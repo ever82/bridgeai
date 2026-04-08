@@ -1,0 +1,146 @@
+---
+id: "ISSUE-DATE004"
+issue_number: 804
+title: "双向同意引荐机制"
+slug: "mutual-consent-referral"
+status: "pending"
+description: |
+  实现AgentDate场景的双向同意引荐机制。在Agent对话评估完成后，
+  系统向双方用户展示对话摘要和匹配评估，双方均需同意才能交换联系方式并开启真人聊天。
+  支持单方/双方同意、拒绝处理、重新匹配、引荐记录管理等功能。
+prerequisites:
+  - "ISSUE-DATE003"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-DATE004~c1"
+    name: "双向同意状态管理"
+    description: |
+      状态管理:
+      - 同意状态数据模型（pending/accepted/rejected/expired）
+      - 双方独立决策存储
+      - 决策时效控制（超时自动过期）
+      - 决策变更规则（有效期内可改）
+      - 最终结果计算（双方都同意才成功）
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查双向同意状态管理，验证有完整状态模型、独立决策存储、时效控制、变更规则和最终结果计算逻辑"
+        context_files: ["apps/server/src/models/MutualConsent.ts", "apps/server/src/services/dating/consentStateManager.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE004~c2"
+    name: "引荐结果处理流程"
+    description: |
+      结果处理:
+      - 双方同意：交换联系方式、创建真人聊天房间、发送匹配成功通知
+      - 单方同意：保持匿名、提示对方未同意、提供再次推荐选项
+      - 双方/单方拒绝：记录原因、更新推荐算法、避免重复推荐
+      - 超时处理：自动取消、提醒决策
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查引荐结果处理流程，验证双方同意时交换联系方式创建聊天房间，单方同意保持匿名，拒绝时更新算法，超时自动处理"
+        context_files: ["apps/server/src/services/dating/referralService.ts", "apps/server/src/services/dating/consentProcessor.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE004~c3"
+    name: "真人聊天房间创建"
+    description: |
+      房间创建:
+      - 双方同意后自动创建1v1聊天房间
+      - 继承Agent对话上下文（可选）
+      - 身份标识切换（从Agent切换到真人）
+      - 初始欢迎消息生成
+      - 人机切换标记（用户接管提示）
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查真人聊天房间创建功能，验证双方同意后自动创建1v1房间，支持继承Agent上下文，身份切换到真人，并生成欢迎消息"
+        context_files: ["apps/server/src/services/dating/humanChatRoomService.ts", "apps/server/src/services/chat/roomCreation.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE004~c4"
+    name: "引荐结果通知系统"
+    description: |
+      通知系统:
+      - 对方已决策提醒（不透露具体选择）
+      - 双方同意成功通知
+      - 引荐失败通知（婉转化表达）
+      - 新真人消息提醒
+      - 决策即将超时提醒
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查引荐结果通知系统，验证有决策状态提醒、成功/失败通知、新消息提醒和超时提醒功能，且失败通知表达婉转化"
+        context_files: ["apps/server/src/services/dating/referralNotificationService.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE004~c5"
+    name: "引荐记录与管理"
+    description: |
+      记录管理:
+      - 引荐历史记录存储
+      - 引荐状态追踪（待处理/成功/失败）
+      - 引荐统计（成功率、偏好分析）
+      - 黑名单管理（拒绝后不再推荐）
+      - 引荐报告导出（可选）
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查引荐记录与管理功能，验证有历史记录存储、状态追踪、统计分析、黑名单管理和报告导出功能"
+        context_files: ["apps/server/src/services/dating/referralHistoryService.ts", "apps/server/src/models/ReferralRecord.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE004~c6"
+    name: "移动端引荐交互界面"
+    description: |
+      移动端UI:
+      - 决策等待界面（显示对方决策中）
+      - 匹配成功庆祝界面
+      - 真人聊天入口
+      - 引荐历史列表
+      - 引荐详情查看（摘要、决策时间线）
+      - 重新匹配入口
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查移动端引荐交互界面，验证有决策等待、成功庆祝、聊天入口、历史列表、详情查看和重新匹配功能"
+        context_files: ["apps/mobile/src/screens/dating/ReferralScreen.tsx", "apps/mobile/src/screens/dating/MatchSuccessScreen.tsx", "apps/mobile/src/screens/dating/ReferralHistoryScreen.tsx"]
+        model: "claude-sonnet-4-6"

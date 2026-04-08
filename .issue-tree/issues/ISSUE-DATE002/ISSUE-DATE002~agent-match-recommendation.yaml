@@ -1,0 +1,148 @@
+---
+id: "ISSUE-DATE002"
+issue_number: 802
+title: "Agent主动匹配推荐"
+slug: "agent-match-recommendation"
+status: "pending"
+description: |
+  实现AgentDate场景的Agent主动匹配推荐系统。系统根据用户的交友画像，
+  自动筛选匹配对象，由用户的Agent主动发起对话，经过初步交流后向用户推荐合适的交友对象。
+  支持匹配度算法、个性化推荐排序、每日推荐推送等功能。
+prerequisites:
+  - "ISSUE-C006"
+  - "ISSUE-M004"
+  - "ISSUE-DATE001"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-DATE002~c1"
+    name: "交友匹配度算法"
+    description: |
+      匹配算法:
+      - 多维度相似度计算（基础条件、性格、兴趣、生活方式）
+      - 权重配置（硬条件vs软偏好）
+      - 互补性评分（性格互补、技能互补）
+      - 地理位置接近度计算
+      - 综合匹配度分数（0-100）
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查交友匹配度算法实现，验证有多维度相似度计算、硬软条件权重、互补性评分，输出0-100的综合匹配度分数"
+        context_files: ["apps/server/src/services/dating/matchAlgorithm.ts", "packages/shared/src/utils/datingSimilarity.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE002~c2"
+    name: "Agent主动推荐逻辑"
+    description: |
+      推荐逻辑:
+      - 每日匹配候选池生成
+      - Agent自动筛选高匹配度对象
+      - 批量匹配候选人的排序算法
+      - 过滤已匹配/已拒绝/黑名单用户
+      - 推荐多样性保证（避免同质化）
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查Agent主动推荐逻辑，验证有每日候选池生成、自动筛选、排序算法、过滤机制和多样性保证功能"
+        context_files: ["apps/server/src/services/dating/recommendationService.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE002~c3"
+    name: "匹配结果推送通知"
+    description: |
+      推送系统:
+      - 每日推荐推送（新匹配对象提醒）
+      - 推送内容个性化（展示匹配亮点）
+      - 推送频率控制（避免打扰）
+      - 用户偏好学习时间设置
+      - 推送点击跳转匹配详情
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查匹配结果推送通知系统，验证有每日推荐推送、个性化内容、频率控制、时间偏好设置和跳转功能"
+        context_files: ["apps/server/src/services/dating/matchNotificationService.ts", "apps/mobile/src/services/notifications.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE002~c4"
+    name: "Agent发起对话匹配"
+    description: |
+      对话启动:
+      - Agent自动发起对话流程
+      - 个性化开场白生成（基于匹配点）
+      - 对方Agent的自动响应
+      - 对话目标设定（了解特定信息）
+      - 对话轮次控制（初步交流后暂停等待用户）
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: required
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查Agent发起对话匹配功能，验证能自动发起对话、生成个性化开场白、控制对话轮次，在初步交流后暂停等待用户介入"
+        context_files: ["apps/server/src/services/dating/agentInitiatedChat.ts", "apps/server/src/services/ai/openingLineService.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE002~c5"
+    name: "匹配结果展示界面"
+    description: |
+      移动端UI:
+      - 每日推荐列表（卡片式展示）
+      - 匹配详情页（照片、基本信息、匹配度、共同兴趣）
+      - 匹配亮点高亮展示
+      - 快速操作（喜欢/跳过/查看详情）
+      - 匹配历史记录
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查移动端匹配结果展示界面，验证有卡片式推荐列表、匹配详情页、亮点高亮、快速操作按钮和匹配历史功能"
+        context_files: ["apps/mobile/src/screens/dating/RecommendationsScreen.tsx", "apps/mobile/src/components/dating/MatchCard.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE002~c6"
+    name: "用户反馈与推荐优化"
+    description: |
+      反馈系统:
+      - 喜欢/跳过快捷反馈
+      - 不感兴趣原因收集（可选）
+      - 推荐准确性评分
+      - 反馈数据用于算法优化
+      - 用户偏好学习
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查用户反馈与推荐优化系统，验证有快捷反馈、原因收集、准确性评分功能，且反馈数据用于持续优化推荐算法"
+        context_files: ["apps/server/src/services/dating/feedbackService.ts", "apps/server/src/services/dating/preferenceLearning.ts"]
+        model: "claude-sonnet-4-6"

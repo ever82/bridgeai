@@ -1,0 +1,146 @@
+---
+id: "ISSUE-CR003"
+issue_number: 603
+title: "积分系统基础与交易记录"
+slug: "points-transaction-system"
+status: "pending"
+description: |
+  实现平台积分系统，包括积分账户管理、积分获取与消耗、
+  交易记录追踪、积分商城基础、以及积分在场景中的应用(如VisionShare照片购买)。
+  积分作为平台内流通的虚拟货币，支持平台经济生态。
+prerequisites:
+  - "ISSUE-A003"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-CR003~c1"
+    name: "积分账户数据模型"
+    description: |
+      积分系统数据库设计:
+      - PointsAccount 表设计(用户ID、当前余额、总获取、总消耗、冻结金额)
+      - PointsTransaction 表设计(交易ID、类型、金额、描述、关联场景)
+      - PointsFreeze 表设计(冻结记录用于交易担保)
+      - 账户唯一性约束和用户关联
+      - 余额非负约束
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查积分账户数据模型，验证Prisma schema中有PointsAccount、PointsTransaction、PointsFreeze模型，确认字段和约束"
+        context_files: ["packages/database/prisma/schema.prisma", "packages/shared/src/types/points.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-CR003~c2"
+    name: "积分交易核心服务"
+    description: |
+      积分操作原子性实现:
+      - 积分获取接口(任务奖励、签到等)
+      - 积分消耗接口(购买服务、打赏等)
+      - 积分冻结/解冻(交易担保)
+      - 积分转账(用户间转移)
+      - 事务安全(防止超卖和并发问题)
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查积分交易服务，验证有PointsService类实现获取、消耗、冻结、转账方法，确认事务和并发控制"
+        context_files: ["apps/server/src/services/pointsService.ts", "apps/server/src/services/pointsTransactionService.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-CR003~c3"
+    name: "积分交易记录API"
+    description: |
+      积分记录查询接口:
+      - GET /api/v1/points/balance - 获取当前余额
+      - GET /api/v1/points/transactions - 获取交易记录(支持筛选和分页)
+      - GET /api/v1/points/transactions/:id - 获取交易详情
+      - GET /api/v1/points/stats - 获取积分统计(收入/支出分类)
+      - 交易记录导出功能
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查积分API，验证有/points/balance、/points/transactions端点，确认筛选、分页和统计功能"
+        context_files: ["apps/server/src/routes/points.ts", "apps/server/src/services/pointsService.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-CR003~c4"
+    name: "积分规则配置"
+    description: |
+      积分获取和消耗规则:
+      - 获取规则配置(签到、分享、完成任务等)
+      - 消耗规则配置(查看照片、发起匹配等)
+      - 每日/每周获取上限
+      - 积分价值换算(人民币->积分)
+      - 规则动态调整接口(管理员)
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查积分规则配置，验证有PointsRule配置表和RuleEngine，确认获取/消耗规则和上限控制"
+        context_files: ["apps/server/src/config/pointsRules.ts", "apps/server/src/services/pointsRuleEngine.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-CR003~c5"
+    name: "积分钱包UI"
+    description: |
+      移动端积分界面:
+      - 积分钱包首页(余额、收支概览)
+      - 交易记录列表(时间轴展示)
+      - 交易详情页(含关联场景)
+      - 积分获取任务列表
+      - 积分充值入口(预留)
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查积分UI，验证有PointsWalletScreen、TransactionList、PointsTaskList组件，确认余额展示和交易记录"
+        context_files: ["apps/mobile/src/screens/Points/PointsWalletScreen.tsx", "apps/mobile/src/components/Points/TransactionList.tsx", "apps/mobile/src/components/Points/PointsTaskList.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-CR003~c6"
+    name: "VisionShare场景积分支付"
+    description: |
+      积分在VisionShare场景的应用:
+      - 照片查看积分支付接口
+      - 支付前余额检查
+      - 积分支付给供给方(平台抽成)
+      - 支付成功后的照片解锁
+      - 支付失败和退款处理
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查VisionShare积分支付，验证有PhotoPaymentService，确认支付流程、解锁机制和分账逻辑"
+        context_files: ["apps/server/src/services/visionSharePaymentService.ts", "apps/server/src/services/photoUnlockService.ts"]
+        model: "claude-sonnet-4-6"

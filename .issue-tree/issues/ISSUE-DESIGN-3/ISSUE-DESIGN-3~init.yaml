@@ -1,0 +1,28 @@
+id: "ISSUE-DESIGN-3"
+issue_number: 3
+title: "生成 Issues"
+slug: "generate-issues"
+status: "pending"
+description: |
+  根据完善的 IssueTree.md，生成所有 Issue 的 YAML 文件。
+  每个 issue 包含完整的 acceptance criteria。
+prerequisites: ["ISSUE-DESIGN-2"]
+created_at: "2026-04-08"
+completed_at: null
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-DESIGN-3~c1"
+    name: "所有 Issues 已生成"
+    description: "IssueTree.md 中每个 issue 都有对应的 YAML 文件"
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查所有 issues 是否都有 YAML 文件"
+        context_files: [".issuetree/IssueTree.md", ".issuetree/issues/"]
+        model: "claude-sonnet-4-6"

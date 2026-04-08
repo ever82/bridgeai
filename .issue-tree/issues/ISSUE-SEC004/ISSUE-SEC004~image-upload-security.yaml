@@ -1,0 +1,139 @@
+---
+id: "ISSUE-SEC004"
+issue_number: 404
+title: "图片上传安全检查"
+slug: "image-upload-security"
+status: "pending"
+description: |
+  实现图片上传的安全检查机制，包括文件类型验证、大小限制、
+  恶意内容检测、病毒扫描、图片元数据清理等，确保上传的图片文件安全可靠。
+prerequisites:
+  - "ISSUE-VS003"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-SEC004~c1"
+    name: "文件类型与大小验证"
+    description: |
+      基础上传验证:
+      - 允许的图片格式(白名单)
+      - 文件大小限制
+      - 文件头Magic Number校验
+      - 双重扩展名检查
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查文件上传验证，验证只允许jpg/png/gif/webp，文件大小限制，确认Magic Number校验文件真实类型"
+        context_files: ["apps/server/src/middleware/upload.ts", "apps/server/src/utils/fileValidator.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-SEC004~c2"
+    name: "图片内容安全检测"
+    description: |
+      内容安全:
+      - 色情图片检测
+      - 暴力恐怖图片识别
+      - 敏感政治内容检测
+      - 图片分类与标签
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查图片内容检测，验证集成阿里云/腾讯云内容安全API或自研AI模型，确认色情/暴力检测准确率高"
+        context_files: ["apps/server/src/services/imageModeration.ts", "apps/server/src/services/ai/imageAnalysis.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-SEC004~c3"
+    name: "病毒与恶意代码扫描"
+    description: |
+      安全扫描:
+      - 文件病毒扫描
+      - 嵌入式恶意代码检测
+      - 可执行文件伪装检查
+      - 扫描结果缓存
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查病毒扫描，验证集成ClamAV或其他杀毒引擎，确认检测EICAR测试文件，扫描结果有缓存"
+        context_files: ["apps/server/src/services/virusScan.ts", "apps/server/src/config/clamav.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-SEC004~c4"
+    name: "图片元数据处理"
+    description: |
+      元数据安全:
+      - EXIF数据清理
+      - GPS位置信息移除
+      - 拍摄设备信息清除
+      - 缩略图重建
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查图片元数据处理，验证使用sharp/exiftool清理EXIF，确认GPS和设备信息已移除，保留必要的方向信息"
+        context_files: ["apps/server/src/utils/imageProcessor.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-SEC004~c5"
+    name: "存储与访问安全"
+    description: |
+      安全存储:
+      - 文件名随机化重命名
+      - 分离存储目录结构
+      - 存储路径不直接暴露
+      - CDN访问控制
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查存储安全，验证文件名使用UUID随机化，确认存储路径按日期分片，通过代理访问而非直接URL"
+        context_files: ["apps/server/src/services/storage.ts", "apps/server/src/routes/images.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-SEC004~c6"
+    name: "上传审计与违规处理"
+    description: |
+      审计与管理:
+      - 上传记录审计日志
+      - 违规图片自动标记
+      - 用户上传历史追踪
+      - 违规用户限制上传
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查上传审计，验证有上传日志记录，违规图片标记并隔离，确认违规用户被限制上传权限"
+        context_files: ["apps/server/src/services/uploadAudit.ts", "apps/server/src/models/uploadLog.ts"]
+        model: "claude-sonnet-4-6"

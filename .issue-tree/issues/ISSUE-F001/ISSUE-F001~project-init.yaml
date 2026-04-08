@@ -1,0 +1,139 @@
+---
+id: "ISSUE-F001"
+issue_number: 101
+title: "项目初始化与开发环境搭建"
+slug: "project-init"
+status: "pending"
+description: |
+  初始化 BridgeAI Agent通信平台项目，搭建完整的开发环境。
+  包括 monorepo 结构设置、TypeScript 配置、代码规范工具配置、
+  Git 工作流设置以及开发文档模板。
+prerequisites: []
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-F001~c1"
+    name: "Monorepo 结构初始化"
+    description: |
+      使用 pnpm workspaces 设置 monorepo 结构，包含以下目录:
+      - apps/server: Express 后端服务
+      - apps/mobile: Expo React Native 移动端
+      - packages/shared: 共享类型定义和工具函数
+      - packages/config: 共享配置文件(ESLint, TypeScript等)
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查项目根目录是否有 pnpm-workspace.yaml，且包含 apps/* 和 packages/* 目录结构，确认 package.json 中定义了 workspaces"
+        context_files: ["pnpm-workspace.yaml", "package.json"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-F001~c2"
+    name: "TypeScript 配置完成"
+    description: |
+      为每个 workspace 配置 TypeScript:
+      - 根目录 tsconfig.json 作为基础配置
+      - 每个子项目继承并扩展配置
+      - 配置严格的类型检查选项
+      - 设置路径别名和模块解析
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查各目录下的 tsconfig.json 是否存在且配置完整，验证 compilerOptions 包含 strict 模式和正确的 target 设置"
+        context_files: ["tsconfig.json", "apps/server/tsconfig.json", "apps/mobile/tsconfig.json"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-F001~c3"
+    name: "代码规范工具配置"
+    description: |
+      配置代码质量工具链:
+      - ESLint 配置(使用 @typescript-eslint)
+      - Prettier 配置(统一代码格式)
+      - Husky + lint-staged (Git 钩子)
+      - commitlint (提交信息规范)
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 .eslintrc.js/.eslintrc.json、prettier.config.js/.prettierrc、.husky 目录和 commitlint.config.js 是否存在且配置正确"
+        context_files: [".eslintrc.js", "prettier.config.js", ".husky/pre-commit", "commitlint.config.js"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-F001~c4"
+    name: "环境变量配置管理"
+    description: |
+      建立环境变量管理方案:
+      - 创建 .env.example 模板文件
+      - 配置 dotenv 加载环境变量
+      - 设置不同环境的配置文件(.env.development, .env.production)
+      - 环境变量类型定义和验证
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 .env.example 是否存在且包含必要的环境变量定义(数据库、API密钥、端口等)，确认有 .env.*.example 文件用于不同环境"
+        context_files: [".env.example", ".env.development.example", ".env.production.example"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-F001~c5"
+    name: "开发文档和 README"
+    description: |
+      创建项目基础文档:
+      - 根目录 README.md (项目介绍、快速开始)
+      - CONTRIBUTING.md (贡献指南)
+      - docs/ 目录下的架构文档
+      - API 文档结构模板
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 README.md 是否包含项目描述、技术栈、安装步骤、开发命令；确认 CONTRIBUTING.md 和 docs/ 目录存在"
+        context_files: ["README.md", "CONTRIBUTING.md"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-F001~c6"
+    name: "Git 工作流和分支策略"
+    description: |
+      配置 Git 工作流:
+      - 设置 GitHub/GitLab 仓库
+      - 配置分支保护规则(main, develop)
+      - PR 模板和 Code Review 流程
+      - CI/CD 基础工作流配置
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 .github/workflows/ 或 CI 配置文件是否存在，确认有 PR 模板 .github/pull_request_template.md 和分支策略文档"
+        context_files: [".github/workflows/ci.yml", ".github/pull_request_template.md"]
+        model: "claude-sonnet-4-6"

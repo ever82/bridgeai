@@ -1,0 +1,140 @@
+---
+id: "ISSUE-SEC005"
+issue_number: 405
+title: "举报与内容审核系统"
+slug: "report-content-moderation"
+status: "pending"
+description: |
+  实现用户举报系统和内容审核机制，包括举报提交、审核工作流、
+  违规内容处理、用户处罚管理、申诉流程等，维护平台内容安全和秩序。
+prerequisites:
+  - "ISSUE-COM002c"
+  - "ISSUE-CR002"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-SEC005~c1"
+    name: "举报提交与管理"
+    description: |
+      举报功能:
+      - 多类型举报(消息/用户/内容)
+      - 举报原因选择
+      - 证据截图上传
+      - 举报记录管理
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查举报系统，验证有Report模型，支持message/user/content类型，确认可上传证据，有举报记录查询"
+        context_files: ["apps/server/src/models/report.ts", "apps/server/src/routes/reports.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-SEC005~c2"
+    name: "内容审核工作流"
+    description: |
+      审核流程:
+      - 待审核队列管理
+      - 人工审核界面
+      - AI预审核辅助
+      - 审核状态流转
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查审核工作流，验证有审核队列，管理员可查看处理，AI预标记可疑内容，状态从pending到resolved"
+        context_files: ["apps/server/src/services/moderationQueue.ts", "apps/admin/src/pages/ModerationDashboard.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-SEC005~c3"
+    name: "违规处理机制"
+    description: |
+      违规处置:
+      - 内容删除/隐藏
+      - 用户警告通知
+      - 临时禁言/封禁
+      - 信用分扣减
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查违规处理，验证可删除/隐藏违规内容，用户收到警告，支持禁言封禁，信用分系统联动扣分"
+        context_files: ["apps/server/src/services/violationHandler.ts", "apps/server/src/services/creditService.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-SEC005~c4"
+    name: "申诉与复核"
+    description: |
+      申诉流程:
+      - 用户申诉提交
+      - 申诉审核流程
+      - 处罚撤销机制
+      - 信用分恢复
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查申诉系统，验证用户可提交申诉，有独立审核流程，申诉成功可撤销处罚和恢复信用分"
+        context_files: ["apps/server/src/models/appeal.ts", "apps/server/src/services/appealService.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-SEC005~c5"
+    name: "敏感词过滤"
+    description: |
+      内容过滤:
+      - 敏感词库管理
+      - 实时消息过滤
+      - 正则匹配支持
+      - 分级屏蔽策略
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查敏感词过滤，验证有敏感词库，实时检测消息内容，支持正则，分级处理(提示/替换/拦截)"
+        context_files: ["apps/server/src/services/sensitiveWordFilter.ts", "apps/server/src/config/sensitiveWords.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-SEC005~c6"
+    name: "审核数据统计"
+    description: |
+      数据与报表:
+      - 审核量统计
+      - 违规类型分析
+      - 审核效率指标
+      - 举报准确率计算
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查审核统计，验证有审核量/处理时效报表，违规类型分布，确认举报准确率统计(有效举报/总举报)"
+        context_files: ["apps/admin/src/pages/ModerationStats.tsx", "apps/server/src/services/moderationAnalytics.ts"]
+        model: "claude-sonnet-4-6"

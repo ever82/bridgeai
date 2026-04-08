@@ -1,0 +1,142 @@
+---
+id: "ISSUE-CR001"
+issue_number: 601
+title: "信用分计算系统"
+slug: "credit-score-calculation"
+status: "pending"
+description: |
+  实现用户信用分计算系统，包括信用分模型设计、多维度评分算法、
+  信用等级划分、信用分历史追踪、以及信用分的实时更新机制。
+  信用分是平台信任体系的核心，影响用户的匹配优先级、交易权限和场景准入。
+prerequisites:
+  - "ISSUE-A003"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-CR001~c1"
+    name: "信用分数据模型"
+    description: |
+      信用分数据库设计:
+      - CreditScore 表设计(用户ID、当前分数、等级、更新时间)
+      - CreditHistory 表设计(分数变更历史记录)
+      - CreditFactor 表设计(各维度评分因子存储)
+      - 数据库索引优化(按用户ID和日期查询)
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查信用分数据模型，验证Prisma schema中有CreditScore、CreditHistory、CreditFactor模型，确认字段完整性和关联关系"
+        context_files: ["packages/database/prisma/schema.prisma", "packages/shared/src/types/credit.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-CR001~c2"
+    name: "多维度信用评分算法"
+    description: |
+      信用分计算核心算法:
+      - 基础信息完整性评分(资料完善度)
+      - 行为信用评分(活跃度、响应率)
+      - 交易信用评分(完成率、纠纷记录)
+      - 社交信用评分(评价、举报记录)
+      - 加权综合算法实现
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查信用分计算算法，验证有CreditScoreService.calculateScore方法，确认多维度评分逻辑和权重配置正确"
+        context_files: ["apps/server/src/services/creditScoreService.ts", "apps/server/src/config/creditWeights.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-CR001~c3"
+    name: "信用等级系统"
+    description: |
+      信用等级划分机制:
+      - 等级定义(例如: 优秀900-1000、良好750-899、一般600-749、较差<600)
+      - 等级权益配置(不同等级的权限差异)
+      - 等级升降级规则
+      - 等级徽章和视觉展示
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查信用等级系统，验证有CreditLevel枚举定义，确认等级划分规则和权益配置正确"
+        context_files: ["packages/shared/src/types/credit.ts", "apps/server/src/config/creditLevels.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-CR001~c4"
+    name: "信用分API接口"
+    description: |
+      信用分对外接口:
+      - GET /api/v1/credit/score - 获取当前用户信用分
+      - GET /api/v1/credit/history - 获取信用分历史记录
+      - GET /api/v1/credit/factors - 获取各维度评分详情
+      - POST /api/v1/credit/recalculate - 触发重新计算(管理员)
+      - 其他用户信用分查询(脱敏)
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查信用分API，验证有/credit/score、/credit/history、/credit/factors端点，确认响应格式和权限控制"
+        context_files: ["apps/server/src/routes/credit.ts", "apps/server/src/services/creditScoreService.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-CR001~c5"
+    name: "信用分实时更新机制"
+    description: |
+      信用分动态更新:
+      - 事件驱动更新(交易完成、评价提交等)
+      - 定时任务全量计算(每日/每周)
+      - 更新频率限制(防止刷分)
+      - 异常波动检测和告警
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查信用分更新机制，验证有事件监听和定时任务实现，确认更新频率控制和异常检测逻辑"
+        context_files: ["apps/server/src/services/creditScoreService.ts", "apps/server/src/jobs/creditUpdateJob.ts", "apps/server/src/events/creditEventHandlers.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-CR001~c6"
+    name: "信用分过滤与匹配集成"
+    description: |
+      信用分在匹配中的应用:
+      - 信用分筛选接口(最低分数要求)
+      - 信用分排序权重
+      - 信用不达标用户过滤
+      - 匹配结果中的信用分展示
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查信用分匹配集成，验证匹配查询支持信用分筛选，确认信用分权重在排序算法中的应用"
+        context_files: ["apps/server/src/services/matchingService.ts", "apps/server/src/services/queryBuilder.ts"]
+        model: "claude-sonnet-4-6"

@@ -1,0 +1,121 @@
+---
+id: "ISSUE-M001a"
+issue_number: 401
+title: "查询构建器与DSL设计"
+slug: "query-builder"
+status: "pending"
+description: |
+  设计并实现查询构建器和领域特定语言(DSL)，
+  支持复杂的 Agent 筛选和匹配查询。
+prerequisites:
+  - "ISSUE-C002b"
+  - "ISSUE-C003"
+  - "ISSUE-C004"
+  - "ISSUE-C005"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-M001a~c1"
+    name: "DSL 语法设计"
+    description: |
+      查询 DSL:
+      - JSON 格式查询语法
+      - 支持的条件操作符
+      - 嵌套和组合表达式
+      - 类型安全验证
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 DSL 设计，验证有 QueryDSL 类型定义和 JSON Schema 验证"
+        context_files: ["packages/shared/src/types/queryDSL.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M001a~c2"
+    name: "查询解析器"
+    description: |
+      解析实现:
+      - DSL 解析器
+      - 语法验证
+      - 错误报告
+      - 查询优化建议
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查解析器实现，验证有 QueryParser 类可解析和验证 DSL"
+        context_files: ["apps/server/src/utils/queryParser.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M001a~c3"
+    name: "可视化查询构建器"
+    description: |
+      可视化构建:
+      - 拖拽式条件添加
+      - 条件组管理
+      - 实时预览 DSL
+      - 查询验证反馈
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查可视化构建器，验证有 QueryBuilder 组件支持拖拽和条件组合"
+        context_files: ["apps/mobile/src/components/QueryBuilder/"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M001a~c4"
+    name: "DSL 到 SQL 转换"
+    description: |
+      查询转换:
+      - DSL 到 Prisma 查询转换
+      - JSON 字段查询支持
+      - 复杂 JOIN 处理
+      - 子查询支持
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查查询转换，验证有 DSL 到 Prisma 查询的转换逻辑"
+        context_files: ["apps/server/src/utils/dslToPrisma.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M001a~c5"
+    name: "查询保存和分享"
+    description: |
+      查询管理:
+      - 保存查询条件
+      - 命名和描述
+      - 查询分享
+      - 查询导入/导出
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查查询保存，验证有 SavedQuery 模型和分享功能"
+        context_files: ["apps/server/src/services/savedQueryService.ts"]
+        model: "claude-sonnet-4-6"
