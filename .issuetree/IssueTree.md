@@ -21,15 +21,15 @@ flowchart TD
         F002[🟢 ISSUE-F002<br/>数据库设计与Prisma ORM搭建]
         F003[🟢 ISSUE-F003<br/>Express后端基础框架]
         F004[🟢 ISSUE-F004<br/>Expo移动端项目初始化]
-        F005[🔵 ISSUE-F005<br/>Docker部署配置]
-        F006[🔵 ISSUE-F006<br/>日志系统与结构化日志]
-        F007[🔵 ISSUE-F007<br/>错误追踪与监控集成]
+        F005[🔵 ISSUE-F005<br/>日志系统与结构化日志]
+        F006[🔵 ISSUE-F006<br/>错误追踪与监控集成]
     end
 
     subgraph Test["🧪 测试框架层 - Test"]
         T001[🔵 ISSUE-T001<br/>单元测试框架搭建]
         T002[🔵 ISSUE-T002<br/>API集成测试框架]
         T003[🔵 ISSUE-T003<br/>移动端测试框架]
+        T004[⚪ ISSUE-T004<br/>E2E端到端测试框架]
     end
 
     subgraph Security["🔒 安全层 - Security"]
@@ -37,6 +37,7 @@ flowchart TD
         SEC002[🔵 ISSUE-SEC002<br/>敏感数据加密与保护]
         SEC003[🔵 ISSUE-SEC003<br/>API限流与安全防护]
         SEC004[🔵 ISSUE-SEC004<br/>图片上传安全检查]
+        SEC005[🔵 ISSUE-SEC005<br/>举报与内容审核系统]
     end
 
     subgraph Auth["🔐 认证与用户层 - Auth"]
@@ -55,6 +56,7 @@ flowchart TD
         C004[🟡 ISSUE-C004<br/>属性过滤系统]
         C005[🟡 ISSUE-C005<br/>信用过滤系统]
         C006[🟡 ISSUE-C006<br/>场景配置管理]
+        C007[🟡 ISSUE-C007<br/>Agent信息披露控制机制]
     end
 
     subgraph Matching["🎯 匹配引擎层 - Matching"]
@@ -97,7 +99,8 @@ flowchart TD
         VS003[🔵 ISSUE-VS003<br/>相机拍照与上传]
         VS004[🔵 ISSUE-VS004<br/>AI隐私脱敏处理]
         VS005[🔵 ISSUE-VS005<br/>照片查看与积分支付]
-        VS006[🔵 ISSUE-VS006<br/>AI相册智能检索]
+        VS006[🔵 ISSUE-VS006<br/>AI相册智能检索与历史查询]
+        VS007[🔵 ISSUE-VS007<br/>本地相册AI智能检索]
     end
 
     subgraph Date["💕 AgentDate场景"]
@@ -145,8 +148,8 @@ flowchart TD
     F001 --> F004
     F002 --> A001
     F003 --> A001
+    F003 --> F005
     F003 --> F006
-    F003 --> F007
     F003 --> T002
     F004 --> T003
 
@@ -154,15 +157,20 @@ flowchart TD
     F003 --> T001
     A001 --> T001
     C001 --> T001
+    T001 --> T004
+    T002 --> T004
+    T003 --> T004
 
     %% 安全层依赖
     A002 --> SEC001
     A002 --> SEC002
     F003 --> SEC003
     VS003 --> SEC004
+    COM002c --> SEC005
     SEC001 --> C001
     SEC002 --> C002a
     SEC003 --> A004
+    SEC005 --> CR002
 
     %% 认证层依赖
     A001 --> A002
@@ -182,6 +190,8 @@ flowchart TD
     C001 --> C006
     C002a --> C006
     C006 --> C002a
+    C002c --> C007
+    COM002c --> C007
 
     %% 匹配引擎依赖
     C002b --> M001a
@@ -243,6 +253,8 @@ flowchart TD
     AI005 --> VS006
     CR003 --> VS005
     SEC004 --> VS003
+    VS006 --> VS007
+    AI005 --> VS007
 
     %% AgentDate场景依赖
     C006 --> DATE001
@@ -316,8 +328,9 @@ flowchart TD
     T001 --> INT001
     T002 --> INT001
     T003 --> INT001
+    T004 --> INT001
+    F005 --> INT001
     F006 --> INT001
-    F007 --> INT001
     INT001 --> INT002
     INT002 --> INT003
 ```
@@ -333,9 +346,8 @@ flowchart TD
 | ISSUE-F002 | 数据库设计与Prisma ORM搭建 | L | F001 |
 | ISSUE-F003 | Express后端基础框架 | L | F001 |
 | ISSUE-F004 | Expo移动端项目初始化 | L | F001 |
-| ISSUE-F005 | Docker部署配置 | S | F001, F003 |
-| ISSUE-F006 | 日志系统与结构化日志 | M | F003 |
-| ISSUE-F007 | 错误追踪与监控集成 | M | F003 |
+| ISSUE-F005 | 日志系统与结构化日志 | M | F003 |
+| ISSUE-F006 | 错误追踪与监控集成 | M | F003 |
 
 ### 🧪 Test (测试框架层)
 | Issue | 标题 | 复杂度 | 关键依赖 |
@@ -343,6 +355,7 @@ flowchart TD
 | ISSUE-T001 | 单元测试框架搭建(Jest) | M | F003, A001 |
 | ISSUE-T002 | API集成测试框架 | M | F003 |
 | ISSUE-T003 | 移动端测试框架 | M | F004 |
+| ISSUE-T004 | E2E端到端测试框架 | H | T001, T002, T003, UI001 |
 
 ### 🔒 Security (安全层)
 | Issue | 标题 | 复杂度 | 关键依赖 |
@@ -351,6 +364,7 @@ flowchart TD
 | ISSUE-SEC002 | 敏感数据加密与保护 | M | A002, C002a |
 | ISSUE-SEC003 | API限流与安全防护 | M | F003 |
 | ISSUE-SEC004 | 图片上传安全检查 | M | VS003 |
+| ISSUE-SEC005 | 举报与内容审核系统 | M | COM002c, CR002 |
 
 ### 🔐 Auth (认证层)
 | Issue | 标题 | 复杂度 | 关键依赖 |
@@ -371,6 +385,7 @@ flowchart TD
 | ISSUE-C004 | 属性过滤系统 | H | C002b |
 | ISSUE-C005 | 信用过滤系统 | M | C002b, CR001 |
 | ISSUE-C006 | 场景配置管理 | **L** | C001, C002a |
+| ISSUE-C007 | Agent信息披露控制机制 | M | C002c, COM002c |
 
 ### 🎯 Matching (匹配引擎层)
 | Issue | 标题 | 复杂度 | 关键依赖 |
@@ -390,7 +405,7 @@ flowchart TD
 | ISSUE-COM002b | 消息持久化与历史记录 | M | COM002a |
 | ISSUE-COM002c | 群聊状态同步与在线状态 | M | COM002b |
 | ISSUE-COM003 | 人机切换机制 | M | COM002c |
-| ISSUE-COM004 | Agent通信协议定义 | M | COM002c |
+| ISSUE-COM004 | Agent通信协议定义(消息格式/身份切换/信用分) | M | COM002c |
 | ISSUE-COM005 | 私聊建议系统 | M | COM002c, AI004 |
 
 ### 🧠 AI Service (AI服务层)
@@ -418,7 +433,8 @@ flowchart TD
 | ISSUE-VS003 | 相机拍照与上传 | M | VS002, F004, SEC004 |
 | ISSUE-VS004 | AI隐私脱敏处理 | H | VS003, AI005 |
 | ISSUE-VS005 | 照片查看与积分支付 | M | VS004, CR003 |
-| ISSUE-VS006 | AI相册智能检索 | **M** | VS002, AI005 |
+| ISSUE-VS006 | AI相册智能检索与历史查询 | **M** | VS002, AI005 |
+| ISSUE-VS007 | 本地相册AI智能检索 | M | VS006, AI005 |
 
 ### 💕 AgentDate场景
 | Issue | 标题 | 复杂度 | 关键依赖 |
@@ -460,7 +476,7 @@ flowchart TD
 ### 🚀 Integration (集成与部署)
 | Issue | 标题 | 复杂度 | 关键依赖 |
 |-------|------|--------|----------|
-| ISSUE-INT001 | 端到端集成测试 | M | 所有场景Issue, UI, T001-T003, F006, F007 |
+| ISSUE-INT001 | 端到端集成测试 | M | 所有场景Issue, UI, T001-T004, F005, F006 |
 | ISSUE-INT002 | 性能优化与压测 | H | INT001 |
 | ISSUE-INT003 | Demo演示准备 | M | INT002 |
 
@@ -470,7 +486,7 @@ flowchart TD
 
 ### 第一阶段：基础架构 (Foundation + Auth + Test + Security)
 **目标**: 搭建项目基础，用户可注册登录，测试框架就绪
-- ISSUE-F001 ~ F007
+- ISSUE-F001 ~ F006
 - ISSUE-A001 ~ A004
 - ISSUE-T001 ~ T003
 - ISSUE-SEC001 ~ SEC003
@@ -488,11 +504,13 @@ flowchart TD
 
 ### 第四阶段：场景实现 (Scenes + Security)
 **目标**: 四大场景核心流程跑通，安全加固完成
-- VisionShare: ISSUE-VS001 ~ VS006
+- VisionShare: ISSUE-VS001 ~ VS007
 - AgentDate: ISSUE-DATE001 ~ DATE004
 - AgentJob: ISSUE-JOB001 ~ JOB004
 - AgentAd: ISSUE-AD001 ~ AD004
 - ISSUE-SEC004 (图片安全检查)
+- ISSUE-SEC005 (举报与内容审核系统)
+- ISSUE-C007 (信息披露控制机制)
 
 ### 第五阶段：前端与集成 (UI + Integration)
 **目标**: 完整UI界面，系统可演示
@@ -517,7 +535,7 @@ F003 → F004 → UI001 → UI002 → UI003/UI004a/UI004b/UI004c/UI005/UI006/UI0
 - AI服务: AI001 → AI002/AI003/AI004/AI005/AI006 (可与Core并行)
 - 信用系统: A003 → CR001 → CR002/CR003 (可与Core并行)
 - 场景开发: 依赖C006和M004后可并行开发四个场景
-- 日志监控: F003 → F006/F007 (基础设施)
+- 日志监控: F003 → F005/F006 (基础设施)
 ```
 
 ---
@@ -535,6 +553,7 @@ F003 → F004 → UI001 → UI002 → UI003/UI004a/UI004b/UI004c/UI005/UI006/UI0
 
 ---
 
-*IssueTree 版本: 2.0*
+*IssueTree 版本: 2.1*
 *最后更新: 2026-04-08*
 *基于Spec: BridgeAI Agent通信平台完整设计文档*
+*更新内容: 新增SEC005/C007/VS007，扩展COM004描述*
