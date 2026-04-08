@@ -1,0 +1,90 @@
+id: ISSUE-AD004
+issue_number: 1004
+title: 一键购买与优惠码
+slug: one-click-purchase
+status: pending
+description: |
+  AgentAd场景的最终购买转化模块。消费者确认优惠方案后，系统生成专属优惠码
+  并提供一键购买功能。消费者可以在合作商家处使用优惠码完成消费，
+  系统自动追踪优惠使用情况并记录交易。支持线下核销和线上跳转购买两种模式。
+prerequisites:
+  - ISSUE-AD003
+logic: sufficient_necessary
+created_at: 2026-04-08
+criteria:
+  - id: AD004-CR01
+    name: 专属优惠码生成
+    description: |
+      当消费者确认接受某个商家的优惠方案后，系统自动生成唯一的专属优惠码，
+      绑定消费者、商家和具体优惠方案，包含有效期和使用次数限制。
+    status: pending
+    coverage: 95
+    verification:
+      ai_prompt: |
+        验证确认接受优惠后系统是否调用优惠码生成服务，
+        检查生成的优惠码是否唯一、格式规范(如AD-XXXX-XXXX)，
+        确认优惠码数据正确存储并关联consumerId、merchantId、offerId。
+
+  - id: AD004-CR02
+    name: 一键购买界面
+    description: |
+      提供一键购买界面，展示优惠码详情(二维码和数字码)、商家信息、
+      使用说明、有效期倒计时等，并提供保存到手机、分享给好友等功能。
+    status: pending
+    coverage: 92
+    verification:
+      ai_prompt: |
+        检查购买确认界面是否清晰展示所有必要信息，验证二维码生成是否正确
+        可被扫描识别，确认"保存到相册"、"分享给好友"按钮功能正常，
+        测试倒计时显示准确。
+
+  - id: AD004-CR03
+    name: 线下核销流程
+    description: |
+      支持线下到店核销模式，消费者到店后展示优惠码二维码，
+      商家使用专用App或设备扫描二维码完成核销，系统实时更新优惠码状态。
+    status: pending
+    coverage: 90
+    verification:
+      ai_prompt: |
+        验证商家扫码核销流程是否顺畅，检查核销后优惠码状态是否变为"USED"，
+        确认同一优惠码不能重复使用，测试核销记录是否正确记录到CR003积分系统。
+
+  - id: AD004-CR04
+    name: 线上跳转购买
+    description: |
+      支持线上购买模式，点击"立即使用"跳转至商家小程序/H5页面，
+      自动携带优惠码信息，用户在商家页面完成支付时自动应用优惠。
+    status: pending
+    coverage: 85
+    verification:
+      ai_prompt: |
+        检查线上跳转是否正确携带优惠码参数，验证跳转链接是否指向正确的
+        商家页面，确认支付环节优惠自动生效，测试支付完成后回调通知
+        正确更新优惠码使用状态。
+
+  - id: AD004-CR05
+    name: 使用状态追踪与提醒
+    description: |
+      系统实时追踪优惠码状态(未使用/已使用/已过期)，在即将过期前
+      发送提醒通知，使用完成后发送确认通知，过期未使用发送过期提醒。
+    status: pending
+    coverage: 88
+    verification:
+      ai_prompt: |
+        验证优惠码状态流转是否正确(ACTIVE->USED/EXPIRED)，
+        检查到期前24小时是否触发提醒通知，确认使用后是否发送
+        交易确认通知，测试过期后优惠码变为无效状态。
+
+  - id: AD004-CR06
+    name: 交易记录与评价
+    description: |
+      完成消费后，交易记录保存到CR003积分系统，支持消费者和商家互评，
+      评价结果影响双方信用分(CR001)，为后续匹配提供参考。
+    status: pending
+    coverage: 87
+    verification:
+      ai_prompt: |
+        检查交易完成后是否生成交易记录，验证记录是否包含优惠码、
+        优惠金额、实际支付金额等信息，确认评价功能是否允许双方互评，
+        测试评价提交后是否触发CR001信用分更新计算。

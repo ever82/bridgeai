@@ -1,0 +1,118 @@
+---
+id: "ISSUE-M003"
+issue_number: 404
+title: "匹配度算法实现"
+slug: "match-algorithm"
+status: "pending"
+description: |
+  实现高精度的匹配度算法，综合计算需求与供给的
+  匹配程度，支持多种场景的匹配需求。
+prerequisites:
+  - "ISSUE-M002"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-M003~c1"
+    name: "匹配度计算模型"
+    description: |
+      算法模型:
+      - 多维度匹配评分
+      - 权重配置系统
+      - 场景特定算法
+      - 机器学习优化
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查匹配度模型，验证有 MatchScoringModel 和维度权重配置"
+        context_files: ["apps/server/src/services/matchAlgorithm.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M003~c2"
+    name: "L1/L2/L3 匹配计算"
+    description: |
+      分层匹配:
+      - L1 基础属性匹配
+      - L2 结构化信息匹配
+      - L3 语义匹配(AI)
+      - 综合匹配分数
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查分层匹配，验证有 L1Matcher, L2Matcher, L3Matcher 分别计算匹配度"
+        context_files: ["apps/server/src/services/matchers/"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M003~c3"
+    name: "匹配度 API"
+    description: |
+      匹配接口:
+      - 计算匹配度端点
+      - 批量匹配计算
+      - 匹配度缓存
+      - 匹配解释
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查匹配度 API，验证有 /api/v1/matches/calculate 端点计算匹配度"
+        context_files: ["apps/server/src/routes/matches.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M003~c4"
+    name: "匹配度可视化"
+    description: |
+      可视化展示:
+      - 匹配度分数展示
+      - 匹配维度雷达图
+      - 匹配解释说明
+      - 匹配建议
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查匹配度可视化，验证有 MatchScore 组件展示匹配分数和维度分析"
+        context_files: ["apps/mobile/src/components/MatchScore/"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M003~c5"
+    name: "匹配算法 A/B 测试"
+    description: |
+      算法优化:
+      - 多算法版本支持
+      - A/B 测试框架
+      - 效果数据收集
+      - 算法迭代优化
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 A/B 测试，验证有算法版本切换和效果追踪"
+        context_files: ["apps/server/src/services/matchABTest.ts"]
+        model: "claude-sonnet-4-6"

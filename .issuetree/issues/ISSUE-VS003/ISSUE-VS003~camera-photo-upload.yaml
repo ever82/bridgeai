@@ -1,0 +1,148 @@
+---
+id: "ISSUE-VS003"
+issue_number: 703
+title: "相机拍照与上传"
+slug: "camera-photo-upload"
+status: "pending"
+description: |
+  实现VisionShare场景的相机拍照和照片上传功能。接单用户通过相机拍摄实时照片，
+  支持拍照预览、照片编辑、批量上传等功能。集成图片安全检查，
+  确保上传内容符合规范。
+prerequisites:
+  - "ISSUE-VS002"
+  - "ISSUE-F004"
+  - "ISSUE-SEC004"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-VS003~c1"
+    name: "相机功能集成"
+    description: |
+      相机界面:
+      - 原生相机调用(Expo Camera)
+      - 拍照按钮和连拍功能
+      - 闪光灯和焦距控制
+      - 照片预览和重拍
+      - 相机权限处理
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查相机功能，验证有Expo Camera集成、拍照控制、预览和权限处理"
+        context_files: ["apps/mobile/src/screens/VisionShare/CameraScreen.tsx", "apps/mobile/src/components/Camera/VisionShareCamera.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-VS003~c2"
+    name: "照片预览与编辑"
+    description: |
+      编辑功能:
+      - 照片预览界面
+      - 裁剪和旋转
+      - 滤镜和亮度调整
+      - 标记和注释
+      - 照片选择/取消
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查照片编辑功能，验证有预览界面、裁剪旋转、滤镜调整和标记功能"
+        context_files: ["apps/mobile/src/screens/VisionShare/PhotoEdit.tsx", "apps/mobile/src/components/PhotoEditor/"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-VS003~c3"
+    name: "图片安全检查"
+    description: |
+      安全检测:
+      - 敏感内容识别
+      - 违规图片拦截
+      - 人脸识别和隐私检测
+      - 图片质量检查
+      - 检查结果反馈
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查图片安全检查，验证有敏感内容识别、违规拦截、隐私检测和质量检查"
+        context_files: ["apps/server/src/services/security/imageSecurity.ts", "apps/server/src/middleware/imageUploadCheck.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-VS003~c4"
+    name: "照片上传服务"
+    description: |
+      上传功能:
+      - 多图批量上传
+      - 上传进度显示
+      - 断点续传
+      - 图片压缩和优化
+      - 上传队列管理
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查照片上传服务，验证有批量上传、进度显示、断点续传和压缩优化功能"
+        context_files: ["apps/server/src/services/visionShare/photoUpload.ts", "apps/mobile/src/services/upload/photoUploader.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-VS003~c5"
+    name: "照片存储与管理"
+    description: |
+      存储管理:
+      - 照片元数据记录
+      - 云存储集成(S3/OSS)
+      - 缩略图生成
+      - 照片关联任务
+      - 存储生命周期管理
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查照片存储管理，验证有元数据记录、云存储集成、缩略图生成和生命周期管理"
+        context_files: ["apps/server/src/services/storage/photoStorage.ts", "packages/database/src/schema/photo.prisma"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-VS003~c6"
+    name: "相册选择和导入"
+    description: |
+      导入功能:
+      - 本地相册访问
+      - 多选照片导入
+      - 导入照片预览
+      - 导入安全检查
+      - 照片来源标记
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查相册导入功能，验证有本地相册访问、多选导入、预览和安全检查"
+        context_files: ["apps/mobile/src/components/PhotoPicker/", "apps/mobile/src/screens/VisionShare/ImportPhotos.tsx"]
+        model: "claude-sonnet-4-6"

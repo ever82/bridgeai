@@ -1,0 +1,98 @@
+---
+id: "ISSUE-C005"
+issue_number: 307
+title: "信用过滤系统"
+slug: "credit-filter"
+status: "pending"
+description: |
+  实现基于信用分的过滤系统，支持按信用分范围筛选 Agent，
+  信用分门槛设置，以及信用等级过滤。
+prerequisites:
+  - "ISSUE-C002b"
+  - "ISSUE-CR001"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-C005~c1"
+    name: "信用分范围筛选"
+    description: |
+      信用筛选:
+      - 最低信用分设置
+      - 信用分范围筛选
+      - 信用等级筛选(优秀/良好/一般)
+      - 无信用分处理
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查信用筛选实现，验证有过滤条件支持 minCreditScore 和 creditLevel"
+        context_files: ["apps/server/src/services/filterService.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-C005~c2"
+    name: "信用门槛配置"
+    description: |
+      门槛设置:
+      - 场景特定的信用门槛
+      - 动态门槛调整
+      - 门槛豁免机制
+      - 门槛变更通知
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查门槛配置，验证有场景信用门槛配置和豁免规则"
+        context_files: ["apps/server/src/config/creditThresholds.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-C005~c3"
+    name: "信用筛选界面"
+    description: |
+      信用筛选 UI:
+      - 信用分滑块选择器
+      - 信用等级快速选择
+      - 筛选结果信用展示
+      - 信用解释说明
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查信用筛选界面，验证有 CreditFilter 组件包含滑块和等级选择"
+        context_files: ["apps/mobile/src/components/FilterPanel/CreditFilter.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-C005~c4"
+    name: "信用不足提示"
+    description: |
+      不足处理:
+      - 信用不足原因说明
+      - 提升信用建议
+      - 临时准入申请
+      - 替代推荐
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查信用不足处理，验证有 CreditInsufficient 提示组件和提升建议"
+        context_files: ["apps/mobile/src/components/Credit/"]
+        model: "claude-sonnet-4-6"

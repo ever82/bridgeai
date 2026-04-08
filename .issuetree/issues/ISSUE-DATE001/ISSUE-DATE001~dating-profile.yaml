@@ -1,0 +1,151 @@
+---
+id: "ISSUE-DATE001"
+issue_number: 801
+title: "交友画像配置"
+slug: "dating-profile"
+status: "pending"
+description: |
+  实现AgentDate交友场景的交友画像配置系统。用户可以配置自己的交友需求画像，
+  包括基础条件（年龄、地域、身高、学历等）、性格偏好、兴趣爱好、生活方式等。
+  支持AI智能提炼，将自然语言描述转化为结构化交友需求。
+prerequisites:
+  - "ISSUE-C006"
+  - "ISSUE-AI002"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-DATE001~c1"
+    name: "交友画像数据模型"
+    description: |
+      数据模型:
+      - DatingProfile 模型定义
+      - 基础条件字段（年龄范围、地域、身高范围、学历等）
+      - 性格偏好字段（MBTI、性格特质等）
+      - 兴趣爱好字段（多选+自定义）
+      - 生活方式字段（作息、烟酒、宠物等）
+      - 关系期望字段（交友目的、发展节奏等）
+      - 与 Agent L2/L3 模型的关联
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查DatingProfile模型定义，验证包含基础条件、性格偏好、兴趣爱好、生活方式、关系期望等完整字段，且与Agent L2/L3模型正确关联"
+        context_files: ["packages/shared/src/types/dating.ts", "apps/server/src/models/DatingProfile.ts", "prisma/schema.prisma"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE001~c2"
+    name: "AI智能提炼交友需求"
+    description: |
+      AI提炼功能:
+      - 自然语言描述转结构化数据
+      - 从用户自我介绍提取关键信息
+      - 识别隐性偏好（通过否定词、强调词）
+      - 智能补全建议（基于已有信息推断其他偏好）
+      - 提炼结果的可编辑确认
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: required
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查AI交友需求提炼服务，验证能从自然语言文本提取结构化交友偏好，包括显性和隐性偏好识别，并有智能补全建议功能"
+        context_files: ["apps/server/src/services/ai/datingExtractionService.ts", "apps/server/src/prompts/dating/"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE001~c3"
+    name: "交友画像配置API"
+    description: |
+      后端API:
+      - 创建/更新交友画像
+      - 获取画像详情
+      - 画像完整性检查
+      - 必填项验证
+      - 选项值范围验证
+      - 与场景配置的集成
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查交友画像API端点，验证有创建、更新、获取接口，包含完整的数据验证和完整性检查逻辑"
+        context_files: ["apps/server/src/routes/dating/profile.routes.ts", "apps/server/src/controllers/dating/"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE001~c4"
+    name: "隐私与信息披露控制"
+    description: |
+      隐私控制:
+      - 字段级可见性设置（公开/仅匹配成功/保密）
+      - 敏感信息保护（收入、详细住址等）
+      - 信息披露等级配置
+      - 不同阶段的披露策略
+      - 用户完全控制展示内容
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查隐私控制实现，验证支持字段级可见性设置、敏感信息保护、分阶段披露策略，用户可完全控制展示内容"
+        context_files: ["apps/server/src/services/dating/privacyService.ts", "packages/shared/src/types/privacy.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE001~c5"
+    name: "交友画像移动端界面"
+    description: |
+      移动端UI:
+      - 交友画像配置向导
+      - 分步骤表单（基础条件→性格偏好→兴趣爱好→生活方式）
+      - 自然语言输入框带AI提炼按钮
+      - 选项选择器（单选/多选/滑块）
+      - 画像预览功能
+      - 隐私设置界面
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查移动端交友画像界面，验证有分步骤配置向导、AI提炼按钮、多种选项选择器、画像预览和隐私设置功能"
+        context_files: ["apps/mobile/src/screens/dating/DatingProfileScreen.tsx", "apps/mobile/src/components/dating/"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-DATE001~c6"
+    name: "画像质量评估与优化建议"
+    description: |
+      质量评估:
+      - 画像完整度评分
+      - 信息丰富度分析
+      - 匹配潜力评估
+      - 优化建议生成
+      - 缺失关键信息提醒
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查画像质量评估服务，验证能计算完整度评分、分析信息丰富度、评估匹配潜力，并生成具体的优化建议"
+        context_files: ["apps/server/src/services/dating/profileQualityService.ts"]
+        model: "claude-sonnet-4-6"

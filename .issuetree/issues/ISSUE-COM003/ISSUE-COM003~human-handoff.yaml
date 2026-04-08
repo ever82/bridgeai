@@ -1,0 +1,118 @@
+---
+id: "ISSUE-COM003"
+issue_number: 506
+title: "人机切换机制"
+slug: "human-handoff"
+status: "pending"
+description: |
+  实现人机切换机制，允许用户从 Agent 接管对话，
+  或将对话交还给 Agent。
+prerequisites:
+  - "ISSUE-COM002c"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-COM003~c1"
+    name: "切换状态管理"
+    description: |
+      状态管理:
+      - Agent 模式状态
+      - 人工模式状态
+      - 切换请求状态
+      - 切换历史记录
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查切换状态，验证有 HandoffStatus 枚举和相关状态管理"
+        context_files: ["packages/shared/src/types/handoff.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-COM003~c2"
+    name: "切换请求和响应"
+    description: |
+      切换流程:
+      - 请求接管对话
+      - 请求交还 Agent
+      - 切换确认机制
+      - 切换超时处理
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查切换流程，验证有 handoff 请求和响应的 socket 事件"
+        context_files: ["apps/server/src/socket/handlers/handoffHandler.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-COM003~c3"
+    name: "切换界面组件"
+    description: |
+      切换 UI:
+      - 接管按钮
+      - 交还按钮
+      - 切换状态提示
+      - 切换确认对话框
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查切换界面，验证有 HandoffButton 和 HandoffStatus 组件"
+        context_files: ["apps/mobile/src/components/Handoff/"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-COM003~c4"
+    name: "消息发送者标识"
+    description: |
+      发送者标识:
+      - Agent 发送标识
+      - 用户发送标识
+      - 切换过渡标识
+      - 发送者切换动画
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查发送者标识，验证有 senderType 字段和切换过渡 UI"
+        context_files: ["apps/mobile/src/components/Chat/SenderIndicator.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-COM003~c5"
+    name: "切换权限控制"
+    description: |
+      权限控制:
+      - 切换权限验证
+      - 频繁切换限制
+      - 强制切换机制
+      - 切换审计日志
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查切换权限，验证有 handoff 权限检查和限制机制"
+        context_files: ["apps/server/src/middleware/handoffAuth.ts"]
+        model: "claude-sonnet-4-6"

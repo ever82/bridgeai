@@ -1,0 +1,148 @@
+---
+id: "ISSUE-UI004a"
+issue_number: 1104
+title: "聊天消息组件与输入框"
+slug: "chat-components"
+status: "pending"
+description: |
+  实现聊天界面核心组件，包括消息气泡、消息列表、
+  输入框、表情选择器、快捷回复等，支持人机混合对话体验。
+prerequisites:
+  - "ISSUE-UI002"
+  - "ISSUE-COM002c"
+  - "ISSUE-COM003"
+  - "ISSUE-COM005"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-UI004a~c1"
+    name: "消息气泡组件"
+    description: |
+      实现消息气泡 MessageBubble 组件:
+      - 发送/接收消息样式区分
+      - 文本、图片、文件消息类型支持
+      - 消息状态指示（发送中、已发送、已读）
+      - 时间戳显示
+      - 长按菜单（复制、删除、举报）
+    status: "pending"
+    coverage:
+      unit: required
+      integration: not_needed
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查消息气泡组件实现，验证有 MessageBubble 组件，支持 isMe、type、status、timestamp props，有长按菜单功能"
+        context_files: ["apps/mobile/src/components/MessageBubble/MessageBubble.tsx", "apps/mobile/src/components/MessageBubble/MessageBubble.test.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI004a~c2"
+    name: "消息输入框"
+    description: |
+      实现聊天输入框 ChatInput 组件:
+      - 多行文本输入
+      - 输入高度自适应
+      - 发送按钮状态（有内容时可发送）
+      - 语音输入切换
+      - 提及(@)用户功能
+    status: "pending"
+    coverage:
+      unit: required
+      integration: not_needed
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查消息输入框实现，验证有 ChatInput 组件，支持多行输入、高度自适应、发送按钮、语音切换，有 @mention 功能"
+        context_files: ["apps/mobile/src/components/ChatInput/ChatInput.tsx", "apps/mobile/src/components/ChatInput/ChatInput.test.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI004a~c3"
+    name: "附件与媒体选择"
+    description: |
+      实现附件发送功能:
+      - 图片选择（相册/相机）
+      - 文件选择器
+      - 附件预览
+      - 发送进度指示
+      - 取消发送功能
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查附件功能实现，验证有 AttachmentPicker 组件，支持图片选择和文件上传，有进度指示和预览功能"
+        context_files: ["apps/mobile/src/components/AttachmentPicker/AttachmentPicker.tsx", "apps/mobile/src/components/AttachmentPicker/ImagePicker.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI004a~c4"
+    name: "快捷回复与建议"
+    description: |
+      实现快捷回复功能（依赖 COM005）:
+      - Agent 建议的回复选项
+      - 快捷回复横向滚动列表
+      - 点击快速填入输入框或直接发送
+      - 基于对话上下文的智能建议
+      - 用户可自定义快捷回复
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查快捷回复实现，验证有 QuickReplies 组件，显示 Agent 建议的回复选项，支持点击快速发送，基于对话上下文更新建议"
+        context_files: ["apps/mobile/src/components/QuickReplies/QuickReplies.tsx", "apps/mobile/src/screens/Chat/components/SuggestedReplies.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI004a~c5"
+    name: "人机切换指示器"
+    description: |
+      实现人机切换界面元素（依赖 COM003）:
+      - 当前对话者身份标识（Agent/真人）
+      - 切换按钮/指示器
+      - 切换确认对话框
+      - 切换过渡动画
+      - 身份标识持久显示
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查人机切换指示器实现，验证有 IdentitySwitcher 或 SpeakerIndicator 组件，显示当前对话者身份，有切换按钮和确认对话框"
+        context_files: ["apps/mobile/src/components/SpeakerIndicator/SpeakerIndicator.tsx", "apps/mobile/src/screens/Chat/components/IdentitySwitcher.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI004a~c6"
+    name: "表情与贴纸选择器"
+    description: |
+      实现表情选择器:
+      - Emoji 表情面板
+      - 表情分类和搜索
+      - 最近使用表情
+      - 自定义贴纸支持
+      - 面板展开/收起动画
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查表情选择器实现，验证有 EmojiPicker 组件，支持表情分类、最近使用、搜索功能，有展开收起动画"
+        context_files: ["apps/mobile/src/components/EmojiPicker/EmojiPicker.tsx", "apps/mobile/src/components/EmojiPicker/EmojiData.ts"]
+        model: "claude-sonnet-4-6"

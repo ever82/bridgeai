@@ -1,0 +1,140 @@
+---
+id: "ISSUE-A001"
+issue_number: 201
+title: "用户注册与登录系统"
+slug: "user-auth"
+status: "pending"
+description: |
+  实现用户注册和登录功能，支持手机号/邮箱注册、
+  密码登录、验证码登录、第三方登录(微信/Google)等认证方式。
+prerequisites:
+  - "ISSUE-F002"
+  - "ISSUE-F003"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-A001~c1"
+    name: "用户注册 API"
+    description: |
+      实现注册接口:
+      - 手机号/邮箱注册
+      - 密码强度验证
+      - 验证码发送和校验
+      - 用户唯一性检查
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查用户注册 API 实现，验证有 /api/v1/auth/register 端点，包含手机号/邮箱验证和密码加密"
+        context_files: ["apps/server/src/routes/auth.ts", "apps/server/src/services/authService.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-A001~c2"
+    name: "用户登录 API"
+    description: |
+      实现登录接口:
+      - 密码登录
+      - 验证码登录
+      - 登录失败处理(限制重试)
+      - 登录日志记录
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查用户登录 API 实现，验证有 /api/v1/auth/login 端点，包含密码验证和失败限制机制"
+        context_files: ["apps/server/src/routes/auth.ts", "apps/server/src/services/authService.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-A001~c3"
+    name: "第三方登录集成"
+    description: |
+      第三方登录:
+      - 微信 OAuth 登录
+      - Google OAuth 登录
+      - OAuth 回调处理
+      - 账号绑定和解绑
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查第三方登录实现，验证有微信和 Google OAuth 集成，确认回调处理正确"
+        context_files: ["apps/server/src/services/oauthService.ts", "apps/server/src/routes/oauth.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-A001~c4"
+    name: "密码重置功能"
+    description: |
+      密码重置:
+      - 忘记密码申请
+      - 重置验证码发送
+      - 密码重置确认
+      - 重置令牌有效期
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查密码重置功能，验证有 /api/v1/auth/forgot-password 和 reset-password 端点"
+        context_files: ["apps/server/src/routes/auth.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-A001~c5"
+    name: "移动端登录界面"
+    description: |
+      移动端登录 UI:
+      - 登录表单(手机号/密码)
+      - 验证码输入界面
+      - 第三方登录按钮
+      - 注册入口
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查移动端登录界面，验证有 LoginScreen 组件，包含表单验证和第三方登录按钮"
+        context_files: ["apps/mobile/src/screens/Auth/LoginScreen.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-A001~c6"
+    name: "注册界面和安全"
+    description: |
+      注册流程:
+      - 注册表单验证
+      - 密码确认
+      - 服务条款同意
+      - 密码加密存储(bcrypt)
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查注册实现，验证密码使用 bcrypt 加密存储，确认有密码强度验证"
+        context_files: ["apps/server/src/services/authService.ts", "apps/mobile/src/screens/Auth/RegisterScreen.tsx"]
+        model: "claude-sonnet-4-6"

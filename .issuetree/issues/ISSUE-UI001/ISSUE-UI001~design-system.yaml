@@ -1,0 +1,142 @@
+---
+id: "ISSUE-UI001"
+issue_number: 1101
+title: "设计系统与组件库"
+slug: "design-system"
+status: "pending"
+description: |
+  建立 BridgeAI 统一设计系统，包含色彩、字体、间距规范，
+  以及基础UI组件库（Button、Input、Card、Modal等）。
+  使用 React Native 实现跨平台一致的视觉体验。
+prerequisites:
+  - "ISSUE-F004"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-UI001~c1"
+    name: "设计令牌（Design Tokens）定义"
+    description: |
+      建立完整的设计令牌体系:
+      - 色彩系统：主色、辅色、功能色（成功、警告、错误、信息）
+      - 字体规范：字号层级（标题/正文/辅助文字）、字重、行高
+      - 间距系统：基础单位、内边距、外边距层级
+      - 圆角、阴影、边框等视觉属性
+      - 支持亮色/暗色主题切换
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查设计令牌实现，验证有 theme.ts 或 designTokens.ts 文件，包含 colors、typography、spacing、borderRadius 等完整定义，支持主题切换"
+        context_files: ["apps/mobile/src/theme/theme.ts", "apps/mobile/src/theme/designTokens.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI001~c2"
+    name: "基础组件 - Button 按钮"
+    description: |
+      实现多功能 Button 组件:
+      - 变体：实心(primary)、轮廓(outline)、幽灵(ghost)、文字(text)
+      - 尺寸：大、中、小
+      - 状态：正常、禁用、加载中
+      - 图标支持：前置图标、后置图标
+      - 颜色主题适配
+    status: "pending"
+    coverage:
+      unit: required
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 Button 组件实现，验证有 Button.tsx 组件文件，支持 variant、size、loading、disabled、icon 等 props，有对应的单元测试"
+        context_files: ["apps/mobile/src/components/Button/Button.tsx", "apps/mobile/src/components/Button/Button.test.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI001~c3"
+    name: "基础组件 - Input 输入框"
+    description: |
+      实现 Input 输入组件:
+      - 类型：文本、密码、数字、邮箱、手机号
+      - 状态：正常、错误、禁用、只读
+      - 前缀/后缀支持：图标、文字
+      - 清除按钮功能
+      - 错误提示和字符计数
+    status: "pending"
+    coverage:
+      unit: required
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 Input 组件实现，验证有 Input.tsx 组件文件，支持 type、error、disabled、prefix、suffix、clearable 等 props，有对应的单元测试"
+        context_files: ["apps/mobile/src/components/Input/Input.tsx", "apps/mobile/src/components/Input/Input.test.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI001~c4"
+    name: "基础组件 - Card 卡片与 Modal 弹窗"
+    description: |
+      实现 Card 和 Modal 组件:
+      - Card：可点击、带阴影、圆角、支持头部/内容/底部结构
+      - Modal：遮罩层、动画过渡、点击遮罩关闭、手势滑动关闭
+      - 支持自定义内容和操作按钮
+    status: "pending"
+    coverage:
+      unit: required
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 Card 和 Modal 组件实现，验证有 Card.tsx 和 Modal.tsx 文件，Card 支持 pressable、header/content/footer 结构；Modal 支持 visible 控制、动画、遮罩点击关闭"
+        context_files: ["apps/mobile/src/components/Card/Card.tsx", "apps/mobile/src/components/Modal/Modal.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI001~c5"
+    name: "图标系统与资源管理"
+    description: |
+      建立图标系统:
+      - 使用统一的图标库（如 react-native-vector-icons 或自定义 SVG）
+      - 图标分类：导航、操作、状态、场景
+      - 支持尺寸和颜色自定义
+      - 图片资源优化和缓存策略
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查图标系统实现，验证有 Icon 组件或图标导出文件，支持 name、size、color props，确认使用了统一的图标库"
+        context_files: ["apps/mobile/src/components/Icon/Icon.tsx", "apps/mobile/src/assets/icons/index.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI001~c6"
+    name: "组件文档与 Storybook"
+    description: |
+      建立组件文档体系:
+      - 配置 Storybook 或等效工具展示组件
+      - 每个组件包含用法示例、Props 说明
+      - 视觉回归测试基础
+      - 设计系统文档网站
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查组件文档实现，验证有 .storybook 配置或组件文档目录，包含 Button、Input、Card、Modal 等组件的使用示例和 Props 表格"
+        context_files: [".storybook/main.js", "apps/mobile/src/components/README.md"]
+        model: "claude-sonnet-4-6"

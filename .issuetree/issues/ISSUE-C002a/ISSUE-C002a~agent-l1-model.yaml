@@ -1,0 +1,120 @@
+---
+id: "ISSUE-C002a"
+issue_number: 302
+title: "L1基础信息模型"
+slug: "agent-l1-model"
+status: "pending"
+description: |
+  实现 Agent L1 基础信息模型，包括用户可编辑的
+  结构化基础字段：年龄、性别、地域、职业等。
+prerequisites:
+  - "ISSUE-C001"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-C002a~c1"
+    name: "L1 字段定义"
+    description: |
+      基础信息 Schema:
+      - age: 年龄段枚举
+      - gender: 性别
+      - location: 地理位置(省市区)
+      - occupation: 职业
+      - education: 教育水平
+      - 字段验证规则
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 L1 模型定义，验证有 L1Profile 类型包含 age, gender, location, occupation 字段"
+        context_files: ["packages/shared/src/types/agentProfile.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-C002a~c2"
+    name: "L1 数据存储"
+    description: |
+      数据库模型:
+      - Prisma AgentProfile 模型 L1 字段
+      - JSON 字段存储灵活数据
+      - 索引优化
+      - 数据迁移
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 Prisma schema，验证 AgentProfile 模型有 l1Data JSON 字段和相关索引"
+        context_files: ["prisma/schema.prisma"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-C002a~c3"
+    name: "L1 编辑 API"
+    description: |
+      L1 信息接口:
+      - 获取 L1 信息
+      - 更新 L1 信息
+      - 字段级验证
+      - 变更历史
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 L1 API，验证有 /api/v1/agents/:id/profile/l1 端点支持 GET/PUT"
+        context_files: ["apps/server/src/routes/agentProfile.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-C002a~c4"
+    name: "L1 编辑界面"
+    description: |
+      L1 配置 UI:
+      - 表单字段组件
+      - 地理位置选择器
+      - 职业/教育选择器
+      - 实时验证
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查 L1 编辑界面，验证有 L1ProfileForm 组件包含年龄、性别、地域等字段"
+        context_files: ["apps/mobile/src/components/AgentProfile/L1ProfileForm.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-C002a~c5"
+    name: "L1 完成度计算"
+    description: |
+      完成度系统:
+      - 字段权重定义
+      - 完成度百分比计算
+      - 缺失字段提示
+      - 完成度展示
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查完成度计算，验证有 calculateL1Completion 函数，确认返回 0-100 百分比"
+        context_files: ["apps/server/src/utils/profileCompletion.ts"]
+        model: "claude-sonnet-4-6"

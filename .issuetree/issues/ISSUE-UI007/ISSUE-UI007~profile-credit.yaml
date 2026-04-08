@@ -1,0 +1,148 @@
+---
+id: "ISSUE-UI007"
+issue_number: 1109
+title: "个人中心与信用展示"
+slug: "profile-credit"
+status: "pending"
+description: |
+  实现用户个人中心界面，包括个人资料管理、信用分展示、
+  积分账户、活动历史、设置等功能，展示用户的平台身份和信誉。
+prerequisites:
+  - "ISSUE-UI002"
+  - "ISSUE-CR001"
+  - "ISSUE-A003"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-UI007~c1"
+    name: "个人资料展示"
+    description: |
+      实现个人资料界面:
+      - 用户头像和昵称展示
+      - 用户信息卡片（ID、注册时间）
+      - 个人简介/签名
+      - 认证状态显示
+      - 编辑资料入口
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查个人资料展示实现，验证有 ProfileScreen 组件，显示用户头像、昵称、ID、注册时间、简介，有编辑按钮"
+        context_files: ["apps/mobile/src/screens/Profile/ProfileScreen.tsx", "apps/mobile/src/screens/Profile/components/ProfileHeader.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI007~c2"
+    name: "信用分展示模块"
+    description: |
+      实现信用分展示（依赖 CR001）:
+      - 信用分大数字显示
+      - 信用等级标识（优秀/良好/一般）
+      - 信用分变化趋势图
+      - 信用详情入口
+      - 信用提升建议
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查信用分展示实现，验证有 CreditScoreCard 组件，显示信用分数、等级、趋势图，有详情入口和提升建议"
+        context_files: ["apps/mobile/src/screens/Profile/components/CreditScoreCard.tsx", "apps/mobile/src/components/CreditChart/CreditChart.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI007~c3"
+    name: "积分账户与交易"
+    description: |
+      实现积分账户界面:
+      - 当前积分余额显示
+      - 积分收支明细列表
+      - 交易类型筛选
+      - 积分充值入口
+      - 积分使用记录
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查积分账户实现，验证有 PointsWalletScreen 组件，显示积分余额、收支明细、交易筛选，有充值入口"
+        context_files: ["apps/mobile/src/screens/Profile/PointsWalletScreen.tsx", "apps/mobile/src/screens/Profile/components/TransactionItem.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI007~c4"
+    name: "活动历史与统计"
+    description: |
+      实现用户活动展示:
+      - 活动概览统计（对话数、匹配数、发布数）
+      - 近期活动列表
+      - 活动日历视图
+      - 成就徽章展示
+      - 分享活动统计
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查活动历史实现，验证有 ActivityScreen 组件，显示活动统计、列表、日历、成就徽章"
+        context_files: ["apps/mobile/src/screens/Profile/ActivityScreen.tsx", "apps/mobile/src/screens/Profile/components/ActivityStats.tsx", "apps/mobile/src/screens/Profile/components/AchievementBadge.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI007~c5"
+    name: "个人设置菜单"
+    description: |
+      实现设置菜单:
+      - 账号与安全设置
+      - 隐私设置
+      - 通知设置
+      - 通用设置（语言、主题）
+      - 关于与帮助
+      - 退出登录
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查设置菜单实现，验证有 SettingsScreen 组件，包含账号安全、隐私、通知、通用设置、关于帮助、退出登录选项"
+        context_files: ["apps/mobile/src/screens/Settings/SettingsScreen.tsx", "apps/mobile/src/screens/Settings/components/SettingsItem.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-UI007~c6"
+    name: "资料编辑功能"
+    description: |
+      实现资料编辑界面（依赖 A003）:
+      - 头像更换（拍照/相册选择）
+      - 昵称修改
+      - 简介编辑
+      - 联系信息更新
+      - 保存/取消操作
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查资料编辑实现，验证有 EditProfileScreen 组件，支持头像更换、昵称修改、简介编辑，有保存和取消功能"
+        context_files: ["apps/mobile/src/screens/Profile/EditProfileScreen.tsx", "apps/mobile/src/components/ImagePicker/ImagePicker.tsx"]
+        model: "claude-sonnet-4-6"

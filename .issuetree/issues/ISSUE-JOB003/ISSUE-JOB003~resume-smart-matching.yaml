@@ -1,0 +1,152 @@
+---
+id: "ISSUE-JOB003"
+issue_number: 903
+title: "简历智能匹配筛选"
+slug: "resume-smart-matching"
+status: "pending"
+description: |
+  实现求职者与招聘方的智能双向匹配系统。AI分析简历与职位
+  要求的匹配度，考虑技能、经验、薪资期望等多维度因素，
+  为双方推荐最合适的匹配对象。支持匹配筛选与排序。
+prerequisites:
+  - "ISSUE-JOB001"
+  - "ISSUE-JOB002"
+  - "ISSUE-M004"
+  - "ISSUE-AI004"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-JOB003~c1"
+    name: "职位匹配度算法"
+    description: |
+      匹配算法:
+      - 技能匹配度计算(关键词匹配+语义相似度)
+      - 经验匹配评估(年限/行业/职级)
+      - 薪资期望匹配度计算
+      - 地域与工作方式兼容性评估
+      - 综合匹配度评分(0-100分)
+      - 匹配度权重可配置
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查职位匹配度算法，验证有JobMatchingAlgorithm实现，包含技能匹配、经验评估、薪资匹配等多维度计算"
+        context_files: ["apps/server/src/services/job/jobMatchingAlgorithm.ts", "apps/server/src/services/job/matchScoring.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-JOB003~c2"
+    name: "简历智能筛选服务"
+    description: |
+      AI筛选:
+      - 基于LLM的简历深度分析
+      - 隐含技能推断
+      - 经验相关性评估
+      - 文化匹配度预测
+      - 筛选建议生成
+      - 排序与排名算法
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查AI筛选服务，验证有ResumeScreeningService使用LLM进行深度分析，能生成筛选建议和排序"
+        context_files: ["apps/server/src/services/job/resumeScreening.ts", "apps/server/src/ai/prompts/resumeScreening.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-JOB003~c3"
+    name: "双向推荐引擎"
+    description: |
+      推荐系统:
+      - 为求职者推荐合适职位
+      - 为招聘方推荐合适候选人
+      - 推荐结果排序与分页
+      - 推荐解释(为什么匹配)
+      - 推荐反馈学习(喜欢/不喜欢)
+      - 推荐去重与刷新
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查双向推荐引擎，验证有JobRecommendationService，能为求职者和招聘方生成推荐并提供匹配解释"
+        context_files: ["apps/server/src/services/job/jobRecommendation.ts", "apps/server/src/routes/job/recommendationRoutes.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-JOB003~c4"
+    name: "匹配查询API"
+    description: |
+      查询接口:
+      - 职位搜索API(多条件筛选)
+      - 候选人搜索API(招聘方视角)
+      - 匹配结果获取API
+      - 搜索结果排序与过滤
+      - 搜索历史记录
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查匹配查询API，验证有完整的搜索端点支持多条件筛选、排序和分页功能"
+        context_files: ["apps/server/src/routes/job/jobSearchRoutes.ts", "apps/server/src/controllers/job/jobSearchController.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-JOB003~c5"
+    name: "匹配通知与推送"
+    description: |
+      通知系统:
+      - 新匹配结果通知
+      - 高匹配度职位推送
+      - 简历被查看通知
+      - 匹配状态变更通知
+      - 通知偏好设置
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查匹配通知系统，验证集成M004推送服务，支持新匹配、高匹配度推送等Job场景特定通知"
+        context_files: ["apps/server/src/services/job/jobMatchNotifications.ts", "apps/mobile/src/screens/Job/MatchNotificationsScreen.tsx"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-JOB003~c6"
+    name: "移动端匹配展示界面"
+    description: |
+      UI实现:
+      - 职位推荐列表页面
+      - 候选人推荐列表页面(招聘方)
+      - 匹配详情页面
+      - 匹配度可视化展示
+      - 快速操作(感兴趣/跳过)
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查移动端匹配界面，验证有JobRecommendationsScreen组件，支持推荐列表、匹配度展示和快速操作"
+        context_files: ["apps/mobile/src/screens/Job/JobRecommendationsScreen.tsx", "apps/mobile/src/screens/Job/CandidateRecommendationsScreen.tsx"]
+        model: "claude-sonnet-4-6"

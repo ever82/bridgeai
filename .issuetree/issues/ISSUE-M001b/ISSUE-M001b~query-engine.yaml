@@ -1,0 +1,118 @@
+---
+id: "ISSUE-M001b"
+issue_number: 402
+title: "实时查询执行引擎"
+slug: "query-engine"
+status: "pending"
+description: |
+  实现高效的实时查询执行引擎，支持复杂的 Agent 筛选
+  和实时结果更新。
+prerequisites:
+  - "ISSUE-M001a"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-M001b~c1"
+    name: "查询执行引擎"
+    description: |
+      执行引擎:
+      - 查询编译和执行
+      - 执行计划优化
+      - 并行查询支持
+      - 资源管理
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查执行引擎，验证有 QueryEngine 类可编译和执行查询"
+        context_files: ["apps/server/src/services/queryEngine.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M001b~c2"
+    name: "查询缓存"
+      description: |
+      缓存系统:
+      - 查询结果缓存
+      - 缓存失效策略
+      - 智能缓存预热
+      - 缓存命中率监控
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查查询缓存，验证有 QueryCache 实现和缓存策略"
+        context_files: ["apps/server/src/services/queryCache.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M001b~c3"
+    name: "实时结果更新"
+    description: |
+      实时更新:
+      - WebSocket 推送更新
+      - 订阅查询结果
+      - 增量更新
+      - 连接管理
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查实时更新，验证有 WebSocket 推送查询结果更新"
+        context_files: ["apps/server/src/services/realtimeQuery.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M001b~c4"
+    name: "查询性能监控"
+    description: |
+      性能监控:
+      - 查询执行时间
+      - 慢查询检测
+      - 性能瓶颈分析
+      - 查询优化建议
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查性能监控，验证有 QueryMetrics 和慢查询日志"
+        context_files: ["apps/server/src/services/queryMetrics.ts"]
+        model: "claude-sonnet-4-6"
+
+  - id: "ISSUE-M001b~c5"
+    name: "查询限流和配额"
+    description: |
+      限流系统:
+      - 用户查询配额
+      - 频率限制
+      - 复杂查询限制
+      - 配额管理界面
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查限流系统，验证有 queryRateLimiter 和配额管理"
+        context_files: ["apps/server/src/middleware/queryRateLimit.ts"]
+        model: "claude-sonnet-4-6"

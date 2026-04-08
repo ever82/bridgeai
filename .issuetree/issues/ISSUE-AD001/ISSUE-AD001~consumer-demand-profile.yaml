@@ -1,0 +1,93 @@
+id: ISSUE-AD001
+issue_number: 1001
+title: 消费需求画像配置
+slug: consumer-demand-profile
+status: pending
+description: |
+  AgentAd场景的消费者需求画像配置模块。消费者创建Agent并配置其消费需求，
+  包括目标商品/服务类别、预算范围、品牌偏好、时间要求、地域限制等。
+  通过AI服务(AI002)将用户的自然语言需求提炼为结构化的消费画像，
+  用于后续的商家匹配和优惠协商。
+prerequisites:
+  - ISSUE-C006
+  - ISSUE-AI002
+logic: sufficient_necessary
+created_at: 2026-04-08
+criteria:
+  - id: AD001-CR01
+    name: 消费场景Agent创建
+    description: |
+      消费者能够创建专属于AgentAd场景的Agent实例，选择"消费者"角色类型，
+      并配置基础信息如称呼、沟通风格偏好等。
+    status: pending
+    coverage: 95
+    verification:
+      ai_prompt: |
+        检查Agent创建API是否支持AgentAd场景的消费者角色，
+        验证创建后Agent的scene字段为"AGENT_AD"，role字段为"CONSUMER"，
+        并确认消费者基础信息正确存储在L1基础信息模型中。
+
+  - id: AD001-CR02
+    name: 消费品类配置
+    description: |
+      消费者可以配置感兴趣的商品/服务类别，包括一级类目(如餐饮、零售、服务)
+      和二级细分类目。支持多选，最多可选择5个主要类别。
+    status: pending
+    coverage: 90
+    verification:
+      ai_prompt: |
+        验证消费品类配置界面支持多级类目选择，检查API是否限制最多5个类别，
+        确认选择的类别正确存储在Agent的L2结构化信息的category字段中，
+        并支持通过查询DSL按类别检索。
+
+  - id: AD001-CR03
+    name: 预算范围设置
+    description: |
+      消费者能够设置消费预算范围，包括单次消费预算、月度消费预算等维度。
+      支持具体金额或区间选择，并可选择是否向商家Agent透露预算信息。
+    status: pending
+    coverage: 90
+    verification:
+      ai_prompt: |
+        检查预算配置表单是否支持多种预算维度设置，验证预算数据正确存储在
+        L2结构化信息的budget字段中，测试预算披露权限控制是否生效，
+        确认C007信息披露机制对预算字段的控制逻辑正确。
+
+  - id: AD001-CR04
+    name: 品牌与商家偏好
+    description: |
+      消费者可以配置品牌偏好(偏好品牌、避雷品牌)和商家类型偏好
+      (如连锁品牌、本地小店、评分要求等)，用于匹配时的排序权重计算。
+    status: pending
+    coverage: 85
+    verification:
+      ai_prompt: |
+        验证品牌偏好配置界面支持偏好品牌和避雷品牌列表管理，
+        检查品牌偏好数据是否正确影响M002匹配排序的权重计算，
+        确认偏好信息存储在L2结构化信息的preferences字段中。
+
+  - id: AD001-CR05
+    name: AI需求提炼集成
+    description: |
+      集成AI002需求智能提炼服务，消费者可以通过自然语言描述消费需求，
+      AI自动提取关键信息(品类、预算、紧急程度等)并填充到结构化配置中。
+    status: pending
+    coverage: 88
+    verification:
+      ai_prompt: |
+        测试自然语言输入"我想找一家附近的日料店，预算人均200左右，这周末用"
+        验证AI002服务是否正确提取出品类(日料/餐饮)、预算(200元/人)、
+        时间(本周末)、地域(附近)等信息并自动填充配置表单。
+
+  - id: AD001-CR06
+    name: 消费需求预览与发布
+    description: |
+      消费者完成画像配置后，可以预览完整的消费需求画像摘要，
+      确认无误后发布需求，系统将自动激活Agent并开始匹配相关商家Agent。
+    status: pending
+    coverage: 92
+    verification:
+      ai_prompt: |
+        检查需求预览功能是否正确汇总所有配置信息生成可读摘要，
+        验证发布后Agent状态变更为"ACTIVE"，确认M002匹配引擎开始
+        基于该消费画像进行商家匹配，并生成匹配结果通知。
