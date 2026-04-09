@@ -1,0 +1,102 @@
+---
+id: 'ISSUE-COM002'
+issue_number: 601
+title: '聊天房间系统'
+slug: 'chat-room-system'
+status: 'split'
+description: |
+  实现聊天房间系统，支持私聊、群聊和消息管理。
+  该Issue已拆分为子Issue:
+  - ISSUE-COM002a: 聊天房间基础架构（房间创建、成员管理、消息路由）
+  - ISSUE-COM002b: 消息持久化与历史记录（消息存储、查询、分页）
+  - ISSUE-COM002c: 群聊状态同步与在线状态（已读回执、在线状态、打字指示）
+prerequisites:
+  - 'ISSUE-COM001b'
+created_at: '2026-04-09'
+logic: sufficient_necessary
+children:
+  - 'ISSUE-COM002a'
+  - 'ISSUE-COM002b'
+  - 'ISSUE-COM002c'
+criteria:
+  - id: 'ISSUE-COM002~c1'
+    name: '聊天房间架构'
+    description: |
+      房间系统:
+      - 私聊房间创建
+      - 群聊房间管理
+      - 房间成员权限
+      - 消息路由机制
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查聊天房间，验证有ChatRoomService管理房间，支持createPrivateRoom/createGroupRoom，处理成员权限'
+        context_files: ['apps/server/src/services/communication/chatRoomService.ts']
+
+  - id: 'ISSUE-COM002~c2'
+    name: '消息持久化'
+    description: |
+      消息存储:
+      - 消息数据模型
+      - 消息存储和查询
+      - 历史记录分页
+      - 消息软删除
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查消息持久化，验证有MessageRepository支持save/findByRoomId，分页查询历史消息，软删除实现'
+        context_files: ['apps/server/src/repositories/messageRepository.ts']
+
+  - id: 'ISSUE-COM002~c3'
+    name: '实时消息投递'
+    description: |
+      消息投递:
+      - 实时消息推送
+      - 离线消息队列
+      - 消息确认机制
+      - 消息重试策略
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查消息投递，验证有MessageDeliveryService处理实时推送和离线队列，支持消息确认和重试'
+        context_files: ['apps/server/src/services/communication/messageDelivery.ts']
+
+  - id: 'ISSUE-COM002~c4'
+    name: '状态同步'
+    description: |
+      状态管理:
+      - 已读回执
+      - 在线/离线状态
+      - 打字指示器
+      - 最后活跃时间
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查状态同步，验证有PresenceService管理用户在线状态，支持read receipt和typing indicator'
+        context_files: ['apps/server/src/services/communication/presenceService.ts']
+
+tasks: []

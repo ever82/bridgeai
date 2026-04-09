@@ -14,7 +14,7 @@ Key requirements:
 6. Write example unit tests
 
 Prerequisites:
-- ISSUE-F003 (Express backend) must be completed
+- ISSUE-F003 (Express backend) must be passed
 - ISSUE-A001 (User auth) should be available
 
 Work in the worktree: D:/projects/visionshare/.issuetree/issues/ISSUE-T001
@@ -32,7 +32,7 @@ Instructions:
 4. Implement the Jest unit test framework in the worktree
 
 5. On completion, update the task YAML:
-   - Set status to "completed"
+   - Set status to "passed"
    - Fill in result, session_end, execution_time_minutes
    - List files_touched
 

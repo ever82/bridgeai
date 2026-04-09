@@ -14,7 +14,7 @@ Key requirements:
 6. Setup API contract testing
 
 Prerequisites:
-- ISSUE-F003 (Express backend) must be completed
+- ISSUE-F003 (Express backend) must be passed
 
 Work in the worktree: D:/projects/visionshare/.issuetree/issues/ISSUE-T002
 
@@ -31,7 +31,7 @@ Instructions:
 4. Implement the API integration test framework in the worktree
 
 5. On completion, update the task YAML:
-   - Set status to "completed"
+   - Set status to "passed"
    - Fill in result, session_end, execution_time_minutes
    - List files_touched
 

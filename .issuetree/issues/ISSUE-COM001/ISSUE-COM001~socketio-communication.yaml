@@ -1,0 +1,100 @@
+---
+id: 'ISSUE-COM001'
+issue_number: 600
+title: 'Socket.io通信基础设施'
+slug: 'socketio-communication'
+status: 'split'
+description: |
+  搭建Socket.io通信基础设施，提供实时双向通信能力。
+  该Issue已拆分为子Issue:
+  - ISSUE-COM001a: Socket.io基础设施搭建（服务器、中间件、命名空间）
+  - ISSUE-COM001b: 连接管理与房间系统（连接生命周期、房间、广播）
+prerequisites:
+  - 'ISSUE-C001'
+created_at: '2026-04-09'
+logic: sufficient_necessary
+children:
+  - 'ISSUE-COM001a'
+  - 'ISSUE-COM001b'
+criteria:
+  - id: 'ISSUE-COM001~c1'
+    name: 'Socket.io服务器'
+    description: |
+      服务器搭建:
+      - Socket.io与Express集成
+      - 命名空间设计(/chat, /presence)
+      - 适配器配置(支持多实例)
+      - 传输方式配置
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查Socket.io服务器，验证有socketio.ts初始化模块，配置命名空间，与Express HTTP服务器集成'
+        context_files: ['apps/server/src/services/communication/socketio.ts']
+
+  - id: 'ISSUE-COM001~c2'
+    name: '认证中间件'
+    description: |
+      连接认证:
+      - JWT token验证
+      - 连接权限检查
+      - 用户身份绑定
+      - 认证失败处理
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查Socket.io认证，验证有auth中间件验证JWT，将userId绑定到socket对象，拒绝无效连接'
+        context_files: ['apps/server/src/middleware/socketAuth.ts']
+
+  - id: 'ISSUE-COM001~c3'
+    name: '连接管理'
+    description: |
+      连接生命周期:
+      - 连接建立处理
+      - 断开连接清理
+      - 心跳检测
+      - 重连机制
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查连接管理，验证有ConnectionManager跟踪连接状态，处理connect/disconnect事件，支持ping/pong心跳'
+        context_files: ['apps/server/src/services/communication/connectionManager.ts']
+
+  - id: 'ISSUE-COM001~c4'
+    name: '房间系统'
+    description: |
+      房间管理:
+      - 房间创建和销毁
+      - 加入/离开房间
+      - 房间广播
+      - 房间成员查询
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查房间系统，验证有RoomManager管理房间生命周期，支持join/leave/broadcast操作，维护房间成员列表'
+        context_files: ['apps/server/src/services/communication/roomManager.ts']
+
+tasks: []

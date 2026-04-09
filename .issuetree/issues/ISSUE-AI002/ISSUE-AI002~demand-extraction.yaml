@@ -1,0 +1,106 @@
+---
+id: 'ISSUE-AI002'
+issue_number: 502
+title: '需求智能提炼服务'
+slug: 'demand-extraction'
+status: 'split'
+description: |
+  实现需求智能提炼服务，将用户自然语言描述转换为结构化的L1/L2/L3信息模型。
+  该Issue已拆分为子Issue:
+  - ISSUE-AI002a: 核心框架（解析引擎、结构化映射、验证系统）
+  - ISSUE-AI002b: 场景提取器（VisionShare/AgentDate/AgentJob/AgentAd场景适配）
+prerequisites:
+  - 'ISSUE-AI001'
+  - 'ISSUE-C002a'
+  - 'ISSUE-C002b'
+created_at: '2026-04-09'
+logic: sufficient_necessary
+children:
+  - 'ISSUE-AI002a'
+  - 'ISSUE-AI002b'
+criteria:
+  - id: 'ISSUE-AI002~c1'
+    name: '需求解析引擎'
+    description: |
+      解析引擎:
+      - 自然语言理解
+      - 实体识别(时间/地点/人物)
+      - 意图分类
+      - 需求结构化输出
+      - 置信度评分
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查需求解析引擎，验证有DemandExtractionService类，包含extract方法返回结构化的Demand对象，含confidence字段'
+        context_files: ['apps/server/src/services/ai/demandExtractionService.ts']
+
+  - id: 'ISSUE-AI002~c2'
+    name: '场景特定提取器'
+    description: |
+      场景适配:
+      - VisionShare需求提取(拍照时间、类型、预算)
+      - AgentDate需求提取(择偶标准、兴趣、时间)
+      - AgentJob需求提取(技能、经验、薪资期望)
+      - AgentAd需求提取(商品、预算、品牌偏好)
+      - 场景检测自动路由
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查场景提取器，验证有SceneSpecificExtractor接口，VisionShareExtractor、AgentDateExtractor等实现类继承基类'
+        context_files: ['apps/server/src/services/ai/extractors/']
+
+  - id: 'ISSUE-AI002~c3'
+    name: '需求结构化映射'
+    description: |
+      映射系统:
+      - 提取字段到L2模型映射
+      - 属性标准化(价格/时间格式)
+      - 枚举值匹配
+      - 缺失字段推断
+      - 冲突检测与提示
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查映射系统，验证有DemandToL2Mapper类，将提取的需求字段映射到AgentL2Model的属性，支持属性转换和验证'
+        context_files: ['apps/server/src/services/ai/mappers/demandToL2Mapper.ts']
+
+  - id: 'ISSUE-AI002~c4'
+    name: '需求澄清对话'
+    description: |
+      澄清机制:
+      - 缺失信息识别
+      - 澄清问题生成
+      - 多轮对话管理
+      - 用户意图确认
+      - 澄清历史记录
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查澄清对话系统，验证有ClarificationDialog类，管理多轮澄清流程，生成clarification_questions并处理用户回复'
+        context_files: ['apps/server/src/services/ai/clarificationDialog.ts']
+
+tasks: []

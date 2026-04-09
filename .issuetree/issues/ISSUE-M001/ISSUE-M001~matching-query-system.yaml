@@ -1,0 +1,103 @@
+---
+id: 'ISSUE-M001'
+issue_number: 400
+title: '匹配查询系统'
+slug: 'matching-query-system'
+status: 'split'
+description: |
+  实现匹配查询系统，提供强大的Agent筛选和查询能力。
+  该Issue已拆分为子Issue:
+  - ISSUE-M001a: 查询构建器与DSL设计（查询语法、条件操作符、类型安全）
+  - ISSUE-M001b: 实时查询执行引擎（查询编译、执行优化、并行查询）
+prerequisites:
+  - 'ISSUE-C002b'
+  - 'ISSUE-C003'
+  - 'ISSUE-C004'
+  - 'ISSUE-C005'
+created_at: '2026-04-09'
+logic: sufficient_necessary
+children:
+  - 'ISSUE-M001a'
+  - 'ISSUE-M001b'
+criteria:
+  - id: 'ISSUE-M001~c1'
+    name: '查询DSL设计'
+    description: |
+      领域特定语言:
+      - JSON格式查询语法
+      - 条件操作符(等于、范围、包含)
+      - 嵌套和组合表达式
+      - 类型安全验证
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查查询DSL实现，验证有QueryDSL类和语法定义，支持eq、range、in等操作符，包含类型验证'
+        context_files: ['apps/server/src/services/matching/queryDSL.ts']
+
+  - id: 'ISSUE-M001~c2'
+    name: '查询构建器'
+    description: |
+      构建器实现:
+      - 流畅API设计
+      - 类型安全的构建接口
+      - 常见查询模式封装
+      - 查询验证和优化提示
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查查询构建器，验证有QueryBuilder类支持链式调用，类型安全，提供build方法生成QueryDSL'
+        context_files: ['apps/server/src/services/matching/queryBuilder.ts']
+
+  - id: 'ISSUE-M001~c3'
+    name: '查询执行引擎'
+    description: |
+      执行引擎:
+      - 查询编译和执行计划
+      - 执行计划优化
+      - 并行查询支持
+      - 资源管理和限流
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查查询引擎，验证有QueryEngine类，支持execute方法，包含查询计划优化和并行执行'
+        context_files: ['apps/server/src/services/matching/queryEngine.ts']
+
+  - id: 'ISSUE-M001~c4'
+    name: '实时查询更新'
+    description: |
+      实时更新:
+      - WebSocket推送
+      - 查询结果缓存
+      - 增量更新机制
+      - 订阅管理
+    status: 'split'
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '检查实时查询，验证有QuerySubscriptionManager支持WebSocket订阅，推送增量更新'
+        context_files: ['apps/server/src/services/matching/querySubscription.ts']
+
+tasks: []

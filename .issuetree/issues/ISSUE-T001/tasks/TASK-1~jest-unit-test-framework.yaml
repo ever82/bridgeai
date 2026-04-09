@@ -1,7 +1,7 @@
-id: "TASK-1"
-title: "Setup Jest Unit Test Framework"
-status: "completed"
-issue_id: "ISSUE-T001"
+id: 'TASK-1'
+title: 'Setup Jest Unit Test Framework'
+status: 'passed'
+issue_id: 'ISSUE-T001'
 parent_task: null
 child_tasks: []
 description: |-
@@ -33,7 +33,7 @@ description: |-
   Work in the worktree: .issuetree/issues/ISSUE-T001
 
   Prerequisites:
-  - ISSUE-F003 (Express backend) must be completed
+  - ISSUE-F003 (Express backend) must be passed
   - ISSUE-A001 (User auth) should be available for testing
 
   Acceptance Criteria:
@@ -92,11 +92,11 @@ files_touched:
   - apps/server/src/errors/__tests__/AppError.test.ts
   - apps/server/src/__tests__/health.test.ts
 session_id: null
-session_start: "2026-04-09T13:00:00Z"
-session_end: "2026-04-09T15:30:00Z"
+session_start: '2026-04-09T13:00:00Z'
+session_end: '2026-04-09T15:30:00Z'
 execution_time_minutes: 150
-created_at: "2026-04-09T13:00:00Z"
-started_at: "2026-04-09T13:05:00Z"
-completed_at: "2026-04-09T15:30:00Z"
+created_at: '2026-04-09T13:00:00Z'
+started_at: '2026-04-09T13:05:00Z'
+passed_at: '2026-04-09T15:30:00Z'
 blockers: []
-notes: ""
+notes: ''

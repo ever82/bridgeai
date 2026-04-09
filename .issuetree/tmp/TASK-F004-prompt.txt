@@ -37,7 +37,7 @@ Instructions:
 4. Initialize the Expo mobile project in the worktree
 
 5. On completion, update the task YAML:
-   - Set status to "completed"
+   - Set status to "passed"
    - Fill in result, session_end, execution_time_minutes
    - List files_touched
 

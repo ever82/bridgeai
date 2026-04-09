@@ -61,7 +61,7 @@ Task: 项目初始化与开发环境搭建
 - 数据库部分需要在本地 PostgreSQL 中执行 SQL
 
 完成后，更新 task YAML:
-- status: completed
+- status: passed
 - result: 简述完成的成果
 - session_end: 完成时间
 - execution_time_minutes: 执行时间

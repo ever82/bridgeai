@@ -6,11 +6,11 @@
 
 每个需求/供给记录分为三层，控制信息访问权限：
 
-| 层级 | 访问范围 | 用途 |
-|------|----------|------|
-| Queryable | 系统 | 快速查询过滤（位置、时间、类别） |
-| Readable | 对方 Agent | 智能阅读理解（自然语言描述） |
-| Private | 自家 Agent | 绝不外泄（底价、底线、硬性条件） |
+| 层级      | 访问范围   | 用途                             |
+| --------- | ---------- | -------------------------------- |
+| Queryable | 系统       | 快速查询过滤（位置、时间、类别） |
+| Readable  | 对方 Agent | 智能阅读理解（自然语言描述）     |
+| Private   | 自家 Agent | 绝不外泄（底价、底线、硬性条件） |
 
 ### 2. 一对多实时匹配
 
@@ -67,28 +67,28 @@ interface Record {
   id: string;
   scene: string;
   userId: string;
-  
+
   queryable: {
     location: { lat: number; lng: number; radius: number };
     timeRange: { start: Date; end: Date };
     category: string;
     budget?: { min?: number; max: number };
   };
-  
+
   readable: {
     title: string;
     description: string;
     requirements: string[];
     preferences: string[];
   };
-  
+
   private: {
     mustHaves: string[];
     bottomLine: any;
     urgency: 'critical' | 'high' | 'medium' | 'low';
     disclosureStrategy: 'gradual' | 'conditional' | 'exchange' | 'protected';
   };
-  
+
   status: 'active' | 'matching' | 'fulfilled' | 'expired';
   createdAt: Date;
   expiresAt: Date;
@@ -100,18 +100,18 @@ interface ChatSession {
   scene: string;
   demandId: string;
   supplyId: string;
-  
+
   participants: {
     demandUser: string;
     demandAgent: string;
     supplyUser: string;
     supplyAgent: string;
   };
-  
+
   messages: Message[];
-  status: 'active' | 'paused' | 'confirmed' | 'completed';
+  status: 'active' | 'paused' | 'confirmed' | 'passed';
   currentSpeaker: { demandSide: 'agent' | 'user'; supplySide: 'agent' | 'user' };
-  
+
   createdAt: Date;
   lastActivityAt: Date;
 }

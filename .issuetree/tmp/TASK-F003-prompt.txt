@@ -41,7 +41,7 @@ Instructions:
 4. Implement the Express backend framework in the worktree
 
 5. On completion, update the task YAML:
-   - Set status to "completed"
+   - Set status to "passed"
    - Fill in result, session_end, execution_time_minutes
    - List files_touched
 

@@ -1,20 +1,20 @@
 ---
-id: "ISSUE-T003"
+id: 'ISSUE-T003'
 issue_number: 303
-title: "移动端测试框架"
-slug: "mobile-test-framework"
-status: "completed"
+title: '移动端测试框架'
+slug: 'mobile-test-framework'
+status: 'passed'
 description: |
   搭建React Native移动端测试框架，支持组件测试、Hook测试和快照测试。
   使用Jest + React Native Testing Library进行测试，配置 Expo 测试环境。
   确保移动端代码质量和稳定性。
 prerequisites:
-  - "ISSUE-F004"
-created_at: "2026-04-08"
+  - 'ISSUE-F004'
+created_at: '2026-04-08'
 logic: sufficient_necessary
 criteria:
-  - id: "ISSUE-T003~c1"
-    name: "React Native Jest配置"
+  - id: 'ISSUE-T003~c1'
+    name: 'React Native Jest配置'
     description: |
       配置React Native测试环境:
       - React Native Jest预设配置
@@ -22,7 +22,7 @@ criteria:
       - Metro配置用于测试
       - 静态资源Mock配置
       - Native模块自动Mock
-    status: "completed"
+    status: 'passed'
     coverage:
       unit: required
       integration: required
@@ -31,12 +31,11 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查React Native Jest配置，验证使用react-native预设或expo jest预设，Native模块Mock配置正确"
-        context_files: ["apps/mobile/jest.config.js", "apps/mobile/package.json"]
-        
+        prompt: '检查React Native Jest配置，验证使用react-native预设或expo jest预设，Native模块Mock配置正确'
+        context_files: ['apps/mobile/jest.config.js', 'apps/mobile/package.json']
 
-  - id: "ISSUE-T003~c2"
-    name: "React Native Testing Library配置"
+  - id: 'ISSUE-T003~c2'
+    name: 'React Native Testing Library配置'
     description: |
       配置Testing Library:
       - @testing-library/react-native安装和配置
@@ -44,7 +43,7 @@ criteria:
       - fireEvent事件模拟
       - waitFor异步处理
       - 测试工具函数封装
-    status: "completed"
+    status: 'passed'
     coverage:
       unit: required
       integration: required
@@ -53,12 +52,12 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查Testing Library配置，验证有测试工具封装，包含render、screen、fireEvent等常用方法封装"
-        context_files: ["apps/mobile/src/__tests__/utils/test-utils.tsx", "apps/mobile/jest.setup.js"]
-        
+        prompt: '检查Testing Library配置，验证有测试工具封装，包含render、screen、fireEvent等常用方法封装'
+        context_files:
+          ['apps/mobile/src/__tests__/utils/test-utils.tsx', 'apps/mobile/jest.setup.js']
 
-  - id: "ISSUE-T003~c3"
-    name: "Native模块Mock"
+  - id: 'ISSUE-T003~c3'
+    name: 'Native模块Mock'
     description: |
       Mock React Native原生模块:
       - Expo模块Mock(相机、存储、通知等)
@@ -66,7 +65,7 @@ criteria:
       - 第三方库Native代码Mock
       - 平台特定代码Mock(iOS/Android)
       - 传感器和硬件Mock
-    status: "completed"
+    status: 'passed'
     coverage:
       unit: required
       integration: not_needed
@@ -75,12 +74,16 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查Native模块Mock，验证有__mocks__目录包含expo模块、react-native模块的Mock实现"
-        context_files: ["apps/mobile/__mocks__/expo-camera.ts", "apps/mobile/__mocks__/react-native.ts", "apps/mobile/jest.setup.js"]
-        
+        prompt: '检查Native模块Mock，验证有__mocks__目录包含expo模块、react-native模块的Mock实现'
+        context_files:
+          [
+            'apps/mobile/__mocks__/expo-camera.ts',
+            'apps/mobile/__mocks__/react-native.ts',
+            'apps/mobile/jest.setup.js',
+          ]
 
-  - id: "ISSUE-T003~c4"
-    name: "组件测试示例"
+  - id: 'ISSUE-T003~c4'
+    name: '组件测试示例'
     description: |
       组件测试套件:
       - 基础UI组件测试
@@ -88,7 +91,7 @@ criteria:
       - 列表组件测试
       - 导航组件测试
       - 状态交互测试
-    status: "completed"
+    status: 'passed'
     coverage:
       unit: required
       integration: not_needed
@@ -97,12 +100,11 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查组件测试示例，验证有基础UI组件测试文件，测试渲染、props传递、事件处理"
-        context_files: ["apps/mobile/src/components/__tests__/*.test.tsx"]
-        
+        prompt: '检查组件测试示例，验证有基础UI组件测试文件，测试渲染、props传递、事件处理'
+        context_files: ['apps/mobile/src/components/__tests__/*.test.tsx']
 
-  - id: "ISSUE-T003~c5"
-    name: "Hook测试配置"
+  - id: 'ISSUE-T003~c5'
+    name: 'Hook测试配置'
     description: |
       React Hook测试:
       - @testing-library/react-hooks配置
@@ -110,7 +112,7 @@ criteria:
       - API调用Hook测试
       - 状态管理Hook测试
       - 副作用Hook测试
-    status: "completed"
+    status: 'passed'
     coverage:
       unit: required
       integration: not_needed
@@ -119,12 +121,15 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查Hook测试配置，验证有renderHook工具使用，自定义Hook测试文件，包含useAuth、useApi等Hook测试"
-        context_files: ["apps/mobile/src/hooks/__tests__/useAuth.test.ts", "apps/mobile/src/hooks/__tests__/useApi.test.ts"]
-        
+        prompt: '检查Hook测试配置，验证有renderHook工具使用，自定义Hook测试文件，包含useAuth、useApi等Hook测试'
+        context_files:
+          [
+            'apps/mobile/src/hooks/__tests__/useAuth.test.ts',
+            'apps/mobile/src/hooks/__tests__/useApi.test.ts',
+          ]
 
-  - id: "ISSUE-T003~c6"
-    name: "快照测试配置"
+  - id: 'ISSUE-T003~c6'
+    name: '快照测试配置'
     description: |
       快照测试:
       - Jest快照测试配置
@@ -132,7 +137,7 @@ criteria:
       - 快照更新策略
       - 平台特定快照(iOS/Android)
       - 快照失效检测
-    status: "completed"
+    status: 'passed'
     coverage:
       unit: required
       integration: not_needed
@@ -141,18 +146,22 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查快照测试配置，验证有toMatchSnapshot使用，平台特定快照配置，快照文件管理策略"
-        context_files: ["apps/mobile/src/components/__tests__/__snapshots__/", "apps/mobile/src/components/__tests__/Snapshot.test.tsx"]
+        prompt: '检查快照测试配置，验证有toMatchSnapshot使用，平台特定快照配置，快照文件管理策略'
+        context_files:
+          [
+            'apps/mobile/src/components/__tests__/__snapshots__/',
+            'apps/mobile/src/components/__tests__/Snapshot.test.tsx',
+          ]
 
-  - id: "ISSUE-T003~c7"
-    name: "测试运行验证"
+  - id: 'ISSUE-T003~c7'
+    name: '测试运行验证'
     description: |
       验证测试框架能正常工作:
       - 运行 npm test 命令无错误
       - 至少一个测试用例通过
       - 生成测试覆盖率报告
       - CI集成验证通过
-    status: "completed"
+    status: 'passed'
     coverage:
       unit: not_needed
       integration: required
@@ -161,6 +170,5 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "验证测试能正常运行，检查npm test命令执行结果，确认有测试通过和覆盖率报告生成"
-        context_files: ["apps/mobile/package.json", ".github/workflows/ci.yml"]
-        
+        prompt: '验证测试能正常运行，检查npm test命令执行结果，确认有测试通过和覆盖率报告生成'
+        context_files: ['apps/mobile/package.json', '.github/workflows/ci.yml']
