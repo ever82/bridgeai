@@ -2,40 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { render, fireEvent } from '../utils/test-utils';
 import { useNavigation, useRoute } from '@react-navigation/native';
-
-// Example Navigation Component for testing
-const DetailScreen: React.FC = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
-  const { itemId, title } = route.params as { itemId?: string; title?: string } || {};
-
-  React.useEffect(() => {
-    if (title) {
-      navigation.setOptions({ title });
-    }
-  }, [title, navigation]);
-
-  return (
-    <View testID="detail-screen">
-      <Text testID="screen-title">Detail Screen</Text>
-      <Text testID="item-id">{itemId || 'No ID'}</Text>
-
-      <TouchableOpacity
-        testID="navigate-button"
-        onPress={() => navigation.navigate('EditScreen', { itemId })}
-      >
-        <Text>Edit Item</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        testID="go-back-button"
-        onPress={() => navigation.goBack()}
-      >
-        <Text>Go Back</Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
+import { DetailScreen } from '../../screens/DetailScreen';
 
 // Mock the navigation hooks
 jest.mock('@react-navigation/native', () => ({

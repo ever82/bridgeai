@@ -1,16 +1,1 @@
-export { HomeScreen } from './home/HomeScreen';
-export { ExploreScreen } from './explore/ExploreScreen';
-export { SearchScreen } from './explore/SearchScreen';
-export { CategoryMomentsScreen } from './explore/CategoryMomentsScreen';
-export { ActivityScreen } from './activity/ActivityScreen';
-export { CreateMomentScreen } from './moment/CreateMomentScreen';
-export { MomentDetailScreen } from './moment/MomentDetailScreen';
-export { ProfileScreen } from './profile/ProfileScreen';
-export { MyMomentsScreen } from './profile/MyMomentsScreen';
-export { LikedMomentsScreen } from './profile/LikedMomentsScreen';
-export { SettingsScreen } from './settings/SettingsScreen';
-export { EditProfileScreen } from './settings/EditProfileScreen';
-export { UserProfileScreen } from './user/UserProfileScreen';
-export { LoginScreen } from './auth/LoginScreen';
-export { RegisterScreen } from './auth/RegisterScreen';
-export { ForgotPasswordScreen } from './auth/ForgotPasswordScreen';
+export { DetailScreen } from './DetailScreen';

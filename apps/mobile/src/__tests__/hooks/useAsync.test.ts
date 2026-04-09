@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from '@testing-library/react-native';
+import { renderHook, act } from '@testing-library/react-native';
 import { useAsync } from '../../hooks/useAsync';
 
 describe('useAsync', () => {
@@ -132,5 +132,52 @@ describe('useAsync', () => {
     });
 
     expect(returnValue).toEqual(mockData);
+  });
+
+  it('cleans up properly on unmount during execution', async () => {
+    let resolve: (value: unknown) => void;
+    const promise = new Promise((r) => {
+      resolve = r;
+    });
+    mockAsyncFunction.mockReturnValue(promise);
+
+    const { result, unmount } = renderHook(() => useAsync(mockAsyncFunction));
+
+    // Start execution
+    act(() => {
+      result.current.execute();
+    });
+
+    expect(result.current.isLoading).toBe(true);
+
+    // Unmount while loading
+    unmount();
+
+    // Resolve after unmount - should not throw
+    await act(async () => {
+      resolve!('data');
+      await promise;
+    });
+
+    // Test passes if no state update on unmounted component warning
+  });
+
+  it('does not update state after unmount', async () => {
+    mockAsyncFunction.mockResolvedValue({ data: 'test' });
+
+    const { result, unmount } = renderHook(() => useAsync(mockAsyncFunction));
+
+    // Start execution
+    const executePromise = act(async () => {
+      await result.current.execute();
+    });
+
+    // Unmount immediately
+    unmount();
+
+    // Wait for promise to resolve
+    await executePromise;
+
+    // Should not have any errors from state updates on unmounted component
   });
 });

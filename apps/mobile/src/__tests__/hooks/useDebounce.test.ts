@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from '@testing-library/react-native';
+import { renderHook, act } from '@testing-library/react-native';
 import { useDebounce } from '../../hooks/useDebounce';
 
 describe('useDebounce', () => {
@@ -101,9 +101,13 @@ describe('useDebounce', () => {
   });
 
   it('cleans up timer on unmount', () => {
+    jest.spyOn(global, 'clearTimeout');
     const { unmount } = renderHook(() => useDebounce('test', 500));
 
     // Unmount should not throw
     expect(() => unmount()).not.toThrow();
+
+    // Verify clearTimeout was called during cleanup
+    expect(clearTimeout).toHaveBeenCalled();
   });
 });

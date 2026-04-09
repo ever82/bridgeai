@@ -2,6 +2,8 @@ import React, { ReactNode } from 'react';
 import { render, RenderOptions } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StyleSheet } from 'react-native';
 
 interface AllTheProvidersProps {
   children: ReactNode;
@@ -14,11 +16,19 @@ const initialMetrics = {
 
 export function AllTheProviders({ children }: AllTheProvidersProps) {
   return (
-    <SafeAreaProvider initialMetrics={initialMetrics}>
-      <NavigationContainer>{children}</NavigationContainer>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaProvider initialMetrics={initialMetrics}>
+        <NavigationContainer>{children}</NavigationContainer>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 const customRender = (ui: React.ReactElement, options?: Omit<RenderOptions, 'wrapper'>) =>
   render(ui, { wrapper: AllTheProviders, ...options });

@@ -13,7 +13,22 @@ export const View = mockComponent('View');
 export const Text = mockComponent('Text');
 export const Image = mockComponent('Image');
 export const ScrollView = mockComponent('ScrollView');
-export const FlatList = mockComponent('FlatList');
+export const FlatList = jest.fn((props: any) => {
+  const { data, renderItem, keyExtractor, testID, children, ...rest } = props;
+  // If children are passed directly, render them (for non-standard usage)
+  if (children) {
+    return React.createElement('FlatList', { testID, ...rest }, children);
+  }
+  // Otherwise, render items from data using renderItem
+  if (data && renderItem) {
+    const items = data.map((item: any, index: number) => {
+      const key = keyExtractor ? keyExtractor(item, index) : index;
+      return React.createElement(View, { key, testID: `flat-list-item-${key}` }, renderItem({ item, index }));
+    });
+    return React.createElement(View, { testID }, items);
+  }
+  return React.createElement('FlatList', { testID, ...rest });
+});
 export const SectionList = mockComponent('SectionList');
 export const TouchableOpacity = jest.fn((props: any) => {
   const { children, onPress, disabled, testID, style } = props;

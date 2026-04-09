@@ -1,52 +1,6 @@
 import React from 'react';
-import { TouchableOpacity, Text, TextInput, View, FlatList } from 'react-native';
 import { render, fireEvent } from '../utils/test-utils';
-
-// Example List Component for testing
-interface Item {
-  id: string;
-  title: string;
-  description: string;
-}
-
-interface ItemListProps {
-  items: Item[];
-  onItemPress?: (item: Item) => void;
-  loading?: boolean;
-  emptyMessage?: string;
-}
-
-const ItemList: React.FC<ItemListProps> = ({
-  items,
-  onItemPress,
-  emptyMessage = 'No items found',
-}) => {
-  const renderItem = ({ item }: { item: Item }) => (
-    <TouchableOpacity
-      testID={`item-${item.id}`}
-      onPress={() => onItemPress?.(item)}
-    >
-      <Text testID={`item-title-${item.id}`}>{item.title}</Text>
-      <Text testID={`item-description-${item.id}`}>{item.description}</Text>
-    </TouchableOpacity>
-  );
-
-  if (items.length === 0) {
-    return (
-      <View testID="empty-state">
-        <Text testID="empty-message">{emptyMessage}</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View testID="item-list">
-      {items.map((item) => (
-        <View key={item.id}>{renderItem({ item })}</View>
-      ))}
-    </View>
-  );
-};
+import { ItemList } from '../../components/ItemList';
 
 describe('ItemList (List Component Example)', () => {
   const mockItems: Item[] = [

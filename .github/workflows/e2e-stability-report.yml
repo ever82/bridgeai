@@ -1,0 +1,92 @@
+name: E2E Stability Report
+
+on:
+  schedule:
+    # Weekly on Sunday at 8 PM
+    - cron: '0 20 * * 0'
+  workflow_dispatch:
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for analysis
+
+      - name: Analyze test history
+        run: |
+          echo "# E2E Test Stability Analysis" > report.md
+          echo "" >> report.md
+          echo "Period: Last 7 days" >> report.md
+          echo "Generated: $(date)" >> report.md
+          echo "" >> report.md
+
+          # Analyze GitHub Actions runs
+          gh run list --workflow=e2e.yml --limit 50 --json conclusion,createdAt,duration,headBranch > runs.json
+
+          echo "## Execution Statistics" >> report.md
+          echo "" >> report.md
+
+          # Count results
+          total=$(cat runs.json | jq 'length')
+          success=$(cat runs.json | jq '[.[] | select(.conclusion == "success")] | length')
+          failure=$(cat runs.json | jq '[.[] | select(.conclusion == "failure")] | length')
+
+          echo "- Total runs: $total" >> report.md
+          echo "- Successful: $success" >> report.md
+          echo "- Failed: $failure" >> report.md
+          echo "- Success rate: $(( success * 100 / total ))%" >> report.md
+          echo "" >> report.md
+
+          # Flaky rate analysis
+          if [ $failure -gt 0 ]; then
+            flaky_rate=$(echo "scale=2; $failure / $total" | bc)
+            echo "## Flaky Rate" >> report.md
+            echo "" >> report.md
+            echo "Current flaky rate: ${flaky_rate}%" >> report.md
+
+            if (( $(echo "$flaky_rate > 0.05" | bc -l) )); then
+              echo "⚠️ **WARNING**: Flaky rate exceeds 5% threshold!" >> report.md
+            elif (( $(echo "$flaky_rate > 0.02" | bc -l) )); then
+              echo "⚡ **NOTICE**: Flaky rate above 2% target" >> report.md
+            else
+              echo "✅ **GOOD**: Flaky rate within target (< 2%)" >> report.md
+            fi
+            echo "" >> report.md
+          fi
+
+          echo "## Recommendations" >> report.md
+          echo "" >> report.md
+          echo "- Review failed runs for patterns" >> report.md
+          echo "- Update timeouts if tests are timing out" >> report.md
+          echo "- Check for environment-related failures" >> report.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-stability-report
+          path: report.md
+
+      - name: Notify on high flaky rate
+        if: env.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "E2E Stability Report - Weekly Summary",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "📊 *Weekly E2E Stability Report Generated*\n\nCheck the artifacts for the full analysis."
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_E2E_WEBHOOK }}

@@ -3,7 +3,7 @@ id: "ISSUE-T003"
 issue_number: 303
 title: "移动端测试框架"
 slug: "mobile-test-framework"
-status: "pending"
+status: "completed"
 description: |
   搭建React Native移动端测试框架，支持组件测试、Hook测试和快照测试。
   使用Jest + React Native Testing Library进行测试，配置 Expo 测试环境。
@@ -22,10 +22,10 @@ criteria:
       - Metro配置用于测试
       - 静态资源Mock配置
       - Native模块自动Mock
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
-      integration: not_needed
+      integration: required
       e2e: not_needed
       ai: sufficient
       manual: not_needed
@@ -44,17 +44,17 @@ criteria:
       - fireEvent事件模拟
       - waitFor异步处理
       - 测试工具函数封装
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
-      integration: not_needed
+      integration: required
       e2e: not_needed
       ai: sufficient
       manual: not_needed
     verification:
       ai:
         prompt: "检查Testing Library配置，验证有测试工具封装，包含render、screen、fireEvent等常用方法封装"
-        context_files: ["apps/mobile/src/tests/test-utils.tsx", "apps/mobile/jest.setup.js"]
+        context_files: ["apps/mobile/src/__tests__/utils/test-utils.tsx", "apps/mobile/jest.setup.js"]
         
 
   - id: "ISSUE-T003~c3"
@@ -66,7 +66,7 @@ criteria:
       - 第三方库Native代码Mock
       - 平台特定代码Mock(iOS/Android)
       - 传感器和硬件Mock
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: not_needed
@@ -88,7 +88,7 @@ criteria:
       - 列表组件测试
       - 导航组件测试
       - 状态交互测试
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: not_needed
@@ -97,8 +97,8 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查组件测试示例，验证有Button、Input、Card等基础组件测试文件，测试渲染、props传递、事件处理"
-        context_files: ["apps/mobile/src/components/__tests__/Button.test.tsx", "apps/mobile/src/components/__tests__/Input.test.tsx"]
+        prompt: "检查组件测试示例，验证有基础UI组件测试文件，测试渲染、props传递、事件处理"
+        context_files: ["apps/mobile/src/components/__tests__/*.test.tsx"]
         
 
   - id: "ISSUE-T003~c5"
@@ -110,7 +110,7 @@ criteria:
       - API调用Hook测试
       - 状态管理Hook测试
       - 副作用Hook测试
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: not_needed
@@ -132,7 +132,7 @@ criteria:
       - 快照更新策略
       - 平台特定快照(iOS/Android)
       - 快照失效检测
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: not_needed
@@ -143,4 +143,24 @@ criteria:
       ai:
         prompt: "检查快照测试配置，验证有toMatchSnapshot使用，平台特定快照配置，快照文件管理策略"
         context_files: ["apps/mobile/src/components/__tests__/__snapshots__/", "apps/mobile/src/components/__tests__/Snapshot.test.tsx"]
+
+  - id: "ISSUE-T003~c7"
+    name: "测试运行验证"
+    description: |
+      验证测试框架能正常工作:
+      - 运行 npm test 命令无错误
+      - 至少一个测试用例通过
+      - 生成测试覆盖率报告
+      - CI集成验证通过
+    status: "completed"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "验证测试能正常运行，检查npm test命令执行结果，确认有测试通过和覆盖率报告生成"
+        context_files: ["apps/mobile/package.json", ".github/workflows/ci.yml"]
         

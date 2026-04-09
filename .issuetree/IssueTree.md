@@ -26,10 +26,10 @@ flowchart TD
     end
 
     subgraph Test["🧪 测试框架层 - Test"]
-        T001[🔵 ISSUE-T001<br/>单元测试框架搭建]
-        T002[🔵 ISSUE-T002<br/>API集成测试框架]
-        T003[🔵 ISSUE-T003<br/>移动端测试框架]
-        T004[⚪ ISSUE-T004<br/>E2E端到端测试框架]
+        T001[🟢 ISSUE-T001<br/>单元测试框架搭建]
+        T002[🟢 ISSUE-T002<br/>API集成测试框架]
+        T003[🟢 ISSUE-T003<br/>移动端测试框架]
+        T004[⚪ ISSUE-T004<br/>E2E端到端测试框架<br/>⚡严格标准: flaky<2%]
     end
 
     subgraph Security["🔒 安全层 - Security"]
@@ -160,6 +160,8 @@ flowchart TD
     T001 --> T004
     T002 --> T004
     T003 --> T004
+    UI001 --> T004
+    API001 --> T004
 
     %% 安全层依赖
     A002 --> SEC001
@@ -355,7 +357,7 @@ flowchart TD
 | ISSUE-T001 | 单元测试框架搭建(Jest) | M | F003, A001 |
 | ISSUE-T002 | API集成测试框架 | M | F003 |
 | ISSUE-T003 | 移动端测试框架 | M | F004 |
-| ISSUE-T004 | E2E端到端测试框架 | H | T001, T002, T003, UI001 |
+| ISSUE-T004 | E2E端到端测试框架 [严格标准] | H | T001, T002, T003, UI001, API001 |
 
 ### 🔒 Security (安全层)
 | Issue | 标题 | 复杂度 | 关键依赖 |

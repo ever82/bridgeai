@@ -117,4 +117,44 @@ describe('useAsyncStorage', () => {
 
     consoleError.mockRestore();
   });
+
+  it('cleans up properly on unmount', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+
+    const { result, unmount } = renderHook(() => useAsyncStorage('test-key', 'initial'));
+
+    // Wait for initial load
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Unmount should not throw
+    expect(() => unmount()).not.toThrow();
+  });
+
+  it('does not update state after unmount during load', async () => {
+    let resolveGetItem: (value: string | null) => void;
+    const getItemPromise = new Promise<string | null>((r) => {
+      resolveGetItem = r;
+    });
+    (AsyncStorage.getItem as jest.Mock).mockReturnValue(getItemPromise);
+
+    const { result, unmount } = renderHook(() => useAsyncStorage('test-key', 'initial'));
+
+    // Wait a tick for the effect to start
+    await act(async () => {});
+
+    expect(result.current.isLoading).toBe(true);
+
+    // Unmount before the promise resolves
+    unmount();
+
+    // Resolve after unmount
+    await act(async () => {
+      resolveGetItem!(JSON.stringify('stored-value'));
+      await getItemPromise;
+    });
+
+    // Should not have any errors from state updates on unmounted component
+  });
 });

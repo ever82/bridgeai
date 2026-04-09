@@ -1,4 +1,5 @@
 import { cleanup } from '@testing-library/react-native';
+import '@testing-library/jest-native/extend-expect';
 
 // Global test setup
 beforeAll(() => {
