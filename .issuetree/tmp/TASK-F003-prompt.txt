@@ -1,0 +1,48 @@
+You are working on task TASK-1 in issue ISSUE-F003.
+
+Task: Set up Express Backend Framework
+
+Description:
+Set up the Express.js backend framework for BridgeAI platform.
+
+Key requirements:
+1. Initialize Express project with TypeScript
+2. Set up middleware stack:
+   - CORS configuration
+   - Body parsing (JSON, URL-encoded)
+   - Helmet for security headers
+   - Request logging
+   - Error handling middleware
+3. Create project structure:
+   - routes/, controllers/, middleware/, services/, utils/, types/
+4. Set up environment configuration
+5. Create health check endpoint
+6. Set up API versioning (/api/v1)
+
+Work in the worktree: D:/projects/visionshare/.issuetree/issues/ISSUE-F003
+
+Acceptance Criteria:
+- Express server starts successfully
+- Health check endpoint responds correctly
+- Middleware chain is functional
+- Project structure is organized
+- Environment variables are configurable
+
+Instructions:
+1. First, update the task status to in_progress in the YAML file:
+   .issuetree/issues/ISSUE-F003/tasks/TASK-1~express-backend.yaml
+
+2. Read the issue YAML to understand full requirements:
+   .issuetree/issues/ISSUE-F003/ISSUE-F003.yaml
+
+3. Create a git worktree for this issue at:
+   D:/projects/visionshare/.issuetree/issues/ISSUE-F003
+
+4. Implement the Express backend framework in the worktree
+
+5. On completion, update the task YAML:
+   - Set status to "completed"
+   - Fill in result, session_end, execution_time_minutes
+   - List files_touched
+
+6. On failure, set status to "failed" and describe the error in notes

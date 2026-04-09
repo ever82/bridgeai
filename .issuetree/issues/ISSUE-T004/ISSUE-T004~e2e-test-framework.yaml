@@ -3,7 +3,7 @@ id: "ISSUE-T004"
 issue_number: 304
 title: "E2E端到端测试框架"
 slug: "e2e-test-framework"
-status: "pending"
+status: "blocked"
 description: |
   搭建端到端(E2E)测试框架，使用Detox进行移动端E2E测试，覆盖完整的用户操作流程。
   包括测试环境配置、测试数据准备、页面对象模式、测试报告等。

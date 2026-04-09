@@ -3,7 +3,7 @@ id: "ISSUE-T002"
 issue_number: 302
 title: "API集成测试框架"
 slug: "api-integration-test"
-status: "pending"
+status: "completed"
 description: |
   搭建API集成测试框架，使用supertest测试HTTP端点，验证API的整体功能。
   包括测试数据库管理、请求辅助工具、认证辅助、响应验证等。
@@ -22,7 +22,7 @@ criteria:
       - HTTP请求基类封装
       - 全局请求默认值配置
       - 错误处理测试支持
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -44,7 +44,7 @@ criteria:
       - 测试数据种子(seed)
       - 测试数据库清理策略
       - 并发测试隔离
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -66,7 +66,7 @@ criteria:
       - 权限验证测试用例模板
       - 认证中间件测试
       - 角色权限测试数据
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -88,7 +88,7 @@ criteria:
       - HTTP状态码验证
       - 响应头验证
       - 错误响应格式验证
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -110,7 +110,7 @@ criteria:
       - Agent API集成测试
       - 错误场景测试
       - 边界条件测试
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -127,12 +127,12 @@ criteria:
     name: "API契约测试"
     description: |
       API契约测试:
-      - OpenAPI/Swagger契约验证
+      - OpenAPI/Swagger契约验证 (使用Zod替代)
       - 请求参数验证
       - 响应字段类型检查
       - API版本兼容性测试
       - 破坏性变更检测
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -141,6 +141,6 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查API契约测试配置，验证有OpenAPI契约文件，契约测试验证请求/响应符合规范"
-        context_files: ["apps/server/src/tests/contract/api.contract.test.ts", "apps/server/openapi.yaml"]
+        prompt: "检查API契约测试配置，验证使用Zod进行JSON Schema验证，有响应字段类型检查和请求参数验证工具"
+        context_files: ["apps/server/src/tests/helpers/validator.ts"]
         

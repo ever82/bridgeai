@@ -3,7 +3,7 @@ id: "ISSUE-T001"
 issue_number: 301
 title: "单元测试框架搭建(Jest)"
 slug: "unit-test-framework"
-status: "pending"
+status: "completed"
 description: |
   搭建完整的单元测试框架，使用Jest作为测试运行器，覆盖后端服务和共享包的单元测试。
   包括测试环境配置、Mock工具、测试数据工厂、覆盖率报告等基础设施。
@@ -23,7 +23,7 @@ criteria:
       - TypeScript支持(ts-jest配置)
       - 测试文件匹配规则
       - 测试超时和并发配置
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: not_needed
@@ -45,7 +45,7 @@ criteria:
       - 测试数据库自动创建和销毁
       - 测试数据清理机制
       - 并行测试安全隔离
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -67,7 +67,7 @@ criteria:
       - 外部API Mock工具
       - Redis/缓存Mock
       - 文件系统Mock
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: not_needed
@@ -89,7 +89,7 @@ criteria:
       - Agent数据工厂
       - 消息/聊天数据工厂
       - 数据工厂组合和关联
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -111,7 +111,7 @@ criteria:
       - 覆盖率报告格式(html/text/lcov)
       - 排除文件配置
       - CI集成
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: not_needed
@@ -132,7 +132,7 @@ criteria:
       - 工具函数单元测试示例
       - Middleware单元测试示例
       - 测试最佳实践文档
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: not_needed

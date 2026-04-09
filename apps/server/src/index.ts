@@ -1,2 +1,3 @@
-// Placeholder entry point for server
-export {};
+import server from './server';
+
+export default server;

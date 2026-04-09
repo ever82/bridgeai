@@ -1,0 +1,25 @@
+export default {
+  GestureHandlerRootView: jest.fn(({ children }) => children),
+  PanGestureHandler: jest.fn(({ children }) => children),
+  TapGestureHandler: jest.fn(({ children }) => children),
+  LongPressGestureHandler: jest.fn(({ children }) => children),
+  PinchGestureHandler: jest.fn(({ children }) => children),
+  RotationGestureHandler: jest.fn(({ children }) => children),
+  FlingGestureHandler: jest.fn(({ children }) => children),
+  ForceTouchGestureHandler: jest.fn(({ children }) => children),
+  NativeViewGestureHandler: jest.fn(({ children }) => children),
+  State: {
+    BEGAN: 2,
+    FAILED: 1,
+    CANCELLED: 3,
+    ACTIVE: 4,
+    END: 5,
+    UNDETERMINED: 0,
+  },
+  Directions: {
+    RIGHT: 1,
+    LEFT: 2,
+    UP: 4,
+    DOWN: 8,
+  },
+};

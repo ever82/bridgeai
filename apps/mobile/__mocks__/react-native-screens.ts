@@ -1,0 +1,13 @@
+export default jest.fn(({ children }) => children);
+export const enableScreens = jest.fn();
+export const screensEnabled = jest.fn(() => false);
+export const NativeScreen = jest.fn(({ children }) => children);
+export const NativeScreenContainer = jest.fn(({ children }) => children);
+export const ScreenContainer = jest.fn(({ children }) => children);
+export const Screen = jest.fn(({ children }) => children);
+export const ScreenStack = jest.fn(({ children }) => children);
+export const ScreenStackHeaderConfig = jest.fn(() => null);
+export const ScreenStackHeaderSubview = jest.fn(() => null);
+export const SearchBar = jest.fn(() => null);
+export const FullWindowOverlay = jest.fn(({ children }) => children);
+export const GestureDetectorView = jest.fn(({ children }) => children);

@@ -30,6 +30,9 @@ model User {
   sentMessages  Message[] @relation("SentMessages")
   ratingsGiven  Rating[]  @relation("Rater")
   ratingsReceived Rating[] @relation("Ratee")
+  creditRecords CreditRecord[]
+  transactions  Transaction[]
+  connections   Connection[]
 
   @@map("users")
 }
@@ -60,6 +63,7 @@ model Agent {
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   demands     Demand[]
   supplies    Supply[]
+  profiles    AgentProfile[]
 
   @@index([userId])
   @@index([type])
@@ -239,4 +243,228 @@ model Rating {
   @@index([matchId])
   @@index([rateeId])
   @@map("ratings")
+}
+
+// ============================================
+// 场景相关
+// ============================================
+
+model Scene {
+  id          String     @id @default(uuid())
+  code        SceneCode  @unique
+  name        String
+  description String?
+  icon        String?
+  color       String?
+  isActive    Boolean    @default(true) @map("is_active")
+  config      Json?      // 场景专属配置
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  agentProfiles AgentProfile[]
+  chatRooms     ChatRoom[]
+
+  @@map("scenes")
+}
+
+enum SceneCode {
+  VISION_SHARE  @map("vision_share")
+  AGENT_DATE    @map("agent_date")
+  AGENT_JOB     @map("agent_job")
+  AGENT_AD      @map("agent_ad")
+}
+
+// ============================================
+// Agent 画像相关
+// ============================================
+
+model AgentProfile {
+  id        String   @id @default(uuid())
+  agentId   String   @map("agent_id")
+  sceneId   String   @map("scene_id")
+
+  // L1 - 基础信息（系统可查询）
+  l1Data    Json     @map("l1_data")  // location, timeRange, category, budget
+
+  // L2 - 结构化信息（Agent可读的自然语言）
+  l2Data    Json     @map("l2_data")  // description, requirements, capabilities
+
+  // L3 - 自然语言描述（完整描述）
+  l3Description String? @map("l3_description")
+
+  // 场景专属配置
+  sceneConfig   Json?    @map("scene_config")
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  scene     Scene    @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, sceneId])
+  @@index([agentId])
+  @@index([sceneId])
+  @@map("agent_profiles")
+}
+
+// ============================================
+// 聊天室相关（四人群聊）
+// ============================================
+
+model ChatRoom {
+  id            String        @id @default(uuid())
+  sceneId       String?       @map("scene_id")
+  matchId       String?       @unique @map("match_id")
+  type          ChatRoomType  @default(QUAD)
+  status        ChatRoomStatus @default(ACTIVE)
+  participantIds String[]     @map("participant_ids")  // 存储 userIds
+  metadata      Json?
+  lastMessageAt DateTime?     @map("last_message_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  scene         Scene?        @relation(fields: [sceneId], references: [id])
+  messages      ChatMessage[]
+  connections   Connection[]
+
+  @@index([sceneId])
+  @@index([matchId])
+  @@index([lastMessageAt])
+  @@index([status])
+  @@map("chat_rooms")
+}
+
+enum ChatRoomType {
+  QUAD       @map("quad")       // 四人群聊（默认）
+  PRIVATE    @map("private")    // 私聊
+  GROUP      @map("group")      // 多人群聊
+}
+
+enum ChatRoomStatus {
+  ACTIVE     @map("active")
+  INACTIVE   @map("inactive")
+  CLOSED     @map("closed")
+}
+
+model ChatMessage {
+  id           String       @id @default(uuid())
+  chatRoomId   String       @map("chat_room_id")
+  senderId     String       @map("sender_id")
+  senderType   SenderType   @map("sender_type")  // USER 或 AGENT
+  content      String
+  type         MessageType  @default(TEXT)
+  attachments  Json?
+  metadata     Json?        // 包含私聊建议标记等
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  // Relations
+  chatRoom     ChatRoom     @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+
+  @@index([chatRoomId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
+
+enum SenderType {
+  USER   @map("user")
+  AGENT  @map("agent")
+}
+
+// ============================================
+// 连接管理（Socket/WebSocket）
+// ============================================
+
+model Connection {
+  id         String           @id @default(uuid())
+  userId     String           @map("user_id")
+  chatRoomId String?          @map("chat_room_id")
+  socketId   String           @unique @map("socket_id")
+  deviceInfo Json?            @map("device_info")
+  ipAddress  String?          @map("ip_address")
+  status     ConnectionStatus @default(ONLINE)
+  lastPingAt DateTime?        @map("last_ping_at")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatRoom   ChatRoom?        @relation(fields: [chatRoomId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([chatRoomId])
+  @@index([status])
+  @@index([lastPingAt])
+  @@map("connections")
+}
+
+enum ConnectionStatus {
+  ONLINE      @map("online")
+  AWAY        @map("away")
+  BUSY        @map("busy")
+  OFFLINE     @map("offline")
+}
+
+// ============================================
+// 信用和积分相关
+// ============================================
+
+model CreditRecord {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  score       Int      // 当前信用分
+  delta       Int      // 变化值
+  reason      String   // 变化原因
+  sourceType  String   @map("source_type")  // RATING, TRANSACTION, COMPLAINT 等
+  sourceId    String?  @map("source_id")    // 关联记录ID
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("credit_records")
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  userId      String          @map("user_id")
+  amount      Decimal         @db.Decimal(10, 2)
+  type        TransactionType
+  status      TransactionStatus @default(PENDING)
+  description String?
+  referenceId String?         @map("reference_id")  // 关联订单/匹配ID
+  metadata    Json?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+enum TransactionType {
+  RECHARGE    @map("recharge")     // 充值
+  REWARD      @map("reward")       // 奖励
+  DEDUCT      @map("deduct")       // 扣除
+  REFUND      @map("refund")       // 退款
+  TRANSFER    @map("transfer")     // 转账
+}
+
+enum TransactionStatus {
+  PENDING     @map("pending")
+  SUCCESS     @map("success")
+  FAILED      @map("failed")
+  CANCELLED   @map("cancelled")
 }

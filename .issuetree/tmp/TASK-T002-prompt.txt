@@ -1,0 +1,38 @@
+You are working on task TASK-1 in issue ISSUE-T002.
+
+Task: Setup API Integration Test Framework
+
+Description:
+Setup API integration test framework using Supertest for HTTP endpoint testing.
+
+Key requirements:
+1. Configure Supertest with Express app
+2. Setup test database lifecycle management
+3. Create authentication test helpers
+4. Implement API response validation tools
+5. Write integration test examples
+6. Setup API contract testing
+
+Prerequisites:
+- ISSUE-F003 (Express backend) must be completed
+
+Work in the worktree: D:/projects/visionshare/.issuetree/issues/ISSUE-T002
+
+Instructions:
+1. First, update the task status to in_progress in the YAML file:
+   .issuetree/issues/ISSUE-T002/tasks/TASK-1~api-integration-test.yaml
+
+2. Read the issue YAML to understand full requirements:
+   .issuetree/issues/ISSUE-T002/ISSUE-T002~api-integration-test.yaml
+
+3. Create a git worktree for this issue at:
+   D:/projects/visionshare/.issuetree/issues/ISSUE-T002
+
+4. Implement the API integration test framework in the worktree
+
+5. On completion, update the task YAML:
+   - Set status to "completed"
+   - Fill in result, session_end, execution_time_minutes
+   - List files_touched
+
+6. On failure, set status to "failed" and describe the error in notes
