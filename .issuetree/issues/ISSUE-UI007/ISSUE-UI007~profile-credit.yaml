@@ -34,7 +34,7 @@ criteria:
       ai:
         prompt: "检查个人资料展示实现，验证有 ProfileScreen 组件，显示用户头像、昵称、ID、注册时间、简介，有编辑按钮"
         context_files: ["apps/mobile/src/screens/Profile/ProfileScreen.tsx", "apps/mobile/src/screens/Profile/components/ProfileHeader.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI007~c2"
     name: "信用分展示模块"
@@ -56,7 +56,7 @@ criteria:
       ai:
         prompt: "检查信用分展示实现，验证有 CreditScoreCard 组件，显示信用分数、等级、趋势图，有详情入口和提升建议"
         context_files: ["apps/mobile/src/screens/Profile/components/CreditScoreCard.tsx", "apps/mobile/src/components/CreditChart/CreditChart.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI007~c3"
     name: "积分账户与交易"
@@ -78,7 +78,7 @@ criteria:
       ai:
         prompt: "检查积分账户实现，验证有 PointsWalletScreen 组件，显示积分余额、收支明细、交易筛选，有充值入口"
         context_files: ["apps/mobile/src/screens/Profile/PointsWalletScreen.tsx", "apps/mobile/src/screens/Profile/components/TransactionItem.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI007~c4"
     name: "活动历史与统计"
@@ -100,7 +100,7 @@ criteria:
       ai:
         prompt: "检查活动历史实现，验证有 ActivityScreen 组件，显示活动统计、列表、日历、成就徽章"
         context_files: ["apps/mobile/src/screens/Profile/ActivityScreen.tsx", "apps/mobile/src/screens/Profile/components/ActivityStats.tsx", "apps/mobile/src/screens/Profile/components/AchievementBadge.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI007~c5"
     name: "个人设置菜单"
@@ -123,7 +123,7 @@ criteria:
       ai:
         prompt: "检查设置菜单实现，验证有 SettingsScreen 组件，包含账号安全、隐私、通知、通用设置、关于帮助、退出登录选项"
         context_files: ["apps/mobile/src/screens/Settings/SettingsScreen.tsx", "apps/mobile/src/screens/Settings/components/SettingsItem.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI007~c6"
     name: "资料编辑功能"
@@ -145,4 +145,4 @@ criteria:
       ai:
         prompt: "检查资料编辑实现，验证有 EditProfileScreen 组件，支持头像更换、昵称修改、简介编辑，有保存和取消功能"
         context_files: ["apps/mobile/src/screens/Profile/EditProfileScreen.tsx", "apps/mobile/src/components/ImagePicker/ImagePicker.tsx"]
-        model: "claude-sonnet-4-6"
+        

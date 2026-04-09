@@ -33,7 +33,7 @@ criteria:
       ai:
         prompt: "检查会话列表实现，验证有 ConversationListScreen 组件，显示会话列表项、未读角标，支持左滑操作和下拉刷新"
         context_files: ["apps/mobile/src/screens/Messages/ConversationListScreen.tsx", "apps/mobile/src/screens/Messages/components/ConversationItem.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI006~c2"
     name: "系统通知中心"
@@ -55,7 +55,7 @@ criteria:
       ai:
         prompt: "检查系统通知实现，验证有 NotificationCenter 组件，支持通知分类、列表展示、详情查看、标记已读功能"
         context_files: ["apps/mobile/src/screens/Messages/NotificationCenter.tsx", "apps/mobile/src/screens/Messages/components/NotificationItem.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI006~c3"
     name: "消息搜索功能"
@@ -77,7 +77,7 @@ criteria:
       ai:
         prompt: "检查消息搜索实现，验证有 MessageSearchScreen 或 SearchModal 组件，支持搜索建议、历史、结果分类和高亮"
         context_files: ["apps/mobile/src/screens/Messages/MessageSearchScreen.tsx", "apps/mobile/src/components/SearchBar/SearchBar.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI006~c4"
     name: "会话管理功能"
@@ -99,7 +99,7 @@ criteria:
       ai:
         prompt: "检查会话管理实现，验证有批量选择模式、删除、归档、静音功能，支持清空聊天记录"
         context_files: ["apps/mobile/src/screens/Messages/hooks/useConversationManage.ts", "apps/mobile/src/screens/Messages/components/BatchActionBar.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI006~c5"
     name: "消息设置"
@@ -121,7 +121,7 @@ criteria:
       ai:
         prompt: "检查消息设置实现，验证有 MessageSettingsScreen 组件，包含通知开关、声音振动设置、免打扰模式配置"
         context_files: ["apps/mobile/src/screens/Settings/MessageSettingsScreen.tsx", "apps/mobile/src/screens/Settings/components/NotificationToggle.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI006~c6"
     name: "新联系人/群聊入口"
@@ -143,4 +143,4 @@ criteria:
       ai:
         prompt: "检查新建会话实现，验证有 NewChatScreen 或 ContactPicker 组件，支持搜索用户、选择联系人、创建群聊"
         context_files: ["apps/mobile/src/screens/Messages/NewChatScreen.tsx", "apps/mobile/src/components/ContactPicker/ContactPicker.tsx"]
-        model: "claude-sonnet-4-6"
+        

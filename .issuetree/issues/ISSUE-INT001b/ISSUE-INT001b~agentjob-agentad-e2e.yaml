@@ -1,0 +1,77 @@
+---
+id: "ISSUE-INT001b"
+issue_number: 1201
+parent_issue: "ISSUE-INT001"
+title: "AgentJob + AgentAd E2E测试"
+slug: "agentjob-agentad-e2e"
+status: "pending"
+description: |
+  AgentJob和AgentAd两大核心场景的端到端集成测试。
+  验证求职者画像与简历配置、招聘方职位发布、简历智能匹配筛选、
+  薪资协商与面试安排、消费需求画像配置、商家优惠配置发布、
+  Agent优惠协商谈判、一键购买与优惠码验证、多商家比价等完整流程。
+  确保用户场景模块与核心服务模块的协同工作正常。
+prerequisites:
+  - "ISSUE-JOB001"
+  - "ISSUE-JOB002"
+  - "ISSUE-JOB003"
+  - "ISSUE-JOB004"
+  - "ISSUE-AD001"
+  - "ISSUE-AD002"
+  - "ISSUE-AD003"
+  - "ISSUE-AD004"
+  - "ISSUE-UI001"
+  - "ISSUE-UI002"
+  - "ISSUE-UI003"
+  - "ISSUE-UI004a"
+  - "ISSUE-UI004b"
+  - "ISSUE-UI004c"
+  - "ISSUE-UI005"
+  - "ISSUE-UI006"
+  - "ISSUE-UI007"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-INT001b~c3"
+    name: "AgentJob场景完整流程测试"
+    description: |
+      AgentJob端到端测试:
+      - 求职者画像与简历配置
+      - 招聘方职位发布流程
+      - 简历智能匹配筛选验证
+      - 薪资协商与面试安排流程
+      - 招聘场景人机切换测试
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查AgentJob端到端测试实现，验证包含求职招聘全流程测试，涵盖画像配置、职位发布、智能匹配、薪资协商等场景"
+        context_files: ["apps/e2e/tests/agentjob/", "apps/e2e/tests/scenarios/agentjob.test.ts"]
+        
+
+  - id: "ISSUE-INT001b~c4"
+    name: "AgentAd场景完整流程测试"
+    description: |
+      AgentAd端到端测试:
+      - 消费需求画像配置
+      - 商家优惠配置发布
+      - Agent优惠协商谈判流程
+      - 一键购买与优惠码验证
+      - 多商家比价场景测试
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查AgentAd端到端测试实现，验证包含消费广告场景完整测试，涵盖画像配置、优惠协商、一键购买等核心功能"
+        context_files: ["apps/e2e/tests/agentad/", "apps/e2e/tests/scenarios/agentad.test.ts"]
+        

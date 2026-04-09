@@ -33,7 +33,7 @@ criteria:
       ai:
         prompt: "检查Supertest配置，验证有request基类或辅助函数，能够创建Express测试实例，包含全局错误处理测试"
         context_files: ["apps/server/src/tests/integration/setup.ts", "apps/server/src/tests/helpers/request.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-T002~c2"
     name: "测试数据库生命周期管理"
@@ -55,7 +55,7 @@ criteria:
       ai:
         prompt: "检查测试数据库管理，验证每个测试后数据清理，有事务回滚或独立数据库实例，确保测试隔离性"
         context_files: ["apps/server/src/tests/integration/setup.ts", "apps/server/src/tests/helpers/database.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-T002~c3"
     name: "认证和授权测试辅助"
@@ -77,7 +77,7 @@ criteria:
       ai:
         prompt: "检查认证测试辅助工具，验证有JWT生成函数，测试用户自动登录，支持不同角色权限测试"
         context_files: ["apps/server/src/tests/helpers/auth.ts", "apps/server/src/tests/factories/auth.helper.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-T002~c4"
     name: "API响应验证工具"
@@ -99,7 +99,7 @@ criteria:
       ai:
         prompt: "检查API响应验证工具，验证有JSON Schema验证器，响应结构验证，错误响应格式检查工具"
         context_files: ["apps/server/src/tests/helpers/validator.ts", "apps/server/src/tests/schemas/api-response.schema.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-T002~c5"
     name: "集成测试示例套件"
@@ -121,7 +121,7 @@ criteria:
       ai:
         prompt: "检查集成测试示例，验证有.auth.integration.test.ts、.user.integration.test.ts等，覆盖CRUD操作和错误场景"
         context_files: ["apps/server/src/tests/integration/auth.integration.test.ts", "apps/server/src/tests/integration/user.integration.test.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-T002~c6"
     name: "API契约测试"
@@ -143,4 +143,4 @@ criteria:
       ai:
         prompt: "检查API契约测试配置，验证有OpenAPI契约文件，契约测试验证请求/响应符合规范"
         context_files: ["apps/server/src/tests/contract/api.contract.test.ts", "apps/server/openapi.yaml"]
-        model: "claude-sonnet-4-6"
+        

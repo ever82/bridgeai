@@ -35,7 +35,7 @@ criteria:
       ai:
         prompt: "检查消息气泡组件实现，验证有 MessageBubble 组件，支持 isMe、type、status、timestamp props，有长按菜单功能"
         context_files: ["apps/mobile/src/components/MessageBubble/MessageBubble.tsx", "apps/mobile/src/components/MessageBubble/MessageBubble.test.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI004a~c2"
     name: "消息输入框"
@@ -57,7 +57,7 @@ criteria:
       ai:
         prompt: "检查消息输入框实现，验证有 ChatInput 组件，支持多行输入、高度自适应、发送按钮、语音切换，有 @mention 功能"
         context_files: ["apps/mobile/src/components/ChatInput/ChatInput.tsx", "apps/mobile/src/components/ChatInput/ChatInput.test.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI004a~c3"
     name: "附件与媒体选择"
@@ -79,7 +79,7 @@ criteria:
       ai:
         prompt: "检查附件功能实现，验证有 AttachmentPicker 组件，支持图片选择和文件上传，有进度指示和预览功能"
         context_files: ["apps/mobile/src/components/AttachmentPicker/AttachmentPicker.tsx", "apps/mobile/src/components/AttachmentPicker/ImagePicker.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI004a~c4"
     name: "快捷回复与建议"
@@ -101,7 +101,7 @@ criteria:
       ai:
         prompt: "检查快捷回复实现，验证有 QuickReplies 组件，显示 Agent 建议的回复选项，支持点击快速发送，基于对话上下文更新建议"
         context_files: ["apps/mobile/src/components/QuickReplies/QuickReplies.tsx", "apps/mobile/src/screens/Chat/components/SuggestedReplies.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI004a~c5"
     name: "人机切换指示器"
@@ -123,7 +123,7 @@ criteria:
       ai:
         prompt: "检查人机切换指示器实现，验证有 IdentitySwitcher 或 SpeakerIndicator 组件，显示当前对话者身份，有切换按钮和确认对话框"
         context_files: ["apps/mobile/src/components/SpeakerIndicator/SpeakerIndicator.tsx", "apps/mobile/src/screens/Chat/components/IdentitySwitcher.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI004a~c6"
     name: "表情与贴纸选择器"
@@ -145,4 +145,4 @@ criteria:
       ai:
         prompt: "检查表情选择器实现，验证有 EmojiPicker 组件，支持表情分类、最近使用、搜索功能，有展开收起动画"
         context_files: ["apps/mobile/src/components/EmojiPicker/EmojiPicker.tsx", "apps/mobile/src/components/EmojiPicker/EmojiData.ts"]
-        model: "claude-sonnet-4-6"
+        

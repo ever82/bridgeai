@@ -32,7 +32,7 @@ criteria:
       ai:
         prompt: "检查数据加密策略，验证使用AES-256加密静态数据，TLS 1.3保护传输，确认敏感字段有标记"
         context_files: ["apps/server/src/utils/encryption.ts", "apps/server/src/config/security.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC002~c2"
     name: "密钥管理系统"
@@ -53,7 +53,7 @@ criteria:
       ai:
         prompt: "检查密钥管理系统，验证主密钥存储在环境变量/KMS，DEK分离存储，确认有密钥轮换机制"
         context_files: ["apps/server/src/services/keyManagement.ts", ".env.example", "apps/server/src/config/kms.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC002~c3"
     name: "数据库字段加密"
@@ -74,7 +74,7 @@ criteria:
       ai:
         prompt: "检查数据库字段加密，验证敏感字段(phone, idCard)加密存储，确认Prisma中间件自动加解密"
         context_files: ["apps/server/src/middleware/encryption.ts", "prisma/schema.prisma"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC002~c4"
     name: "数据脱敏处理"
@@ -95,7 +95,7 @@ criteria:
       ai:
         prompt: "检查数据脱敏，验证日志中敏感信息被脱敏，API响应中手机号显示为138****8888格式，确认有脱敏工具函数"
         context_files: ["apps/server/src/utils/mask.ts", "apps/server/src/middleware/logging.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC002~c5"
     name: "PII数据保护合规"
@@ -116,7 +116,7 @@ criteria:
       ai:
         prompt: "检查PII保护，验证有PII数据标识，访问需要特殊权限，确认数据导出加密，删除时安全擦除"
         context_files: ["apps/server/src/models/user.ts", "apps/server/src/services/dataExport.ts", "apps/server/src/services/gdpr.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC002~c6"
     name: "加密性能优化"
@@ -137,4 +137,4 @@ criteria:
       ai:
         prompt: "检查加密性能，验证有缓存机制减少重复加密，确认有健康检查端点，审计日志记录密钥操作"
         context_files: ["apps/server/src/utils/encryption.ts", "apps/server/src/services/monitoring.ts"]
-        model: "claude-sonnet-4-6"
+        

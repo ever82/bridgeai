@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查群聊同步，验证有群成员和设置的实时同步机制"
         context_files: ["apps/server/src/socket/handlers/groupHandler.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM002c~c2"
     name: "在线状态显示"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查在线状态，验证有在线状态显示组件和订阅机制"
         context_files: ["apps/mobile/src/components/OnlineStatus/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM002c~c3"
     name: "正在输入状态"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查输入状态，验证有 typing indicator 实现和广播"
         context_files: ["apps/mobile/src/components/TypingIndicator/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM002c~c4"
     name: "已读状态展示"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查已读展示，验证有消息已读状态 UI 和已读人数显示"
         context_files: ["apps/mobile/src/components/Chat/MessageStatus.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM002c~c5"
     name: "状态聚合和优化"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查状态优化，验证有状态批量处理和缓存机制"
         context_files: ["apps/server/src/services/stateAggregation.ts"]
-        model: "claude-sonnet-4-6"
+        

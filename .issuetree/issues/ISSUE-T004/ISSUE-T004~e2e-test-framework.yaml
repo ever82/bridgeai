@@ -36,7 +36,7 @@ criteria:
       ai:
         prompt: "检查Detox配置，验证有.detoxrc.js或package.json detox配置，包含iOS和Android构建配置，设备配置正确"
         context_files: [".detoxrc.js", "apps/mobile/package.json", "apps/mobile/e2e/config.json"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-T004~c2"
     name: "E2E测试数据管理"
@@ -58,7 +58,7 @@ criteria:
       ai:
         prompt: "检查E2E测试数据管理，验证有数据种子脚本，测试前后数据清理，API辅助创建测试数据"
         context_files: ["apps/mobile/e2e/support/data-setup.ts", "apps/mobile/e2e/support/data-cleanup.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-T004~c3"
     name: "页面对象模式(POM)"
@@ -80,7 +80,7 @@ criteria:
       ai:
         prompt: "检查页面对象模式实现，验证有pages目录，包含LoginPage、HomePage、ChatPage等，使用testID定位元素"
         context_files: ["apps/mobile/e2e/pages/LoginPage.ts", "apps/mobile/e2e/pages/HomePage.ts", "apps/mobile/e2e/pages/BasePage.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-T004~c4"
     name: "用户流程E2E测试"
@@ -102,7 +102,7 @@ criteria:
       ai:
         prompt: "检查E2E测试用例，验证有完整用户流程测试，如注册->登录->创建Agent->匹配的完整流程测试"
         context_files: ["apps/mobile/e2e/tests/auth-flow.test.ts", "apps/mobile/e2e/tests/agent-creation.test.ts", "apps/mobile/e2e/tests/matching.test.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-T004~c5"
     name: "E2E测试报告和截图"
@@ -124,7 +124,7 @@ criteria:
       ai:
         prompt: "检查E2E测试报告配置，验证有失败截图机制，测试报告输出格式(HTML/JUnit)，CI集成配置"
         context_files: ["apps/mobile/e2e/config.json", ".github/workflows/e2e.yml"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-T004~c6"
     name: "并行测试和CI集成"
@@ -146,4 +146,4 @@ criteria:
       ai:
         prompt: "检查并行测试配置，验证有CI工作流配置E2E测试，支持多设备并行，有测试结果通知机制"
         context_files: [".github/workflows/e2e.yml", "apps/mobile/e2e/parallel-config.js"]
-        model: "claude-sonnet-4-6"
+        

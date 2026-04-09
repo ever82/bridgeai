@@ -34,7 +34,7 @@ criteria:
       ai:
         prompt: "检查智能筛选，验证有智能筛选算法和评分系统"
         context_files: ["apps/server/src/services/smartFilter.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M002~c2"
     name: "排序策略"
@@ -55,7 +55,7 @@ criteria:
       ai:
         prompt: "检查排序策略，验证有多种排序方式支持"
         context_files: ["apps/server/src/utils/sorting.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M002~c3"
     name: "筛选结果 API"
@@ -76,7 +76,7 @@ criteria:
       ai:
         prompt: "检查筛选 API，验证有 /api/v1/agents/search 端点支持复杂筛选"
         context_files: ["apps/server/src/routes/agents.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M002~c4"
     name: "筛选结果界面"
@@ -97,7 +97,7 @@ criteria:
       ai:
         prompt: "检查结果界面，验证有 AgentList 组件展示筛选结果"
         context_files: ["apps/mobile/src/components/AgentList/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M002~c5"
     name: "个性化推荐"
@@ -118,4 +118,4 @@ criteria:
       ai:
         prompt: "检查推荐系统，验证有推荐算法和个性化排序"
         context_files: ["apps/server/src/services/recommendation.ts"]
-        model: "claude-sonnet-4-6"
+        

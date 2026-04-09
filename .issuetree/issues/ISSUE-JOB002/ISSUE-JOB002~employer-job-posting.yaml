@@ -35,7 +35,7 @@ criteria:
       ai:
         prompt: "检查招聘方画像模型，验证有EmployerProfile类型定义，包含公司信息、认证状态、在招职位等字段"
         context_files: ["packages/shared/src/types/employer.ts", "packages/shared/src/schemas/employerSchema.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB002~c2"
     name: "职位信息数据模型"
@@ -59,7 +59,7 @@ criteria:
       ai:
         prompt: "检查职位数据模型，验证有JobPosting类型定义，包含完整职位信息字段和要求，支持工作方式选择"
         context_files: ["packages/shared/src/types/jobPosting.ts", "packages/shared/src/schemas/jobPostingSchema.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB002~c3"
     name: "AI职位需求提炼服务"
@@ -82,7 +82,7 @@ criteria:
       ai:
         prompt: "检查AI职位提炼服务，验证有JobExtractionService，能将自然语言职位描述转换为结构化数据，包含技能提取和竞争力分析"
         context_files: ["apps/server/src/services/job/jobExtraction.ts", "apps/server/src/ai/prompts/jobExtraction.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB002~c4"
     name: "职位发布与管理API"
@@ -104,7 +104,7 @@ criteria:
       ai:
         prompt: "检查职位API，验证有完整的RESTful端点(/api/job/postings)，支持职位发布、状态管理和数据统计功能"
         context_files: ["apps/server/src/routes/job/jobPostingRoutes.ts", "apps/server/src/controllers/job/jobPostingController.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB002~c5"
     name: "移动端职位管理界面"
@@ -126,7 +126,7 @@ criteria:
       ai:
         prompt: "检查移动端职位管理界面，验证有JobPostingScreen和ReceivedResumesScreen组件，支持职位发布和简历管理"
         context_files: ["apps/mobile/src/screens/Job/JobPostingScreen.tsx", "apps/mobile/src/screens/Job/ReceivedResumesScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB002~c6"
     name: "公司认证与信誉系统"
@@ -148,4 +148,4 @@ criteria:
       ai:
         prompt: "检查公司认证系统，验证有CompanyVerification流程，包含企业邮箱验证和营业执照审核功能"
         context_files: ["apps/server/src/services/job/companyVerification.ts", "apps/mobile/src/screens/Job/CompanyVerificationScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        

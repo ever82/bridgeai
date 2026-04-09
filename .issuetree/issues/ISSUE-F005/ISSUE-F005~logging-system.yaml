@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查日志配置，验证使用 Pino 或 Winston，确认日志级别可配置且支持结构化输出"
         context_files: ["apps/server/src/utils/logger.ts", "apps/server/src/config/logger.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F005~c2"
     name: "请求上下文追踪"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查请求上下文实现，验证每个请求有唯一 requestId，确认日志中包含 trace 信息"
         context_files: ["apps/server/src/middleware/requestContext.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F005~c3"
     name: "多输出目标配置"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查日志输出配置，验证有 console 和 file transports，确认错误日志单独存储"
         context_files: ["apps/server/src/config/logger.ts", "logs/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F005~c4"
     name: "敏感信息脱敏"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查日志脱敏实现，验证密码、token 等敏感字段被自动脱敏，确认有脱敏测试"
         context_files: ["apps/server/src/utils/logger.ts", "apps/server/src/utils/sanitizer.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F005~c5"
     name: "移动端日志集成"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查移动端日志配置，验证有日志库集成和崩溃报告配置"
         context_files: ["apps/mobile/src/utils/logger.ts"]
-        model: "claude-sonnet-4-6"
+        

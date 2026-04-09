@@ -15,6 +15,13 @@ prerequisites:
   - ISSUE-AI004
 logic: sufficient_necessary
 created_at: 2026-04-08
+complexity:
+  level: "H"
+  description: "涉及多方Agent通信、AI服务调用、人机交互等复杂场景"
+  lines: 1200
+  test_time: 10
+  split: true
+  split_strategy: "按流程拆分: 群聊创建 → 协商对话 → 对比推荐"
 criteria:
   - id: AD003-CR01
     name: 匹配商家群聊创建
@@ -23,6 +30,12 @@ criteria:
       自动创建消费者-多商家的群聊房间，所有参与方Agent加入群聊。
     status: pending
     coverage: 92
+    coverage_detail:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
     verification:
       ai_prompt: |
         验证当匹配结果产生时，系统是否自动调用COM002c创建群聊房间，
@@ -36,6 +49,12 @@ criteria:
       清晰表达消费需求、预算范围、期望优惠等信息，启动协商流程。
     status: pending
     coverage: 90
+    coverage_detail:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
     verification:
       ai_prompt: |
         测试AI004服务是否根据AD001配置的消费画像生成合适的开场白，
@@ -49,6 +68,12 @@ criteria:
       包括优惠内容、使用条件、额外福利等，由AI004生成自然语言描述。
     status: pending
     coverage: 88
+    coverage_detail:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
     verification:
       ai_prompt: |
         验证商家Agent是否基于AD002配置的优惠方案生成介绍消息，
@@ -62,6 +87,12 @@ criteria:
       如询问是否可以叠加其他优惠、是否可以延长有效期、是否还有其他隐藏福利等。
     status: pending
     coverage: 85
+    coverage_detail:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
     verification:
       ai_prompt: |
         测试消费者Agent是否能够针对商家报价提出合理的协商问题，
@@ -75,6 +106,12 @@ criteria:
       综合考虑优惠力度、适用性、便利性等因素，生成对比报告供用户决策。
     status: pending
     coverage: 87
+    coverage_detail:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
     verification:
       ai_prompt: |
         验证当收到3个以上商家方案时，AI002是否能生成结构化的对比分析，
@@ -88,6 +125,12 @@ criteria:
       消费者可以一键接受推荐、选择其他方案或继续协商，实现人机协作决策。
     status: pending
     coverage: 90
+    coverage_detail:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
     verification:
       ai_prompt: |
         检查协商完成后系统是否生成推荐报告，包含推荐商家、优惠详情、

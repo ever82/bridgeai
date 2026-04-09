@@ -33,7 +33,7 @@ criteria:
       ai:
         prompt: "检查多模态适配，验证有VisionModelAdapter类或接口，GPT4VisionAdapter和ClaudeVisionAdapter实现，支持image URL/base64输入"
         context_files: ["apps/server/src/services/ai/adapters/vision/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI005~c2"
     name: "图像内容分析"
@@ -55,7 +55,7 @@ criteria:
       ai:
         prompt: "检查内容分析，验证有ImageAnalysisService类，包含analyze方法返回scene_description、detected_objects、activity_tags、visual_features"
         context_files: ["apps/server/src/services/ai/imageAnalysisService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI005~c3"
     name: "图像安全审核"
@@ -77,7 +77,7 @@ criteria:
       ai:
         prompt: "检查安全审核，验证有ImageModerationService类，包含moderate方法返回is_safe、violation_type、confidence_score，支持NSFW、violence检测"
         context_files: ["apps/server/src/services/ai/imageModerationService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI005~c4"
     name: "OCR文字识别"
@@ -99,7 +99,7 @@ criteria:
       ai:
         prompt: "检查OCR实现，验证有OCRService类，包含extractText方法返回extracted_text、language、bounding_boxes，支持多语言和手写体"
         context_files: ["apps/server/src/services/ai/ocrService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI005~c5"
     name: "AI相册检索"
@@ -121,7 +121,7 @@ criteria:
       ai:
         prompt: "检查相册检索，验证有ImageSearchService类，包含searchByText方法使用自然语言描述搜索，生成image_embeddings存储到向量数据库"
         context_files: ["apps/server/src/services/ai/imageSearchService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI005~c6"
     name: "Vision API端点"
@@ -143,4 +143,4 @@ criteria:
       ai:
         prompt: "检查Vision API，验证有/api/v1/ai/vision/analyze、/moderate、/ocr端点，支持multipart/form-data上传，返回analysis结果"
         context_files: ["apps/server/src/routes/ai/vision.ts"]
-        model: "claude-sonnet-4-6"
+        

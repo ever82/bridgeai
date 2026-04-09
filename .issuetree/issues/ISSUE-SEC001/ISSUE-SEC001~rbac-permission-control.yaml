@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查RBAC角色定义，验证数据库中有Role模型，包含user/admin/moderator角色，确认有角色管理API"
         context_files: ["apps/server/src/models/role.ts", "apps/server/src/routes/admin/roles.ts", "prisma/schema.prisma"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC001~c2"
     name: "权限粒度定义"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查权限系统，验证有Permission模型，支持resource:action格式，确认权限中间件authorize()正确实现"
         context_files: ["apps/server/src/models/permission.ts", "apps/server/src/middleware/rbac.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC001~c3"
     name: "资源访问控制"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查资源访问控制，验证API路由有权限检查，确认用户只能访问自己的数据，管理员可访问所有数据"
         context_files: ["apps/server/src/middleware/rbac.ts", "apps/server/src/routes/api/v1/*.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC001~c4"
     name: "角色权限中间件"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查RBAC中间件，验证有requireRole和requirePermission中间件，确认继承关系正确处理，返回403状态码"
         context_files: ["apps/server/src/middleware/rbac.ts", "apps/server/src/middleware/auth.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC001~c5"
     name: "动态权限管理"
@@ -115,7 +115,7 @@ criteria:
       ai:
         prompt: "检查动态权限管理，验证权限变更后实时生效，确认有审计日志记录，检查缓存刷新机制"
         context_files: ["apps/server/src/services/rbacService.ts", "apps/server/src/services/auditService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC001~c6"
     name: "API权限文档"
@@ -136,4 +136,4 @@ criteria:
       ai:
         prompt: "检查权限文档，验证有API权限矩阵，角色权限对照表，确认测试用例覆盖所有权限场景"
         context_files: ["docs/permissions.md", "apps/server/tests/rbac.test.ts"]
-        model: "claude-sonnet-4-6"
+        

@@ -34,7 +34,7 @@ criteria:
       ai:
         prompt: "检查自然语言图像搜索，验证有描述输入、AI内容理解、语义匹配和搜索历史功能"
         context_files: ["apps/mobile/src/screens/VisionShare/SearchAlbum.tsx", "apps/server/src/services/ai/imageSemanticSearch.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS006~c2"
     name: "图像标签和索引"
@@ -56,7 +56,7 @@ criteria:
       ai:
         prompt: "检查图像标签索引，验证有自动标签、内容描述、多维度索引和分类体系功能"
         context_files: ["apps/server/src/services/ai/imageIndexing.ts", "apps/server/src/services/search/imageSearchIndex.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS006~c3"
     name: "历史任务时间线"
@@ -78,7 +78,7 @@ criteria:
       ai:
         prompt: "检查历史任务时间线，验证有时间排序、可视化、日期定位、筛选和快捷入口功能"
         context_files: ["apps/mobile/src/screens/VisionShare/TaskTimeline.tsx", "apps/mobile/src/components/Timeline/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS006~c4"
     name: "智能相册分类"
@@ -100,7 +100,7 @@ criteria:
       ai:
         prompt: "检查智能相册分类，验证有自动分组、地理聚类、时间分组、场景分类和自定义功能"
         context_files: ["apps/mobile/src/screens/VisionShare/SmartAlbums.tsx", "apps/server/src/services/ai/albumClustering.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS006~c5"
     name: "收藏和标记系统"
@@ -122,7 +122,7 @@ criteria:
       ai:
         prompt: "检查收藏标记系统，验证有收藏功能、收藏夹管理、标签、搜索和同步功能"
         context_files: ["apps/mobile/src/components/Favorite/", "apps/server/src/services/favorite/favoriteService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS006~c6"
     name: "搜索推荐和发现"
@@ -144,4 +144,4 @@ criteria:
       ai:
         prompt: "检查搜索推荐发现，验证有热门推荐、历史建议、相似推荐和搜索趋势功能"
         context_files: ["apps/mobile/src/components/SearchRecommendations/", "apps/server/src/services/search/searchRecommendation.ts"]
-        model: "claude-sonnet-4-6"
+        

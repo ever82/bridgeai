@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查验证中间件，验证使用 Zod 或 Joi，确认有 validate 中间件用于 body/params/query 验证"
         context_files: ["apps/server/src/middleware/validation.ts", "apps/server/src/schemas/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A004~c2"
     name: "API 请求 Schema 定义"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查 Schema 定义，验证有 userSchemas.ts, agentSchemas.ts 等文件，确认类型定义完整"
         context_files: ["apps/server/src/schemas/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A004~c3"
     name: "XSS 和注入防护"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查安全防护，验证有 xss 中间件，确认所有数据库查询使用参数化查询"
         context_files: ["apps/server/src/middleware/security.ts", "apps/server/src/utils/sanitizer.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A004~c4"
     name: "移动端表单验证"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查移动端表单验证，验证使用 React Hook Form + Zod/Yup，确认验证规则与后端一致"
         context_files: ["apps/mobile/src/utils/validation.ts", "apps/mobile/src/hooks/useForm.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A004~c5"
     name: "文件上传验证"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查文件上传验证，验证 multer 配置了 fileFilter 和 limits，确认有文件类型白名单"
         context_files: ["apps/server/src/middleware/upload.ts"]
-        model: "claude-sonnet-4-6"
+        

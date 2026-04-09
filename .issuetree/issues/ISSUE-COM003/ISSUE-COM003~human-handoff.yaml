@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查切换状态，验证有 HandoffStatus 枚举和相关状态管理"
         context_files: ["packages/shared/src/types/handoff.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM003~c2"
     name: "切换请求和响应"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查切换流程，验证有 handoff 请求和响应的 socket 事件"
         context_files: ["apps/server/src/socket/handlers/handoffHandler.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM003~c3"
     name: "切换界面组件"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查切换界面，验证有 HandoffButton 和 HandoffStatus 组件"
         context_files: ["apps/mobile/src/components/Handoff/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM003~c4"
     name: "消息发送者标识"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查发送者标识，验证有 senderType 字段和切换过渡 UI"
         context_files: ["apps/mobile/src/components/Chat/SenderIndicator.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM003~c5"
     name: "切换权限控制"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查切换权限，验证有 handoff 权限检查和限制机制"
         context_files: ["apps/server/src/middleware/handoffAuth.ts"]
-        model: "claude-sonnet-4-6"
+        

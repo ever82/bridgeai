@@ -32,7 +32,7 @@ criteria:
       ai:
         prompt: "检查信用分数据模型，验证Prisma schema中有CreditScore、CreditHistory、CreditFactor模型，确认字段完整性和关联关系"
         context_files: ["packages/database/prisma/schema.prisma", "packages/shared/src/types/credit.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-CR001~c2"
     name: "多维度信用评分算法"
@@ -54,7 +54,7 @@ criteria:
       ai:
         prompt: "检查信用分计算算法，验证有CreditScoreService.calculateScore方法，确认多维度评分逻辑和权重配置正确"
         context_files: ["apps/server/src/services/creditScoreService.ts", "apps/server/src/config/creditWeights.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-CR001~c3"
     name: "信用等级系统"
@@ -75,7 +75,7 @@ criteria:
       ai:
         prompt: "检查信用等级系统，验证有CreditLevel枚举定义，确认等级划分规则和权益配置正确"
         context_files: ["packages/shared/src/types/credit.ts", "apps/server/src/config/creditLevels.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-CR001~c4"
     name: "信用分API接口"
@@ -97,7 +97,7 @@ criteria:
       ai:
         prompt: "检查信用分API，验证有/credit/score、/credit/history、/credit/factors端点，确认响应格式和权限控制"
         context_files: ["apps/server/src/routes/credit.ts", "apps/server/src/services/creditScoreService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-CR001~c5"
     name: "信用分实时更新机制"
@@ -118,7 +118,7 @@ criteria:
       ai:
         prompt: "检查信用分更新机制，验证有事件监听和定时任务实现，确认更新频率控制和异常检测逻辑"
         context_files: ["apps/server/src/services/creditScoreService.ts", "apps/server/src/jobs/creditUpdateJob.ts", "apps/server/src/events/creditEventHandlers.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-CR001~c6"
     name: "信用分过滤与匹配集成"
@@ -139,4 +139,4 @@ criteria:
       ai:
         prompt: "检查信用分匹配集成，验证匹配查询支持信用分筛选，确认信用分权重在排序算法中的应用"
         context_files: ["apps/server/src/services/matchingService.ts", "apps/server/src/services/queryBuilder.ts"]
-        model: "claude-sonnet-4-6"
+        

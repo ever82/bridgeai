@@ -32,7 +32,7 @@ criteria:
       ai:
         prompt: "检查 schema.prisma 是否存在且包含 datasource db 和 generator client 配置，确认 prisma 目录结构和客户端生成配置正确"
         context_files: ["prisma/schema.prisma", "packages/database/src/client.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F002~c2"
     name: "核心数据模型定义"
@@ -54,7 +54,7 @@ criteria:
       ai:
         prompt: "检查 schema.prisma 中是否定义了 User, Agent, AgentProfile, Scene 等模型，验证字段类型、关系和索引配置"
         context_files: ["prisma/schema.prisma"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F002~c3"
     name: "消息和通信模型"
@@ -75,7 +75,7 @@ criteria:
       ai:
         prompt: "检查 schema.prisma 中是否定义了 ChatRoom, Message, Connection 等通信相关模型，验证消息状态枚举和关系"
         context_files: ["prisma/schema.prisma"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F002~c4"
     name: "匹配和信用模型"
@@ -96,7 +96,7 @@ criteria:
       ai:
         prompt: "检查 schema.prisma 中是否定义了 Match, CreditRecord, Transaction, Rating 等模型，验证字段和关系"
         context_files: ["prisma/schema.prisma"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F002~c5"
     name: "数据库迁移系统"
@@ -117,7 +117,7 @@ criteria:
       ai:
         prompt: "检查 prisma/migrations/ 目录是否存在迁移文件，验证 package.json 中有 prisma migrate 相关脚本命令"
         context_files: ["prisma/migrations/migration_lock.toml", "package.json"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F002~c6"
     name: "种子数据和数据库工具"
@@ -138,7 +138,7 @@ criteria:
       ai:
         prompt: "检查 prisma/seed.ts 是否存在，验证种子数据包含测试用户、Agent和场景配置，确认有 db:seed 脚本"
         context_files: ["prisma/seed.ts", "package.json"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F002~c7"
     name: "数据库索引和性能优化"
@@ -159,4 +159,4 @@ criteria:
       ai:
         prompt: "检查 schema.prisma 中关键模型是否有 @@index 定义，验证常用查询字段(如 userId, agentId, createdAt)有索引"
         context_files: ["prisma/schema.prisma"]
-        model: "claude-sonnet-4-6"
+        

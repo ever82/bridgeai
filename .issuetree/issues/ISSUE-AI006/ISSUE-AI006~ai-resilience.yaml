@@ -34,7 +34,7 @@ criteria:
       ai:
         prompt: "检查降级策略，验证有DegradationStrategy类或配置，支持5个降级级别，每个级别有对应的fallback实现和触发条件"
         context_files: ["apps/server/src/services/ai/resilience/degradationStrategy.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI006~c2"
     name: "智能降级决策器"
@@ -56,7 +56,7 @@ criteria:
       ai:
         prompt: "检查降级决策器，验证有DegradationController类，监控error_rate、latency_percentile，自动选择degradation_level，记录decision_reason"
         context_files: ["apps/server/src/services/ai/resilience/degradationController.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI006~c3"
     name: "模板回复系统"
@@ -78,7 +78,7 @@ criteria:
       ai:
         prompt: "检查模板系统，验证有TemplateResponseService类，包含templates配置，支持变量插值{{variable}}，根据scene和intent匹配模板"
         context_files: ["apps/server/src/services/ai/resilience/templateResponseService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI006~c4"
     name: "响应缓存回退"
@@ -100,7 +100,7 @@ criteria:
       ai:
         prompt: "检查缓存回退，验证有AIResponseCacheService类，使用similarity_hash索引缓存，支持TTL过期，degradation时返回stale cache"
         context_files: ["apps/server/src/services/ai/resilience/responseCacheService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI006~c5"
     name: "异步处理队列"
@@ -122,7 +122,7 @@ criteria:
       ai:
         prompt: "检查异步队列，验证有AIAsyncQueueService类，使用Redis/Bull队列，支持priority、retry_count，提供job status查询API"
         context_files: ["apps/server/src/services/ai/resilience/asyncQueueService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI006~c6"
     name: "降级监控与告警"
@@ -144,4 +144,4 @@ criteria:
       ai:
         prompt: "检查降级监控，验证有ResilienceMetricsService类，暴露降级metrics：ai_degradation_events_total、degradation_duration_seconds，集成告警"
         context_files: ["apps/server/src/services/ai/resilience/metricsService.ts"]
-        model: "claude-sonnet-4-6"
+        

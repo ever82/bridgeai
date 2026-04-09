@@ -1,0 +1,68 @@
+You are working on task TASK-1 in issue ISSUE-F001.
+
+Task: 项目初始化与开发环境搭建
+
+## 任务描述
+初始化 VisionShare Agent通信平台项目，搭建完整的开发环境。
+
+## 需要完成的工作
+
+### 1. Monorepo 结构初始化
+- 使用 pnpm workspaces 设置 monorepo 结构
+- 创建 apps/server (Express 后端)
+- 创建 apps/mobile (Expo React Native)
+- 创建 packages/shared (共享类型和工具)
+- 创建 packages/config (共享配置)
+
+### 2. TypeScript 配置
+- 根目录 tsconfig.json 基础配置
+- 各子项目继承并扩展配置
+- 配置严格类型检查
+
+### 3. 代码规范工具配置
+- ESLint 配置 (@typescript-eslint)
+- Prettier 配置
+- Husky + lint-staged (Git 钩子)
+- commitlint (提交信息规范)
+
+### 4. 环境变量配置管理
+- .env.example 模板
+- dotenv 配置
+- 不同环境配置文件(.env.development, .env.production)
+
+### 5. 开发文档和 README
+- 根目录 README.md
+- CONTRIBUTING.md
+- docs/ 目录和架构文档
+
+### 6. Git 工作流配置
+- PR 模板
+- CI/CD 基础工作流
+
+### 7. 数据库和 PostGIS 安装
+- PostgreSQL 数据库创建 (visionshare_dev)
+- PostGIS 扩展安装和启用
+- 数据库连接配置
+
+## 验收标准
+参考 Issue 文件了解每个 criteria 的详细验收标准: .issuetree/issues/ISSUE-F001/ISSUE-F001~project-init.yaml
+
+## 执行步骤
+
+1. 首先读取 Issue 文件了解完整的验收标准
+2. 从第1项开始逐项完成
+3. 每完成一项，更新对应的 criteria 状态
+4. 最后更新 task YAML 和 Issue YAML 的状态
+
+## 重要提示
+- 这是项目初始化，会创建大量文件
+- 使用 pnpm 作为包管理器
+- 确保所有配置文件都正确关联
+- 数据库部分需要在本地 PostgreSQL 中执行 SQL
+
+完成后，更新 task YAML:
+- status: completed
+- result: 简述完成的成果
+- session_end: 完成时间
+- execution_time_minutes: 执行时间
+- files_touched: 修改的文件列表

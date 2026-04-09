@@ -34,7 +34,7 @@ criteria:
       ai:
         prompt: "检查 DSL 设计，验证有 QueryDSL 类型定义和 JSON Schema 验证"
         context_files: ["packages/shared/src/types/queryDSL.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M001a~c2"
     name: "查询解析器"
@@ -55,7 +55,7 @@ criteria:
       ai:
         prompt: "检查解析器实现，验证有 QueryParser 类可解析和验证 DSL"
         context_files: ["apps/server/src/utils/queryParser.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M001a~c3"
     name: "可视化查询构建器"
@@ -76,7 +76,7 @@ criteria:
       ai:
         prompt: "检查可视化构建器，验证有 QueryBuilder 组件支持拖拽和条件组合"
         context_files: ["apps/mobile/src/components/QueryBuilder/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M001a~c4"
     name: "DSL 到 SQL 转换"
@@ -97,7 +97,7 @@ criteria:
       ai:
         prompt: "检查查询转换，验证有 DSL 到 Prisma 查询的转换逻辑"
         context_files: ["apps/server/src/utils/dslToPrisma.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M001a~c5"
     name: "查询保存和分享"
@@ -118,4 +118,4 @@ criteria:
       ai:
         prompt: "检查查询保存，验证有 SavedQuery 模型和分享功能"
         context_files: ["apps/server/src/services/savedQueryService.ts"]
-        model: "claude-sonnet-4-6"
+        

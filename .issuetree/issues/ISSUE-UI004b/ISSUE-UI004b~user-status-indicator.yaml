@@ -33,7 +33,7 @@ criteria:
       ai:
         prompt: "检查头像状态指示器实现，验证有 UserAvatar 或 StatusAvatar 组件，支持显示在线状态点和身份边框区分"
         context_files: ["apps/mobile/src/components/UserAvatar/UserAvatar.tsx", "apps/mobile/src/components/UserAvatar/UserAvatar.test.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI004b~c2"
     name: "输入状态指示器"
@@ -55,7 +55,7 @@ criteria:
       ai:
         prompt: "检查输入状态指示器实现，验证有 TypingIndicator 组件，显示 '正在输入' 动画，支持区分人类输入和 Agent 思考状态"
         context_files: ["apps/mobile/src/components/TypingIndicator/TypingIndicator.tsx", "apps/mobile/src/components/TypingIndicator/TypingIndicator.test.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI004b~c3"
     name: "身份标识徽章"
@@ -77,7 +77,7 @@ criteria:
       ai:
         prompt: "检查身份标识实现，验证有 IdentityBadge 组件，支持 Agent、Verified、SceneType 等徽章类型，可配置位置"
         context_files: ["apps/mobile/src/components/IdentityBadge/IdentityBadge.tsx", "apps/mobile/src/components/IdentityBadge/IdentityBadge.test.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI004b~c4"
     name: "最后在线时间显示"
@@ -99,7 +99,7 @@ criteria:
       ai:
         prompt: "检查在线时间显示实现，验证有 LastSeen 或 OnlineTime 组件，支持相对时间格式化和自动更新"
         context_files: ["apps/mobile/src/components/LastSeen/LastSeen.tsx", "apps/mobile/src/utils/timeFormat.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI004b~c5"
     name: "聊天列表状态预览"
@@ -121,7 +121,7 @@ criteria:
       ai:
         prompt: "检查聊天列表状态实现，验证有 ConversationItem 组件，显示最后消息预览、未读数角标、置顶和静音标识"
         context_files: ["apps/mobile/src/components/ConversationItem/ConversationItem.tsx", "apps/mobile/src/screens/Messages/components/ChatListItem.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI004b~c6"
     name: "信用分与评分展示"
@@ -143,4 +143,4 @@ criteria:
       ai:
         prompt: "检查信用分展示实现，验证有 CreditScore 或 TrustBadge 组件，显示用户信用分和等级，支持点击查看详情"
         context_files: ["apps/mobile/src/components/CreditScore/CreditScore.tsx", "apps/mobile/src/components/TrustBadge/TrustBadge.tsx"]
-        model: "claude-sonnet-4-6"
+        

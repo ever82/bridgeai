@@ -1,0 +1,61 @@
+---
+id: "ISSUE-CR003d"
+issue_number: 603.4
+title: "积分钱包UI与VisionShare场景支付"
+slug: "points-wallet-ui-and-payment"
+status: "pending"
+description: |
+  积分钱包移动端UI实现，以及VisionShare场景下的积分支付功能。
+  包括积分钱包界面、交易记录展示、照片购买积分支付等应用层功能。
+prerequisites:
+  - "ISSUE-CR003c"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-CR003d~c1"
+    name: "积分钱包UI"
+    description: |
+      移动端积分界面:
+      - 积分钱包首页(余额、收支概览)
+      - 交易记录列表(时间轴展示)
+      - 交易详情页(含关联场景)
+      - 积分获取任务列表
+      - 积分充值入口(预留)
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查积分UI，验证有PointsWalletScreen、TransactionList、PointsTaskList组件，确认余额展示和交易记录"
+        context_files: ["apps/mobile/src/screens/Points/PointsWalletScreen.tsx", "apps/mobile/src/components/Points/TransactionList.tsx", "apps/mobile/src/components/Points/PointsTaskList.tsx"]
+        
+
+  - id: "ISSUE-CR003d~c2"
+    name: "VisionShare场景积分支付"
+    description: |
+      积分在VisionShare场景的应用:
+      - 照片查看积分支付接口
+      - 支付前余额检查
+      - 积分支付给供给方(平台抽成)
+      - 支付成功后的照片解锁
+      - 支付失败和退款处理
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查VisionShare积分支付，验证有PhotoPaymentService，确认支付流程、解锁机制和分账逻辑"
+        context_files: ["apps/server/src/services/visionSharePaymentService.ts", "apps/server/src/services/photoUnlockService.ts"]
+        
+
+parent_issue: "ISSUE-CR003"
+part_of: "积分系统基础与交易记录拆分"
+estimated_lines: 300

@@ -33,7 +33,7 @@ criteria:
       ai:
         prompt: "检查 L1 模型定义，验证有 L1Profile 类型包含 age, gender, location, occupation 字段"
         context_files: ["packages/shared/src/types/agentProfile.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002a~c2"
     name: "L1 数据存储"
@@ -54,7 +54,7 @@ criteria:
       ai:
         prompt: "检查 Prisma schema，验证 AgentProfile 模型有 l1Data JSON 字段和相关索引"
         context_files: ["prisma/schema.prisma"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002a~c3"
     name: "L1 编辑 API"
@@ -75,7 +75,7 @@ criteria:
       ai:
         prompt: "检查 L1 API，验证有 /api/v1/agents/:id/profile/l1 端点支持 GET/PUT"
         context_files: ["apps/server/src/routes/agentProfile.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002a~c4"
     name: "L1 编辑界面"
@@ -96,7 +96,7 @@ criteria:
       ai:
         prompt: "检查 L1 编辑界面，验证有 L1ProfileForm 组件包含年龄、性别、地域等字段"
         context_files: ["apps/mobile/src/components/AgentProfile/L1ProfileForm.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002a~c5"
     name: "L1 完成度计算"
@@ -117,4 +117,4 @@ criteria:
       ai:
         prompt: "检查完成度计算，验证有 calculateL1Completion 函数，确认返回 0-100 百分比"
         context_files: ["apps/server/src/utils/profileCompletion.ts"]
-        model: "claude-sonnet-4-6"
+        

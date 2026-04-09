@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查匹配度模型，验证有 MatchScoringModel 和维度权重配置"
         context_files: ["apps/server/src/services/matchAlgorithm.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M003~c2"
     name: "L1/L2/L3 匹配计算"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查分层匹配，验证有 L1Matcher, L2Matcher, L3Matcher 分别计算匹配度"
         context_files: ["apps/server/src/services/matchers/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M003~c3"
     name: "匹配度 API"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查匹配度 API，验证有 /api/v1/matches/calculate 端点计算匹配度"
         context_files: ["apps/server/src/routes/matches.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M003~c4"
     name: "匹配度可视化"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查匹配度可视化，验证有 MatchScore 组件展示匹配分数和维度分析"
         context_files: ["apps/mobile/src/components/MatchScore/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M003~c5"
     name: "匹配算法 A/B 测试"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查 A/B 测试，验证有算法版本切换和效果追踪"
         context_files: ["apps/server/src/services/matchABTest.ts"]
-        model: "claude-sonnet-4-6"
+        

@@ -1,0 +1,61 @@
+---
+id: "ISSUE-INT002c"
+issue_number: 1202.3
+title: "端到端性能验证"
+slug: "end-to-end-performance"
+status: "pending"
+description: |
+  执行端到端性能验证，包括移动端性能测试优化和全链路压力测试。
+  这是ISSUE-INT002的阶段3，依赖于实时服务性能优化完成（INT002b），
+  是整个性能优化工作的最终验证阶段。
+  目标：移动端体验流畅（启动<3s，滚动60fps），系统支撑1000+并发用户。
+parent_issue: "ISSUE-INT002"
+phase: 3
+prerequisites:
+  - "ISSUE-INT002b"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-INT002c~c1"
+    name: "移动端性能测试与优化"
+    description: |
+      移动端性能优化:
+      - 应用启动时间测试与优化(目标<3s)
+      - 列表滚动性能测试(目标60fps)
+      - 内存占用分析与优化
+      - 图片加载与缓存性能优化
+      - 电池消耗与网络流量优化
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查移动端性能测试实现，验证有性能测试方案，包含启动时间、滚动性能、内存分析、图片缓存等测试"
+        context_files: ["apps/mobile/src/performance/", "apps/mobile/e2e/perf.test.ts", "apps/mobile/metro.config.js"]
+        
+
+  - id: "ISSUE-INT002c~c2"
+    name: "全链路压力测试与报告"
+    description: |
+      全链路压力测试:
+      - 端到端场景压测(模拟真实用户行为)
+      - 峰值流量承载能力测试
+      - 系统瓶颈识别与优化报告
+      - 监控告警阈值配置验证
+      - 性能测试报告与优化建议文档
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查全链路压力测试实现，验证有完整压测方案、瓶颈分析报告、性能优化建议，确认监控告警配置"
+        context_files: ["perf/full-load-test.yml", "perf/reports/", "docs/PERFORMANCE_REPORT.md", "apps/server/src/monitoring/"]
+        

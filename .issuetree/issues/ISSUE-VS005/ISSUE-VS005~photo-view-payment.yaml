@@ -3,144 +3,26 @@ id: "ISSUE-VS005"
 issue_number: 705
 title: "照片查看与积分支付"
 slug: "photo-view-payment"
+type: "epic"
 status: "pending"
 description: |
   实现VisionShare场景的照片查看和积分支付功能。需求方可以浏览供给方上传的照片，
   使用积分支付解锁高清原图查看权限。支持支付确认、交易记录、退款申诉等完整流程。
+
+  此Issue已拆分为以下子Issue:
+  - ISSUE-VS005a: 照片浏览与画廊展示
+  - ISSUE-VS005b: 积分支付与高清解锁
+  - ISSUE-VS005c: 交易记录与退款申诉
+  - ISSUE-VS005d: 支付安全与风控
+sub_issues:
+  - "ISSUE-VS005a"
+  - "ISSUE-VS005b"
+  - "ISSUE-VS005c"
+  - "ISSUE-VS005d"
 prerequisites:
   - "ISSUE-VS004"
   - "ISSUE-CR003"
 created_at: "2026-04-08"
+updated_at: "2026-04-09"
 logic: sufficient_necessary
-criteria:
-  - id: "ISSUE-VS005~c1"
-    name: "照片浏览界面"
-    description: |
-      浏览功能:
-      - 缩略图网格展示
-      - 大图预览和缩放
-      - 左右滑动切换
-      - 图片信息展示(拍摄时间/地点)
-      - 下载和收藏按钮
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查照片浏览界面，验证有缩略图网格、大图预览、滑动切换和图片信息展示"
-        context_files: ["apps/mobile/src/screens/VisionShare/PhotoGallery.tsx", "apps/mobile/src/components/PhotoViewer/"]
-        model: "claude-sonnet-4-6"
-
-  - id: "ISSUE-VS005~c2"
-    name: "积分支付系统"
-    description: |
-      支付功能:
-      - 单图/多图支付选项
-      - 积分余额显示
-      - 支付确认弹窗
-      - 支付密码验证
-      - 支付结果通知
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查积分支付系统，验证有支付选项、余额显示、确认弹窗、密码验证和结果通知"
-        context_files: ["apps/mobile/src/screens/VisionShare/PhotoPayment.tsx", "apps/server/src/services/payment/creditPayment.ts"]
-        model: "claude-sonnet-4-6"
-
-  - id: "ISSUE-VS005~c3"
-    name: "交易记录管理"
-    description: |
-      记录功能:
-      - 支付历史列表
-      - 交易详情查看
-      - 收支明细统计
-      - 交易状态追踪
-      - 交易记录导出
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查交易记录管理，验证有历史列表、详情查看、统计和状态追踪功能"
-        context_files: ["apps/mobile/src/screens/VisionShare/TransactionHistory.tsx", "apps/server/src/services/payment/transactionService.ts"]
-        model: "claude-sonnet-4-6"
-
-  - id: "ISSUE-VS005~c4"
-    name: "高清原图解锁"
-    description: |
-      解锁机制:
-      - 支付后自动解锁
-      - 原图下载链接生成
-      - 下载次数限制
-      - 有效期管理
-      - 水印移除
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查高清原图解锁，验证有自动解锁、下载链接、次数限制、有效期和水印处理"
-        context_files: ["apps/server/src/services/visionShare/unlockService.ts", "apps/server/src/middleware/downloadAuth.ts"]
-        model: "claude-sonnet-4-6"
-
-  - id: "ISSUE-VS005~c5"
-    name: "退款和申诉"
-    description: |
-      售后功能:
-      - 退款申请入口
-      - 退款原因选择
-      - 退款审核流程
-      - 积分退回处理
-      - 申诉状态查询
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查退款和申诉功能，验证有申请入口、原因选择、审核流程和积分退回处理"
-        context_files: ["apps/mobile/src/screens/VisionShare/RefundRequest.tsx", "apps/server/src/services/payment/refundService.ts"]
-        model: "claude-sonnet-4-6"
-
-  - id: "ISSUE-VS005~c6"
-    name: "支付安全与风控"
-    description: |
-      安全功能:
-      - 支付行为风控检测
-      - 异常交易预警
-      - 支付限额控制
-      - 设备指纹识别
-      - 支付日志审计
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查支付安全风控，验证有行为检测、异常预警、限额控制、设备指纹和日志审计功能"
-        context_files: ["apps/server/src/services/security/paymentRisk.ts", "apps/server/src/middleware/paymentLimit.ts"]
-        model: "claude-sonnet-4-6"
+criteria: []

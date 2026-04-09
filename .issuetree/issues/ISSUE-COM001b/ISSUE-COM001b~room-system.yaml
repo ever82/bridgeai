@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查房间管理，验证有 RoomService 管理房间生命周期"
         context_files: ["apps/server/src/services/roomService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM001b~c2"
     name: "用户连接追踪"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查连接追踪，验证有 Connection 模型存储用户连接信息"
         context_files: ["apps/server/src/services/connectionService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM001b~c3"
     name: "房间广播"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查广播机制，验证有 room.broadcast 和 io.to 使用"
         context_files: ["apps/server/src/socket/handlers/roomHandler.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM001b~c4"
     name: "在线状态管理"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查在线状态，验证有 online/offline 状态管理和变更通知"
         context_files: ["apps/server/src/services/presenceService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM001b~c5"
     name: "连接安全"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查连接安全，验证有房间权限检查和加入验证"
         context_files: ["apps/server/src/socket/middleware/roomAuth.ts"]
-        model: "claude-sonnet-4-6"
+        

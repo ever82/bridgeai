@@ -32,7 +32,7 @@ criteria:
       ai:
         prompt: "检查用户注册 API 实现，验证有 /api/v1/auth/register 端点，包含手机号/邮箱验证和密码加密"
         context_files: ["apps/server/src/routes/auth.ts", "apps/server/src/services/authService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A001~c2"
     name: "用户登录 API"
@@ -53,7 +53,7 @@ criteria:
       ai:
         prompt: "检查用户登录 API 实现，验证有 /api/v1/auth/login 端点，包含密码验证和失败限制机制"
         context_files: ["apps/server/src/routes/auth.ts", "apps/server/src/services/authService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A001~c3"
     name: "第三方登录集成"
@@ -74,7 +74,7 @@ criteria:
       ai:
         prompt: "检查第三方登录实现，验证有微信和 Google OAuth 集成，确认回调处理正确"
         context_files: ["apps/server/src/services/oauthService.ts", "apps/server/src/routes/oauth.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A001~c4"
     name: "密码重置功能"
@@ -95,7 +95,7 @@ criteria:
       ai:
         prompt: "检查密码重置功能，验证有 /api/v1/auth/forgot-password 和 reset-password 端点"
         context_files: ["apps/server/src/routes/auth.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A001~c5"
     name: "移动端登录界面"
@@ -116,7 +116,7 @@ criteria:
       ai:
         prompt: "检查移动端登录界面，验证有 LoginScreen 组件，包含表单验证和第三方登录按钮"
         context_files: ["apps/mobile/src/screens/Auth/LoginScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A001~c6"
     name: "注册界面和安全"
@@ -137,4 +137,4 @@ criteria:
       ai:
         prompt: "检查注册实现，验证密码使用 bcrypt 加密存储，确认有密码强度验证"
         context_files: ["apps/server/src/services/authService.ts", "apps/mobile/src/screens/Auth/RegisterScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        

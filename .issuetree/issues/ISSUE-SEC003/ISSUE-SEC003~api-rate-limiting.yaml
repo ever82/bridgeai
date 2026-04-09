@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查API限流，验证使用express-rate-limit或redis-rate-limiter，确认IP和用户级别限流，响应头包含限流信息"
         context_files: ["apps/server/src/middleware/rateLimiter.ts", "apps/server/src/config/rateLimit.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC003~c2"
     name: "DDoS防护"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查DDoS防护，验证有异常流量检测，确认自动封禁高频IP，有慢速攻击防护(timeout配置)"
         context_files: ["apps/server/src/middleware/ddosProtection.ts", "apps/server/src/services/firewall.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC003~c3"
     name: "IP黑白名单"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查IP黑白名单，验证有IP过滤中间件，支持白名单优先或黑名单模式，确认可配置地理位置限制"
         context_files: ["apps/server/src/middleware/ipFilter.ts", "apps/server/src/config/ipList.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC003~c4"
     name: "请求安全校验"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查请求安全，验证有body-parser大小限制，helmet中间件配置，输入验证防止SQL注入和XSS"
         context_files: ["apps/server/src/middleware/security.ts", "apps/server/src/app.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC003~c5"
     name: "CORS与安全头"
@@ -115,7 +115,7 @@ criteria:
       ai:
         prompt: "检查CORS配置，验证有白名单限制，确认设置X-Content-Type-Options/X-Frame-Options/CSP等安全头"
         context_files: ["apps/server/src/middleware/cors.ts", "apps/server/src/app.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC003~c6"
     name: "安全事件监控"
@@ -136,4 +136,4 @@ criteria:
       ai:
         prompt: "检查安全监控，验证有攻击日志记录，异常统计报表，确认有管理界面查看封禁IP和解封功能"
         context_files: ["apps/server/src/services/securityMonitor.ts", "apps/admin/src/pages/SecurityDashboard.tsx"]
-        model: "claude-sonnet-4-6"
+        

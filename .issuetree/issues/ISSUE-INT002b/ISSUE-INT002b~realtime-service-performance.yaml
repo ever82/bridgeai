@@ -1,0 +1,60 @@
+---
+id: "ISSUE-INT002b"
+issue_number: 1202.2
+title: "实时服务性能优化"
+slug: "realtime-service-performance"
+status: "pending"
+description: |
+  执行实时服务层性能优化与压力测试，包括WebSocket实时通信性能调优和AI服务熔断降级策略验证。
+  这是ISSUE-INT002的阶段2，依赖于基础设施性能优化完成（INT002a）。
+  目标：WebSocket延迟<100ms，AI服务在高负载下稳定运行并具备降级能力。
+parent_issue: "ISSUE-INT002"
+phase: 2
+prerequisites:
+  - "ISSUE-INT002a"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-INT002b~c1"
+    name: "WebSocket实时通信性能测试"
+    description: |
+      WebSocket性能测试:
+      - Socket.io连接数压力测试(目标1000+并发)
+      - 消息广播延迟测试(目标<100ms)
+      - 房间系统并发性能验证
+      - 在线状态同步性能测试
+      - 连接断开重连稳定性测试
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查WebSocket性能测试实现，验证有Socket.io压测脚本，包含连接并发、消息延迟、房间系统等场景测试"
+        context_files: ["perf/websocket-load-test.yml", "apps/server/src/socket/", "apps/e2e/tests/websocket/websocket-perf.test.ts"]
+        
+
+  - id: "ISSUE-INT002b~c2"
+    name: "AI服务性能与熔断策略验证"
+    description: |
+      AI服务性能测试:
+      - LLM API响应时间优化与测试
+      - AI服务熔断器触发与恢复验证
+      - 多LLM降级策略压力测试
+      - 图像分析Vision API性能测试
+      - AI服务队列与并发控制验证
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查AI服务性能测试实现，验证熔断器配置、降级策略、并发控制，确认有AI服务压力测试脚本"
+        context_files: ["apps/server/src/services/ai/", "apps/server/src/circuit-breaker/", "perf/ai-service-load-test.yml"]
+        

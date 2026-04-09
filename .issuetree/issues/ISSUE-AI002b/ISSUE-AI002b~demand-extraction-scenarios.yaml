@@ -1,0 +1,58 @@
+---
+id: "ISSUE-AI002b"
+issue_number: 503
+slug: "demand-extraction-scenarios"
+title: "需求智能提炼服务 - 场景提取器实现"
+status: "pending"
+description: |
+  实现需求智能提炼服务的场景特定提取器，支持VisionShare、AgentDate、
+  AgentJob、AgentAd等多个业务场景的需求提取，以及需求澄清对话机制，
+  处理缺失信息的多轮对话交互。
+prerequisites:
+  - "ISSUE-AI002a"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-AI002b~c2"
+    name: "场景特定提取器"
+    description: |
+      场景适配:
+      - VisionShare需求提取(拍照时间、类型、预算)
+      - AgentDate需求提取(择偶标准、兴趣、时间)
+      - AgentJob需求提取(技能、经验、薪资期望)
+      - AgentAd需求提取(商品、预算、品牌偏好)
+      - 场景检测自动路由
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查场景提取器，验证有SceneSpecificExtractor接口，VisionShareExtractor、AgentDateExtractor等实现类继承基类"
+        context_files: ["apps/server/src/services/ai/extractors/"]
+        
+
+  - id: "ISSUE-AI002b~c4"
+    name: "需求澄清对话"
+    description: |
+      澄清机制:
+      - 缺失信息检测
+      - 澄清问题生成
+      - 多轮对话管理
+      - 用户输入重解析
+      - 澄清历史记录
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查澄清对话，验证有ClarificationService类，能检测缺失字段，生成clarification_questions，管理多轮对话状态"
+        context_files: ["apps/server/src/services/ai/clarificationService.ts"]
+        

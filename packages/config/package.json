@@ -1,0 +1,22 @@
+{
+  "name": "@visionshare/config",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VisionShare 共享配置文件 (ESLint, TypeScript等)",
+  "main": "./eslint/index.js",
+  "exports": {
+    "./eslint": "./eslint/index.js",
+    "./typescript": "./typescript/base.json"
+  },
+  "scripts": {
+    "clean": "echo 'No build needed'"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  }
+}

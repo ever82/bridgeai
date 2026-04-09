@@ -25,4 +25,4 @@ criteria:
       ai:
         prompt: "检查 IssueTree.md 是否包含完整的 issues 图"
         context_files: [".issuetree/IssueTree.md"]
-        model: "claude-sonnet-4-6"
+        

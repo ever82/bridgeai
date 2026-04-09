@@ -32,7 +32,7 @@ criteria:
       ai:
         prompt: "检查披露级别，验证有 DisclosureLevel 枚举和字段级披露控制"
         context_files: ["packages/shared/src/types/disclosure.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C007~c2"
     name: "字段级披露设置"
@@ -53,7 +53,7 @@ criteria:
       ai:
         prompt: "检查字段披露设置，验证有 DisclosureSettings 组件可配置每个字段"
         context_files: ["apps/mobile/src/screens/Settings/DisclosureSettings.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C007~c3"
     name: "披露权限检查"
@@ -74,7 +74,7 @@ criteria:
       ai:
         prompt: "检查披露权限，验证有 canViewField 函数检查用户访问权限"
         context_files: ["apps/server/src/services/disclosureService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C007~c4"
     name: "信息披露预览"
@@ -95,7 +95,7 @@ criteria:
       ai:
         prompt: "检查预览功能，验证有 DisclosurePreview 组件展示不同角色的可见信息"
         context_files: ["apps/mobile/src/components/Disclosure/DisclosurePreview.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C007~c5"
     name: "披露变更通知"
@@ -116,4 +116,4 @@ criteria:
       ai:
         prompt: "检查变更通知，验证有披露变更记录和通知机制"
         context_files: ["apps/server/src/services/disclosureAuditService.ts"]
-        model: "claude-sonnet-4-6"
+        

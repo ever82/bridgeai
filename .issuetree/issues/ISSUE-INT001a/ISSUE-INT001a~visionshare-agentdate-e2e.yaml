@@ -1,0 +1,80 @@
+---
+id: "ISSUE-INT001a"
+issue_number: 1201
+parent_issue: "ISSUE-INT001"
+title: "VisionShare + AgentDate E2E测试"
+slug: "visionshare-agentdate-e2e"
+status: "pending"
+description: |
+  VisionShare和AgentDate两大核心场景的端到端集成测试。
+  验证需求发布到接单、相机拍照与AI脱敏、照片查看与积分支付、
+  AI相册智能检索、交友画像配置、Agent匹配推荐、Agent间对话匹配、
+  双向同意引荐、人机切换等完整流程。
+  确保用户场景模块与核心服务模块的协同工作正常。
+prerequisites:
+  - "ISSUE-VS001"
+  - "ISSUE-VS002"
+  - "ISSUE-VS003"
+  - "ISSUE-VS004"
+  - "ISSUE-VS005"
+  - "ISSUE-VS006"
+  - "ISSUE-VS007"
+  - "ISSUE-DATE001"
+  - "ISSUE-DATE002"
+  - "ISSUE-DATE003"
+  - "ISSUE-DATE004"
+  - "ISSUE-UI001"
+  - "ISSUE-UI002"
+  - "ISSUE-UI003"
+  - "ISSUE-UI004a"
+  - "ISSUE-UI004b"
+  - "ISSUE-UI004c"
+  - "ISSUE-UI005"
+  - "ISSUE-UI006"
+  - "ISSUE-UI007"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-INT001a~c1"
+    name: "VisionShare场景完整流程测试"
+    description: |
+      VisionShare端到端测试:
+      - 需求发布到接单完整流程
+      - 相机拍照上传与AI脱敏处理
+      - 照片查看与积分支付流程
+      - AI相册智能检索功能验证
+      - 移动端与后端API集成验证
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查VisionShare端到端测试实现，验证包含完整的场景测试用例，覆盖需求发布、接单、拍照上传、AI脱敏、积分支付等全流程"
+        context_files: ["apps/e2e/tests/visionshare/", "apps/e2e/tests/scenarios/visionshare.test.ts"]
+        
+
+  - id: "ISSUE-INT001a~c2"
+    name: "AgentDate场景完整流程测试"
+    description: |
+      AgentDate端到端测试:
+      - 交友画像配置完整流程
+      - Agent主动匹配推荐机制
+      - Agent间对话匹配流程
+      - 双向同意引荐机制验证
+      - 人机切换场景测试
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: required
+    verification:
+      ai:
+        prompt: "检查AgentDate端到端测试实现，验证包含交友画像配置、匹配推荐、Agent对话、双向引荐等完整流程测试"
+        context_files: ["apps/e2e/tests/agentdate/", "apps/e2e/tests/scenarios/agentdate.test.ts"]
+        

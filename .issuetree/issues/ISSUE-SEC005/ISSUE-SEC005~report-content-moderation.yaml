@@ -32,7 +32,7 @@ criteria:
       ai:
         prompt: "检查举报系统，验证有Report模型，支持message/user/content类型，确认可上传证据，有举报记录查询"
         context_files: ["apps/server/src/models/report.ts", "apps/server/src/routes/reports.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC005~c2"
     name: "内容审核工作流"
@@ -53,7 +53,7 @@ criteria:
       ai:
         prompt: "检查审核工作流，验证有审核队列，管理员可查看处理，AI预标记可疑内容，状态从pending到resolved"
         context_files: ["apps/server/src/services/moderationQueue.ts", "apps/admin/src/pages/ModerationDashboard.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC005~c3"
     name: "违规处理机制"
@@ -74,7 +74,7 @@ criteria:
       ai:
         prompt: "检查违规处理，验证可删除/隐藏违规内容，用户收到警告，支持禁言封禁，信用分系统联动扣分"
         context_files: ["apps/server/src/services/violationHandler.ts", "apps/server/src/services/creditService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC005~c4"
     name: "申诉与复核"
@@ -95,7 +95,7 @@ criteria:
       ai:
         prompt: "检查申诉系统，验证用户可提交申诉，有独立审核流程，申诉成功可撤销处罚和恢复信用分"
         context_files: ["apps/server/src/models/appeal.ts", "apps/server/src/services/appealService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC005~c5"
     name: "敏感词过滤"
@@ -116,7 +116,7 @@ criteria:
       ai:
         prompt: "检查敏感词过滤，验证有敏感词库，实时检测消息内容，支持正则，分级处理(提示/替换/拦截)"
         context_files: ["apps/server/src/services/sensitiveWordFilter.ts", "apps/server/src/config/sensitiveWords.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-SEC005~c6"
     name: "审核数据统计"
@@ -137,4 +137,4 @@ criteria:
       ai:
         prompt: "检查审核统计，验证有审核量/处理时效报表，违规类型分布，确认举报准确率统计(有效举报/总举报)"
         context_files: ["apps/admin/src/pages/ModerationStats.tsx", "apps/server/src/services/moderationAnalytics.ts"]
-        model: "claude-sonnet-4-6"
+        

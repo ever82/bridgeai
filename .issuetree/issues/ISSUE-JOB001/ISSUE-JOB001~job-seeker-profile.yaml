@@ -35,7 +35,7 @@ criteria:
       ai:
         prompt: "检查求职画像数据模型，验证有JobSeekerProfile类型定义，包含技能、工作经历、教育背景、期望薪资等字段，使用Zod进行验证"
         context_files: ["packages/shared/src/types/jobSeeker.ts", "packages/shared/src/schemas/jobSeekerSchema.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB001~c2"
     name: "AI简历提炼服务"
@@ -57,7 +57,7 @@ criteria:
       ai:
         prompt: "检查AI简历提炼服务，验证有ResumeExtractionService，能将自然语言转换为结构化简历数据，包含技能提取和工作经历解析"
         context_files: ["apps/server/src/services/job/resumeExtraction.ts", "apps/server/src/ai/prompts/resumeExtraction.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB001~c3"
     name: "简历隐私控制"
@@ -79,7 +79,7 @@ criteria:
       ai:
         prompt: "检查简历隐私控制，验证有ResumePrivacySettings类型，支持可见性设置和敏感信息脱敏，能通过中介联系保护隐私"
         context_files: ["packages/shared/src/types/resumePrivacy.ts", "apps/server/src/services/job/resumePrivacyService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB001~c4"
     name: "简历创建与编辑API"
@@ -101,7 +101,7 @@ criteria:
       ai:
         prompt: "检查简历API，验证有完整的RESTful端点(/api/job/resumes)，支持CRUD操作、版本管理和多简历功能"
         context_files: ["apps/server/src/routes/job/resumeRoutes.ts", "apps/server/src/controllers/job/resumeController.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB001~c5"
     name: "移动端简历编辑界面"
@@ -123,7 +123,7 @@ criteria:
       ai:
         prompt: "检查移动端简历界面，验证有ResumeEditScreen和ResumePreviewScreen组件，支持分步骤填写和技能标签选择"
         context_files: ["apps/mobile/src/screens/Job/ResumeEditScreen.tsx", "apps/mobile/src/screens/Job/ResumePreviewScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB001~c6"
     name: "简历投递与状态追踪"
@@ -145,4 +145,4 @@ criteria:
       ai:
         prompt: "检查简历投递系统，验证有ResumeSubmission模型和投递状态管理，支持向职位投递和状态追踪功能"
         context_files: ["apps/server/src/services/job/resumeSubmissionService.ts", "apps/mobile/src/screens/Job/SubmissionHistoryScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        

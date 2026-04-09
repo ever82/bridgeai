@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查 L2 Schema 定义，验证有各场景的 L2 Schema JSON 文件，包含字段类型和选项"
         context_files: ["packages/shared/src/schemas/l2/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002b~c2"
     name: "L2 动态表单生成"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查动态表单实现，验证有 DynamicForm 组件可根据 Schema 渲染不同类型的字段"
         context_files: ["apps/mobile/src/components/DynamicForm/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002b~c3"
     name: "L2 数据存储和查询"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查 L2 存储，验证 AgentProfile 有 l2Data JSON 字段和 GIN 索引"
         context_files: ["prisma/schema.prisma"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002b~c4"
     name: "L2 编辑和预览"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查 L2 编辑界面，验证有分步骤表单和预览功能"
         context_files: ["apps/mobile/src/screens/AgentProfile/L2ProfileScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002b~c5"
     name: "L2 验证和约束"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查 L2 验证，验证有 validateL2Data 函数根据 Schema 验证数据"
         context_files: ["apps/server/src/utils/l2Validation.ts"]
-        model: "claude-sonnet-4-6"
+        

@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查执行引擎，验证有 QueryEngine 类可编译和执行查询"
         context_files: ["apps/server/src/services/queryEngine.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M001b~c2"
     name: "查询缓存"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查查询缓存，验证有 QueryCache 实现和缓存策略"
         context_files: ["apps/server/src/services/queryCache.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M001b~c3"
     name: "实时结果更新"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查实时更新，验证有 WebSocket 推送查询结果更新"
         context_files: ["apps/server/src/services/realtimeQuery.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M001b~c4"
     name: "查询性能监控"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查性能监控，验证有 QueryMetrics 和慢查询日志"
         context_files: ["apps/server/src/services/queryMetrics.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-M001b~c5"
     name: "查询限流和配额"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查限流系统，验证有 queryRateLimiter 和配额管理"
         context_files: ["apps/server/src/middleware/queryRateLimit.ts"]
-        model: "claude-sonnet-4-6"
+        

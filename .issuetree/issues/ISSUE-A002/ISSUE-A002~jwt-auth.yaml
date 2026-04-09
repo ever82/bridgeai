@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查 JWT 实现，验证使用 jsonwebtoken 库，确认 Token 包含 userId, role, iat, exp 字段"
         context_files: ["apps/server/src/utils/jwt.ts", "apps/server/src/middleware/auth.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A002~c2"
     name: "Refresh Token 机制"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查 Refresh Token 实现，验证有 /api/v1/auth/refresh 端点，确认 Refresh Token 存储在数据库/Redis"
         context_files: ["apps/server/src/routes/auth.ts", "apps/server/src/services/tokenService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A002~c3"
     name: "认证中间件"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查认证中间件，验证 authenticate 中间件正确验证 JWT，并注入 req.user"
         context_files: ["apps/server/src/middleware/auth.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A002~c4"
     name: "Token 黑名单和撤销"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查 Token 黑名单实现，验证登出时将 Token 加入黑名单，确认使用 Redis 存储"
         context_files: ["apps/server/src/services/tokenService.ts", "apps/server/src/config/redis.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A002~c5"
     name: "移动端 Token 管理"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查移动端 Token 管理，验证使用 SecureStore/Keychain 存储 Token，确认 API 客户端自动处理 Token 刷新"
         context_files: ["apps/mobile/src/utils/auth.ts", "apps/mobile/src/api/client.ts"]
-        model: "claude-sonnet-4-6"
+        

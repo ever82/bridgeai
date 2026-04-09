@@ -32,7 +32,7 @@ criteria:
       ai:
         prompt: "检查底部 Tab 导航实现，验证有 BottomTabNavigator 或等效组件，包含 Home、Messages、Discover、Profile 四个 Tab，支持 badge 显示和切换动画"
         context_files: ["apps/mobile/src/navigation/BottomTabNavigator.tsx", "apps/mobile/src/navigation/AppNavigator.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI002~c2"
     name: "导航结构与路由配置"
@@ -54,7 +54,7 @@ criteria:
       ai:
         prompt: "检查导航结构实现，验证使用 @react-navigation/native 配置，有 AuthStack 和 MainStack 分离，路由参数有 TypeScript 类型定义，支持深链接"
         context_files: ["apps/mobile/src/navigation/AppNavigator.tsx", "apps/mobile/src/navigation/types.ts", "apps/mobile/src/navigation/linking.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI002~c3"
     name: "页面布局容器"
@@ -76,7 +76,7 @@ criteria:
       ai:
         prompt: "检查页面布局组件实现，验证有 ScreenContainer、Header、LoadingSkeleton、EmptyState、ErrorState 等组件，支持安全区域和滚动"
         context_files: ["apps/mobile/src/components/ScreenContainer/ScreenContainer.tsx", "apps/mobile/src/components/Header/Header.tsx", "apps/mobile/src/components/EmptyState/EmptyState.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI002~c4"
     name: "侧边抽屉导航"
@@ -98,7 +98,7 @@ criteria:
       ai:
         prompt: "检查侧边抽屉导航实现，验证有 DrawerNavigator 组件，包含用户头像、菜单列表，支持手势滑动和遮罩点击关闭"
         context_files: ["apps/mobile/src/navigation/DrawerNavigator.tsx", "apps/mobile/src/components/DrawerMenu/DrawerMenu.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI002~c5"
     name: "导航状态与权限控制"
@@ -120,7 +120,7 @@ criteria:
       ai:
         prompt: "检查导航状态管理实现，验证有基于 auth 状态的导航控制，路由守卫实现，导航状态持久化存储"
         context_files: ["apps/mobile/src/navigation/AuthGuard.tsx", "apps/mobile/src/hooks/useAuthNavigation.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI002~c6"
     name: "响应式布局适配"
@@ -142,4 +142,4 @@ criteria:
       ai:
         prompt: "检查响应式布局实现，验证使用了 react-native-safe-area-context，有横竖屏适配处理，键盘避免遮挡输入框的处理"
         context_files: ["apps/mobile/src/hooks/useScreenDimensions.ts", "apps/mobile/src/components/KeyboardAvoidingView/KeyboardAvoidingView.tsx"]
-        model: "claude-sonnet-4-6"
+        

@@ -33,7 +33,7 @@ criteria:
       ai:
         prompt: "检查Agent对话房间隔离机制，验证有双人隔离房间、状态管理、超时和轮次控制，确保用户在对话完成前不可见对方真实身份"
         context_files: ["apps/server/src/services/dating/agentConversationRoom.ts", "apps/server/src/services/dating/conversationStateManager.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE003~c2"
     name: "Agent对话生成与管理"
@@ -55,7 +55,7 @@ criteria:
       ai:
         prompt: "检查Agent对话生成与管理功能，验证能基于交友画像进行策略对话、话题引导、人设一致维护，并保持多轮上下文连贯"
         context_files: ["apps/server/src/services/ai/datingConversationService.ts", "apps/server/src/prompts/dating/conversation/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE003~c3"
     name: "对话质量实时评估"
@@ -77,7 +77,7 @@ criteria:
       ai:
         prompt: "检查对话质量实时评估系统，验证能监测流畅度、评估话题深度、分析参与度，并实时计算质量分数用于策略调整"
         context_files: ["apps/server/src/services/dating/conversationQualityService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE003~c4"
     name: "对话摘要与评估报告生成"
@@ -99,7 +99,7 @@ criteria:
       ai:
         prompt: "检查对话摘要与评估报告生成功能，验证能生成对话摘要、重新评估匹配度、提炼亮点、提示潜在问题并给出继续建议"
         context_files: ["apps/server/src/services/ai/conversationReportService.ts", "packages/shared/src/types/conversationReport.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE003~c5"
     name: "用户介入与决策界面"
@@ -122,7 +122,7 @@ criteria:
       ai:
         prompt: "检查用户介入与决策界面，验证有对话状态提示、完成通知、摘要查看、评估报告展示和用户决策操作功能"
         context_files: ["apps/mobile/src/screens/dating/ConversationReportScreen.tsx", "apps/mobile/src/components/dating/DecisionButtons.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE003~c6"
     name: "异常处理与安全机制"
@@ -144,4 +144,4 @@ criteria:
       ai:
         prompt: "检查异常处理与安全机制，验证有敏感话题检测、不当内容拦截、异常中断处理、紧急终止和争议上报功能"
         context_files: ["apps/server/src/services/dating/conversationSafetyService.ts", "apps/server/src/middleware/safety/"]
-        model: "claude-sonnet-4-6"
+        

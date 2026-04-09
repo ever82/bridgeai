@@ -25,7 +25,7 @@ criteria:
       ai:
         prompt: "检查 .issuetree/spec/CONCEPTS.md 是否存在且包含至少 5 个 CONCEPT-XXX 定义"
         context_files: [".issuetree/spec/CONCEPTS.md"]
-        model: "claude-sonnet-4-6"
+        
   - id: "ISSUE-DESIGN-1~c2"
     name: "PROJECT.md 已创建"
     description: "项目介绍文档，包含项目名称、描述、核心价值"
@@ -40,7 +40,7 @@ criteria:
       ai:
         prompt: "检查 .issuetree/spec/PROJECT.md 是否存在且包含项目名称和描述"
         context_files: [".issuetree/spec/PROJECT.md"]
-        model: "claude-sonnet-4-6"
+        
   - id: "ISSUE-DESIGN-1~c3"
     name: "TECH_STACK.md 已创建"
     description: "技术栈文档，包含编程语言、运行时、核心依赖"
@@ -55,7 +55,7 @@ criteria:
       ai:
         prompt: "检查 .issuetree/spec/TECH_STACK.md 是否存在且包含技术栈选择"
         context_files: [".issuetree/spec/TECH_STACK.md"]
-        model: "claude-sonnet-4-6"
+        
   - id: "ISSUE-DESIGN-1~c4"
     name: "ARCHITECTURE.md 已创建"
     description: "架构文档，包含目录结构、模块设计"
@@ -70,7 +70,7 @@ criteria:
       ai:
         prompt: "检查 .issuetree/spec/ARCHITECTURE.md 是否存在且包含架构设计"
         context_files: [".issuetree/spec/ARCHITECTURE.md"]
-        model: "claude-sonnet-4-6"
+        
   - id: "ISSUE-DESIGN-1~c5"
     name: "USER_STORIES.md 已创建"
     description: "用户故事文档，包含 3+ 个用户故事，ID 格式为 US-XXX-{slug}"
@@ -85,4 +85,4 @@ criteria:
       ai:
         prompt: "检查 .issuetree/spec/USER_STORIES.md 是否存在且包含至少 3 个 US-XXX 用户故事"
         context_files: [".issuetree/spec/USER_STORIES.md"]
-        model: "claude-sonnet-4-6"
+        

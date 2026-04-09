@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查用户资料 API，验证有 /api/v1/users/me 端点支持 GET/PUT，确认头像上传接口正确"
         context_files: ["apps/server/src/routes/users.ts", "apps/server/src/services/userService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A003~c2"
     name: "头像上传和存储"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查头像上传功能，验证使用 multer 处理上传，确认图片压缩和云存储集成"
         context_files: ["apps/server/src/routes/upload.ts", "apps/server/src/services/storageService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A003~c3"
     name: "用户资料界面"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查移动端资料界面，验证有 ProfileScreen 和 EditProfileScreen，确认表单验证正确"
         context_files: ["apps/mobile/src/screens/Profile/ProfileScreen.tsx", "apps/mobile/src/screens/Profile/EditProfileScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A003~c4"
     name: "隐私设置"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查隐私设置功能，验证有 PrivacySettings 接口，确认隐私选项存储在数据库"
         context_files: ["apps/server/src/routes/users.ts", "apps/mobile/src/screens/Settings/PrivacySettings.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-A003~c5"
     name: "账号安全设置"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查账号安全功能，验证有修改密码和绑定手机接口，确认需要验证当前密码"
         context_files: ["apps/server/src/routes/users.ts", "apps/mobile/src/screens/Settings/SecuritySettings.tsx"]
-        model: "claude-sonnet-4-6"
+        

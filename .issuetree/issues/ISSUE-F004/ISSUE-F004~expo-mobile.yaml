@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查 apps/mobile/ 目录是否有 Expo 项目结构，验证 app.json 和 package.json 配置正确"
         context_files: ["apps/mobile/app.json", "apps/mobile/package.json"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F004~c2"
     name: "导航结构配置"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查导航配置，验证使用 Expo Router 或 React Navigation，确认有 Tab 和 Stack 导航结构"
         context_files: ["apps/mobile/src/navigation/", "apps/mobile/app/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F004~c3"
     name: "全局状态管理"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查状态管理配置，验证有 store 定义、持久化配置和类型定义"
         context_files: ["apps/mobile/src/store/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F004~c4"
     name: "网络请求和 API 客户端"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查 API 客户端配置，验证有 baseURL 配置、拦截器处理和错误处理"
         context_files: ["apps/mobile/src/api/client.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F004~c5"
     name: "UI 组件库和主题"
@@ -115,7 +115,7 @@ criteria:
       ai:
         prompt: "检查 UI 组件和主题配置，验证有设计系统、主题定义和基础组件实现"
         context_files: ["apps/mobile/src/components/", "apps/mobile/src/theme/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F004~c6"
     name: "权限和原生模块配置"
@@ -136,4 +136,4 @@ criteria:
       ai:
         prompt: "检查 app.json 中的权限配置，验证有 camera, location, notifications 等权限声明"
         context_files: ["apps/mobile/app.json"]
-        model: "claude-sonnet-4-6"
+        

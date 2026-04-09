@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查过滤 DSL 定义，验证有 FilterDSL 类型支持条件表达式和逻辑组合"
         context_files: ["packages/shared/src/types/filter.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C004~c2"
     name: "查询构建器"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查查询构建器，验证有 QueryBuilder 类可将 DSL 转换为 Prisma 查询"
         context_files: ["apps/server/src/utils/queryBuilder.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C004~c3"
     name: "过滤界面组件"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查过滤界面，验证有 FilterPanel 组件支持添加条件和筛选"
         context_files: ["apps/mobile/src/components/FilterPanel/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C004~c4"
     name: "过滤 API"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查过滤 API，验证有 /api/v1/agents/filter 支持复杂查询条件"
         context_files: ["apps/server/src/routes/agents.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C004~c5"
     name: "过滤性能优化"
@@ -115,7 +115,7 @@ criteria:
       ai:
         prompt: "检查过滤优化，验证有数据库索引和查询缓存机制"
         context_files: ["prisma/schema.prisma", "apps/server/src/utils/filterCache.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C004~c6"
     name: "保存和复用筛选条件"
@@ -136,4 +136,4 @@ criteria:
       ai:
         prompt: "检查筛选器保存功能，验证有 SavedFilter 模型和 CRUD 接口"
         context_files: ["apps/server/src/services/savedFilterService.ts"]
-        model: "claude-sonnet-4-6"
+        

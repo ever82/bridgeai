@@ -32,7 +32,7 @@ criteria:
       ai:
         prompt: "检查信用筛选实现，验证有过滤条件支持 minCreditScore 和 creditLevel"
         context_files: ["apps/server/src/services/filterService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C005~c2"
     name: "信用门槛配置"
@@ -53,7 +53,7 @@ criteria:
       ai:
         prompt: "检查门槛配置，验证有场景信用门槛配置和豁免规则"
         context_files: ["apps/server/src/config/creditThresholds.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C005~c3"
     name: "信用筛选界面"
@@ -74,7 +74,7 @@ criteria:
       ai:
         prompt: "检查信用筛选界面，验证有 CreditFilter 组件包含滑块和等级选择"
         context_files: ["apps/mobile/src/components/FilterPanel/CreditFilter.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C005~c4"
     name: "信用不足提示"
@@ -95,4 +95,4 @@ criteria:
       ai:
         prompt: "检查信用不足处理，验证有 CreditInsufficient 提示组件和提升建议"
         context_files: ["apps/mobile/src/components/Credit/"]
-        model: "claude-sonnet-4-6"
+        

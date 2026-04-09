@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查 Agent 创建 API，验证有 /api/v1/agents POST 端点，包含 name, type, description 字段"
         context_files: ["apps/server/src/routes/agents.ts", "apps/server/src/services/agentService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C001~c2"
     name: "Agent 类型系统"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查 Agent 类型定义，验证有 AgentType 枚举包含 VISIONSHARE, AGENTDATE, AGENTJOB, AGENTAD"
         context_files: ["packages/shared/src/types/agent.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C001~c3"
     name: "Agent 状态管理"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查 Agent 状态管理，验证有 AgentStatus 枚举和状态转换验证"
         context_files: ["apps/server/src/services/agentService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C001~c4"
     name: "Agent 列表和查询"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查 Agent 查询 API，验证有 /api/v1/agents GET 端点支持筛选和分页"
         context_files: ["apps/server/src/routes/agents.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C001~c5"
     name: "移动端 Agent 管理界面"
@@ -106,7 +106,8 @@ criteria:
       - 空状态设计
     status: "pending"
     coverage:
-      unit: not_needed
+      unit: sufficient
+      unit_description: "针对关键UI组件（如AgentCard、CreateAgentWizard）的单元测试"
       integration: required
       e2e: required
       ai: sufficient
@@ -115,4 +116,4 @@ criteria:
       ai:
         prompt: "检查移动端 Agent 界面，验证有 AgentListScreen 和 CreateAgentScreen"
         context_files: ["apps/mobile/src/screens/Agent/AgentListScreen.tsx", "apps/mobile/src/screens/Agent/CreateAgentScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        

@@ -32,7 +32,7 @@ criteria:
       ai:
         prompt: "检查建议服务，验证有 generateSuggestions 函数调用 AI 生成建议"
         context_files: ["apps/server/src/services/ai/suggestionService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM005~c2"
     name: "建议展示界面"
@@ -53,7 +53,7 @@ criteria:
       ai:
         prompt: "检查建议界面，验证有 SuggestionBar 组件展示 AI 建议"
         context_files: ["apps/mobile/src/components/Chat/SuggestionBar.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM005~c3"
     name: "建议 API"
@@ -74,7 +74,7 @@ criteria:
       ai:
         prompt: "检查建议 API，验证有 /api/v1/chat/suggestions GET 端点"
         context_files: ["apps/server/src/routes/chat.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM005~c4"
     name: "建议反馈收集"
@@ -95,7 +95,7 @@ criteria:
       ai:
         prompt: "检查反馈收集，验证有建议反馈 API 和存储"
         context_files: ["apps/server/src/services/suggestionFeedbackService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM005~c5"
     name: "建议偏好设置"
@@ -116,4 +116,4 @@ criteria:
       ai:
         prompt: "检查偏好设置，验证有 SuggestionSettings 组件"
         context_files: ["apps/mobile/src/screens/Settings/SuggestionSettings.tsx"]
-        model: "claude-sonnet-4-6"
+        

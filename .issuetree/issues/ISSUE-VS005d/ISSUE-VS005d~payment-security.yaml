@@ -1,0 +1,37 @@
+---
+id: "ISSUE-VS005d"
+issue_number: 705
+parent: "ISSUE-VS005"
+title: "支付安全与风控"
+slug: "payment-security"
+status: "pending"
+description: |
+  实现VisionShare场景的支付安全和风控系统。
+  包括支付行为风控检测、异常交易预警、支付限额控制等安全功能。
+estimated_lines: 350
+prerequisites:
+  - "ISSUE-VS005b"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-VS005d~c1"
+    name: "支付安全与风控"
+    description: |
+      安全功能:
+      - 支付行为风控检测
+      - 异常交易预警
+      - 支付限额控制
+      - 设备指纹识别
+      - 支付日志审计
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查支付安全风控，验证有行为检测、异常预警、限额控制、设备指纹和日志审计功能"
+        context_files: ["apps/server/src/services/security/paymentRisk.ts", "apps/server/src/middleware/paymentLimit.ts"]
+        

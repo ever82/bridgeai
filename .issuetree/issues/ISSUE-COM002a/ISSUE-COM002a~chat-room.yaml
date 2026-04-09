@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查聊天房间模型，验证 ChatRoom 模型包含 type, participants, settings 字段"
         context_files: ["prisma/schema.prisma"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM002a~c2"
     name: "房间创建 API"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查房间创建 API，验证有 /api/v1/chat/rooms POST 端点"
         context_files: ["apps/server/src/routes/chat.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM002a~c3"
     name: "参与者管理"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查参与者管理，验证有 RoomParticipant 模型和相关 API"
         context_files: ["apps/server/src/services/participantService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM002a~c4"
     name: "房间列表和查询"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查房间查询，验证有 /api/v1/chat/rooms GET 端点返回用户房间列表"
         context_files: ["apps/server/src/routes/chat.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM002a~c5"
     name: "移动端房间列表界面"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查房间列表界面，验证有 ChatRoomList 组件展示房间和最后消息"
         context_files: ["apps/mobile/src/components/Chat/ChatRoomList.tsx"]
-        model: "claude-sonnet-4-6"
+        

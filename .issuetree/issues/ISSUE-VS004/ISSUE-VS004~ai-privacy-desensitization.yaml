@@ -34,7 +34,7 @@ criteria:
       ai:
         prompt: "检查AI敏感内容识别，验证有人脸、车牌、文字、物体检测和置信度评分功能"
         context_files: ["apps/server/src/services/ai/sensitiveContentDetection.ts", "apps/server/src/services/ai/visionAnalysis.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS004~c2"
     name: "脱敏处理算法"
@@ -49,14 +49,14 @@ criteria:
     coverage:
       unit: required
       integration: required
-      e2e: not_needed
+      e2e: required
       ai: sufficient
       manual: not_needed
     verification:
       ai:
         prompt: "检查脱敏处理算法，验证有模糊、马赛克、像素化、背景替换和边缘处理实现"
         context_files: ["apps/server/src/services/image/desensitization.ts", "apps/server/src/utils/imageProcessing.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS004~c3"
     name: "脱敏预览和编辑"
@@ -78,7 +78,7 @@ criteria:
       ai:
         prompt: "检查脱敏编辑界面，验证有区域标记、实时预览、手动调整和强度调节功能"
         context_files: ["apps/mobile/src/screens/VisionShare/PrivacyEditor.tsx", "apps/mobile/src/components/PrivacyEditor/DesensitizationControls.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS004~c4"
     name: "脱敏策略配置"
@@ -100,7 +100,7 @@ criteria:
       ai:
         prompt: "检查脱敏策略配置，验证有模板、自定义规则、自动开关、白名单和策略推荐功能"
         context_files: ["apps/server/src/services/privacy/desensitizationPolicy.ts", "apps/mobile/src/screens/Settings/PrivacySettings.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS004~c5"
     name: "隐私报告生成"
@@ -122,7 +122,7 @@ criteria:
       ai:
         prompt: "检查隐私报告生成，验证有敏感项列表、处理日志、风险评级和对比展示功能"
         context_files: ["apps/mobile/src/components/PrivacyReport/", "apps/server/src/services/privacy/privacyReport.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS004~c6"
     name: "AI辅助脱敏建议"
@@ -144,4 +144,15 @@ criteria:
       ai:
         prompt: "检查AI辅助脱敏建议，验证有场景建议、一键应用、等级建议和高亮提示功能"
         context_files: ["apps/server/src/services/ai/desensitizationAdvisor.ts", "apps/mobile/src/components/PrivacyEditor/AIRecommendations.tsx"]
-        model: "claude-sonnet-4-6"
+        
+
+complexity:
+  level: "H"
+  lines: 1450
+  test_time: 10
+  split: true
+  split_strategy: |
+    建议拆分为3个子Issue:
+    - ISSUE-VS004a: 核心引擎层 (c1, c2) - AI识别 + 脱敏算法
+    - ISSUE-VS004b: 交互层 (c3, c5) - 预览编辑 + 报告
+    - ISSUE-VS004c: 配置层 (c4, c6) - 策略配置 + AI建议

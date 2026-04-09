@@ -1,0 +1,81 @@
+---
+id: "ISSUE-AI003c"
+issue_number: 503
+parent: "ISSUE-AI003"
+title: "供给智能提炼服务 - 映射、补全与评估"
+slug: "supply-mapping-completion"
+status: "pending"
+description: |
+  实现供给结构化映射、信息补全和质量评估功能，
+  包含供给到L2模型的映射、智能补全建议和质量评估系统
+prerequisites:
+  - "ISSUE-AI003a"
+  - "ISSUE-AI003b"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-AI003c~c1"
+    name: "供给结构化映射"
+    description: |
+      映射系统:
+      - 供给字段到L2模型映射
+      - 价格/时间标准化
+      - 服务能力量化
+      - 资质等级映射
+      - 标签自动生成
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查供给映射，验证有SupplyToL2Mapper类，将供给字段映射到AgentL2Model，支持价格标准化、资质等级映射"
+        context_files: ["apps/server/src/services/ai/mappers/supplyToL2Mapper.ts"]
+        
+
+  - id: "ISSUE-AI003c~c2"
+    name: "供给信息补全"
+    description: |
+      补全机制:
+      - 信息缺失检测
+      - 智能补全建议
+      - 外部数据增强
+      - 默认值推断
+      - 补全确认流程
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查补全机制，验证有SupplyCompletionService类，能检测incomplete字段，生成completion_suggestions，支持外部数据查询"
+        context_files: ["apps/server/src/services/ai/completionService.ts"]
+        
+
+  - id: "ISSUE-AI003c~c3"
+    name: "供给质量评估"
+    description: |
+      评估系统:
+      - 描述完整性评分
+      - 信息可信度评估
+      - 竞争力分析
+      - 优化建议生成
+      - 质量等级划分
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查质量评估，验证有SupplyQualityAssessor类，包含assess方法，返回completeness_score、credibility_score和optimization_suggestions"
+        context_files: ["apps/server/src/services/ai/assessors/supplyQualityAssessor.ts"]
+        

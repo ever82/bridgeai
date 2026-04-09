@@ -34,7 +34,7 @@ criteria:
       ai:
         prompt: "检查 Agent 创建向导实现，验证有 CreateAgentWizard 组件，包含步骤条、场景选择、表单验证、草稿保存功能"
         context_files: ["apps/mobile/src/screens/Agent/CreateAgentWizard.tsx", "apps/mobile/src/screens/Agent/components/StepIndicator.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI005~c2"
     name: "基础信息配置表单"
@@ -56,7 +56,7 @@ criteria:
       ai:
         prompt: "检查基础信息表单实现，验证有 AgentBasicInfoForm 组件，包含名称、头像上传、描述、可见性设置，有完整表单验证"
         context_files: ["apps/mobile/src/screens/Agent/components/AgentBasicInfoForm.tsx", "apps/mobile/src/components/AvatarPicker/AvatarPicker.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI005~c3"
     name: "场景配置界面"
@@ -78,7 +78,7 @@ criteria:
       ai:
         prompt: "检查场景配置实现，验证有 SceneConfigForm 组件，根据选择的场景类型动态显示不同配置项，支持 VisionShare/AgentDate/AgentJob/AgentAd 的配置"
         context_files: ["apps/mobile/src/screens/Agent/components/SceneConfigForm.tsx", "apps/mobile/src/screens/Agent/components/VisionShareConfig.tsx", "apps/mobile/src/screens/Agent/components/AgentDateConfig.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI005~c4"
     name: "AI 模型与行为配置"
@@ -100,7 +100,7 @@ criteria:
       ai:
         prompt: "检查 AI 配置实现，验证有 AIConfigSection 组件，包含模型选择器、温度滑块、风格选择、自动回复开关"
         context_files: ["apps/mobile/src/screens/Agent/components/AIConfigSection.tsx", "apps/mobile/src/components/ModelSelector/ModelSelector.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI005~c5"
     name: "Agent 列表与管理"
@@ -122,7 +122,7 @@ criteria:
       ai:
         prompt: "检查 Agent 管理界面实现，验证有 AgentListScreen 组件，显示 Agent 卡片列表，支持状态切换、编辑、删除操作，有排序筛选功能"
         context_files: ["apps/mobile/src/screens/Agent/AgentListScreen.tsx", "apps/mobile/src/screens/Agent/components/AgentCard.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI005~c6"
     name: "配置预览与测试"
@@ -144,4 +144,4 @@ criteria:
       ai:
         prompt: "检查配置预览实现，验证有 AgentPreview 或 TestChat 组件，支持预览 Agent 资料、模拟对话测试、查看配置历史"
         context_files: ["apps/mobile/src/screens/Agent/components/AgentPreview.tsx", "apps/mobile/src/screens/Agent/components/TestChat.tsx"]
-        model: "claude-sonnet-4-6"
+        

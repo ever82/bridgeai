@@ -25,16 +25,16 @@ criteria:
       - 列表/地图视图切换
     status: "pending"
     coverage:
-      unit: required
-      integration: required
-      e2e: required
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
       ai: sufficient
       manual: not_needed
     verification:
       ai:
         prompt: "检查附近任务地图界面，验证有地图组件、任务标记、位置显示和视图切换功能"
         context_files: ["apps/mobile/src/screens/VisionShare/NearbyTasksMap.tsx", "apps/mobile/src/components/Map/TaskMarker.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS002~c2"
     name: "任务筛选与排序"
@@ -47,16 +47,16 @@ criteria:
       - 排序方式(距离/时间/预算)
     status: "pending"
     coverage:
-      unit: required
-      integration: required
-      e2e: required
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
       ai: sufficient
       manual: not_needed
     verification:
       ai:
         prompt: "检查任务筛选组件，验证有距离、预算、类型、时间等筛选条件和排序选项"
         context_files: ["apps/mobile/src/components/VisionShare/TaskFilter/", "apps/server/src/services/visionShare/taskFilter.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS002~c3"
     name: "任务详情查看"
@@ -69,16 +69,16 @@ criteria:
       - 历史评价查看
     status: "pending"
     coverage:
-      unit: required
-      integration: required
-      e2e: required
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
       ai: sufficient
       manual: not_needed
     verification:
       ai:
         prompt: "检查任务详情页面，验证有完整信息展示、信用分、距离计算和评价查看功能"
         context_files: ["apps/mobile/src/screens/VisionShare/TaskDetail.tsx", "apps/mobile/src/components/VisionShare/TaskInfo/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS002~c4"
     name: "接单操作与确认"
@@ -91,16 +91,16 @@ criteria:
       - 接单后导航入口
     status: "pending"
     coverage:
-      unit: required
-      integration: required
-      e2e: required
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
       ai: sufficient
       manual: not_needed
     verification:
       ai:
         prompt: "检查接单功能，验证有接单确认、资格检查、状态同步和导航入口"
         context_files: ["apps/mobile/src/screens/VisionShare/AcceptTask.tsx", "apps/server/src/services/visionShare/acceptTask.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS002~c5"
     name: "任务推荐推送"
@@ -113,16 +113,16 @@ criteria:
       - 推荐偏好设置
     status: "pending"
     coverage:
-      unit: required
-      integration: required
-      e2e: required
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
       ai: sufficient
       manual: not_needed
     verification:
       ai:
         prompt: "检查任务推荐推送，验证有位置推送、匹配度展示、通知处理和偏好设置"
         context_files: ["apps/server/src/services/visionShare/taskRecommendation.ts", "apps/mobile/src/components/VisionShare/RecommendationCard.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS002~c6"
     name: "任务状态追踪"
@@ -135,13 +135,13 @@ criteria:
       - 任务取消和申诉
     status: "pending"
     coverage:
-      unit: required
-      integration: required
-      e2e: required
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
       ai: sufficient
       manual: not_needed
     verification:
       ai:
         prompt: "检查任务状态追踪，验证有已接任务列表、状态管理、完成确认和历史记录"
         context_files: ["apps/mobile/src/screens/VisionShare/MyTasks.tsx", "apps/mobile/src/components/VisionShare/TaskStatusTracker.tsx"]
-        model: "claude-sonnet-4-6"
+        

@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查 Sentry 后端集成，验证 SDK 初始化配置正确，确认错误会被自动捕获"
         context_files: ["apps/server/src/utils/sentry.ts", "apps/server/src/app.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F006~c2"
     name: "Sentry 移动端集成"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查移动端 Sentry 配置，验证有 Sentry.init 调用和错误边界设置"
         context_files: ["apps/mobile/src/utils/sentry.ts", "apps/mobile/App.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F006~c3"
     name: "性能监控配置"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查性能监控配置，验证有 Performance 监控和关键事务追踪"
         context_files: ["apps/server/src/middleware/performance.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F006~c4"
     name: "告警规则配置"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查 Sentry 告警配置，验证有 Alert Rules 设置和通知渠道配置"
         context_files: [".sentry/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-F006~c5"
     name: "用户反馈收集"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查用户反馈组件，验证有反馈表单和截图功能"
         context_files: ["apps/mobile/src/components/Feedback/"]
-        model: "claude-sonnet-4-6"
+        

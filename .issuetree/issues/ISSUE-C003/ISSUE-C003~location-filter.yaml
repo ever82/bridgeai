@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查地理数据模型，验证有 Location 类型包含 province, city, district 和 coordinates"
         context_files: ["packages/shared/src/types/location.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C003~c2"
     name: "地理位置选择组件"
@@ -43,7 +43,7 @@ criteria:
       - 常用地址管理
     status: "pending"
     coverage:
-      unit: not_needed
+      unit: required
       integration: required
       e2e: required
       ai: sufficient
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查位置选择组件，验证有 LocationPicker 支持省市区三级选择"
         context_files: ["apps/mobile/src/components/LocationPicker/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C003~c3"
     name: "距离计算和筛选"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查距离计算，验证有 calculateDistance 函数和按距离筛选 API"
         context_files: ["apps/server/src/utils/geo.ts", "apps/server/src/services/filterService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C003~c4"
     name: "地理围栏支持"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查地理围栏实现，验证有 GeoFence 类型和 pointInPolygon 判断函数"
         context_files: ["apps/server/src/utils/geoFence.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C003~c5"
     name: "位置服务集成"
@@ -106,7 +106,7 @@ criteria:
       - 地址联想搜索
     status: "pending"
     coverage:
-      unit: not_needed
+      unit: required
       integration: required
       e2e: required
       ai: sufficient
@@ -115,4 +115,26 @@ criteria:
       ai:
         prompt: "检查地图服务集成，验证有 geocodingService 和地址搜索功能"
         context_files: ["apps/server/src/services/geoCodingService.ts", "apps/mobile/src/services/locationService.ts"]
-        model: "claude-sonnet-4-6"
+        
+
+  - id: "ISSUE-C003~c6"
+    name: "Agent地理位置筛选集成"
+    description: |
+      Agent位置筛选:
+      - Agent位置数据存储和更新
+      - 基于位置的Agent搜索API
+      - 实时位置更新机制
+      - 位置隐私设置管理
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查Agent位置筛选功能，验证有基于地理位置的Agent搜索API和Agent位置数据模型"
+        context_files: ["apps/server/src/services/agentLocationService.ts", "apps/server/src/models/AgentLocation.ts"]
+        
+---

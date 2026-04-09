@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查消息协议，验证有 AgentMessage 类型定义和协议规范文档"
         context_files: ["packages/shared/src/protocols/agentMessage.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM004~c2"
     name: "Agent 身份标识"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查身份标识，验证有 AgentIdentity 组件展示 Agent 信息"
         context_files: ["apps/mobile/src/components/AgentIdentity/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM004~c3"
     name: "信用分展示"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查信用展示，验证有 CreditBadge 组件展示信用分和等级"
         context_files: ["apps/mobile/src/components/Credit/CreditBadge.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM004~c4"
     name: "行为约束规则"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查约束规则，验证有 AgentBehaviorRules 和违规检测机制"
         context_files: ["apps/server/src/services/agentBehaviorService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM004~c5"
     name: "协议文档和规范"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查协议文档，验证有 AGENT_PROTOCOL.md 文档包含完整规范"
         context_files: [".issuetree/spec/AGENT_PROTOCOL.md"]
-        model: "claude-sonnet-4-6"
+        

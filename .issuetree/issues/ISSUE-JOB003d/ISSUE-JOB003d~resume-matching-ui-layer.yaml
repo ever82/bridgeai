@@ -1,0 +1,37 @@
+---
+id: "ISSUE-JOB003d"
+issue_number: 903.4
+title: "简历智能匹配 - UI层"
+slug: "resume-matching-ui-layer"
+status: "pending"
+description: |
+  实现移动端匹配展示界面，包括推荐列表、匹配详情、
+  匹配度可视化展示和快速操作功能。
+  预估代码量: 250-350行
+parent: "ISSUE-JOB003"
+prerequisites:
+  - "ISSUE-JOB003c"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-JOB003d~c1"
+    name: "移动端匹配展示界面"
+    description: |
+      UI实现:
+      - 职位推荐列表页面
+      - 候选人推荐列表页面(招聘方)
+      - 匹配详情页面
+      - 匹配度可视化展示
+      - 快速操作(感兴趣/跳过)
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查移动端匹配界面，验证有JobRecommendationsScreen组件，支持推荐列表、匹配度展示和快速操作"
+        context_files: ["apps/mobile/src/screens/Job/JobRecommendationsScreen.tsx", "apps/mobile/src/screens/Job/CandidateRecommendationsScreen.tsx"]
+        

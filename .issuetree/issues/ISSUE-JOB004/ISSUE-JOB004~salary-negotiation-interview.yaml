@@ -33,7 +33,7 @@ criteria:
       ai:
         prompt: "检查协商对话房间，验证有NegotiationRoom类型和创建逻辑，支持双方Agent对话和话题管理"
         context_files: ["apps/server/src/services/job/negotiationRoom.ts", "apps/server/src/models/NegotiationRoom.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB004~c2"
     name: "Agent薪资协商服务"
@@ -56,7 +56,7 @@ criteria:
       ai:
         prompt: "检查Agent薪资协商服务，验证有SalaryNegotiationService使用LLM进行协商，包含市场数据参考和策略生成"
         context_files: ["apps/server/src/services/job/salaryNegotiation.ts", "apps/server/src/ai/prompts/salaryNegotiation.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB004~c3"
     name: "面试安排系统"
@@ -79,7 +79,7 @@ criteria:
       ai:
         prompt: "检查面试安排系统，验证有InterviewSchedulingService，支持时间协调、日历集成和多轮面试管理"
         context_files: ["apps/server/src/services/job/interviewScheduling.ts", "apps/server/src/models/Interview.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB004~c4"
     name: "协商结果与人机切换"
@@ -101,7 +101,7 @@ criteria:
       ai:
         prompt: "检查协商结果处理，验证集成COM003人机切换机制，支持协商结果确认和切换到真人沟通"
         context_files: ["apps/server/src/services/job/negotiationResult.ts", "apps/server/src/services/job/humanHandoff.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB004~c5"
     name: "薪资协商与面试API"
@@ -123,7 +123,7 @@ criteria:
       ai:
         prompt: "检查协商与面试API，验证有完整的RESTful端点(/api/job/negotiations, /api/job/interviews)支持协商和面试功能"
         context_files: ["apps/server/src/routes/job/negotiationRoutes.ts", "apps/server/src/routes/job/interviewRoutes.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-JOB004~c6"
     name: "移动端协商与面试界面"
@@ -145,4 +145,4 @@ criteria:
       ai:
         prompt: "检查移动端协商界面，验证有NegotiationChatScreen和InterviewScheduleScreen组件，支持协商对话和时间选择"
         context_files: ["apps/mobile/src/screens/Job/NegotiationChatScreen.tsx", "apps/mobile/src/screens/Job/InterviewScheduleScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        

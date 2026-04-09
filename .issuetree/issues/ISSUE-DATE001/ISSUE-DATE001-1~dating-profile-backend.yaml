@@ -1,0 +1,63 @@
+---
+id: "ISSUE-DATE001-1"
+issue_number: 801.1
+title: "交友画像配置 - 后端数据模型与API"
+slug: "dating-profile-backend"
+status: "pending"
+description: |
+  实现AgentDate交友场景的交友画像配置系统的后端部分。
+  包含交友画像数据模型定义和相关API接口实现。
+
+  拆分来源: ISSUE-DATE001
+parent_issue: "ISSUE-DATE001"
+prerequisites:
+  - "ISSUE-C006"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-DATE001-1~c1"
+    name: "交友画像数据模型"
+    description: |
+      数据模型:
+      - DatingProfile 模型定义
+      - 基础条件字段（年龄范围、地域、身高范围、学历等）
+      - 性格偏好字段（MBTI、性格特质等）
+      - 兴趣爱好字段（多选+自定义）
+      - 生活方式字段（作息、烟酒、宠物等）
+      - 关系期望字段（交友目的、发展节奏等）
+      - 与 Agent L2/L3 模型的关联
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查DatingProfile模型定义，验证包含基础条件、性格偏好、兴趣爱好、生活方式、关系期望等完整字段，且与Agent L2/L3模型正确关联"
+        context_files: ["packages/shared/src/types/dating.ts", "apps/server/src/models/DatingProfile.ts", "prisma/schema.prisma"]
+        
+
+  - id: "ISSUE-DATE001-1~c3"
+    name: "交友画像配置API"
+    description: |
+      后端API:
+      - 创建/更新交友画像
+      - 获取画像详情
+      - 画像完整性检查
+      - 必填项验证
+      - 选项值范围验证
+      - 与场景配置的集成
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查交友画像API端点，验证有创建、更新、获取接口，包含完整的数据验证和完整性检查逻辑"
+        context_files: ["apps/server/src/routes/dating/profile.routes.ts", "apps/server/src/controllers/dating/"]
+        

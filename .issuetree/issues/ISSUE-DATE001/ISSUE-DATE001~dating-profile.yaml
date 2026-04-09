@@ -3,15 +3,33 @@ id: "ISSUE-DATE001"
 issue_number: 801
 title: "交友画像配置"
 slug: "dating-profile"
-status: "pending"
+status: "split"
 description: |
   实现AgentDate交友场景的交友画像配置系统。用户可以配置自己的交友需求画像，
   包括基础条件（年龄、地域、身高、学历等）、性格偏好、兴趣爱好、生活方式等。
   支持AI智能提炼，将自然语言描述转化为结构化交友需求。
+
+  拆分说明:
+  按架构层拆分为4个子Issue:
+  - ISSUE-DATE001-1: 后端数据模型与API (原c1, c3)
+  - ISSUE-DATE001-2: AI智能提炼服务 (原c2)
+  - ISSUE-DATE001-3: 隐私与信息披露控制 (原c4)
+  - ISSUE-DATE001-4: 前端界面与质量评估 (原c5, c6)
+
+  依赖关系:
+  DATE001-1 (后端) 必须在最前面完成
+  DATE001-2 (AI) 和 DATE001-3 (隐私) 可并行，但依赖 DATE001-1
+  DATE001-4 (前端) 最后，依赖 DATE001-1, DATE001-2, DATE001-3
 prerequisites:
   - "ISSUE-C006"
   - "ISSUE-AI002"
 created_at: "2026-04-08"
+split_at: "2026-04-09"
+split_into:
+  - "ISSUE-DATE001-1"
+  - "ISSUE-DATE001-2"
+  - "ISSUE-DATE001-3"
+  - "ISSUE-DATE001-4"
 logic: sufficient_necessary
 criteria:
   - id: "ISSUE-DATE001~c1"
@@ -36,7 +54,7 @@ criteria:
       ai:
         prompt: "检查DatingProfile模型定义，验证包含基础条件、性格偏好、兴趣爱好、生活方式、关系期望等完整字段，且与Agent L2/L3模型正确关联"
         context_files: ["packages/shared/src/types/dating.ts", "apps/server/src/models/DatingProfile.ts", "prisma/schema.prisma"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE001~c2"
     name: "AI智能提炼交友需求"
@@ -58,7 +76,7 @@ criteria:
       ai:
         prompt: "检查AI交友需求提炼服务，验证能从自然语言文本提取结构化交友偏好，包括显性和隐性偏好识别，并有智能补全建议功能"
         context_files: ["apps/server/src/services/ai/datingExtractionService.ts", "apps/server/src/prompts/dating/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE001~c3"
     name: "交友画像配置API"
@@ -81,7 +99,7 @@ criteria:
       ai:
         prompt: "检查交友画像API端点，验证有创建、更新、获取接口，包含完整的数据验证和完整性检查逻辑"
         context_files: ["apps/server/src/routes/dating/profile.routes.ts", "apps/server/src/controllers/dating/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE001~c4"
     name: "隐私与信息披露控制"
@@ -103,7 +121,7 @@ criteria:
       ai:
         prompt: "检查隐私控制实现，验证支持字段级可见性设置、敏感信息保护、分阶段披露策略，用户可完全控制展示内容"
         context_files: ["apps/server/src/services/dating/privacyService.ts", "packages/shared/src/types/privacy.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE001~c5"
     name: "交友画像移动端界面"
@@ -126,7 +144,7 @@ criteria:
       ai:
         prompt: "检查移动端交友画像界面，验证有分步骤配置向导、AI提炼按钮、多种选项选择器、画像预览和隐私设置功能"
         context_files: ["apps/mobile/src/screens/dating/DatingProfileScreen.tsx", "apps/mobile/src/components/dating/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE001~c6"
     name: "画像质量评估与优化建议"
@@ -148,4 +166,4 @@ criteria:
       ai:
         prompt: "检查画像质量评估服务，验证能计算完整度评分、分析信息丰富度、评估匹配潜力，并生成具体的优化建议"
         context_files: ["apps/server/src/services/dating/profileQualityService.ts"]
-        model: "claude-sonnet-4-6"
+        

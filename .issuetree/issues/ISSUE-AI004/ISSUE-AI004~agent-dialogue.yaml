@@ -33,7 +33,7 @@ criteria:
       ai:
         prompt: "检查对话引擎，验证有DialogueGenerationService类，包含generateReply方法，使用conversation_context维护多轮对话状态"
         context_files: ["apps/server/src/services/ai/dialogueGenerationService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI004~c2"
     name: "Agent人格模拟"
@@ -55,7 +55,7 @@ criteria:
       ai:
         prompt: "检查人格模拟，验证有AgentPersona类或persona配置，支持tone、style、behavior_traits定义，对话生成时应用persona_prompt"
         context_files: ["apps/server/src/services/ai/agentPersona.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI004~c3"
     name: "Agent间协商对话"
@@ -77,7 +77,7 @@ criteria:
       ai:
         prompt: "检查协商对话，验证有AgentNegotiationService类，支持agentA和agentB双向对话，包含negotiation_state和agreement detection逻辑"
         context_files: ["apps/server/src/services/ai/agentNegotiationService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI004~c4"
     name: "上下文记忆管理"
@@ -99,7 +99,7 @@ criteria:
       ai:
         prompt: "检查记忆管理，验证有ConversationMemoryService类，支持message_history存储、key_facts提取、memory_summary生成，用于RAG增强"
         context_files: ["apps/server/src/services/ai/memoryService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI004~c5"
     name: "人机切换处理"
@@ -121,7 +121,7 @@ criteria:
       ai:
         prompt: "检查人机切换，验证有HandoffService类，包含requestHandoff、transferContext、resumeAgent方法，与COM003人机切换机制集成"
         context_files: ["apps/server/src/services/ai/handoffService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-AI004~c6"
     name: "对话API与流式输出"
@@ -143,4 +143,4 @@ criteria:
       ai:
         prompt: "检查对话API，验证有/api/v1/ai/dialogue端点支持POST和WebSocket，支持streaming模式，参数包含agent_id、conversation_id、message"
         context_files: ["apps/server/src/routes/ai/dialogue.ts"]
-        model: "claude-sonnet-4-6"
+        

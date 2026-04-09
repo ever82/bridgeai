@@ -12,7 +12,7 @@ prerequisites:
   - "ISSUE-VS006"
   - "ISSUE-AI005"
 created_at: "2026-04-08"
-logic: sufficient_necessary
+logic: sufficient
 criteria:
   - id: "ISSUE-VS007~c1"
     name: "本地相册访问权限"
@@ -25,7 +25,7 @@ criteria:
       - 权限引导说明
     status: "pending"
     coverage:
-      unit: not_needed
+      unit: required
       integration: required
       e2e: required
       ai: sufficient
@@ -34,7 +34,7 @@ criteria:
       ai:
         prompt: "检查本地相册权限，验证有权限申请、状态管理、部分访问、拒绝处理和引导功能"
         context_files: ["apps/mobile/src/permissions/photoLibrary.ts", "apps/mobile/src/screens/Permissions/PhotoPermission.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS007~c2"
     name: "本地照片AI分析"
@@ -56,7 +56,7 @@ criteria:
       ai:
         prompt: "检查本地照片AI分析，验证有批量处理、端侧推理、特征提取、标签生成和进度显示"
         context_files: ["apps/mobile/src/services/ai/localImageAnalysis.ts", "apps/mobile/src/utils/onDeviceML.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS007~c3"
     name: "本地搜索索引"
@@ -71,14 +71,14 @@ criteria:
     coverage:
       unit: required
       integration: required
-      e2e: not_needed
+      e2e: required
       ai: sufficient
       manual: not_needed
     verification:
       ai:
         prompt: "检查本地搜索索引，验证有SQLite存储、增量更新、压缩优化、备份恢复和版本管理"
         context_files: ["apps/mobile/src/storage/localSearchIndex.ts", "apps/mobile/src/services/indexing/localIndexer.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS007~c4"
     name: "统一搜索界面"
@@ -100,7 +100,7 @@ criteria:
       ai:
         prompt: "检查统一搜索界面，验证有数据源切换、统一展示、来源标识和范围选择功能"
         context_files: ["apps/mobile/src/screens/VisionShare/UnifiedSearch.tsx", "apps/mobile/src/components/Search/SearchSourceTabs.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS007~c5"
     name: "本地照片隐私保护"
@@ -122,7 +122,7 @@ criteria:
       ai:
         prompt: "检查本地照片隐私保护，验证有端侧处理、敏感排除、加密存储和隐私模式功能"
         context_files: ["apps/mobile/src/services/privacy/localPrivacy.ts", "apps/mobile/src/utils/encryptedStorage.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS007~c6"
     name: "性能优化和缓存"
@@ -137,11 +137,30 @@ criteria:
     coverage:
       unit: required
       integration: required
-      e2e: not_needed
+      e2e: recommended
       ai: sufficient
       manual: not_needed
     verification:
       ai:
         prompt: "检查性能优化缓存，验证有后台更新、缩略图缓存、响应优化和资源优化功能"
         context_files: ["apps/mobile/src/services/performance/searchOptimization.ts", "apps/mobile/src/utils/imageCache.ts"]
-        model: "claude-sonnet-4-6"
+        
+
+# 子Issue拆分建议 (预估1550行代码)
+sub_issues:
+  - id: "ISSUE-VS007a"
+    title: "本地相册权限与隐私"
+    criteria: ["c1", "c5"]
+    focus: "相册权限管理和隐私保护"
+  - id: "ISSUE-VS007b"
+    title: "本地照片AI分析引擎"
+    criteria: ["c2"]
+    focus: "端侧AI模型推理和图像分析"
+  - id: "ISSUE-VS007c"
+    title: "本地搜索索引系统"
+    criteria: ["c3", "c6"]
+    focus: "SQLite索引存储和性能优化"
+  - id: "ISSUE-VS007d"
+    title: "统一搜索界面"
+    criteria: ["c4"]
+    focus: "云端/本地统一搜索UI"

@@ -1,0 +1,61 @@
+---
+id: "ISSUE-CR002c"
+issue_number: 602.3
+title: "评分与评价系统 - 业务逻辑"
+slug: "rating-review-business-logic"
+status: "pending"
+description: |
+  实现评分与评价系统的业务逻辑部分，包括评价与信用分联动机制、
+  评价相关的通知与提醒功能。本Issue是ISSUE-CR002的拆分部分，专注于业务逻辑实现。
+prerequisites:
+  - "ISSUE-CR002a"
+parent_issue: "ISSUE-CR002"
+part_number: 3
+total_parts: 3
+estimated_lines: 450
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-CR002c~c1"
+    name: "评价与信用分联动"
+    description: |
+      评价对信用分的影响:
+      - 收到好评增加信用分
+      - 收到差评扣除信用分
+      - 评价数量对信用的影响
+      - 评价回复率计入信用
+      - 触发信用分重算事件
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查评价与信用分联动，验证评价提交后触发信用分更新，确认好评/差评对信用分的影响规则"
+        context_files: ["apps/server/src/events/reviewEventHandlers.ts", "apps/server/src/services/creditScoreService.ts"]
+        
+
+  - id: "ISSUE-CR002c~c2"
+    name: "评价通知与提醒"
+    description: |
+      评价相关通知:
+      - 收到新评价推送通知
+      - 待评价提醒(交易完成后24小时)
+      - 评价回复通知
+      - 差评预警通知(信用分下降时)
+      - 通知偏好设置
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查评价通知系统，验证有新评价、待评价、差评等场景的通知触发逻辑"
+        context_files: ["apps/server/src/services/notificationService.ts", "apps/server/src/events/reviewNotificationHandlers.ts"]
+        

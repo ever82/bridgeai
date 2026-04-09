@@ -22,7 +22,7 @@ criteria:
       - 草稿自动保存
     status: "pending"
     coverage:
-      unit: required
+      unit: lacking
       integration: required
       e2e: required
       ai: sufficient
@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查 L3 文本输入实现，验证有自由文本编辑器和自动保存功能"
         context_files: ["apps/mobile/src/components/AgentProfile/L3TextEditor.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002c~c2"
     name: "AI 文本提炼服务"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查 AI 提炼服务，验证有 extractL2FromL3 函数调用 LLM 并返回结构化结果"
         context_files: ["apps/server/src/services/ai/extractionService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002c~c3"
     name: "提炼结果确认界面"
@@ -64,7 +64,7 @@ criteria:
       - 置信度可视化
     status: "pending"
     coverage:
-      unit: not_needed
+      unit: lacking
       integration: required
       e2e: required
       ai: sufficient
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查提炼确认界面，验证有 ExtractionResultScreen 组件展示 AI 提炼结果"
         context_files: ["apps/mobile/src/screens/AgentProfile/ExtractionResultScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002c~c4"
     name: "L3 数据存储"
@@ -85,7 +85,7 @@ criteria:
       - 全文搜索索引
     status: "pending"
     coverage:
-      unit: not_needed
+      unit: lacking
       integration: required
       e2e: not_needed
       ai: sufficient
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查 L3 存储，验证 AgentProfile 有 l3Text 和 extractionHistory 字段"
         context_files: ["prisma/schema.prisma"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-C002c~c5"
     name: "AI 提炼优化和反馈"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查提炼反馈机制，验证有用户修正记录和提炼质量统计"
         context_files: ["apps/server/src/services/ai/extractionFeedback.ts"]
-        model: "claude-sonnet-4-6"
+        

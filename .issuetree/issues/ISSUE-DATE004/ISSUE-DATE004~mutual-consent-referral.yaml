@@ -33,7 +33,7 @@ criteria:
       ai:
         prompt: "检查双向同意状态管理，验证有完整状态模型、独立决策存储、时效控制、变更规则和最终结果计算逻辑"
         context_files: ["apps/server/src/models/MutualConsent.ts", "apps/server/src/services/dating/consentStateManager.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE004~c2"
     name: "引荐结果处理流程"
@@ -54,7 +54,7 @@ criteria:
       ai:
         prompt: "检查引荐结果处理流程，验证双方同意时交换联系方式创建聊天房间，单方同意保持匿名，拒绝时更新算法，超时自动处理"
         context_files: ["apps/server/src/services/dating/referralService.ts", "apps/server/src/services/dating/consentProcessor.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE004~c3"
     name: "真人聊天房间创建"
@@ -76,7 +76,7 @@ criteria:
       ai:
         prompt: "检查真人聊天房间创建功能，验证双方同意后自动创建1v1房间，支持继承Agent上下文，身份切换到真人，并生成欢迎消息"
         context_files: ["apps/server/src/services/dating/humanChatRoomService.ts", "apps/server/src/services/chat/roomCreation.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE004~c4"
     name: "引荐结果通知系统"
@@ -98,7 +98,7 @@ criteria:
       ai:
         prompt: "检查引荐结果通知系统，验证有决策状态提醒、成功/失败通知、新消息提醒和超时提醒功能，且失败通知表达婉转化"
         context_files: ["apps/server/src/services/dating/referralNotificationService.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE004~c5"
     name: "引荐记录与管理"
@@ -120,7 +120,7 @@ criteria:
       ai:
         prompt: "检查引荐记录与管理功能，验证有历史记录存储、状态追踪、统计分析、黑名单管理和报告导出功能"
         context_files: ["apps/server/src/services/dating/referralHistoryService.ts", "apps/server/src/models/ReferralRecord.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-DATE004~c6"
     name: "移动端引荐交互界面"
@@ -143,4 +143,4 @@ criteria:
       ai:
         prompt: "检查移动端引荐交互界面，验证有决策等待、成功庆祝、聊天入口、历史列表、详情查看和重新匹配功能"
         context_files: ["apps/mobile/src/screens/dating/ReferralScreen.tsx", "apps/mobile/src/screens/dating/MatchSuccessScreen.tsx", "apps/mobile/src/screens/dating/ReferralHistoryScreen.tsx"]
-        model: "claude-sonnet-4-6"
+        

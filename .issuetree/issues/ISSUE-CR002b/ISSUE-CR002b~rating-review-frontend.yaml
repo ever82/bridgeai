@@ -1,0 +1,39 @@
+---
+id: "ISSUE-CR002b"
+issue_number: 602.2
+title: "评分与评价系统 - 前端UI"
+slug: "rating-review-frontend"
+status: "pending"
+description: |
+  实现评分与评价系统的移动端前端UI组件，包括评价列表、评分输入、
+  评价详情展示等功能。本Issue是ISSUE-CR002的拆分部分，专注于前端界面实现。
+prerequisites:
+  - "ISSUE-CR002a"
+parent_issue: "ISSUE-CR002"
+part_number: 2
+total_parts: 3
+estimated_lines: 500
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-CR002b~c1"
+    name: "评价展示组件"
+    description: |
+      移动端评价UI:
+      - 评价列表页面(收到的/发出的)
+      - 评价卡片组件(评分、内容、时间)
+      - 评分输入组件(星级评分+文字评价)
+      - 评价详情页(含回复)
+      - 评价统计展示(平均分、分布图)
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查评价UI组件，验证有ReviewListScreen、ReviewCard、StarRating组件，确认交互和展示正确"
+        context_files: ["apps/mobile/src/screens/Reviews/ReviewListScreen.tsx", "apps/mobile/src/components/Reviews/ReviewCard.tsx", "apps/mobile/src/components/Reviews/StarRating.tsx"]
+        

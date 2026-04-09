@@ -1,0 +1,39 @@
+---
+id: "ISSUE-CR003c"
+issue_number: 603.3
+title: "积分交易记录API"
+slug: "points-transaction-api"
+status: "pending"
+description: |
+  积分交易记录查询API实现，包括余额查询、交易记录列表、交易详情、积分统计等功能。
+  作为积分系统的API层，为客户端提供积分数据访问接口。
+prerequisites:
+  - "ISSUE-CR003b"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-CR003c~c1"
+    name: "积分交易记录API"
+    description: |
+      积分记录查询接口:
+      - GET /api/v1/points/balance - 获取当前余额
+      - GET /api/v1/points/transactions - 获取交易记录(支持筛选和分页)
+      - GET /api/v1/points/transactions/:id - 获取交易详情
+      - GET /api/v1/points/stats - 获取积分统计(收入/支出分类)
+      - 交易记录导出功能
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查积分API，验证有/points/balance、/points/transactions端点，确认筛选、分页和统计功能"
+        context_files: ["apps/server/src/routes/points.ts", "apps/server/src/services/pointsService.ts"]
+        
+
+parent_issue: "ISSUE-CR003"
+part_of: "积分系统基础与交易记录拆分"
+estimated_lines: 200

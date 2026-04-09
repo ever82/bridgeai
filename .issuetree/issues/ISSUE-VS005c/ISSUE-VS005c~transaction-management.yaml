@@ -1,0 +1,59 @@
+---
+id: "ISSUE-VS005c"
+issue_number: 705
+parent: "ISSUE-VS005"
+title: "交易记录与退款申诉"
+slug: "transaction-management"
+status: "pending"
+description: |
+  实现VisionShare场景的交易记录管理和退款申诉功能。
+  用户可以查看支付历史、交易详情，并在需要时发起退款申请和申诉。
+estimated_lines: 400
+prerequisites:
+  - "ISSUE-VS005b"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-VS005c~c1"
+    name: "交易记录管理"
+    description: |
+      记录功能:
+      - 支付历史列表
+      - 交易详情查看
+      - 收支明细统计
+      - 交易状态追踪
+      - 交易记录导出
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查交易记录管理，验证有历史列表、详情查看、统计和状态追踪功能"
+        context_files: ["apps/mobile/src/screens/VisionShare/TransactionHistory.tsx", "apps/server/src/services/payment/transactionService.ts"]
+        
+
+  - id: "ISSUE-VS005c~c2"
+    name: "退款和申诉"
+    description: |
+      售后功能:
+      - 退款申请入口
+      - 退款原因选择
+      - 退款审核流程
+      - 积分退回处理
+      - 申诉状态查询
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查退款和申诉功能，验证有申请入口、原因选择、审核流程和积分退回处理"
+        context_files: ["apps/mobile/src/screens/VisionShare/RefundRequest.tsx", "apps/server/src/services/payment/refundService.ts"]
+        

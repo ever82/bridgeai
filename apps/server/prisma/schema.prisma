@@ -1,0 +1,242 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// 用户相关
+// ============================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  name          String?
+  avatarUrl     String?   @map("avatar_url")
+  phone         String?
+  status        UserStatus @default(ACTIVE)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  agents        Agent[]
+  sentMessages  Message[] @relation("SentMessages")
+  ratingsGiven  Rating[]  @relation("Rater")
+  ratingsReceived Rating[] @relation("Ratee")
+
+  @@map("users")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+// ============================================
+// Agent 相关
+// ============================================
+
+model Agent {
+  id          String     @id @default(uuid())
+  userId      String     @map("user_id")
+  type        AgentType
+  name        String
+  config      Json?
+  latitude    Float?
+  longitude   Float?
+  isActive    Boolean    @default(true) @map("is_active")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  demands     Demand[]
+  supplies    Supply[]
+
+  @@index([userId])
+  @@index([type])
+  @@index([latitude, longitude])
+  @@map("agents")
+}
+
+enum AgentType {
+  DEMAND
+  SUPPLY
+}
+
+// ============================================
+// 需求相关
+// ============================================
+
+model Demand {
+  id          String       @id @default(uuid())
+  agentId     String       @map("agent_id")
+  title       String
+  description String?
+  tags        String[]
+  budgetMin   Decimal?     @map("budget_min") @db.Decimal(10, 2)
+  budgetMax   Decimal?     @map("budget_max") @db.Decimal(10, 2)
+  latitude    Float?
+  longitude   Float?
+  status      DemandStatus @default(OPEN)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  agent       Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  matches     Match[]
+
+  @@index([agentId])
+  @@index([status])
+  @@index([tags])
+  @@map("demands")
+}
+
+enum DemandStatus {
+  OPEN
+  MATCHED
+  CLOSED
+}
+
+// ============================================
+// 供给相关
+// ============================================
+
+model Supply {
+  id          String        @id @default(uuid())
+  agentId     String        @map("agent_id")
+  title       String
+  description String?
+  skills      String[]
+  hourlyRate  Decimal?      @map("hourly_rate") @db.Decimal(10, 2)
+  latitude    Float?
+  longitude   Float?
+  availability Json?
+  status      SupplyStatus  @default(AVAILABLE)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  agent       Agent         @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  matches     Match[]
+
+  @@index([agentId])
+  @@index([status])
+  @@index([skills])
+  @@map("supplies")
+}
+
+enum SupplyStatus {
+  AVAILABLE
+  BUSY
+  OFFLINE
+}
+
+// ============================================
+// 匹配相关
+// ============================================
+
+model Match {
+  id          String      @id @default(uuid())
+  demandId    String      @map("demand_id")
+  supplyId    String      @map("supply_id")
+  score       Decimal     @db.Decimal(5, 2)
+  status      MatchStatus @default(PENDING)
+  metadata    Json?
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  demand      Demand      @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  supply      Supply      @relation(fields: [supplyId], references: [id], onDelete: Cascade)
+  conversation Conversation?
+  ratings     Rating[]
+
+  @@unique([demandId, supplyId])
+  @@index([demandId])
+  @@index([supplyId])
+  @@index([status])
+  @@map("matches")
+}
+
+enum MatchStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+// ============================================
+// 会话和消息
+// ============================================
+
+model Conversation {
+  id            String    @id @default(uuid())
+  matchId       String    @unique @map("match_id")
+  participantIds String[]  @map("participant_ids")
+  lastMessageAt DateTime? @map("last_message_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  match         Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  messages      Message[]
+
+  @@index([matchId])
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model Message {
+  id              String        @id @default(uuid())
+  conversationId  String        @map("conversation_id")
+  senderId        String        @map("sender_id")
+  content         String
+  type            MessageType   @default(TEXT)
+  attachments     Json?
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  conversation    Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender          User          @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+}
+
+// ============================================
+// 评分相关
+// ============================================
+
+model Rating {
+  id        String   @id @default(uuid())
+  matchId   String   @map("match_id")
+  raterId   String   @map("rater_id")
+  rateeId   String   @map("ratee_id")
+  score     Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  rater     User     @relation("Rater", fields: [raterId], references: [id])
+  ratee     User     @relation("Ratee", fields: [rateeId], references: [id])
+
+  @@index([matchId])
+  @@index([rateeId])
+  @@map("ratings")
+}

@@ -26,7 +26,7 @@ criteria:
       - 相机权限处理
     status: "pending"
     coverage:
-      unit: not_needed
+      unit: required
       integration: required
       e2e: required
       ai: sufficient
@@ -35,7 +35,7 @@ criteria:
       ai:
         prompt: "检查相机功能，验证有Expo Camera集成、拍照控制、预览和权限处理"
         context_files: ["apps/mobile/src/screens/VisionShare/CameraScreen.tsx", "apps/mobile/src/components/Camera/VisionShareCamera.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS003~c2"
     name: "照片预览与编辑"
@@ -57,7 +57,7 @@ criteria:
       ai:
         prompt: "检查照片编辑功能，验证有预览界面、裁剪旋转、滤镜调整和标记功能"
         context_files: ["apps/mobile/src/screens/VisionShare/PhotoEdit.tsx", "apps/mobile/src/components/PhotoEditor/"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS003~c3"
     name: "图片安全检查"
@@ -79,7 +79,7 @@ criteria:
       ai:
         prompt: "检查图片安全检查，验证有敏感内容识别、违规拦截、隐私检测和质量检查"
         context_files: ["apps/server/src/services/security/imageSecurity.ts", "apps/server/src/middleware/imageUploadCheck.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS003~c4"
     name: "照片上传服务"
@@ -101,7 +101,7 @@ criteria:
       ai:
         prompt: "检查照片上传服务，验证有批量上传、进度显示、断点续传和压缩优化功能"
         context_files: ["apps/server/src/services/visionShare/photoUpload.ts", "apps/mobile/src/services/upload/photoUploader.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS003~c5"
     name: "照片存储与管理"
@@ -123,7 +123,7 @@ criteria:
       ai:
         prompt: "检查照片存储管理，验证有元数据记录、云存储集成、缩略图生成和生命周期管理"
         context_files: ["apps/server/src/services/storage/photoStorage.ts", "packages/database/src/schema/photo.prisma"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-VS003~c6"
     name: "相册选择和导入"
@@ -136,7 +136,7 @@ criteria:
       - 照片来源标记
     status: "pending"
     coverage:
-      unit: not_needed
+      unit: required
       integration: required
       e2e: required
       ai: sufficient
@@ -145,4 +145,16 @@ criteria:
       ai:
         prompt: "检查相册导入功能，验证有本地相册访问、多选导入、预览和安全检查"
         context_files: ["apps/mobile/src/components/PhotoPicker/", "apps/mobile/src/screens/VisionShare/ImportPhotos.tsx"]
-        model: "claude-sonnet-4-6"
+        
+
+complexity:
+  level: "M"
+  lines: 1000
+  test_time: 9
+  split: true
+  split_strategy: |
+    建议拆分为:
+    - ISSUE-VS003a: 相机与相册导入 (c1, c6) - 前端/native
+    - ISSUE-VS003b: 照片编辑 (c2) - UI组件
+    - ISSUE-VS003c: 上传与存储 (c4, c5) - 后端服务
+    - ISSUE-VS003d: 图像安全 (c3) - 集成

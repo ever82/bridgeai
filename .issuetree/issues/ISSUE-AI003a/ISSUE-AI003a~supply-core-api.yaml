@@ -1,0 +1,60 @@
+---
+id: "ISSUE-AI003a"
+issue_number: 503
+parent: "ISSUE-AI003"
+title: "供给智能提炼服务 - 核心解析引擎与API"
+slug: "supply-core-api"
+status: "pending"
+description: |
+  实现供给智能提炼服务的核心解析引擎和API端点，
+  包含供给解析引擎和供给API与集成，为场景提取器提供基础能力
+prerequisites:
+  - "ISSUE-AI001"
+  - "ISSUE-C002a"
+  - "ISSUE-C002b"
+created_at: "2026-04-09"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-AI003a~c1"
+    name: "供给解析引擎"
+    description: |
+      解析引擎:
+      - 服务描述理解
+      - 供给实体识别
+      - 服务类型分类
+      - 供给结构化输出
+      - 能力评估评分
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查供给解析引擎，验证有SupplyExtractionService类，包含extract方法返回结构化的Supply对象，含capabilities和pricing字段"
+        context_files: ["apps/server/src/services/ai/supplyExtractionService.ts"]
+        
+
+  - id: "ISSUE-AI003a~c2"
+    name: "供给API与集成"
+    description: |
+      API实现:
+      - 供给提取API端点
+      - 批量供给导入
+      - 提取结果存储
+      - 质量报告生成
+      - 供给更新同步
+    status: "pending"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查供给API，验证有/api/v1/ai/extract-supply端点，支持scene参数和bulk模式，返回supply数据和quality_report"
+        context_files: ["apps/server/src/routes/ai/supply.ts"]
+        

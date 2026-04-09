@@ -31,7 +31,7 @@ criteria:
       ai:
         prompt: "检查 Socket.io 服务器，验证正确集成到 Express 并有认证中间件"
         context_files: ["apps/server/src/socket/index.ts", "apps/server/src/socket/middleware/auth.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM001a~c2"
     name: "Socket.io 客户端"
@@ -52,7 +52,7 @@ criteria:
       ai:
         prompt: "检查 Socket.io 客户端，验证有 socketClient 封装和自动重连"
         context_files: ["apps/mobile/src/services/socketClient.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM001a~c3"
     name: "连接认证"
@@ -73,7 +73,7 @@ criteria:
       ai:
         prompt: "检查 Socket 认证，验证连接时传递 JWT Token 并验证用户身份"
         context_files: ["apps/server/src/socket/middleware/auth.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM001a~c4"
     name: "心跳和连接管理"
@@ -94,7 +94,7 @@ criteria:
       ai:
         prompt: "检查连接管理，验证有 ping/pong 心跳和连接状态监控"
         context_files: ["apps/server/src/socket/connectionManager.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-COM001a~c5"
     name: "适配器配置"
@@ -115,4 +115,4 @@ criteria:
       ai:
         prompt: "检查适配器配置，验证有 Redis Adapter 配置支持多节点"
         context_files: ["apps/server/src/socket/adapter.ts"]
-        model: "claude-sonnet-4-6"
+        

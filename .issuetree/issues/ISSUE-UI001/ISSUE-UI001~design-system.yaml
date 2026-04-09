@@ -33,7 +33,7 @@ criteria:
       ai:
         prompt: "检查设计令牌实现，验证有 theme.ts 或 designTokens.ts 文件，包含 colors、typography、spacing、borderRadius 等完整定义，支持主题切换"
         context_files: ["apps/mobile/src/theme/theme.ts", "apps/mobile/src/theme/designTokens.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI001~c2"
     name: "基础组件 - Button 按钮"
@@ -55,7 +55,7 @@ criteria:
       ai:
         prompt: "检查 Button 组件实现，验证有 Button.tsx 组件文件，支持 variant、size、loading、disabled、icon 等 props，有对应的单元测试"
         context_files: ["apps/mobile/src/components/Button/Button.tsx", "apps/mobile/src/components/Button/Button.test.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI001~c3"
     name: "基础组件 - Input 输入框"
@@ -77,7 +77,7 @@ criteria:
       ai:
         prompt: "检查 Input 组件实现，验证有 Input.tsx 组件文件，支持 type、error、disabled、prefix、suffix、clearable 等 props，有对应的单元测试"
         context_files: ["apps/mobile/src/components/Input/Input.tsx", "apps/mobile/src/components/Input/Input.test.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI001~c4"
     name: "基础组件 - Card 卡片与 Modal 弹窗"
@@ -97,7 +97,7 @@ criteria:
       ai:
         prompt: "检查 Card 和 Modal 组件实现，验证有 Card.tsx 和 Modal.tsx 文件，Card 支持 pressable、header/content/footer 结构；Modal 支持 visible 控制、动画、遮罩点击关闭"
         context_files: ["apps/mobile/src/components/Card/Card.tsx", "apps/mobile/src/components/Modal/Modal.tsx"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI001~c5"
     name: "图标系统与资源管理"
@@ -118,7 +118,7 @@ criteria:
       ai:
         prompt: "检查图标系统实现，验证有 Icon 组件或图标导出文件，支持 name、size、color props，确认使用了统一的图标库"
         context_files: ["apps/mobile/src/components/Icon/Icon.tsx", "apps/mobile/src/assets/icons/index.ts"]
-        model: "claude-sonnet-4-6"
+        
 
   - id: "ISSUE-UI001~c6"
     name: "组件文档与 Storybook"
@@ -139,4 +139,4 @@ criteria:
       ai:
         prompt: "检查组件文档实现，验证有 .storybook 配置或组件文档目录，包含 Button、Input、Card、Modal 等组件的使用示例和 Props 表格"
         context_files: [".storybook/main.js", "apps/mobile/src/components/README.md"]
-        model: "claude-sonnet-4-6"
+        
