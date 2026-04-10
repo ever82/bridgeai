@@ -1,299 +1,361 @@
 /**
  * Extraction Validator
  * 提取结果验证系统
- *
- * Provides:
- * - Field completeness checking
- * - Business rule validation
- * - Range validation (budget, etc.)
- * - Enum validity checking
- * - User confirmation flow support
- * - Extraction result correction support
+ * 验证字段完整性、业务规则和合理性
  */
 
-import {
-  L2Schema,
-  L2Data,
-  L2FieldType,
-  L2ValidationError,
-  L2FieldOption,
-  getL2Schema,
-} from '@visionshare/shared';
-import logger from '../../../utils/logger';
+import { L2Schema, L2Data, L2FieldType, L2ValidationError, L2ValidationResult } from '@visionshare/shared';
+import { Demand } from '../demandExtractionService';
+import { logger } from '../../../utils/logger';
 
 /**
- * Validation result
+ * Validation Rule
  */
-export interface ValidationResult {
-  valid: boolean;
-  isComplete: boolean;
-  canProceed: boolean;
-  errors: L2ValidationError[];
-  warnings: L2ValidationError[];
-  missingRequired: string[];
-  invalidFields: string[];
-  suggestions: Array<{
-    field: string;
-    suggestion: string;
-    confidence: number;
-  }>;
-}
-
-/**
- * Business rule
- */
-export interface BusinessRule {
+export interface ValidationRule {
   id: string;
   name: string;
   description: string;
-  condition: (data: L2Data) => boolean;
-  errorMessage: string;
-  severity: 'error' | 'warning';
+  condition: (data: L2Data, schema: L2Schema, demand?: Demand) => boolean;
+  message: string;
+  severity: 'error' | 'warning' | 'info';
+  category: 'completeness' | 'business' | 'range' | 'format' | 'logic';
 }
 
 /**
- * Field validation rule
+ * Validation Context
  */
-export interface FieldValidationRule {
+export interface ValidationContext {
+  data: L2Data;
+  schema: L2Schema;
+  demand?: Demand;
+  options?: ValidationOptions;
+}
+
+/**
+ * Validation Options
+ */
+export interface ValidationOptions {
+  checkCompleteness?: boolean;
+  checkBusinessRules?: boolean;
+  checkRanges?: boolean;
+  checkFormats?: boolean;
+  strictMode?: boolean;
+  allowPartial?: boolean;
+}
+
+/**
+ * Validation Report
+ */
+export interface ValidationReport {
+  valid: boolean;
+  errors: ValidationIssue[];
+  warnings: ValidationIssue[];
+  infos: ValidationIssue[];
+  summary: {
+    totalIssues: number;
+    errorCount: number;
+    warningCount: number;
+    infoCount: number;
+    completenessScore: number;
+  };
+  suggestions: string[];
+  confirmationNeeded: boolean;
+  confirmationPrompt?: string;
+}
+
+/**
+ * Validation Issue
+ */
+export interface ValidationIssue {
+  ruleId: string;
+  field?: string;
+  message: string;
+  severity: 'error' | 'warning' | 'info';
+  category: string;
+  suggestion?: string;
+}
+
+/**
+ * Field Validation Result
+ */
+export interface FieldValidationResult {
   field: string;
-  validate: (value: any, data: L2Data) => { valid: boolean; message?: string };
+  valid: boolean;
+  errors: ValidationIssue[];
+  warnings: ValidationIssue[];
+  value?: any;
 }
 
 /**
- * Confirmation status
- */
-export interface ConfirmationStatus {
-  extractionId: string;
-  confirmed: boolean;
-  confirmedFields: string[];
-  correctedFields: Array<{
-    field: string;
-    originalValue: any;
-    correctedValue: any;
-  }>;
-  rejectedFields: string[];
-  confirmedAt?: Date;
-}
-
-/**
- * Extraction Validator
+ * Extraction Validator Class
+ * 提取结果验证器
  */
 export class ExtractionValidator {
-  private businessRules: Map<string, BusinessRule> = new Map();
-  private customRules: Map<string, FieldValidationRule> = new Map();
+  private rules: Map<string, ValidationRule> = new Map();
+  private sceneRules: Map<string, ValidationRule[]> = new Map();
 
   constructor() {
-    this.registerDefaultRules();
+    this.initializeDefaultRules();
   }
 
   /**
-   * Register default validation rules
+   * Validate extraction result
+   * 验证提取结果
    */
-  private registerDefaultRules(): void {
-    // Range validation: min <= max
-    this.addCustomRule({
-      field: 'range_validation',
-      validate: (value: any, data: L2Data) => {
-        if (typeof value === 'object' && value !== null && 'min' in value && 'max' in value) {
-          if (value.min > value.max) {
-            return { valid: false, message: 'Minimum value cannot be greater than maximum' };
-          }
-        }
-        return { valid: true };
+  validate(
+    data: L2Data,
+    schema: L2Schema,
+    demand?: Demand,
+    options: ValidationOptions = {}
+  ): ValidationReport {
+    const startTime = Date.now();
+    const opts = { ...this.getDefaultOptions(), ...options };
+
+    const context: ValidationContext = {
+      data,
+      schema,
+      demand,
+      options: opts,
+    };
+
+    const report: ValidationReport = {
+      valid: true,
+      errors: [],
+      warnings: [],
+      infos: [],
+      summary: {
+        totalIssues: 0,
+        errorCount: 0,
+        warningCount: 0,
+        infoCount: 0,
+        completenessScore: 0,
       },
-    });
+      suggestions: [],
+      confirmationNeeded: false,
+    };
 
-    // Price reasonableness check
-    this.addBusinessRule({
-      id: 'price_reasonable',
-      name: 'Price Reasonableness',
-      description: 'Check if price is within reasonable range',
-      condition: (data: L2Data) => {
-        const price = this.getNumericValue(data, ['price', 'budget', 'salary', 'amount']);
-        if (price === undefined) return true;
-        return price >= 0 && price <= 100000000; // Reasonable max: 100 million
-      },
-      errorMessage: 'Price seems unreasonable (too high or negative)',
-      severity: 'warning',
-    });
+    try {
+      logger.info('Starting extraction validation', {
+        scene: schema.scene,
+        fieldCount: Object.keys(data).length,
+      });
 
-    // Date range validation
-    this.addBusinessRule({
-      id: 'date_valid',
-      name: 'Date Validity',
-      description: 'Check if date is valid and not in the distant past',
-      condition: (data: L2Data) => {
-        const dateStr = this.getStringValue(data, ['date', 'deadline', 'startDate', 'endDate']);
-        if (!dateStr) return true;
+      // Step 1: Validate field completeness
+      if (opts.checkCompleteness) {
+        this.validateCompleteness(context, report);
+      }
 
-        try {
-          const date = new Date(dateStr);
-          const now = new Date();
-          const oneYearAgo = new Date();
-          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-          const tenYearsLater = new Date();
-          tenYearsLater.setFullYear(tenYearsLater.getFullYear() + 10);
+      // Step 2: Validate individual fields
+      this.validateFields(context, report);
 
-          return date >= oneYearAgo && date <= tenYearsLater;
-        } catch {
-          return false;
-        }
-      },
-      errorMessage: 'Date is invalid or outside reasonable range',
-      severity: 'error',
-    });
+      // Step 3: Validate business rules
+      if (opts.checkBusinessRules) {
+        this.validateBusinessRules(context, report);
+      }
 
-    // Age validation
-    this.addBusinessRule({
-      id: 'age_valid',
-      name: 'Age Validity',
-      description: 'Check if age is within valid range',
-      condition: (data: L2Data) => {
-        const age = this.getNumericValue(data, ['age', 'minAge', 'maxAge']);
-        if (age === undefined) return true;
-        return age >= 0 && age <= 150;
-      },
-      errorMessage: 'Age must be between 0 and 150',
-      severity: 'error',
-    });
-  }
+      // Step 4: Validate ranges
+      if (opts.checkRanges) {
+        this.validateRanges(context, report);
+      }
 
-  /**
-   * Validate extracted data against schema
-   *
-   * @param data - Extracted L2 data
-   * @param scene - Scene code for schema lookup
-   * @returns ValidationResult - Validation result with errors and warnings
-   */
-  validate(data: L2Data, scene: string): ValidationResult {
-    const schema = getL2Schema(scene);
+      // Step 5: Validate formats
+      if (opts.checkFormats) {
+        this.validateFormats(context, report);
+      }
 
-    if (!schema) {
-      return {
-        valid: false,
-        isComplete: false,
-        canProceed: false,
-        errors: [{
-          field: 'scene',
-          message: `Schema not found for scene: ${scene}`,
-          code: 'SCHEMA_NOT_FOUND',
-        }],
-        warnings: [],
-        missingRequired: [],
-        invalidFields: [],
-        suggestions: [],
-      };
+      // Step 6: Apply custom rules
+      this.applyCustomRules(context, report);
+
+      // Step 7: Calculate completeness score
+      report.summary.completenessScore = this.calculateCompletenessScore(data, schema);
+
+      // Step 8: Determine if confirmation is needed
+      this.determineConfirmationNeeded(report, opts);
+
+      // Step 9: Update summary
+      report.summary.errorCount = report.errors.length;
+      report.summary.warningCount = report.warnings.length;
+      report.summary.infoCount = report.infos.length;
+      report.summary.totalIssues = report.summary.errorCount + report.summary.warningCount + report.summary.infoCount;
+
+      // Report is valid if no errors (warnings allowed)
+      report.valid = report.errors.length === 0;
+
+      logger.info('Extraction validation completed', {
+        scene: schema.scene,
+        valid: report.valid,
+        errorCount: report.summary.errorCount,
+        warningCount: report.summary.warningCount,
+        latencyMs: Date.now() - startTime,
+      });
+
+      return report;
+    } catch (error) {
+      logger.error('Extraction validation failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        scene: schema.scene,
+      });
+
+      report.valid = false;
+      report.errors.push({
+        ruleId: 'system_error',
+        message: `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        severity: 'error',
+        category: 'system',
+      });
+
+      return report;
     }
+  }
 
-    const errors: L2ValidationError[] = [];
-    const warnings: L2ValidationError[] = [];
-    const missingRequired: string[] = [];
-    const invalidFields: string[] = [];
-    const suggestions: Array<{ field: string; suggestion: string; confidence: number }> = [];
+  /**
+   * Validate field completeness
+   * 字段完整性检查
+   */
+  private validateCompleteness(context: ValidationContext, report: ValidationReport): void {
+    const { data, schema } = context;
 
-    // Check each field
+    for (const field of schema.fields) {
+      if (field.required && (data[field.id] === undefined || data[field.id] === null || data[field.id] === '')) {
+        report.errors.push({
+          ruleId: 'required_field_missing',
+          field: field.id,
+          message: `Required field "${field.label}" is missing`,
+          severity: 'error',
+          category: 'completeness',
+          suggestion: `Please provide a value for ${field.label}`,
+        });
+      }
+    }
+  }
+
+  /**
+   * Validate individual fields
+   * 字段级验证
+   */
+  private validateFields(context: ValidationContext, report: ValidationReport): void {
+    const { data, schema } = context;
+
     for (const field of schema.fields) {
       const value = data[field.id];
+      if (value === undefined || value === null) continue;
 
-      // Required field check
-      if (field.required && (value === undefined || value === null || value === '')) {
-        missingRequired.push(field.id);
-        errors.push({
+      // Type validation
+      const typeValid = this.validateFieldType(value, field.type);
+      if (!typeValid) {
+        report.errors.push({
+          ruleId: 'invalid_field_type',
           field: field.id,
-          message: `${field.label} is required`,
-          code: 'REQUIRED_FIELD_MISSING',
+          message: `Field "${field.label}" has invalid type. Expected ${field.type}`,
+          severity: 'error',
+          category: 'format',
         });
         continue;
-      }
-
-      // Skip validation if value is not provided and not required
-      if (value === undefined || value === null) {
-        continue;
-      }
-
-      // Type-specific validation
-      const typeValidation = this.validateFieldType(value, field);
-      if (!typeValidation.valid) {
-        invalidFields.push(field.id);
-        errors.push({
-          field: field.id,
-          message: typeValidation.message || `${field.label} has invalid format`,
-          code: 'INVALID_FIELD_FORMAT',
-        });
       }
 
       // Range validation for numbers
       if (field.type === L2FieldType.NUMBER && typeof value === 'number') {
         if (field.min !== undefined && value < field.min) {
-          errors.push({
+          report.errors.push({
+            ruleId: 'value_below_minimum',
             field: field.id,
-            message: `${field.label} must be at least ${field.min}`,
-            code: 'BELOW_MINIMUM',
+            message: `Value ${value} is below minimum ${field.min}`,
+            severity: 'error',
+            category: 'range',
           });
         }
         if (field.max !== undefined && value > field.max) {
-          errors.push({
+          report.errors.push({
+            ruleId: 'value_above_maximum',
             field: field.id,
-            message: `${field.label} must be at most ${field.max}`,
-            code: 'EXCEEDS_MAXIMUM',
+            message: `Value ${value} is above maximum ${field.max}`,
+            severity: 'error',
+            category: 'range',
           });
+        }
+      }
+
+      // Range validation for range type
+      if (field.type === L2FieldType.RANGE && typeof value === 'object') {
+        const range = value as { min: number; max: number };
+        if (range.min > range.max) {
+          report.errors.push({
+            ruleId: 'invalid_range',
+            field: field.id,
+            message: `Invalid range: min (${range.min}) is greater than max (${range.max})`,
+            severity: 'error',
+            category: 'range',
+          });
+        }
+        if (field.min !== undefined && range.min < field.min) {
+          report.warnings.push({
+            ruleId: 'range_below_minimum',
+            field: field.id,
+            message: `Range minimum ${range.min} is below schema minimum ${field.min}`,
+            severity: 'warning',
+            category: 'range',
+          });
+        }
+        if (field.max !== undefined && range.max > field.max) {
+          report.warnings.push({
+            ruleId: 'range_above_maximum',
+            field: field.id,
+            message: `Range maximum ${range.max} is above schema maximum ${field.max}`,
+            severity: 'warning',
+            category: 'range',
+          });
+        }
+      }
+
+      // Enum validation
+      if ((field.type === L2FieldType.ENUM || field.type === L2FieldType.MULTI_SELECT) && field.options) {
+        const validValues = field.options.map(o => o.value);
+
+        if (field.type === L2FieldType.ENUM) {
+          if (!validValues.includes(value as string)) {
+            report.errors.push({
+              ruleId: 'invalid_enum_value',
+              field: field.id,
+              message: `Invalid value "${value}" for field "${field.label}"`,
+              severity: 'error',
+              category: 'format',
+              suggestion: `Valid values are: ${validValues.join(', ')}`,
+            });
+          }
+        } else {
+          const values = value as string[];
+          const invalidValues = values.filter(v => !validValues.includes(v));
+          if (invalidValues.length > 0) {
+            report.errors.push({
+              ruleId: 'invalid_multi_select_values',
+              field: field.id,
+              message: `Invalid values [${invalidValues.join(', ')}] for field "${field.label}"`,
+              severity: 'error',
+              category: 'format',
+            });
+          }
         }
       }
 
       // Text length validation
-      if ((field.type === L2FieldType.TEXT || field.type === L2FieldType.LONG_TEXT) &&
-          typeof value === 'string') {
+      if ((field.type === L2FieldType.TEXT || field.type === L2FieldType.LONG_TEXT) && typeof value === 'string') {
         if (field.minLength !== undefined && value.length < field.minLength) {
-          warnings.push({
+          report.warnings.push({
+            ruleId: 'text_too_short',
             field: field.id,
-            message: `${field.label} should have at least ${field.minLength} characters`,
-            code: 'BELOW_MIN_LENGTH',
+            message: `Text is too short (${value.length} chars, minimum ${field.minLength})`,
+            severity: 'warning',
+            category: 'format',
           });
         }
         if (field.maxLength !== undefined && value.length > field.maxLength) {
-          errors.push({
+          report.warnings.push({
+            ruleId: 'text_too_long',
             field: field.id,
-            message: `${field.label} exceeds maximum length of ${field.maxLength}`,
-            code: 'EXCEEDS_MAX_LENGTH',
+            message: `Text is too long (${value.length} chars, maximum ${field.maxLength})`,
+            severity: 'warning',
+            category: 'format',
           });
-        }
-      }
-
-      // Enum validity check
-      if (field.type === L2FieldType.ENUM && field.options) {
-        const validValues = field.options.map(o => o.value);
-        if (!validValues.includes(value as string)) {
-          invalidFields.push(field.id);
-          errors.push({
-            field: field.id,
-            message: `${field.label} must be one of: ${validValues.join(', ')}`,
-            code: 'INVALID_ENUM_VALUE',
-          });
-          // Suggest closest match
-          const suggestion = this.findClosestMatch(value as string, field.options);
-          if (suggestion) {
-            suggestions.push({
-              field: field.id,
-              suggestion: `Did you mean "${suggestion}"?`,
-              confidence: 0.8,
-            });
-          }
-        }
-      }
-
-      // Multi-select validity check
-      if (field.type === L2FieldType.MULTI_SELECT && field.options) {
-        if (Array.isArray(value)) {
-          const validValues = field.options.map(o => o.value);
-          const invalidValues = value.filter(v => !validValues.includes(v));
-          if (invalidValues.length > 0) {
-            invalidFields.push(field.id);
-            warnings.push({
-              field: field.id,
-              message: `Invalid values in ${field.label}: ${invalidValues.join(', ')}`,
-              code: 'INVALID_MULTI_SELECT_VALUES',
-            });
-          }
         }
       }
 
@@ -301,329 +363,514 @@ export class ExtractionValidator {
       if (field.validation?.pattern && typeof value === 'string') {
         const regex = new RegExp(field.validation.pattern);
         if (!regex.test(value)) {
-          errors.push({
+          report.errors.push({
+            ruleId: 'pattern_mismatch',
             field: field.id,
-            message: field.validation.message || `${field.label} format is invalid`,
-            code: 'PATTERN_MISMATCH',
-          });
-        }
-      }
-
-      // Custom rule validation
-      const customRule = this.customRules.get(field.id);
-      if (customRule) {
-        const customResult = customRule.validate(value, data);
-        if (!customResult.valid) {
-          errors.push({
-            field: field.id,
-            message: customResult.message || `${field.label} failed custom validation`,
-            code: 'CUSTOM_VALIDATION_FAILED',
+            message: field.validation.message || `Value does not match required pattern`,
+            severity: 'error',
+            category: 'format',
           });
         }
       }
     }
-
-    // Run business rules
-    for (const rule of this.businessRules.values()) {
-      if (!rule.condition(data)) {
-        const error = {
-          field: 'business_rule',
-          message: rule.errorMessage,
-          code: rule.id.toUpperCase(),
-        };
-        if (rule.severity === 'error') {
-          errors.push(error);
-        } else {
-          warnings.push(error);
-        }
-      }
-    }
-
-    const valid = errors.length === 0;
-    const isComplete = missingRequired.length === 0;
-    const canProceed = valid || (isComplete && errors.every(e =>
-      !['SCHEMA_NOT_FOUND', 'REQUIRED_FIELD_MISSING'].includes(e.code)
-    ));
-
-    return {
-      valid,
-      isComplete,
-      canProceed,
-      errors,
-      warnings,
-      missingRequired,
-      invalidFields,
-      suggestions,
-    };
   }
 
   /**
-   * Validate a single field value based on its type
+   * Validate field type
    */
-  private validateFieldType(value: any, field: { type: L2FieldType }): { valid: boolean; message?: string } {
-    switch (field.type) {
-      case L2FieldType.NUMBER:
-        if (typeof value !== 'number' || isNaN(value)) {
-          return { valid: false, message: 'Value must be a number' };
-        }
-        return { valid: true };
-
-      case L2FieldType.BOOLEAN:
-        if (typeof value !== 'boolean') {
-          return { valid: false, message: 'Value must be a boolean' };
-        }
-        return { valid: true };
-
+  private validateFieldType(value: any, type: L2FieldType): boolean {
+    switch (type) {
       case L2FieldType.TEXT:
       case L2FieldType.LONG_TEXT:
-        if (typeof value !== 'string') {
-          return { valid: false, message: 'Value must be a string' };
-        }
-        return { valid: true };
-
       case L2FieldType.ENUM:
-        if (typeof value !== 'string') {
-          return { valid: false, message: 'Value must be a string' };
-        }
-        return { valid: true };
-
+        return typeof value === 'string';
+      case L2FieldType.NUMBER:
+        return typeof value === 'number' && !isNaN(value);
+      case L2FieldType.BOOLEAN:
+        return typeof value === 'boolean';
       case L2FieldType.MULTI_SELECT:
-        if (!Array.isArray(value)) {
-          return { valid: false, message: 'Value must be an array' };
-        }
-        return { valid: true };
-
+        return Array.isArray(value) && value.every(v => typeof v === 'string');
       case L2FieldType.RANGE:
-        if (typeof value !== 'object' || value === null) {
-          return { valid: false, message: 'Value must be an object' };
-        }
-        if (!('min' in value) || !('max' in value)) {
-          return { valid: false, message: 'Range must have min and max' };
-        }
-        if (value.min > value.max) {
-          return { valid: false, message: 'Min cannot be greater than max' };
-        }
-        return { valid: true };
-
+        return (
+          typeof value === 'object' &&
+          value !== null &&
+          typeof value.min === 'number' &&
+          typeof value.max === 'number'
+        );
       case L2FieldType.DATE:
-      case L2FieldType.TIME:
       case L2FieldType.DATETIME:
-        if (typeof value !== 'string') {
-          return { valid: false, message: 'Value must be a string' };
-        }
-        if (isNaN(Date.parse(value))) {
-          return { valid: false, message: 'Invalid date format' };
-        }
-        return { valid: true };
-
+      case L2FieldType.TIME:
+        // Accept strings or Date objects
+        return typeof value === 'string' || value instanceof Date;
       default:
-        return { valid: true };
+        return true;
     }
   }
 
   /**
-   * Find closest matching option using simple string similarity
+   * Validate business rules
+   * 业务规则验证
    */
-  private findClosestMatch(value: string, options: L2FieldOption[]): string | null {
-    const lowerValue = value.toLowerCase();
-    let bestMatch: string | null = null;
-    let bestScore = 0;
+  private validateBusinessRules(context: ValidationContext, report: ValidationReport): void {
+    const { data, schema, demand } = context;
 
-    for (const option of options) {
-      // Check value match
-      if (option.value.toLowerCase().includes(lowerValue) ||
-          lowerValue.includes(option.value.toLowerCase())) {
-        const score = Math.min(option.value.length, lowerValue.length) /
-                      Math.max(option.value.length, lowerValue.length);
-        if (score > bestScore && score > 0.5) {
-          bestScore = score;
-          bestMatch = option.value;
-        }
+    // Rule: Budget reasonableness
+    if (data.budgetMin !== undefined && data.budgetMax !== undefined) {
+      const min = Number(data.budgetMin);
+      const max = Number(data.budgetMax);
+
+      if (min > max) {
+        report.errors.push({
+          ruleId: 'invalid_budget_range',
+          field: 'budget',
+          message: 'Minimum budget cannot be greater than maximum budget',
+          severity: 'error',
+          category: 'business',
+        });
       }
 
-      // Check label match
-      if (option.label.toLowerCase().includes(lowerValue) ||
-          lowerValue.includes(option.label.toLowerCase())) {
-        const score = Math.min(option.label.length, lowerValue.length) /
-                      Math.max(option.label.length, lowerValue.length);
-        if (score > bestScore && score > 0.5) {
-          bestScore = score;
-          bestMatch = option.value;
-        }
+      // Warning if range is too wide (>10x difference)
+      if (max / min > 10) {
+        report.warnings.push({
+          ruleId: 'budget_range_too_wide',
+          field: 'budget',
+          message: `Budget range (${min} - ${max}) is very wide`,
+          severity: 'warning',
+          category: 'business',
+          suggestion: 'Consider narrowing your budget range for better matching',
+        });
       }
-    }
 
-    return bestMatch;
-  }
-
-  /**
-   * Get numeric value from data using possible field names
-   */
-  private getNumericValue(data: L2Data, possibleNames: string[]): number | undefined {
-    for (const name of possibleNames) {
-      const value = data[name];
-      if (typeof value === 'number') {
-        return value;
+      // Warning if budget seems too low or too high
+      if (max < 100) {
+        report.warnings.push({
+          ruleId: 'budget_very_low',
+          field: 'budget',
+          message: 'Budget seems very low, please confirm',
+          severity: 'warning',
+          category: 'business',
+        });
       }
-    }
-    return undefined;
-  }
-
-  /**
-   * Get string value from data using possible field names
-   */
-  private getStringValue(data: L2Data, possibleNames: string[]): string | undefined {
-    for (const name of possibleNames) {
-      const value = data[name];
-      if (typeof value === 'string') {
-        return value;
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Add a business rule
-   */
-  addBusinessRule(rule: BusinessRule): void {
-    this.businessRules.set(rule.id, rule);
-    logger.info('Business rule registered', { ruleId: rule.id, name: rule.name });
-  }
-
-  /**
-   * Remove a business rule
-   */
-  removeBusinessRule(ruleId: string): void {
-    this.businessRules.delete(ruleId);
-    logger.info('Business rule removed', { ruleId });
-  }
-
-  /**
-   * Add a custom field validation rule
-   */
-  addCustomRule(rule: FieldValidationRule): void {
-    this.customRules.set(rule.field, rule);
-  }
-
-  /**
-   * Check if data can proceed to next step
-   */
-  canProceed(data: L2Data, scene: string): boolean {
-    const result = this.validate(data, scene);
-    return result.canProceed;
-  }
-
-  /**
-   * Get validation summary for user confirmation
-   */
-  getConfirmationSummary(data: L2Data, scene: string): {
-    isValid: boolean;
-    requiresConfirmation: boolean;
-    confirmationItems: Array<{
-      field: string;
-      value: any;
-      needsConfirmation: boolean;
-      reason: string;
-    }>;
-  } {
-    const schema = getL2Schema(scene);
-    if (!schema) {
-      return {
-        isValid: false,
-        requiresConfirmation: true,
-        confirmationItems: [],
-      };
-    }
-
-    const confirmationItems: Array<{
-      field: string;
-      value: any;
-      needsConfirmation: boolean;
-      reason: string;
-    }> = [];
-
-    for (const field of schema.fields) {
-      const value = data[field.id];
-
-      if (value !== undefined && value !== null) {
-        // Check if field typically needs confirmation
-        const needsConfirmation = this.fieldNeedsConfirmation(field.id, value);
-        confirmationItems.push({
-          field: field.id,
-          value,
-          needsConfirmation,
-          reason: needsConfirmation ? 'High-impact field - please confirm' : '',
+      if (max > 1000000) {
+        report.infos.push({
+          ruleId: 'budget_very_high',
+          field: 'budget',
+          message: 'Budget is very high, premium service may be available',
+          severity: 'info',
+          category: 'business',
         });
       }
     }
 
-    const validation = this.validate(data, scene);
+    // Rule: Time reasonableness
+    if (data.startTime && data.endTime) {
+      const start = new Date(data.startTime as string);
+      const end = new Date(data.endTime as string);
 
+      if (start >= end) {
+        report.errors.push({
+          ruleId: 'invalid_time_range',
+          field: 'time',
+          message: 'Start time must be before end time',
+          severity: 'error',
+          category: 'business',
+        });
+      }
+
+      // Warning if duration is very short (< 30 minutes)
+      const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+      if (durationMinutes < 30) {
+        report.warnings.push({
+          ruleId: 'very_short_duration',
+          field: 'time',
+          message: `Duration (${Math.round(durationMinutes)} minutes) is very short`,
+          severity: 'warning',
+          category: 'business',
+        });
+      }
+
+      // Warning if time is in the past
+      if (start < new Date()) {
+        report.warnings.push({
+          ruleId: 'time_in_past',
+          field: 'time',
+          message: 'Start time is in the past',
+          severity: 'warning',
+          category: 'business',
+        });
+      }
+    }
+
+    // Rule: People count reasonableness
+    if (data.peopleCount !== undefined) {
+      const count = Number(data.peopleCount);
+      if (count < 1) {
+        report.errors.push({
+          ruleId: 'invalid_people_count',
+          field: 'peopleCount',
+          message: 'People count must be at least 1',
+          severity: 'error',
+          category: 'business',
+        });
+      }
+      if (count > 1000) {
+        report.warnings.push({
+          ruleId: 'very_large_group',
+          field: 'peopleCount',
+          message: `Group size (${count}) is very large`,
+          severity: 'warning',
+          category: 'business',
+          suggestion: 'Please confirm this is correct for your needs',
+        });
+      }
+    }
+
+    // Apply custom business rules
+    if (schema.scene) {
+      const sceneRules = this.sceneRules.get(schema.scene) || [];
+      for (const rule of sceneRules) {
+        try {
+          const passed = rule.condition(data, schema, demand);
+          if (!passed) {
+            const issue: ValidationIssue = {
+              ruleId: rule.id,
+              message: rule.message,
+              severity: rule.severity,
+              category: rule.category,
+            };
+
+            if (rule.severity === 'error') {
+              report.errors.push(issue);
+            } else if (rule.severity === 'warning') {
+              report.warnings.push(issue);
+            } else {
+              report.infos.push(issue);
+            }
+          }
+        } catch (error) {
+          logger.error(`Rule ${rule.id} failed`, { error });
+        }
+      }
+    }
+  }
+
+  /**
+   * Validate ranges
+   * 范围验证
+   */
+  private validateRanges(context: ValidationContext, report: ValidationReport): void {
+    const { data, schema } = context;
+
+    for (const field of schema.fields) {
+      const value = data[field.id];
+      if (value === undefined || value === null) continue;
+
+      // Schema-level range constraints
+      if (field.min !== undefined || field.max !== undefined) {
+        if (typeof value === 'number') {
+          if (field.min !== undefined && value < field.min) {
+            report.errors.push({
+              ruleId: 'below_schema_minimum',
+              field: field.id,
+              message: `Value ${value} is below schema minimum ${field.min}`,
+              severity: 'error',
+              category: 'range',
+            });
+          }
+          if (field.max !== undefined && value > field.max) {
+            report.errors.push({
+              ruleId: 'above_schema_maximum',
+              field: field.id,
+              message: `Value ${value} is above schema maximum ${field.max}`,
+              severity: 'error',
+              category: 'range',
+            });
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Validate formats
+   * 格式验证
+   */
+  private validateFormats(context: ValidationContext, report: ValidationReport): void {
+    const { data } = context;
+
+    // Email format
+    const emailFields = ['email', 'contactEmail', 'userEmail'];
+    for (const field of emailFields) {
+      const value = data[field];
+      if (value && typeof value === 'string') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          report.errors.push({
+            ruleId: 'invalid_email_format',
+            field,
+            message: `Invalid email format: ${value}`,
+            severity: 'error',
+            category: 'format',
+          });
+        }
+      }
+    }
+
+    // Phone format
+    const phoneFields = ['phone', 'contactPhone', 'mobile'];
+    const phoneRegex = /^1[3-9]\d{9}$/; // Chinese mobile
+    for (const field of phoneFields) {
+      const value = data[field];
+      if (value && typeof value === 'string') {
+        if (!phoneRegex.test(value.replace(/\s/g, ''))) {
+          report.warnings.push({
+            ruleId: 'invalid_phone_format',
+            field,
+            message: `Phone number format may be invalid: ${value}`,
+            severity: 'warning',
+            category: 'format',
+          });
+        }
+      }
+    }
+
+    // URL format
+    const urlFields = ['url', 'website', 'link'];
+    const urlRegex = /^https?:\/\/.+/;
+    for (const field of urlFields) {
+      const value = data[field];
+      if (value && typeof value === 'string') {
+        if (!urlRegex.test(value)) {
+          report.warnings.push({
+            ruleId: 'invalid_url_format',
+            field,
+            message: `URL should start with http:// or https://`,
+            severity: 'warning',
+            category: 'format',
+          });
+        }
+      }
+    }
+
+    // Date format validation
+    const dateFields = ['startTime', 'endTime', 'deadline'];
+    for (const field of dateFields) {
+      const value = data[field];
+      if (value && typeof value === 'string') {
+        const date = new Date(value);
+        if (isNaN(date.getTime())) {
+          report.errors.push({
+            ruleId: 'invalid_date_format',
+            field,
+            message: `Invalid date format: ${value}`,
+            severity: 'error',
+            category: 'format',
+          });
+        }
+      }
+    }
+  }
+
+  /**
+   * Apply custom rules
+   */
+  private applyCustomRules(context: ValidationContext, report: ValidationReport): void {
+    // Global custom rules
+    for (const rule of this.rules.values()) {
+      try {
+        const passed = rule.condition(context.data, context.schema, context.demand);
+        if (!passed) {
+          const issue: ValidationIssue = {
+            ruleId: rule.id,
+            message: rule.message,
+            severity: rule.severity,
+            category: rule.category,
+          };
+
+          if (rule.severity === 'error') {
+            report.errors.push(issue);
+          } else if (rule.severity === 'warning') {
+            report.warnings.push(issue);
+          } else {
+            report.infos.push(issue);
+          }
+        }
+      } catch (error) {
+        logger.error(`Custom rule ${rule.id} failed`, { error });
+      }
+    }
+  }
+
+  /**
+   * Calculate completeness score
+   */
+  private calculateCompletenessScore(data: L2Data, schema: L2Schema): number {
+    if (schema.fields.length === 0) return 100;
+
+    const requiredFields = schema.fields.filter(f => f.required);
+    const optionalFields = schema.fields.filter(f => !f.required);
+
+    let score = 0;
+
+    // Required fields: 70% of score
+    if (requiredFields.length > 0) {
+      const filledRequired = requiredFields.filter(f => {
+        const value = data[f.id];
+        return value !== undefined && value !== null && value !== '';
+      }).length;
+      score += (filledRequired / requiredFields.length) * 70;
+    } else {
+      score += 70;
+    }
+
+    // Optional fields: 30% of score
+    if (optionalFields.length > 0) {
+      const filledOptional = optionalFields.filter(f => {
+        const value = data[f.id];
+        return value !== undefined && value !== null && value !== '';
+      }).length;
+      score += (filledOptional / optionalFields.length) * 30;
+    } else {
+      score += 30;
+    }
+
+    return Math.round(score);
+  }
+
+  /**
+   * Determine if user confirmation is needed
+   */
+  private determineConfirmationNeeded(report: ValidationReport, options: ValidationOptions): void {
+    if (options.strictMode && report.errors.length > 0) {
+      report.confirmationNeeded = true;
+      report.confirmationPrompt = `Found ${report.errors.length} errors. Please review and confirm.`;
+      return;
+    }
+
+    // Confirmation needed if completeness is low
+    if (report.summary.completenessScore < 50) {
+      report.confirmationNeeded = true;
+      report.confirmationPrompt = 'Information is incomplete. Please review and confirm or provide more details.';
+      return;
+    }
+
+    // Confirmation needed if there are warnings
+    if (report.warnings.length > 2) {
+      report.confirmationNeeded = true;
+      report.confirmationPrompt = 'There are some items that need attention. Please review before proceeding.';
+      return;
+    }
+
+    report.confirmationNeeded = false;
+  }
+
+  /**
+   * Register a custom validation rule
+   */
+  registerRule(rule: ValidationRule): void {
+    this.rules.set(rule.id, rule);
+    logger.info(`Registered validation rule: ${rule.id}`);
+  }
+
+  /**
+   * Register scene-specific rules
+   */
+  registerSceneRules(scene: string, rules: ValidationRule[]): void {
+    this.sceneRules.set(scene, rules);
+    logger.info(`Registered ${rules.length} rules for scene: ${scene}`);
+  }
+
+  /**
+   * Get default validation options
+   */
+  private getDefaultOptions(): ValidationOptions {
     return {
-      isValid: validation.valid,
-      requiresConfirmation: confirmationItems.some(i => i.needsConfirmation) || !validation.valid,
-      confirmationItems,
+      checkCompleteness: true,
+      checkBusinessRules: true,
+      checkRanges: true,
+      checkFormats: true,
+      strictMode: false,
+      allowPartial: true,
     };
   }
 
   /**
-   * Determine if a field needs confirmation based on its value
+   * Initialize default validation rules
    */
-  private fieldNeedsConfirmation(fieldId: string, value: any): boolean {
-    // Fields that typically need confirmation
-    const highImpactFields = ['price', 'budget', 'salary', 'quantity', 'deadline'];
-
-    if (highImpactFields.some(f => fieldId.toLowerCase().includes(f))) {
-      return true;
-    }
-
-    // Large numeric values need confirmation
-    if (typeof value === 'number' && value > 10000) {
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Record confirmation status
-   */
-  recordConfirmation(status: ConfirmationStatus): void {
-    logger.info('Extraction confirmation recorded', {
-      extractionId: status.extractionId,
-      confirmed: status.confirmed,
-      confirmedFields: status.confirmedFields.length,
-      correctedFields: status.correctedFields.length,
+  private initializeDefaultRules(): void {
+    // Add some built-in rules
+    this.rules.set('no_empty_fields', {
+      id: 'no_empty_fields',
+      name: 'No Empty Fields',
+      description: 'Prevents empty string values',
+      condition: (data) => {
+        return !Object.values(data).some(v => v === '');
+      },
+      message: 'Empty values are not allowed',
+      severity: 'warning',
+      category: 'completeness',
     });
   }
 
   /**
-   * Apply corrections to data
+   * Validate a single field
    */
-  applyCorrections(data: L2Data, corrections: Record<string, any>): L2Data {
-    return {
-      ...data,
-      ...corrections,
-    };
-  }
-
-  /**
-   * Get validation errors for specific fields
-   */
-  getFieldErrors(result: ValidationResult, fieldIds?: string[]): L2ValidationError[] {
-    if (!fieldIds) {
-      return result.errors;
+  validateField(
+    fieldId: string,
+    value: any,
+    schema: L2Schema
+  ): FieldValidationResult {
+    const field = schema.fields.find(f => f.id === fieldId);
+    if (!field) {
+      return {
+        field: fieldId,
+        valid: false,
+        errors: [{
+          ruleId: 'field_not_found',
+          field: fieldId,
+          message: `Field ${fieldId} not found in schema`,
+          severity: 'error',
+          category: 'completeness',
+        }],
+        warnings: [],
+      };
     }
-    return result.errors.filter(e => fieldIds.includes(e.field));
-  }
 
-  /**
-   * Check if specific fields are valid
-   */
-  areFieldsValid(result: ValidationResult, fieldIds: string[]): boolean {
-    return fieldIds.every(fieldId =>
-      !result.errors.some(e => e.field === fieldId)
-    );
+    const result: FieldValidationResult = {
+      field: fieldId,
+      valid: true,
+      errors: [],
+      warnings: [],
+      value,
+    };
+
+    // Required check
+    if (field.required && (value === undefined || value === null || value === '')) {
+      result.errors.push({
+        ruleId: 'required_field_missing',
+        field: fieldId,
+        message: `Field "${field.label}" is required`,
+        severity: 'error',
+        category: 'completeness',
+      });
+      result.valid = false;
+    }
+
+    // Type check
+    if (value !== undefined && value !== null) {
+      if (!this.validateFieldType(value, field.type)) {
+        result.errors.push({
+          ruleId: 'invalid_type',
+          field: fieldId,
+          message: `Invalid type for field "${field.label}"`,
+          severity: 'error',
+          category: 'format',
+        });
+        result.valid = false;
+      }
+    }
+
+    return result;
   }
 }
 

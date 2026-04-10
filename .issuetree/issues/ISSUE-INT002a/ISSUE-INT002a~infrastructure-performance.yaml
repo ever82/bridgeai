@@ -2,7 +2,7 @@ id: ISSUE-INT002a
 issue_number: 1202.1
 title: 基础设施性能优化
 slug: infrastructure-performance
-status: implemented
+status: checking
 description: |
   执行系统基础设施层性能优化与压力测试，包括API响应时间优化和数据库查询优化。
   这是ISSUE-INT002的阶段1，专注于基础设施性能，为后续实时服务性能优化奠定基础。
@@ -23,7 +23,7 @@ criteria:
       - 数据库查询性能分析与优化
       - 缓存策略实施与验证(Redis)
       - API限流与熔断机制压力测试
-    status: passed
+status: checking
     coverage:
       unit: not_needed
       integration: required
@@ -46,7 +46,7 @@ criteria:
       - Prisma连接池配置优化
       - 复杂查询(匹配算法)性能优化
       - 数据库分表分库策略评估
-    status: passed
+status: checking
     coverage:
       unit: not_needed
       integration: required

@@ -2,13 +2,15 @@ id: ISSUE-UI002
 issue_number: 1102
 title: 全局导航与布局
 slug: navigation-layout
-status: in_progress
+status: implemented
 description: |
   实现应用全局导航结构和布局系统，包括底部 Tab 导航、
   侧边抽屉导航、导航状态管理、页面布局容器等。
 prerequisites:
   - ISSUE-UI001
 created_at: '2026-04-08'
+started_at: '2026-04-11'
+completed_at: '2026-04-11'
 logic: sufficient_necessary
 criteria:
   - id: ISSUE-UI002~c1
@@ -20,7 +22,7 @@ criteria:
       - 未读消息红点/角标显示
       - Tab 切换动画效果
       - 适配 iOS 底部安全区域
-    status: pending
+status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -42,7 +44,7 @@ criteria:
       - 嵌套导航结构（Tab + Stack）
       - 路由参数类型定义
       - 深链接（Deep Link）配置
-    status: pending
+status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -65,7 +67,7 @@ criteria:
       - 内容滚动容器（ScrollView/FlatList）
       - 加载状态占位（Skeleton）
       - 空状态和错误状态页面
-    status: pending
+status: passed
     coverage:
       unit: required
       integration: not_needed
@@ -88,7 +90,7 @@ criteria:
       - 菜单项列表（设置、帮助、反馈等）
       - 手势滑动打开/关闭
       - 遮罩层点击关闭
-    status: pending
+status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -110,7 +112,7 @@ criteria:
       - 导航状态持久化
       - 返回按钮行为控制
       - 页面跳转动画配置
-    status: pending
+status: passed
     coverage:
       unit: required
       integration: required
@@ -132,7 +134,7 @@ criteria:
       - 键盘弹出时布局调整
       - 底部 Tab 栏与输入法协调
       - 刘海屏/灵动岛适配
-    status: pending
+status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -145,5 +147,5 @@ criteria:
         context_files:
           - apps/mobile/src/hooks/useScreenDimensions.ts
           - apps/mobile/src/components/KeyboardAvoidingView/KeyboardAvoidingView.tsx
-started_at: null
-completed_at: null
+started_at: '2026-04-11'
+completed_at: '2026-04-11'

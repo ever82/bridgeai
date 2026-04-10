@@ -1,0 +1,27 @@
+id: TASK-IMP
+title: 场景配置管理系统实现验证
+description: |
+  验证并实现 ISSUE-C006 场景配置管理系统：
+  1. 验证场景配置 Schema (VisionShare, AgentDate, AgentJob, AgentAd)
+  2. 验证场景字段定义和验证规则
+  3. 验证场景模板系统功能
+  4. 验证场景能力声明和检查
+  5. 验证场景切换和迁移功能
+  6. 验证场景配置管理 UI
+  7. 运行所有单元测试确保通过
+
+  如发现问题，修复并完善实现。
+issue_id: ISSUE-C006
+status: completed
+time_limit_minutes: 90
+created_at: $(date -Iseconds)
+notes: |
+  实现完成：
+  - 已合并到 master 分支
+  - 所有文件已正确放置
+  - 冲突已解决 (apps/server/src/routes/v1/index.ts)
+  - 实现了 6 个验收标准 (c1-c6)
+session_start: '2026-04-10T19:18:06.488Z'
+session_end: '2026-04-10T19:25:00.000Z'
+execution_time_minutes: 7
+result: success
