@@ -1,48 +1,37 @@
-You are working on task TASK-2 in issue ISSUE-F001.
+# Implementation Task: 实现设计系统组件库
 
-Task file: .issuetree/issues/ISSUE-F001/tasks/TASK-2~setup-dev-environment.yaml
+**Issue:** ISSUE-UI001
+**Task:** TASK-2
 
-## Task Description
-安装 VisionShare 项目开发所需的所有软件依赖。
+## Description
 
-### 必需软件
-1. **pnpm** (>= 9.0.0) - Node.js 包管理器
-2. **PostgreSQL** (>= 15) - 数据库，需带 PostGIS 扩展
-3. **Redis** (>= 7.0) - 缓存/队列
+实现 BridgeAI 设计系统与组件库：
+1. 创建设计令牌（Design Tokens）- 色彩、字体、间距、圆角等
+2. 实现 Button 组件 - 多种变体、尺寸、状态
+3. 实现 Input 组件 - 多种类型、状态、前缀后缀
+4. 实现 Card 和 Modal 组件
+5. 建立图标系统
+6. 配置组件文档/Storybook
 
-### E2E 测试软件（可选但建议安装）
-4. **Detox CLI** - E2E 测试框架
-5. **Xcode** - iOS 开发和模拟器
-6. **Android Studio** - Android SDK 和模拟器
+完成后更新 Issue 状态为 implemented。
 
-## Your Instructions
+## Files to Modify
 
-1. First, read the task YAML to understand full requirements
-2. Update the task status to "in_progress" in the YAML file
-3. Check current environment and what software is already installed
-4. Install all missing required software (pnpm, PostgreSQL, Redis)
-5. Start PostgreSQL and Redis services
-6. Install Detox CLI for E2E testing
-7. Check and report Xcode installation status (it may require manual App Store download)
-8. Check and report Android Studio installation status
-9. Run `pnpm install` to install project dependencies
-10. Verify all installations are successful
+- (To be determined based on implementation)
 
-## Success Criteria
-- pnpm --version >= 9.0.0
-- psql --version >= 15
-- redis-cli --version >= 7.0
-- detox --version works
-- PostgreSQL service running
-- Redis service running
-- pnpm install completes successfully
+## Instructions
 
-## On Completion
-Update the task YAML:
-- Set status to "completed"
-- Fill in result with summary of what was installed
-- Set session_end and execution_time_minutes
-- List any files_touched
+1. Implement the features described above
+2. Make focused, incremental changes
+3. Test your changes as you go
+4. Commit your work when complete
 
-## On Failure
-Set status to "failed" and describe the error in notes.
+## Completion
+
+When you have completed the implementation:
+1. Run: `echo '{"status": "completed"}' > .issuetree/tmp/TASK-2-result.json`
+2. Exit the session
+
+---
+
+Start implementing now.

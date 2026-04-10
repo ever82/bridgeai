@@ -719,3 +719,31 @@ model SavedFilter {
   @@index([isPublic, usageCount])
   @@map("saved_filters")
 }
+
+// ============================================
+// 场景模板
+// ============================================
+
+model SceneTemplate {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")  // null for preset templates
+  sceneId     String   @map("scene_id") // visionshare, agentdate, agentjob, agentad
+  name        String   // 模板名称
+  description String?  // 模板描述
+  isPreset    Boolean  @default(false) @map("is_preset")  // 是否是预设模板
+  isDefault   Boolean  @default(false) @map("is_default") // 是否用户默认模板
+  fieldValues Json     // 字段默认值
+  isPublic    Boolean  @default(false) @map("is_public")  // 是否公开
+  usageCount  Int      @default(0) @map("usage_count")    // 使用次数
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sceneId])
+  @@index([isPublic, usageCount])
+  @@index([userId, sceneId, isDefault])
+  @@map("scene_templates")
+}
