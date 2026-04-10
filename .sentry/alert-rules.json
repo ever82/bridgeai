@@ -1,0 +1,166 @@
+{
+  "version": 2,
+  "rules": [
+    {
+      "id": "p0-critical-errors",
+      "name": "P0 Critical Errors",
+      "description": "Immediate notification for critical errors",
+      "conditions": {
+        "all": [
+          {
+            "name": "An event occurs",
+            "id": "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+          },
+          {
+            "name": "The event's level is",
+            "id": "sentry.rules.conditions.event_attribute.EventAttributeCondition",
+            "attribute": "level",
+            "match": "eq",
+            "value": "fatal"
+          }
+        ]
+      },
+      "filters": {
+        "all": [
+          {
+            "name": "The event's tags match {key} {match} {value}",
+            "id": "sentry.rules.filters.tagged_event.TaggedEventFilter",
+            "key": "environment",
+            "match": "eq",
+            "value": "production"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "name": "Send a notification to the {account} Slack workspace to {channel} and show tags {tags} in notification",
+          "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
+          "account": "visionshare",
+          "channel": "#alerts-critical",
+          "tags": "environment,release,user"
+        },
+        {
+          "name": "Send a notification via {service} to {target_identifier}",
+          "id": "sentry.mail.actions.NotifyEmailAction",
+          "targetType": "IssueOwners",
+          "targetIdentifier": ""
+        }
+      ],
+      "frequency": 5,
+      "actionMatch": "all",
+      "filterMatch": "all"
+    },
+    {
+      "id": "p1-error-spike",
+      "name": "P1 Error Spike Detection",
+      "description": "Alert when error rate increases significantly",
+      "conditions": {
+        "all": [
+          {
+            "name": "An issue affects more than {value} users in {interval}",
+            "id": "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition",
+            "value": 10,
+            "interval": "5m"
+          }
+        ]
+      },
+      "filters": {
+        "all": [
+          {
+            "name": "The event's tags match {key} {match} {value}",
+            "id": "sentry.rules.filters.tagged_event.TaggedEventFilter",
+            "key": "environment",
+            "match": "eq",
+            "value": "production"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "name": "Send a notification to the {account} Slack workspace to {channel} and show tags {tags} in notification",
+          "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
+          "account": "visionshare",
+          "channel": "#alerts-high",
+          "tags": "environment,release,user,count"
+        }
+      ],
+      "frequency": 15,
+      "actionMatch": "all",
+      "filterMatch": "all"
+    },
+    {
+      "id": "error-rate-threshold",
+      "name": "Error Rate Threshold",
+      "description": "Alert when error rate exceeds threshold",
+      "conditions": {
+        "all": [
+          {
+            "name": "An issue is seen more than {value} times in {interval}",
+            "id": "sentry.rules.conditions.event_frequency.EventFrequencyCondition",
+            "value": 100,
+            "interval": "1h"
+          }
+        ]
+      },
+      "filters": {
+        "all": [
+          {
+            "name": "The event's tags match {key} {match} {value}",
+            "id": "sentry.rules.filters.tagged_event.TaggedEventFilter",
+            "key": "environment",
+            "match": "eq",
+            "value": "production"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "name": "Send a notification to the {account} Slack workspace to {channel} and show tags {tags} in notification",
+          "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
+          "account": "visionshare",
+          "channel": "#alerts-medium",
+          "tags": "environment,release,count"
+        }
+      ],
+      "frequency": 30,
+      "actionMatch": "all",
+      "filterMatch": "all"
+    },
+    {
+      "id": "new-issues",
+      "name": "New Issues in Production",
+      "description": "Notify when new issues are detected in production",
+      "conditions": {
+        "all": [
+          {
+            "name": "A new issue is created",
+            "id": "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+          }
+        ]
+      },
+      "filters": {
+        "all": [
+          {
+            "name": "The event's tags match {key} {match} {value}",
+            "id": "sentry.rules.filters.tagged_event.TaggedEventFilter",
+            "key": "environment",
+            "match": "eq",
+            "value": "production"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "name": "Send a notification to the {account} Slack workspace to {channel} and show tags {tags} in notification",
+          "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
+          "account": "visionshare",
+          "channel": "#alerts-info",
+          "tags": "environment,release"
+        }
+      ],
+      "frequency": 60,
+      "actionMatch": "all",
+      "filterMatch": "all"
+    }
+  ]
+}
