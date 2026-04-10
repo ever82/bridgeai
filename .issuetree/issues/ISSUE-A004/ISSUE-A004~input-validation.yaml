@@ -1,26 +1,26 @@
 ---
-id: "ISSUE-A004"
+id: 'ISSUE-A004'
 issue_number: 204
-title: "输入验证与数据校验"
-slug: "input-validation"
-status: "in_progress"
+title: '输入验证与数据校验'
+slug: 'input-validation'
+status: 'implemented'
 description: |
   实现统一的输入验证和数据校验机制，包括请求参数验证、
   数据格式校验、XSS 防护、SQL 注入防护等安全功能。
 prerequisites:
-  - "ISSUE-A002"
-created_at: "2026-04-08"
+  - 'ISSUE-A002'
+created_at: '2026-04-08'
 logic: sufficient_necessary
 criteria:
-  - id: "ISSUE-A004~c1"
-    name: "请求验证中间件"
+  - id: 'ISSUE-A004~c1'
+    name: '请求验证中间件'
     description: |
       验证中间件:
       - 集成 Zod/Joi/Yup 验证库
       - body/params/query 验证
       - 验证错误处理
       - 自定义验证规则
-    status: "in_progress"
+    status: 'passed'
     coverage:
       unit: required
       integration: required
@@ -29,19 +29,18 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查验证中间件，验证使用 Zod 或 Joi，确认有 validate 中间件用于 body/params/query 验证"
-        context_files: ["apps/server/src/middleware/validation.ts", "apps/server/src/schemas/"]
-        
+        prompt: '检查验证中间件，验证使用 Zod 或 Joi，确认有 validate 中间件用于 body/params/query 验证'
+        context_files: ['apps/server/src/middleware/validation.ts', 'apps/server/src/schemas/']
 
-  - id: "ISSUE-A004~c2"
-    name: "API 请求 Schema 定义"
+  - id: 'ISSUE-A004~c2'
+    name: 'API 请求 Schema 定义'
     description: |
       数据 Schema:
       - 用户相关 Schema
       - Agent 相关 Schema
       - 消息相关 Schema
       - 通用字段验证规则
-    status: "in_progress"
+    status: 'passed'
     coverage:
       unit: required
       integration: required
@@ -50,19 +49,18 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查 Schema 定义，验证有 userSchemas.ts, agentSchemas.ts 等文件，确认类型定义完整"
-        context_files: ["apps/server/src/schemas/"]
-        
+        prompt: '检查 Schema 定义，验证有 userSchemas.ts, agentSchemas.ts 等文件，确认类型定义完整'
+        context_files: ['apps/server/src/schemas/']
 
-  - id: "ISSUE-A004~c3"
-    name: "XSS 和注入防护"
+  - id: 'ISSUE-A004~c3'
+    name: 'XSS 和注入防护'
     description: |
       安全防护:
       - XSS 过滤中间件
       - SQL 注入防护(参数化查询)
       - NoSQL 注入防护
       - HTML 转义处理
-    status: "in_progress"
+    status: 'passed'
     coverage:
       unit: required
       integration: required
@@ -71,19 +69,19 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查安全防护，验证有 xss 中间件，确认所有数据库查询使用参数化查询"
-        context_files: ["apps/server/src/middleware/security.ts", "apps/server/src/utils/sanitizer.ts"]
-        
+        prompt: '检查安全防护，验证有 xss 中间件，确认所有数据库查询使用参数化查询'
+        context_files:
+          ['apps/server/src/middleware/security.ts', 'apps/server/src/utils/sanitizer.ts']
 
-  - id: "ISSUE-A004~c4"
-    name: "移动端表单验证"
+  - id: 'ISSUE-A004~c4'
+    name: '移动端表单验证'
     description: |
       前端验证:
       - 表单字段验证
       - 实时验证反馈
       - 错误提示国际化
       - 验证规则复用
-    status: "in_progress"
+    status: 'passed'
     coverage:
       unit: required
       integration: required
@@ -92,19 +90,18 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查移动端表单验证，验证使用 React Hook Form + Zod/Yup，确认验证规则与后端一致"
-        context_files: ["apps/mobile/src/utils/validation.ts", "apps/mobile/src/hooks/useForm.ts"]
-        
+        prompt: '检查移动端表单验证，验证使用 React Hook Form + Zod/Yup，确认验证规则与后端一致'
+        context_files: ['apps/mobile/src/utils/validation.ts', 'apps/mobile/src/hooks/useForm.ts']
 
-  - id: "ISSUE-A004~c5"
-    name: "文件上传验证"
+  - id: 'ISSUE-A004~c5'
+    name: '文件上传验证'
     description: |
       上传安全:
       - 文件类型限制
       - 文件大小限制
       - 图片内容验证
       - 恶意文件检测
-    status: "in_progress"
+    status: 'passed'
     coverage:
       unit: required
       integration: required
@@ -113,6 +110,19 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查文件上传验证，验证 multer 配置了 fileFilter 和 limits，确认有文件类型白名单"
-        context_files: ["apps/server/src/middleware/upload.ts"]
-        
+        prompt: '检查文件上传验证，验证 multer 配置了 fileFilter 和 limits，确认有文件类型白名单'
+        context_files: ['apps/server/src/middleware/upload.ts']
+
+implementation:
+  completed_at: '2026-04-10'
+  result: 'success'
+  notes: |
+    All 5 criteria implemented:
+    - C1: Request validation middleware with Zod (validation.ts: 186 lines)
+    - C2: API schemas for user, agent, message (userSchemas.ts: 225 lines, agentSchemas.ts: 197 lines)
+    - C3: Security middleware with XSS/SQL/NoSQL protection (security.ts: 386 lines)
+    - C4: Mobile form validation with useForm hook and validation utilities (useForm.ts: 419 lines, validation.ts: 364 lines)
+    - C5: File upload validation with multer (upload.ts: 554 lines) - MIME type checking, dangerous file detection, size limits, image validation
+
+test_passed: true
+merged_to_master: true
