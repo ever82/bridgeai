@@ -3,7 +3,7 @@ id: "ISSUE-F006"
 issue_number: 106
 title: "错误追踪与监控集成"
 slug: "error-monitoring"
-status: "implemented"
+status: "passed"
 description: |
   集成错误追踪和监控服务(Sentry)，实现错误自动上报、
   性能监控、用户反馈收集，以及告警机制。
@@ -16,6 +16,51 @@ implementation:
   completed_at: "2026-04-10T11:15:00+08:00"
   execution_time_minutes: 10
   result: "success"
+check:
+  checked_at: "2026-04-10T11:20:00+08:00"
+  status: "passed"
+  functional_verification:
+    all_criteria_passed: true
+    criteria_verified:
+      - id: "ISSUE-F006~c1"
+        name: "Sentry 后端集成"
+        status: "passed"
+        notes: "Sentry SDK properly integrated with initSentry(), error handlers, and environment configuration"
+      - id: "ISSUE-F006~c2"
+        name: "Sentry 移动端集成"
+        status: "passed"
+        notes: "React Native SDK integrated with crash reporting and error boundaries"
+      - id: "ISSUE-F006~c3"
+        name: "性能监控配置"
+        status: "passed"
+        notes: "Performance middleware with API tracking, database monitoring, and memory usage"
+      - id: "ISSUE-F006~c4"
+        name: "告警规则配置"
+        status: "passed"
+        notes: "4 alert rules configured: P0 Critical, P1 Spike, Error Rate, New Issues"
+      - id: "ISSUE-F006~c5"
+        name: "用户反馈收集"
+        status: "passed"
+        notes: "Feedback form with categories, screenshots, and Sentry integration"
+  code_review:
+    merged_to_main: true
+    files_created:
+      - "apps/server/src/utils/sentry.ts"
+      - "apps/server/src/middleware/performance.ts"
+      - "apps/mobile/src/utils/sentry.ts"
+      - "apps/mobile/src/components/ErrorBoundary/index.tsx"
+      - "apps/mobile/src/components/Feedback/FeedbackForm.tsx"
+      - "apps/mobile/src/components/Feedback/FeedbackButton.tsx"
+      - "apps/mobile/src/components/Feedback/index.tsx"
+      - ".sentry/alert-rules.json"
+      - ".sentry/environment-setup.md"
+      - ".sentry/notification-channels.md"
+    files_modified:
+      - "apps/server/src/app.ts"
+      - "apps/server/package.json"
+      - "apps/mobile/src/App.tsx"
+      - "apps/mobile/package.json"
+  notes: "All acceptance criteria verified. Implementation complete and merged to master."
 criteria:
   - id: "ISSUE-F006~c1"
     name: "Sentry 后端集成"
