@@ -25,7 +25,7 @@ model User {
   bio           String?
   website       String?
   location      String?
-  phone         String?
+  phone         String?    /// @encrypted - PII field
   phoneVerified Boolean   @default(false) @map("phone_verified")
   status        UserStatus @default(ACTIVE)
   privacySettings Json?   @map("privacy_settings") // Profile visibility, online status, etc.
@@ -228,7 +228,7 @@ model Message {
   id              String        @id @default(uuid())
   conversationId  String        @map("conversation_id")
   senderId        String        @map("sender_id")
-  content         String
+  content         String    /// @encrypted - Message content encryption
   type            MessageType   @default(TEXT)
   attachments     Json?
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -388,7 +388,7 @@ model ChatMessage {
   chatRoomId   String       @map("chat_room_id")
   senderId     String       @map("sender_id")
   senderType   SenderType   @map("sender_type")  // USER 或 AGENT
-  content      String
+  content      String    /// @encrypted - Chat message content encryption
   type         MessageType  @default(TEXT)
   attachments  Json?
   metadata     Json?        // 包含私聊建议标记等
