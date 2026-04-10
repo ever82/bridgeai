@@ -19,6 +19,21 @@ export const SettingsScreen = () => {
 
   const settingsGroups = [
     {
+      title: '账号',
+      items: [
+        {
+          title: '账号安全',
+          type: 'link',
+          onPress: () => navigation.navigate('SecuritySettings'),
+        },
+        {
+          title: '隐私设置',
+          type: 'link',
+          onPress: () => navigation.navigate('PrivacySettings'),
+        },
+      ],
+    },
+    {
       title: '外观',
       items: [
         {

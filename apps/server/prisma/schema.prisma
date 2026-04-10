@@ -17,11 +17,20 @@ datasource db {
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
+  emailVerified Boolean   @default(false) @map("email_verified")
   passwordHash  String    @map("password_hash")
   name          String?
+  displayName   String?   @map("display_name")
   avatarUrl     String?   @map("avatar_url")
+  bio           String?
+  website       String?
+  location      String?
   phone         String?
+  phoneVerified Boolean   @default(false) @map("phone_verified")
   status        UserStatus @default(ACTIVE)
+  privacySettings Json?   @map("privacy_settings") // Profile visibility, online status, etc.
+  lastLoginAt   DateTime? @map("last_login_at")
+  loginAttempts Int       @default(0) @map("login_attempts")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
@@ -33,6 +42,9 @@ model User {
   creditRecords CreditRecord[]
   transactions  Transaction[]
   connections   Connection[]
+  devices       UserDevice[]
+  blockedUsers  BlockedUser[] @relation("BlockingUser")
+  blockedBy     BlockedUser[] @relation("BlockedByUser")
 
   @@map("users")
 }
@@ -467,4 +479,51 @@ enum TransactionStatus {
   SUCCESS     @map("success")
   FAILED      @map("failed")
   CANCELLED   @map("cancelled")
+}
+
+// ============================================
+// 用户设备管理
+// ============================================
+
+model UserDevice {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  deviceId    String    @unique @map("device_id")
+  deviceName  String?   @map("device_name")
+  deviceType  String?   @map("device_type") // ios, android, web
+  osVersion   String?   @map("os_version")
+  appVersion  String?   @map("app_version")
+  pushToken   String?   @map("push_token")
+  ipAddress   String?   @map("ip_address")
+  lastActiveAt DateTime @default(now()) @map("last_active_at")
+  isCurrent   Boolean  @default(false) @map("is_current")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deviceId])
+  @@map("user_devices")
+}
+
+// ============================================
+// 阻止列表
+// ============================================
+
+model BlockedUser {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  blockedUserId String @map("blocked_user_id")
+  reason      String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user        User     @relation("BlockingUser", fields: [userId], references: [id], onDelete: Cascade)
+  blockedUser User     @relation("BlockedByUser", fields: [blockedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blockedUserId])
+  @@index([userId])
+  @@index([blockedUserId])
+  @@map("blocked_users")
 }
