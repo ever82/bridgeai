@@ -147,5 +147,45 @@ implementation:
   result: success
   notes: Successfully implemented all design system components
 test_passed: true
-merged_to_master: false
+merged_to_master: true
 worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-UI001
+check:
+  issue_id: ISSUE-UI001
+  checked_at: '2026-04-10T16:05:00+08:00'
+  status: passed
+  functional_verification:
+    all_criteria_passed: true
+    criteria:
+      - id: ISSUE-UI001~c1
+        name: 设计令牌（Design Tokens）定义
+        status: passed
+        notes: Theme with colors, typography, spacing, borderRadius, shadows; light/dark theme support
+      - id: ISSUE-UI001~c2
+        name: 基础组件 - Button 按钮
+        status: passed
+        notes: 5 variants, 3 sizes, loading/disabled states, left/right icons, unit tests
+      - id: ISSUE-UI001~c3
+        name: 基础组件 - Input 输入框
+        status: passed
+        notes: 5 types, 4 states, prefix/suffix, clearable, character count, unit tests
+      - id: ISSUE-UI001~c4
+        name: 基础组件 - Card 卡片与 Modal 弹窗
+        status: passed
+        notes: Card with 3 variants, header/content/footer, pressable; Modal with animations, gestures
+      - id: ISSUE-UI001~c5
+        name: 图标系统与资源管理
+        status: passed
+        notes: Icon component with 28 icons, 4 categories, customizable size/color
+      - id: ISSUE-UI001~c6
+        name: 组件文档与 Storybook
+        status: passed
+        notes: README.md with full documentation, stories for all components
+  test_execution:
+    all_tests_passed: true
+    unit_tests: passed
+  code_review:
+    merged_to_main: true
+    pr_approved: true
+  documentation:
+    all_updated: true
+  notes: All acceptance criteria met. Design system implementation complete.
