@@ -15,8 +15,8 @@ import {
 
 // Mock adapter implementation for testing
 class MockAdapter extends BaseLLMAdapter {
-  readonly id = 'mock';
-  readonly provider = 'MockProvider';
+  readonly id = 'openai';
+  readonly provider = 'OpenAI';
 
   chatCompletionResponses: ChatCompletionResponse[] = [];
   embeddingResponses: EmbeddingResponse[] = [];
@@ -87,7 +87,7 @@ class MockAdapter extends BaseLLMAdapter {
       {
         id: 'mock-model-1',
         name: 'Mock Model 1',
-        provider: 'mock',
+        provider: 'openai',
         capabilities: {
           chatCompletion: true,
           embeddings: true,
@@ -121,8 +121,8 @@ describe('BaseLLMAdapter', () => {
     });
 
     it('should have provider id', () => {
-      expect(adapter.id).toBe('mock');
-      expect(adapter.provider).toBe('MockProvider');
+      expect(adapter.id).toBe('openai');
+      expect(adapter.provider).toBe('OpenAI');
     });
   });
 
@@ -179,7 +179,7 @@ describe('BaseLLMAdapter', () => {
 
       const context: RequestContext = {
         requestId: 'req-1',
-        provider: 'mock',
+        provider: 'openai',
         model: 'mock-model-1',
         startTime: new Date(),
         routingStrategy: 'round-robin'
@@ -201,7 +201,7 @@ describe('BaseLLMAdapter', () => {
 
       const context: RequestContext = {
         requestId: 'req-1',
-        provider: 'mock',
+        provider: 'openai',
         model: 'mock-model-1',
         startTime: new Date(),
         routingStrategy: 'round-robin'
@@ -241,7 +241,7 @@ describe('BaseLLMAdapter', () => {
 
       const context: RequestContext = {
         requestId: 'req-1',
-        provider: 'mock',
+        provider: 'openai',
         model: 'mock-model-1',
         startTime: new Date(),
         routingStrategy: 'round-robin'
@@ -255,7 +255,7 @@ describe('BaseLLMAdapter', () => {
   describe('Cost Calculation', () => {
     it('should calculate cost correctly', () => {
       const cost = adapter.calculateCost('mock-model-1', 1000, 500);
-      expect(cost).toBe(0.015); // (1000 + 500) * 0.00001
+      expect(cost).toBeCloseTo(0.015, 5); // (1000 + 500) * 0.00001
     });
   });
 });

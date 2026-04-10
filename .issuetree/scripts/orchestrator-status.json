@@ -1,13 +1,19 @@
 {
   "completed": [
     "ISSUE-A002",
+    "ISSUE-A004",
     "ISSUE-F005",
     "ISSUE-F006",
     "ISSUE-T001"
   ],
-  "failed": [],
-  "in_progress": [
-    "ISSUE-A004"
+  "failed": [
+    "ISSUE-CR001"
   ],
-  "last_update": "2026-04-10T11:54:35.693304"
+  "in_progress": [],
+  "merged": [
+    "ISSUE-A004",
+    "ISSUE-AI001",
+    "ISSUE-CR001"
+  ],
+  "last_update": "2026-04-10T13:07:19.506731"
 }

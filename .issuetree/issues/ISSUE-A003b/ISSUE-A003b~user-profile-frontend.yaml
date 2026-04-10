@@ -3,7 +3,7 @@ id: "ISSUE-A003b"
 issue_number: 2032
 title: "用户基础资料管理 - 移动端界面"
 slug: "user-profile-frontend"
-status: "pending"
+status: "implemented"
 description: |
   实现用户资料管理移动端界面，包括：
   - 个人资料展示页面
@@ -22,7 +22,7 @@ criteria:
       - 编辑资料表单 EditProfileScreen
       - 头像选择和上传
       - 资料预览
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required

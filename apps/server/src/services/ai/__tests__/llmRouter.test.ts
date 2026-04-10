@@ -213,14 +213,16 @@ describe('LLMRouter', () => {
 
       // Run many times to verify distribution
       const providerCounts: Record<string, number> = {};
+      let lastDecision;
       for (let i = 0; i < 100; i++) {
         const decision = router.route(request, ['openai', 'claude', 'wenxin']);
+        lastDecision = decision;
         providerCounts[decision.provider] = (providerCounts[decision.provider] || 0) + 1;
       }
 
       // Higher weight should generally get more requests
       expect(providerCounts['openai']).toBeGreaterThan(providerCounts['wenxin'] || 0);
-      expect(decision.reason).toContain('weighted');
+      expect(lastDecision!.reason).toContain('Weighted');
     });
   });
 

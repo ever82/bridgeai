@@ -1,4 +1,3 @@
-import { describe, it, expect } from '@jest/globals';
 import {
   CREDIT_SCORE_CONFIG,
   FACTOR_WEIGHTS,

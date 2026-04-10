@@ -1,6 +1,5 @@
 import request from 'supertest';
 import express from 'express';
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import creditRoutes from '../credit';
 import { CreditScoreService } from '../../services/creditScoreService';
 

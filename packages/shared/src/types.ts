@@ -1,5 +1,6 @@
 // Shared types
 export * from './types/agent';
+export * from './types/agentProfile';
 
 export interface User {
   id: string;

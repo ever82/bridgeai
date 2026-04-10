@@ -154,6 +154,7 @@ export class CircuitBreaker extends EventEmitter {
    * 手动打开熔断器
    */
   forceOpen(): void {
+    this.metrics.lastFailureTime = Date.now();
     this.transitionTo('OPEN');
   }
 

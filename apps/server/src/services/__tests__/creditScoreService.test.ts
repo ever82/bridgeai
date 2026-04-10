@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { CreditScoreService } from '../creditScoreService';
 import { CreditLevel, CreditFactorType } from '../../types/credit';
 import { PrismaClient } from '@prisma/client';

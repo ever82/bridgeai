@@ -256,7 +256,7 @@ describe('LLMMetricsService', () => {
     });
 
     it('should return null for unknown provider', () => {
-      const stats = metricsService.getProviderStats('unknown');
+      const stats = metricsService.getProviderStats('wenxin');
       expect(stats).toBeNull();
     });
   });

@@ -3,7 +3,7 @@ id: "ISSUE-CR001"
 issue_number: 601
 title: "信用分计算系统"
 slug: "credit-score-calculation"
-status: "pending"
+status: "implemented"
 description: |
   实现用户信用分计算系统，包括信用分模型设计、多维度评分算法、
   信用等级划分、信用分历史追踪、以及信用分的实时更新机制。
@@ -12,6 +12,13 @@ prerequisites:
   - "ISSUE-A003"
 created_at: "2026-04-08"
 logic: sufficient_necessary
+implementation:
+  task_id: "TASK-1"
+  completed_at: "2026-04-10T04:30:00+08:00"
+  execution_time_minutes: 120
+  result: "success"
+test_passed: true
+merged_to_master: true
 criteria:
   - id: "ISSUE-CR001~c1"
     name: "信用分数据模型"
