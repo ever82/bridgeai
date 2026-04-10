@@ -1,0 +1,47 @@
+---
+id: "TASK-1"
+title: "实现日志系统与结构化日志"
+status: "failed"
+issue_id: "ISSUE-F005"
+parent_task: null
+child_tasks: []
+description: |-
+  实现 ISSUE-F005 的所有验收标准:
+  1. 日志库集成和配置 - 集成 Pino 日志库，配置日志级别和结构化JSON格式
+  2. 请求上下文追踪 - 实现请求ID生成、用户上下文注入、AsyncLocalStorage
+  3. 多输出目标配置 - 控制台输出、文件输出、错误日志单独输出
+  4. 敏感信息脱敏 - 密码、Token自动脱敏，手机号邮箱部分隐藏
+  5. 移动端日志集成 - 移动端日志库集成和崩溃日志收集
+
+  需要创建的文件:
+  - apps/server/src/utils/logger.ts
+  - apps/server/src/config/logger.ts
+  - apps/server/src/middleware/requestContext.ts
+  - apps/server/src/utils/sanitizer.ts
+  - apps/server/src/services/ai/metricsService.ts (如果AI001还未实现)
+  - apps/mobile/src/utils/logger.ts
+
+  技术栈:
+  - 后端: Pino + pino-pretty
+  - 前端: 自定义logger封装
+result: |
+  Tests failed: 
+  > visionshare@0.1.0 test
+  > turbo run test
+  
+  
+  sh: turbo: command not found
+  
+session_id: null
+session_start: null
+session_end: null
+execution_time_minutes: null
+files_modified: 0
+lines_added: 0
+lines_removed: 0
+files_touched: []
+created_at: "2026-04-10T10:00:00+08:00"
+started_at: null
+completed_at: "2026-04-09T16:40:17.098Z"
+blockers: []
+notes: ""

@@ -3,7 +3,7 @@ id: "ISSUE-F005"
 issue_number: 105
 title: "日志系统与结构化日志"
 slug: "logging-system"
-status: "pending"
+status: "passed"
 description: |
   实现统一的结构化日志系统，支持日志级别控制、上下文追踪、
   多输出目标(控制台、文件、远程)，以及日志聚合和分析。
@@ -20,7 +20,7 @@ criteria:
       - 配置日志级别 (DEBUG, INFO, WARN, ERROR)
       - 设置结构化日志格式(JSON)
       - 配置日志轮转和清理
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -41,7 +41,7 @@ criteria:
       - 用户上下文注入
       - 异步上下文存储 (AsyncLocalStorage)
       - 链路追踪支持
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -62,7 +62,7 @@ criteria:
       - 文件输出(按日期/大小轮转)
       - 错误日志单独输出
       - 可选: 远程日志服务集成
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -83,7 +83,7 @@ criteria:
       - 手机号、邮箱部分隐藏
       - 可配置的脱敏字段列表
       - 脱敏规则测试
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -104,7 +104,7 @@ criteria:
       - 日志本地存储
       - 崩溃日志收集
       - 日志上传机制
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -115,4 +115,32 @@ criteria:
       ai:
         prompt: "检查移动端日志配置，验证有日志库集成和崩溃报告配置"
         context_files: ["apps/mobile/src/utils/logger.ts"]
+
+implementation:
+  task_id: "TASK-3"
+  completed_at: "2026-04-10T03:30:00Z"
+  execution_time_minutes: 30
+  result: success
+test_passed: true
+merged_to_master: false
+worktree_path: ".issuetree/worktrees/ISSUE-F005"
         
+
+check:
+  issue_id: "ISSUE-F005"
+  checked_at: "2026-04-10T03:45:00Z"
+  status: passed
+  functional_verification:
+    all_criteria_passed: true
+    notes: |
+      C1: Pino logger integrated with configurable levels
+      C2: AsyncLocalStorage-based request context with trace IDs
+      C3: Multi-output targets (console, file, error file)
+      C4: Sensitive data sanitization with configurable rules
+      C5: Mobile logger with crash reporting
+  test_execution:
+    all_tests_passed: true
+    type_check: passed
+  code_review:
+    merged_to_main: false
+  notes: "All acceptance criteria verified and passed"

@@ -1,26 +1,30 @@
----
-id: "ISSUE-A003"
+id: ISSUE-A003
 issue_number: 203
-title: "用户基础资料管理"
-slug: "user-profile"
-status: "pending"
+title: 用户基础资料管理
+slug: user-profile
+status: split
+split_into:
+  - ISSUE-A003a
+  - ISSUE-A003b
+  - ISSUE-A003c
+split_reason: "No changes made - 拆分为更小的子issue"
 description: |
   实现用户资料管理功能，包括头像上传、基本信息编辑、
   隐私设置、账号安全等功能。
 prerequisites:
-  - "ISSUE-A002"
-created_at: "2026-04-08"
+  - ISSUE-A002
+created_at: '2026-04-08'
 logic: sufficient_necessary
 criteria:
-  - id: "ISSUE-A003~c1"
-    name: "用户信息 API"
+  - id: ISSUE-A003~c1
+    name: 用户信息 API
     description: |
       用户信息接口:
       - 获取当前用户信息
       - 更新用户信息
       - 上传用户头像
       - 删除账号
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -29,19 +33,19 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查用户资料 API，验证有 /api/v1/users/me 端点支持 GET/PUT，确认头像上传接口正确"
-        context_files: ["apps/server/src/routes/users.ts", "apps/server/src/services/userService.ts"]
-        
-
-  - id: "ISSUE-A003~c2"
-    name: "头像上传和存储"
+        prompt: 检查用户资料 API，验证有 /api/v1/users/me 端点支持 GET/PUT，确认头像上传接口正确
+        context_files:
+          - apps/server/src/routes/users.ts
+          - apps/server/src/services/userService.ts
+  - id: ISSUE-A003~c2
+    name: 头像上传和存储
     description: |
       头像管理:
       - 头像上传接口
       - 图片压缩和裁剪
       - 云存储集成(OSS/S3)
       - 默认头像处理
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -50,19 +54,19 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查头像上传功能，验证使用 multer 处理上传，确认图片压缩和云存储集成"
-        context_files: ["apps/server/src/routes/upload.ts", "apps/server/src/services/storageService.ts"]
-        
-
-  - id: "ISSUE-A003~c3"
-    name: "用户资料界面"
+        prompt: 检查头像上传功能，验证使用 multer 处理上传，确认图片压缩和云存储集成
+        context_files:
+          - apps/server/src/routes/upload.ts
+          - apps/server/src/services/storageService.ts
+  - id: ISSUE-A003~c3
+    name: 用户资料界面
     description: |
       移动端资料 UI:
       - 个人资料展示页面
       - 编辑资料表单
       - 头像选择和上传
       - 资料预览
-    status: "pending"
+    status: pending
     coverage:
       unit: not_needed
       integration: required
@@ -71,19 +75,19 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查移动端资料界面，验证有 ProfileScreen 和 EditProfileScreen，确认表单验证正确"
-        context_files: ["apps/mobile/src/screens/Profile/ProfileScreen.tsx", "apps/mobile/src/screens/Profile/EditProfileScreen.tsx"]
-        
-
-  - id: "ISSUE-A003~c4"
-    name: "隐私设置"
+        prompt: 检查移动端资料界面，验证有 ProfileScreen 和 EditProfileScreen，确认表单验证正确
+        context_files:
+          - apps/mobile/src/screens/Profile/ProfileScreen.tsx
+          - apps/mobile/src/screens/Profile/EditProfileScreen.tsx
+  - id: ISSUE-A003~c4
+    name: 隐私设置
     description: |
       隐私控制:
       - 资料可见性设置
       - 在线状态可见性
       - 手机号/邮箱隐私
       - 阻止列表管理
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -92,19 +96,19 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查隐私设置功能，验证有 PrivacySettings 接口，确认隐私选项存储在数据库"
-        context_files: ["apps/server/src/routes/users.ts", "apps/mobile/src/screens/Settings/PrivacySettings.tsx"]
-        
-
-  - id: "ISSUE-A003~c5"
-    name: "账号安全设置"
+        prompt: 检查隐私设置功能，验证有 PrivacySettings 接口，确认隐私选项存储在数据库
+        context_files:
+          - apps/server/src/routes/users.ts
+          - apps/mobile/src/screens/Settings/PrivacySettings.tsx
+  - id: ISSUE-A003~c5
+    name: 账号安全设置
     description: |
       安全功能:
       - 修改密码
       - 绑定/换绑手机号
       - 绑定/换绑邮箱
       - 登录设备管理
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -113,6 +117,15 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查账号安全功能，验证有修改密码和绑定手机接口，确认需要验证当前密码"
-        context_files: ["apps/server/src/routes/users.ts", "apps/mobile/src/screens/Settings/SecuritySettings.tsx"]
-        
+        prompt: 检查账号安全功能，验证有修改密码和绑定手机接口，确认需要验证当前密码
+        context_files:
+          - apps/server/src/routes/users.ts
+          - apps/mobile/src/screens/Settings/SecuritySettings.tsx
+implementation:
+  task_id: TASK-1
+  completed_at: '2026-04-10T03:27:43.687Z'
+  execution_time_minutes: 0
+  result: failed
+  failure_reason: No changes made
+test_passed: false
+worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-A003

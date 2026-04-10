@@ -3,7 +3,7 @@ id: "ISSUE-A004"
 issue_number: 204
 title: "输入验证与数据校验"
 slug: "input-validation"
-status: "pending"
+status: "in_progress"
 description: |
   实现统一的输入验证和数据校验机制，包括请求参数验证、
   数据格式校验、XSS 防护、SQL 注入防护等安全功能。
@@ -20,7 +20,7 @@ criteria:
       - body/params/query 验证
       - 验证错误处理
       - 自定义验证规则
-    status: "pending"
+    status: "in_progress"
     coverage:
       unit: required
       integration: required
@@ -41,7 +41,7 @@ criteria:
       - Agent 相关 Schema
       - 消息相关 Schema
       - 通用字段验证规则
-    status: "pending"
+    status: "in_progress"
     coverage:
       unit: required
       integration: required
@@ -62,7 +62,7 @@ criteria:
       - SQL 注入防护(参数化查询)
       - NoSQL 注入防护
       - HTML 转义处理
-    status: "pending"
+    status: "in_progress"
     coverage:
       unit: required
       integration: required
@@ -83,7 +83,7 @@ criteria:
       - 实时验证反馈
       - 错误提示国际化
       - 验证规则复用
-    status: "pending"
+    status: "in_progress"
     coverage:
       unit: required
       integration: required
@@ -104,7 +104,7 @@ criteria:
       - 文件大小限制
       - 图片内容验证
       - 恶意文件检测
-    status: "pending"
+    status: "in_progress"
     coverage:
       unit: required
       integration: required

@@ -1,0 +1,25 @@
+---
+id: "TASK-1"
+issue_id: "ISSUE-CR002a"
+type: "implementation"
+title: "实现评分与评价系统后端API"
+description: |
+  实现评分与评价系统的后端API，包括：
+  1. 评价数据模型设计 (Review, ReviewReply, ReviewReport, ReviewStats)
+  2. 双向评分API端点 (提交、查询、回复、删除)
+  3. 评价审核与反作弊机制 (敏感词过滤、刷评价检测)
+  
+  使用Prisma进行数据库设计，Express实现API端点，确保权限验证和测试覆盖。
+status: "pending"
+created_at: "2026-04-10"
+time_limit_minutes: 90
+acceptance_criteria:
+  - "ISSUE-CR002a~c1"
+  - "ISSUE-CR002a~c2"
+  - "ISSUE-CR002a~c3"
+context_files:
+  - "packages/database/prisma/schema.prisma"
+  - "apps/server/src/routes/"
+  - "apps/server/src/services/"
+notes: |
+  前置依赖: ISSUE-CR001(信用基础模型), ISSUE-COM002c(用户资料), ISSUE-A003(认证)

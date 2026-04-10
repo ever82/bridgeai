@@ -3,7 +3,7 @@ id: "ISSUE-A001"
 issue_number: 201
 title: "用户注册与登录系统"
 slug: "user-auth"
-status: "pending"
+status: "in_progress"
 description: |
   实现用户注册和登录功能，支持手机号/邮箱注册、
   密码登录、验证码登录、第三方登录(微信/Google)等认证方式。

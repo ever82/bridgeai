@@ -1,0 +1,32 @@
+---
+id: "TASK-1"
+title: "实现积分账户数据模型"
+status: "in_progress"
+issue_id: "ISSUE-CR003a"
+parent_task: null
+child_tasks: []
+description: |-
+  实现积分系统数据模型：
+  1. 在 Prisma schema 中添加 PointsAccount 模型（用户ID、当前余额、总获取、总消耗、冻结金额）
+  2. 添加 PointsTransaction 模型（交易ID、类型、金额、描述、关联场景）
+  3. 添加 PointsFreeze 模型（冻结记录用于交易担保）
+  4. 配置账户唯一性约束和用户关联
+  5. 添加余额非负约束
+  6. 创建对应的 TypeScript 类型定义
+  7. 编写单元测试验证模型和约束
+result: null
+  
+session_id: null
+session_start: null
+session_end: null
+execution_time_minutes: null
+files_modified: 0
+lines_added: 0
+lines_removed: 0
+files_touched: []
+created_at: "$(date -u +%Y-%m-%dT%H:%M:%S+00:00)"
+started_at: null
+started_at: "$(date -u +%Y-%m-%dT%H:%M:%S+00:00)"
+completed_at: null
+blockers: []
+notes: ""

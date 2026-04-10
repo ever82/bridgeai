@@ -1,0 +1,35 @@
+---
+id: "ISSUE-A003b"
+issue_number: 2032
+title: "用户基础资料管理 - 移动端界面"
+slug: "user-profile-frontend"
+status: "pending"
+description: |
+  实现用户资料管理移动端界面，包括：
+  - 个人资料展示页面
+  - 编辑资料表单
+  - 头像选择和上传UI
+prerequisites:
+  - "ISSUE-A003a"
+created_at: "2026-04-10"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-A003b~c1"
+    name: "用户资料界面"
+    description: |
+      移动端资料 UI:
+      - 个人资料展示页面 ProfileScreen
+      - 编辑资料表单 EditProfileScreen
+      - 头像选择和上传
+      - 资料预览
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查移动端资料界面，验证有 ProfileScreen 和 EditProfileScreen"
+        context_files: ["apps/mobile/src/screens/Profile/"]

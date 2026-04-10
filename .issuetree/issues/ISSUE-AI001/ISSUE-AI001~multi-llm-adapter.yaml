@@ -3,7 +3,7 @@ id: "ISSUE-AI001"
 issue_number: 501
 title: "多LLM适配器与熔断器"
 slug: "multi-llm-adapter"
-status: "pending"
+status: "in_progress"
 description: |
   实现多LLM适配器与熔断器机制，支持OpenAI、Claude、
   文心一言等多个大语言模型提供商的统一接入，并提供

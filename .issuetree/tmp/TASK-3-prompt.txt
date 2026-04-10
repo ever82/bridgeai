@@ -1,0 +1,29 @@
+# Implementation Task: 验证并完成日志系统实现
+
+**Issue:** ISSUE-F005
+**Task:** TASK-3
+
+## Description
+
+验证日志系统代码实现并完成 Issue F005。任务目标：验证并确认日志系统实现完整，更新 Issue 状态。实现步骤：1. 安装项目依赖 2. 运行服务器端测试 3. 验证所有日志相关文件存在 4. 更新 Issue F005 状态。相关文件：apps/server/src/utils/logger.ts, apps/server/src/config/logger.ts, apps/server/src/middleware/requestContext.ts, apps/server/src/utils/sanitizer.ts, apps/mobile/src/utils/logger.ts
+
+## Files to Modify
+
+- (To be determined based on implementation)
+
+## Instructions
+
+1. Implement the features described above
+2. Make focused, incremental changes
+3. Test your changes as you go
+4. Commit your work when complete
+
+## Completion
+
+When you have completed the implementation:
+1. Run: `echo '{"status": "completed"}' > .issuetree/tmp/TASK-3-result.json`
+2. Exit the session
+
+---
+
+Start implementing now.

@@ -1,0 +1,30 @@
+---
+id: "TASK-1"
+issue_id: "ISSUE-A001"
+type: "implementation"
+status: "in_progress"
+title: "实现用户注册与登录系统"
+description: |
+  实现完整的用户认证系统，包括：
+  1. 用户注册 API (/api/v1/auth/register)
+  2. 用户登录 API (/api/v1/auth/login)
+  3. 第三方登录集成 (微信/Google OAuth)
+  4. 密码重置功能
+  5. 移动端登录界面 (LoginScreen)
+  6. 注册界面和安全 (bcrypt加密)
+
+created_at: "2026-04-10T09:00:00+08:00"
+session_start: "2026-04-10T09:00:00+08:00"
+time_limit_minutes: 90
+
+files_to_modify:
+  - apps/server/src/routes/auth.ts
+  - apps/server/src/services/authService.ts
+  - apps/server/src/services/oauthService.ts
+  - apps/server/src/routes/oauth.ts
+  - apps/mobile/src/screens/auth/LoginScreen.tsx
+  - apps/mobile/src/screens/auth/RegisterScreen.tsx
+
+test_commands:
+  - cd apps/server && npm test -- --testPathPattern="auth"
+  - cd apps/mobile && npm test -- --testPathPattern="LoginScreen|RegisterScreen"

@@ -1,0 +1,42 @@
+---
+id: "TASK-1"
+issue_id: "ISSUE-SEC005"
+title: "实现举报与内容审核系统"
+description: |
+  实现完整的举报与内容审核系统，包括：
+  1. 举报提交与管理 - Report模型、举报API、证据上传
+  2. 内容审核工作流 - 审核队列、状态流转
+  3. 违规处理机制 - 内容处理、用户处罚、信用分扣减
+  4. 申诉与复核 - Appeal模型、申诉流程
+  5. 敏感词过滤 - 敏感词库、实时过滤
+  6. 审核数据统计 - 统计报表、数据分析
+
+  需要创建：
+  - 后端：Models, Services, Routes, Middleware
+  - 管理端：审核界面、统计报表
+  - 单元测试和集成测试
+status: "failed"
+type: "implementation"
+created_at: "2026-04-10"
+time_limit_minutes: 180
+acceptance_criteria:
+  - "ISSUE-SEC005~c1"
+  - "ISSUE-SEC005~c2"
+  - "ISSUE-SEC005~c3"
+  - "ISSUE-SEC005~c4"
+  - "ISSUE-SEC005~c5"
+  - "ISSUE-SEC005~c6"
+files_to_modify: []
+notes: "Complex implementation requiring multiple models and services"
+
+
+completed_at: "2026-04-09T17:28:26.391Z"
+
+result: |
+  Tests failed: 
+  > visionshare@0.1.0 test
+  > turbo run test
+  
+  
+  sh: turbo: command not found
+  

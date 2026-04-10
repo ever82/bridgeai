@@ -1,0 +1,13 @@
+{
+  "completed": [
+    "ISSUE-A002",
+    "ISSUE-F005",
+    "ISSUE-F006",
+    "ISSUE-T001"
+  ],
+  "failed": [],
+  "in_progress": [
+    "ISSUE-A004"
+  ],
+  "last_update": "2026-04-10T11:43:33.748227"
+}

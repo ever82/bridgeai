@@ -1,0 +1,97 @@
+id: TASK-1
+issue_id: ISSUE-A003
+title: 实现用户基础资料管理功能
+description: |
+  实现用户资料管理功能，包括:
+  1. 用户信息 API - /api/v1/users/me GET/PUT, 头像上传, 删除账号
+  2. 头像上传和存储 - multer处理, 图片压缩, 云存储集成
+  3. 用户资料界面 - ProfileScreen, EditProfileScreen
+  4. 隐私设置 - 资料可见性, 在线状态, 阻止列表
+  5. 账号安全设置 - 修改密码, 绑定手机/邮箱, 登录设备管理
+criteria:
+  - ISSUE-A003~c1
+  - ISSUE-A003~c2
+  - ISSUE-A003~c3
+  - ISSUE-A003~c4
+  - ISSUE-A003~c5
+status: failed
+created_at: '2026-04-10T00:30:00+08:00'
+session:
+  timeout_minutes: 150
+  estimated_complexity: complex
+  context_files:
+    - apps/server/src/routes/auth.ts
+    - apps/server/src/middleware/auth.ts
+    - apps/server/src/config/database.ts
+    - apps/mobile/src/navigation
+    - package.json
+prompt: |
+  实现用户基础资料管理功能 (ISSUE-A003)。这是一个复杂任务，需要实现5个主要功能模块：
+
+  ## 1. 用户信息 API (ISSUE-A003~c1)
+  在 apps/server/src/routes/users.ts 创建用户路由:
+  - GET /api/v1/users/me - 获取当前用户信息
+  - PUT /api/v1/users/me - 更新用户信息
+  - POST /api/v1/users/avatar - 上传头像
+  - DELETE /api/v1/users/me - 删除账号
+
+  在 apps/server/src/services/userService.ts 创建用户服务:
+  - getUserById(id): 获取用户信息
+  - updateUser(id, data): 更新用户信息
+  - deleteUser(id): 删除用户
+
+  ## 2. 头像上传和存储 (ISSUE-A003~c2)
+  在 apps/server/src/routes/upload.ts 创建上传路由:
+  - 使用 multer 处理文件上传
+  - 图片格式验证 (jpg, png, gif)
+  - 大小限制 (5MB)
+
+  在 apps/server/src/services/storageService.ts 创建存储服务:
+  - uploadImage(file): 上传图片到云存储
+  - compressImage(file): 压缩图片
+  - generateThumbnail(file): 生成缩略图
+
+  ## 3. 用户资料界面 (ISSUE-A003~c3)
+  创建移动端界面:
+  - apps/mobile/src/screens/Profile/ProfileScreen.tsx - 个人资料展示
+  - apps/mobile/src/screens/Profile/EditProfileScreen.tsx - 编辑资料
+  - 包含头像显示、昵称、简介等字段
+
+  ## 4. 隐私设置 (ISSUE-A003~c4)
+  后端:
+  - 在 users 表添加 privacy_settings JSON 字段
+  - PUT /api/v1/users/privacy - 更新隐私设置
+
+  前端:
+  - apps/mobile/src/screens/Settings/PrivacySettings.tsx
+  - 资料可见性、在线状态、阻止列表
+
+  ## 5. 账号安全设置 (ISSUE-A003~c5)
+  后端:
+  - POST /api/v1/users/password - 修改密码
+  - POST /api/v1/users/phone - 绑定/换绑手机
+  - POST /api/v1/users/email - 绑定/换绑邮箱
+  - GET /api/v1/users/devices - 登录设备列表
+
+  前端:
+  - apps/mobile/src/screens/Settings/SecuritySettings.tsx
+
+  ## 要求
+  1. 所有 API 需要认证（使用已实现的 auth 中间件）
+  2. 编写完整的单元测试
+  3. 使用 TypeScript 类型
+  4. 错误处理要完善
+  5. 完成所有 5 个验收标准
+
+  完成后运行测试：
+  - cd apps/server && npm test
+  - cd apps/mobile && npm test
+
+  标记任务完成:
+  - 更新 TASK-1~implement-user-profile.yaml status 为 "completed"
+  - 更新 ISSUE-A003~user-profile.yaml 所有 criteria 为 "passed"
+  - 更新 ISSUE-A003~user-profile.yaml status 为 "implemented"
+session_start: '2026-04-10T03:27:42.602Z'
+session_end: '2026-04-10T03:27:43.620Z'
+execution_time_minutes: 0
+result: No changes made

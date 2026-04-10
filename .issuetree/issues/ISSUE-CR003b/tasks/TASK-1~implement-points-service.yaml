@@ -1,0 +1,32 @@
+---
+id: "TASK-1"
+issue_id: "ISSUE-CR003b"
+title: "实现积分交易核心服务与规则配置"
+description: |
+  实现 ISSUE-CR003b 的积分交易核心服务和规则配置：
+  1. 积分交易核心服务 (PointsService) - 获取、消耗、冻结、转账等原子操作
+  2. 积分规则配置 (PointsRuleEngine) - 获取/消耗规则、上限控制、价值换算
+  3. 事务安全和并发控制
+  4. 单元测试覆盖
+
+  目标文件：
+  - apps/server/src/services/pointsService.ts
+  - apps/server/src/services/pointsTransactionService.ts
+  - apps/server/src/config/pointsRules.ts
+  - apps/server/src/services/pointsRuleEngine.ts
+  - apps/server/src/services/__tests__/pointsService.test.ts
+status: "failed"
+time_limit_minutes: 90
+created_at: "2026-04-10"
+
+
+completed_at: "2026-04-09T17:42:06.011Z"
+
+result: |
+  Tests failed: 
+  > visionshare@0.1.0 test
+  > turbo run test
+  
+  
+  sh: turbo: command not found
+  

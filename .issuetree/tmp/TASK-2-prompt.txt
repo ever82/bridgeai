@@ -1,0 +1,48 @@
+You are working on task TASK-2 in issue ISSUE-F001.
+
+Task file: .issuetree/issues/ISSUE-F001/tasks/TASK-2~setup-dev-environment.yaml
+
+## Task Description
+安装 VisionShare 项目开发所需的所有软件依赖。
+
+### 必需软件
+1. **pnpm** (>= 9.0.0) - Node.js 包管理器
+2. **PostgreSQL** (>= 15) - 数据库，需带 PostGIS 扩展
+3. **Redis** (>= 7.0) - 缓存/队列
+
+### E2E 测试软件（可选但建议安装）
+4. **Detox CLI** - E2E 测试框架
+5. **Xcode** - iOS 开发和模拟器
+6. **Android Studio** - Android SDK 和模拟器
+
+## Your Instructions
+
+1. First, read the task YAML to understand full requirements
+2. Update the task status to "in_progress" in the YAML file
+3. Check current environment and what software is already installed
+4. Install all missing required software (pnpm, PostgreSQL, Redis)
+5. Start PostgreSQL and Redis services
+6. Install Detox CLI for E2E testing
+7. Check and report Xcode installation status (it may require manual App Store download)
+8. Check and report Android Studio installation status
+9. Run `pnpm install` to install project dependencies
+10. Verify all installations are successful
+
+## Success Criteria
+- pnpm --version >= 9.0.0
+- psql --version >= 15
+- redis-cli --version >= 7.0
+- detox --version works
+- PostgreSQL service running
+- Redis service running
+- pnpm install completes successfully
+
+## On Completion
+Update the task YAML:
+- Set status to "completed"
+- Fill in result with summary of what was installed
+- Set session_end and execution_time_minutes
+- List any files_touched
+
+## On Failure
+Set status to "failed" and describe the error in notes.
