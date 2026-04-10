@@ -39,6 +39,8 @@ export type ProfileStackParamList = {
   EditProfile: undefined;
   MyMoments: undefined;
   LikedMoments: undefined;
+  AgentList: undefined;
+  CreateAgent: undefined;
 };
 
 declare global {

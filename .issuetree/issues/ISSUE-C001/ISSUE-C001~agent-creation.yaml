@@ -3,7 +3,7 @@ id: "ISSUE-C001"
 issue_number: 301
 title: "Agent创建与基础配置"
 slug: "agent-creation"
-status: "pending"
+status: "implemented"
 description: |
   实现 Agent 创建和基础配置功能，包括 Agent 类型定义、
   基础属性设置、场景关联、初始状态配置等。
@@ -20,7 +20,7 @@ criteria:
       - Agent 类型选择(VisionShare, AgentDate, AgentJob, AgentAd)
       - 基础信息设置(名称、描述)
       - 用户关联和权限
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -41,7 +41,7 @@ criteria:
       - 场景特定配置 Schema
       - 类型验证和转换
       - 场景能力声明
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -62,7 +62,7 @@ criteria:
       - 状态转换规则
       - 状态变更 API
       - 状态历史记录
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -83,7 +83,7 @@ criteria:
       - 按类型筛选
       - 按状态筛选
       - 分页和排序
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -104,7 +104,7 @@ criteria:
       - 创建 Agent 向导
       - Agent 卡片组件
       - 空状态设计
-    status: "pending"
+    status: "passed"
     coverage:
       unit: sufficient
       unit_description: "针对关键UI组件（如AgentCard、CreateAgentWizard）的单元测试"

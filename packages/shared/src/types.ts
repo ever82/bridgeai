@@ -1,4 +1,6 @@
 // Shared types
+export * from './types/agent';
+
 export interface User {
   id: string;
   email: string;

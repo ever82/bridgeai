@@ -65,6 +65,8 @@ model Agent {
   userId      String     @map("user_id")
   type        AgentType
   name        String
+  description String?
+  status      AgentStatus @default(DRAFT)
   config      Json?
   latitude    Float?
   longitude   Float?
@@ -80,13 +82,23 @@ model Agent {
 
   @@index([userId])
   @@index([type])
+  @@index([status])
   @@index([latitude, longitude])
   @@map("agents")
 }
 
 enum AgentType {
-  DEMAND
-  SUPPLY
+  VISIONSHARE @map("visionshare")
+  AGENTDATE   @map("agentdate")
+  AGENTJOB    @map("agentjob")
+  AGENTAD     @map("agentad")
+}
+
+enum AgentStatus {
+  DRAFT     @map("draft")
+  ACTIVE    @map("active")
+  PAUSED    @map("paused")
+  ARCHIVED  @map("archived")
 }
 
 // ============================================
