@@ -1,6 +1,4 @@
-/**
- * Tests for mask utilities
- */
+import { describe, it, expect } from '@jest/globals';
 import {
   maskPhone,
   maskEmail,

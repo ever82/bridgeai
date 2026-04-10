@@ -1,6 +1,4 @@
-/**
- * Tests for encryption utilities
- */
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import {
   encrypt,
   decrypt,

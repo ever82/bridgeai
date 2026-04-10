@@ -1,6 +1,4 @@
-/**
- * Tests for PII management
- */
+import { describe, it, expect } from '@jest/globals';
 import {
   piiManager,
   PIIField,
