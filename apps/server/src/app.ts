@@ -8,12 +8,23 @@ import dotenv from 'dotenv';
 import { errorHandler } from './middleware/errorHandler';
 import { requestId } from './middleware/requestId';
 import { timeout } from './middleware/timeout';
+import { performanceMonitor } from './middleware/performance';
 import routes from './routes';
 import { ApiResponse } from './utils/response';
+import { initSentry, Sentry } from './utils/sentry';
 
 dotenv.config();
 
+// Initialize Sentry before creating the app
+initSentry();
+
 const app: Application = express();
+
+// Sentry request handler (must be first)
+app.use(Sentry.Handlers.requestHandler());
+
+// Sentry tracing handler
+app.use(Sentry.Handlers.tracingHandler());
 
 // Security middleware
 app.use(helmet());
@@ -38,6 +49,9 @@ app.use(requestId);
 
 // Timeout middleware (30 seconds default)
 app.use(timeout(parseInt(process.env.REQUEST_TIMEOUT_MS || '30000', 10)));
+
+// Performance monitoring middleware
+app.use(performanceMonitor);
 
 // Logging middleware
 if (process.env.NODE_ENV !== 'test') {
@@ -85,6 +99,9 @@ app.use((req: Request, res: Response) => {
     404
   ));
 });
+
+// Sentry error handler (before custom error handler)
+app.use(Sentry.Handlers.errorHandler());
 
 // Global error handler
 app.use(errorHandler);
