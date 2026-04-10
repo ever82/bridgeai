@@ -3,7 +3,7 @@ id: "ISSUE-C002b"
 issue_number: 303
 title: "L2结构化信息模型"
 slug: "agent-l2-model"
-status: "implemented"
+status: "passed"
 description: |
   实现 Agent L2 结构化信息模型，支持用户通过选择/填写
   预设选项来描述需求/供给，用于过滤和匹配。

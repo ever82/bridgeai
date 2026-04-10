@@ -1,0 +1,110 @@
+id: TASK-001
+issue_id: ISSUE-C006
+title: 场景配置管理系统实现
+description: |
+  实现四大场景（VisionShare、AgentDate、AgentJob、AgentAd）的配置管理系统，包括：
+  1. 场景配置 Schema 定义
+  2. 场景字段定义和验证
+  3. 场景模板系统
+  4. 场景能力声明
+  5. 场景切换和迁移
+  6. 场景配置管理 UI
+
+acceptance_criteria:
+  - id: ISSUE-C006~c1
+    name: 场景配置 Schema
+    status: completed
+    notes: SceneConfig 类型已定义，四个场景配置在 packages/shared/src/config/scenes/ 中
+  - id: ISSUE-C006~c2
+    name: 场景字段定义
+    status: completed
+    notes: SceneFieldDefinition 已定义，包含字段类型、验证规则、依赖关系、国际化支持
+  - id: ISSUE-C006~c3
+    name: 场景模板系统
+    status: completed
+    notes: TemplateService 已实现，支持模板的 CRUD、应用、复制、分享
+  - id: ISSUE-C006~c4
+    name: 场景能力声明
+    status: in_progress
+    notes: SceneCapability 类型已定义，需添加能力检查和版本管理服务
+  - id: ISSUE-C006~c5
+    name: 场景切换和迁移
+    status: completed
+    notes: SceneMigrationService 已实现，支持预览、迁移规划和执行
+  - id: ISSUE-C006~c6
+    name: 场景配置管理UI
+    status: in_progress
+    notes: 需要为移动端添加场景配置界面
+
+tasks:
+  - id: TASK-001-1
+    name: 创建场景配置 API 路由
+    status: in_progress
+    priority: high
+    files:
+      - apps/server/src/routes/scene.ts
+      - apps/server/src/routes/v1/scene.ts
+
+  - id: TASK-001-2
+    name: 实现场景能力检查服务
+    status: pending
+    priority: high
+    files:
+      - apps/server/src/services/sceneCapabilityService.ts
+      - packages/shared/src/types/capability.ts
+
+  - id: TASK-001-3
+    name: 创建场景字段验证 Schema
+    status: pending
+    priority: high
+    files:
+      - packages/shared/src/schemas/sceneFields/index.ts
+      - packages/shared/src/schemas/sceneFields/visionShare.ts
+      - packages/shared/src/schemas/sceneFields/agentDate.ts
+      - packages/shared/src/schemas/sceneFields/agentJob.ts
+      - packages/shared/src/schemas/sceneFields/agentAd.ts
+
+  - id: TASK-001-4
+    name: 添加场景配置管理移动端 UI
+    status: pending
+    priority: medium
+    files:
+      - apps/mobile/src/screens/scene/
+      - apps/mobile/src/components/scene/
+
+  - id: TASK-001-5
+    name: 编写单元测试
+    status: pending
+    priority: high
+    files:
+      - apps/server/src/services/__tests__/templateService.test.ts
+      - apps/server/src/services/__tests__/sceneMigrationService.test.ts
+      - apps/server/src/services/__tests__/sceneCapabilityService.test.ts
+      - packages/shared/src/config/scenes/__tests__/sceneConfig.test.ts
+
+  - id: TASK-001-6
+    name: 编写集成测试
+    status: pending
+    priority: medium
+    files:
+      - apps/server/src/routes/__tests__/scene.test.ts
+
+estimated_hours: 16
+actual_hours: 0
+started_at: '2026-04-11'
+completed_at: null
+assigned_to: Claude
+notes: |
+  已存在的基础设施：
+  - SceneConfig 类型定义 (packages/shared/src/types/scene.ts)
+  - 四个场景的配置 (packages/shared/src/config/scenes/*.ts)
+  - TemplateService (apps/server/src/services/templateService.ts)
+  - SceneMigrationService (apps/server/src/services/sceneMigrationService.ts)
+  - SceneTemplate Prisma 模型
+
+  需要新建：
+  - Scene API 路由
+  - SceneCapabilityService
+  - 场景字段验证 Schema
+  - 移动端场景配置 UI
+  - 测试文件

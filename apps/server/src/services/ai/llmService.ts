@@ -513,3 +513,81 @@ export class LLMService {
     }
   }
 }
+
+/**
+ * Generate text using chat completion (simplified interface)
+ * This is a helper method that wraps chatCompletion for simple text generation
+ */
+export interface GenerateTextOptions {
+  temperature?: number;
+  maxTokens?: number;
+  model?: string;
+  provider?: LLMProvider;
+}
+
+export interface GenerateTextResponse {
+  text: string;
+  provider: LLMProvider;
+  model: string;
+  latencyMs: number;
+  cost: number;
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+}
+
+// Extend LLMService with generateText method
+declare module './llmService' {
+  interface LLMService {
+    generateText(prompt: string, options?: GenerateTextOptions): Promise<GenerateTextResponse>;
+  }
+}
+
+// Add generateText method to LLMService prototype
+LLMService.prototype.generateText = async function(
+  this: LLMService,
+  prompt: string,
+  options: GenerateTextOptions = {}
+): Promise<GenerateTextResponse> {
+  const response = await this.chatCompletion({
+    model: options.model || 'gpt-4',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: options.temperature ?? 0.7,
+    maxTokens: options.maxTokens,
+  }, options.provider);
+
+  const text = response.choices[0]?.message?.content || '';
+
+  return {
+    text,
+    provider: response.model.includes('claude') ? 'claude' :
+              response.model.includes('ernie') ? 'wenxin' : 'openai',
+    model: response.model,
+    latencyMs: 0, // Would need to track this
+    cost: 0, // Would need to calculate this
+    usage: {
+      promptTokens: response.usage.promptTokens,
+      completionTokens: response.usage.completionTokens,
+      totalTokens: response.usage.totalTokens,
+    },
+  };
+};
+
+// Export singleton instance
+export const llmService = new LLMService({
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY || '',
+    apiUrl: process.env.OPENAI_API_URL,
+  },
+  claude: {
+    apiKey: process.env.CLAUDE_API_KEY || '',
+    apiUrl: process.env.CLAUDE_API_URL,
+  },
+  wenxin: {
+    apiKey: process.env.WENXIN_API_KEY || '',
+    secretKey: process.env.WENXIN_SECRET_KEY || '',
+    apiUrl: process.env.WENXIN_API_URL,
+  },
+});

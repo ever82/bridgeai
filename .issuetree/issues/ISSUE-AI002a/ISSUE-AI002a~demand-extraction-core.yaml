@@ -1,22 +1,21 @@
----
-id: "ISSUE-AI002a"
+id: ISSUE-AI002a
 issue_number: 502
-slug: "demand-extraction-core"
-title: "需求智能提炼服务 - 核心框架"
-status: "pending"
+slug: demand-extraction-core
+title: 需求智能提炼服务 - 核心框架
+status: checking
 description: |
   实现需求智能提炼服务的核心框架部分，提供基础的解析引擎、
   结构化映射、验证系统和API接口，为后续场景特定提取器提供
   基础设施和扩展点。
 prerequisites:
-  - "ISSUE-AI001"
-  - "ISSUE-C002a"
-  - "ISSUE-C002b"
-created_at: "2026-04-09"
+  - ISSUE-AI001
+  - ISSUE-C002a
+  - ISSUE-C002b
+created_at: '2026-04-09'
 logic: sufficient_necessary
 criteria:
-  - id: "ISSUE-AI002a~c1"
-    name: "需求解析引擎"
+  - id: ISSUE-AI002a~c1
+    name: 需求解析引擎
     description: |
       解析引擎:
       - 自然语言理解
@@ -24,7 +23,7 @@ criteria:
       - 意图分类
       - 需求结构化输出
       - 置信度评分
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -33,12 +32,11 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查需求解析引擎，验证有DemandExtractionService类，包含extract方法返回结构化的Demand对象，含confidence字段"
-        context_files: ["apps/server/src/services/ai/demandExtractionService.ts"]
-        
-
-  - id: "ISSUE-AI002a~c3"
-    name: "需求结构化映射"
+        prompt: 检查需求解析引擎，验证有DemandExtractionService类，包含extract方法返回结构化的Demand对象，含confidence字段
+        context_files:
+          - apps/server/src/services/ai/demandExtractionService.ts
+  - id: ISSUE-AI002a~c3
+    name: 需求结构化映射
     description: |
       映射系统:
       - 提取字段到L2模型映射
@@ -46,7 +44,7 @@ criteria:
       - 枚举值匹配
       - 缺失字段推断
       - 冲突检测与提示
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -55,12 +53,11 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查映射系统，验证有DemandToL2Mapper类，将提取的需求字段映射到AgentL2Model的属性，支持属性转换和验证"
-        context_files: ["apps/server/src/services/ai/mappers/demandToL2Mapper.ts"]
-        
-
-  - id: "ISSUE-AI002a~c5"
-    name: "提取结果验证"
+        prompt: 检查映射系统，验证有DemandToL2Mapper类，将提取的需求字段映射到AgentL2Model的属性，支持属性转换和验证
+        context_files:
+          - apps/server/src/services/ai/mappers/demandToL2Mapper.ts
+  - id: ISSUE-AI002a~c5
+    name: 提取结果验证
     description: |
       验证系统:
       - 字段完整性检查
@@ -68,7 +65,7 @@ criteria:
       - 合理性检查(预算范围等)
       - 用户确认流程
       - 提取结果修正
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -77,12 +74,11 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查验证系统，验证有ExtractionValidator类，包含validate方法，检查required字段、数值范围、枚举有效性"
-        context_files: ["apps/server/src/services/ai/validators/extractionValidator.ts"]
-        
-
-  - id: "ISSUE-AI002a~c6"
-    name: "API与集成"
+        prompt: 检查验证系统，验证有ExtractionValidator类，包含validate方法，检查required字段、数值范围、枚举有效性
+        context_files:
+          - apps/server/src/services/ai/validators/extractionValidator.ts
+  - id: ISSUE-AI002a~c6
+    name: API与集成
     description: |
       API实现:
       - 需求提取API端点
@@ -90,7 +86,7 @@ criteria:
       - 提取结果缓存
       - WebSocket实时反馈
       - 场景配置API
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -99,6 +95,8 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查API实现，验证有/api/v1/ai/extract-demand端点，支持scene参数，返回提取结果和clarification_needed标志"
-        context_files: ["apps/server/src/routes/ai/extraction.ts"]
-        
+        prompt: 检查API实现，验证有/api/v1/ai/extract-demand端点，支持scene参数，返回提取结果和clarification_needed标志
+        context_files:
+          - apps/server/src/routes/ai/extraction.ts
+started_at: '2026-04-10T16:47:32.886Z'
+completed_at: '2026-04-10T17:28:31.581Z'

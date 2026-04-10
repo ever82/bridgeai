@@ -210,7 +210,7 @@ check:
     bug_fixes_applied:
       - file: "src/services/ai/metricsService.ts"
         issue: "incrementCounter方法忽略name参数导致重复计数"
-        fix: "将key从\`${provider}:${model}\`改为\`${provider}:${model}:${name}\`"
+        fix: '将key从`${provider}:${model}`改为`${provider}:${model}:${name}`'
   code_review:
     merged_to_main: true
     pr_approved: true

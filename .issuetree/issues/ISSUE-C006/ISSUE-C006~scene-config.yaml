@@ -1,27 +1,26 @@
----
-id: "ISSUE-C006"
+id: ISSUE-C006
 issue_number: 308
-title: "场景配置管理"
-slug: "scene-config"
-status: "pending"
+title: 场景配置管理
+slug: scene-config
+status: in_progress
 description: |
   实现四大场景的配置管理系统，包括场景特定字段定义、
   场景模板、场景能力配置等。
 prerequisites:
-  - "ISSUE-C001"
-  - "ISSUE-C002a"
-created_at: "2026-04-08"
+  - ISSUE-C001
+  - ISSUE-C002a
+created_at: '2026-04-08'
 logic: necessary
 criteria:
-  - id: "ISSUE-C006~c1"
-    name: "场景配置 Schema"
+  - id: ISSUE-C006~c1
+    name: 场景配置 Schema
     description: |
       场景配置:
       - VisionShare 场景配置
       - AgentDate 场景配置
       - AgentJob 场景配置
       - AgentAd 场景配置
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -30,19 +29,19 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查场景配置，验证有 SceneConfig 类型和四个场景的配置定义"
-        context_files: ["packages/shared/src/types/scene.ts", "packages/shared/src/config/scenes/"]
-        
-
-  - id: "ISSUE-C006~c2"
-    name: "场景字段定义"
+        prompt: 检查场景配置，验证有 SceneConfig 类型和四个场景的配置定义
+        context_files:
+          - packages/shared/src/types/scene.ts
+          - packages/shared/src/config/scenes/
+  - id: ISSUE-C006~c2
+    name: 场景字段定义
     description: |
       字段系统:
       - 场景特定字段
       - 字段验证规则
       - 字段依赖关系
       - 字段国际化
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -51,19 +50,18 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查场景字段，验证每个场景有完整的字段定义和验证规则"
-        context_files: ["packages/shared/src/schemas/sceneFields/"]
-        
-
-  - id: "ISSUE-C006~c3"
-    name: "场景模板系统"
+        prompt: 检查场景字段，验证每个场景有完整的字段定义和验证规则
+        context_files:
+          - packages/shared/src/schemas/sceneFields/
+  - id: ISSUE-C006~c3
+    name: 场景模板系统
     description: |
       场景模板:
       - 预设场景模板
       - 模板应用和复制
       - 用户自定义模板
       - 模板分享
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -72,19 +70,18 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查模板系统，验证有 SceneTemplate 模型和模板应用功能"
-        context_files: ["apps/server/src/services/templateService.ts"]
-        
-
-  - id: "ISSUE-C006~c4"
-    name: "场景能力声明"
+        prompt: 检查模板系统，验证有 SceneTemplate 模型和模板应用功能
+        context_files:
+          - apps/server/src/services/templateService.ts
+  - id: ISSUE-C006~c4
+    name: 场景能力声明
     description: |
       能力系统:
       - 场景支持的功能列表
       - 能力启用/禁用
       - 能力依赖检查
       - 能力版本管理
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -93,19 +90,18 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查能力系统，验证有 SceneCapability 定义和能力检查逻辑"
-        context_files: ["packages/shared/src/types/capability.ts"]
-        
-
-  - id: "ISSUE-C006~c5"
-    name: "场景切换和迁移"
+        prompt: 检查能力系统，验证有 SceneCapability 定义和能力检查逻辑
+        context_files:
+          - packages/shared/src/types/capability.ts
+  - id: ISSUE-C006~c5
+    name: 场景切换和迁移
     description: |
       场景切换:
       - 场景间数据迁移
       - 配置转换规则
       - 迁移预览
       - 迁移确认
-    status: "pending"
+    status: pending
     coverage:
       unit: required
       integration: required
@@ -114,14 +110,13 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查场景切换，验证有场景迁移功能和数据转换逻辑"
-        context_files: ["apps/server/src/services/sceneMigrationService.ts"]
-        
-
-  - id: "ISSUE-C006~c6"
-    name: "场景配置管理UI"
-    description: "提供场景配置的可视化管理界面，支持场景切换和配置预览"
-    status: "pending"
+        prompt: 检查场景切换，验证有场景迁移功能和数据转换逻辑
+        context_files:
+          - apps/server/src/services/sceneMigrationService.ts
+  - id: ISSUE-C006~c6
+    name: 场景配置管理UI
+    description: 提供场景配置的可视化管理界面，支持场景切换和配置预览
+    status: pending
     coverage:
       unit: not_needed
       integration: required
@@ -130,6 +125,8 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查场景配置管理UI，验证有可视化的场景配置界面"
-        context_files: ["apps/web/src/pages/scene/"]
-        
+        prompt: 检查场景配置管理UI，验证有可视化的场景配置界面
+        context_files:
+          - apps/web/src/pages/scene/
+started_at: null
+completed_at: null

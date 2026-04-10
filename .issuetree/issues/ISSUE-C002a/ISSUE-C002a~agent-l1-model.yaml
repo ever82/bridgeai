@@ -3,7 +3,7 @@ id: "ISSUE-C002a"
 issue_number: 302
 title: "L1基础信息模型"
 slug: "agent-l1-model"
-status: "implemented"
+status: "passed"
 description: |
   实现 Agent L1 基础信息模型，包括用户可编辑的
   结构化基础字段：年龄、性别、地域、职业等。

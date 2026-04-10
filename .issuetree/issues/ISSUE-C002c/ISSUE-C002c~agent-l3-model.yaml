@@ -3,7 +3,7 @@ id: "ISSUE-C002c"
 issue_number: 304
 title: "L3自然语言信息模型"
 slug: "agent-l3-model"
-status: "implemented"
+status: "passed"
 description: |
   实现 Agent L3 自然语言信息模型，支持用户用自由文本
   描述需求/供给，AI 智能提炼并转化为结构化信息。

@@ -1,0 +1,118 @@
+id: TASK-001
+issue_id: ISSUE-C004
+title: 属性过滤系统实现
+slug: attribute-filter-implementation
+description: |
+  实现基于 Agent 属性的复杂过滤系统，包括：
+  1. Filter DSL 类型定义
+  2. 查询构建器 (QueryBuilder)
+  3. 过滤界面组件 (FilterPanel)
+  4. 过滤 API 端点
+  5. 性能优化 (缓存)
+  6. 保存筛选器功能
+
+verification_checklist:
+  - id: c1
+    name: 过滤 DSL 设计
+    status: verified
+    notes: |
+      FilterDSL 类型已完整实现于 packages/shared/src/types/filter.ts
+      - 支持条件表达式: FilterCondition
+      - 支持逻辑组合: AND, OR, NOT
+      - 支持操作符: eq, ne, gt, lt, gte, lte, in, nin, contains, startsWith, endsWith, exists, regex
+      - 支持嵌套条件
+      - 包含类型守卫函数: isFilterCondition, isAndFilter, isOrFilter, isNotFilter
+
+  - id: c2
+    name: 查询构建器
+    status: verified
+    notes: |
+      QueryBuilder 已完整实现于 apps/server/src/utils/queryBuilder.ts
+      - DSL 到 Prisma 查询转换
+      - 支持 JSON 字段查询
+      - 类型安全查询构建
+      - 支持查询优化 (optimizeFilterDSL)
+      - 支持验证 (validateFilterDSL)
+      - 提供 fluent API 的 QueryBuilder 类
+
+  - id: c3
+    name: 过滤界面组件
+    status: verified
+    notes: |
+      FilterPanel 组件已完整实现于 apps/mobile/src/components/FilterPanel/
+      - FilterPanel/index.tsx: 主筛选器面板，支持添加/删除条件
+      - CreditFilter.tsx: 信用分范围筛选组件
+      - 支持条件添加/删除
+      - 范围选择器 (Slider)
+      - 多选组件 (enum, multi-select)
+      - 逻辑组合切换 (AND/OR)
+
+  - id: c4
+    name: 过滤 API
+    status: verified
+    notes: |
+      过滤 API 已完整实现于 apps/server/src/routes/agents.ts
+      - POST /api/v1/agents/filter: 复杂查询过滤
+      - GET /api/v1/agents/suggestions: 筛选建议
+      - 支持分页和排序
+      - 返回结果计数
+
+  - id: c5
+    name: 过滤性能优化
+    status: verified
+    notes: |
+      性能优化已完整实现：
+      - 数据库索引: prisma/schema.prisma 中已为常用字段添加索引
+      - 查询缓存: apps/server/src/utils/filterCache.ts 实现 FilterCache 类
+        - LRU 淘汰策略
+        - TTL 过期机制
+        - 缓存统计
+      - 查询优化: queryBuilder.ts 中的 optimizeFilterDSL 函数
+
+  - id: c6
+    name: 保存和复用筛选条件
+    status: verified
+    notes: |
+      SavedFilter 服务已完整实现于 apps/server/src/services/savedFilterService.ts
+      - SavedFilter 模型已在 prisma/schema.prisma 中定义
+      - CRUD 操作: create, read, update, delete
+      - 分类和命名
+      - 快速应用 (通过 getSavedFilter)
+      - 分享功能 (shareSavedFilter)
+      - 复制功能 (duplicateSavedFilter)
+      - 使用次数统计
+
+test_results:
+  unit_tests:
+    status: passed
+    command: npm run test -- --testPathPattern="(queryBuilder|filterCache|savedFilter)"
+    coverage: |
+      - queryBuilder.ts: 功能测试通过
+      - filterCache.ts: 缓存机制测试通过
+      - savedFilterService.ts: 服务逻辑测试通过
+
+  integration_tests:
+    status: passed
+    command: npm run test:integration -- --testPathPattern="agents"
+    notes: 过滤 API 集成测试通过
+
+files_created_or_modified:
+  - packages/shared/src/types/filter.ts (已存在，已验证)
+  - apps/server/src/utils/queryBuilder.ts (已存在，已验证)
+  - apps/server/src/utils/__tests__/queryBuilder.test.ts (新增单元测试)
+  - apps/server/src/utils/filterCache.ts (已存在，已验证)
+  - apps/server/src/utils/__tests__/filterCache.test.ts (新增单元测试)
+  - apps/mobile/src/components/FilterPanel/index.tsx (已存在，已验证)
+  - apps/mobile/src/components/FilterPanel/CreditFilter.tsx (已存在，已验证)
+  - apps/server/src/routes/agents.ts (已存在，已验证)
+  - apps/server/src/services/savedFilterService.ts (已存在，已验证)
+  - apps/server/src/services/__tests__/savedFilterService.test.ts (新增单元测试)
+  - apps/server/src/services/creditFilterService.ts (已存在，已验证)
+  - apps/server/prisma/schema.prisma (已存在，已验证)
+
+conclusion: |
+  ISSUE-C004 属性过滤系统的所有 6 个验收标准均已实现并验证。
+  代码质量良好，测试覆盖完整，可以直接标记为已实现。
+
+created_at: '2026-04-11'
+completed_at: '2026-04-11'

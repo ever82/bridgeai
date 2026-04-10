@@ -3,7 +3,7 @@ id: "ISSUE-A003a"
 issue_number: 2031
 title: "用户基础资料管理 - 后端API"
 slug: "user-profile-backend"
-status: "implemented"
+status: "passed"
 description: |
   实现用户资料管理后端API，包括：
   - 用户信息CRUD接口 (/api/v1/users/me)
@@ -70,3 +70,30 @@ test_count: 26
 test_duration_seconds: 4
 merged_to_master: false
 worktree_path: null
+
+check:
+  issue_id: "ISSUE-A003a"
+  checked_at: "2026-04-10T16:10:00+08:00"
+  status: passed
+  functional_verification:
+    all_criteria_passed: true
+    criteria:
+      - id: "ISSUE-A003a~c1"
+        name: "用户信息 API"
+        status: passed
+        notes: "GET/PUT/DELETE /api/v1/users/me implemented"
+      - id: "ISSUE-A003a~c2"
+        name: "头像上传和存储"
+        status: passed
+        notes: "multer + sharp + S3/OSS integration complete"
+  test_execution:
+    all_tests_passed: true
+    unit_tests: passed
+    test_count: 26
+  code_review:
+    merged_to_main: false
+    pr_approved: true
+    notes: "Implementation complete but pending merge to master"
+  documentation:
+    all_updated: true
+  notes: "All acceptance criteria met. 26 unit tests passed. Merge to master required."

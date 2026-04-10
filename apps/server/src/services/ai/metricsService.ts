@@ -402,3 +402,6 @@ export class LLMMetricsService extends EventEmitter {
     this.costCounter.set(key, current + cost);
   }
 }
+
+// Export singleton instance
+export const metricsService = new LLMMetricsService();

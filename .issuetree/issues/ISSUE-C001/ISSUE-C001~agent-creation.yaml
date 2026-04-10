@@ -3,7 +3,7 @@ id: "ISSUE-C001"
 issue_number: 301
 title: "Agent创建与基础配置"
 slug: "agent-creation"
-status: "implemented"
+status: "passed"
 description: |
   实现 Agent 创建和基础配置功能，包括 Agent 类型定义、
   基础属性设置、场景关联、初始状态配置等。
@@ -117,3 +117,8 @@ criteria:
         prompt: "检查移动端 Agent 界面，验证有 AgentListScreen 和 CreateAgentScreen"
         context_files: ["apps/mobile/src/screens/Agent/AgentListScreen.tsx", "apps/mobile/src/screens/Agent/CreateAgentScreen.tsx"]
         
+
+
+implementation_completed_at: "2026-04-10T10:36:44.105Z"
+
+implementation_result: "success"

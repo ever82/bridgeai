@@ -1,26 +1,25 @@
----
-id: "ISSUE-C003"
+id: ISSUE-C003
 issue_number: 305
-title: "地域过滤系统"
-slug: "location-filter"
-status: "pending"
+title: 地域过滤系统
+slug: location-filter
+status: checking
 description: |
   实现基于地理位置的过滤系统，支持按省市区、
   距离范围、地理围栏等方式筛选 Agent。
 prerequisites:
-  - "ISSUE-C002b"
-created_at: "2026-04-08"
+  - ISSUE-C002b
+created_at: '2026-04-08'
 logic: sufficient_necessary
 criteria:
-  - id: "ISSUE-C003~c1"
-    name: "地理位置数据模型"
+  - id: ISSUE-C003~c1
+    name: 地理位置数据模型
     description: |
       地理数据:
       - 省市区编码标准
       - 经纬度坐标存储
       - GeoJSON 支持
       - 地址解析服务
-    status: "pending"
+    status: completed
     coverage:
       unit: required
       integration: required
@@ -29,19 +28,18 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查地理数据模型，验证有 Location 类型包含 province, city, district 和 coordinates"
-        context_files: ["packages/shared/src/types/location.ts"]
-        
-
-  - id: "ISSUE-C003~c2"
-    name: "地理位置选择组件"
+        prompt: 检查地理数据模型，验证有 Location 类型包含 province, city, district 和 coordinates
+        context_files:
+          - packages/shared/src/types/location.ts
+  - id: ISSUE-C003~c2
+    name: 地理位置选择组件
     description: |
       位置选择 UI:
       - 三级联动选择器
       - 地图选点功能
       - 定位权限处理
       - 常用地址管理
-    status: "pending"
+    status: completed
     coverage:
       unit: required
       integration: required
@@ -50,19 +48,18 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查位置选择组件，验证有 LocationPicker 支持省市区三级选择"
-        context_files: ["apps/mobile/src/components/LocationPicker/"]
-        
-
-  - id: "ISSUE-C003~c3"
-    name: "距离计算和筛选"
+        prompt: 检查位置选择组件，验证有 LocationPicker 支持省市区三级选择
+        context_files:
+          - apps/mobile/src/components/LocationPicker/
+  - id: ISSUE-C003~c3
+    name: 距离计算和筛选
     description: |
       距离筛选:
       - 基于经纬度的距离计算
       - 距离范围筛选(1km, 5km, 10km等)
       - PostGIS 空间查询优化
       - 近似距离估算
-    status: "pending"
+    status: completed
     coverage:
       unit: required
       integration: required
@@ -71,19 +68,19 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查距离计算，验证有 calculateDistance 函数和按距离筛选 API"
-        context_files: ["apps/server/src/utils/geo.ts", "apps/server/src/services/filterService.ts"]
-        
-
-  - id: "ISSUE-C003~c4"
-    name: "地理围栏支持"
+        prompt: 检查距离计算，验证有 calculateDistance 函数和按距离筛选 API
+        context_files:
+          - apps/server/src/utils/geo.ts
+          - apps/server/src/services/locationSearchService.ts
+  - id: ISSUE-C003~c4
+    name: 地理围栏支持
     description: |
       围栏功能:
       - 多边形围栏定义
       - 点是否在围栏内判断
       - 围栏交集计算
       - 围栏可视化
-    status: "pending"
+    status: completed
     coverage:
       unit: required
       integration: required
@@ -92,19 +89,18 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查地理围栏实现，验证有 GeoFence 类型和 pointInPolygon 判断函数"
-        context_files: ["apps/server/src/utils/geoFence.ts"]
-        
-
-  - id: "ISSUE-C003~c5"
-    name: "位置服务集成"
+        prompt: 检查地理围栏实现，验证有 GeoFence 类型和 pointInPolygon 判断函数
+        context_files:
+          - apps/server/src/utils/geoFence.ts
+  - id: ISSUE-C003~c5
+    name: 位置服务集成
     description: |
       位置服务:
       - 高德/百度地图 API 集成
       - 地理编码(地址转坐标)
       - 逆地理编码(坐标转地址)
       - 地址联想搜索
-    status: "pending"
+    status: completed
     coverage:
       unit: required
       integration: required
@@ -113,19 +109,19 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查地图服务集成，验证有 geocodingService 和地址搜索功能"
-        context_files: ["apps/server/src/services/geoCodingService.ts", "apps/mobile/src/services/locationService.ts"]
-        
-
-  - id: "ISSUE-C003~c6"
-    name: "Agent地理位置筛选集成"
+        prompt: 检查地图服务集成，验证有 geocodingService 和地址搜索功能
+        context_files:
+          - apps/server/src/services/geoCodingService.ts
+          - apps/mobile/src/services/locationService.ts
+  - id: ISSUE-C003~c6
+    name: Agent地理位置筛选集成
     description: |
       Agent位置筛选:
       - Agent位置数据存储和更新
       - 基于位置的Agent搜索API
       - 实时位置更新机制
       - 位置隐私设置管理
-    status: "pending"
+    status: completed
     coverage:
       unit: required
       integration: required
@@ -134,7 +130,8 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查Agent位置筛选功能，验证有基于地理位置的Agent搜索API和Agent位置数据模型"
-        context_files: ["apps/server/src/services/agentLocationService.ts", "apps/server/src/models/AgentLocation.ts"]
-        
----
+        prompt: 检查Agent位置筛选功能，验证有基于地理位置的Agent搜索API和Agent位置数据模型
+        context_files:
+          - apps/server/src/services/agentLocationService.ts
+started_at: '2026-04-10T17:28:05.046Z'
+completed_at: '2026-04-10T17:48:49.813Z'

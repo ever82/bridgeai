@@ -3,7 +3,7 @@ id: "ISSUE-COM001a"
 issue_number: 501
 title: "Socket.io基础设施搭建"
 slug: "socketio-infra"
-status: "implemented"
+status: "passed"
 description: |
   搭建 Socket.io 实时通信基础设施，支持 WebSocket 连接、
   事件处理和广播功能。
@@ -134,3 +134,8 @@ implementation:
 
 test_passed: true
 merged_to_master: true
+
+
+implementation_completed_at: "2026-04-10T10:36:57.852Z"
+
+implementation_result: "success"

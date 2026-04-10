@@ -3,9 +3,11 @@
     "ISSUE-A002",
     "ISSUE-A004",
     "ISSUE-AI001",
+    "ISSUE-C001",
     "ISSUE-CR001",
     "ISSUE-F005",
     "ISSUE-F006",
+    "ISSUE-SEC002",
     "ISSUE-T001"
   ],
   "failed": [
@@ -16,7 +18,8 @@
   "merged": [
     "ISSUE-A004",
     "ISSUE-AI001",
-    "ISSUE-CR001"
+    "ISSUE-CR001",
+    "ISSUE-UI001"
   ],
-  "last_update": "2026-04-10T15:08:39.557470"
+  "last_update": "2026-04-11T01:59:33.083013"
 }

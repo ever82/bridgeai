@@ -10,8 +10,12 @@ import { authenticateToken } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
 import { z } from 'zod';
 import logger from '../utils/logger';
+import extractionRoutes from './ai/extraction';
 
 const router = Router();
+
+// Mount extraction routes
+router.use('/extract', extractionRoutes);
 
 // 初始化LLM服务
 const llmService = new LLMService({
