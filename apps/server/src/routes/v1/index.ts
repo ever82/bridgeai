@@ -5,6 +5,7 @@ import uploadRoutes from '../upload';
 import creditRoutes from '../credit';
 import agentRoutes from '../agents';
 import agentProfileRoutes from '../agentProfile';
+import locationRoutes from '../locationRoutes';
 
 const router: Router = Router();
 
@@ -15,6 +16,7 @@ router.use('/upload', uploadRoutes);
 router.use('/credit', creditRoutes);
 router.use('/agents', agentRoutes);
 router.use('/agents', agentProfileRoutes);
+router.use('/location', locationRoutes);
 
 // Placeholder for future routes
 // router.use('/auth', authRoutes);

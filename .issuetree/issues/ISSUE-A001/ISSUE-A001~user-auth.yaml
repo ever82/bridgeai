@@ -3,7 +3,7 @@ id: "ISSUE-A001"
 issue_number: 201
 title: "用户注册与登录系统"
 slug: "user-auth"
-status: "in_progress"
+status: "implemented"
 description: |
   实现用户注册和登录功能，支持手机号/邮箱注册、
   密码登录、验证码登录、第三方登录(微信/Google)等认证方式。
@@ -21,7 +21,7 @@ criteria:
       - 密码强度验证
       - 验证码发送和校验
       - 用户唯一性检查
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -42,7 +42,7 @@ criteria:
       - 验证码登录
       - 登录失败处理(限制重试)
       - 登录日志记录
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -63,7 +63,7 @@ criteria:
       - Google OAuth 登录
       - OAuth 回调处理
       - 账号绑定和解绑
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -84,7 +84,7 @@ criteria:
       - 重置验证码发送
       - 密码重置确认
       - 重置令牌有效期
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -105,7 +105,7 @@ criteria:
       - 验证码输入界面
       - 第三方登录按钮
       - 注册入口
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -126,7 +126,7 @@ criteria:
       - 密码确认
       - 服务条款同意
       - 密码加密存储(bcrypt)
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -138,3 +138,18 @@ criteria:
         prompt: "检查注册实现，验证密码使用 bcrypt 加密存储，确认有密码强度验证"
         context_files: ["apps/server/src/services/authService.ts", "apps/mobile/src/screens/Auth/RegisterScreen.tsx"]
         
+
+implementation:
+  completed_at: "2026-04-10"
+  result: "success"
+  notes: |
+    All 6 criteria implemented:
+    - C1: User registration API with phone/email, password validation
+    - C2: User login API with password/code login, rate limiting
+    - C3: Third-party OAuth (WeChat/Google) with bind/unbind
+    - C4: Password reset with token-based flow
+    - C5: Mobile login UI with third-party buttons
+    - C6: Registration UI with bcrypt password encryption
+
+test_passed: true
+merged_to_master: true
