@@ -1,4 +1,6 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
+/**
+ * Tests for key management service
+ */
 import {
   getDataEncryptionKey,
   rotateKeys,

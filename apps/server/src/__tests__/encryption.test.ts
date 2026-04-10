@@ -1,4 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+/**
+ * Tests for encryption utilities
+ */
 import {
   encrypt,
   decrypt,

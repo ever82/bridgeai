@@ -2,7 +2,7 @@ id: ISSUE-A004
 issue_number: 204
 title: 输入验证与数据校验
 slug: input-validation
-status: implemented
+status: passed
 description: |
   实现统一的输入验证和数据校验机制，包括请求参数验证、
   数据格式校验、XSS 防护、SQL 注入防护等安全功能。
@@ -123,3 +123,29 @@ test_passed: true
 merged_to_master: true
 test_duration_seconds: 300
 worktree_path: null
+check:
+  checked_at: '2026-04-10T06:45:00+08:00'
+  status: passed
+  functional_verification:
+    all_criteria_passed: true
+    notes: |
+      All 5 criteria verified:
+      - C1: Request validation middleware with Zod
+      - C2: API schemas for user, agent, message
+      - C3: Security middleware with XSS/SQL/NoSQL protection
+      - C4: Mobile form validation with useForm hook
+      - C5: File upload validation with multer
+  test_execution:
+    all_tests_passed: true
+    test_summary: |
+      Middleware tests: 51 passed
+      - validation.test.ts: All tests passed
+      - security.test.ts: All tests passed
+  code_review:
+    merged_to_main: true
+    pr_approved: true
+    notes: |
+      Fixed TypeScript errors in upload.ts, security.ts, performance.ts, validation.ts
+  documentation:
+    all_updated: true
+  notes: 'Issue A004 acceptance completed successfully'
