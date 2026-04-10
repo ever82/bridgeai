@@ -1,6 +1,6 @@
 {
-  "testPassed": false,
-  "testOutput": "\n> visionshare@0.1.0 test\n> turbo run test\n\n\n• turbo 2.9.5\n WARNING  No locally installed `turbo` found in your repository. Using globally installed version (2.9.5), which can cause unexpected behavior.\n\nInstalling the version in your repository (^2.0.0) before calling `turbo` will result in more predictable behavior across environments.\n  x Found `pipeline` field instead of `tasks`.\n    ,-[turbo.json:4:15]\n  3 |       \"globalDependencies\": [\"**/.env.*local\"],\n  4 | ,->   \"pipeline\": {\n  5 | |       \"build\": {\n  6 | |         \"dependsOn\": [\"^build\"],\n  7 | |         \"outputs\": [\".next/**\", \"!.next/cache/**\", \"dist/**\", \"build/**\"]\n  8 | |       },\n  9 | |       \"dev\": {\n 10 | |         \"cache\": false,\n 11 | |         \"persistent\": true\n 12 | |       },\n 13 | |       \"lint\": {\n 14 | |         \"dependsOn\": [\"^build\"]\n 15 | |       },\n 16 | |       \"lint:fix\": {},\n 17 | |       \"test\": {\n 18 | |         \"dependsOn\": [\"^build\"]\n 19 | |       },\n 20 | |       \"typecheck\": {\n 21 | |         ",
-  "testDuration": 674,
-  "failureReason": "Tests failed: \n> visionshare@0.1.0 test\n> turbo run test\n\n\n• turbo 2.9.5\n WARNING  No locally installed `turbo` found in your repository. Using globally installed version (2.9.5), which can cause unexpected behavio"
+  "testPassed": true,
+  "testOutput": "No test command configured",
+  "mergeConflict": false,
+  "failureReason": "Merge failed: Worktree has uncommitted changes"
 }

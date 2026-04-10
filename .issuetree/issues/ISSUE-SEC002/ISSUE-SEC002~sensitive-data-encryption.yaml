@@ -3,7 +3,7 @@ id: "ISSUE-SEC002"
 issue_number: 402
 title: "敏感数据加密与保护"
 slug: "sensitive-data-encryption"
-status: "pending"
+status: "in_progress"
 description: |
   实现敏感数据的加密存储与传输保护，包括用户个人信息、聊天记录、
   支付信息等敏感字段的加密方案，密钥管理，以及数据脱敏策略。

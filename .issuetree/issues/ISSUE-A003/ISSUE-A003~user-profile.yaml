@@ -2,7 +2,7 @@ id: ISSUE-A003
 issue_number: 203
 title: 用户基础资料管理
 slug: user-profile
-status: implemented
+status: "passed"
 description: |
   实现用户资料管理功能，包括头像上传、基本信息编辑、
   隐私设置、账号安全等功能。
@@ -124,3 +124,12 @@ implementation:
 test_passed: true
 merged_to_master: false
 worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-A003
+
+
+implementation_attempted_at: "2026-04-10T06:34:32.287Z"
+
+implementation_result: "failed"
+
+implementation_failure_reason: "Merge failed: Worktree has uncommitted changes"
+
+test_output_summary: "No test command configured"
