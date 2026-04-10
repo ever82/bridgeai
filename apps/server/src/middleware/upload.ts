@@ -10,7 +10,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import multer, { type FileFilterCallback } from 'multer';
 import path from 'path';
-import { logger } from '../utils/logger';
 import { getRequestContext } from './requestContext';
 
 // ============================================================================

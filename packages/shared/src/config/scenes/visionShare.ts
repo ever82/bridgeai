@@ -1,0 +1,326 @@
+import { SceneConfig, SceneMetadata, SceneFieldDefinition, SceneCapability, SceneSection } from '../../types/scene';
+
+const metadata: SceneMetadata = {
+  id: 'visionshare',
+  name: '视觉分享',
+  nameEn: 'VisionShare',
+  description: '分享摄影、艺术作品、设计作品等视觉内容的场景',
+  icon: '🎨',
+  color: '#9C27B0',
+  version: '1.0.0',
+  isActive: true,
+  createdAt: new Date('2026-01-01'),
+  updatedAt: new Date('2026-01-01'),
+};
+
+const fields: SceneFieldDefinition[] = [
+  {
+    id: 'content_type',
+    name: 'contentType',
+    label: '内容类型',
+    type: 'multiselect',
+    required: true,
+    options: [
+      { value: 'photography', label: '摄影', icon: '📷' },
+      { value: 'artwork', label: '绘画/艺术', icon: '🎨' },
+      { value: 'design', label: '设计作品', icon: '✏️' },
+      { value: 'illustration', label: '插画', icon: '🖼️' },
+      { value: 'video', label: '视频', icon: '🎬' },
+      { value: 'animation', label: '动画', icon: '🎞️' },
+    ],
+    ui: { order: 1, section: 'basic', placeholder: '选择内容类型' },
+  },
+  {
+    id: 'purpose',
+    name: 'purpose',
+    label: '分享目的',
+    type: 'select',
+    required: true,
+    options: [
+      { value: 'share', label: '纯粹分享', description: '只是想分享作品' },
+      { value: 'discover', label: '寻求发现', description: '希望作品被更多人看到' },
+      { value: 'collaborate', label: '寻找合作', description: '寻找合作机会' },
+      { value: 'sell', label: '出售作品', description: '作品可出售或授权' },
+      { value: 'feedback', label: '获取反馈', description: '希望得到专业反馈' },
+    ],
+    ui: { order: 2, section: 'basic' },
+  },
+  {
+    id: 'style',
+    name: 'style',
+    label: '风格',
+    type: 'multiselect',
+    required: false,
+    options: [
+      { value: 'minimalist', label: '极简' },
+      { value: 'vintage', label: '复古' },
+      { value: 'modern', label: '现代' },
+      { value: 'abstract', label: '抽象' },
+      { value: 'realistic', label: '写实' },
+      { value: 'cartoon', label: '卡通' },
+      { value: 'cyberpunk', label: '赛博朋克' },
+      { value: 'nature', label: '自然' },
+      { value: 'urban', label: '都市' },
+    ],
+    ui: { order: 3, section: 'basic', placeholder: '选择风格标签' },
+  },
+  {
+    id: 'portfolio_url',
+    name: 'portfolioUrl',
+    label: '作品集链接',
+    type: 'url',
+    required: false,
+    validation: [
+      { type: 'pattern', value: '^https?://', message: '请输入有效的URL' },
+    ],
+    ui: { order: 4, section: 'basic', placeholder: 'https://...' },
+  },
+  {
+    id: 'skills',
+    name: 'skills',
+    label: '相关技能',
+    type: 'tags',
+    required: false,
+    options: [
+      { value: 'photoshop', label: 'Photoshop' },
+      { value: 'lightroom', label: 'Lightroom' },
+      { value: 'illustrator', label: 'Illustrator' },
+      { value: 'premiere', label: 'Premiere' },
+      { value: 'after_effects', label: 'After Effects' },
+      { value: 'blender', label: 'Blender' },
+      { value: 'figma', label: 'Figma' },
+      { value: 'sketch', label: 'Sketch' },
+    ],
+    ui: { order: 5, section: 'skills', placeholder: '添加技能标签' },
+  },
+  {
+    id: 'experience_level',
+    name: 'experienceLevel',
+    label: '经验水平',
+    type: 'select',
+    required: false,
+    options: [
+      { value: 'beginner', label: '初学者', icon: '🌱' },
+      { value: 'intermediate', label: '中级', icon: '🌿' },
+      { value: 'advanced', label: '高级', icon: '🌳' },
+      { value: 'professional', label: '专业', icon: '⭐' },
+    ],
+    ui: { order: 6, section: 'skills' },
+  },
+  {
+    id: 'availability',
+    name: 'availability',
+    label: '可接单状态',
+    type: 'select',
+    required: false,
+    options: [
+      { value: 'not_available', label: '不接单', icon: '🔴' },
+      { value: 'limited', label: '有限接单', icon: '🟡' },
+      { value: 'available', label: '可接单', icon: '🟢' },
+    ],
+    ui: { order: 7, section: 'services' },
+  },
+  {
+    id: 'price_range',
+    name: 'priceRange',
+    label: '价格区间',
+    type: 'range',
+    required: false,
+    options: [
+      { value: 'free', label: '免费' },
+      { value: 'low', label: '低价 (¥1-100)' },
+      { value: 'medium', label: '中价 (¥100-1000)' },
+      { value: 'high', label: '高价 (¥1000+)' },
+    ],
+    dependencies: [
+      { field: 'purpose', operator: 'eq', value: 'sell' },
+    ],
+    ui: { order: 8, section: 'services' },
+  },
+  {
+    id: 'inspiration_sources',
+    name: 'inspirationSources',
+    label: '灵感来源',
+    type: 'textarea',
+    required: false,
+    ui: {
+      order: 9,
+      section: 'about',
+      placeholder: '描述你的创作灵感来源...',
+      helpText: '分享是什么激发了你的创作',
+    },
+  },
+  {
+    id: 'favorite_artists',
+    name: 'favoriteArtists',
+    label: '喜欢的艺术家',
+    type: 'tags',
+    required: false,
+    ui: {
+      order: 10,
+      section: 'about',
+      placeholder: '添加你喜欢的艺术家',
+    },
+  },
+];
+
+const capabilities: SceneCapability[] = [
+  {
+    id: 'image_upload',
+    name: '图片上传',
+    description: '支持上传高清图片作品',
+    enabled: true,
+    version: '1.0.0',
+    dependencies: [],
+    config: {
+      maxFileSize: 20 * 1024 * 1024, // 20MB
+      allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+      maxImages: 20,
+    },
+  },
+  {
+    id: 'video_upload',
+    name: '视频上传',
+    description: '支持上传视频作品',
+    enabled: true,
+    version: '1.0.0',
+    dependencies: [],
+    config: {
+      maxFileSize: 500 * 1024 * 1024, // 500MB
+      allowedFormats: ['mp4', 'mov', 'avi'],
+      maxDuration: 300, // 5 minutes
+    },
+  },
+  {
+    id: 'portfolio_link',
+    name: '作品集链接',
+    description: '支持链接到外部作品集',
+    enabled: true,
+    version: '1.0.0',
+    dependencies: [],
+  },
+  {
+    id: 'collaboration',
+    name: '协作功能',
+    description: '寻找合作者和项目',
+    enabled: true,
+    version: '1.0.0',
+    dependencies: ['portfolio_link'],
+  },
+  {
+    id: 'marketplace',
+    name: '作品交易',
+    description: '出售和授权作品',
+    enabled: false,
+    version: '0.5.0',
+    dependencies: ['image_upload'],
+  },
+  {
+    id: 'critique_system',
+    name: '作品点评',
+    description: '获取专业反馈和建议',
+    enabled: true,
+    version: '1.0.0',
+    dependencies: [],
+  },
+];
+
+const sections: SceneSection[] = [
+  {
+    id: 'basic',
+    title: '基本信息',
+    description: '作品的基本信息',
+    icon: '📋',
+    order: 1,
+    fields: ['content_type', 'purpose', 'style', 'portfolio_url'],
+  },
+  {
+    id: 'skills',
+    title: '技能和经验',
+    description: '你的专业技能',
+    icon: '🛠️',
+    order: 2,
+    fields: ['skills', 'experience_level'],
+  },
+  {
+    id: 'services',
+    title: '服务信息',
+    description: '可提供服务',
+    icon: '💼',
+    order: 3,
+    fields: ['availability', 'price_range'],
+  },
+  {
+    id: 'about',
+    title: '关于你',
+    description: '更多关于你的信息',
+    icon: '👤',
+    order: 4,
+    fields: ['inspiration_sources', 'favorite_artists'],
+  },
+];
+
+export const visionShareConfig: SceneConfig = {
+  id: 'visionshare',
+  metadata,
+  fields,
+  capabilities,
+  templates: [
+    {
+      id: 'photographer',
+      name: '摄影师',
+      description: '专业摄影师模板',
+      isPreset: true,
+      isDefault: false,
+      fieldValues: {
+        contentType: ['photography'],
+        purpose: 'share',
+        skills: ['lightroom', 'photoshop'],
+        experienceLevel: 'advanced',
+      },
+    },
+    {
+      id: 'designer',
+      name: '设计师',
+      description: '平面设计师模板',
+      isPreset: true,
+      isDefault: false,
+      fieldValues: {
+        contentType: ['design', 'illustration'],
+        purpose: 'collaborate',
+        skills: ['figma', 'illustrator', 'photoshop'],
+        experienceLevel: 'professional',
+        availability: 'available',
+      },
+    },
+    {
+      id: 'artist',
+      name: '艺术家',
+      description: '纯艺术创作者模板',
+      isPreset: true,
+      isDefault: false,
+      fieldValues: {
+        contentType: ['artwork'],
+        purpose: 'discover',
+        experienceLevel: 'advanced',
+      },
+    },
+  ],
+  validation: {
+    rules: [],
+    preventSubmitOnError: true,
+    showWarnings: true,
+  },
+  ui: {
+    sections,
+    layout: 'tabs',
+    theme: {
+      primaryColor: '#9C27B0',
+      secondaryColor: '#E1BEE7',
+      backgroundColor: '#F3E5F5',
+      textColor: '#333333',
+    },
+  },
+};
+
+export default visionShareConfig;
