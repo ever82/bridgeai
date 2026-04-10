@@ -1,0 +1,7 @@
+Task: TASK-1
+Issue: ISSUE-SEC001
+
+Please execute the task according to the IssueTree workflow.
+1. Read the Issue YAML at .issuetree/issues/ISSUE-SEC001/ISSUE-SEC001~*.yaml
+2. Create a Task YAML at .issuetree/issues/ISSUE-SEC001/tasks/TASK-1~*.yaml
+3. Execute the task and update the Task YAML with results.
