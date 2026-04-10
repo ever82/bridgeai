@@ -316,7 +316,13 @@ model AgentProfile {
   l2Data    Json     @map("l2_data")  // description, requirements, capabilities
 
   // L3 - 自然语言描述（完整描述）
-  l3Description String? @map("l3_description")
+  l3Text            String?   @map("l3_text") @db.Text  // 原始文本
+  l3Description     String?   @map("l3_description")    // AI提炼后的描述
+  l3ExtractionData  Json?     @map("l3_extraction_data") // 从L3提取的L2数据
+  l3ExtractionConfidence Float? @map("l3_extraction_confidence") // 提炼置信度
+
+  // 提炼历史
+  extractionHistory Json?     @map("extraction_history") // 提炼历史记录
 
   // 场景专属配置
   sceneConfig   Json?    @map("scene_config")
@@ -332,6 +338,7 @@ model AgentProfile {
   @@unique([agentId, sceneId])
   @@index([agentId])
   @@index([sceneId])
+  @@index([l3ExtractionConfidence])
   @@map("agent_profiles")
 }
 

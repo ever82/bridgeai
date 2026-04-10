@@ -3,7 +3,7 @@ id: "ISSUE-C002c"
 issue_number: 304
 title: "L3自然语言信息模型"
 slug: "agent-l3-model"
-status: "pending"
+status: "implemented"
 description: |
   实现 Agent L3 自然语言信息模型，支持用户用自由文本
   描述需求/供给，AI 智能提炼并转化为结构化信息。
@@ -20,7 +20,7 @@ criteria:
       - 富文本/纯文本选项
       - 字符数限制和提示
       - 草稿自动保存
-    status: "pending"
+    status: "passed"
     coverage:
       unit: lacking
       integration: required
@@ -41,7 +41,7 @@ criteria:
       - 提炼结果置信度评分
       - 可编辑的提炼结果
       - 提炼历史记录
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -62,7 +62,7 @@ criteria:
       - 编辑和确认流程
       - 拒绝和重新提炼
       - 置信度可视化
-    status: "pending"
+    status: "passed"
     coverage:
       unit: lacking
       integration: required
@@ -83,7 +83,7 @@ criteria:
       - 提炼历史存储
       - 文本向量化(可选)
       - 全文搜索索引
-    status: "pending"
+    status: "passed"
     coverage:
       unit: lacking
       integration: required
@@ -104,7 +104,7 @@ criteria:
       - Few-shot 示例学习
       - 提炼质量监控
       - 模型调优
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
