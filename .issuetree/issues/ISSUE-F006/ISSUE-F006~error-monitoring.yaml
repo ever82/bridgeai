@@ -3,7 +3,7 @@ id: "ISSUE-F006"
 issue_number: 106
 title: "错误追踪与监控集成"
 slug: "error-monitoring"
-status: "pending"
+status: "implemented"
 description: |
   集成错误追踪和监控服务(Sentry)，实现错误自动上报、
   性能监控、用户反馈收集，以及告警机制。
@@ -11,6 +11,11 @@ prerequisites:
   - "ISSUE-F003"
 created_at: "2026-04-08"
 logic: sufficient_necessary
+implementation:
+  task_id: "TASK-1"
+  completed_at: "2026-04-10T11:15:00+08:00"
+  execution_time_minutes: 10
+  result: "success"
 criteria:
   - id: "ISSUE-F006~c1"
     name: "Sentry 后端集成"
@@ -20,7 +25,7 @@ criteria:
       - 错误自动捕获
       - 用户信息关联
       - 环境配置 (DSN)
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -31,7 +36,7 @@ criteria:
       ai:
         prompt: "检查 Sentry 后端集成，验证 SDK 初始化配置正确，确认错误会被自动捕获"
         context_files: ["apps/server/src/utils/sentry.ts", "apps/server/src/app.ts"]
-        
+
 
   - id: "ISSUE-F006~c2"
     name: "Sentry 移动端集成"
@@ -41,7 +46,7 @@ criteria:
       - 崩溃报告捕获
       - 面包屑导航
       - 发布版本关联
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -52,7 +57,7 @@ criteria:
       ai:
         prompt: "检查移动端 Sentry 配置，验证有 Sentry.init 调用和错误边界设置"
         context_files: ["apps/mobile/src/utils/sentry.ts", "apps/mobile/App.tsx"]
-        
+
 
   - id: "ISSUE-F006~c3"
     name: "性能监控配置"
@@ -62,7 +67,7 @@ criteria:
       - 数据库查询性能
       - 内存使用情况
       - 关键事务性能指标
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -73,7 +78,7 @@ criteria:
       ai:
         prompt: "检查性能监控配置，验证有 Performance 监控和关键事务追踪"
         context_files: ["apps/server/src/middleware/performance.ts"]
-        
+
 
   - id: "ISSUE-F006~c4"
     name: "告警规则配置"
@@ -83,7 +88,7 @@ criteria:
       - P0/P1 错误即时通知
       - 告警渠道配置(邮件/Slack)
       - 告警去重和抑制
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -94,7 +99,7 @@ criteria:
       ai:
         prompt: "检查 Sentry 告警配置，验证有 Alert Rules 设置和通知渠道配置"
         context_files: [".sentry/"]
-        
+
 
   - id: "ISSUE-F006~c5"
     name: "用户反馈收集"
@@ -104,7 +109,7 @@ criteria:
       - 截图和日志附件
       - 反馈分类和标签
       - 反馈处理工作流
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
