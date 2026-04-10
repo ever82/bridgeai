@@ -8,14 +8,16 @@
     "ISSUE-F006",
     "ISSUE-T001"
   ],
-  "failed": [
+  "failed": [],
+  "in_progress": [
+    "ISSUE-A001",
+    "ISSUE-C001",
     "ISSUE-CR001"
   ],
-  "in_progress": [],
   "merged": [
     "ISSUE-A004",
     "ISSUE-AI001",
     "ISSUE-CR001"
   ],
-  "last_update": "2026-04-10T14:14:46.402972"
+  "last_update": "2026-04-10T22:45:00"
 }

@@ -694,3 +694,28 @@ model UserRole {
   @@index([roleId])
   @@map("user_roles")
 }
+
+// ============================================
+// 保存的筛选器
+// ============================================
+
+model SavedFilter {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String   // 筛选器名称
+  description String?  // 筛选器描述
+  category    String?  // 分类
+  filter      Json     // FilterDSL JSON
+  isPublic    Boolean  @default(false) @map("is_public")  // 是否公开
+  usageCount  Int      @default(0) @map("usage_count")     // 使用次数
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([isPublic, usageCount])
+  @@map("saved_filters")
+}
