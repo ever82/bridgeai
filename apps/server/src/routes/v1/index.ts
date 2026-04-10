@@ -6,6 +6,7 @@ import creditRoutes from '../credit';
 import agentRoutes from '../agents';
 import agentProfileRoutes from '../agentProfile';
 import locationRoutes from '../locationRoutes';
+import sceneRoutes from './scene';
 
 const router: Router = Router();
 
@@ -17,6 +18,7 @@ router.use('/credit', creditRoutes);
 router.use('/agents', agentRoutes);
 router.use('/agents', agentProfileRoutes);
 router.use('/location', locationRoutes);
+router.use('/scenes', sceneRoutes);
 
 // Placeholder for future routes
 // router.use('/auth', authRoutes);

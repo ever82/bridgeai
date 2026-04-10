@@ -19,7 +19,7 @@ import { getSceneConfig } from '@visionshare/shared';
 export async function createTemplate(
   userId: string,
   sceneId: SceneId,
-  config: SceneTemplateConfig,
+  config: Omit<SceneTemplateConfig, 'id' | 'isPreset'>,
   isPublic: boolean = false
 ): Promise<SceneTemplate> {
   try {
