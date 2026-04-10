@@ -159,8 +159,30 @@ export function requireRole(...allowedRoles: string[]) {
   };
 }
 
+/**
+ * Admin authorization middleware
+ */
+export function requireAdmin(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  if (!req.user) {
+    next(new AppError('Authentication required', 'UNAUTHORIZED', 401));
+    return;
+  }
+
+  if (req.user.role !== 'admin') {
+    next(new AppError('Admin access required', 'FORBIDDEN', 403));
+    return;
+  }
+
+  next();
+}
+
 export default {
   authenticate,
   optionalAuth,
   requireRole,
+  requireAdmin,
 };
