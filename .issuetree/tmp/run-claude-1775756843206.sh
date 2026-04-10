@@ -1,0 +1,1 @@
+cd '/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-AI001' && claude --dangerously-skip-permissions --plugin-dir ../issue-tree --file '/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-AI001/.issuetree/tmp/claude-session-1775756843206.txt'
