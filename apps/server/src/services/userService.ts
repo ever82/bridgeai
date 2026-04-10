@@ -1,199 +1,486 @@
-/**
- * User Service
- * 用户服务
- *
- * 用户资料管理、头像上传等
- */
+import { prisma } from '../db/client';
+import { AppError } from '../errors/AppError';
+import bcrypt from 'bcryptjs';
 
-import { PrismaClient, User } from '@prisma/client';
-import { logger } from '../utils/logger';
-
-const prisma = new PrismaClient();
-
-// 可更新的用户字段
-export interface IUpdateUserData {
-  name?: string;
-  phone?: string;
-  email?: string;
-}
-
-// 用户资料响应（不包含敏感信息）
-export interface IUserProfile {
+export interface UserProfile {
   id: string;
-  email: string | null;
+  email: string;
+  emailVerified: boolean;
   name: string | null;
+  displayName: string | null;
   avatarUrl: string | null;
+  bio: string | null;
+  website: string | null;
+  location: string | null;
   phone: string | null;
+  phoneVerified: boolean;
   status: string;
+  privacySettings: Record<string, any> | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
+export interface UpdateUserData {
+  name?: string;
+  displayName?: string;
+  bio?: string;
+  website?: string;
+  location?: string;
+  avatarUrl?: string;
+}
+
+export interface PrivacySettings {
+  profileVisibility: 'public' | 'friends' | 'private';
+  onlineStatusVisible: boolean;
+  phoneVisible: boolean;
+  emailVisible: boolean;
+  allowSearchByPhone: boolean;
+  allowSearchByEmail: boolean;
+}
+
+export interface DeviceInfo {
+  deviceId: string;
+  deviceName?: string;
+  deviceType?: string;
+  osVersion?: string;
+  appVersion?: string;
+  pushToken?: string;
+  ipAddress?: string;
+}
+
 /**
- * 获取用户资料
- * @param userId 用户ID
- * @returns 用户资料
+ * Get user by ID
  */
-export async function getUserProfile(userId: string): Promise<IUserProfile> {
+export async function getUserById(userId: string): Promise<UserProfile | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
 
-  if (!user) {
-    throw new Error('用户不存在');
-  }
+  if (!user) return null;
 
   return {
     id: user.id,
     email: user.email,
+    emailVerified: user.emailVerified,
     name: user.name,
+    displayName: user.displayName,
     avatarUrl: user.avatarUrl,
+    bio: user.bio,
+    website: user.website,
+    location: user.location,
     phone: user.phone,
+    phoneVerified: user.phoneVerified,
     status: user.status,
+    privacySettings: user.privacySettings as Record<string, any> | null,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
 }
 
 /**
- * 更新用户资料
- * @param userId 用户ID
- * @param data 更新数据
- * @returns 更新后的用户资料
+ * Get user by email
  */
-export async function updateUserProfile(
-  userId: string,
-  data: IUpdateUserData
-): Promise<IUserProfile> {
-  // 检查用户是否存在
-  const existingUser = await prisma.user.findUnique({
-    where: { id: userId },
+export async function getUserByEmail(email: string): Promise<UserProfile | null> {
+  const user = await prisma.user.findUnique({
+    where: { email },
   });
 
-  if (!existingUser) {
-    throw new Error('用户不存在');
-  }
+  if (!user) return null;
 
-  // 如果更新邮箱，检查是否已被使用
-  if (data.email && data.email !== existingUser.email) {
-    const emailExists = await prisma.user.findUnique({
-      where: { email: data.email },
-    });
-    if (emailExists) {
-      throw new Error('邮箱已被使用');
-    }
-  }
+  return {
+    id: user.id,
+    email: user.email,
+    emailVerified: user.emailVerified,
+    name: user.name,
+    displayName: user.displayName,
+    avatarUrl: user.avatarUrl,
+    bio: user.bio,
+    website: user.website,
+    location: user.location,
+    phone: user.phone,
+    phoneVerified: user.phoneVerified,
+    status: user.status,
+    privacySettings: user.privacySettings as Record<string, any> | null,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+}
 
-  // 如果更新手机号，检查是否已被使用
-  if (data.phone && data.phone !== existingUser.phone) {
-    const phoneExists = await prisma.user.findFirst({
-      where: { phone: data.phone },
-    });
-    if (phoneExists) {
-      throw new Error('手机号已被使用');
-    }
-  }
-
-  // 更新用户
-  const updatedUser = await prisma.user.update({
+/**
+ * Update user profile
+ */
+export async function updateUser(
+  userId: string,
+  data: UpdateUserData
+): Promise<UserProfile> {
+  const user = await prisma.user.update({
     where: { id: userId },
     data: {
-      ...(data.name !== undefined && { name: data.name }),
-      ...(data.phone !== undefined && { phone: data.phone }),
-      ...(data.email !== undefined && { email: data.email }),
+      ...data,
+      updatedAt: new Date(),
     },
   });
 
-  logger.info('User profile updated', { userId });
-
   return {
-    id: updatedUser.id,
-    email: updatedUser.email,
-    name: updatedUser.name,
-    avatarUrl: updatedUser.avatarUrl,
-    phone: updatedUser.phone,
-    status: updatedUser.status,
-    createdAt: updatedUser.createdAt,
-    updatedAt: updatedUser.updatedAt,
+    id: user.id,
+    email: user.email,
+    emailVerified: user.emailVerified,
+    name: user.name,
+    displayName: user.displayName,
+    avatarUrl: user.avatarUrl,
+    bio: user.bio,
+    website: user.website,
+    location: user.location,
+    phone: user.phone,
+    phoneVerified: user.phoneVerified,
+    status: user.status,
+    privacySettings: user.privacySettings as Record<string, any> | null,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
   };
 }
 
 /**
- * 更新用户头像
- * @param userId 用户ID
- * @param avatarUrl 头像URL
- * @returns 更新后的用户资料
+ * Update user avatar
  */
-export async function updateUserAvatar(
+export async function updateAvatar(userId: string, avatarUrl: string): Promise<UserProfile> {
+  return updateUser(userId, { avatarUrl });
+}
+
+/**
+ * Delete user account
+ */
+export async function deleteUser(userId: string): Promise<void> {
+  // Delete related records first due to foreign key constraints
+  await prisma.$transaction([
+    prisma.blockedUser.deleteMany({
+      where: { OR: [{ userId }, { blockedUserId: userId }] },
+    }),
+    prisma.userDevice.deleteMany({
+      where: { userId },
+    }),
+    prisma.connection.deleteMany({
+      where: { userId },
+    }),
+    prisma.user.delete({
+      where: { id: userId },
+    }),
+  ]);
+}
+
+/**
+ * Update privacy settings
+ */
+export async function updatePrivacySettings(
   userId: string,
-  avatarUrl: string
-): Promise<IUserProfile> {
+  settings: Partial<PrivacySettings>
+): Promise<PrivacySettings> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
+    select: { privacySettings: true },
   });
 
-  if (!user) {
-    throw new Error('用户不存在');
-  }
-
-  const updatedUser = await prisma.user.update({
-    where: { id: userId },
-    data: { avatarUrl },
-  });
-
-  logger.info('User avatar updated', { userId, avatarUrl });
-
-  return {
-    id: updatedUser.id,
-    email: updatedUser.email,
-    name: updatedUser.name,
-    avatarUrl: updatedUser.avatarUrl,
-    phone: updatedUser.phone,
-    status: updatedUser.status,
-    createdAt: updatedUser.createdAt,
-    updatedAt: updatedUser.updatedAt,
+  const currentSettings = (user?.privacySettings as PrivacySettings) || {
+    profileVisibility: 'public',
+    onlineStatusVisible: true,
+    phoneVisible: false,
+    emailVisible: false,
+    allowSearchByPhone: true,
+    allowSearchByEmail: true,
   };
-}
 
-/**
- * 删除用户账号
- * @param userId 用户ID
- */
-export async function deleteUserAccount(userId: string): Promise<void> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
+  const newSettings = { ...currentSettings, ...settings };
 
-  if (!user) {
-    throw new Error('用户不存在');
-  }
-
-  // 软删除：将状态改为 INACTIVE
   await prisma.user.update({
     where: { id: userId },
-    data: { status: 'INACTIVE' },
+    data: {
+      privacySettings: newSettings,
+      updatedAt: new Date(),
+    },
   });
 
-  logger.info('User account deleted (soft delete)', { userId });
+  return newSettings;
 }
 
 /**
- * 硬删除用户账号（谨慎使用）
- * @param userId 用户ID
+ * Get privacy settings
  */
-export async function permanentlyDeleteUser(userId: string): Promise<void> {
+export async function getPrivacySettings(userId: string): Promise<PrivacySettings> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
+    select: { privacySettings: true },
+  });
+
+  return (user?.privacySettings as PrivacySettings) || {
+    profileVisibility: 'public',
+    onlineStatusVisible: true,
+    phoneVisible: false,
+    emailVisible: false,
+    allowSearchByPhone: true,
+    allowSearchByEmail: true,
+  };
+}
+
+/**
+ * Change password
+ */
+export async function changePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { passwordHash: true },
   });
 
   if (!user) {
-    throw new Error('用户不存在');
+    throw new AppError('User not found', 'USER_NOT_FOUND', 404);
   }
 
-  // 硬删除：从数据库中删除用户
-  await prisma.user.delete({
+  // Verify current password
+  const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!isValid) {
+    throw new AppError('Current password is incorrect', 'INVALID_PASSWORD', 401);
+  }
+
+  // Hash new password
+  const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+  await prisma.user.update({
     where: { id: userId },
+    data: {
+      passwordHash: newPasswordHash,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+/**
+ * Update phone number
+ */
+export async function updatePhone(userId: string, phone: string): Promise<UserProfile> {
+  // Check if phone is already used by another user
+  const existingUser = await prisma.user.findFirst({
+    where: { phone, NOT: { id: userId } },
   });
 
-  logger.info('User account permanently deleted', { userId });
+  if (existingUser) {
+    throw new AppError('Phone number is already in use', 'PHONE_EXISTS', 409);
+  }
+
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      phone,
+      phoneVerified: false,
+      updatedAt: new Date(),
+    },
+  });
+
+  return {
+    id: user.id,
+    email: user.email,
+    emailVerified: user.emailVerified,
+    name: user.name,
+    displayName: user.displayName,
+    avatarUrl: user.avatarUrl,
+    bio: user.bio,
+    website: user.website,
+    location: user.location,
+    phone: user.phone,
+    phoneVerified: user.phoneVerified,
+    status: user.status,
+    privacySettings: user.privacySettings as Record<string, any> | null,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
 }
+
+/**
+ * Update email
+ */
+export async function updateEmail(userId: string, email: string): Promise<UserProfile> {
+  // Check if email is already used by another user
+  const existingUser = await prisma.user.findFirst({
+    where: { email, NOT: { id: userId } },
+  });
+
+  if (existingUser) {
+    throw new AppError('Email is already in use', 'EMAIL_EXISTS', 409);
+  }
+
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      email,
+      emailVerified: false,
+      updatedAt: new Date(),
+    },
+  });
+
+  return {
+    id: user.id,
+    email: user.email,
+    emailVerified: user.emailVerified,
+    name: user.name,
+    displayName: user.displayName,
+    avatarUrl: user.avatarUrl,
+    bio: user.bio,
+    website: user.website,
+    location: user.location,
+    phone: user.phone,
+    phoneVerified: user.phoneVerified,
+    status: user.status,
+    privacySettings: user.privacySettings as Record<string, any> | null,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+}
+
+/**
+ * Register or update device
+ */
+export async function registerDevice(
+  userId: string,
+  deviceInfo: DeviceInfo
+): Promise<void> {
+  await prisma.userDevice.upsert({
+    where: { deviceId: deviceInfo.deviceId },
+    create: {
+      userId,
+      deviceId: deviceInfo.deviceId,
+      deviceName: deviceInfo.deviceName,
+      deviceType: deviceInfo.deviceType,
+      osVersion: deviceInfo.osVersion,
+      appVersion: deviceInfo.appVersion,
+      pushToken: deviceInfo.pushToken,
+      ipAddress: deviceInfo.ipAddress,
+      lastActiveAt: new Date(),
+      isCurrent: true,
+    },
+    update: {
+      deviceName: deviceInfo.deviceName,
+      deviceType: deviceInfo.deviceType,
+      osVersion: deviceInfo.osVersion,
+      appVersion: deviceInfo.appVersion,
+      pushToken: deviceInfo.pushToken,
+      ipAddress: deviceInfo.ipAddress,
+      lastActiveAt: new Date(),
+      isCurrent: true,
+    },
+  });
+
+  // Mark other devices as not current
+  await prisma.userDevice.updateMany({
+    where: {
+      userId,
+      deviceId: { not: deviceInfo.deviceId },
+    },
+    data: { isCurrent: false },
+  });
+}
+
+/**
+ * Get user devices
+ */
+export async function getUserDevices(userId: string) {
+  return prisma.userDevice.findMany({
+    where: { userId },
+    orderBy: { lastActiveAt: 'desc' },
+  });
+}
+
+/**
+ * Remove device
+ */
+export async function removeDevice(userId: string, deviceId: string): Promise<void> {
+  await prisma.userDevice.deleteMany({
+    where: { userId, deviceId },
+  });
+}
+
+/**
+ * Add user to block list
+ */
+export async function blockUser(
+  userId: string,
+  blockedUserId: string,
+  reason?: string
+): Promise<void> {
+  if (userId === blockedUserId) {
+    throw new AppError('Cannot block yourself', 'SELF_BLOCK', 400);
+  }
+
+  await prisma.blockedUser.create({
+    data: {
+      userId,
+      blockedUserId,
+      reason,
+    },
+  });
+}
+
+/**
+ * Remove user from block list
+ */
+export async function unblockUser(userId: string, blockedUserId: string): Promise<void> {
+  await prisma.blockedUser.deleteMany({
+    where: { userId, blockedUserId },
+  });
+}
+
+/**
+ * Get blocked users
+ */
+export async function getBlockedUsers(userId: string) {
+  return prisma.blockedUser.findMany({
+    where: { userId },
+    include: {
+      blockedUser: {
+        select: {
+          id: true,
+          name: true,
+          displayName: true,
+          avatarUrl: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+/**
+ * Check if user is blocked
+ */
+export async function isUserBlocked(userId: string, blockedUserId: string): Promise<boolean> {
+  const blocked = await prisma.blockedUser.findUnique({
+    where: {
+      userId_blockedUserId: {
+        userId,
+        blockedUserId,
+      },
+    },
+  });
+  return !!blocked;
+}
+
+export default {
+  getUserById,
+  getUserByEmail,
+  updateUser,
+  updateAvatar,
+  deleteUser,
+  updatePrivacySettings,
+  getPrivacySettings,
+  changePassword,
+  updatePhone,
+  updateEmail,
+  registerDevice,
+  getUserDevices,
+  removeDevice,
+  blockUser,
+  unblockUser,
+  getBlockedUsers,
+  isUserBlocked,
+};

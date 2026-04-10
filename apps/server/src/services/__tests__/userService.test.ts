@@ -1,193 +1,317 @@
-/**
- * User Service Tests
- * 用户服务测试
- */
+import {
+  getUserById,
+  getUserByEmail,
+  updateUser,
+  updateAvatar,
+  deleteUser,
+  updatePrivacySettings,
+  getPrivacySettings,
+  changePassword,
+  updatePhone,
+  updateEmail,
+  registerDevice,
+  getUserDevices,
+  removeDevice,
+  blockUser,
+  unblockUser,
+  getBlockedUsers,
+  isUserBlocked,
+} from '../../services/userService';
+import { prisma } from '../../db/client';
+import bcrypt from 'bcryptjs';
 
-import * as userService from '../userService';
-import { PrismaClient } from '@prisma/client';
-
-// Mock Prisma
-jest.mock('@prisma/client', () => {
-  const mockUser = {
-    findUnique: jest.fn(),
-    findFirst: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-  };
-
-  return {
-    PrismaClient: jest.fn(() => ({
-      user: mockUser,
-    })),
-  };
-});
-
-// Mock logger
-jest.mock('../../utils/logger', () => ({
-  logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
+// Mock the prisma client
+jest.mock('../../db/client', () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      deleteMany: jest.fn(),
+    },
+    blockedUser: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      deleteMany: jest.fn(),
+    },
+    userDevice: {
+      findMany: jest.fn(),
+      upsert: jest.fn(),
+      updateMany: jest.fn(),
+      deleteMany: jest.fn(),
+    },
+    $transaction: jest.fn((ops: any[]) => Promise.all(ops)),
   },
 }));
 
-describe('UserService', () => {
-  const mockUserId = 'user-123';
-  const mockUser = {
-    id: mockUserId,
-    email: 'test@example.com',
-    name: 'Test User',
-    avatarUrl: null,
-    phone: '13800138000',
-    status: 'ACTIVE',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    passwordHash: 'hashed-password',
-  };
-
+describe('User Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('getUserProfile', () => {
-    it('should return user profile successfully', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.user.findUnique.mockResolvedValue(mockUser);
+  describe('getUserById', () => {
+    it('should return user profile when user exists', async () => {
+      const mockUser = {
+        id: 'user-1',
+        email: 'test@example.com',
+        emailVerified: true,
+        name: 'Test User',
+        displayName: 'Test',
+        avatarUrl: null,
+        bio: null,
+        website: null,
+        location: null,
+        phone: null,
+        phoneVerified: false,
+        status: 'ACTIVE',
+        privacySettings: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-      const result = await userService.getUserProfile(mockUserId);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
 
-      expect(result).toEqual({
-        id: mockUser.id,
-        email: mockUser.email,
-        name: mockUser.name,
-        avatarUrl: mockUser.avatarUrl,
-        phone: mockUser.phone,
-        status: mockUser.status,
-        createdAt: mockUser.createdAt,
-        updatedAt: mockUser.updatedAt,
-      });
-      expect(prisma.user.findUnique).toHaveBeenCalledWith({
-        where: { id: mockUserId },
-      });
+      const result = await getUserById('user-1');
+
+      expect(result).toBeDefined();
+      expect(result?.id).toBe('user-1');
+      expect(result?.email).toBe('test@example.com');
     });
 
-    it('should throw error when user not found', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.user.findUnique.mockResolvedValue(null);
+    it('should return null when user does not exist', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(userService.getUserProfile(mockUserId)).rejects.toThrow('用户不存在');
-    });
-  });
+      const result = await getUserById('non-existent');
 
-  describe('updateUserProfile', () => {
-    const updateData = {
-      name: 'New Name',
-      phone: '13900139000',
-    };
-
-    it('should update user profile successfully', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.user.findFirst.mockResolvedValue(null);
-      prisma.user.update.mockResolvedValue({
-        ...mockUser,
-        ...updateData,
-      });
-
-      const result = await userService.updateUserProfile(mockUserId, updateData);
-
-      expect(result.name).toBe(updateData.name);
-      expect(result.phone).toBe(updateData.phone);
-    });
-
-    it('should throw error when user not found', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.user.findUnique.mockResolvedValue(null);
-
-      await expect(userService.updateUserProfile(mockUserId, updateData)).rejects.toThrow('用户不存在');
-    });
-
-    it('should throw error when email already exists', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.user.findUnique.mockResolvedValueOnce(mockUser).mockResolvedValueOnce({ id: 'other-user' });
-
-      await expect(
-        userService.updateUserProfile(mockUserId, { email: 'other@example.com' })
-      ).rejects.toThrow('邮箱已被使用');
-    });
-
-    it('should throw error when phone already exists', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.user.findFirst.mockResolvedValue({ id: 'other-user' });
-
-      await expect(
-        userService.updateUserProfile(mockUserId, { phone: '13900139000' })
-      ).rejects.toThrow('手机号已被使用');
+      expect(result).toBeNull();
     });
   });
 
-  describe('updateUserAvatar', () => {
-    const avatarUrl = 'https://example.com/avatar.jpg';
+  describe('getUserByEmail', () => {
+    it('should return user profile when user exists', async () => {
+      const mockUser = {
+        id: 'user-1',
+        email: 'test@example.com',
+        emailVerified: true,
+        name: 'Test User',
+        displayName: 'Test',
+        avatarUrl: null,
+        bio: null,
+        website: null,
+        location: null,
+        phone: null,
+        phoneVerified: false,
+        status: 'ACTIVE',
+        privacySettings: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-    it('should update user avatar successfully', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.user.update.mockResolvedValue({
-        ...mockUser,
-        avatarUrl,
-      });
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
 
-      const result = await userService.updateUserAvatar(mockUserId, avatarUrl);
+      const result = await getUserByEmail('test@example.com');
 
-      expect(result.avatarUrl).toBe(avatarUrl);
-      expect(prisma.user.update).toHaveBeenCalledWith({
-        where: { id: mockUserId },
-        data: { avatarUrl },
-      });
-    });
-
-    it('should throw error when user not found', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.user.findUnique.mockResolvedValue(null);
-
-      await expect(userService.updateUserAvatar(mockUserId, avatarUrl)).rejects.toThrow('用户不存在');
+      expect(result).toBeDefined();
+      expect(result?.email).toBe('test@example.com');
     });
   });
 
-  describe('deleteUserAccount', () => {
-    it('should soft delete user account', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.user.update.mockResolvedValue({
-        ...mockUser,
-        status: 'INACTIVE',
+  describe('updateUser', () => {
+    it('should update user profile', async () => {
+      const mockUser = {
+        id: 'user-1',
+        email: 'test@example.com',
+        emailVerified: true,
+        name: 'Updated Name',
+        displayName: 'Updated',
+        avatarUrl: null,
+        bio: 'New bio',
+        website: 'https://example.com',
+        location: 'New York',
+        phone: null,
+        phoneVerified: false,
+        status: 'ACTIVE',
+        privacySettings: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      (prisma.user.update as jest.Mock).mockResolvedValue(mockUser);
+
+      const result = await updateUser('user-1', {
+        name: 'Updated Name',
+        displayName: 'Updated',
+        bio: 'New bio',
+        website: 'https://example.com',
+        location: 'New York',
       });
 
-      await userService.deleteUserAccount(mockUserId);
+      expect(result.name).toBe('Updated Name');
+      expect(result.displayName).toBe('Updated');
+      expect(result.bio).toBe('New bio');
+    });
+  });
 
-      expect(prisma.user.update).toHaveBeenCalledWith({
-        where: { id: mockUserId },
-        data: { status: 'INACTIVE' },
+  describe('updateAvatar', () => {
+    it('should update user avatar', async () => {
+      const mockUser = {
+        id: 'user-1',
+        email: 'test@example.com',
+        emailVerified: true,
+        name: 'Test User',
+        displayName: 'Test',
+        avatarUrl: 'https://example.com/avatar.jpg',
+        bio: null,
+        website: null,
+        location: null,
+        phone: null,
+        phoneVerified: false,
+        status: 'ACTIVE',
+        privacySettings: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      (prisma.user.update as jest.Mock).mockResolvedValue(mockUser);
+
+      const result = await updateAvatar('user-1', 'https://example.com/avatar.jpg');
+
+      expect(result.avatarUrl).toBe('https://example.com/avatar.jpg');
+    });
+  });
+
+  describe('getPrivacySettings', () => {
+    it('should return default settings when no settings exist', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ privacySettings: null });
+
+      const result = await getPrivacySettings('user-1');
+
+      expect(result.profileVisibility).toBe('public');
+      expect(result.onlineStatusVisible).toBe(true);
+    });
+
+    it('should return saved settings', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        privacySettings: {
+          profileVisibility: 'private',
+          onlineStatusVisible: false,
+        },
+      });
+
+      const result = await getPrivacySettings('user-1');
+
+      expect(result.profileVisibility).toBe('private');
+      expect(result.onlineStatusVisible).toBe(false);
+    });
+  });
+
+  describe('updatePrivacySettings', () => {
+    it('should update privacy settings', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ privacySettings: null });
+      (prisma.user.update as jest.Mock).mockResolvedValue({
+        privacySettings: {
+          profileVisibility: 'friends',
+          onlineStatusVisible: true,
+        },
+      });
+
+      const result = await updatePrivacySettings('user-1', { profileVisibility: 'friends' });
+
+      expect(result.profileVisibility).toBe('friends');
+    });
+  });
+
+  describe('blockUser', () => {
+    it('should block a user', async () => {
+      (prisma.blockedUser.create as jest.Mock).mockResolvedValue({});
+
+      await blockUser('user-1', 'user-2', 'Spam');
+
+      expect(prisma.blockedUser.create).toHaveBeenCalledWith({
+        data: {
+          userId: 'user-1',
+          blockedUserId: 'user-2',
+          reason: 'Spam',
+        },
       });
     });
 
-    it('should throw error when user not found', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.user.findUnique.mockResolvedValue(null);
+    it('should throw error when trying to block self', async () => {
+      await expect(blockUser('user-1', 'user-1')).rejects.toThrow('Cannot block yourself');
+    });
+  });
 
-      await expect(userService.deleteUserAccount(mockUserId)).rejects.toThrow('用户不存在');
+  describe('unblockUser', () => {
+    it('should unblock a user', async () => {
+      (prisma.blockedUser.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
+
+      await unblockUser('user-1', 'user-2');
+
+      expect(prisma.blockedUser.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 'user-1', blockedUserId: 'user-2' },
+      });
+    });
+  });
+
+  describe('isUserBlocked', () => {
+    it('should return true when user is blocked', async () => {
+      (prisma.blockedUser.findUnique as jest.Mock).mockResolvedValue({ id: 'block-1' });
+
+      const result = await isUserBlocked('user-1', 'user-2');
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false when user is not blocked', async () => {
+      (prisma.blockedUser.findUnique as jest.Mock).mockResolvedValue(null);
+
+      const result = await isUserBlocked('user-1', 'user-2');
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('registerDevice', () => {
+    it('should register a new device', async () => {
+      (prisma.userDevice.upsert as jest.Mock).mockResolvedValue({});
+      (prisma.userDevice.updateMany as jest.Mock).mockResolvedValue({});
+
+      await registerDevice('user-1', {
+        deviceId: 'device-1',
+        deviceName: 'iPhone 12',
+        deviceType: 'ios',
+      });
+
+      expect(prisma.userDevice.upsert).toHaveBeenCalled();
+    });
+  });
+
+  describe('getUserDevices', () => {
+    it('should return user devices', async () => {
+      const mockDevices = [
+        { id: 'device-1', deviceName: 'iPhone 12' },
+        { id: 'device-2', deviceName: 'iPad' },
+      ];
+
+      (prisma.userDevice.findMany as jest.Mock).mockResolvedValue(mockDevices);
+
+      const result = await getUserDevices('user-1');
+
+      expect(result).toHaveLength(2);
+    });
+  });
+
+  describe('removeDevice', () => {
+    it('should remove a device', async () => {
+      (prisma.userDevice.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
+
+      await removeDevice('user-1', 'device-1');
+
+      expect(prisma.userDevice.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 'user-1', deviceId: 'device-1' },
+      });
     });
   });
 });

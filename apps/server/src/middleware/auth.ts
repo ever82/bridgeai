@@ -1,83 +1,166 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken, extractBearerToken } from '../services/auth/jwt';
-import { isTokenBlacklisted } from '../services/auth/blacklist';
-import { UnauthorizedError } from '../errors/AppError';
-import { UserRole } from '../types';
+import jwt from 'jsonwebtoken';
+import { prisma } from '../db/client';
+import { AppError } from '../errors/AppError';
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        userId: string;
-        email: string;
-        role: UserRole;
-      };
-      token?: string;
-    }
-  }
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    role?: string;
+  };
 }
 
+interface JWTPayload {
+  userId: string;
+  email: string;
+  role?: string;
+  iat: number;
+  exp: number;
+}
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+/**
+ * Extract token from Authorization header
+ */
+function extractToken(req: Request): string | null {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return null;
+  }
+
+  const parts = authHeader.split(' ');
+
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
+    return null;
+  }
+
+  return parts[1];
+}
+
+/**
+ * Authentication middleware
+ * Verifies JWT token and attaches user to request
+ */
 export async function authenticate(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const authHeader = req.headers.authorization;
-    const token = extractBearerToken(authHeader);
+    const token = extractToken(req);
 
     if (!token) {
-      throw new UnauthorizedError('Authentication required');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
-    const isBlacklisted = await isTokenBlacklisted(token);
-    if (isBlacklisted) {
-      throw new UnauthorizedError('Token has been revoked');
+    // Verify token
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, email: true, status: true },
+    });
+
+    if (!user) {
+      throw new AppError('User not found', 'USER_NOT_FOUND', 401);
     }
 
-    const decoded = verifyToken(token);
-
-    if (decoded.type !== 'access') {
-      throw new UnauthorizedError('Invalid token type');
+    if (user.status !== 'ACTIVE') {
+      throw new AppError('Account is not active', 'ACCOUNT_INACTIVE', 403);
     }
 
+    // Attach user to request
     req.user = {
-      userId: decoded.userId,
-      email: decoded.email,
+      id: user.id,
+      email: user.email,
       role: decoded.role,
     };
-    req.token = token;
 
     next();
   } catch (error) {
-    if (error instanceof UnauthorizedError) {
+    if (error instanceof AppError) {
       next(error);
       return;
     }
-    if (error instanceof Error) {
-      if (error.message === 'Token has expired') {
-        next(new UnauthorizedError('Token has expired', { code: 'TOKEN_EXPIRED' }));
-        return;
-      }
-      if (error.message === 'Invalid token') {
-        next(new UnauthorizedError('Invalid token'));
-        return;
-      }
+
+    if (error instanceof jwt.TokenExpiredError) {
+      next(new AppError('Token has expired', 'TOKEN_EXPIRED', 401));
+      return;
     }
-    next(new UnauthorizedError('Authentication failed'));
+
+    if (error instanceof jwt.JsonWebTokenError) {
+      next(new AppError('Invalid token', 'INVALID_TOKEN', 401));
+      return;
+    }
+
+    next(new AppError('Authentication failed', 'AUTH_FAILED', 401));
   }
 }
 
-export function requireRoles(...roles: UserRole[]) {
-  return (req: Request, res: Response, next: NextFunction): void => {
+/**
+ * Optional authentication middleware
+ * Attaches user to request if token is valid, but doesn't require it
+ */
+export async function optionalAuth(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const token = extractToken(req);
+
+    if (!token) {
+      next();
+      return;
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, email: true, status: true },
+    });
+
+    if (user && user.status === 'ACTIVE') {
+      req.user = {
+        id: user.id,
+        email: user.email,
+        role: decoded.role,
+      };
+    }
+
+    next();
+  } catch (error) {
+    // Ignore errors for optional auth
+    next();
+  }
+}
+
+/**
+ * Role-based authorization middleware
+ */
+export function requireRole(...allowedRoles: string[]) {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      next(new UnauthorizedError('Authentication required'));
+      next(new AppError('Authentication required', 'UNAUTHORIZED', 401));
       return;
     }
-    if (!roles.includes(req.user.role)) {
-      next(new UnauthorizedError('Insufficient permissions'));
+
+    if (!allowedRoles.includes(req.user.role || 'user')) {
+      next(new AppError('Insufficient permissions', 'FORBIDDEN', 403));
       return;
     }
+
     next();
   };
 }
+
+export default {
+  authenticate,
+  optionalAuth,
+  requireRole,
+};

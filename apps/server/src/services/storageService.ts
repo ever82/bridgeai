@@ -1,161 +1,293 @@
-/**
- * Storage Service
- * 存储服务
- *
- * 处理文件上传到云存储(OSS/S3)
- */
+import { AppError } from '../errors/AppError';
+import path from 'path';
+import fs from 'fs/promises';
+import { existsSync } from 'fs';
 
-import {
-  S3Client,
-  PutObjectCommand,
-  DeleteObjectCommand,
-} from '@aws-sdk/client-s3';
-import { logger } from '../utils/logger';
-
-// 存储配置
-const storageConfig = {
-  provider: process.env.STORAGE_PROVIDER || 's3', // 's3' | 'oss' | 'local'
-  region: process.env.STORAGE_REGION || 'us-east-1',
-  endpoint: process.env.STORAGE_ENDPOINT,
-  bucket: process.env.STORAGE_BUCKET || 'visionshare-uploads',
-  accessKeyId: process.env.STORAGE_ACCESS_KEY_ID || '',
-  secretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY || '',
-  baseUrl: process.env.STORAGE_BASE_URL || '',
-};
-
-// 初始化 S3 客户端
-let s3Client: S3Client | null = null;
-
-if (storageConfig.provider === 's3' || storageConfig.provider === 'oss') {
-  s3Client = new S3Client({
-    region: storageConfig.region,
-    endpoint: storageConfig.endpoint,
-    credentials: {
-      accessKeyId: storageConfig.accessKeyId,
-      secretAccessKey: storageConfig.secretAccessKey,
-    },
-  });
+export interface UploadOptions {
+  maxSize?: number; // in bytes
+  allowedTypes?: string[];
+  compress?: boolean;
+  generateThumbnail?: boolean;
 }
 
-// 支持的图片类型
-export const ALLOWED_IMAGE_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-];
+export interface UploadResult {
+  url: string;
+  key: string;
+  size: number;
+  mimeType: string;
+  width?: number;
+  height?: number;
+  thumbnailUrl?: string;
+}
 
-// 最大文件大小 (5MB)
-export const MAX_FILE_SIZE = 5 * 1024 * 1024;
+export interface FileInfo {
+  buffer: Buffer;
+  originalName: string;
+  mimeType: string;
+  size: number;
+}
 
-// 头像尺寸配置
-export const AVATAR_SIZES = {
-  small: { width: 64, height: 64 },
-  medium: { width: 128, height: 128 },
-  large: { width: 256, height: 256 },
+const DEFAULT_OPTIONS: UploadOptions = {
+  maxSize: 5 * 1024 * 1024, // 5MB
+  allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+  compress: true,
+  generateThumbnail: true,
 };
 
+// Upload directory for local development
+const UPLOAD_DIR = process.env.UPLOAD_DIR || 'uploads';
+const BASE_URL = process.env.UPLOAD_BASE_URL || '/uploads';
+
 /**
- * 生成存储路径
- * @param userId 用户ID
- * @param filename 文件名
- * @returns 存储路径
+ * Validate file
  */
-export function generateStoragePath(userId: string, filename: string): string {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const randomString = Math.random().toString(36).substring(2, 10);
-  const extension = filename.split('.').pop() || 'jpg';
-  return `avatars/${userId}/${year}/${month}/${randomString}.${extension}`;
+function validateFile(file: FileInfo, options: UploadOptions = {}): void {
+  const opts = { ...DEFAULT_OPTIONS, ...options };
+
+  // Check file size
+  if (file.size > opts.maxSize!) {
+    throw new AppError(
+      `File size exceeds limit of ${opts.maxSize! / 1024 / 1024}MB`,
+      'FILE_TOO_LARGE',
+      400
+    );
+  }
+
+  // Check mime type
+  if (!opts.allowedTypes!.includes(file.mimeType)) {
+    throw new AppError(
+      `File type ${file.mimeType} not allowed. Allowed types: ${opts.allowedTypes!.join(', ')}`,
+      'INVALID_FILE_TYPE',
+      400
+    );
+  }
 }
 
 /**
- * 上传文件到 S3/OSS
- * @param key 存储键
- * @param buffer 文件内容
- * @param contentType 内容类型
- * @returns 文件访问URL
+ * Generate unique file key
  */
-export async function uploadToStorage(
+function generateFileKey(originalName: string, prefix: string = ''): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 15);
+  const ext = path.extname(originalName).toLowerCase();
+  const name = path.basename(originalName, ext).replace(/[^a-zA-Z0-9]/g, '_');
+
+  return `${prefix}${name}_${timestamp}_${random}${ext}`;
+}
+
+/**
+ * Ensure upload directory exists
+ */
+async function ensureUploadDir(subDir: string = ''): Promise<string> {
+  const dir = path.join(UPLOAD_DIR, subDir);
+  if (!existsSync(dir)) {
+    await fs.mkdir(dir, { recursive: true });
+  }
+  return dir;
+}
+
+/**
+ * Get image dimensions
+ * Note: In a real implementation, you would use sharp or similar library
+ */
+async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number } | undefined> {
+  // Placeholder - would use sharp library in production
+  // const sharp = require('sharp');
+  // const metadata = await sharp(buffer).metadata();
+  // return { width: metadata.width!, height: metadata.height! };
+  return undefined;
+}
+
+/**
+ * Compress image
+ * Note: In a real implementation, you would use sharp or similar library
+ */
+async function compressImage(buffer: Buffer, quality: number = 80): Promise<Buffer> {
+  // Placeholder - would use sharp library in production
+  // const sharp = require('sharp');
+  // return await sharp(buffer)
+  //   .jpeg({ quality, progressive: true })
+  //   .toBuffer();
+  return buffer;
+}
+
+/**
+ * Generate thumbnail
+ * Note: In a real implementation, you would use sharp or similar library
+ */
+async function generateThumbnail(buffer: Buffer, width: number = 200, height: number = 200): Promise<Buffer> {
+  // Placeholder - would use sharp library in production
+  // const sharp = require('sharp');
+  // return await sharp(buffer)
+  //   .resize(width, height, { fit: 'cover' })
+  //   .jpeg({ quality: 70 })
+  //   .toBuffer();
+  return buffer;
+}
+
+/**
+ * Upload file to local storage
+ */
+async function uploadToLocal(
+  file: FileInfo,
   key: string,
-  buffer: Buffer,
-  contentType: string
-): Promise<string> {
-  if (!s3Client) {
-    throw new Error('存储客户端未初始化');
+  options: UploadOptions = {}
+): Promise<UploadResult> {
+  const subDir = key.split('/')[0] || 'default';
+  const dir = await ensureUploadDir(subDir);
+  const filePath = path.join(dir, path.basename(key));
+
+  let buffer = file.buffer;
+  let thumbnailUrl: string | undefined;
+
+  // Compress image if option enabled
+  if (options.compress && file.mimeType.startsWith('image/')) {
+    buffer = await compressImage(buffer);
   }
 
-  try {
-    const command = new PutObjectCommand({
-      Bucket: storageConfig.bucket,
-      Key: key,
-      Body: buffer,
-      ContentType: contentType,
-      ACL: 'public-read',
-    });
-
-    await s3Client.send(command);
-
-    // 构建访问URL
-    if (storageConfig.baseUrl) {
-      return `${storageConfig.baseUrl}/${key}`;
-    }
-
-    if (storageConfig.endpoint) {
-      return `${storageConfig.endpoint}/${storageConfig.bucket}/${key}`;
-    }
-
-    return `https://${storageConfig.bucket}.s3.${storageConfig.region}.amazonaws.com/${key}`;
-  } catch (error) {
-    logger.error('Upload to storage failed', error as Error, { key });
-    throw new Error('文件上传失败');
-  }
-}
-
-/**
- * 从存储删除文件
- * @param key 存储键
- */
-export async function deleteFromStorage(key: string): Promise<void> {
-  if (!s3Client) {
-    throw new Error('存储客户端未初始化');
+  // Generate thumbnail if option enabled
+  if (options.generateThumbnail && file.mimeType.startsWith('image/')) {
+    const thumbnailKey = key.replace(/\.(\w+)$/, '-thumb.$1');
+    const thumbnailPath = path.join(dir, path.basename(thumbnailKey));
+    const thumbnailBuffer = await generateThumbnail(buffer);
+    await fs.writeFile(thumbnailPath, thumbnailBuffer);
+    thumbnailUrl = `${BASE_URL}/${thumbnailKey}`;
   }
 
-  try {
-    const command = new DeleteObjectCommand({
-      Bucket: storageConfig.bucket,
-      Key: key,
-    });
+  // Save file
+  await fs.writeFile(filePath, buffer);
 
-    await s3Client.send(command);
-    logger.info('File deleted from storage', { key });
-  } catch (error) {
-    logger.error('Delete from storage failed', error as Error, { key });
-    throw new Error('文件删除失败');
-  }
-}
+  // Get dimensions
+  const dimensions = await getImageDimensions(buffer);
 
-/**
- * 验证文件类型
- * @param mimetype MIME类型
- * @returns 是否允许
- */
-export function isAllowedImageType(mimetype: string): boolean {
-  return ALLOWED_IMAGE_TYPES.includes(mimetype);
-}
-
-/**
- * 获取文件扩展名
- * @param mimetype MIME类型
- * @returns 扩展名
- */
-export function getExtensionFromMimetype(mimetype: string): string {
-  const map: Record<string, string> = {
-    'image/jpeg': 'jpg',
-    'image/png': 'png',
-    'image/gif': 'gif',
-    'image/webp': 'webp',
+  return {
+    url: `${BASE_URL}/${key}`,
+    key,
+    size: buffer.length,
+    mimeType: file.mimeType,
+    width: dimensions?.width,
+    height: dimensions?.height,
+    thumbnailUrl,
   };
-  return map[mimetype] || 'jpg';
 }
+
+/**
+ * Upload file to cloud storage (S3/OSS)
+ * Note: This is a placeholder - implement with actual cloud SDK
+ */
+async function uploadToCloud(
+  _file: FileInfo,
+  _key: string,
+  _options: UploadOptions = {}
+): Promise<UploadResult> {
+  // Placeholder - implement with aws-sdk or ali-oss
+  // const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+  // or
+  // const OSS = require('ali-oss');
+
+  throw new AppError('Cloud storage not configured', 'CLOUD_STORAGE_NOT_CONFIGURED', 500);
+}
+
+/**
+ * Upload file
+ */
+export async function uploadFile(
+  file: FileInfo,
+  options: UploadOptions = {},
+  prefix: string = ''
+): Promise<UploadResult> {
+  // Validate file
+  validateFile(file, options);
+
+  // Generate key
+  const key = generateFileKey(file.originalName, prefix);
+
+  // Upload to appropriate storage
+  const storageType = process.env.STORAGE_TYPE || 'local';
+
+  if (storageType === 'cloud') {
+    return uploadToCloud(file, key, options);
+  }
+
+  return uploadToLocal(file, key, options);
+}
+
+/**
+ * Upload avatar
+ */
+export async function uploadAvatar(
+  file: FileInfo,
+  userId: string
+): Promise<UploadResult> {
+  const options: UploadOptions = {
+    maxSize: 5 * 1024 * 1024, // 5MB
+    allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+    compress: true,
+    generateThumbnail: true,
+  };
+
+  return uploadFile(file, options, `avatars/${userId}/`);
+}
+
+/**
+ * Delete file
+ */
+export async function deleteFile(key: string): Promise<void> {
+  const storageType = process.env.STORAGE_TYPE || 'local';
+
+  if (storageType === 'cloud') {
+    // Placeholder - implement with cloud SDK
+    // await deleteFromCloud(key);
+    return;
+  }
+
+  // Delete from local storage
+  const subDir = key.split('/')[0] || 'default';
+  const filePath = path.join(UPLOAD_DIR, subDir, path.basename(key));
+
+  try {
+    await fs.unlink(filePath);
+  } catch (error) {
+    // File may not exist, ignore error
+  }
+
+  // Delete thumbnail if exists
+  const thumbnailKey = key.replace(/\.(\w+)$/, '-thumb.$1');
+  const thumbnailPath = path.join(UPLOAD_DIR, subDir, path.basename(thumbnailKey));
+  try {
+    await fs.unlink(thumbnailPath);
+  } catch (error) {
+    // Thumbnail may not exist, ignore error
+  }
+}
+
+/**
+ * Get file URL
+ */
+export function getFileUrl(key: string): string {
+  const storageType = process.env.STORAGE_TYPE || 'local';
+
+  if (storageType === 'cloud') {
+    const cdnUrl = process.env.CDN_URL || process.env.OSS_BUCKET_URL;
+    if (cdnUrl) {
+      return `${cdnUrl}/${key}`;
+    }
+  }
+
+  return `${BASE_URL}/${key}`;
+}
+
+/**
+ * Get default avatar URL
+ */
+export function getDefaultAvatarUrl(): string {
+  return process.env.DEFAULT_AVATAR_URL || `${BASE_URL}/default-avatar.png`;
+}
+
+export default {
+  uploadFile,
+  uploadAvatar,
+  deleteFile,
+  getFileUrl,
+  getDefaultAvatarUrl,
+};

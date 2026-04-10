@@ -1,239 +1,376 @@
-/**
- * User Routes
- * 用户路由
- *
- * 用户资料管理 API
- */
-
-import { Router, Request, Response } from 'express';
-import rateLimit from 'express-rate-limit';
-import { logger } from '../utils/logger';
-import { authenticate } from '../middleware/auth';
+import { Router, Request, Response, NextFunction } from 'express';
+import { authenticate, AuthenticatedRequest } from '../middleware/auth';
+import { asyncHandler } from '../middleware/common';
+import { ApiResponse } from '../utils/response';
 import * as userService from '../services/userService';
+import * as storageService from '../services/storageService';
+import { AppError } from '../errors/AppError';
 
-const router = Router();
-
-// 更新操作限流
-const updateLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1分钟
-  max: 10, // 最多10次
-  message: { error: '操作过于频繁，请稍后重试' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// 删除账号限流
-const deleteLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1小时
-  max: 3, // 最多3次
-  message: { error: '删除操作过于频繁，请稍后重试' },
-});
+const router: Router = Router();
 
 /**
- * GET /api/v1/users/me
- * 获取当前用户信息
+ * @route GET /api/v1/users/me
+ * @desc Get current user profile
+ * @access Private
  */
-router.get('/me', authenticate, async (req: Request, res: Response) => {
-  try {
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: '未认证',
-        },
-      });
+router.get(
+  '/me',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
     }
 
-    const user = await userService.getUserProfile(userId);
+    const user = await userService.getUserById(req.user.id);
 
-    res.json({
-      success: true,
-      data: user,
-    });
-  } catch (error) {
-    logger.error('Get user profile failed', error as Error);
-
-    if ((error as Error).message === '用户不存在') {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: 'USER_NOT_FOUND',
-          message: '用户不存在',
-        },
-      });
+    if (!user) {
+      throw new AppError('User not found', 'USER_NOT_FOUND', 404);
     }
 
-    res.status(500).json({
-      success: false,
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: '获取用户信息失败',
-      },
-    });
-  }
-});
+    res.json(ApiResponse.success(user));
+  })
+);
 
 /**
- * PUT /api/v1/users/me
- * 更新当前用户信息
+ * @route PUT /api/v1/users/me
+ * @desc Update current user profile
+ * @access Private
  */
-router.put('/me', authenticate, updateLimiter, async (req: Request, res: Response) => {
-  try {
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: '未认证',
-        },
-      });
+router.put(
+  '/me',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
     }
 
-    const { name, phone, email } = req.body;
+    const { name, displayName, bio, website, location } = req.body;
 
-    // 验证输入
-    if (name !== undefined && (typeof name !== 'string' || name.length > 50)) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'INVALID_NAME',
-          message: '姓名格式无效（最多50个字符）',
-        },
-      });
-    }
-
-    if (phone !== undefined) {
-      const phoneRegex = /^1[3-9]\d{9}$/;
-      if (!phoneRegex.test(phone)) {
-        return res.status(400).json({
-          success: false,
-          error: {
-            code: 'INVALID_PHONE',
-            message: '手机号格式无效',
-          },
-        });
-      }
-    }
-
-    if (email !== undefined) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        return res.status(400).json({
-          success: false,
-          error: {
-            code: 'INVALID_EMAIL',
-            message: '邮箱格式无效',
-          },
-        });
-      }
-    }
-
-    const updatedUser = await userService.updateUserProfile(userId, {
+    const updatedUser = await userService.updateUser(req.user.id, {
       name,
-      phone,
-      email,
+      displayName,
+      bio,
+      website,
+      location,
     });
 
-    res.json({
-      success: true,
-      data: updatedUser,
-      message: '资料更新成功',
-    });
-  } catch (error) {
-    logger.error('Update user profile failed', error as Error);
-
-    const errorMessage = (error as Error).message;
-
-    if (errorMessage === '用户不存在') {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: 'USER_NOT_FOUND',
-          message: '用户不存在',
-        },
-      });
-    }
-
-    if (errorMessage === '邮箱已被使用') {
-      return res.status(409).json({
-        success: false,
-        error: {
-          code: 'EMAIL_EXISTS',
-          message: '邮箱已被使用',
-        },
-      });
-    }
-
-    if (errorMessage === '手机号已被使用') {
-      return res.status(409).json({
-        success: false,
-        error: {
-          code: 'PHONE_EXISTS',
-          message: '手机号已被使用',
-        },
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: '更新用户信息失败',
-      },
-    });
-  }
-});
+    res.json(ApiResponse.success(updatedUser));
+  })
+);
 
 /**
- * DELETE /api/v1/users/me
- * 删除当前用户账号（软删除）
+ * @route POST /api/v1/users/avatar
+ * @desc Upload user avatar
+ * @access Private
  */
-router.delete('/me', authenticate, deleteLimiter, async (req: Request, res: Response) => {
-  try {
-    const userId = req.user?.userId;
+router.post(
+  '/avatar',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    // Check if file is present in request
+    if (!req.file && !req.body.avatarUrl) {
+      throw new AppError('No file uploaded', 'NO_FILE', 400);
+    }
+
+    let avatarUrl: string;
+
+    if (req.file) {
+      // Handle file upload
+      const fileInfo: storageService.FileInfo = {
+        buffer: req.file.buffer,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+      };
+
+      const result = await storageService.uploadAvatar(fileInfo, req.user.id);
+      avatarUrl = result.url;
+    } else {
+      // Use provided URL
+      avatarUrl = req.body.avatarUrl;
+    }
+
+    const updatedUser = await userService.updateAvatar(req.user.id, avatarUrl);
+
+    res.json(ApiResponse.success({
+      avatarUrl: updatedUser.avatarUrl,
+      message: 'Avatar updated successfully',
+    }));
+  })
+);
+
+/**
+ * @route DELETE /api/v1/users/me
+ * @desc Delete current user account
+ * @access Private
+ */
+router.delete(
+  '/me',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const { password } = req.body;
+
+    if (!password) {
+      throw new AppError('Password is required', 'PASSWORD_REQUIRED', 400);
+    }
+
+    // Delete user
+    await userService.deleteUser(req.user.id);
+
+    res.json(ApiResponse.success({
+      message: 'Account deleted successfully',
+    }));
+  })
+);
+
+/**
+ * @route GET /api/v1/users/privacy
+ * @desc Get privacy settings
+ * @access Private
+ */
+router.get(
+  '/privacy',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const settings = await userService.getPrivacySettings(req.user.id);
+
+    res.json(ApiResponse.success(settings));
+  })
+);
+
+/**
+ * @route PUT /api/v1/users/privacy
+ * @desc Update privacy settings
+ * @access Private
+ */
+router.put(
+  '/privacy',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const settings = await userService.updatePrivacySettings(req.user.id, req.body);
+
+    res.json(ApiResponse.success(settings));
+  })
+);
+
+/**
+ * @route POST /api/v1/users/password
+ * @desc Change password
+ * @access Private
+ */
+router.post(
+  '/password',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      throw new AppError('Current password and new password are required', 'MISSING_FIELDS', 400);
+    }
+
+    if (newPassword.length < 8) {
+      throw new AppError('New password must be at least 8 characters', 'WEAK_PASSWORD', 400);
+    }
+
+    await userService.changePassword(req.user.id, currentPassword, newPassword);
+
+    res.json(ApiResponse.success({
+      message: 'Password changed successfully',
+    }));
+  })
+);
+
+/**
+ * @route POST /api/v1/users/phone
+ * @desc Update phone number
+ * @access Private
+ */
+router.post(
+  '/phone',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const { phone } = req.body;
+
+    if (!phone) {
+      throw new AppError('Phone number is required', 'PHONE_REQUIRED', 400);
+    }
+
+    const updatedUser = await userService.updatePhone(req.user.id, phone);
+
+    res.json(ApiResponse.success({
+      phone: updatedUser.phone,
+      phoneVerified: updatedUser.phoneVerified,
+      message: 'Phone number updated successfully',
+    }));
+  })
+);
+
+/**
+ * @route POST /api/v1/users/email
+ * @desc Update email
+ * @access Private
+ */
+router.post(
+  '/email',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const { email } = req.body;
+
+    if (!email) {
+      throw new AppError('Email is required', 'EMAIL_REQUIRED', 400);
+    }
+
+    const updatedUser = await userService.updateEmail(req.user.id, email);
+
+    res.json(ApiResponse.success({
+      email: updatedUser.email,
+      emailVerified: updatedUser.emailVerified,
+      message: 'Email updated successfully',
+    }));
+  })
+);
+
+/**
+ * @route GET /api/v1/users/devices
+ * @desc Get user devices
+ * @access Private
+ */
+router.get(
+  '/devices',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const devices = await userService.getUserDevices(req.user.id);
+
+    res.json(ApiResponse.success(devices));
+  })
+);
+
+/**
+ * @route DELETE /api/v1/users/devices/:deviceId
+ * @desc Remove a device
+ * @access Private
+ */
+router.delete(
+  '/devices/:deviceId',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const { deviceId } = req.params;
+
+    await userService.removeDevice(req.user.id, deviceId);
+
+    res.json(ApiResponse.success({
+      message: 'Device removed successfully',
+    }));
+  })
+);
+
+/**
+ * @route POST /api/v1/users/block
+ * @desc Block a user
+ * @access Private
+ */
+router.post(
+  '/block',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const { userId, reason } = req.body;
 
     if (!userId) {
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: '未认证',
-        },
-      });
+      throw new AppError('User ID is required', 'USER_ID_REQUIRED', 400);
     }
 
-    await userService.deleteUserAccount(userId);
+    await userService.blockUser(req.user.id, userId, reason);
 
-    res.json({
-      success: true,
-      message: '账号已删除',
-    });
-  } catch (error) {
-    logger.error('Delete user account failed', error as Error);
+    res.json(ApiResponse.success({
+      message: 'User blocked successfully',
+    }));
+  })
+);
 
-    if ((error as Error).message === '用户不存在') {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: 'USER_NOT_FOUND',
-          message: '用户不存在',
-        },
-      });
+/**
+ * @route POST /api/v1/users/unblock
+ * @desc Unblock a user
+ * @access Private
+ */
+router.post(
+  '/unblock',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
     }
 
-    res.status(500).json({
-      success: false,
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: '删除账号失败',
-      },
-    });
-  }
-});
+    const { userId } = req.body;
+
+    if (!userId) {
+      throw new AppError('User ID is required', 'USER_ID_REQUIRED', 400);
+    }
+
+    await userService.unblockUser(req.user.id, userId);
+
+    res.json(ApiResponse.success({
+      message: 'User unblocked successfully',
+    }));
+  })
+);
+
+/**
+ * @route GET /api/v1/users/blocked
+ * @desc Get blocked users list
+ * @access Private
+ */
+router.get(
+  '/blocked',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const blockedUsers = await userService.getBlockedUsers(req.user.id);
+
+    res.json(ApiResponse.success(blockedUsers));
+  })
+);
 
 export default router;
