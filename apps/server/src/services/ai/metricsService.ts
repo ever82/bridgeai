@@ -128,8 +128,10 @@ export class LLMMetricsService extends EventEmitter {
     lines.push('# HELP llm_requests_total Total LLM requests');
     lines.push('# TYPE llm_requests_total counter');
     this.requestCounter.forEach((value, key) => {
-      const [provider, model] = key.split(':');
-      lines.push(`llm_requests_total{provider="${provider}",model="${model}"} ${value}`);
+      if (key.endsWith(':requests_total')) {
+        const [provider, model] = key.split(':');
+        lines.push(`llm_requests_total{provider="${provider}",model="${model}"} ${value}`);
+      }
     });
 
     // 成功请求
@@ -137,10 +139,12 @@ export class LLMMetricsService extends EventEmitter {
     lines.push('# HELP llm_requests_success Total successful LLM requests');
     lines.push('# TYPE llm_requests_success counter');
     this.requestCounter.forEach((value, key) => {
-      const [provider, model] = key.split(':');
-      const successKey = `${provider}:${model}:success`;
-      const successValue = this.requestCounter.get(successKey) || 0;
-      lines.push(`llm_requests_success{provider="${provider}",model="${model}"} ${successValue}`);
+      if (key.endsWith(':requests_success')) {
+        const parts = key.split(':');
+        const provider = parts[0];
+        const model = parts[1];
+        lines.push(`llm_requests_success{provider="${provider}",model="${model}"} ${value}`);
+      }
     });
 
     // 失败请求
@@ -148,10 +152,12 @@ export class LLMMetricsService extends EventEmitter {
     lines.push('# HELP llm_requests_failed Total failed LLM requests');
     lines.push('# TYPE llm_requests_failed counter');
     this.requestCounter.forEach((value, key) => {
-      const [provider, model] = key.split(':');
-      const failedKey = `${provider}:${model}:failed`;
-      const failedValue = this.requestCounter.get(failedKey) || 0;
-      lines.push(`llm_requests_failed{provider="${provider}",model="${model}"} ${failedValue}`);
+      if (key.endsWith(':requests_failed')) {
+        const parts = key.split(':');
+        const provider = parts[0];
+        const model = parts[1];
+        lines.push(`llm_requests_failed{provider="${provider}",model="${model}"} ${value}`);
+      }
     });
 
     // 延迟直方图
@@ -229,8 +235,9 @@ export class LLMMetricsService extends EventEmitter {
     errorRate: number;
     circuitBreakerEvents: number;
   } {
-    const totalRequests = Array.from(this.requestCounter.values())
-      .reduce((sum, val) => sum + val, 0);
+    const totalRequests = Array.from(this.requestCounter.entries())
+      .filter(([key]) => key.endsWith(':requests_total'))
+      .reduce((sum, [, val]) => sum + val, 0);
 
     const totalTokens = Array.from(this.tokenCounter.values())
       .reduce((sum, val) => ({
@@ -272,7 +279,7 @@ export class LLMMetricsService extends EventEmitter {
     errorCount: number;
   } | null {
     const providerKeys = Array.from(this.requestCounter.keys())
-      .filter(k => k.startsWith(`${provider}:`));
+      .filter(k => k.startsWith(`${provider}:`) && k.endsWith(':requests_total'));
 
     if (providerKeys.length === 0) return null;
 
@@ -280,15 +287,18 @@ export class LLMMetricsService extends EventEmitter {
       .map(k => this.requestCounter.get(k) || 0)
       .reduce((a, b) => a + b, 0);
 
-    const tokens = providerKeys
+    // Extract base keys (provider:model) for other counters
+    const baseKeys = providerKeys.map(k => k.replace(':requests_total', ''));
+
+    const tokens = baseKeys
       .map(k => this.tokenCounter.get(k) || { input: 0, output: 0 })
       .reduce((a, b) => ({ input: a.input + b.input, output: a.output + b.output }));
 
-    const cost = providerKeys
+    const cost = baseKeys
       .map(k => this.costCounter.get(k) || 0)
       .reduce((a, b) => a + b, 0);
 
-    const latencies = providerKeys
+    const latencies = baseKeys
       .map(k => this.latencyHistogram.get(k) || [])
       .flat();
     const averageLatency = latencies.length > 0
@@ -345,7 +355,7 @@ export class LLMMetricsService extends EventEmitter {
   }
 
   private incrementCounter(name: string, provider: LLMProvider, model: string): void {
-    const key = `${provider}:${model}`;
+    const key = `${provider}:${model}:${name}`;
     const current = this.requestCounter.get(key) || 0;
     this.requestCounter.set(key, current + 1);
   }

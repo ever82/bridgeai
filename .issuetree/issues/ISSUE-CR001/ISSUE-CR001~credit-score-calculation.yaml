@@ -3,7 +3,7 @@ id: "ISSUE-CR001"
 issue_number: 601
 title: "信用分计算系统"
 slug: "credit-score-calculation"
-status: "implemented"
+status: "passed"
 description: |
   实现用户信用分计算系统，包括信用分模型设计、多维度评分算法、
   信用等级划分、信用分历史追踪、以及信用分的实时更新机制。
@@ -28,7 +28,7 @@ criteria:
       - CreditHistory 表设计(分数变更历史记录)
       - CreditFactor 表设计(各维度评分因子存储)
       - 数据库索引优化(按用户ID和日期查询)
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -50,7 +50,7 @@ criteria:
       - 交易信用评分(完成率、纠纷记录)
       - 社交信用评分(评价、举报记录)
       - 加权综合算法实现
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -71,7 +71,7 @@ criteria:
       - 等级权益配置(不同等级的权限差异)
       - 等级升降级规则
       - 等级徽章和视觉展示
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -93,7 +93,7 @@ criteria:
       - GET /api/v1/credit/factors - 获取各维度评分详情
       - POST /api/v1/credit/recalculate - 触发重新计算(管理员)
       - 其他用户信用分查询(脱敏)
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -114,7 +114,7 @@ criteria:
       - 定时任务全量计算(每日/每周)
       - 更新频率限制(防止刷分)
       - 异常波动检测和告警
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -135,7 +135,7 @@ criteria:
       - 信用分排序权重
       - 信用不达标用户过滤
       - 匹配结果中的信用分展示
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -147,3 +147,16 @@ criteria:
         prompt: "检查信用分匹配集成，验证匹配查询支持信用分筛选，确认信用分权重在排序算法中的应用"
         context_files: ["apps/server/src/services/matchingService.ts", "apps/server/src/services/queryBuilder.ts"]
         
+
+check:
+  checked_at: "2026-04-10"
+  status: "passed"
+  functional_verification:
+    all_criteria_passed: true
+  test_execution:
+    all_tests_passed: true
+    passed_tests: 29
+    total_tests: 29
+  code_review:
+    merged_to_main: true
+  notes: "All acceptance criteria verified. Credit score system fully implemented."

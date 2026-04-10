@@ -32,6 +32,11 @@ export const LoginScreen = () => {
     }
   };
 
+  const handleOAuthLogin = (provider: 'wechat' | 'google') => {
+    // TODO: Implement OAuth login flow
+    Alert.alert('提示', `${provider === 'wechat' ? '微信' : 'Google'}登录功能开发中`);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -76,6 +81,31 @@ export const LoginScreen = () => {
           disabled={isLoading}
         >
           <Text style={styles.linkText}>忘记密码？</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 第三方登录 */}
+      <View style={styles.dividerContainer}>
+        <View style={styles.divider} />
+        <Text style={styles.dividerText}>或使用以下方式登录</Text>
+        <View style={styles.divider} />
+      </View>
+
+      <View style={styles.oauthContainer}>
+        <TouchableOpacity
+          style={[styles.oauthButton, styles.wechatButton]}
+          onPress={() => handleOAuthLogin('wechat')}
+          disabled={isLoading}
+        >
+          <Text style={styles.wechatButtonText}>微信登录</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.oauthButton, styles.googleButton]}
+          onPress={() => handleOAuthLogin('google')}
+          disabled={isLoading}
+        >
+          <Text style={styles.googleButtonText}>Google 登录</Text>
         </TouchableOpacity>
       </View>
 
@@ -148,6 +178,49 @@ const styles = StyleSheet.create({
   linkText: {
     color: theme.colors.primary,
     fontSize: theme.fonts.sizes.base,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: theme.spacing.lg,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: theme.colors.border,
+  },
+  dividerText: {
+    marginHorizontal: theme.spacing.base,
+    color: theme.colors.textSecondary,
+    fontSize: theme.fonts.sizes.sm,
+  },
+  oauthContainer: {
+    gap: theme.spacing.base,
+  },
+  oauthButton: {
+    height: 48,
+    borderRadius: theme.borderRadius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  wechatButton: {
+    backgroundColor: '#07C160',
+    borderColor: '#07C160',
+  },
+  wechatButtonText: {
+    color: '#FFFFFF',
+    fontSize: theme.fonts.sizes.base,
+    fontWeight: theme.fonts.weights.semibold,
+  },
+  googleButton: {
+    backgroundColor: theme.colors.background,
+    borderColor: theme.colors.border,
+  },
+  googleButtonText: {
+    color: theme.colors.text,
+    fontSize: theme.fonts.sizes.base,
+    fontWeight: theme.fonts.weights.semibold,
   },
   footer: {
     flexDirection: 'row',

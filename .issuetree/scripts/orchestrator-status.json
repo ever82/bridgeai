@@ -2,6 +2,8 @@
   "completed": [
     "ISSUE-A002",
     "ISSUE-A004",
+    "ISSUE-AI001",
+    "ISSUE-CR001",
     "ISSUE-F005",
     "ISSUE-F006",
     "ISSUE-T001"
@@ -15,5 +17,5 @@
     "ISSUE-AI001",
     "ISSUE-CR001"
   ],
-  "last_update": "2026-04-10T13:07:19.506731"
+  "last_update": "2026-04-10T13:28:42.088535"
 }

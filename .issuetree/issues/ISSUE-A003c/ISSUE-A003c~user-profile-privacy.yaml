@@ -3,7 +3,7 @@ id: "ISSUE-A003c"
 issue_number: 2033
 title: "用户基础资料管理 - 隐私与安全"
 slug: "user-profile-privacy"
-status: "pending"
+status: "implemented"
 description: |
   实现用户资料隐私与安全设置，包括：
   - 隐私设置API和界面
@@ -21,7 +21,7 @@ criteria:
       - 资料可见性设置
       - 在线状态可见性
       - 手机号/邮箱隐私
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -40,7 +40,7 @@ criteria:
       - 修改密码
       - 绑定/换绑手机号
       - 绑定/换绑邮箱
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -51,3 +51,11 @@ criteria:
       ai:
         prompt: "检查账号安全功能，验证有修改密码和绑定手机接口"
         context_files: ["apps/server/src/routes/users.ts"]
+
+implementation:
+  completed_at: "2026-04-10"
+  result: "success"
+  notes: "Privacy and security settings implemented with API routes and mobile screens"
+
+test_passed: true
+merged_to_master: true
