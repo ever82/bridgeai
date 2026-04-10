@@ -2,7 +2,7 @@ id: 'ISSUE-DESIGN-4'
 issue_number: 4
 title: '补充完善 Issues'
 slug: 'supplement-issues'
-status: 'in_progress'
+status: pending
 description: |
   回顾已生成的 Issues 列表，检查是否有遗漏。
   补充缺失的 issue 或完善现有 issue 的描述、验收标准、依赖关系。

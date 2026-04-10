@@ -2,7 +2,7 @@ id: ISSUE-AI002a
 issue_number: 502
 slug: demand-extraction-core
 title: 需求智能提炼服务 - 核心框架
-status: implemented
+status: checking
 description: |
   实现需求智能提炼服务的核心框架部分，提供基础的解析引擎、
   结构化映射、验证系统和API接口，为后续场景特定提取器提供
@@ -23,7 +23,7 @@ criteria:
       - 意图分类
       - 需求结构化输出
       - 置信度评分
-    status: pending
+status: checking
     coverage:
       unit: required
       integration: required
@@ -44,7 +44,7 @@ criteria:
       - 枚举值匹配
       - 缺失字段推断
       - 冲突检测与提示
-    status: pending
+status: checking
     coverage:
       unit: required
       integration: required
@@ -65,7 +65,7 @@ criteria:
       - 合理性检查(预算范围等)
       - 用户确认流程
       - 提取结果修正
-    status: pending
+status: checking
     coverage:
       unit: required
       integration: required
@@ -86,7 +86,7 @@ criteria:
       - 提取结果缓存
       - WebSocket实时反馈
       - 场景配置API
-    status: pending
+status: checking
     coverage:
       unit: required
       integration: required
@@ -101,4 +101,4 @@ criteria:
 started_at: '2026-04-10T16:47:32.886Z'
 completed_at: '2026-04-10T17:28:31.581Z'
 
-current_task: TASK-1775845414
+current_task: TASK-1775846486

@@ -2,7 +2,7 @@ id: ISSUE-SEC003
 issue_number: 403
 title: API限流与安全防护
 slug: api-rate-limiting
-status: in_progress
+status: pending
 description: |
   实现API限流与安全防护机制，包括请求频率限制、DDoS防护、
   IP黑名单、请求大小限制、CORS配置等，保护API服务免受滥用和攻击。

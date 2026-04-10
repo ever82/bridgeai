@@ -2,7 +2,7 @@ id: ISSUE-C003
 issue_number: 305
 title: 地域过滤系统
 slug: location-filter
-status: implemented
+status: checking
 description: |
   实现基于地理位置的过滤系统，支持按省市区、
   距离范围、地理围栏等方式筛选 Agent。
@@ -19,7 +19,7 @@ criteria:
       - 经纬度坐标存储
       - GeoJSON 支持
       - 地址解析服务
-    status: completed
+status: checking
     coverage:
       unit: required
       integration: required
@@ -39,7 +39,7 @@ criteria:
       - 地图选点功能
       - 定位权限处理
       - 常用地址管理
-    status: completed
+status: checking
     coverage:
       unit: required
       integration: required
@@ -59,7 +59,7 @@ criteria:
       - 距离范围筛选(1km, 5km, 10km等)
       - PostGIS 空间查询优化
       - 近似距离估算
-    status: completed
+status: checking
     coverage:
       unit: required
       integration: required
@@ -80,7 +80,7 @@ criteria:
       - 点是否在围栏内判断
       - 围栏交集计算
       - 围栏可视化
-    status: completed
+status: checking
     coverage:
       unit: required
       integration: required
@@ -100,7 +100,7 @@ criteria:
       - 地理编码(地址转坐标)
       - 逆地理编码(坐标转地址)
       - 地址联想搜索
-    status: completed
+status: checking
     coverage:
       unit: required
       integration: required
@@ -121,7 +121,7 @@ criteria:
       - 基于位置的Agent搜索API
       - 实时位置更新机制
       - 位置隐私设置管理
-    status: completed
+status: checking
     coverage:
       unit: required
       integration: required
@@ -136,4 +136,4 @@ criteria:
 started_at: '2026-04-10T17:28:05.046Z'
 completed_at: '2026-04-10T17:48:49.813Z'
 
-current_task: TASK-1775845414
+current_task: TASK-1775846486

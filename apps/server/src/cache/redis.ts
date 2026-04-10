@@ -173,7 +173,7 @@ export async function mget<T>(namespace: string, keys: string[]): Promise<(T | n
     const fullKeys = keys.map(key => generateKey(namespace, key));
     const values = await redis.mget(...fullKeys);
 
-    return values.map((value) => {
+    return values.map((value: string | null) => {
       if (value) {
         stats.hits++;
         return JSON.parse(value) as T;
