@@ -1,133 +1,118 @@
 /**
  * Token Blacklist Service
- * Manages blacklisted tokens for logout and token revocation
- * Uses in-memory Map (replace with Redis for production)
+ * Manages blacklisted tokens using Redis
  */
 
-import jwt from 'jsonwebtoken';
-import { logger } from '../../utils/logger';
+import { redis } from '../redis';
+import { DecodedToken, decodeToken } from './jwt';
 
-// In-memory blacklist storage
-// Structure: token -> { blacklistedAt: Date, expiresAt: Date }
-const blacklist = new Map<string, { blacklistedAt: Date; expiresAt: Date }>();
-
-// Cleanup interval (1 hour)
-const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+// Key prefix for blacklisted tokens
+const BLACKLIST_PREFIX = 'token:blacklist:';
+const BLACKLIST_JTI_PREFIX = 'token:jti:';
 
 /**
  * Add a token to the blacklist
- * @param token JWT token to blacklist
+ * The token will be stored with its expiration time from the token itself
  */
 export async function blacklistToken(token: string): Promise<void> {
-  try {
-    // Decode token to get expiration
-    const decoded = jwt.decode(token) as { exp?: number } | null;
-
-    if (!decoded?.exp) {
-      logger.warn('Cannot blacklist token: no expiration found');
-      return;
-    }
-
-    const expiresAt = new Date(decoded.exp * 1000);
-
-    // Don't blacklist already expired tokens
-    if (expiresAt < new Date()) {
-      return;
-    }
-
-    blacklist.set(token, {
-      blacklistedAt: new Date(),
-      expiresAt,
-    });
-
-    logger.debug('Token blacklisted');
-  } catch (error) {
-    logger.error('Error blacklisting token:', error);
-    throw error;
+  const decoded = decodeToken(token);
+  if (!decoded) {
+    throw new Error('Invalid token');
   }
+
+  // Calculate TTL based on token expiration
+  const now = Date.now();
+  const exp = decoded.exp * 1000; // Convert to milliseconds
+  const ttl = Math.max(0, Math.ceil((exp - now) / 1000)); // Convert to seconds
+
+  if (ttl <= 0) {
+    // Token already expired, no need to blacklist
+    return;
+  }
+
+  // Store token jti in blacklist with TTL
+  const key = BLACKLIST_PREFIX + decoded.jti;
+  await redis.setex(key, ttl, '1');
+
+  // Also store jti mapping for quick lookup
+  await redis.setex(BLACKLIST_JTI_PREFIX + decoded.jti, ttl, '1');
 }
 
 /**
  * Check if a token is blacklisted
- * @param token JWT token to check
- * @returns true if token is blacklisted
  */
 export async function isTokenBlacklisted(token: string): Promise<boolean> {
-  const entry = blacklist.get(token);
-
-  if (!entry) {
-    return false;
+  const decoded = decodeToken(token);
+  if (!decoded) {
+    return true; // Invalid tokens are considered blacklisted
   }
 
-  // If token has expired, remove from blacklist
-  if (new Date() > entry.expiresAt) {
-    blacklist.delete(token);
-    return false;
-  }
-
-  return true;
+  const key = BLACKLIST_PREFIX + decoded.jti;
+  const exists = await redis.exists(key);
+  return exists === 1;
 }
 
 /**
- * Blacklist multiple tokens
- * @param tokens Array of JWT tokens to blacklist
+ * Check if a token JTI is blacklisted
+ */
+export async function isJtiBlacklisted(jti: string): Promise<boolean> {
+  const key = BLACKLIST_PREFIX + jti;
+  const exists = await redis.exists(key);
+  return exists === 1;
+}
+
+/**
+ * Blacklist multiple tokens (for bulk logout/revoke)
  */
 export async function blacklistTokens(tokens: string[]): Promise<void> {
+  const pipeline = redis.pipeline();
+
   for (const token of tokens) {
-    await blacklistToken(token);
+    const decoded = decodeToken(token);
+    if (decoded) {
+      const now = Date.now();
+      const exp = decoded.exp * 1000;
+      const ttl = Math.max(0, Math.ceil((exp - now) / 1000));
+
+      if (ttl > 0) {
+        const key = BLACKLIST_PREFIX + decoded.jti;
+        pipeline.setex(key, ttl, '1');
+      }
+    }
   }
+
+  await pipeline.exec();
 }
 
 /**
- * Clean up expired tokens from blacklist
- * Should be called periodically
+ * Get blacklist stats
  */
-export function cleanupBlacklist(): number {
-  const now = new Date();
+export async function getBlacklistStats(): Promise<{
+  totalKeys: number;
+  pattern: string;
+}> {
+  const keys = await redis.keys(BLACKLIST_PREFIX + '*');
+  return {
+    totalKeys: keys.length,
+    pattern: BLACKLIST_PREFIX + '*',
+  };
+}
+
+/**
+ * Clean up expired blacklist entries (Redis handles this automatically with TTL)
+ * This is a manual cleanup if needed
+ */
+export async function cleanupBlacklist(): Promise<number> {
+  const keys = await redis.keys(BLACKLIST_PREFIX + '*');
   let cleaned = 0;
 
-  for (const [token, data] of blacklist.entries()) {
-    if (now > data.expiresAt) {
-      blacklist.delete(token);
+  for (const key of keys) {
+    const ttl = await redis.ttl(key);
+    if (ttl < 0) {
+      await redis.del(key);
       cleaned++;
     }
   }
 
-  if (cleaned > 0) {
-    logger.debug(`Cleaned up ${cleaned} expired tokens from blacklist`);
-  }
-
   return cleaned;
 }
-
-/**
- * Get blacklist statistics
- */
-export function getBlacklistStats(): {
-  totalTokens: number;
-  validTokens: number;
-  expiredTokens: number;
-} {
-  const now = new Date();
-  let expiredCount = 0;
-
-  for (const [, data] of blacklist.entries()) {
-    if (now > data.expiresAt) {
-      expiredCount++;
-    }
-  }
-
-  return {
-    totalTokens: blacklist.size,
-    validTokens: blacklist.size - expiredCount,
-    expiredTokens: expiredCount,
-  };
-}
-
-// Start periodic cleanup
-setInterval(() => {
-  cleanupBlacklist();
-}, CLEANUP_INTERVAL_MS);
-
-// Initial cleanup
-cleanupBlacklist();

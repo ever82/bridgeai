@@ -4,9 +4,9 @@ import axios, {
   AxiosResponse,
   AxiosError,
 } from 'axios';
-import { API_BASE_URL } from '../constants/config';
-import { useAuthStore } from '../stores/authStore';
-import { ApiResponse, ApiError, AuthTokens } from '../types';
+import { API_BASE_URL } from '../../constants/config';
+import { ApiResponse, ApiError, AuthTokens } from '../../types';
+import { getAccessToken, getRefreshToken, updateAccessToken, clearTokens } from '../authToken';
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -21,10 +21,10 @@ const apiClient: AxiosInstance = axios.create({
 // Request interceptor
 apiClient.interceptors.request.use(
   async (config) => {
-    // Get token from auth store
-    const tokens = useAuthStore.getState().tokens;
-    if (tokens?.accessToken) {
-      config.headers.Authorization = `Bearer ${tokens.accessToken}`;
+    // Get token from SecureStore
+    const accessToken = await getAccessToken();
+    if (accessToken) {
+      config.headers.Authorization = 'Bearer ' + accessToken;
     }
     return config;
   },
@@ -44,18 +44,28 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshed = await useAuthStore.getState().refreshToken();
-        if (refreshed) {
+        const refreshToken = await getRefreshToken();
+        if (refreshToken) {
+          // Attempt to refresh token
+          const response = await axios.post<AuthTokens>(
+            API_BASE_URL + '/auth/refresh',
+            { refreshToken }
+          );
+          
+          const newTokens = response.data;
+          
+          // Update tokens in SecureStore
+          await updateAccessToken(newTokens.accessToken, newTokens.expiresIn);
+          
           // Retry the original request with new token
-          const tokens = useAuthStore.getState().tokens;
-          if (tokens?.accessToken && originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`;
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = 'Bearer ' + newTokens.accessToken;
           }
           return apiClient(originalRequest);
         }
       } catch {
-        // Refresh failed, logout user
-        await useAuthStore.getState().logout();
+        // Refresh failed, clear tokens
+        await clearTokens();
       }
     }
 

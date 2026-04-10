@@ -1,33 +1,22 @@
-/**
- * Authentication Middleware
- * Validates JWT tokens and attaches user info to request
- */
-
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { logger } from '../utils/logger';
+import { verifyToken, extractBearerToken } from '../services/auth/jwt';
+import { isTokenBlacklisted } from '../services/auth/blacklist';
+import { UnauthorizedError } from '../errors/AppError';
+import { UserRole } from '../types';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-// Extended Express Request type to include user
 declare global {
   namespace Express {
     interface Request {
       user?: {
         userId: string;
-        email?: string;
-        phone?: string;
-        role: string;
+        email: string;
+        role: UserRole;
       };
       token?: string;
     }
   }
 }
 
-/**
- * Authentication middleware
- * Verifies JWT token from Authorization header
- */
 export async function authenticate(
   req: Request,
   res: Response,
@@ -35,168 +24,60 @@ export async function authenticate(
 ): Promise<void> {
   try {
     const authHeader = req.headers.authorization;
+    const token = extractBearerToken(authHeader);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({
-        success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'Authentication required',
-        },
-      });
-      return;
+    if (!token) {
+      throw new UnauthorizedError('Authentication required');
     }
 
-    const token = authHeader.substring(7);
+    const isBlacklisted = await isTokenBlacklisted(token);
+    if (isBlacklisted) {
+      throw new UnauthorizedError('Token has been revoked');
+    }
 
-    // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET) as {
-      userId: string;
-      email?: string;
-      phone?: string;
-      role: string;
-      type: string;
-    };
+    const decoded = verifyToken(token);
 
-    // Check token type
     if (decoded.type !== 'access') {
-      res.status(401).json({
-        success: false,
-        error: {
-          code: 'INVALID_TOKEN_TYPE',
-          message: 'Invalid token type',
-        },
-      });
-      return;
+      throw new UnauthorizedError('Invalid token type');
     }
 
-    // Attach user info to request
     req.user = {
       userId: decoded.userId,
       email: decoded.email,
-      phone: decoded.phone,
       role: decoded.role,
     };
     req.token = token;
 
     next();
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      res.status(401).json({
-        success: false,
-        error: {
-          code: 'TOKEN_EXPIRED',
-          message: 'Token has expired',
-        },
-      });
+    if (error instanceof UnauthorizedError) {
+      next(error);
       return;
     }
-
-    if (error instanceof jwt.JsonWebTokenError) {
-      res.status(401).json({
-        success: false,
-        error: {
-          code: 'INVALID_TOKEN',
-          message: 'Invalid token',
-        },
-      });
-      return;
+    if (error instanceof Error) {
+      if (error.message === 'Token has expired') {
+        next(new UnauthorizedError('Token has expired', { code: 'TOKEN_EXPIRED' }));
+        return;
+      }
+      if (error.message === 'Invalid token') {
+        next(new UnauthorizedError('Invalid token'));
+        return;
+      }
     }
-
-    logger.error('Authentication error:', error);
-    res.status(500).json({
-      success: false,
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: 'Authentication failed',
-      },
-    });
+    next(new UnauthorizedError('Authentication failed'));
   }
 }
 
-/**
- * Optional authentication middleware
- * Attaches user info if token is valid, but doesn't require it
- */
-export async function optionalAuth(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      next();
-      return;
-    }
-
-    const token = authHeader.substring(7);
-
-    // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET) as {
-      userId: string;
-      email?: string;
-      phone?: string;
-      role: string;
-      type: string;
-    };
-
-    if (decoded.type === 'access') {
-      req.user = {
-        userId: decoded.userId,
-        email: decoded.email,
-        phone: decoded.phone,
-        role: decoded.role,
-      };
-      req.token = token;
-    }
-
-    next();
-  } catch {
-    // Ignore errors in optional auth
-    next();
-  }
-}
-
-/**
- * Role-based authorization middleware factory
- */
-export function requireRoles(...roles: string[]) {
+export function requireRoles(...roles: UserRole[]) {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      res.status(401).json({
-        success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'Authentication required',
-        },
-      });
+      next(new UnauthorizedError('Authentication required'));
       return;
     }
-
     if (!roles.includes(req.user.role)) {
-      res.status(403).json({
-        success: false,
-        error: {
-          code: 'FORBIDDEN',
-          message: 'Insufficient permissions',
-        },
-      });
+      next(new UnauthorizedError('Insufficient permissions'));
       return;
     }
-
     next();
   };
-}
-
-/**
- * Require admin role middleware
- */
-export function requireAdmin(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
-  requireRoles('admin')(req, res, next);
 }

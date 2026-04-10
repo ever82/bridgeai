@@ -3,6 +3,13 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, AuthTokens, LoginCredentials, RegisterData } from '../types';
 import { authApi } from '../services/api/auth';
+import {
+  storeTokens,
+  clearTokens,
+  getTokens,
+  updateAccessToken,
+  getRefreshToken,
+} from '../services/authToken';
 
 interface AuthState {
   // State
@@ -42,9 +49,14 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const response = await authApi.login(credentials);
+          const { user, tokens } = response.data;
+          
+          // Store tokens in SecureStore
+          await storeTokens(tokens);
+          
           set({
-            user: response.data.user,
-            tokens: response.data.tokens,
+            user,
+            tokens,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -61,9 +73,14 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const response = await authApi.register(data);
+          const { user, tokens } = response.data;
+          
+          // Store tokens in SecureStore
+          await storeTokens(tokens);
+          
           set({
-            user: response.data.user,
-            tokens: response.data.tokens,
+            user,
+            tokens,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -81,6 +98,9 @@ export const useAuthStore = create<AuthState>()(
         try {
           await authApi.logout();
         } finally {
+          // Clear tokens from SecureStore
+          await clearTokens();
+          
           set({
             user: null,
             tokens: null,
@@ -92,14 +112,22 @@ export const useAuthStore = create<AuthState>()(
       },
 
       refreshToken: async () => {
-        const { tokens } = get();
-        if (!tokens?.refreshToken) return false;
+        const refreshToken = await getRefreshToken();
+        if (!refreshToken) return false;
 
         try {
-          const response = await authApi.refreshToken(tokens.refreshToken);
-          set({ tokens: response.data });
+          const response = await authApi.refreshToken(refreshToken);
+          const newTokens = response.data;
+          
+          // Update tokens in SecureStore
+          await updateAccessToken(newTokens.accessToken, newTokens.expiresIn);
+          
+          set({ tokens: newTokens });
           return true;
         } catch {
+          // Clear tokens on refresh failure
+          await clearTokens();
+          
           set({
             user: null,
             tokens: null,
@@ -113,16 +141,25 @@ export const useAuthStore = create<AuthState>()(
 
       initialize: async () => {
         set({ isLoading: true });
-        // The persist middleware will automatically restore the state
-        // We just need to verify the token is still valid
-        const { tokens, refreshToken } = get();
-        if (tokens) {
+        
+        // Load tokens from SecureStore
+        const tokens = await getTokens();
+        
+        if (tokens.accessToken && tokens.refreshToken) {
+          // Verify the token is still valid
+          const { refreshToken } = get();
           const isValid = await refreshToken();
           if (!isValid) {
             set({ isLoading: false });
             return;
           }
+          
+          set({
+            tokens: tokens as AuthTokens,
+            isAuthenticated: true,
+          });
         }
+        
         set({ isLoading: false });
       },
     }),
@@ -131,8 +168,8 @@ export const useAuthStore = create<AuthState>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         user: state.user,
-        tokens: state.tokens,
         isAuthenticated: state.isAuthenticated,
+        // Note: tokens are stored in SecureStore, not AsyncStorage
       }),
     }
   )

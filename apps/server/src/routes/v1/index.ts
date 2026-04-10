@@ -1,15 +1,17 @@
 import { Router } from 'express';
 import healthRoutes from './health';
-import authRoutes from '../auth';
-import userRoutes from '../users';
-import uploadRoutes from '../upload';
+import authRoutes from './auth';
 
 const router: Router = Router();
 
 // Mount routes
 router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
-router.use('/users', userRoutes);
-router.use('/users', uploadRoutes);
+
+// Placeholder for future routes
+// router.use('/users', userRoutes);
+// router.use('/agents', agentRoutes);
+// router.use('/chats', chatRoutes);
+// router.use('/matches', matchRoutes);
 
 export default router;
