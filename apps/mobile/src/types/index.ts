@@ -134,7 +134,7 @@ export interface ApiError {
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
-  expiresAt: number;
+  expiresIn: number;
 }
 
 export interface LoginCredentials {
