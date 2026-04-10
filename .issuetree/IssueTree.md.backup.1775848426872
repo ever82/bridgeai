@@ -36,7 +36,7 @@ flowchart TD
     subgraph Security["🔒 安全层 - Security"]
         SEC001[🟢 ISSUE-SEC001<br/>RBAC权限控制系统]
         SEC002[🟢 ISSUE-SEC002<br/>敏感数据加密与保护]
-        SEC003[🟢 ISSUE-SEC003<br/>API限流与安全防护]
+        SEC003[🟡 ISSUE-SEC003<br/>API限流与安全防护]
         SEC004[🟡 ISSUE-SEC004<br/>图片上传安全检查]
         SEC005[🟡 ISSUE-SEC005<br/>举报与内容审核系统]
     end
@@ -56,7 +56,7 @@ flowchart TD
         C003[🟡 ISSUE-C003<br/>地域过滤系统]
         C004[🟡 ISSUE-C004<br/>属性过滤系统]
         C005[🟡 ISSUE-C005<br/>信用过滤系统]
-        C006[🔵 ISSUE-C006<br/>场景配置管理]
+        C006[🟡 ISSUE-C006<br/>场景配置管理]
         C007[🟡 ISSUE-C007<br/>Agent信息披露控制机制]
     end
 
