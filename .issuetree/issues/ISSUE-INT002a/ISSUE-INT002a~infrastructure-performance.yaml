@@ -1,20 +1,19 @@
----
-id: "ISSUE-INT002a"
+id: ISSUE-INT002a
 issue_number: 1202.1
-title: "基础设施性能优化"
-slug: "infrastructure-performance"
-status: "pending"
+title: 基础设施性能优化
+slug: infrastructure-performance
+status: in_progress
 description: |
   执行系统基础设施层性能优化与压力测试，包括API响应时间优化和数据库查询优化。
   这是ISSUE-INT002的阶段1，专注于基础设施性能，为后续实时服务性能优化奠定基础。
   目标：API响应时间P95<200ms，数据库查询性能达到高并发要求。
-parent_issue: "ISSUE-INT002"
+parent_issue: ISSUE-INT002
 phase: 1
-created_at: "2026-04-09"
+created_at: '2026-04-09'
 logic: sufficient_necessary
 criteria:
-  - id: "ISSUE-INT002a~c1"
-    name: "API性能基准测试与优化"
+  - id: ISSUE-INT002a~c1
+    name: API性能基准测试与优化
     description: |
       API性能测试与优化:
       - 核心API响应时间基准测试(目标P95<200ms)
@@ -22,7 +21,7 @@ criteria:
       - 数据库查询性能分析与优化
       - 缓存策略实施与验证(Redis)
       - API限流与熔断机制压力测试
-    status: "pending"
+    status: pending
     coverage:
       unit: not_needed
       integration: required
@@ -31,12 +30,13 @@ criteria:
       manual: required
     verification:
       ai:
-        prompt: "检查API性能测试实现，验证有k6或Artillery压测脚本，包含基准测试、并发测试、限流测试，确认性能优化方案"
-        context_files: ["apps/server/perf/", "perf/api-load-test.yml", "apps/server/src/middleware/rateLimiter.ts"]
-        
-
-  - id: "ISSUE-INT002a~c2"
-    name: "数据库性能优化与测试"
+        prompt: 检查API性能测试实现，验证有k6或Artillery压测脚本，包含基准测试、并发测试、限流测试，确认性能优化方案
+        context_files:
+          - apps/server/perf/
+          - perf/api-load-test.yml
+          - apps/server/src/middleware/rateLimiter.ts
+  - id: ISSUE-INT002a~c2
+    name: 数据库性能优化与测试
     description: |
       数据库性能优化:
       - 慢查询分析与索引优化
@@ -44,7 +44,7 @@ criteria:
       - Prisma连接池配置优化
       - 复杂查询(匹配算法)性能优化
       - 数据库分表分库策略评估
-    status: "pending"
+    status: pending
     coverage:
       unit: not_needed
       integration: required
@@ -53,6 +53,10 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查数据库性能优化实现，验证慢查询日志配置、索引优化方案、Prisma连接池配置，确认性能测试报告"
-        context_files: ["apps/server/prisma/schema.prisma", "apps/server/src/services/matching/", "perf/db-perf-report.md"]
-        
+        prompt: 检查数据库性能优化实现，验证慢查询日志配置、索引优化方案、Prisma连接池配置，确认性能测试报告
+        context_files:
+          - apps/server/prisma/schema.prisma
+          - apps/server/src/services/matching/
+          - perf/db-perf-report.md
+started_at: null
+completed_at: null

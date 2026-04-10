@@ -1,0 +1,26 @@
+{
+  "name": "@visionshare/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BridgeAI E2E端到端测试",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed",
+    "test:scenario": "playwright test tests/scenarios/",
+    "test:integration": "playwright test tests/integration/",
+    "test:contracts": "playwright test tests/contracts/",
+    "test:websocket": "playwright test tests/websocket/",
+    "test:report": "playwright show-report",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.42.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.7.0"
+  }
+}

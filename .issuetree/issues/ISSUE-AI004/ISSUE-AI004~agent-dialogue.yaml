@@ -2,7 +2,7 @@ id: ISSUE-AI004
 issue_number: 504
 title: Agent对话生成服务
 slug: agent-dialogue
-status: checking
+status: implemented
 description: |
   实现Agent对话生成服务，为AI Agent提供智能对话能力，
   支持Agent间的自主沟通、协商、匹配对话，以及Agent与用户
@@ -140,3 +140,5 @@ criteria:
         prompt: 检查对话API，验证有/api/v1/ai/dialogue端点支持POST和WebSocket，支持streaming模式，参数包含agent_id、conversation_id、message
         context_files:
           - apps/server/src/routes/ai/dialogue.ts
+
+current_task: TASK-1775845414

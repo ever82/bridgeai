@@ -1,0 +1,21 @@
+id: TASK-001
+issue_id: ISSUE-INT002a
+title: API性能基准测试与优化
+description: |
+  实现API性能测试套件，包括k6压力测试脚本、基准测试、并发测试和限流熔断测试。
+  目标：API响应时间P95<200ms
+status: in_progress
+priority: high
+assignee: AI
+acceptance_criteria:
+  - 使用k6实现API负载测试脚本
+  - 实现基准性能测试(Baseline Test)
+  - 实现并发压力测试(Load Test)
+  - 实现限流和熔断机制测试
+  - 生成性能测试报告
+context_files:
+  - apps/server/perf/
+  - apps/server/src/middleware/rateLimiter.ts
+  - apps/server/src/middleware/performance.ts
+created_at: '2026-04-11'
+updated_at: '2026-04-11'

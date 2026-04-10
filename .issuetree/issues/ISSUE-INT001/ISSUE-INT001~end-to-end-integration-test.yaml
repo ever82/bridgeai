@@ -1,9 +1,8 @@
----
-id: "ISSUE-INT001"
+id: ISSUE-INT001
 issue_number: 1201
-title: "端到端集成测试（父Issue）"
-slug: "end-to-end-integration-test"
-status: "pending"
+title: 端到端集成测试（父Issue）
+slug: end-to-end-integration-test
+status: in_progress
 description: |
   【此Issue已拆分为子Issue，仅作为父Issue追踪】
 
@@ -35,11 +34,13 @@ description: |
   - c5 (跨模块集成) -> ISSUE-INT001c~c5
   - c6 (测试框架) -> ISSUE-INT001c~c6
 sub_issues:
-  - "ISSUE-INT001a"
-  - "ISSUE-INT001b"
-  - "ISSUE-INT001c"
+  - ISSUE-INT001a
+  - ISSUE-INT001b
+  - ISSUE-INT001c
 prerequisites: []
-created_at: "2026-04-08"
-updated_at: "2026-04-09"
+created_at: '2026-04-08'
+updated_at: '2026-04-09'
 logic: sufficient_necessary
 criteria: []
+started_at: null
+completed_at: null

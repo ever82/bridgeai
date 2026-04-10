@@ -2,7 +2,7 @@ id: ISSUE-AI002a
 issue_number: 502
 slug: demand-extraction-core
 title: 需求智能提炼服务 - 核心框架
-status: checking
+status: implemented
 description: |
   实现需求智能提炼服务的核心框架部分，提供基础的解析引擎、
   结构化映射、验证系统和API接口，为后续场景特定提取器提供
@@ -100,3 +100,5 @@ criteria:
           - apps/server/src/routes/ai/extraction.ts
 started_at: '2026-04-10T16:47:32.886Z'
 completed_at: '2026-04-10T17:28:31.581Z'
+
+current_task: TASK-1775845414

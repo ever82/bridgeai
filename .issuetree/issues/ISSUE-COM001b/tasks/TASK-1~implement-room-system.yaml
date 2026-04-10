@@ -4,21 +4,22 @@ title: Implement Connection Management and Room System
 acceptance_criteria:
   - id: ISSUE-COM001b~c1
     name: 房间管理
-    status: pending
+    status: passed
   - id: ISSUE-COM001b~c2
     name: 用户连接追踪
-    status: pending
+    status: passed
   - id: ISSUE-COM001b~c3
     name: 房间广播
-    status: pending
+    status: passed
   - id: ISSUE-COM001b~c4
     name: 在线状态管理
-    status: pending
+    status: passed
   - id: ISSUE-COM001b~c5
     name: 连接安全
-    status: pending
+    status: passed
 created_at: '2026-04-11'
 started_at: '2026-04-11'
+completed_at: '2026-04-11'
 file_changes:
   - action: create
     path: apps/server/src/services/roomService.ts

@@ -2,7 +2,7 @@ id: ISSUE-C004
 issue_number: 306
 title: 属性过滤系统
 slug: attribute-filter
-status: checking
+status: implemented
 description: |
   实现基于 Agent 属性的复杂过滤系统，支持多条件组合、
   范围筛选、枚举匹配、布尔判断等多种过滤方式。
@@ -134,3 +134,5 @@ criteria:
           - apps/server/src/services/savedFilterService.ts
 started_at: '2026-04-10T17:28:31.832Z'
 completed_at: '2026-04-10T17:39:09.437Z'
+
+current_task: TASK-1775845414

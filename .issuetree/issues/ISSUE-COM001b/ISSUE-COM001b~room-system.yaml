@@ -2,7 +2,7 @@ id: ISSUE-COM001b
 issue_number: 502
 title: 连接管理与房间系统
 slug: room-system
-status: in_progress
+status: implemented
 description: |
   实现连接管理和房间系统，支持用户加入房间、
   离开房间、房间消息广播等功能。
@@ -19,7 +19,7 @@ criteria:
       - 加入/离开房间
       - 房间成员管理
       - 房间销毁
-    status: pending
+    status: passed
     coverage:
       unit: required
       integration: required
@@ -39,7 +39,7 @@ criteria:
       - 多设备连接管理
       - 连接历史记录
       - 设备信息存储
-    status: pending
+    status: passed
     coverage:
       unit: required
       integration: required
@@ -59,7 +59,7 @@ criteria:
       - 用户特定推送
       - 多房间广播
       - 离线用户处理
-    status: pending
+    status: passed
     coverage:
       unit: required
       integration: required
@@ -79,7 +79,7 @@ criteria:
       - 最后活跃时间
       - 状态变更通知
       - 状态订阅
-    status: pending
+    status: passed
     coverage:
       unit: required
       integration: required
@@ -99,7 +99,7 @@ criteria:
       - 加入房间验证
       - 踢出房间功能
       - 房间黑名单
-    status: pending
+    status: passed
     coverage:
       unit: required
       integration: required
@@ -111,5 +111,5 @@ criteria:
         prompt: 检查连接安全，验证有房间权限检查和加入验证
         context_files:
           - apps/server/src/socket/middleware/roomAuth.ts
-started_at: null
-completed_at: null
+started_at: '2026-04-10T17:48:49.817Z'
+completed_at: '2026-04-10T18:26:02.325Z'

@@ -3,7 +3,7 @@ issue_number: 503
 parent: ISSUE-AI003
 title: 供给智能提炼服务 - 核心解析引擎与API
 slug: supply-core-api
-status: checking
+status: implemented
 description: |
   实现供给智能提炼服务的核心解析引擎和API端点，
   包含供给解析引擎和供给API与集成，为场景提取器提供基础能力
@@ -58,3 +58,5 @@ criteria:
         prompt: 检查供给API，验证有/api/v1/ai/extract-supply端点，支持scene参数和bulk模式，返回supply数据和quality_report
         context_files:
           - apps/server/src/routes/ai/supply.ts
+
+current_task: TASK-1775845414

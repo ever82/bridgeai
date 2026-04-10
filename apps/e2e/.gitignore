@@ -1,0 +1,11 @@
+# E2E Tests
+node_modules/
+dist/
+test-results/
+playwright-report/
+playwright/.cache/
+coverage/
+.env
+.env.local
+*.log
+.DS_Store

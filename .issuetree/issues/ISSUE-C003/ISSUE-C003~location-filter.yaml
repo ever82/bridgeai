@@ -2,7 +2,7 @@ id: ISSUE-C003
 issue_number: 305
 title: 地域过滤系统
 slug: location-filter
-status: checking
+status: implemented
 description: |
   实现基于地理位置的过滤系统，支持按省市区、
   距离范围、地理围栏等方式筛选 Agent。
@@ -135,3 +135,5 @@ criteria:
           - apps/server/src/services/agentLocationService.ts
 started_at: '2026-04-10T17:28:05.046Z'
 completed_at: '2026-04-10T17:48:49.813Z'
+
+current_task: TASK-1775845414

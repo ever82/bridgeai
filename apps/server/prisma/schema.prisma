@@ -47,6 +47,7 @@ model User {
   blockedUsers  BlockedUser[] @relation("BlockingUser")
   blockedBy     BlockedUser[] @relation("BlockedByUser")
   roles         UserRole[]  // RBAC roles
+  pointsAccount PointsAccount?
 
   @@map("users")
 }
@@ -570,6 +571,102 @@ enum TransactionStatus {
   SUCCESS     @map("success")
   FAILED      @map("failed")
   CANCELLED   @map("cancelled")
+}
+
+// ============================================
+// 积分系统相关 (Points System)
+// ============================================
+
+// 积分账户 - 每个用户有一个积分账户
+model PointsAccount {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  balance       Int      @default(0) // 当前可用余额
+  totalEarned   Int      @default(0) @map("total_earned") // 总获取积分
+  totalSpent    Int      @default(0) @map("total_spent") // 总消耗积分
+  frozenAmount  Int      @default(0) @map("frozen_amount") // 冻结金额（交易担保）
+  version       Int      @default(0) // 乐观锁版本号
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  PointsTransaction[]
+  freezeRecords PointsFreeze[]
+
+  @@index([userId])
+  @@index([balance])
+  @@map("points_accounts")
+}
+
+// 积分交易记录
+model PointsTransaction {
+  id          String              @id @default(uuid())
+  accountId   String              @map("account_id")
+  userId      String              @map("user_id")
+  type        PointsTransactionType // 交易类型
+  amount      Int                 // 交易金额（正数为收入，负数为支出）
+  balanceAfter Int                @map("balance_after") // 交易后余额
+  description String?             // 交易描述
+  scene       SceneCode?          // 关联场景
+  referenceId String?             @map("reference_id") // 关联记录ID（如订单ID）
+  metadata    Json?               // 额外元数据
+  createdAt   DateTime            @default(now()) @map("created_at")
+
+  // Relations
+  account     PointsAccount       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  freezeRecord PointsFreeze?      // 可选关联的冻结记录
+
+  @@index([accountId])
+  @@index([userId])
+  @@index([type])
+  @@index([scene])
+  @@index([createdAt])
+  @@map("points_transactions")
+}
+
+// 积分冻结记录（用于交易担保）
+model PointsFreeze {
+  id            String          @id @default(uuid())
+  accountId     String          @map("account_id")
+  transactionId String?         @unique @map("transaction_id") // 关联的交易记录
+  amount        Int             // 冻结金额
+  reason        String          // 冻结原因/用途
+  scene         SceneCode?      // 关联场景
+  referenceId   String?         @map("reference_id") // 关联业务记录ID
+  status        FreezeStatus    @default(FROZEN) // 冻结状态
+  expiresAt     DateTime?       @map("expires_at") // 过期时间（自动解冻）
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  account       PointsAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  transaction   PointsTransaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([accountId])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([referenceId])
+  @@map("points_freezes")
+}
+
+enum PointsTransactionType {
+  EARN        @map("earn")        // 获取积分（任务奖励、注册奖励等）
+  SPEND       @map("spend")       // 消耗积分（查看照片等）
+  RECHARGE    @map("recharge")    // 充值
+  REFUND      @map("refund")      // 退款
+  FROZEN      @map("frozen")      // 冻结
+  UNFROZEN    @map("unfrozen")    // 解冻
+  DEDUCT      @map("deduct")      // 扣除（惩罚）
+  TRANSFER_IN @map("transfer_in")  // 转入
+  TRANSFER_OUT @map("transfer_out") // 转出
+}
+
+enum FreezeStatus {
+  FROZEN      @map("frozen")      // 冻结中
+  USED        @map("used")         // 已使用（完成交易）
+  RELEASED    @map("released")     // 已释放（取消交易）
+  EXPIRED     @map("expired")      // 已过期
 }
 
 // ============================================

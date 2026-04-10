@@ -2,7 +2,7 @@ id: ISSUE-CR003a
 issue_number: 603.1
 title: 积分账户数据模型
 slug: points-account-data-model
-status: in_progress
+status: implemented
 description: |
   积分系统数据库设计与基础数据模型实现。
   包括积分账户、交易记录、冻结记录等核心数据表设计。
@@ -21,7 +21,7 @@ criteria:
       - PointsFreeze 表设计(冻结记录用于交易担保)
       - 账户唯一性约束和用户关联
       - 余额非负约束
-    status: pending
+    status: passed
     coverage:
       unit: required
       integration: required
@@ -34,8 +34,19 @@ criteria:
         context_files:
           - packages/database/prisma/schema.prisma
           - packages/shared/src/types/points.ts
+    result: |
+      已实现所有数据模型:
+      - PointsAccount 模型已添加，包含 userId(唯一), balance, totalEarned, totalSpent, frozenAmount, version 字段
+      - PointsTransaction 模型已添加，包含 accountId, userId, type(枚举), amount, balanceAfter, description, scene(枚举), referenceId 字段
+      - PointsFreeze 模型已添加，包含 accountId, transactionId(唯一), amount, reason, scene, referenceId, status(枚举), expiresAt 字段
+      - User 与 PointsAccount 建立了一对一关系
+      - 添加了级联删除约束和乐观锁机制
+      - 创建了 TypeScript 类型定义在 packages/shared/src/types/points.ts
+      - 编写了 22 个单元测试，全部通过
 parent_issue: ISSUE-CR003
 part_of: 积分系统基础与交易记录拆分
 estimated_lines: 150
-started_at: null
-completed_at: null
+started_at: '2026-04-10T17:56:30.953Z'
+completed_at: '2026-04-10T18:11:13.869Z'
+
+current_task: TASK-1775845130
