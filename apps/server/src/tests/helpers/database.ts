@@ -84,7 +84,7 @@ export async function teardownTestDatabase(): Promise<void> {
 export async function withTransaction<T>(
   fn: () => Promise<T>
 ): Promise<T> {
-  return await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx: typeof prisma) => {
     try {
       // Temporarily replace global prisma with transaction client
       const result = await fn();
