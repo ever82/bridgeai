@@ -1,4 +1,4 @@
-import { L2Schema, L2FieldType } from '../types';
+import { L2Schema, L2FieldType } from './types';
 
 /**
  * VisionShare Scene L2 Schema

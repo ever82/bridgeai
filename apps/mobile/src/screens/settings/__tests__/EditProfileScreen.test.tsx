@@ -1,20 +1,20 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { EditProfileScreen } from '../EditProfileScreen';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore } from '../../../stores/authStore';
 import { useNavigation } from '@react-navigation/native';
-import { api } from '../../services/api';
+import { api } from '../../../services';
 
 // Mock dependencies
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
 
-jest.mock('../../stores/authStore', () => ({
+jest.mock('../../../stores/authStore', () => ({
   useAuthStore: jest.fn(),
 }));
 
-jest.mock('../../services/api', () => ({
+jest.mock('../../../services', () => ({
   api: {
     put: jest.fn(),
   },
@@ -24,7 +24,7 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0 }),
 }));
 
-jest.mock('../../theme', () => ({
+jest.mock('../../../theme', () => ({
   theme: {
     colors: {
       background: '#fff',
