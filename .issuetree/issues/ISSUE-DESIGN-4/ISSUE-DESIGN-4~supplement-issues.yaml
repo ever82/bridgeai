@@ -68,10 +68,32 @@ criteria:
     verification:
       ai:
         prompt: '检查 IssueTree.md 是否包含 ISSUE-API001 的表格条目和 mermaid 图节点'
+  - id: 'ISSUE-DESIGN-4~c4'
+    name: '补充所有子Issue到IssueTree'
+    description: |
+      将以下24个子Issue补充到IssueTree.md中:
+      - Auth: A003a
+      - AI: AI002a, AI002b, AI003a, AI003b, AI003c
+      - Credit: CR002a, CR002b, CR002c, CR003a, CR003b, CR003c, CR003d
+      - VisionShare: VS005a, VS005b, VS005c, VS005d
+      - Integration: INT001a, INT001b, INT001c, INT002a, INT002b, INT002c
+      - AgentJob: JOB003a, JOB003b, JOB003c, JOB003d
+      同时添加了所有相关的Mermaid依赖关系。
+    status: 'passed'
+    coverage:
+      unit: not_needed
+      integration: not_needed
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: '验证IssueTree.md是否包含所有子Issue条目和Mermaid依赖关系'
+
 implementation:
   task_id: TASK-1
-  completed_at: '2026-04-11T09:52:00+08:00'
-  execution_time_minutes: 15
+  completed_at: '2026-04-11T17:55:00+08:00'
+  execution_time_minutes: 45
   result: success
   notes: |
     已完成 ISSUE-DESIGN-4 的补充工作:
@@ -81,6 +103,14 @@ implementation:
        - 在 Test 表格中添加 ISSUE-API001 条目
        - 在 mermaid 依赖图中添加 API001 节点 (🟡 状态)
        - 添加 F003 --> API001 和 A002 --> API001 依赖关系
+    4. 补充所有子Issue到IssueTree (2026-04-11):
+       - Auth: 添加 A003a
+       - AI Service: 添加 AI002a, AI002b, AI003a, AI003b, AI003c
+       - Credit: 添加 CR002a, CR002b, CR002c, CR003a, CR003b, CR003c, CR003d
+       - VisionShare: 添加 VS005a, VS005b, VS005c, VS005d
+       - Integration: 添加 INT001a, INT001b, INT001c, INT002a, INT002b, INT002c
+       - AgentJob: 添加 JOB003a, JOB003b, JOB003c, JOB003d
+       - 添加了30+条Mermaid依赖关系
     所有更改已提交到工作目录。
 test_passed: true
 test_duration_seconds: 0

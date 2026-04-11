@@ -561,8 +561,7 @@ flowchart TD
 | ISSUE-INT002a | 性能优化 - 数据库优化    | H      | INT001                                   |
 | ISSUE-INT002b | 性能优化 - 缓存策略      | H      | INT002a                                  |
 | ISSUE-INT002c | 性能优化 - 压测与调优    | H      | INT002b                                  |
-| ISSUE-INT003  | Demo演示准备             | M      | INT002                                   || ISSUE-INT002 | 性能优化与压测 | H      | INT001                                   |
-| ISSUE-INT003 | Demo演示准备   | M      | INT002                                   |
+| ISSUE-INT003  | Demo演示准备             | M      | INT002                                   |
 
 ---
 
