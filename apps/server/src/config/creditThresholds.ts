@@ -3,7 +3,7 @@
  * 信用门槛配置
  */
 
-import { CreditLevel } from '../services/creditFilterService';
+import { CreditLevel } from '@visionshare/shared';
 
 export interface SceneCreditThreshold {
   sceneId: string;
@@ -109,6 +109,15 @@ export const DEFAULT_SCENE_THRESHOLDS: Record<string, SceneCreditThreshold> = {
 let sceneThresholds: Map<string, SceneCreditThreshold> = new Map(
   Object.entries(DEFAULT_SCENE_THRESHOLDS)
 );
+
+/**
+ * Reset scene thresholds to defaults (for testing)
+ */
+export function resetSceneThresholds(): void {
+  // Deep clone to avoid mutating the default thresholds
+  const cloned = JSON.parse(JSON.stringify(DEFAULT_SCENE_THRESHOLDS));
+  sceneThresholds = new Map(Object.entries(cloned));
+}
 
 /**
  * Get credit threshold for a scene

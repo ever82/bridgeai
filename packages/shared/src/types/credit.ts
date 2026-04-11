@@ -3,13 +3,24 @@
  * 供前后端共享使用
  */
 
-// 信用等级
-export enum CreditLevel {
-  EXCELLENT = 'excellent', // 优秀 900-1000
-  GOOD = 'good',           // 良好 750-899
-  GENERAL = 'general',     // 一般 600-749
-  POOR = 'poor',           // 较差 <600
+// 信用等级枚举 (for backend use)
+export enum CreditLevelEnum {
+  EXCELLENT = 'excellent', // 优秀 800-1000
+  GOOD = 'good',           // 良好 600-799
+  GENERAL = 'general',     // 一般 400-599
+  POOR = 'poor',           // 较差 0-399
 }
+
+// 信用等级类型 (for frontend/mobile use)
+export type CreditLevel = 'excellent' | 'good' | 'average' | 'poor';
+
+// Credit level thresholds (used by mobile and server)
+export const CREDIT_LEVEL_THRESHOLDS: Record<CreditLevel, { min: number; max: number }> = {
+  excellent: { min: 800, max: 1000 },
+  good: { min: 600, max: 799 },
+  average: { min: 400, max: 599 },
+  poor: { min: 0, max: 399 },
+};
 
 // 信用分维度类型
 export enum CreditFactorType {

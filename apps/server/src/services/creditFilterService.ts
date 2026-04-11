@@ -11,10 +11,10 @@ import {
   isAndFilter,
   isOrFilter,
   isNotFilter,
+  CreditLevel,
+  CREDIT_LEVEL_THRESHOLDS,
 } from '@visionshare/shared';
 import { logger } from '../utils/logger';
-
-export type CreditLevel = 'excellent' | 'good' | 'average' | 'poor';
 
 export interface CreditRange {
   min?: number;
@@ -27,16 +27,6 @@ export interface CreditFilterOptions {
   creditLevel?: CreditLevel | CreditLevel[];
   includeNoCredit?: boolean;
 }
-
-/**
- * Credit score thresholds for levels
- */
-export const CREDIT_LEVEL_THRESHOLDS: Record<CreditLevel, { min: number; max: number }> = {
-  excellent: { min: 800, max: 1000 },
-  good: { min: 600, max: 799 },
-  average: { min: 400, max: 599 },
-  poor: { min: 0, max: 399 },
-};
 
 /**
  * Get credit level from score
@@ -206,7 +196,7 @@ export async function filterAgentsByCredit(
     ]);
 
     return {
-      items: agents.map(agent => {
+      items: agents.map((agent: any) => {
         const score = agent.user?.creditScore?.score ?? null;
         return {
           id: agent.id,
