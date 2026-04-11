@@ -26,6 +26,15 @@ flowchart TD
         F006[🟢 ISSUE-F006<br/>错误追踪与监控集成]
     end
 
+    subgraph Infrastructure["⚙️ 基础设施层 - Infrastructure"]
+        INF001[⚪ ISSUE-INF001<br/>API Gateway 设计与实现]
+        INF002[⚪ ISSUE-INF002<br/>Redis 缓存层设计与实现]
+        INF003[⚪ ISSUE-INF003<br/>任务队列系统设计与实现]
+        INF004[⚪ ISSUE-INF004<br/>数据库迁移系统]
+        INF005[⚪ ISSUE-INF005<br/>推送通知服务]
+        INF006[⚪ ISSUE-INF006<br/>邮件服务系统]
+    end
+
     subgraph Test["🧪 测试框架层 - Test"]
         T001[🟢 ISSUE-T001<br/>单元测试框架搭建]
         T002[🟢 ISSUE-T002<br/>API集成测试框架]
@@ -154,6 +163,17 @@ flowchart TD
     F003 --> F006
     F003 --> T002
     F004 --> T003
+
+    %% 基础设施层依赖
+    F003 --> INF001
+    A002 --> INF001
+    F001 --> INF002
+    F002 --> INF002
+    INF002 --> INF003
+    F002 --> INF004
+    F003 --> INF005
+    A001 --> INF005
+    F003 --> INF006
 
     %% 测试框架依赖
     F003 --> T001
@@ -392,6 +412,17 @@ flowchart TD
 | ISSUE-F004 | Expo移动端项目初始化       | L      | F001     |
 | ISSUE-F005 | 日志系统与结构化日志       | M      | F003     |
 | ISSUE-F006 | 错误追踪与监控集成         | M      | F003     |
+
+### ⚙️ Infrastructure (基础设施层)
+
+| Issue        | 标题                       | 复杂度 | 关键依赖       |
+| ------------ | -------------------------- | ------ | -------------- |
+| ISSUE-INF001 | API Gateway 设计与实现     | **H**  | F003, A002     |
+| ISSUE-INF002 | Redis 缓存层设计与实现     | M      | F001, F002     |
+| ISSUE-INF003 | 任务队列系统设计与实现     | H      | F001, F002, INF002 |
+| ISSUE-INF004 | 数据库迁移系统             | M      | F002           |
+| ISSUE-INF005 | 推送通知服务               | H      | F003, A001     |
+| ISSUE-INF006 | 邮件服务系统               | M      | F003           |
 
 ### 🧪 Test (测试框架层)
 
@@ -649,7 +680,7 @@ F003 → F004 → UI001 → UI002 → UI003/UI004a/UI004b/UI004c/UI005/UI006/UI0
 
 ---
 
-_IssueTree 版本: 2.1_
-_最后更新: 2026-04-11_
+_IssueTree 版本: 2.2_
+_最后更新: 2026-04-12_
 _基于Spec: BridgeAI Agent通信平台完整设计文档_
-_更新内容: 新增SEC005/C007/VS007，扩展COM004描述；补充所有子Issue到IssueTree（A003a, AI002a-b, AI003a-c, CR002a-c, CR003a-d, VS005a-d, INT001a-c, INT002a-c, JOB003a-d）
+_更新内容: 新增基础设施层(Infrastructure)模块，包含6个Issue: INF001-API Gateway, INF002-Redis缓存, INF003-任务队列, INF004-数据库迁移, INF005-推送通知, INF006-邮件服务_

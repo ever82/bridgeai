@@ -1,0 +1,60 @@
+id: ISSUE-INF004
+issue_number: 4
+module: INF
+title: 数据库迁移系统
+slug: db-migration
+status: draft
+description: |
+  建立规范的数据库迁移流程，基于 Prisma Migration 实现版本化管理。
+  支持多环境迁移（开发、测试、生产）。
+  实现迁移脚本审查、回滚、数据备份恢复机制。
+prerequisites:
+  - ISSUE-F002
+logic: sufficient_necessary
+criteria:
+  - id: CRIT-INF004-1
+    name: 迁移工作流
+    description: |
+      建立 migration 创建、审查、执行的标准流程。
+      支持迁移脚本自动生成和手动编辑。
+      实现迁移脚本命名规范检查。
+    verification:
+      test:
+        command: npm test -- migration/workflow
+        expected: "All workflow tests passed"
+  - id: CRIT-INF004-2
+    name: 多环境管理
+    description: |
+      支持开发/测试/生产环境隔离。
+      实现环境特定的迁移配置。
+      支持环境状态同步和差异检测。
+    verification:
+      test:
+        command: npm test -- migration/environments
+        expected: "All environment tests passed"
+  - id: CRIT-INF004-3
+    name: 迁移安全机制
+    description: |
+      生产环境迁移前自动备份。
+      支持迁移失败自动回滚。
+      实现破坏性变更检测和警告。
+    verification:
+      test:
+        command: npm test -- migration/safety
+        expected: "All safety tests passed"
+  - id: CRIT-INF004-4
+    name: 迁移历史记录
+    description: |
+      记录每次迁移的元数据（执行人、时间、耗时）。
+      支持迁移历史查询和审计。
+      实现迁移回滚到指定版本。
+    verification:
+      test:
+        command: npm test -- migration/history
+        expected: "All history tests passed"
+complexity: medium
+estimated_effort_hours: 10
+assigned_to: null
+created_at: '2026-04-12'
+updated_at: '2026-04-12'
+passed_at: null
