@@ -111,6 +111,15 @@ let sceneThresholds: Map<string, SceneCreditThreshold> = new Map(
 );
 
 /**
+ * Reset scene thresholds to defaults (for testing)
+ */
+export function resetSceneThresholds(): void {
+  // Deep clone to avoid mutating the default thresholds
+  const cloned = JSON.parse(JSON.stringify(DEFAULT_SCENE_THRESHOLDS));
+  sceneThresholds = new Map(Object.entries(cloned));
+}
+
+/**
  * Get credit threshold for a scene
  */
 export function getSceneThreshold(sceneId: string): SceneCreditThreshold | undefined {

@@ -206,7 +206,7 @@ export async function filterAgentsByCredit(
     ]);
 
     return {
-      items: agents.map(agent => {
+      items: agents.map((agent: any) => {
         const score = agent.user?.creditScore?.score ?? null;
         return {
           id: agent.id,
