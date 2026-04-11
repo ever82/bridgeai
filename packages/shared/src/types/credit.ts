@@ -11,6 +11,14 @@ export enum CreditLevel {
   POOR = 'poor',           // 较差 <600
 }
 
+// Credit level thresholds (used by mobile and server)
+export const CREDIT_LEVEL_THRESHOLDS: Record<CreditLevel, { min: number; max: number }> = {
+  [CreditLevel.EXCELLENT]: { min: 800, max: 1000 },
+  [CreditLevel.GOOD]: { min: 600, max: 799 },
+  [CreditLevel.GENERAL]: { min: 400, max: 599 },
+  [CreditLevel.POOR]: { min: 0, max: 399 },
+};
+
 // 信用分维度类型
 export enum CreditFactorType {
   PROFILE = 'profile',       // 基础信息
