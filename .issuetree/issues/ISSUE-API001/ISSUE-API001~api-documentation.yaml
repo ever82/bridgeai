@@ -1,0 +1,177 @@
+---
+id: "ISSUE-API001"
+issue_number: 401
+title: "API文档与OpenAPI规范"
+slug: "api-documentation"
+status: "pending"
+description: |
+  建立完整的API文档体系，使用OpenAPI 3.0规范描述所有后端接口。
+  包括自动生成API文档、请求/响应示例、接口版本管理、API测试工具集成等。
+  为前端开发、E2E测试和第三方集成提供完整的API参考文档。
+
+  **核心目标**:
+  - 100% API接口OpenAPI规范覆盖
+  - 自动化文档生成和发布
+  - API版本管理和兼容性文档
+  - 与E2E测试框架集成
+prerequisites:
+  - "ISSUE-F003"
+  - "ISSUE-A002"
+created_at: "2026-04-11"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-API001~c1"
+    name: "OpenAPI基础配置"
+    description: |
+      配置OpenAPI规范和文档生成:
+      - 安装swagger-jsdoc和swagger-ui-express
+      - 配置OpenAPI 3.0基础信息(标题、版本、描述)
+      - 设置API服务器配置(开发/测试/生产环境)
+      - 配置安全方案(JWT Bearer认证)
+      - 文档路由配置(/api-docs)
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查OpenAPI配置，验证有swagger配置文件中定义OpenAPI 3.0规范，包含info、servers、securitySchemes，有/api-docs路由可访问文档UI"
+        context_files: ["apps/server/src/config/swagger.ts", "apps/server/src/routes/docs.ts"]
+
+  - id: "ISSUE-API001~c2"
+    name: "认证相关API文档"
+    description: |
+      为认证模块编写OpenAPI文档:
+      - POST /api/v1/auth/register - 用户注册
+      - POST /api/v1/auth/login - 用户登录
+      - POST /api/v1/auth/refresh - 刷新Token
+      - POST /api/v1/auth/logout - 用户登出
+      - POST /api/v1/auth/forgot-password - 忘记密码
+      - POST /api/v1/auth/reset-password - 重置密码
+      - 每个端点包含: 请求体、响应示例、错误码、安全要求
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查认证API文档，验证所有认证端点有OpenAPI注释，包含请求参数、响应示例、错误状态码，可在Swagger UI中查看"
+        context_files: ["apps/server/src/routes/auth.ts", "apps/server/src/docs/auth.docs.ts"]
+
+  - id: "ISSUE-API001~c3"
+    name: "用户资料API文档"
+    description: |
+      为用户资料模块编写OpenAPI文档:
+      - GET /api/v1/users/me - 获取当前用户
+      - PUT /api/v1/users/me - 更新用户信息
+      - GET /api/v1/users/:id - 获取用户详情
+      - PUT /api/v1/users/me/avatar - 更新头像
+      - 包含数据模型定义(User, UserProfile)
+      - 字段类型和验证规则文档化
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查用户API文档，验证用户相关端点有OpenAPI注释，包含User和UserProfile模型定义，字段类型正确，有响应示例"
+        context_files: ["apps/server/src/routes/users.ts", "apps/server/src/docs/users.docs.ts"]
+
+  - id: "ISSUE-API001~c4"
+    name: "Agent管理API文档"
+    description: |
+      为Agent模块编写OpenAPI文档:
+      - POST /api/v1/agents - 创建Agent
+      - GET /api/v1/agents - 获取Agent列表
+      - GET /api/v1/agents/:id - 获取Agent详情
+      - PUT /api/v1/agents/:id - 更新Agent
+      - DELETE /api/v1/agents/:id - 删除Agent
+      - 三层信息模型文档(L1/L2/L3)
+      - 场景配置字段说明
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查Agent API文档，验证Agent CRUD端点有完整OpenAPI注释，包含L1/L2/L3模型定义，场景配置字段有说明"
+        context_files: ["apps/server/src/routes/agents.ts", "apps/server/src/docs/agents.docs.ts"]
+
+  - id: "ISSUE-API001~c5"
+    name: "匹配和推荐API文档"
+    description: |
+      为匹配引擎编写OpenAPI文档:
+      - GET /api/v1/matches - 获取推荐列表
+      - POST /api/v1/matches/:id/like - 喜欢/匹配
+      - POST /api/v1/matches/:id/pass - 跳过
+      - GET /api/v1/matches/mutual - 双向匹配列表
+      - 匹配算法参数说明
+      - 筛选条件文档化
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查匹配API文档，验证匹配相关端点有OpenAPI注释，包含查询参数、匹配响应结构、筛选条件说明"
+        context_files: ["apps/server/src/routes/matches.ts", "apps/server/src/docs/matches.docs.ts"]
+
+  - id: "ISSUE-API001~c6"
+    name: "聊天通信API文档"
+    description: |
+      为聊天模块编写OpenAPI文档:
+      - GET /api/v1/chats - 获取聊天列表
+      - GET /api/v1/chats/:id/messages - 获取消息历史
+      - POST /api/v1/chats/:id/messages - 发送消息(REST备用)
+      - WebSocket事件文档
+      - 消息类型和格式定义
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查聊天API文档，验证聊天REST端点有OpenAPI注释，WebSocket事件有独立文档，消息模型定义完整"
+        context_files: ["apps/server/src/routes/chats.ts", "apps/server/src/docs/chats.docs.ts", "apps/server/docs/websocket.md"]
+
+  - id: "ISSUE-API001~c7"
+    name: "API文档自动化和集成"
+    description: |
+      API文档自动化流程:
+      - 文档自动生成脚本(npm run docs:generate)
+      - 文档静态站点导出
+      - CI/CD集成(自动部署文档站点)
+      - 文档版本管理(与API版本同步)
+      - 变更日志自动生成
+      - E2E测试集成(基于文档生成测试数据)
+    status: "pending"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查API文档自动化，验证有文档生成脚本，可导出静态站点，CI配置自动部署，有版本管理机制，E2E测试可使用文档数据"
+        context_files: ["package.json", ".github/workflows/docs-deploy.yml", "scripts/generate-api-docs.ts"]
+
+tasks: []
