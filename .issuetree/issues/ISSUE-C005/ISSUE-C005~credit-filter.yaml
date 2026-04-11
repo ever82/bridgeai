@@ -3,7 +3,7 @@ id: "ISSUE-C005"
 issue_number: 307
 title: "信用过滤系统"
 slug: "credit-filter"
-status: "pending"
+status: "implemented"
 description: |
   实现基于信用分的过滤系统，支持按信用分范围筛选 Agent，
   信用分门槛设置，以及信用等级过滤。
@@ -21,7 +21,7 @@ criteria:
       - 信用分范围筛选
       - 信用等级筛选(优秀/良好/一般)
       - 无信用分处理
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -42,7 +42,7 @@ criteria:
       - 动态门槛调整
       - 门槛豁免机制
       - 门槛变更通知
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -63,7 +63,7 @@ criteria:
       - 信用等级快速选择
       - 筛选结果信用展示
       - 信用解释说明
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -84,7 +84,7 @@ criteria:
       - 提升信用建议
       - 临时准入申请
       - 替代推荐
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -95,4 +95,10 @@ criteria:
       ai:
         prompt: "检查信用不足处理，验证有 CreditInsufficient 提示组件和提升建议"
         context_files: ["apps/mobile/src/components/Credit/"]
+
+implementation:
+  completed_at: "2026-04-11"
+  test_results:
+    unit_tests: "67 passed"
+    coverage: "100% of test suites"
         

@@ -3,7 +3,7 @@
  * 信用门槛配置
  */
 
-import { CreditLevel } from '../services/creditFilterService';
+import { CreditLevel } from '@visionshare/shared';
 
 export interface SceneCreditThreshold {
   sceneId: string;

@@ -5,8 +5,10 @@
 
 import {
   CreditLevel,
-  CreditFilterOptions,
   CREDIT_LEVEL_THRESHOLDS,
+} from '@visionshare/shared';
+import {
+  CreditFilterOptions,
   getCreditLevel,
   getCreditLevelLabel,
   getCreditLevelColor,
