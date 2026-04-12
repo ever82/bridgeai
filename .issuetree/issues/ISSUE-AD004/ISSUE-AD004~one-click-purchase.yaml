@@ -2,7 +2,7 @@ id: ISSUE-AD004
 issue_number: 1004
 title: 一键购买与优惠码
 slug: one-click-purchase
-status: pending
+status: implemented
 description: |
   AgentAd场景的最终购买转化模块。消费者确认优惠方案后，系统生成专属优惠码
   并提供一键购买功能。消费者可以在合作商家处使用优惠码完成消费，
@@ -11,13 +11,24 @@ prerequisites:
   - ISSUE-AD003
 logic: sufficient_necessary
 created_at: 2026-04-08
+implementation:
+  task_id: TASK-1
+  completed_at: "2026-04-13T10:30:00+08:00"
+  execution_time_minutes: 120
+  result: success
+  notes: |
+    实现了完整的优惠码系统，包括：
+    1. 后端服务：优惠码生成、验证、核销、状态管理、通知系统
+    2. API路由：完整的CRUD端点、QR码验证、在线支付集成
+    3. 前端组件：优惠码展示、列表、购买界面、评价系统、商家核销
+    4. 数据库：添加了完整的优惠码相关数据模型
 criteria:
   - id: AD004-CR01
     name: 专属优惠码生成
     description: |
       当消费者确认接受某个商家的优惠方案后，系统自动生成唯一的专属优惠码，
       绑定消费者、商家和具体优惠方案，包含有效期和使用次数限制。
-    status: pending
+    status: implemented
     coverage: 95
     verification:
       ai_prompt: |
@@ -30,7 +41,7 @@ criteria:
     description: |
       提供一键购买界面，展示优惠码详情(二维码和数字码)、商家信息、
       使用说明、有效期倒计时等，并提供保存到手机、分享给好友等功能。
-    status: pending
+    status: implemented
     coverage: 92
     verification:
       ai_prompt: |
@@ -43,7 +54,7 @@ criteria:
     description: |
       支持线下到店核销模式，消费者到店后展示优惠码二维码，
       商家使用专用App或设备扫描二维码完成核销，系统实时更新优惠码状态。
-    status: pending
+    status: implemented
     coverage: 90
     verification:
       ai_prompt: |
@@ -55,7 +66,7 @@ criteria:
     description: |
       支持线上购买模式，点击"立即使用"跳转至商家小程序/H5页面，
       自动携带优惠码信息，用户在商家页面完成支付时自动应用优惠。
-    status: pending
+    status: implemented
     coverage: 85
     verification:
       ai_prompt: |
@@ -68,7 +79,7 @@ criteria:
     description: |
       系统实时追踪优惠码状态(未使用/已使用/已过期)，在即将过期前
       发送提醒通知，使用完成后发送确认通知，过期未使用发送过期提醒。
-    status: pending
+    status: implemented
     coverage: 88
     verification:
       ai_prompt: |
@@ -81,7 +92,7 @@ criteria:
     description: |
       完成消费后，交易记录保存到CR003积分系统，支持消费者和商家互评，
       评价结果影响双方信用分(CR001)，为后续匹配提供参考。
-    status: pending
+    status: implemented
     coverage: 87
     verification:
       ai_prompt: |
