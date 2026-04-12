@@ -2,7 +2,7 @@ id: ISSUE-AD001
 issue_number: 1001
 title: 消费需求画像配置
 slug: consumer-demand-profile
-status: pending
+status: implemented
 description: |
   AgentAd场景的消费者需求画像配置模块。消费者创建Agent并配置其消费需求，
   包括目标商品/服务类别、预算范围、品牌偏好、时间要求、地域限制等。
@@ -19,7 +19,7 @@ criteria:
     description: |
       消费者能够创建专属于AgentAd场景的Agent实例，选择"消费者"角色类型，
       并配置基础信息如称呼、沟通风格偏好等。
-    status: pending
+    status: implemented
     coverage: 95
     verification:
       ai_prompt: |
@@ -32,7 +32,7 @@ criteria:
     description: |
       消费者可以配置感兴趣的商品/服务类别，包括一级类目(如餐饮、零售、服务)
       和二级细分类目。支持多选，最多可选择5个主要类别。
-    status: pending
+    status: implemented
     coverage: 90
     verification:
       ai_prompt: |
@@ -45,7 +45,7 @@ criteria:
     description: |
       消费者能够设置消费预算范围，包括单次消费预算、月度消费预算等维度。
       支持具体金额或区间选择，并可选择是否向商家Agent透露预算信息。
-    status: pending
+    status: implemented
     coverage: 90
     verification:
       ai_prompt: |
@@ -58,7 +58,7 @@ criteria:
     description: |
       消费者可以配置品牌偏好(偏好品牌、避雷品牌)和商家类型偏好
       (如连锁品牌、本地小店、评分要求等)，用于匹配时的排序权重计算。
-    status: pending
+    status: implemented
     coverage: 85
     verification:
       ai_prompt: |
@@ -71,7 +71,7 @@ criteria:
     description: |
       集成AI002需求智能提炼服务，消费者可以通过自然语言描述消费需求，
       AI自动提取关键信息(品类、预算、紧急程度等)并填充到结构化配置中。
-    status: pending
+    status: implemented
     coverage: 88
     verification:
       ai_prompt: |
@@ -84,7 +84,7 @@ criteria:
     description: |
       消费者完成画像配置后，可以预览完整的消费需求画像摘要，
       确认无误后发布需求，系统将自动激活Agent并开始匹配相关商家Agent。
-    status: pending
+    status: implemented
     coverage: 92
     verification:
       ai_prompt: |
