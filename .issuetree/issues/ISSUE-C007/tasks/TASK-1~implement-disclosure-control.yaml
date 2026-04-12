@@ -1,0 +1,61 @@
+---
+id: "TASK-1"
+title: "Implement Agent disclosure control mechanism"
+status: "completed"
+issue_id: "ISSUE-C007"
+parent_task: null
+child_tasks: []
+description: |-
+  Implement the Agent Information Disclosure Control Mechanism with the following components:
+
+  1. Disclosure Level Definition (c1):
+     - Create DisclosureLevel enum in packages/shared/src/types/disclosure.ts
+     - Define field-level disclosure controls
+
+  2. Field-level Disclosure Settings (c2):
+     - Create DisclosureSettings component in apps/mobile/src/screens/settings/
+     - Allow users to configure disclosure level per field
+     - Support batch settings and preview effects
+
+  3. Disclosure Permission Checking (c3):
+     - Create disclosureService.ts in apps/server/src/services/
+     - Implement canViewField function for permission verification
+     - Add disclosure level calculation and access validation
+
+  4. Information Disclosure Preview (c4):
+     - Create DisclosurePreview component in apps/mobile/src/components/Disclosure/
+     - Show visible information from different role perspectives
+     - Support info masking and disclosure status visualization
+
+  5. Disclosure Change Notification (c5):
+     - Create disclosureAuditService.ts in apps/server/src/services/
+     - Record disclosure setting changes
+     - Implement change notification mechanism and audit logs
+
+  Also write corresponding unit tests and integration tests for the services.
+result: "success"
+session_id: "implement-issue-c007"
+session_start: "2026-04-13T10:05:00+08:00"
+session_end: "2026-04-13T10:15:00+08:00"
+execution_time_minutes: 10
+files_modified: 1
+lines_added: 1
+lines_removed: 1
+files_touched:
+  - "packages/shared/src/types/__tests__/disclosure.test.ts"
+created_at: "2026-04-13T10:00:00+08:00"
+started_at: "2026-04-13T10:05:00+08:00"
+completed_at: "2026-04-13T10:15:00+08:00"
+blockers: []
+notes: |-
+  All components were already implemented. Fixed import path in test file.
+  All 30 unit tests pass:
+  - disclosureService.test.ts: 15 tests passed
+  - disclosureAuditService.test.ts: 15 tests passed
+
+  Implementation includes:
+  1. DisclosureLevel enum with 4 levels (PUBLIC, AFTER_MATCH, AFTER_CHAT, AFTER_REFERRAL)
+  2. DisclosureSettings.tsx component with field-level configuration and batch settings
+  3. disclosureService.ts with canViewField, getRelationshipStage, filterAgentData
+  4. DisclosurePreview.tsx with role-based preview and info masking
+  5. disclosureAuditService.ts with change logging and audit trail
