@@ -524,7 +524,7 @@ async function updateMerchantCreditScore(merchantId: string) {
 
   if (ratings.length === 0) return;
 
-  const averageScore = ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length;
+  const averageScore = ratings.reduce((sum: number, r: { score: number }) => sum + r.score, 0) / ratings.length;
 
   // Map 1-5 rating to credit score adjustment
   let creditAdjustment = 0;
