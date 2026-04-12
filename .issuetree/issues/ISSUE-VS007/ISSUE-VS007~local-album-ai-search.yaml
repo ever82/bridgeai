@@ -3,7 +3,7 @@ id: "ISSUE-VS007"
 issue_number: 707
 title: "本地相册AI智能检索"
 slug: "local-album-ai-search"
-status: "implemented"
+status: stuck
 description: |
   实现VisionShare场景的本地相册AI智能检索功能。扩展AI相册搜索能力到用户设备本地相册，
   在保护隐私的前提下，对本地照片进行AI分析和索引，支持自然语言搜索本地照片，

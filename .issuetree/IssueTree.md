@@ -111,7 +111,7 @@ flowchart TD
         VS004[🆘 ISSUE-VS004<br/>AI隐私脱敏处理]
         VS005[🆘 ISSUE-VS005<br/>照片查看与积分支付]
         VS006[🔵 ISSUE-VS006<br/>AI相册智能检索与历史查询]
-        VS007[🔵 ISSUE-VS007<br/>本地相册AI智能检索]
+        VS007[❌ ISSUE-VS007<br/>本地相册AI智能检索]
     end
 
     subgraph Date["💕 AgentDate场景"]
@@ -132,7 +132,7 @@ flowchart TD
         AD001[🔵 ISSUE-AD001<br/>消费需求画像配置]
         AD002[🆘 ISSUE-AD002<br/>商家优惠配置]
         AD003[🆘 ISSUE-AD003<br/>Agent优惠协商谈判]
-        AD004[🆘 ISSUE-AD004<br/>一键购买与优惠码]
+        AD004[🔵 ISSUE-AD004<br/>一键购买与优惠码]
     end
 
     subgraph UI["📱 前端UI层 - Frontend"]

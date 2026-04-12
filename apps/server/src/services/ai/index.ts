@@ -75,3 +75,16 @@ export {
   ClarificationRequest,
   ClarificationResponse,
 } from './clarificationService';
+
+// VisionShare Demand Refinement Service (ISSUE-VS001)
+export {
+  VisionShareDemandRefinementService,
+  visionShareDemandRefinementService,
+} from './visionShareDemandRefinement';
+
+// VisionShare NLP Service (ISSUE-VS001)
+export {
+  VisionShareNLPService,
+  visionShareNLPService,
+  ExtractedEntities,
+} from './visionShareNLP';

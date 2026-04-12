@@ -8,6 +8,7 @@ import agentProfileRoutes from '../agentProfile';
 import locationRoutes from '../locationRoutes';
 import aiExtractionRoutes from '../ai/extraction';
 import chatRoutes from './chat';
+import visionSharePublishRoutes from '../visionShare/publish';
 
 const router: Router = Router();
 
@@ -21,6 +22,9 @@ router.use('/agents', agentProfileRoutes);
 router.use('/location', locationRoutes);
 router.use('/ai', aiExtractionRoutes);
 router.use('/chat', chatRoutes);
+
+// VisionShare Routes (ISSUE-VS001)
+router.use('/visionshare', visionSharePublishRoutes);
 
 // Placeholder for future routes
 // router.use('/auth', authRoutes);
