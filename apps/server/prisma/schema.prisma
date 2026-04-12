@@ -48,6 +48,7 @@ model User {
   blockedBy     BlockedUser[] @relation("BlockedByUser")
   roles         UserRole[]  // RBAC roles
   pointsAccount PointsAccount?
+  visionShareTasks VisionShareTask[]
 
   @@map("users")
 }
@@ -843,4 +844,118 @@ model SceneTemplate {
   @@index([isPublic, usageCount])
   @@index([userId, sceneId, isDefault])
   @@map("scene_templates")
+}
+
+// ============================================
+// VisionShare 任务发布
+// ============================================
+
+model VisionShareTask {
+  id              String              @id @default(uuid())
+  userId          String              @map("user_id")
+  agentId         String?             @map("agent_id")  // 关联的Agent
+  title           String              // 任务标题
+  description     String?             @db.Text          // 详细描述
+  aiRefinedDescription String?        @map("ai_refined_description") @db.Text // AI提炼后的描述
+  qualityScore    Float?              @map("quality_score") // 需求质量评分 (0-100)
+
+  // 预算信息
+  budgetType      BudgetType          @map("budget_type") // POINTS, CASH
+  budgetAmount    Decimal             @map("budget_amount") @db.Decimal(10, 2)
+  budgetCurrency  String?             @map("budget_currency") // CNY, USD等
+
+  // 地理位置
+  latitude        Float?
+  longitude       Float?
+  locationName    String?             @map("location_name")
+  locationAddress String?             @map("location_address")
+
+  // 时间窗口
+  startTime       DateTime?           @map("start_time")
+  endTime         DateTime?           @map("end_time")
+  timeType        TimeType            @map("time_type") // IMMEDIATE, SCHEDULED
+
+  // 有效期
+  validHours      Int                 @default(24) @map("valid_hours") // 任务有效期(小时)
+  expiresAt       DateTime            @map("expires_at")
+
+  // 分类和标签
+  category        String?             // 需求分类
+  tags            String[]            // 标签数组
+  aiGeneratedTags String[]            @map("ai_generated_tags") // AI生成的标签
+
+  // 状态机
+  status          VisionShareTaskStatus @default(DRAFT) @map("status")
+
+  // 验证状态
+  creditChecked   Boolean             @default(false) @map("credit_checked")
+  creditScore     Int?                @map("credit_score") // 发布时的信用分
+  contentFiltered Boolean             @default(false) @map("content_filtered")
+  filterResult    Json?               @map("filter_result") // 过滤结果
+
+  // 统计信息
+  viewCount       Int                 @default(0) @map("view_count")
+  matchCount      Int                 @default(0) @map("match_count")
+  shareCount      Int                 @default(0) @map("share_count")
+
+  // 发布控制
+  publishCount    Int                 @default(0) @map("publish_count") // 当日发布计数
+  dailyLimitHit   Boolean             @default(false) @map("daily_limit_hit")
+
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+  publishedAt     DateTime?           @map("published_at")
+  completedAt     DateTime?           @map("completed_at")
+  cancelledAt     DateTime?           @map("cancelled_at")
+
+  // Relations
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  history         VisionShareTaskHistory[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([latitude, longitude])
+  @@index([tags])
+  @@index([category])
+  @@index([expiresAt])
+  @@index([createdAt])
+  @@index([userId, status])
+  @@map("visionshare_tasks")
+}
+
+enum VisionShareTaskStatus {
+  DRAFT       @map("draft")       // 草稿
+  PUBLISHING  @map("publishing")  // 发布中
+  PUBLISHED   @map("published")   // 已发布
+  MATCHING    @map("matching")    // 匹配中
+  IN_PROGRESS @map("in_progress") // 进行中
+  COMPLETED   @map("completed")   // 已完成
+  CANCELLED   @map("cancelled")   // 已取消
+  EXPIRED     @map("expired")     // 已过期
+}
+
+enum BudgetType {
+  POINTS  @map("points")
+  CASH    @map("cash")
+}
+
+enum TimeType {
+  IMMEDIATE   @map("immediate")
+  SCHEDULED   @map("scheduled")
+}
+
+// VisionShare任务历史记录
+model VisionShareTaskHistory {
+  id          String   @id @default(uuid())
+  taskId      String   @map("task_id")
+  status      VisionShareTaskStatus @map("status")
+  metadata    Json?    // 状态变更元数据
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  task        VisionShareTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([createdAt])
+  @@map("visionshare_task_histories")
 }
