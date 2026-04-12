@@ -89,7 +89,7 @@ status: implementing
       - .issuetree/spec/AGENT_PROTOCOL.md
       prompt: "\u68C0\u67E5\u534F\u8BAE\u6587\u6863\uFF0C\u9A8C\u8BC1\u6709 AGENT_PROTOCOL.md\
         \ \u6587\u6863\u5305\u542B\u5B8C\u6574\u89C4\u8303"
-current_task: TASK-1776011031-4009
+current_task: null
 description: "\u5B9A\u4E49 Agent \u901A\u4FE1\u534F\u8BAE\uFF0C\u5305\u62EC\u6D88\u606F\
   \u683C\u5F0F\u3001\u8EAB\u4EFD\u6807\u8BC6\u3001\n\u4FE1\u7528\u5206\u5C55\u793A\
   \u3001\u884C\u4E3A\u7EA6\u675F\u7B49\u89C4\u8303\u3002\n"

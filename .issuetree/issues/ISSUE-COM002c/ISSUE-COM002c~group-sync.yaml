@@ -28,7 +28,7 @@ criteria:
     \n- \u5728\u7EBF\u72B6\u6001\u8BA2\u9605\n"
   id: ISSUE-COM002c~c2
   name: "\u5728\u7EBF\u72B6\u6001\u663E\u793A"
-status: stuck
+status: need-help
   verification:
     ai:
       context_files:

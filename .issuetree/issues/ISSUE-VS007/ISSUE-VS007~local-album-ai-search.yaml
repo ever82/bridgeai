@@ -32,7 +32,7 @@ criteria:
     \u663E\u793A\n"
   id: ISSUE-VS007~c2
   name: "\u672C\u5730\u7167\u7247AI\u5206\u6790"
-  status: pending
+status: implementing
   verification:
     ai:
       context_files:
@@ -125,7 +125,7 @@ criteria:
       prompt: "\u68C0\u67E5\u6027\u80FD\u4F18\u5316\u7F13\u5B58\uFF0C\u9A8C\u8BC1\u6709\
         \u540E\u53F0\u66F4\u65B0\u3001\u7F29\u7565\u56FE\u7F13\u5B58\u3001\u54CD\u5E94\
         \u4F18\u5316\u548C\u8D44\u6E90\u4F18\u5316\u529F\u80FD"
-current_task: null
+current_task: TASK-1776018332-3298
 description: "\u5B9E\u73B0VisionShare\u573A\u666F\u7684\u672C\u5730\u76F8\u518CAI\u667A\
   \u80FD\u68C0\u7D22\u529F\u80FD\u3002\u6269\u5C55AI\u76F8\u518C\u641C\u7D22\u80FD\
   \u529B\u5230\u7528\u6237\u8BBE\u5907\u672C\u5730\u76F8\u518C\uFF0C\n\u5728\u4FDD\

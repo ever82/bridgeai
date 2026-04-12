@@ -61,7 +61,7 @@
   },
   "ISSUE-COM002a": {
     "issue_id": "ISSUE-COM002a",
-    "status": "stuck",
+    "status": "need-help",
     "title": "\u804a\u5929\u623f\u95f4\u57fa\u7840\u67b6\u6784",
     "prerequisites": [
       "ISSUE-COM001b"
@@ -71,7 +71,7 @@
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-13T00:23:51.473205",
+    "last_update": "2026-04-13T02:15:37.392323",
     "failure_count": 1,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
@@ -243,18 +243,18 @@
   },
   "ISSUE-AD001": {
     "issue_id": "ISSUE-AD001",
-    "status": "pending",
+    "status": "implementing",
     "title": "\u6d88\u8d39\u9700\u6c42\u753b\u50cf\u914d\u7f6e",
     "prerequisites": [
       "ISSUE-C006",
       "ISSUE-AI002"
     ],
     "sub_issues": [],
-    "current_task": null,
+    "current_task": "TASK-1776018063-6704",
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T22:30:29.930141",
+    "last_update": "2026-04-13T02:21:03.983631",
     "failure_count": 0,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
@@ -371,11 +371,11 @@
       "ISSUE-COM002c"
     ],
     "sub_issues": [],
-    "current_task": "TASK-1776009450-4244",
+    "current_task": null,
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T23:57:30.470599",
+    "last_update": "2026-04-13T02:25:18.015791",
     "failure_count": 0,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
@@ -392,11 +392,11 @@
       "ISSUE-COM002c"
     ],
     "sub_issues": [],
-    "current_task": "TASK-1776011031-4009",
+    "current_task": null,
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-13T00:23:51.606900",
+    "last_update": "2026-04-13T02:25:18.036300",
     "failure_count": 0,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
@@ -594,11 +594,11 @@
       "ISSUE-AI004"
     ],
     "sub_issues": [],
-    "current_task": "TASK-1776011062-6498",
+    "current_task": null,
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-13T00:24:22.383714",
+    "last_update": "2026-04-13T02:25:18.062834",
     "failure_count": 0,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
@@ -784,7 +784,7 @@
   },
   "ISSUE-VS007": {
     "issue_id": "ISSUE-VS007",
-    "status": "pending",
+    "status": "implementing",
     "title": "\u672c\u5730\u76f8\u518cAI\u667a\u80fd\u68c0\u7d22",
     "prerequisites": [
       "ISSUE-VS006",
@@ -826,11 +826,11 @@
         "focus": "\u4e91\u7aef/\u672c\u5730\u7edf\u4e00\u641c\u7d22UI"
       }
     ],
-    "current_task": null,
+    "current_task": "TASK-1776018332-3298",
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T22:30:30.107298",
+    "last_update": "2026-04-13T02:25:32.433155",
     "failure_count": 0,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
@@ -841,7 +841,7 @@
   },
   "ISSUE-JOB001": {
     "issue_id": "ISSUE-JOB001",
-    "status": "pending",
+    "status": "stuck",
     "title": "\u6c42\u804c\u8005\u753b\u50cf\u4e0e\u7b80\u5386",
     "prerequisites": [
       "ISSUE-C006",
@@ -852,18 +852,18 @@
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T22:30:30.336864",
-    "failure_count": 0,
+    "last_update": "2026-04-13T02:29:38.991658",
+    "failure_count": 1,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
     "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-JOB001",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "implement_failed",
+    "stuck_at": "2026-04-12T18:29:38.990281+00:00"
   },
   "ISSUE-C007": {
     "issue_id": "ISSUE-C007",
-    "status": "pending",
+    "status": "need-help",
     "title": "Agent\u4fe1\u606f\u62ab\u9732\u63a7\u5236\u673a\u5236",
     "prerequisites": [
       "ISSUE-C002c",
@@ -874,14 +874,14 @@
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T22:30:17.167572",
-    "failure_count": 0,
+    "last_update": "2026-04-13T02:25:32.274960",
+    "failure_count": 1,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
     "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-C007",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "implement_failed",
+    "stuck_at": "2026-04-12T18:17:17.418621+00:00"
   },
   "ISSUE-AI002b": {
     "issue_id": "ISSUE-AI002b",
@@ -906,18 +906,18 @@
   },
   "ISSUE-VS001": {
     "issue_id": "ISSUE-VS001",
-    "status": "pending",
+    "status": "implementing",
     "title": "VisionShare\u9700\u6c42\u53d1\u5e03",
     "prerequisites": [
       "ISSUE-C006",
       "ISSUE-AI002"
     ],
     "sub_issues": [],
-    "current_task": null,
+    "current_task": "TASK-1776018391-8265",
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T22:30:30.606463",
+    "last_update": "2026-04-13T02:26:31.271190",
     "failure_count": 0,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
@@ -928,18 +928,18 @@
   },
   "ISSUE-VS006": {
     "issue_id": "ISSUE-VS006",
-    "status": "pending",
+    "status": "implementing",
     "title": "AI\u76f8\u518c\u667a\u80fd\u68c0\u7d22\u4e0e\u5386\u53f2\u67e5\u8be2",
     "prerequisites": [
       "ISSUE-VS002",
       "ISSUE-AI005"
     ],
     "sub_issues": [],
-    "current_task": null,
+    "current_task": "TASK-1776018579-6560",
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T22:30:30.945160",
+    "last_update": "2026-04-13T02:29:39.119976",
     "failure_count": 0,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
@@ -1012,7 +1012,7 @@
   },
   "ISSUE-COM002b": {
     "issue_id": "ISSUE-COM002b",
-    "status": "pending",
+    "status": "need-help",
     "title": "\u6d88\u606f\u6301\u4e45\u5316\u4e0e\u5386\u53f2\u8bb0\u5f55",
     "prerequisites": [
       "ISSUE-COM002a"
@@ -1022,14 +1022,14 @@
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T22:30:17.482096",
-    "failure_count": 0,
+    "last_update": "2026-04-13T02:25:46.629283",
+    "failure_count": 1,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
     "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM002b",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "implement_failed",
+    "stuck_at": "2026-04-12T18:18:00.394987+00:00"
   },
   "ISSUE-AD004": {
     "issue_id": "ISSUE-AD004",
@@ -1288,7 +1288,7 @@
   },
   "ISSUE-COM002c": {
     "issue_id": "ISSUE-COM002c",
-    "status": "stuck",
+    "status": "need-help",
     "title": "\u7fa4\u804a\u72b6\u6001\u540c\u6b65\u4e0e\u5728\u7ebf\u72b6\u6001",
     "prerequisites": [
       "ISSUE-COM002b"
@@ -1298,7 +1298,7 @@
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-13T00:24:22.237359",
+    "last_update": "2026-04-13T02:15:51.572573",
     "failure_count": 1,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
@@ -1430,11 +1430,11 @@
       "ISSUE-AI004"
     ],
     "sub_issues": [],
-    "current_task": "TASK-1776009450-2623",
+    "current_task": null,
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T23:57:30.218336",
+    "last_update": "2026-04-13T02:25:18.089496",
     "failure_count": 0,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
@@ -1693,11 +1693,11 @@
       "ISSUE-M002"
     ],
     "sub_issues": [],
-    "current_task": "TASK-1776009450-5210",
+    "current_task": null,
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T23:57:30.337926",
+    "last_update": "2026-04-13T02:25:18.116653",
     "failure_count": 0,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
@@ -1931,7 +1931,7 @@
   },
   "ISSUE-UI004b": {
     "issue_id": "ISSUE-UI004b",
-    "status": "pending",
+    "status": "need-help",
     "title": "Agent/\u4eba\u7c7b\u7528\u6237\u72b6\u6001\u6307\u793a\u5668",
     "prerequisites": [
       "ISSUE-UI002",
@@ -1942,14 +1942,14 @@
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T22:30:17.759568",
-    "failure_count": 0,
+    "last_update": "2026-04-13T02:26:31.135183",
+    "failure_count": 1,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,
     "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-UI004b",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "implement_failed",
+    "stuck_at": "2026-04-12T18:21:03.861425+00:00"
   },
   "ISSUE-F002": {
     "issue_id": "ISSUE-F002",

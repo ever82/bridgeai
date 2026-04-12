@@ -81,9 +81,9 @@ flowchart TD
     subgraph Comm["💬 通信层 - Communication"]
         COM001a[✂️ ISSUE-COM001a<br/>Socket.io基础设施搭建]
         COM001b[✂️ ISSUE-COM001b<br/>连接管理与房间系统]
-        COM002a[❌ ISSUE-COM002a<br/>聊天房间基础架构]
+        COM002a[🆘 ISSUE-COM002a<br/>聊天房间基础架构]
         COM002b[🆘 ISSUE-COM002b<br/>消息持久化与历史记录]
-        COM002c[❌ ISSUE-COM002c<br/>群聊状态同步与在线状态]
+        COM002c[🆘 ISSUE-COM002c<br/>群聊状态同步与在线状态]
         COM003[🔵 ISSUE-COM003<br/>人机切换机制]
         COM004[🔵 ISSUE-COM004<br/>Agent通信协议定义]
         COM005[🔵 ISSUE-COM005<br/>私聊建议系统]
@@ -105,13 +105,13 @@ flowchart TD
     end
 
     subgraph VS["📷 VisionShare场景"]
-        VS001[🆘 ISSUE-VS001<br/>VisionShare需求发布]
+        VS001[🔵 ISSUE-VS001<br/>VisionShare需求发布]
         VS002[🆘 ISSUE-VS002<br/>附近任务查询与接单]
         VS003[🆘 ISSUE-VS003<br/>相机拍照与上传]
         VS004[🆘 ISSUE-VS004<br/>AI隐私脱敏处理]
         VS005[🆘 ISSUE-VS005<br/>照片查看与积分支付]
-        VS006[🆘 ISSUE-VS006<br/>AI相册智能检索与历史查询]
-        VS007[🆘 ISSUE-VS007<br/>本地相册AI智能检索]
+        VS006[🔵 ISSUE-VS006<br/>AI相册智能检索与历史查询]
+        VS007[🔵 ISSUE-VS007<br/>本地相册AI智能检索]
     end
 
     subgraph Date["💕 AgentDate场景"]
@@ -122,14 +122,14 @@ flowchart TD
     end
 
     subgraph Job["💼 AgentJob场景"]
-        JOB001[🆘 ISSUE-JOB001<br/>求职者画像与简历]
+        JOB001[❌ ISSUE-JOB001<br/>求职者画像与简历]
         JOB002[🆘 ISSUE-JOB002<br/>招聘方职位发布]
         JOB003[🆘 ISSUE-JOB003<br/>简历智能匹配筛选]
         JOB004[🆘 ISSUE-JOB004<br/>薪资协商与面试安排]
     end
 
     subgraph Ad["🛒 AgentAd场景"]
-        AD001[🆘 ISSUE-AD001<br/>消费需求画像配置]
+        AD001[🔵 ISSUE-AD001<br/>消费需求画像配置]
         AD002[🆘 ISSUE-AD002<br/>商家优惠配置]
         AD003[🆘 ISSUE-AD003<br/>Agent优惠协商谈判]
         AD004[🆘 ISSUE-AD004<br/>一键购买与优惠码]

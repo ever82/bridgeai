@@ -2,7 +2,7 @@ id: ISSUE-COM002b
 issue_number: 504
 title: 消息持久化与历史记录
 slug: message-persistence
-status: implemented
+status: need-help
 description: |
   实现消息的持久化存储、历史记录查询、
   消息同步和离线消息处理。

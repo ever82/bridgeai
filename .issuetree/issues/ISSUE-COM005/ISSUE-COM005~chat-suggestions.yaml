@@ -89,7 +89,7 @@ status: implementing
       - apps/mobile/src/screens/Settings/SuggestionSettings.tsx
       prompt: "\u68C0\u67E5\u504F\u597D\u8BBE\u7F6E\uFF0C\u9A8C\u8BC1\u6709 SuggestionSettings\
         \ \u7EC4\u4EF6"
-current_task: TASK-1776011062-6498
+current_task: null
 description: "\u5B9E\u73B0\u79C1\u804A\u5EFA\u8BAE\u7CFB\u7EDF\uFF0CAI \u6839\u636E\
   \u5BF9\u8BDD\u4E0A\u4E0B\u6587\u4E3A\u7528\u6237\u63D0\u4F9B\n\u56DE\u590D\u5EFA\
   \u8BAE\uFF0C\u5E2E\u52A9\u7528\u6237\u66F4\u597D\u5730\u6C9F\u901A\u3002\n"
