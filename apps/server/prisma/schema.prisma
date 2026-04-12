@@ -81,6 +81,7 @@ model Agent {
   demands     Demand[]
   supplies    Supply[]
   profiles    AgentProfile[]
+  datingProfile DatingProfile?
 
   @@index([userId])
   @@index([type])
@@ -843,4 +844,60 @@ model SceneTemplate {
   @@index([isPublic, usageCount])
   @@index([userId, sceneId, isDefault])
   @@map("scene_templates")
+}
+
+// ============================================
+// Dating Profile - 交友画像 (AgentDate)
+// ============================================
+
+model DatingProfile {
+  id            String    @id @default(uuid())
+  agentId       String    @unique @map("agent_id")
+  userId        String    @map("user_id")
+
+  // Basic conditions (基础条件)
+  basicConditions Json?   @map("basic_conditions")
+
+  // Personality preferences (性格偏好)
+  personality   Json?     // MBTI, traits
+
+  // Interests (兴趣爱好)
+  interests     Json?
+
+  // Lifestyle (生活方式)
+  lifestyle     Json?     // Sleep, smoking, drinking, pets, etc.
+
+  // Relationship expectations (关系期望)
+  expectations  Json?
+
+  // Natural language description
+  description   String?   @db.Text
+
+  // AI extracted data
+  aiExtractedData       Json?   @map("ai_extracted_data")
+  aiExtractionConfidence Float? @map("ai_extraction_confidence")
+
+  // Privacy settings (隐私设置)
+  privacySettings Json    @map("privacy_settings")
+
+  // Quality metrics
+  completenessScore Float? @map("completeness_score")
+  qualityScore      Float? @map("quality_score")
+
+  // Status
+  isActive      Boolean   @default(true) @map("is_active")
+  isComplete    Boolean   @default(false) @map("is_complete")
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  agent         Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@index([userId])
+  @@index([isActive])
+  @@index([qualityScore])
+  @@index([completenessScore])
+  @@map("dating_profiles")
 }
