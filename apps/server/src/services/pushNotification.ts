@@ -125,7 +125,7 @@ export class PushNotificationService {
           if (delivery) {
             result.deliveryIds.push(delivery.id);
           }
-        } catch (error) {
+        } catch (error: any) {
           result.errors.push(`Channel ${channel} failed: ${error.message}`);
         }
       }
@@ -138,7 +138,7 @@ export class PushNotificationService {
 
       result.success = result.errors.length === 0 || result.deliveryIds.length > 0;
       return result;
-    } catch (error) {
+    } catch (error: any) {
       result.errors.push(`Send failed: ${error.message}`);
       return result;
     }
@@ -321,7 +321,7 @@ export class PushNotificationService {
     }
 
     // 构建 Expo 推送消息
-    const messages: ExpoPushMessage[] = tokens.map(token => ({
+    const messages: ExpoPushMessage[] = tokens.map((token: any) => ({
       to: token.token,
       sound: 'default',
       title: notification.title,

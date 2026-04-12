@@ -261,7 +261,7 @@ export class EmailService {
         success: true,
         queueId: queue.id,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         error: error.message,
@@ -284,7 +284,7 @@ export class EmailService {
       await this.processEmail(queueResult.queueId!);
 
       return queueResult;
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         error: error.message,

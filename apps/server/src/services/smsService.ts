@@ -155,7 +155,7 @@ export class SMSService {
         queueId: queue.id,
         segments,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         error: error.message,
@@ -178,7 +178,7 @@ export class SMSService {
       await this.processSMS(queueResult.queueId!);
 
       return queueResult;
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         error: error.message,

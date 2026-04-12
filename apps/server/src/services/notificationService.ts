@@ -406,7 +406,7 @@ export class NotificationService {
       _count: { type: true },
     });
 
-    return result.reduce((acc, item) => {
+    return result.reduce((acc: Record<string, number>, item: any) => {
       acc[item.type] = item._count.type;
       return acc;
     }, {} as Record<string, number>);
@@ -422,7 +422,7 @@ export class NotificationService {
       _count: { category: true },
     });
 
-    return result.reduce((acc, item) => {
+    return result.reduce((acc: Record<string, number>, item: any) => {
       acc[item.category || 'other'] = item._count.category;
       return acc;
     }, {} as Record<string, number>);
