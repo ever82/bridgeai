@@ -75,3 +75,22 @@ export {
   ClarificationRequest,
   ClarificationResponse,
 } from './clarificationService';
+
+// Agent Negotiation Service (ISSUE-AD003)
+export {
+  AgentNegotiationService,
+  agentNegotiationService,
+  NegotiationRoom,
+  NegotiationMessage,
+  NegotiationContext,
+  NegotiationConfig,
+  AgentInfo,
+  AgentType,
+  ConsumerProfile,
+  MerchantProfile,
+  MerchantOffer,
+  ComparisonResult,
+  ComparedOffer,
+  RecommendationResult,
+  FollowUpQuestion,
+} from './agentNegotiationService';

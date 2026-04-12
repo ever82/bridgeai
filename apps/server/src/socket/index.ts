@@ -15,6 +15,7 @@ import { pubClient, subClient } from './adapter';
 import { registerUserHandlers } from './handlers/user';
 import { registerChatHandlers } from './handlers/chat';
 import { registerSystemHandlers } from './handlers/system';
+import { registerAgentNegotiationHandlers } from './handlers/agentNegotiation';
 
 /**
  * Socket.io server instance
@@ -97,6 +98,13 @@ function setupNamespaces(io: SocketServer): void {
   systemNsp.on('connection', (socket) => {
     handleConnection(socket, 'system');
     registerSystemHandlers(socket, systemNsp);
+  });
+
+  // Negotiation namespace for Agent negotiation (AD003)
+  const negotiationNsp = io.of('/negotiation');
+  negotiationNsp.on('connection', (socket) => {
+    handleConnection(socket, 'negotiation');
+    registerAgentNegotiationHandlers(socket, negotiationNsp);
   });
 }
 

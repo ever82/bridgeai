@@ -11,11 +11,15 @@ import { validateRequest } from '../middleware/validation';
 import { z } from 'zod';
 import logger from '../utils/logger';
 import extractionRoutes from './ai/extraction';
+import negotiationRoutes from './ai/negotiation';
 
 const router = Router();
 
 // Mount extraction routes
 router.use('/extract', extractionRoutes);
+
+// Mount negotiation routes (AD003)
+router.use('/negotiation', negotiationRoutes);
 
 // 初始化LLM服务
 const llmService = new LLMService({

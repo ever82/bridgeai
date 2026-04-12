@@ -2,7 +2,7 @@ id: ISSUE-AD003
 issue_number: 1003
 title: Agent优惠协商谈判
 slug: agent-negotiation
-status: pending
+status: implemented
 description: |
   AgentAd场景的核心协商谈判模块。消费者Agent与多个匹配的商家Agent进行群聊，
   基于各自的需求画像和优惠方案进行自动化谈判协商。利用AI002(需求提炼)、
