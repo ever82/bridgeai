@@ -3,7 +3,7 @@ id: "ISSUE-COM002a"
 issue_number: 503
 title: "聊天房间基础架构"
 slug: "chat-room"
-status: "pending"
+status: "implemented"
 description: |
   实现聊天房间基础架构，支持多人群聊、私聊、
   房间类型管理和参与者管理。
@@ -20,7 +20,7 @@ criteria:
       - 房间类型: private, group
       - 房间元数据
       - 房间设置
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: required
@@ -41,7 +41,7 @@ criteria:
       - 创建群聊房间
       - 房间创建验证
       - 初始化房间设置
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: required
@@ -62,7 +62,7 @@ criteria:
       - 移除参与者
       - 参与者角色
       - 参与者权限
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: required
@@ -83,7 +83,7 @@ criteria:
       - 房间搜索
       - 房间排序
       - 房间筛选
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: required
@@ -104,7 +104,7 @@ criteria:
       - 最后消息预览
       - 未读数显示
       - 房间头像
-    status: "pending"
+    status: "completed"
     coverage:
       unit: not_needed
       integration: required

@@ -1,0 +1,56 @@
+id: TASK-1
+issue_id: ISSUE-COM002a
+title: 实现聊天房间基础架构
+acceptance_criteria:
+  - id: ISSUE-COM002a~c1
+    name: 聊天房间模型
+    status: completed
+  - id: ISSUE-COM002a~c2
+    name: 房间创建 API
+    status: completed
+  - id: ISSUE-COM002a~c3
+    name: 参与者管理
+    status: completed
+  - id: ISSUE-COM002a~c4
+    name: 房间列表和查询
+    status: completed
+  - id: ISSUE-COM002a~c5
+    name: 移动端房间列表界面
+    status: completed
+created_at: '2026-04-13'
+started_at: '2026-04-13'
+completed_at: '2026-04-13'
+file_changes:
+  - action: modify
+    path: apps/server/prisma/schema.prisma
+    description: Add RoomParticipant model and enhance ChatRoom model with settings
+  - action: create
+    path: apps/server/src/services/chat/roomService.ts
+    description: Chat room service for CRUD operations
+  - action: create
+    path: apps/server/src/services/chat/participantService.ts
+    description: Participant management service
+  - action: create
+    path: apps/server/src/routes/v1/chat.ts
+    description: Chat room API routes
+  - action: modify
+    path: apps/server/src/routes/v1/index.ts
+    description: Register chat routes
+  - action: create
+    path: apps/server/src/services/chat/__tests__/roomService.test.ts
+    description: Unit tests for room service
+  - action: create
+    path: apps/server/src/services/chat/__tests__/participantService.test.ts
+    description: Unit tests for participant service
+  - action: create
+    path: apps/server/src/routes/v1/__tests__/chat.test.ts
+    description: Integration tests for chat routes
+  - action: create
+    path: apps/mobile/src/components/Chat/ChatRoomList.tsx
+    description: Mobile chat room list component
+  - action: create
+    path: apps/mobile/src/components/Chat/index.ts
+    description: Chat components index
+  - action: create
+    path: apps/mobile/src/services/chatApi.ts
+    description: Chat API client service

@@ -48,6 +48,7 @@ model User {
   blockedBy     BlockedUser[] @relation("BlockedByUser")
   roles         UserRole[]  // RBAC roles
   pointsAccount PointsAccount?
+  roomParticipants RoomParticipant[] // 聊天室参与者
 
   @@map("users")
 }
@@ -355,7 +356,10 @@ model ChatRoom {
   type          ChatRoomType  @default(QUAD)
   status        ChatRoomStatus @default(ACTIVE)
   participantIds String[]     @map("participant_ids")  // 存储 userIds
-  metadata      Json?
+  metadata      Json?         // 房间元数据
+  settings      Json?         @map("settings") // 房间设置
+  unreadCount   Json?         @map("unread_count") // 用户未读数 {userId: count}
+  lastMessage   Json?         @map("last_message") // 最后消息预览
   lastMessageAt DateTime?     @map("last_message_at")
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
@@ -364,11 +368,13 @@ model ChatRoom {
   scene         Scene?        @relation(fields: [sceneId], references: [id])
   messages      ChatMessage[]
   connections   Connection[]
+  participants  RoomParticipant[]
 
   @@index([sceneId])
   @@index([matchId])
   @@index([lastMessageAt])
   @@index([status])
+  @@index([type])
   @@map("chat_rooms")
 }
 
@@ -382,6 +388,39 @@ enum ChatRoomStatus {
   ACTIVE     @map("active")
   INACTIVE   @map("inactive")
   CLOSED     @map("closed")
+}
+
+// 房间参与者模型
+model RoomParticipant {
+  id          String          @id @default(uuid())
+  roomId      String          @map("room_id")
+  userId      String          @map("user_id")
+  role        ParticipantRole @default(MEMBER)
+  permissions Json?           // 自定义权限
+  joinedAt    DateTime        @default(now()) @map("joined_at")
+  leftAt      DateTime?       @map("left_at")
+  isActive    Boolean         @default(true) @map("is_active")
+  lastReadAt  DateTime?       @map("last_read_at")
+  unreadCount Int             @default(0) @map("unread_count")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  room        ChatRoom        @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@index([roomId])
+  @@index([userId])
+  @@index([isActive])
+  @@map("room_participants")
+}
+
+enum ParticipantRole {
+  OWNER      @map("owner")      // 房主
+  ADMIN      @map("admin")      // 管理员
+  MEMBER     @map("member")     // 普通成员
+  GUEST      @map("guest")      // 访客
 }
 
 model ChatMessage {

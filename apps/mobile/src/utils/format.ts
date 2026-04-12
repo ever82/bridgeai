@@ -37,6 +37,13 @@ export function formatRelativeDate(date: string | Date): string {
 }
 
 /**
+ * Format date relative to now (alias for formatRelativeDate)
+ */
+export function formatDistanceToNow(date: string | Date): string {
+  return formatRelativeDate(date);
+}
+
+/**
  * Truncate text with ellipsis
  */
 export function truncateText(text: string, maxLength: number): string {
