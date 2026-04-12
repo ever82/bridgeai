@@ -37,6 +37,7 @@ model User {
   // Relations
   agents        Agent[]
   sentMessages  Message[] @relation("SentMessages")
+  readReceipts  ReadReceipt[]
   ratingsGiven  Rating[]  @relation("Rater")
   ratingsReceived Rating[] @relation("Ratee")
   creditRecords CreditRecord[]
@@ -231,22 +232,65 @@ model Message {
   senderId        String        @map("sender_id")
   content         String    /// @encrypted - Message content encryption
   type            MessageType   @default(TEXT)
+  status          MessageStatus @default(SENT) @map("status")
   attachments     Json?
+  metadata        Json?         @map("metadata")
+  sequenceId      BigInt        @default(autoincrement()) @map("sequence_id")
+  editedAt        DateTime?     @map("edited_at")
   createdAt       DateTime      @default(now()) @map("created_at")
 
   // Relations
   conversation    Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender          User          @relation("SentMessages", fields: [senderId], references: [id])
+  readReceipts    ReadReceipt[]
 
   @@index([conversationId])
   @@index([createdAt])
+  @@index([sequenceId])
+  @@index([conversationId, sequenceId])
   @@map("messages")
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+model ReadReceipt {
+  id          String   @id @default(uuid())
+  messageId   String   @map("message_id")
+  userId      String   @map("user_id")
+  readAt      DateTime @default(now()) @map("read_at")
+
+  // Relations
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("read_receipts")
+}
+
+model OfflineMessage {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  messageId     String   @map("message_id")
+  conversationId String  @map("conversation_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  deliveredAt   DateTime? @map("delivered_at")
+
+  @@index([userId])
+  @@index([userId, deliveredAt])
+  @@map("offline_messages")
 }
 
 enum MessageType {
   TEXT
   IMAGE
   FILE
+  SYSTEM
 }
 
 // ============================================
