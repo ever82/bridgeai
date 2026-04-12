@@ -1,0 +1,35 @@
+# Implementation Task: Implement Agent communication protocol
+
+**Issue:** ISSUE-COM004
+**Task:** TASK-1
+
+## Description
+
+Implement the Agent communication protocol including:
+1. AgentMessage type definition and protocol specs
+2. AgentIdentity component for identity display
+3. CreditBadge component for credit score display
+4. AgentBehaviorRules service for behavior constraints
+5. AGENT_PROTOCOL.md documentation
+
+
+## Files to Modify
+
+- (To be determined based on implementation)
+
+## Instructions
+
+1. Implement the features described above
+2. Make focused, incremental changes
+3. Test your changes as you go
+4. Commit your work when complete
+
+## Completion
+
+When you have completed the implementation:
+1. Run: `echo '{"status": "completed"}' > .issuetree/tmp/TASK-1-result.json`
+2. Exit the session
+
+---
+
+Start implementing now.
