@@ -7,8 +7,8 @@ import agentRoutes from '../agents';
 import agentProfileRoutes from '../agentProfile';
 import locationRoutes from '../locationRoutes';
 import aiExtractionRoutes from '../ai/extraction';
-import chatRoutes from './chat';
-import visionSharePublishRoutes from '../visionShare/publish';
+import notificationRoutes from '../notifications';
+import notificationPreferenceRoutes from '../notificationPreferences';
 
 const router: Router = Router();
 
@@ -21,13 +21,12 @@ router.use('/agents', agentRoutes);
 router.use('/agents', agentProfileRoutes);
 router.use('/location', locationRoutes);
 router.use('/ai', aiExtractionRoutes);
-router.use('/chat', chatRoutes);
-
-// VisionShare Routes (ISSUE-VS001)
-router.use('/visionshare', visionSharePublishRoutes);
+router.use('/notifications', notificationRoutes);
+router.use('/notification-preferences', notificationPreferenceRoutes);
 
 // Placeholder for future routes
 // router.use('/auth', authRoutes);
+// router.use('/chats', chatRoutes);
 // router.use('/matches', matchRoutes);
 
 export default router;
