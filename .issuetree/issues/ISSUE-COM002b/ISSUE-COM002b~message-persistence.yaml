@@ -29,7 +29,7 @@ criteria:
     \u8BA4\n"
   id: ISSUE-COM002b~c2
   name: "\u6D88\u606F\u53D1\u9001\u548C\u5B58\u50A8"
-  status: pending
+status: implementing
   verification:
     ai:
       context_files:
@@ -130,7 +130,7 @@ criteria:
   id: ISSUE-COM002b~c8
   name: "\u6027\u80FD\u57FA\u51C6"
   status: pending
-current_task: null
+current_task: TASK-1776013604-7398
 description: "\u5B9E\u73B0\u6D88\u606F\u7684\u6301\u4E45\u5316\u5B58\u50A8\u3001\u5386\
   \u53F2\u8BB0\u5F55\u67E5\u8BE2\u3001\n\u6D88\u606F\u540C\u6B65\u548C\u79BB\u7EBF\
   \u6D88\u606F\u5904\u7406\u3002\n"
