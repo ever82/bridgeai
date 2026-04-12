@@ -8,6 +8,9 @@ import { buildPrismaQuery, validateFilterDSL } from '../utils/queryBuilder';
 import { FilterDSL } from '@visionshare/shared';
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
+import { smartFilter, filterAndSort, FilterCriteria } from '../services/smartFilter';
+import { SortingStrategy } from '../utils/sorting';
+import { getRecommendationsForUser } from '../services/recommendation';
 
 const router: Router = Router();
 
@@ -307,6 +310,175 @@ router.delete(
     await agentService.deleteAgent(id, req.user.id);
 
     res.json(ApiResponse.success(null, 'Agent deleted successfully'));
+  })
+);
+
+/**
+ * @route GET /api/v1/agents/search
+ * @desc Search agents with smart filtering and sorting
+ * @access Private
+ */
+router.get(
+  '/search',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const {
+      skills,
+      minRating,
+      maxHourlyRate,
+      availability,
+      location,
+      language,
+      experienceYears,
+      verified,
+      sortBy = 'relevance',
+      sortOrder = 'desc',
+      page = '1',
+      limit = '20',
+    } = req.query;
+
+    // Build filter criteria
+    const criteria: FilterCriteria = {
+      skills: skills ? (skills as string).split(',') : undefined,
+      minRating: minRating ? parseFloat(minRating as string) : undefined,
+      maxHourlyRate: maxHourlyRate ? parseFloat(maxHourlyRate as string) : undefined,
+      availability: availability !== undefined ? availability === 'true' : undefined,
+      location: location as string | undefined,
+      language: language ? (language as string).split(',') : undefined,
+      experienceYears: experienceYears ? parseInt(experienceYears as string, 10) : undefined,
+      verified: verified !== undefined ? verified === 'true' : undefined,
+    };
+
+    // Fetch all agents (in production, this would be paginated at DB level)
+    const agents = await prisma.agent.findMany({
+      include: {
+        profile: true,
+      },
+    });
+
+    // Apply smart filtering and sorting
+    const results = filterAndSort(
+      agents as any,
+      criteria,
+      sortBy as SortingStrategy,
+      sortOrder as 'asc' | 'desc'
+    );
+
+    // Paginate results
+    const pageNum = parseInt(page as string, 10);
+    const limitNum = parseInt(limit as string, 10);
+    const skip = (pageNum - 1) * limitNum;
+    const paginatedResults = results.slice(skip, skip + limitNum);
+
+    res.json(ApiResponse.success({
+      agents: paginatedResults.map(r => ({
+        ...r.agent,
+        matchScore: r.score,
+        matchDetails: r.matchDetails,
+      })),
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: results.length,
+        totalPages: Math.ceil(results.length / limitNum),
+        hasMore: skip + limitNum < results.length,
+      },
+      filters: {
+        applied: criteria,
+        sortBy,
+        sortOrder,
+      },
+    }));
+  })
+);
+
+/**
+ * @route GET /api/v1/agents/sort-options
+ * @desc Get available sorting options
+ * @access Private
+ */
+router.get(
+  '/sort-options',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const options = [
+      { value: 'relevance', label: 'Best Match', description: 'Most relevant to your search' },
+      { value: 'rating', label: 'Highest Rated', description: 'By customer rating' },
+      { value: 'price', label: 'Price', description: 'Lowest to highest hourly rate' },
+      { value: 'experience', label: 'Experience', description: 'Years of experience' },
+      { value: 'activity', label: 'Recently Active', description: 'Most recent activity' },
+      { value: 'credit', label: 'Credit Score', description: 'Platform credit score' },
+      { value: 'composite', label: 'Overall Score', description: 'Combined ranking' },
+    ];
+
+    res.json(ApiResponse.success({ options }));
+  })
+);
+
+/**
+ * @route GET /api/v1/agents/recommended
+ * @desc Get personalized agent recommendations
+ * @access Private
+ */
+router.get(
+  '/recommended',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+
+    const agents = await prisma.agent.findMany({
+      include: {
+        profile: true,
+      },
+    });
+
+    const recommendations = await getRecommendationsForUser(
+      req.user.id,
+      agents as any
+    );
+
+    const skip = (page - 1) * limit;
+    const paginated = recommendations.slice(skip, skip + limit);
+
+    res.json(ApiResponse.success({
+      agents: paginated,
+      pagination: {
+        page,
+        limit,
+        total: recommendations.length,
+        totalPages: Math.ceil(recommendations.length / limit),
+      },
+      explanation: 'Based on your preferences and past interactions',
+    }));
+  })
+);
+
+/**
+ * @route GET /api/v1/agents/filter-suggestions
+ * @desc Get popular filter suggestions
+ * @access Private
+ */
+router.get(
+  '/filter-suggestions',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const suggestions = [
+      { label: 'Top Rated', criteria: { minRating: 4.5, verified: true } },
+      { label: 'Available Now', criteria: { availability: true, minRating: 4.0 } },
+      { label: 'Best Value', criteria: { verified: true, maxHourlyRate: 50 } },
+      { label: 'Expert Level', criteria: { experienceYears: 5, verified: true } },
+    ];
+
+    res.json(ApiResponse.success({ suggestions }));
   })
 );
 
