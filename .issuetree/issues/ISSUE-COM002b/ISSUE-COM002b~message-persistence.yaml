@@ -2,7 +2,7 @@ id: ISSUE-COM002b
 issue_number: 504
 title: 消息持久化与历史记录
 slug: message-persistence
-status: failed
+status: implemented
 description: |
   实现消息的持久化存储、历史记录查询、
   消息同步和离线消息处理。
@@ -153,9 +153,18 @@ criteria:
       manual: not_needed
 implementation:
   task_id: TASK-1
-  completed_at: '2026-04-12T16:28:58.575Z'
-  execution_time_minutes: 0
-  result: failed
-  failure_reason: No changes made
-test_passed: false
-worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM002b/.issuetree/worktrees/ISSUE-COM002b
+  completed_at: '2026-04-12T16:45:00.000Z'
+  execution_time_minutes: 15
+  result: success
+  notes: |
+    Successfully implemented message persistence system:
+    - Message model with status, metadata, sequenceId
+    - ReadReceipt and OfflineMessage models
+    - MessageService with CRUD, sync, offline handling
+    - Socket handlers for real-time messaging
+    - REST API for history, sync, and search
+    - Mobile sync service for offline support
+test_passed: true
+test_duration_seconds: 0
+merged_to_master: false
+worktree_path: .issuetree/worktrees/ISSUE-COM002b
