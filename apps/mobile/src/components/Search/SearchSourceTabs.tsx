@@ -1,27 +1,35 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
 
-export type SearchSourceType = 'all' | 'local' | 'cloud';
+export type SearchSource = 'all' | 'local' | 'cloud';
+
+export interface SearchSourceOption {
+  source: SearchSource;
+  label: string;
+  icon?: string;
+  count?: number;
+}
 
 interface SearchSourceTabsProps {
-  activeSource: SearchSourceType;
-  onSourceChange: (source: SearchSourceType) => void;
+  activeSource: SearchSource;
+  onSourceChange: (source: SearchSource) => void;
   localCount?: number;
   cloudCount?: number;
   totalCount?: number;
+  showCounts?: boolean;
+  disabled?: boolean;
 }
 
-interface TabConfig {
-  key: SearchSourceType;
-  label: string;
-  icon: string;
-}
-
-const TABS: TabConfig[] = [
-  { key: 'all', label: 'All Photos', icon: 'photo-library' },
-  { key: 'local', label: 'Local', icon: 'phone-android' },
-  { key: 'cloud', label: 'Cloud', icon: 'cloud' },
+const SOURCE_OPTIONS: SearchSourceOption[] = [
+  { source: 'all', label: 'All' },
+  { source: 'local', label: 'Local' },
+  { source: 'cloud', label: 'Cloud' },
 ];
 
 export const SearchSourceTabs: React.FC<SearchSourceTabsProps> = ({
@@ -30,15 +38,19 @@ export const SearchSourceTabs: React.FC<SearchSourceTabsProps> = ({
   localCount,
   cloudCount,
   totalCount,
+  showCounts = true,
+  disabled = false,
 }) => {
-  const getCount = (key: SearchSourceType): number | undefined => {
-    switch (key) {
+  const getCountForSource = (source: SearchSource): number | undefined => {
+    if (!showCounts) return undefined;
+
+    switch (source) {
+      case 'all':
+        return totalCount;
       case 'local':
         return localCount;
       case 'cloud':
         return cloudCount;
-      case 'all':
-        return totalCount;
       default:
         return undefined;
     }
@@ -46,93 +58,148 @@ export const SearchSourceTabs: React.FC<SearchSourceTabsProps> = ({
 
   return (
     <View style={styles.container}>
-      {TABS.map((tab) => {
-        const isActive = activeSource === tab.key;
-        const count = getCount(tab.key);
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {SOURCE_OPTIONS.map((option) => {
+          const isActive = activeSource === option.source;
+          const count = getCountForSource(option.source);
 
-        return (
-          <TouchableOpacity
-            key={tab.key}
-            style={[styles.tab, isActive && styles.tabActive]}
-            onPress={() => onSourceChange(tab.key)}
-            activeOpacity={0.7}
-          >
-            <Icon
-              name={tab.icon}
-              size={18}
-              color={isActive ? '#007AFF' : '#666'}
+          return (
+            <TouchableOpacity
+              key={option.source}
+              style={[
+                styles.tab,
+                isActive && styles.activeTab,
+                disabled && styles.disabledTab,
+              ]}
+              onPress={() => !disabled && onSourceChange(option.source)}
+              activeOpacity={disabled ? 1 : 0.7}
+              accessibilityRole="button"
+              accessibilityState={{ selected: isActive, disabled }}
+              accessibilityLabel={`${option.label} search results`}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  isActive && styles.activeTabText,
+                  disabled && styles.disabledTabText,
+                ]}
+              >
+                {option.label}
+              </Text>
+              {count !== undefined && count > 0 && (
+                <View style={[styles.badge, isActive && styles.activeBadge]}>
+                  <Text
+                    style={[
+                      styles.badgeText,
+                      isActive && styles.activeBadgeText,
+                    ]}
+                  >
+                    {count > 99 ? '99+' : count}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* Source indicator */}
+      <View style={styles.indicatorContainer}>
+        {SOURCE_OPTIONS.map((option) => {
+          const isActive = activeSource === option.source;
+          return (
+            <View
+              key={`indicator-${option.source}`}
+              style={[
+                styles.indicator,
+                isActive && styles.activeIndicator,
+              ]}
             />
-            <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
-              {tab.label}
-            </Text>
-            {count !== undefined && count > 0 && (
-              <View style={styles.countBadge}>
-                <Text style={styles.countBadgeText}>
-                  {count > 99 ? '99+' : count}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        );
-      })}
+          );
+        })}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    backgroundColor: '#f8f9fa',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+  },
+  scrollContent: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#f8f8f8',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    gap: 8,
   },
   tab: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    marginHorizontal: 4,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#e9ecef',
+    marginRight: 8,
+    minHeight: 36,
   },
-  tabActive: {
-    backgroundColor: '#E3F2FD',
-    borderWidth: 1,
-    borderColor: '#007AFF',
+  activeTab: {
+    backgroundColor: '#007bff',
   },
-  tabLabel: {
-    fontSize: 13,
-    color: '#666',
-    marginLeft: 6,
-    fontWeight: '500',
+  disabledTab: {
+    opacity: 0.5,
   },
-  tabLabelActive: {
-    color: '#007AFF',
+  tabText: {
+    fontSize: 14,
     fontWeight: '600',
+    color: '#495057',
   },
-  countBadge: {
-    backgroundColor: '#FF3B30',
+  activeTabText: {
+    color: '#ffffff',
+  },
+  disabledTabText: {
+    color: '#adb5bd',
+  },
+  badge: {
+    backgroundColor: '#6c757d',
     borderRadius: 10,
-    minWidth: 18,
-    height: 18,
+    minWidth: 20,
+    height: 20,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 6,
-  },
-  countBadgeText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: 'bold',
     paddingHorizontal: 4,
+  },
+  activeBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  activeBadgeText: {
+    color: '#ffffff',
+  },
+  indicatorContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingBottom: 8,
+    gap: 4,
+  },
+  indicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#dee2e6',
+  },
+  activeIndicator: {
+    backgroundColor: '#007bff',
+    width: 18,
   },
 });
 
