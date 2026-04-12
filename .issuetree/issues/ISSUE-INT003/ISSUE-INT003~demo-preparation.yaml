@@ -1,147 +1,169 @@
----
-id: "ISSUE-INT003"
-issue_number: 1203
-title: "Demo演示准备"
-slug: "demo-preparation"
-status: "pending"
-description: |
-  准备产品演示环境和演示脚本，确保Demo流畅展示四大核心场景。
-  包括演示数据准备、演示脚本编写、演示环境部署、故障回退方案、
-  演示录制与文档准备。目标是能够在15分钟内完整展示VisionShare、
-  AgentDate、AgentJob、AgentAd四大场景的核心价值。
-prerequisites:
-  - "ISSUE-INT002"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-INT003~c1"
-    name: "演示环境部署与配置"
-    description: |
-      演示环境准备:
-      - 独立演示环境服务器部署(Demo环境)
-      - 演示环境数据库初始化与数据隔离
-      - 域名与SSL证书配置(demo.bridgeai.com)
-      - CDN加速与静态资源优化
-      - 演示环境监控与日志配置
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: not_needed
-      e2e: required
-      ai: sufficient
-      manual: required
-    verification:
-      ai:
-        prompt: "检查演示环境部署配置，验证有独立的Demo环境部署脚本，确认域名、SSL、CDN配置正确，检查监控和日志配置"
-        context_files: ["deploy/demo/", "infra/terraform/demo.tf", "deploy/demo/docker-compose.yml", "docs/DEMO_ENV_SETUP.md"]
-        
-
-  - id: "ISSUE-INT003~c2"
-    name: "演示数据准备与种子脚本"
-    description: |
-      演示数据准备:
-      - 演示用户账号数据(5个预设账号)
-      - VisionShare演示任务数据(10个示例任务)
-      - AgentDate演示用户画像数据
-      - AgentJob演示职位与简历数据
-      - AgentAd演示商家优惠与消费需求数据
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查演示数据准备实现，验证有演示数据种子脚本(seed scripts)，包含各场景的预设数据，确认数据脚本可重复执行"
-        context_files: ["apps/server/prisma/seeds/demo/", "apps/server/scripts/seed-demo.ts", "docs/DEMO_DATA.md"]
-        
-
-  - id: "ISSUE-INT003~c3"
-    name: "演示脚本与流程设计"
-    description: |
-      演示脚本编写:
-      - VisionShare场景演示脚本(3分钟)
-      - AgentDate场景演示脚本(4分钟)
-      - AgentJob场景演示脚本(4分钟)
-      - AgentAd场景演示脚本(4分钟)
-      - 演示流程时间控制与转场设计
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: required
-    verification:
-      ai:
-        prompt: "检查演示脚本文档，验证有完整的场景演示脚本，包含操作步骤、讲解词、时间控制，确认脚本逻辑清晰"
-        context_files: ["docs/demo-scripts/", "docs/DEMO_SCRIPT_VISIONSHARE.md", "docs/DEMO_SCRIPT_AGENTDATE.md", "docs/DEMO_SCRIPT_AGENTJOB.md", "docs/DEMO_SCRIPT_AGENTAD.md"]
-        
-
-  - id: "ISSUE-INT003~c4"
-    name: "演示故障回退与应急预案"
-    description: |
-      演示应急预案:
-      - 网络延迟/断网场景应对策略
-      - AI服务故障回退方案(预设回复)
-      - 演示数据重置脚本(快速恢复)
-      - 热备份演示环境配置
-      - 常见问题FAQ与应对方案
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: required
-    verification:
-      ai:
-        prompt: "检查演示应急预案文档，验证有故障应对策略、数据重置脚本、热备份方案，确认有FAQ文档"
-        context_files: ["docs/DEMO_CONTINGENCY_PLAN.md", "scripts/demo-reset.sh", "deploy/demo/backup.yml", "docs/DEMO_FAQ.md"]
-        
-
-  - id: "ISSUE-INT003~c5"
-    name: "演示视频录制与备份"
-    description: |
-      演示录制准备:
-      - 核心场景演示视频录制(带旁白)
-      - 移动端操作演示录屏
-      - Web端与移动端双屏演示方案
-      - 演示视频剪辑与字幕添加
-      - 备用演示视频离线存储
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: required
-    verification:
-      ai:
-        prompt: "检查演示录制资源，验证有演示视频文件，包含各场景录制，确认有备用离线演示方案"
-        context_files: ["docs/demo-videos/", "docs/DEMO_VIDEO_GUIDE.md", "assets/demo-recordings/"]
-        
-
-  - id: "ISSUE-INT003~c6"
-    name: "演示检查清单与Go-Live准备"
-    description: |
-      Demo Go-Live准备:
-      - 演示前检查清单(Pre-demo Checklist)
-      - 演示设备与环境测试
-      - 演示者培训与彩排记录
-      - 演示反馈收集表单
-      - 演示后数据清理与报告
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: required
-    verification:
-      ai:
-        prompt: "检查演示准备文档，验证有Pre-demo检查清单、设备测试记录、培训文档，确认有演示反馈收集机制"
-        context_files: ["docs/DEMO_CHECKLIST.md", "docs/DEMO_PREPARATION_LOG.md", "docs/DEMO_FEEDBACK_FORM.md", "docs/DEMO_REPORT_TEMPLATE.md"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: not_needed
+    manual: required
+    unit: not_needed
+  description: "\u6F14\u793A\u73AF\u5883\u51C6\u5907:\n- \u72EC\u7ACB\u6F14\u793A\u73AF\
+    \u5883\u670D\u52A1\u5668\u90E8\u7F72(Demo\u73AF\u5883)\n- \u6F14\u793A\u73AF\u5883\
+    \u6570\u636E\u5E93\u521D\u59CB\u5316\u4E0E\u6570\u636E\u9694\u79BB\n- \u57DF\u540D\
+    \u4E0ESSL\u8BC1\u4E66\u914D\u7F6E(demo.bridgeai.com)\n- CDN\u52A0\u901F\u4E0E\u9759\
+    \u6001\u8D44\u6E90\u4F18\u5316\n- \u6F14\u793A\u73AF\u5883\u76D1\u63A7\u4E0E\u65E5\
+    \u5FD7\u914D\u7F6E\n"
+  id: ISSUE-INT003~c1
+  name: "\u6F14\u793A\u73AF\u5883\u90E8\u7F72\u4E0E\u914D\u7F6E"
+  verification:
+    ai:
+      context_files:
+      - deploy/demo/
+      - infra/terraform/demo.tf
+      - deploy/demo/docker-compose.yml
+      - docs/DEMO_ENV_SETUP.md
+      prompt: "\u68C0\u67E5\u6F14\u793A\u73AF\u5883\u90E8\u7F72\u914D\u7F6E\uFF0C\u9A8C\
+        \u8BC1\u6709\u72EC\u7ACB\u7684Demo\u73AF\u5883\u90E8\u7F72\u811A\u672C\uFF0C\
+        \u786E\u8BA4\u57DF\u540D\u3001SSL\u3001CDN\u914D\u7F6E\u6B63\u786E\uFF0C\u68C0\
+        \u67E5\u76D1\u63A7\u548C\u65E5\u5FD7\u914D\u7F6E"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u6F14\u793A\u6570\u636E\u51C6\u5907:\n- \u6F14\u793A\u7528\u6237\u8D26\
+    \u53F7\u6570\u636E(5\u4E2A\u9884\u8BBE\u8D26\u53F7)\n- VisionShare\u6F14\u793A\
+    \u4EFB\u52A1\u6570\u636E(10\u4E2A\u793A\u4F8B\u4EFB\u52A1)\n- AgentDate\u6F14\u793A\
+    \u7528\u6237\u753B\u50CF\u6570\u636E\n- AgentJob\u6F14\u793A\u804C\u4F4D\u4E0E\
+    \u7B80\u5386\u6570\u636E\n- AgentAd\u6F14\u793A\u5546\u5BB6\u4F18\u60E0\u4E0E\u6D88\
+    \u8D39\u9700\u6C42\u6570\u636E\n"
+  id: ISSUE-INT003~c2
+  name: "\u6F14\u793A\u6570\u636E\u51C6\u5907\u4E0E\u79CD\u5B50\u811A\u672C"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/prisma/seeds/demo/
+      - apps/server/scripts/seed-demo.ts
+      - docs/DEMO_DATA.md
+      prompt: "\u68C0\u67E5\u6F14\u793A\u6570\u636E\u51C6\u5907\u5B9E\u73B0\uFF0C\u9A8C\
+        \u8BC1\u6709\u6F14\u793A\u6570\u636E\u79CD\u5B50\u811A\u672C(seed scripts)\uFF0C\
+        \u5305\u542B\u5404\u573A\u666F\u7684\u9884\u8BBE\u6570\u636E\uFF0C\u786E\u8BA4\
+        \u6570\u636E\u811A\u672C\u53EF\u91CD\u590D\u6267\u884C"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: required
+    unit: not_needed
+  description: "\u6F14\u793A\u811A\u672C\u7F16\u5199:\n- VisionShare\u573A\u666F\u6F14\
+    \u793A\u811A\u672C(3\u5206\u949F)\n- AgentDate\u573A\u666F\u6F14\u793A\u811A\u672C\
+    (4\u5206\u949F)\n- AgentJob\u573A\u666F\u6F14\u793A\u811A\u672C(4\u5206\u949F\
+    )\n- AgentAd\u573A\u666F\u6F14\u793A\u811A\u672C(4\u5206\u949F)\n- \u6F14\u793A\
+    \u6D41\u7A0B\u65F6\u95F4\u63A7\u5236\u4E0E\u8F6C\u573A\u8BBE\u8BA1\n"
+  id: ISSUE-INT003~c3
+  name: "\u6F14\u793A\u811A\u672C\u4E0E\u6D41\u7A0B\u8BBE\u8BA1"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - docs/demo-scripts/
+      - docs/DEMO_SCRIPT_VISIONSHARE.md
+      - docs/DEMO_SCRIPT_AGENTDATE.md
+      - docs/DEMO_SCRIPT_AGENTJOB.md
+      - docs/DEMO_SCRIPT_AGENTAD.md
+      prompt: "\u68C0\u67E5\u6F14\u793A\u811A\u672C\u6587\u6863\uFF0C\u9A8C\u8BC1\u6709\
+        \u5B8C\u6574\u7684\u573A\u666F\u6F14\u793A\u811A\u672C\uFF0C\u5305\u542B\u64CD\
+        \u4F5C\u6B65\u9AA4\u3001\u8BB2\u89E3\u8BCD\u3001\u65F6\u95F4\u63A7\u5236\uFF0C\
+        \u786E\u8BA4\u811A\u672C\u903B\u8F91\u6E05\u6670"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: required
+    unit: not_needed
+  description: "\u6F14\u793A\u5E94\u6025\u9884\u6848:\n- \u7F51\u7EDC\u5EF6\u8FDF\
+    /\u65AD\u7F51\u573A\u666F\u5E94\u5BF9\u7B56\u7565\n- AI\u670D\u52A1\u6545\u969C\
+    \u56DE\u9000\u65B9\u6848(\u9884\u8BBE\u56DE\u590D)\n- \u6F14\u793A\u6570\u636E\
+    \u91CD\u7F6E\u811A\u672C(\u5FEB\u901F\u6062\u590D)\n- \u70ED\u5907\u4EFD\u6F14\
+    \u793A\u73AF\u5883\u914D\u7F6E\n- \u5E38\u89C1\u95EE\u9898FAQ\u4E0E\u5E94\u5BF9\
+    \u65B9\u6848\n"
+  id: ISSUE-INT003~c4
+  name: "\u6F14\u793A\u6545\u969C\u56DE\u9000\u4E0E\u5E94\u6025\u9884\u6848"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - docs/DEMO_CONTINGENCY_PLAN.md
+      - scripts/demo-reset.sh
+      - deploy/demo/backup.yml
+      - docs/DEMO_FAQ.md
+      prompt: "\u68C0\u67E5\u6F14\u793A\u5E94\u6025\u9884\u6848\u6587\u6863\uFF0C\u9A8C\
+        \u8BC1\u6709\u6545\u969C\u5E94\u5BF9\u7B56\u7565\u3001\u6570\u636E\u91CD\u7F6E\
+        \u811A\u672C\u3001\u70ED\u5907\u4EFD\u65B9\u6848\uFF0C\u786E\u8BA4\u6709FAQ\u6587\
+        \u6863"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: required
+    unit: not_needed
+  description: "\u6F14\u793A\u5F55\u5236\u51C6\u5907:\n- \u6838\u5FC3\u573A\u666F\u6F14\
+    \u793A\u89C6\u9891\u5F55\u5236(\u5E26\u65C1\u767D)\n- \u79FB\u52A8\u7AEF\u64CD\
+    \u4F5C\u6F14\u793A\u5F55\u5C4F\n- Web\u7AEF\u4E0E\u79FB\u52A8\u7AEF\u53CC\u5C4F\
+    \u6F14\u793A\u65B9\u6848\n- \u6F14\u793A\u89C6\u9891\u526A\u8F91\u4E0E\u5B57\u5E55\
+    \u6DFB\u52A0\n- \u5907\u7528\u6F14\u793A\u89C6\u9891\u79BB\u7EBF\u5B58\u50A8\n"
+  id: ISSUE-INT003~c5
+  name: "\u6F14\u793A\u89C6\u9891\u5F55\u5236\u4E0E\u5907\u4EFD"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - docs/demo-videos/
+      - docs/DEMO_VIDEO_GUIDE.md
+      - assets/demo-recordings/
+      prompt: "\u68C0\u67E5\u6F14\u793A\u5F55\u5236\u8D44\u6E90\uFF0C\u9A8C\u8BC1\u6709\
+        \u6F14\u793A\u89C6\u9891\u6587\u4EF6\uFF0C\u5305\u542B\u5404\u573A\u666F\u5F55\
+        \u5236\uFF0C\u786E\u8BA4\u6709\u5907\u7528\u79BB\u7EBF\u6F14\u793A\u65B9\u6848"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: required
+    unit: not_needed
+  description: "Demo Go-Live\u51C6\u5907:\n- \u6F14\u793A\u524D\u68C0\u67E5\u6E05\u5355\
+    (Pre-demo Checklist)\n- \u6F14\u793A\u8BBE\u5907\u4E0E\u73AF\u5883\u6D4B\u8BD5\
+    \n- \u6F14\u793A\u8005\u57F9\u8BAD\u4E0E\u5F69\u6392\u8BB0\u5F55\n- \u6F14\u793A\
+    \u53CD\u9988\u6536\u96C6\u8868\u5355\n- \u6F14\u793A\u540E\u6570\u636E\u6E05\u7406\
+    \u4E0E\u62A5\u544A\n"
+  id: ISSUE-INT003~c6
+  name: "\u6F14\u793A\u68C0\u67E5\u6E05\u5355\u4E0EGo-Live\u51C6\u5907"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - docs/DEMO_CHECKLIST.md
+      - docs/DEMO_PREPARATION_LOG.md
+      - docs/DEMO_FEEDBACK_FORM.md
+      - docs/DEMO_REPORT_TEMPLATE.md
+      prompt: "\u68C0\u67E5\u6F14\u793A\u51C6\u5907\u6587\u6863\uFF0C\u9A8C\u8BC1\u6709\
+        Pre-demo\u68C0\u67E5\u6E05\u5355\u3001\u8BBE\u5907\u6D4B\u8BD5\u8BB0\u5F55\
+        \u3001\u57F9\u8BAD\u6587\u6863\uFF0C\u786E\u8BA4\u6709\u6F14\u793A\u53CD\u9988\
+        \u6536\u96C6\u673A\u5236"
+current_task: null
+description: "\u51C6\u5907\u4EA7\u54C1\u6F14\u793A\u73AF\u5883\u548C\u6F14\u793A\u811A\
+  \u672C\uFF0C\u786E\u4FDDDemo\u6D41\u7545\u5C55\u793A\u56DB\u5927\u6838\u5FC3\u573A\
+  \u666F\u3002\n\u5305\u62EC\u6F14\u793A\u6570\u636E\u51C6\u5907\u3001\u6F14\u793A\
+  \u811A\u672C\u7F16\u5199\u3001\u6F14\u793A\u73AF\u5883\u90E8\u7F72\u3001\u6545\u969C\
+  \u56DE\u9000\u65B9\u6848\u3001\n\u6F14\u793A\u5F55\u5236\u4E0E\u6587\u6863\u51C6\
+  \u5907\u3002\u76EE\u6807\u662F\u80FD\u591F\u572815\u5206\u949F\u5185\u5B8C\u6574\
+  \u5C55\u793AVisionShare\u3001\nAgentDate\u3001AgentJob\u3001AgentAd\u56DB\u5927\u573A\
+  \u666F\u7684\u6838\u5FC3\u4EF7\u503C\u3002\n"
+id: ISSUE-INT003
+issue_number: 1203
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-INT002
+slug: demo-preparation
+status: pending
+title: "Demo\u6F14\u793A\u51C6\u5907"

@@ -1,146 +1,154 @@
----
-id: "ISSUE-UI004b"
-issue_number: 1105
-title: "Agent/人类用户状态指示器"
-slug: "user-status-indicator"
-status: "pending"
-description: |
-  实现在聊天和列表中显示 Agent 和真人用户状态的指示器组件，
-  包括在线状态、输入状态、身份标识等，增强用户对对话对象的认知。
-prerequisites:
-  - "ISSUE-UI002"
-  - "ISSUE-UI004a"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-UI004b~c1"
-    name: "用户头像与状态指示"
-    description: |
-      实现带状态的头像组件:
-      - 用户头像显示（圆形/圆角矩形）
-      - 在线/离线/忙碌状态点
-      - 状态点颜色区分
-      - 头像边框样式（Agent/真人区分）
-      - 头像点击展开详情
-    status: "pending"
-    coverage:
-      unit: required
-      integration: not_needed
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查头像状态指示器实现，验证有 UserAvatar 或 StatusAvatar 组件，支持显示在线状态点和身份边框区分"
-        context_files: ["apps/mobile/src/components/UserAvatar/UserAvatar.tsx", "apps/mobile/src/components/UserAvatar/UserAvatar.test.tsx"]
-        
-
-  - id: "ISSUE-UI004b~c2"
-    name: "输入状态指示器"
-    description: |
-      实现输入中状态显示:
-      - "正在输入..." 动画提示
-      - 对方 Agent 正在思考/生成回复
-      - 输入状态实时同步
-      - 动画效果（三个点跳动）
-      - 状态超时自动隐藏
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查输入状态指示器实现，验证有 TypingIndicator 组件，显示 '正在输入' 动画，支持区分人类输入和 Agent 思考状态"
-        context_files: ["apps/mobile/src/components/TypingIndicator/TypingIndicator.tsx", "apps/mobile/src/components/TypingIndicator/TypingIndicator.test.tsx"]
-        
-
-  - id: "ISSUE-UI004b~c3"
-    name: "身份标识徽章"
-    description: |
-      实现身份标识组件:
-      - Agent 标识徽章（机器人图标）
-      - 真人用户标识
-      - 认证标识（已验证用户）
-      - 场景类型标识（VisionShare/Date/Job/Ad）
-      - 徽章位置配置（头像右下角/名称旁边）
-    status: "pending"
-    coverage:
-      unit: required
-      integration: not_needed
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查身份标识实现，验证有 IdentityBadge 组件，支持 Agent、Verified、SceneType 等徽章类型，可配置位置"
-        context_files: ["apps/mobile/src/components/IdentityBadge/IdentityBadge.tsx", "apps/mobile/src/components/IdentityBadge/IdentityBadge.test.tsx"]
-        
-
-  - id: "ISSUE-UI004b~c4"
-    name: "最后在线时间显示"
-    description: |
-      实现在线时间显示:
-      - 最后在线时间格式化（刚刚、几分钟前、几小时前）
-      - 相对时间自动更新
-      - 在线状态实时更新
-      - 时间格式本地化
-      - 悬停/长按显示精确时间
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查在线时间显示实现，验证有 LastSeen 或 OnlineTime 组件，支持相对时间格式化和自动更新"
-        context_files: ["apps/mobile/src/components/LastSeen/LastSeen.tsx", "apps/mobile/src/utils/timeFormat.ts"]
-        
-
-  - id: "ISSUE-UI004b~c5"
-    name: "聊天列表状态预览"
-    description: |
-      实现会话列表状态显示:
-      - 会话列表项显示最后消息预览
-      - 未读消息数角标
-      - 会话优先级标识
-      - 置顶会话标记
-      - 静音会话标识
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查聊天列表状态实现，验证有 ConversationItem 组件，显示最后消息预览、未读数角标、置顶和静音标识"
-        context_files: ["apps/mobile/src/components/ConversationItem/ConversationItem.tsx", "apps/mobile/src/screens/Messages/components/ChatListItem.tsx"]
-        
-
-  - id: "ISSUE-UI004b~c6"
-    name: "信用分与评分展示"
-    description: |
-      实现用户信用展示组件:
-      - 信用分星级/数字显示
-      - 评分等级颜色区分
-      - 信用徽章（高信用用户）
-      - 点击查看信用详情
-      - 实时更新信用分数
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查信用分展示实现，验证有 CreditScore 或 TrustBadge 组件，显示用户信用分和等级，支持点击查看详情"
-        context_files: ["apps/mobile/src/components/CreditScore/CreditScore.tsx", "apps/mobile/src/components/TrustBadge/TrustBadge.tsx"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: not_needed
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u5E26\u72B6\u6001\u7684\u5934\u50CF\u7EC4\u4EF6:\n- \u7528\
+    \u6237\u5934\u50CF\u663E\u793A\uFF08\u5706\u5F62/\u5706\u89D2\u77E9\u5F62\uFF09\
+    \n- \u5728\u7EBF/\u79BB\u7EBF/\u5FD9\u788C\u72B6\u6001\u70B9\n- \u72B6\u6001\u70B9\
+    \u989C\u8272\u533A\u5206\n- \u5934\u50CF\u8FB9\u6846\u6837\u5F0F\uFF08Agent/\u771F\
+    \u4EBA\u533A\u5206\uFF09\n- \u5934\u50CF\u70B9\u51FB\u5C55\u5F00\u8BE6\u60C5\n"
+  id: ISSUE-UI004b~c1
+  name: "\u7528\u6237\u5934\u50CF\u4E0E\u72B6\u6001\u6307\u793A"
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/UserAvatar/UserAvatar.tsx
+      - apps/mobile/src/components/UserAvatar/UserAvatar.test.tsx
+      prompt: "\u68C0\u67E5\u5934\u50CF\u72B6\u6001\u6307\u793A\u5668\u5B9E\u73B0\uFF0C\
+        \u9A8C\u8BC1\u6709 UserAvatar \u6216 StatusAvatar \u7EC4\u4EF6\uFF0C\u652F\
+        \u6301\u663E\u793A\u5728\u7EBF\u72B6\u6001\u70B9\u548C\u8EAB\u4EFD\u8FB9\u6846\
+        \u533A\u5206"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u8F93\u5165\u4E2D\u72B6\u6001\u663E\u793A:\n- \"\u6B63\
+    \u5728\u8F93\u5165...\" \u52A8\u753B\u63D0\u793A\n- \u5BF9\u65B9 Agent \u6B63\u5728\
+    \u601D\u8003/\u751F\u6210\u56DE\u590D\n- \u8F93\u5165\u72B6\u6001\u5B9E\u65F6\u540C\
+    \u6B65\n- \u52A8\u753B\u6548\u679C\uFF08\u4E09\u4E2A\u70B9\u8DF3\u52A8\uFF09\n\
+    - \u72B6\u6001\u8D85\u65F6\u81EA\u52A8\u9690\u85CF\n"
+  id: ISSUE-UI004b~c2
+  name: "\u8F93\u5165\u72B6\u6001\u6307\u793A\u5668"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/TypingIndicator/TypingIndicator.tsx
+      - apps/mobile/src/components/TypingIndicator/TypingIndicator.test.tsx
+      prompt: "\u68C0\u67E5\u8F93\u5165\u72B6\u6001\u6307\u793A\u5668\u5B9E\u73B0\uFF0C\
+        \u9A8C\u8BC1\u6709 TypingIndicator \u7EC4\u4EF6\uFF0C\u663E\u793A '\u6B63\u5728\
+        \u8F93\u5165' \u52A8\u753B\uFF0C\u652F\u6301\u533A\u5206\u4EBA\u7C7B\u8F93\
+        \u5165\u548C Agent \u601D\u8003\u72B6\u6001"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: not_needed
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u8EAB\u4EFD\u6807\u8BC6\u7EC4\u4EF6:\n- Agent \u6807\u8BC6\
+    \u5FBD\u7AE0\uFF08\u673A\u5668\u4EBA\u56FE\u6807\uFF09\n- \u771F\u4EBA\u7528\u6237\
+    \u6807\u8BC6\n- \u8BA4\u8BC1\u6807\u8BC6\uFF08\u5DF2\u9A8C\u8BC1\u7528\u6237\uFF09\
+    \n- \u573A\u666F\u7C7B\u578B\u6807\u8BC6\uFF08VisionShare/Date/Job/Ad\uFF09\n\
+    - \u5FBD\u7AE0\u4F4D\u7F6E\u914D\u7F6E\uFF08\u5934\u50CF\u53F3\u4E0B\u89D2/\u540D\
+    \u79F0\u65C1\u8FB9\uFF09\n"
+  id: ISSUE-UI004b~c3
+  name: "\u8EAB\u4EFD\u6807\u8BC6\u5FBD\u7AE0"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/IdentityBadge/IdentityBadge.tsx
+      - apps/mobile/src/components/IdentityBadge/IdentityBadge.test.tsx
+      prompt: "\u68C0\u67E5\u8EAB\u4EFD\u6807\u8BC6\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \ IdentityBadge \u7EC4\u4EF6\uFF0C\u652F\u6301 Agent\u3001Verified\u3001SceneType\
+        \ \u7B49\u5FBD\u7AE0\u7C7B\u578B\uFF0C\u53EF\u914D\u7F6E\u4F4D\u7F6E"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u5728\u7EBF\u65F6\u95F4\u663E\u793A:\n- \u6700\u540E\u5728\
+    \u7EBF\u65F6\u95F4\u683C\u5F0F\u5316\uFF08\u521A\u521A\u3001\u51E0\u5206\u949F\
+    \u524D\u3001\u51E0\u5C0F\u65F6\u524D\uFF09\n- \u76F8\u5BF9\u65F6\u95F4\u81EA\u52A8\
+    \u66F4\u65B0\n- \u5728\u7EBF\u72B6\u6001\u5B9E\u65F6\u66F4\u65B0\n- \u65F6\u95F4\
+    \u683C\u5F0F\u672C\u5730\u5316\n- \u60AC\u505C/\u957F\u6309\u663E\u793A\u7CBE\u786E\
+    \u65F6\u95F4\n"
+  id: ISSUE-UI004b~c4
+  name: "\u6700\u540E\u5728\u7EBF\u65F6\u95F4\u663E\u793A"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/LastSeen/LastSeen.tsx
+      - apps/mobile/src/utils/timeFormat.ts
+      prompt: "\u68C0\u67E5\u5728\u7EBF\u65F6\u95F4\u663E\u793A\u5B9E\u73B0\uFF0C\u9A8C\
+        \u8BC1\u6709 LastSeen \u6216 OnlineTime \u7EC4\u4EF6\uFF0C\u652F\u6301\u76F8\
+        \u5BF9\u65F6\u95F4\u683C\u5F0F\u5316\u548C\u81EA\u52A8\u66F4\u65B0"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5B9E\u73B0\u4F1A\u8BDD\u5217\u8868\u72B6\u6001\u663E\u793A:\n- \u4F1A\
+    \u8BDD\u5217\u8868\u9879\u663E\u793A\u6700\u540E\u6D88\u606F\u9884\u89C8\n- \u672A\
+    \u8BFB\u6D88\u606F\u6570\u89D2\u6807\n- \u4F1A\u8BDD\u4F18\u5148\u7EA7\u6807\u8BC6\
+    \n- \u7F6E\u9876\u4F1A\u8BDD\u6807\u8BB0\n- \u9759\u97F3\u4F1A\u8BDD\u6807\u8BC6\
+    \n"
+  id: ISSUE-UI004b~c5
+  name: "\u804A\u5929\u5217\u8868\u72B6\u6001\u9884\u89C8"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/ConversationItem/ConversationItem.tsx
+      - apps/mobile/src/screens/Messages/components/ChatListItem.tsx
+      prompt: "\u68C0\u67E5\u804A\u5929\u5217\u8868\u72B6\u6001\u5B9E\u73B0\uFF0C\u9A8C\
+        \u8BC1\u6709 ConversationItem \u7EC4\u4EF6\uFF0C\u663E\u793A\u6700\u540E\u6D88\
+        \u606F\u9884\u89C8\u3001\u672A\u8BFB\u6570\u89D2\u6807\u3001\u7F6E\u9876\u548C\
+        \u9759\u97F3\u6807\u8BC6"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5B9E\u73B0\u7528\u6237\u4FE1\u7528\u5C55\u793A\u7EC4\u4EF6:\n- \u4FE1\
+    \u7528\u5206\u661F\u7EA7/\u6570\u5B57\u663E\u793A\n- \u8BC4\u5206\u7B49\u7EA7\u989C\
+    \u8272\u533A\u5206\n- \u4FE1\u7528\u5FBD\u7AE0\uFF08\u9AD8\u4FE1\u7528\u7528\u6237\
+    \uFF09\n- \u70B9\u51FB\u67E5\u770B\u4FE1\u7528\u8BE6\u60C5\n- \u5B9E\u65F6\u66F4\
+    \u65B0\u4FE1\u7528\u5206\u6570\n"
+  id: ISSUE-UI004b~c6
+  name: "\u4FE1\u7528\u5206\u4E0E\u8BC4\u5206\u5C55\u793A"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/CreditScore/CreditScore.tsx
+      - apps/mobile/src/components/TrustBadge/TrustBadge.tsx
+      prompt: "\u68C0\u67E5\u4FE1\u7528\u5206\u5C55\u793A\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\
+        \u6709 CreditScore \u6216 TrustBadge \u7EC4\u4EF6\uFF0C\u663E\u793A\u7528\u6237\
+        \u4FE1\u7528\u5206\u548C\u7B49\u7EA7\uFF0C\u652F\u6301\u70B9\u51FB\u67E5\u770B\
+        \u8BE6\u60C5"
+current_task: null
+description: "\u5B9E\u73B0\u5728\u804A\u5929\u548C\u5217\u8868\u4E2D\u663E\u793A Agent\
+  \ \u548C\u771F\u4EBA\u7528\u6237\u72B6\u6001\u7684\u6307\u793A\u5668\u7EC4\u4EF6\
+  \uFF0C\n\u5305\u62EC\u5728\u7EBF\u72B6\u6001\u3001\u8F93\u5165\u72B6\u6001\u3001\
+  \u8EAB\u4EFD\u6807\u8BC6\u7B49\uFF0C\u589E\u5F3A\u7528\u6237\u5BF9\u5BF9\u8BDD\u5BF9\
+  \u8C61\u7684\u8BA4\u77E5\u3002\n"
+id: ISSUE-UI004b
+issue_number: 1105
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-UI002
+- ISSUE-UI004a
+slug: user-status-indicator
+status: pending
+title: "Agent/\u4EBA\u7C7B\u7528\u6237\u72B6\u6001\u6307\u793A\u5668"

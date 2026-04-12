@@ -1,0 +1,522 @@
+# BridgeAI 用户故事
+# priority: 0=P0(最高) → 数值越小越优先
+# depends_stories: 依赖的其他 stories（必须已 implemented）
+# depends_issues: 依赖的 issues（必须已 accepted），同时实现后本 story 视为 implemented
+
+stories:
+  # ============================================================
+  # P0: Agent 生命周期 + 核心创建
+  # ============================================================
+
+  - id: US-AGENT-001
+    title: 创建个人 Agent
+    priority: 0
+    depends_stories: []
+    depends_issues:
+      - ISSUE-C001   # Agent创建与基础配置
+      - ISSUE-A003   # 用户基础资料管理
+    role: 用户
+    description: 用户首次使用 BridgeAI，创建自己的 AI Agent，配置基本信息和偏好。
+    criteria:
+      - 用户设置昵称和头像
+      - 用户选择感兴趣的场景（可多选）
+      - 用户配置 Agent 沟通风格（直接/委婉/详细/简洁）
+      - Agent 生成初始画像
+
+  - id: US-AGENT-002
+    title: 通过与 Agent 对话创建需求和供给
+    priority: 0
+    depends_stories:
+      - US-AGENT-001
+    depends_issues:
+      - ISSUE-C002a  # L1基础信息模型
+      - ISSUE-C002b  # L2结构化信息模型
+      - ISSUE-AI002  # 需求智能提炼服务
+      - ISSUE-AI003  # 供给智能提炼服务
+    role: 用户
+    description: 用户通过与 Agent 自然语言对话，创建或更新需求和供给信息。
+    criteria:
+      - 用户可通过文字或语音告诉 Agent 自己的需求或供给
+      - Agent 主动追问关键信息
+      - 支持多轮对话逐步完善信息
+      - Agent 从对话中自动提取关键字段并分类
+      - 用户确认后自动保存到对应场景
+
+  # ============================================================
+  # P1: 需求/供给配置
+  # ============================================================
+
+  - id: US-AGENT-011
+    title: 配置需求信息（分公开和详细）
+    priority: 1
+    depends_stories:
+      - US-AGENT-002
+    depends_issues:
+      - ISSUE-C006   # 场景配置管理
+    role: 用户
+    description: 用户配置不同场景下的需求信息，分公开和详细两级。
+    criteria:
+      - 每个场景设置公开信息和详细信息
+      - 为每个场景设置披露策略
+
+  - id: US-AGENT-012
+    title: 配置供给信息（分公开和详细）
+    priority: 1
+    depends_stories:
+      - US-AGENT-002
+    depends_issues:
+      - ISSUE-C006   # 场景配置管理
+    role: 用户
+    description: 用户配置不同场景下的供给信息，分公开和详细两级。
+    criteria:
+      - 每个场景设置公开信息和详细信息
+      - 为每个场景设置展示策略
+
+  # ============================================================
+  # P2: 对话/披露/引荐
+  # ============================================================
+
+  - id: US-AGENT-007
+    title: 在四人群聊中切换身份
+    priority: 2
+    depends_stories: []
+    depends_issues:
+      - ISSUE-COM001  # Socket.io通信基础设施
+      - ISSUE-COM002  # 聊天房间系统
+      - ISSUE-COM003  # 人机切换机制
+    role: 用户
+    description: 用户在四人群聊中随时切换"亲自聊"或"让 Agent 代聊"。
+    criteria:
+      - 点击"亲自聊"按钮后以用户身份发言
+      - 点击"让 Agent 聊"按钮后 Agent 以自己名义发言
+      - 切换状态实时显示在聊天室
+
+  - id: US-AGENT-008
+    title: 在四人群聊中感知对方身份
+    priority: 2
+    depends_stories:
+      - US-AGENT-007
+    depends_issues:
+      - ISSUE-COM004  # Agent通信协议定义
+      - ISSUE-UI004b  # Agent/人类用户状态指示器
+    role: 用户
+    description: 每条消息清楚显示是谁发的（用户 or Agent）。
+    criteria:
+      - 每条消息显示头像和名称
+      - Agent 消息标识为"XX 的 Agent"
+      - 对方切换时实时更新标识
+
+  - id: US-AGENT-014
+    title: Agent 控制信息披露
+    priority: 2
+    depends_stories:
+      - US-AGENT-008
+    depends_issues:
+      - ISSUE-C007   # Agent信息披露控制机制
+    role: 用户
+    description: Agent 根据对话情况决定是否向对方披露详细信息。
+    criteria:
+      - 支持每次确认模式和自动模式
+      - 保护底线信息不轻易透露
+      - 用户可实时否决即将发生的披露
+
+  - id: US-AGENT-009
+    title: 接收 Agent 私聊建议
+    priority: 2
+    depends_stories:
+      - US-AGENT-008
+    depends_issues:
+      - ISSUE-COM005  # 私聊建议系统
+    role: 用户
+    description: Agent 给自己发送私聊建议，仅自己可见。
+    criteria:
+      - 私聊建议显示在侧边栏或独立区域
+      - 建议包括话题推荐、风险提示、对方意图分析
+      - 可一键采用建议
+
+  - id: US-AGENT-006
+    title: 接受/拒绝引荐
+    priority: 2
+    depends_stories:
+      - US-AGENT-008
+    depends_issues:
+      - ISSUE-COM002c # 群聊状态同步与在线状态
+    role: 用户
+    description: Agent 匹配成功并请求引荐真人时，用户决定是否接受。
+    criteria:
+      - 收到引荐通知，显示匹配理由
+      - 显示对方关键信息和信用分
+      - 可选择接受或拒绝
+
+  - id: US-AGENT-005
+    title: 查看 Agent 对话记录
+    priority: 2
+    depends_stories:
+      - US-AGENT-008
+    depends_issues:
+      - ISSUE-COM002b # 消息持久化与历史记录
+    role: 用户
+    description: 用户查看 Agent 与其他 Agent 的对话历史。
+    criteria:
+      - 按场景筛选对话记录
+      - 显示对话双方 Agent 和匹配度评分
+
+  # ============================================================
+  # P3: VisionShare 场景
+  # ============================================================
+
+  - id: VS-001
+    title: 配置视觉需求
+    priority: 3
+    depends_stories:
+      - US-AGENT-011
+    depends_issues:
+      - ISSUE-VS001  # VisionShare需求发布
+    role: 用户
+    description: 用户发布视觉需求，设置响应者的过滤规则。
+    criteria:
+      - 用户输入自然语言描述（地点+意图）
+      - 系统解析出地点和意图
+      - 设置过滤条件
+      - 系统向符合条件的附近用户推送
+
+  - id: VS-002
+    title: 附近任务接单（带过滤）
+    priority: 3
+    depends_stories:
+      - VS-001
+    depends_issues:
+      - ISSUE-VS002  # 附近任务查询与接单
+    role: 用户
+    description: 用户打开接单界面，系统根据过滤规则显示符合条件的附近任务。
+    criteria:
+      - 只显示符合地域和信用过滤条件的任务
+      - 点击接单后进入拍照界面
+
+  - id: VS-003
+    title: AI 智能检索本地相册
+    priority: 3
+    depends_stories:
+      - VS-002
+    depends_issues:
+      - ISSUE-VS006  # AI相册智能检索与历史查询
+      - ISSUE-VS007  # 本地相册AI智能检索
+    role: 用户
+    description: 系统智能扫描本地相册，推荐匹配照片。
+    criteria:
+      - AI 分析照片内容是否包含需求场景特征
+      - 符合条件的照片推荐给用户确认
+
+  - id: VS-004
+    title: AI 隐私脱敏处理
+    priority: 3
+    depends_stories:
+      - VS-002
+    depends_issues:
+      - ISSUE-VS003  # 相机拍照与上传
+      - ISSUE-VS004  # AI隐私脱敏处理
+    role: 用户
+    description: 照片上传前 AI 自动进行隐私脱敏处理。
+    criteria:
+      - AI 自动检测并模糊处理人脸
+      - 去除 EXIF 敏感信息
+      - 脱敏后预览给用户确认
+
+  - id: VS-005
+    title: 查看照片（显示对方信用）
+    priority: 3
+    depends_stories:
+      - VS-001
+    depends_issues:
+      - ISSUE-VS005  # 照片查看与积分支付
+      - ISSUE-CR003  # 积分系统
+    role: 用户
+    description: 用户支付积分查看照片，界面显示拍摄者信用分。
+    criteria:
+      - 照片列表页显示价格、缩略图和拍摄者信用分
+      - 支付积分后显示完整照片
+
+  - id: VS-006
+    title: 历史照片查询
+    priority: 3
+    depends_stories:
+      - VS-005
+    depends_issues:
+      - ISSUE-VS006  # AI相册智能检索与历史查询
+    role: 用户
+    description: 用户查询历史照片。
+    criteria:
+      - 支持按地点和时间搜索
+      - 返回匹配的历史照片
+
+  # ============================================================
+  # P3: AgentDate 场景
+  # ============================================================
+
+  - id: DATE-001
+    title: 配置交友 Agent 画像
+    priority: 3
+    depends_stories:
+      - US-AGENT-011
+    depends_issues:
+      - ISSUE-DATE001 # 交友画像配置
+    role: 用户
+    description: 用户配置 AgentDate 场景下的交友偏好。
+    criteria:
+      - 设置个人基本信息和期望条件
+      - 设置隐私级别
+
+  - id: DATE-002
+    title: Agent 主动匹配推荐（带过滤）
+    priority: 3
+    depends_stories:
+      - DATE-001
+    depends_issues:
+      - ISSUE-DATE002 # Agent主动匹配推荐
+      - ISSUE-M004    # 匹配结果推送通知
+    role: 用户
+    description: Agent 根据画像和过滤规则自动寻找匹配对象。
+    criteria:
+      - Agent 只扫描符合过滤条件的用户
+      - 计算匹配度评分并向用户推送推荐
+
+  - id: DATE-003
+    title: Agent 间对话匹配
+    priority: 3
+    depends_stories:
+      - DATE-002
+      - US-AGENT-008
+    depends_issues:
+      - ISSUE-DATE003 # Agent间对话匹配
+    role: 用户
+    description: 双方 Agent 先进行对话，匹配度高后请求引荐。
+    criteria:
+      - Agent 间可进行多轮对话
+      - 匹配度达标后请求引荐
+
+  - id: DATE-004
+    title: 四人群聊交友沟通
+    priority: 3
+    depends_stories:
+      - DATE-003
+      - US-AGENT-007
+    depends_issues:
+      - ISSUE-DATE004 # 双向同意引荐机制
+    role: 用户
+    description: 双方接受引荐后，进入四人群聊进行交友沟通。
+    criteria:
+      - 四人群聊界面
+      - Agent 提供交友话题建议
+
+  - id: DATE-005
+    title: 约会后评分
+    priority: 3
+    depends_stories:
+      - DATE-004
+    depends_issues:
+      - ISSUE-CR002  # 评分与评价系统
+    role: 用户
+    description: 约会完成后双方评分，影响信用分。
+    criteria:
+      - 交流结束后弹出评分界面
+      - 评分影响信用分
+
+  # ============================================================
+  # P3: AgentJob 场景
+  # ============================================================
+
+  - id: JOB-001
+    title: 配置求职者 Agent 画像
+    priority: 3
+    depends_stories:
+      - US-AGENT-011
+    depends_issues:
+      - ISSUE-JOB001 # 求职者画像与简历
+    role: 求职者
+    description: 求职者配置 Agent，包括技能、经验、期望薪资。
+    criteria:
+      - 设置技能标签、工作经历、期望薪资、工作偏好
+
+  - id: JOB-002
+    title: 配置招聘方 Agent 画像
+    priority: 3
+    depends_stories:
+      - US-AGENT-012
+    depends_issues:
+      - ISSUE-JOB002 # 招聘方职位发布
+    role: 招聘方
+    description: 招聘方配置 Agent，发布职位需求。
+    criteria:
+      - 设置职位信息、薪资预算、硬性条件和软性偏好
+
+  - id: JOB-003
+    title: Agent 简历筛选（带过滤）
+    priority: 3
+    depends_stories:
+      - JOB-001
+      - JOB-002
+    depends_issues:
+      - ISSUE-JOB003 # 简历智能匹配筛选
+    role: 用户
+    description: Agent 间自动匹配职位和简历，双方过滤条件都满足才推荐。
+    criteria:
+      - 评估匹配度并向双方推荐
+
+  - id: JOB-004
+    title: 四人群聊薪资协商
+    priority: 3
+    depends_stories:
+      - JOB-003
+      - US-AGENT-007
+    depends_issues:
+      - ISSUE-JOB004 # 薪资协商与面试安排
+    role: 用户
+    description: 双方 Agent 和用户在四人群聊中协商薪资。
+    criteria:
+      - Agent 间进行薪资范围协商
+      - 达成初步一致后引荐真人面试
+
+  - id: JOB-005
+    title: 面试后评分
+    priority: 3
+    depends_stories:
+      - JOB-004
+    depends_issues:
+      - ISSUE-CR002  # 评分与评价系统
+    role: 用户
+    description: 面试完成后双方评分。
+    criteria:
+      - 双向评分影响信用分
+
+  # ============================================================
+  # P3: AgentAd 场景
+  # ============================================================
+
+  - id: AD-001
+    title: 配置用户广告偏好
+    priority: 3
+    depends_stories:
+      - US-AGENT-011
+    depends_issues:
+      - ISSUE-AD001  # 消费需求画像配置
+    role: 用户
+    description: 用户配置 Agent，告诉 Agent 自己对什么类型的广告感兴趣。
+    criteria:
+      - 设置品类、预算范围、品牌偏好
+
+  - id: AD-002
+    title: 配置商家 Agent 画像
+    priority: 3
+    depends_stories:
+      - US-AGENT-012
+    depends_issues:
+      - ISSUE-AD002  # 商家优惠配置
+    role: 商家
+    description: 商家配置 Agent，设置目标客户画像、优惠活动。
+    criteria:
+      - 设置目标客户、优惠活动、推广预算
+
+  - id: AD-003
+    title: Agent 精准匹配（双向过滤）
+    priority: 3
+    depends_stories:
+      - AD-001
+      - AD-002
+    depends_issues:
+      - ISSUE-AD003  # Agent优惠协商谈判
+    role: 用户
+    description: Agent 间匹配用户需求和商家优惠，双向过滤。
+    criteria:
+      - 只推送高匹配度且符合过滤条件的广告
+
+  - id: AD-004
+    title: 四人群聊优惠协商
+    priority: 3
+    depends_stories:
+      - AD-003
+      - US-AGENT-007
+    depends_issues:
+      - ISSUE-AD004  # 一键购买与优惠码
+    role: 用户
+    description: Agent 与商家 Agent 谈判争取更好优惠。
+    criteria:
+      - Agent 间协商优惠条件
+      - 达成双方满意的方案
+
+  - id: AD-005
+    title: 一键购买和商家评分
+    priority: 3
+    depends_stories:
+      - AD-004
+    depends_issues:
+      - ISSUE-AD004  # 一键购买与优惠码
+      - ISSUE-CR002  # 评分与评价系统
+    role: 用户
+    description: 一键购买，购买后评价商家。
+    criteria:
+      - 一键跳转商家页面，自动应用优惠
+      - 购买后可评分
+
+  # ============================================================
+  # P4: 评分/浏览/举报/协议
+  # ============================================================
+
+  - id: US-AGENT-010
+    title: 真人交流后评分
+    priority: 4
+    depends_stories:
+      - US-AGENT-006
+    depends_issues:
+      - ISSUE-CR001  # 信用分计算系统
+      - ISSUE-CR002  # 评分与评价系统
+    role: 用户
+    description: 双方真人交流后互相评分。
+    criteria:
+      - 多维度评分（诚信度、礼貌度、响应度、满意度）
+      - 评分影响信用分
+
+  - id: US-AGENT-013
+    title: 浏览对方公开需求和供给
+    priority: 4
+    depends_stories:
+      - US-AGENT-002
+    depends_issues: []
+    role: 用户
+    description: 用户通过 Agent 浏览对方的公开信息。
+    criteria:
+      - Agent 展示对方公开的需求和供给概要
+      - 显示匹配度评估
+
+  - id: US-AGENT-015
+    title: 退出匹配流程
+    priority: 4
+    depends_stories: []
+    depends_issues: []
+    role: 用户
+    description: 用户在匹配过程中随时退出。
+    criteria:
+      - 在匹配列表页或四人群聊中可随时退出
+      - Agent 礼貌结束对话
+
+  - id: US-AGENT-016
+    title: 举报不当行为
+    priority: 4
+    depends_stories: []
+    depends_issues:
+      - ISSUE-SEC005  # 举报与内容审核系统
+    role: 用户
+    description: 用户遇到不当行为时举报。
+    criteria:
+      - 可在对话界面举报
+      - 选择举报类型并上传证据
+
+  - id: US-AGENT-017
+    title: 注销 Agent
+    priority: 4
+    depends_stories: []
+    depends_issues: []
+    role: 用户
+    description: 用户注销某场景的 Agent。
+    criteria:
+      - 注销特定场景 Agent
+      - 保留历史交易记录

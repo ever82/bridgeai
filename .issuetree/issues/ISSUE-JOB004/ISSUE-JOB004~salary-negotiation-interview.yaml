@@ -1,148 +1,145 @@
----
-id: "ISSUE-JOB004"
-issue_number: 904
-title: "薪资协商与面试安排"
-slug: "salary-negotiation-interview"
-status: "pending"
-description: |
-  实现Agent驱动的薪资协商与面试安排功能。当求职者与招聘方
-  达成初步匹配意向后，双方Agent介入进行沟通，协商薪资细节、
-  工作时间等条件，并协调安排面试时间。支持人机切换。
-prerequisites:
-  - "ISSUE-COM002c"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-JOB004~c1"
-    name: "协商对话房间"
-    description: |
-      协商房间:
-      - 创建薪资协商专用房间
-      - 求职者Agent与招聘方Agent对话
-      - 协商话题管理(薪资/福利/工作时间)
-      - 协商进度追踪
-      - 历史协商记录
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查协商对话房间，验证有NegotiationRoom类型和创建逻辑，支持双方Agent对话和话题管理"
-        context_files: ["apps/server/src/services/job/negotiationRoom.ts", "apps/server/src/models/NegotiationRoom.ts"]
-        
-
-  - id: "ISSUE-JOB004~c2"
-    name: "Agent薪资协商服务"
-    description: |
-      AI协商:
-      - 基于市场数据的薪资建议
-      - 双方利益分析与平衡点寻找
-      - 协商策略生成
-      - 条件让步建议
-      - 协商结果总结
-      - 多轮协商支持
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查Agent薪资协商服务，验证有SalaryNegotiationService使用LLM进行协商，包含市场数据参考和策略生成"
-        context_files: ["apps/server/src/services/job/salaryNegotiation.ts", "apps/server/src/ai/prompts/salaryNegotiation.ts"]
-        
-
-  - id: "ISSUE-JOB004~c3"
-    name: "面试安排系统"
-    description: |
-      面试安排:
-      - 面试时间协调(双方可用时间匹配)
-      - 面试方式选择(视频/电话/现场)
-      - 日历集成与提醒
-      - 面试确认与取消
-      - 面试反馈收集
-      - 多轮面试管理
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查面试安排系统，验证有InterviewSchedulingService，支持时间协调、日历集成和多轮面试管理"
-        context_files: ["apps/server/src/services/job/interviewScheduling.ts", "apps/server/src/models/Interview.ts"]
-        
-
-  - id: "ISSUE-JOB004~c4"
-    name: "协商结果与人机切换"
-    description: |
-      结果处理:
-      - 协商结果确认机制
-      - 双方同意检测
-      - 人机切换触发(进入真人面试)
-      - 协商记录导出
-      - 拒绝原因记录
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查协商结果处理，验证集成COM003人机切换机制，支持协商结果确认和切换到真人沟通"
-        context_files: ["apps/server/src/services/job/negotiationResult.ts", "apps/server/src/services/job/humanHandoff.ts"]
-        
-
-  - id: "ISSUE-JOB004~c5"
-    name: "薪资协商与面试API"
-    description: |
-      API接口:
-      - 创建协商房间API
-      - 发送协商消息API
-      - 面试时间提议/确认API
-      - 协商状态查询API
-      - 面试列表管理API
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查协商与面试API，验证有完整的RESTful端点(/api/job/negotiations, /api/job/interviews)支持协商和面试功能"
-        context_files: ["apps/server/src/routes/job/negotiationRoutes.ts", "apps/server/src/routes/job/interviewRoutes.ts"]
-        
-
-  - id: "ISSUE-JOB004~c6"
-    name: "移动端协商与面试界面"
-    description: |
-      UI实现:
-      - 协商对话界面(类似聊天)
-      - 薪资调整提议组件
-      - 面试时间选择器
-      - 面试列表与详情页面
-      - 协商结果确认页面
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查移动端协商界面，验证有NegotiationChatScreen和InterviewScheduleScreen组件，支持协商对话和时间选择"
-        context_files: ["apps/mobile/src/screens/Job/NegotiationChatScreen.tsx", "apps/mobile/src/screens/Job/InterviewScheduleScreen.tsx"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u534F\u5546\u623F\u95F4:\n- \u521B\u5EFA\u85AA\u8D44\u534F\u5546\u4E13\
+    \u7528\u623F\u95F4\n- \u6C42\u804C\u8005Agent\u4E0E\u62DB\u8058\u65B9Agent\u5BF9\
+    \u8BDD\n- \u534F\u5546\u8BDD\u9898\u7BA1\u7406(\u85AA\u8D44/\u798F\u5229/\u5DE5\
+    \u4F5C\u65F6\u95F4)\n- \u534F\u5546\u8FDB\u5EA6\u8FFD\u8E2A\n- \u5386\u53F2\u534F\
+    \u5546\u8BB0\u5F55\n"
+  id: ISSUE-JOB004~c1
+  name: "\u534F\u5546\u5BF9\u8BDD\u623F\u95F4"
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/job/negotiationRoom.ts
+      - apps/server/src/models/NegotiationRoom.ts
+      prompt: "\u68C0\u67E5\u534F\u5546\u5BF9\u8BDD\u623F\u95F4\uFF0C\u9A8C\u8BC1\u6709\
+        NegotiationRoom\u7C7B\u578B\u548C\u521B\u5EFA\u903B\u8F91\uFF0C\u652F\u6301\
+        \u53CC\u65B9Agent\u5BF9\u8BDD\u548C\u8BDD\u9898\u7BA1\u7406"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "AI\u534F\u5546:\n- \u57FA\u4E8E\u5E02\u573A\u6570\u636E\u7684\u85AA\
+    \u8D44\u5EFA\u8BAE\n- \u53CC\u65B9\u5229\u76CA\u5206\u6790\u4E0E\u5E73\u8861\u70B9\
+    \u5BFB\u627E\n- \u534F\u5546\u7B56\u7565\u751F\u6210\n- \u6761\u4EF6\u8BA9\u6B65\
+    \u5EFA\u8BAE\n- \u534F\u5546\u7ED3\u679C\u603B\u7ED3\n- \u591A\u8F6E\u534F\u5546\
+    \u652F\u6301\n"
+  id: ISSUE-JOB004~c2
+  name: "Agent\u85AA\u8D44\u534F\u5546\u670D\u52A1"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/job/salaryNegotiation.ts
+      - apps/server/src/ai/prompts/salaryNegotiation.ts
+      prompt: "\u68C0\u67E5Agent\u85AA\u8D44\u534F\u5546\u670D\u52A1\uFF0C\u9A8C\u8BC1\
+        \u6709SalaryNegotiationService\u4F7F\u7528LLM\u8FDB\u884C\u534F\u5546\uFF0C\
+        \u5305\u542B\u5E02\u573A\u6570\u636E\u53C2\u8003\u548C\u7B56\u7565\u751F\u6210"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u9762\u8BD5\u5B89\u6392:\n- \u9762\u8BD5\u65F6\u95F4\u534F\u8C03\
+    (\u53CC\u65B9\u53EF\u7528\u65F6\u95F4\u5339\u914D)\n- \u9762\u8BD5\u65B9\u5F0F\
+    \u9009\u62E9(\u89C6\u9891/\u7535\u8BDD/\u73B0\u573A)\n- \u65E5\u5386\u96C6\u6210\
+    \u4E0E\u63D0\u9192\n- \u9762\u8BD5\u786E\u8BA4\u4E0E\u53D6\u6D88\n- \u9762\u8BD5\
+    \u53CD\u9988\u6536\u96C6\n- \u591A\u8F6E\u9762\u8BD5\u7BA1\u7406\n"
+  id: ISSUE-JOB004~c3
+  name: "\u9762\u8BD5\u5B89\u6392\u7CFB\u7EDF"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/job/interviewScheduling.ts
+      - apps/server/src/models/Interview.ts
+      prompt: "\u68C0\u67E5\u9762\u8BD5\u5B89\u6392\u7CFB\u7EDF\uFF0C\u9A8C\u8BC1\u6709\
+        InterviewSchedulingService\uFF0C\u652F\u6301\u65F6\u95F4\u534F\u8C03\u3001\
+        \u65E5\u5386\u96C6\u6210\u548C\u591A\u8F6E\u9762\u8BD5\u7BA1\u7406"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u7ED3\u679C\u5904\u7406:\n- \u534F\u5546\u7ED3\u679C\u786E\u8BA4\u673A\
+    \u5236\n- \u53CC\u65B9\u540C\u610F\u68C0\u6D4B\n- \u4EBA\u673A\u5207\u6362\u89E6\
+    \u53D1(\u8FDB\u5165\u771F\u4EBA\u9762\u8BD5)\n- \u534F\u5546\u8BB0\u5F55\u5BFC\
+    \u51FA\n- \u62D2\u7EDD\u539F\u56E0\u8BB0\u5F55\n"
+  id: ISSUE-JOB004~c4
+  name: "\u534F\u5546\u7ED3\u679C\u4E0E\u4EBA\u673A\u5207\u6362"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/job/negotiationResult.ts
+      - apps/server/src/services/job/humanHandoff.ts
+      prompt: "\u68C0\u67E5\u534F\u5546\u7ED3\u679C\u5904\u7406\uFF0C\u9A8C\u8BC1\u96C6\
+        \u6210COM003\u4EBA\u673A\u5207\u6362\u673A\u5236\uFF0C\u652F\u6301\u534F\u5546\
+        \u7ED3\u679C\u786E\u8BA4\u548C\u5207\u6362\u5230\u771F\u4EBA\u6C9F\u901A"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "API\u63A5\u53E3:\n- \u521B\u5EFA\u534F\u5546\u623F\u95F4API\n- \u53D1\
+    \u9001\u534F\u5546\u6D88\u606FAPI\n- \u9762\u8BD5\u65F6\u95F4\u63D0\u8BAE/\u786E\
+    \u8BA4API\n- \u534F\u5546\u72B6\u6001\u67E5\u8BE2API\n- \u9762\u8BD5\u5217\u8868\
+    \u7BA1\u7406API\n"
+  id: ISSUE-JOB004~c5
+  name: "\u85AA\u8D44\u534F\u5546\u4E0E\u9762\u8BD5API"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/job/negotiationRoutes.ts
+      - apps/server/src/routes/job/interviewRoutes.ts
+      prompt: "\u68C0\u67E5\u534F\u5546\u4E0E\u9762\u8BD5API\uFF0C\u9A8C\u8BC1\u6709\
+        \u5B8C\u6574\u7684RESTful\u7AEF\u70B9(/api/job/negotiations, /api/job/interviews)\u652F\
+        \u6301\u534F\u5546\u548C\u9762\u8BD5\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "UI\u5B9E\u73B0:\n- \u534F\u5546\u5BF9\u8BDD\u754C\u9762(\u7C7B\u4F3C\
+    \u804A\u5929)\n- \u85AA\u8D44\u8C03\u6574\u63D0\u8BAE\u7EC4\u4EF6\n- \u9762\u8BD5\
+    \u65F6\u95F4\u9009\u62E9\u5668\n- \u9762\u8BD5\u5217\u8868\u4E0E\u8BE6\u60C5\u9875\
+    \u9762\n- \u534F\u5546\u7ED3\u679C\u786E\u8BA4\u9875\u9762\n"
+  id: ISSUE-JOB004~c6
+  name: "\u79FB\u52A8\u7AEF\u534F\u5546\u4E0E\u9762\u8BD5\u754C\u9762"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Job/NegotiationChatScreen.tsx
+      - apps/mobile/src/screens/Job/InterviewScheduleScreen.tsx
+      prompt: "\u68C0\u67E5\u79FB\u52A8\u7AEF\u534F\u5546\u754C\u9762\uFF0C\u9A8C\u8BC1\
+        \u6709NegotiationChatScreen\u548CInterviewScheduleScreen\u7EC4\u4EF6\uFF0C\
+        \u652F\u6301\u534F\u5546\u5BF9\u8BDD\u548C\u65F6\u95F4\u9009\u62E9"
+current_task: null
+description: "\u5B9E\u73B0Agent\u9A71\u52A8\u7684\u85AA\u8D44\u534F\u5546\u4E0E\u9762\
+  \u8BD5\u5B89\u6392\u529F\u80FD\u3002\u5F53\u6C42\u804C\u8005\u4E0E\u62DB\u8058\u65B9\
+  \n\u8FBE\u6210\u521D\u6B65\u5339\u914D\u610F\u5411\u540E\uFF0C\u53CC\u65B9Agent\u4ECB\
+  \u5165\u8FDB\u884C\u6C9F\u901A\uFF0C\u534F\u5546\u85AA\u8D44\u7EC6\u8282\u3001\n\
+  \u5DE5\u4F5C\u65F6\u95F4\u7B49\u6761\u4EF6\uFF0C\u5E76\u534F\u8C03\u5B89\u6392\u9762\
+  \u8BD5\u65F6\u95F4\u3002\u652F\u6301\u4EBA\u673A\u5207\u6362\u3002\n"
+id: ISSUE-JOB004
+issue_number: 904
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-COM002c
+slug: salary-negotiation-interview
+status: pending
+title: "\u85AA\u8D44\u534F\u5546\u4E0E\u9762\u8BD5\u5B89\u6392"

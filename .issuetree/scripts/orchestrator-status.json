@@ -1,6 +1,7 @@
 {
   "completed": [
     "ISSUE-A002",
+    "ISSUE-A003",
     "ISSUE-A004",
     "ISSUE-AI001",
     "ISSUE-C001",
@@ -17,15 +18,14 @@
     "ISSUE-A003",
     "ISSUE-CR001"
   ],
-  "in_progress": [
-    "ISSUE-AI002a"
-  ],
+  "in_progress": [],
   "merged": [
     "ISSUE-A004",
     "ISSUE-AI001",
+    "ISSUE-AI002a",
+    "ISSUE-C006",
     "ISSUE-CR001",
     "ISSUE-UI001"
   ],
-  "ready_for_check": [],
-  "last_update": "2026-04-11T03:47:57.079961"
+  "last_update": "2026-04-13T00:24:15.553173"
 }

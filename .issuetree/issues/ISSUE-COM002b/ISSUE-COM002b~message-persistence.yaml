@@ -1,161 +1,143 @@
----
-id: "ISSUE-COM002b"
-issue_number: 504
-title: "消息持久化与历史记录"
-slug: "message-persistence"
-status: "pending"
-description: |
-  实现消息的持久化存储、历史记录查询、
-  消息同步和离线消息处理。
-prerequisites:
-  - "ISSUE-COM002a"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-COM002b~c1"
-    name: "消息模型设计"
-    description: |
-      数据模型:
-      - Message 数据库模型
-      - 消息类型: text, image, file, system
-      - 消息状态: sent, delivered, read
-      - 消息元数据
-    status: "pending"
-    coverage:
-      unit: sufficient
-      integration: sufficient
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查消息模型，验证 Message 模型包含 type, content, status, senderId 字段"
-        context_files: ["prisma/schema.prisma"]
-        
-
-  - id: "ISSUE-COM002b~c2"
-    name: "消息发送和存储"
-    description: |
-      消息处理:
-      - 消息验证和过滤
-      - 消息存储
-      - 消息广播
-      - 发送确认
-    status: "pending"
-    coverage:
-      unit: sufficient
-      integration: sufficient
-      e2e: lacking
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查消息处理，验证有消息发送 socket handler 和存储逻辑"
-        context_files: ["apps/server/src/socket/handlers/messageHandler.ts"]
-        
-
-  - id: "ISSUE-COM002b~c3"
-    name: "历史记录查询"
-    description: |
-      查询接口:
-      - 分页查询历史消息
-      - 消息搜索
-      - 按时间范围查询
-      - 消息过滤
-    status: "pending"
-    coverage:
-      unit: sufficient
-      integration: sufficient
-      e2e: lacking
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查历史查询，验证有 /api/v1/chat/rooms/:id/messages GET 支持分页"
-        context_files: ["apps/server/src/routes/chat.ts"]
-        
-
-  - id: "ISSUE-COM002b~c4"
-    name: "消息同步机制"
-    description: |
-      同步系统:
-      - 消息 ID 序列
-      - 增量同步
-      - 消息去重
-      - 同步状态管理
-    status: "pending"
-    coverage:
-      unit: sufficient
-      integration: lacking
-      e2e: lacking
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查消息同步，验证有 syncMessages 函数支持增量同步"
-        context_files: ["apps/mobile/src/services/messageSync.ts"]
-        
-
-  - id: "ISSUE-COM002b~c5"
-    name: "离线消息处理"
-    description: |
-      离线处理:
-      - 离线消息存储
-      - 上线推送
-      - 消息队列
-      - 推送通知
-    status: "pending"
-    coverage:
-      unit: sufficient
-      integration: lacking
-      e2e: lacking
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查离线消息，验证有离线消息队列和用户上线推送逻辑"
-        context_files: ["apps/server/src/services/offlineMessageService.ts"]
-        
-
-  - id: "ISSUE-COM002b~c6"
-    name: "消息已读回执"
-    description: |
-      回执系统:
-      - 已读状态追踪
-      - 已读回执发送
-      - 已读时间记录
-      - 批量已读标记
-    status: "pending"
-    coverage:
-      unit: sufficient
-      integration: lacking
-      e2e: lacking
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查已读回执，验证有 read receipt 机制和已读时间存储"
-        context_files: ["apps/server/src/services/readReceiptService.ts"]
-        
-
-  - id: "ISSUE-COM002b~c7"
-    name: "数据一致性保证"
-    description: "消息持久化系统保证事务处理、错误回滚机制完善"
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-
-  - id: "ISSUE-COM002b~c8"
-    name: "性能基准"
-    description: "消息查询响应时间小于200ms，支持10万条消息分页"
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: sufficient
+    manual: not_needed
+    unit: sufficient
+  description: "\u6570\u636E\u6A21\u578B:\n- Message \u6570\u636E\u5E93\u6A21\u578B\
+    \n- \u6D88\u606F\u7C7B\u578B: text, image, file, system\n- \u6D88\u606F\u72B6\u6001\
+    : sent, delivered, read\n- \u6D88\u606F\u5143\u6570\u636E\n"
+  id: ISSUE-COM002b~c1
+  name: "\u6D88\u606F\u6A21\u578B\u8BBE\u8BA1"
+  verification:
+    ai:
+      context_files:
+      - prisma/schema.prisma
+      prompt: "\u68C0\u67E5\u6D88\u606F\u6A21\u578B\uFF0C\u9A8C\u8BC1 Message \u6A21\
+        \u578B\u5305\u542B type, content, status, senderId \u5B57\u6BB5"
+- coverage:
+    ai: sufficient
+    e2e: lacking
+    integration: sufficient
+    manual: not_needed
+    unit: sufficient
+  description: "\u6D88\u606F\u5904\u7406:\n- \u6D88\u606F\u9A8C\u8BC1\u548C\u8FC7\u6EE4\
+    \n- \u6D88\u606F\u5B58\u50A8\n- \u6D88\u606F\u5E7F\u64AD\n- \u53D1\u9001\u786E\
+    \u8BA4\n"
+  id: ISSUE-COM002b~c2
+  name: "\u6D88\u606F\u53D1\u9001\u548C\u5B58\u50A8"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/socket/handlers/messageHandler.ts
+      prompt: "\u68C0\u67E5\u6D88\u606F\u5904\u7406\uFF0C\u9A8C\u8BC1\u6709\u6D88\u606F\
+        \u53D1\u9001 socket handler \u548C\u5B58\u50A8\u903B\u8F91"
+- coverage:
+    ai: sufficient
+    e2e: lacking
+    integration: sufficient
+    manual: not_needed
+    unit: sufficient
+  description: "\u67E5\u8BE2\u63A5\u53E3:\n- \u5206\u9875\u67E5\u8BE2\u5386\u53F2\u6D88\
+    \u606F\n- \u6D88\u606F\u641C\u7D22\n- \u6309\u65F6\u95F4\u8303\u56F4\u67E5\u8BE2\
+    \n- \u6D88\u606F\u8FC7\u6EE4\n"
+  id: ISSUE-COM002b~c3
+  name: "\u5386\u53F2\u8BB0\u5F55\u67E5\u8BE2"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/chat.ts
+      prompt: "\u68C0\u67E5\u5386\u53F2\u67E5\u8BE2\uFF0C\u9A8C\u8BC1\u6709 /api/v1/chat/rooms/:id/messages\
+        \ GET \u652F\u6301\u5206\u9875"
+- coverage:
+    ai: sufficient
+    e2e: lacking
+    integration: lacking
+    manual: not_needed
+    unit: sufficient
+  description: "\u540C\u6B65\u7CFB\u7EDF:\n- \u6D88\u606F ID \u5E8F\u5217\n- \u589E\
+    \u91CF\u540C\u6B65\n- \u6D88\u606F\u53BB\u91CD\n- \u540C\u6B65\u72B6\u6001\u7BA1\
+    \u7406\n"
+  id: ISSUE-COM002b~c4
+  name: "\u6D88\u606F\u540C\u6B65\u673A\u5236"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/services/messageSync.ts
+      prompt: "\u68C0\u67E5\u6D88\u606F\u540C\u6B65\uFF0C\u9A8C\u8BC1\u6709 syncMessages\
+        \ \u51FD\u6570\u652F\u6301\u589E\u91CF\u540C\u6B65"
+- coverage:
+    ai: sufficient
+    e2e: lacking
+    integration: lacking
+    manual: not_needed
+    unit: sufficient
+  description: "\u79BB\u7EBF\u5904\u7406:\n- \u79BB\u7EBF\u6D88\u606F\u5B58\u50A8\n\
+    - \u4E0A\u7EBF\u63A8\u9001\n- \u6D88\u606F\u961F\u5217\n- \u63A8\u9001\u901A\u77E5\
+    \n"
+  id: ISSUE-COM002b~c5
+  name: "\u79BB\u7EBF\u6D88\u606F\u5904\u7406"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/offlineMessageService.ts
+      prompt: "\u68C0\u67E5\u79BB\u7EBF\u6D88\u606F\uFF0C\u9A8C\u8BC1\u6709\u79BB\u7EBF\
+        \u6D88\u606F\u961F\u5217\u548C\u7528\u6237\u4E0A\u7EBF\u63A8\u9001\u903B\u8F91"
+- coverage:
+    ai: sufficient
+    e2e: lacking
+    integration: lacking
+    manual: not_needed
+    unit: sufficient
+  description: "\u56DE\u6267\u7CFB\u7EDF:\n- \u5DF2\u8BFB\u72B6\u6001\u8FFD\u8E2A\n\
+    - \u5DF2\u8BFB\u56DE\u6267\u53D1\u9001\n- \u5DF2\u8BFB\u65F6\u95F4\u8BB0\u5F55\
+    \n- \u6279\u91CF\u5DF2\u8BFB\u6807\u8BB0\n"
+  id: ISSUE-COM002b~c6
+  name: "\u6D88\u606F\u5DF2\u8BFB\u56DE\u6267"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/readReceiptService.ts
+      prompt: "\u68C0\u67E5\u5DF2\u8BFB\u56DE\u6267\uFF0C\u9A8C\u8BC1\u6709 read receipt\
+        \ \u673A\u5236\u548C\u5DF2\u8BFB\u65F6\u95F4\u5B58\u50A8"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u6D88\u606F\u6301\u4E45\u5316\u7CFB\u7EDF\u4FDD\u8BC1\u4E8B\u52A1\
+    \u5904\u7406\u3001\u9519\u8BEF\u56DE\u6EDA\u673A\u5236\u5B8C\u5584"
+  id: ISSUE-COM002b~c7
+  name: "\u6570\u636E\u4E00\u81F4\u6027\u4FDD\u8BC1"
+  status: pending
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u6D88\u606F\u67E5\u8BE2\u54CD\u5E94\u65F6\u95F4\u5C0F\u4E8E200ms\uFF0C\
+    \u652F\u630110\u4E07\u6761\u6D88\u606F\u5206\u9875"
+  id: ISSUE-COM002b~c8
+  name: "\u6027\u80FD\u57FA\u51C6"
+  status: pending
+current_task: null
+description: "\u5B9E\u73B0\u6D88\u606F\u7684\u6301\u4E45\u5316\u5B58\u50A8\u3001\u5386\
+  \u53F2\u8BB0\u5F55\u67E5\u8BE2\u3001\n\u6D88\u606F\u540C\u6B65\u548C\u79BB\u7EBF\
+  \u6D88\u606F\u5904\u7406\u3002\n"
+id: ISSUE-COM002b
+issue_number: 504
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-COM002a
+slug: message-persistence
+status: pending
+title: "\u6D88\u606F\u6301\u4E45\u5316\u4E0E\u5386\u53F2\u8BB0\u5F55"

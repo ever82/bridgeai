@@ -1,99 +1,92 @@
----
-id: "ISSUE-A003a"
-issue_number: 2031
-title: "用户基础资料管理 - 后端API"
-slug: "user-profile-backend"
-status: "passed"
-description: |
-  实现用户资料管理后端API，包括：
-  - 用户信息CRUD接口 (/api/v1/users/me)
-  - 头像上传接口 (multer + 云存储)
-  - 图片压缩处理
-prerequisites:
-  - "ISSUE-A002"
-created_at: "2026-04-10"
-logic: sufficient_necessary
-criteria:
-  - id: "ISSUE-A003a~c1"
-    name: "用户信息 API"
-    description: |
-      用户信息接口:
-      - 获取当前用户信息 GET /api/v1/users/me
-      - 更新用户信息 PUT /api/v1/users/me
-      - 删除账号 DELETE /api/v1/users/me
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查用户资料API，验证有 /api/v1/users/me 端点支持 GET/PUT/DELETE"
-        context_files: ["apps/server/src/routes/users.ts"]
-
-  - id: "ISSUE-A003a~c2"
-    name: "头像上传和存储"
-    description: |
-      头像管理:
-      - 头像上传接口 POST /api/v1/users/avatar
-      - 图片压缩和裁剪
-      - 云存储集成(OSS/S3)
-      - 默认头像处理
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查头像上传功能，验证使用 multer 处理上传，确认图片压缩和云存储集成"
-        context_files: ["apps/server/src/routes/upload.ts"]
-
-implementation:
-  task_id: "TASK-1"
-  completed_at: "2026-04-10T12:45:00+08:00"
-  execution_time_minutes: 45
-  result: "success"
-  notes: |
-    成功实现：
-    1. 用户资料API (GET/PUT/DELETE /api/v1/users/me)
-    2. 头像上传API (POST /api/v1/users/avatar)
-    3. 图片压缩(sharp)和云存储(S3/OSS)集成
-    4. 26个单元测试全部通过
-
-test_passed: true
-test_count: 26
-test_duration_seconds: 4
-merged_to_master: false
-worktree_path: null
-
 check:
-  issue_id: "ISSUE-A003a"
-  checked_at: "2026-04-10T16:10:00+08:00"
-  status: passed
+  checked_at: '2026-04-10T16:10:00+08:00'
+  code_review:
+    merged_to_main: false
+    notes: Implementation complete but pending merge to master
+    pr_approved: true
+  documentation:
+    all_updated: true
   functional_verification:
     all_criteria_passed: true
     criteria:
-      - id: "ISSUE-A003a~c1"
-        name: "用户信息 API"
-        status: passed
-        notes: "GET/PUT/DELETE /api/v1/users/me implemented"
-      - id: "ISSUE-A003a~c2"
-        name: "头像上传和存储"
-        status: passed
-        notes: "multer + sharp + S3/OSS integration complete"
+    - id: ISSUE-A003a~c1
+      name: "\u7528\u6237\u4FE1\u606F API"
+      notes: GET/PUT/DELETE /api/v1/users/me implemented
+      status: accepted
+    - id: ISSUE-A003a~c2
+      name: "\u5934\u50CF\u4E0A\u4F20\u548C\u5B58\u50A8"
+      notes: multer + sharp + S3/OSS integration complete
+      status: accepted
+  issue_id: ISSUE-A003a
+  notes: All acceptance criteria met. 26 unit tests passed. Merge to master required.
+  status: accepted
   test_execution:
     all_tests_passed: true
-    unit_tests: passed
     test_count: 26
-  code_review:
-    merged_to_main: false
-    pr_approved: true
-    notes: "Implementation complete but pending merge to master"
-  documentation:
-    all_updated: true
-  notes: "All acceptance criteria met. 26 unit tests passed. Merge to master required."
+    unit_tests: passed
+created_at: '2026-04-10'
+criteria:
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u7528\u6237\u4FE1\u606F\u63A5\u53E3:\n- \u83B7\u53D6\u5F53\u524D\u7528\
+    \u6237\u4FE1\u606F GET /api/v1/users/me\n- \u66F4\u65B0\u7528\u6237\u4FE1\u606F\
+    \ PUT /api/v1/users/me\n- \u5220\u9664\u8D26\u53F7 DELETE /api/v1/users/me\n"
+  id: ISSUE-A003a~c1
+  name: "\u7528\u6237\u4FE1\u606F API"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/users.ts
+      prompt: "\u68C0\u67E5\u7528\u6237\u8D44\u6599API\uFF0C\u9A8C\u8BC1\u6709 /api/v1/users/me\
+        \ \u7AEF\u70B9\u652F\u6301 GET/PUT/DELETE"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5934\u50CF\u7BA1\u7406:\n- \u5934\u50CF\u4E0A\u4F20\u63A5\u53E3\
+    \ POST /api/v1/users/avatar\n- \u56FE\u7247\u538B\u7F29\u548C\u88C1\u526A\n- \u4E91\
+    \u5B58\u50A8\u96C6\u6210(OSS/S3)\n- \u9ED8\u8BA4\u5934\u50CF\u5904\u7406\n"
+  id: ISSUE-A003a~c2
+  name: "\u5934\u50CF\u4E0A\u4F20\u548C\u5B58\u50A8"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/upload.ts
+      prompt: "\u68C0\u67E5\u5934\u50CF\u4E0A\u4F20\u529F\u80FD\uFF0C\u9A8C\u8BC1\u4F7F\
+        \u7528 multer \u5904\u7406\u4E0A\u4F20\uFF0C\u786E\u8BA4\u56FE\u7247\u538B\
+        \u7F29\u548C\u4E91\u5B58\u50A8\u96C6\u6210"
+current_task: ''
+description: "\u5B9E\u73B0\u7528\u6237\u8D44\u6599\u7BA1\u7406\u540E\u7AEFAPI\uFF0C\
+  \u5305\u62EC\uFF1A\n- \u7528\u6237\u4FE1\u606FCRUD\u63A5\u53E3 (/api/v1/users/me)\n\
+  - \u5934\u50CF\u4E0A\u4F20\u63A5\u53E3 (multer + \u4E91\u5B58\u50A8)\n- \u56FE\u7247\
+  \u538B\u7F29\u5904\u7406\n"
+id: ISSUE-A003a
+implementation:
+  completed_at: '2026-04-10T12:45:00+08:00'
+  execution_time_minutes: 45
+  notes: "\u6210\u529F\u5B9E\u73B0\uFF1A\n1. \u7528\u6237\u8D44\u6599API (GET/PUT/DELETE\
+    \ /api/v1/users/me)\n2. \u5934\u50CF\u4E0A\u4F20API (POST /api/v1/users/avatar)\n\
+    3. \u56FE\u7247\u538B\u7F29(sharp)\u548C\u4E91\u5B58\u50A8(S3/OSS)\u96C6\u6210\
+    \n4. 26\u4E2A\u5355\u5143\u6D4B\u8BD5\u5168\u90E8\u901A\u8FC7\n"
+  result: success
+  task_id: TASK-1
+issue_number: 2031
+logic: sufficient_necessary
+merged_to_master: false
+prerequisites:
+- ISSUE-A002
+slug: user-profile-backend
+status: accepted
+test_count: 26
+test_duration_seconds: 4
+test_passed: true
+title: "\u7528\u6237\u57FA\u7840\u8D44\u6599\u7BA1\u7406 - \u540E\u7AEFAPI"
+worktree_path: null

@@ -1,62 +1,69 @@
----
-id: "ISSUE-CR003b"
-issue_number: 603.2
-title: "积分交易核心服务与规则配置"
-slug: "points-transaction-service-and-rules"
-status: "pending"
-description: |
-  积分交易核心服务实现，包含积分获取、消耗、冻结、转账等操作的原子性实现，
-  以及积分规则配置系统(获取规则、消耗规则、上限控制等)。
-  作为积分系统的服务层，提供完整的积分操作API。
-prerequisites:
-  - "ISSUE-CR003a"
-created_at: "2026-04-09"
-logic: sufficient_necessary
+created_at: '2026-04-09'
 criteria:
-  - id: "ISSUE-CR003b~c1"
-    name: "积分交易核心服务"
-    description: |
-      积分操作原子性实现:
-      - 积分获取接口(任务奖励、签到等)
-      - 积分消耗接口(购买服务、打赏等)
-      - 积分冻结/解冻(交易担保)
-      - 积分转账(用户间转移)
-      - 事务安全(防止超卖和并发问题)
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查积分交易服务，验证有PointsService类实现获取、消耗、冻结、转账方法，确认事务和并发控制"
-        context_files: ["apps/server/src/services/pointsService.ts", "apps/server/src/services/pointsTransactionService.ts"]
-        
-
-  - id: "ISSUE-CR003b~c2"
-    name: "积分规则配置"
-    description: |
-      积分获取和消耗规则:
-      - 获取规则配置(签到、分享、完成任务等)
-      - 消耗规则配置(查看照片、发起匹配等)
-      - 每日/每周获取上限
-      - 积分价值换算(人民币->积分)
-      - 规则动态调整接口(管理员)
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查积分规则配置，验证有PointsRule配置表和RuleEngine，确认获取/消耗规则和上限控制"
-        context_files: ["apps/server/src/config/pointsRules.ts", "apps/server/src/services/pointsRuleEngine.ts"]
-        
-
-parent_issue: "ISSUE-CR003"
-part_of: "积分系统基础与交易记录拆分"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u79EF\u5206\u64CD\u4F5C\u539F\u5B50\u6027\u5B9E\u73B0:\n- \u79EF\u5206\
+    \u83B7\u53D6\u63A5\u53E3(\u4EFB\u52A1\u5956\u52B1\u3001\u7B7E\u5230\u7B49)\n-\
+    \ \u79EF\u5206\u6D88\u8017\u63A5\u53E3(\u8D2D\u4E70\u670D\u52A1\u3001\u6253\u8D4F\
+    \u7B49)\n- \u79EF\u5206\u51BB\u7ED3/\u89E3\u51BB(\u4EA4\u6613\u62C5\u4FDD)\n-\
+    \ \u79EF\u5206\u8F6C\u8D26(\u7528\u6237\u95F4\u8F6C\u79FB)\n- \u4E8B\u52A1\u5B89\
+    \u5168(\u9632\u6B62\u8D85\u5356\u548C\u5E76\u53D1\u95EE\u9898)\n"
+  id: ISSUE-CR003b~c1
+  name: "\u79EF\u5206\u4EA4\u6613\u6838\u5FC3\u670D\u52A1"
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/pointsService.ts
+      - apps/server/src/services/pointsTransactionService.ts
+      prompt: "\u68C0\u67E5\u79EF\u5206\u4EA4\u6613\u670D\u52A1\uFF0C\u9A8C\u8BC1\u6709\
+        PointsService\u7C7B\u5B9E\u73B0\u83B7\u53D6\u3001\u6D88\u8017\u3001\u51BB\u7ED3\
+        \u3001\u8F6C\u8D26\u65B9\u6CD5\uFF0C\u786E\u8BA4\u4E8B\u52A1\u548C\u5E76\u53D1\
+        \u63A7\u5236"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u79EF\u5206\u83B7\u53D6\u548C\u6D88\u8017\u89C4\u5219:\n- \u83B7\u53D6\
+    \u89C4\u5219\u914D\u7F6E(\u7B7E\u5230\u3001\u5206\u4EAB\u3001\u5B8C\u6210\u4EFB\
+    \u52A1\u7B49)\n- \u6D88\u8017\u89C4\u5219\u914D\u7F6E(\u67E5\u770B\u7167\u7247\
+    \u3001\u53D1\u8D77\u5339\u914D\u7B49)\n- \u6BCF\u65E5/\u6BCF\u5468\u83B7\u53D6\
+    \u4E0A\u9650\n- \u79EF\u5206\u4EF7\u503C\u6362\u7B97(\u4EBA\u6C11\u5E01->\u79EF\
+    \u5206)\n- \u89C4\u5219\u52A8\u6001\u8C03\u6574\u63A5\u53E3(\u7BA1\u7406\u5458\
+    )\n"
+  id: ISSUE-CR003b~c2
+  name: "\u79EF\u5206\u89C4\u5219\u914D\u7F6E"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/config/pointsRules.ts
+      - apps/server/src/services/pointsRuleEngine.ts
+      prompt: "\u68C0\u67E5\u79EF\u5206\u89C4\u5219\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u6709\
+        PointsRule\u914D\u7F6E\u8868\u548CRuleEngine\uFF0C\u786E\u8BA4\u83B7\u53D6\
+        /\u6D88\u8017\u89C4\u5219\u548C\u4E0A\u9650\u63A7\u5236"
+current_task: null
+description: "\u79EF\u5206\u4EA4\u6613\u6838\u5FC3\u670D\u52A1\u5B9E\u73B0\uFF0C\u5305\
+  \u542B\u79EF\u5206\u83B7\u53D6\u3001\u6D88\u8017\u3001\u51BB\u7ED3\u3001\u8F6C\u8D26\
+  \u7B49\u64CD\u4F5C\u7684\u539F\u5B50\u6027\u5B9E\u73B0\uFF0C\n\u4EE5\u53CA\u79EF\
+  \u5206\u89C4\u5219\u914D\u7F6E\u7CFB\u7EDF(\u83B7\u53D6\u89C4\u5219\u3001\u6D88\u8017\
+  \u89C4\u5219\u3001\u4E0A\u9650\u63A7\u5236\u7B49)\u3002\n\u4F5C\u4E3A\u79EF\u5206\
+  \u7CFB\u7EDF\u7684\u670D\u52A1\u5C42\uFF0C\u63D0\u4F9B\u5B8C\u6574\u7684\u79EF\u5206\
+  \u64CD\u4F5CAPI\u3002\n"
 estimated_lines: 350
+id: ISSUE-CR003b
+issue_number: 603.2
+logic: sufficient_necessary
+parent_issue: ISSUE-CR003
+part_of: "\u79EF\u5206\u7CFB\u7EDF\u57FA\u7840\u4E0E\u4EA4\u6613\u8BB0\u5F55\u62C6\
+  \u5206"
+prerequisites:
+- ISSUE-CR003a
+slug: points-transaction-service-and-rules
+status: pending
+title: "\u79EF\u5206\u4EA4\u6613\u6838\u5FC3\u670D\u52A1\u4E0E\u89C4\u5219\u914D\u7F6E"

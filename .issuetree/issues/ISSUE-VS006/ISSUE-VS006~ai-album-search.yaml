@@ -1,147 +1,143 @@
----
-id: "ISSUE-VS006"
-issue_number: 706
-title: "AI相册智能检索与历史查询"
-slug: "ai-album-search"
-status: "pending"
-description: |
-  实现VisionShare场景的AI相册智能检索和历史查询功能。用户可以通过自然语言描述
-  搜索已购买或上传的照片，AI基于图像内容分析和元数据进行智能匹配。支持
-  历史任务查询、时间线浏览和收藏管理。
-prerequisites:
-  - "ISSUE-VS002"
-  - "ISSUE-AI005"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-VS006~c1"
-    name: "自然语言图像搜索"
-    description: |
-      搜索功能:
-      - 自然语言描述输入
-      - AI图像内容理解
-      - 语义匹配和排序
-      - 搜索结果过滤
-      - 搜索历史记录
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查自然语言图像搜索，验证有描述输入、AI内容理解、语义匹配和搜索历史功能"
-        context_files: ["apps/mobile/src/screens/VisionShare/SearchAlbum.tsx", "apps/server/src/services/ai/imageSemanticSearch.ts"]
-        
-
-  - id: "ISSUE-VS006~c2"
-    name: "图像标签和索引"
-    description: |
-      索引系统:
-      - AI自动标签生成
-      - 图像内容描述生成
-      - 多维度索引构建
-      - 标签分类体系
-      - 索引更新机制
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查图像标签索引，验证有自动标签、内容描述、多维度索引和分类体系功能"
-        context_files: ["apps/server/src/services/ai/imageIndexing.ts", "apps/server/src/services/search/imageSearchIndex.ts"]
-        
-
-  - id: "ISSUE-VS006~c3"
-    name: "历史任务时间线"
-    description: |
-      时间线功能:
-      - 按时间排序的任务列表
-      - 时间轴可视化展示
-      - 快速定位到指定日期
-      - 任务状态筛选
-      - 任务详情快捷入口
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查历史任务时间线，验证有时间排序、可视化、日期定位、筛选和快捷入口功能"
-        context_files: ["apps/mobile/src/screens/VisionShare/TaskTimeline.tsx", "apps/mobile/src/components/Timeline/"]
-        
-
-  - id: "ISSUE-VS006~c4"
-    name: "智能相册分类"
-    description: |
-      分类功能:
-      - AI自动相册分组
-      - 地理位置聚类
-      - 时间周期分组
-      - 场景类型分类
-      - 自定义相册创建
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查智能相册分类，验证有自动分组、地理聚类、时间分组、场景分类和自定义功能"
-        context_files: ["apps/mobile/src/screens/VisionShare/SmartAlbums.tsx", "apps/server/src/services/ai/albumClustering.ts"]
-        
-
-  - id: "ISSUE-VS006~c5"
-    name: "收藏和标记系统"
-    description: |
-      收藏功能:
-      - 照片收藏/取消收藏
-      - 收藏夹管理
-      - 快速收藏标签
-      - 收藏照片搜索
-      - 收藏同步
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查收藏标记系统，验证有收藏功能、收藏夹管理、标签、搜索和同步功能"
-        context_files: ["apps/mobile/src/components/Favorite/", "apps/server/src/services/favorite/favoriteService.ts"]
-        
-
-  - id: "ISSUE-VS006~c6"
-    name: "搜索推荐和发现"
-    description: |
-      推荐功能:
-      - 热门搜索推荐
-      - 基于历史搜索建议
-      - 相似照片推荐
-      - 发现新内容
-      - 搜索趋势展示
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查搜索推荐发现，验证有热门推荐、历史建议、相似推荐和搜索趋势功能"
-        context_files: ["apps/mobile/src/components/SearchRecommendations/", "apps/server/src/services/search/searchRecommendation.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u641C\u7D22\u529F\u80FD:\n- \u81EA\u7136\u8BED\u8A00\u63CF\u8FF0\u8F93\
+    \u5165\n- AI\u56FE\u50CF\u5185\u5BB9\u7406\u89E3\n- \u8BED\u4E49\u5339\u914D\u548C\
+    \u6392\u5E8F\n- \u641C\u7D22\u7ED3\u679C\u8FC7\u6EE4\n- \u641C\u7D22\u5386\u53F2\
+    \u8BB0\u5F55\n"
+  id: ISSUE-VS006~c1
+  name: "\u81EA\u7136\u8BED\u8A00\u56FE\u50CF\u641C\u7D22"
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/VisionShare/SearchAlbum.tsx
+      - apps/server/src/services/ai/imageSemanticSearch.ts
+      prompt: "\u68C0\u67E5\u81EA\u7136\u8BED\u8A00\u56FE\u50CF\u641C\u7D22\uFF0C\u9A8C\
+        \u8BC1\u6709\u63CF\u8FF0\u8F93\u5165\u3001AI\u5185\u5BB9\u7406\u89E3\u3001\
+        \u8BED\u4E49\u5339\u914D\u548C\u641C\u7D22\u5386\u53F2\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u7D22\u5F15\u7CFB\u7EDF:\n- AI\u81EA\u52A8\u6807\u7B7E\u751F\u6210\
+    \n- \u56FE\u50CF\u5185\u5BB9\u63CF\u8FF0\u751F\u6210\n- \u591A\u7EF4\u5EA6\u7D22\
+    \u5F15\u6784\u5EFA\n- \u6807\u7B7E\u5206\u7C7B\u4F53\u7CFB\n- \u7D22\u5F15\u66F4\
+    \u65B0\u673A\u5236\n"
+  id: ISSUE-VS006~c2
+  name: "\u56FE\u50CF\u6807\u7B7E\u548C\u7D22\u5F15"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/imageIndexing.ts
+      - apps/server/src/services/search/imageSearchIndex.ts
+      prompt: "\u68C0\u67E5\u56FE\u50CF\u6807\u7B7E\u7D22\u5F15\uFF0C\u9A8C\u8BC1\u6709\
+        \u81EA\u52A8\u6807\u7B7E\u3001\u5185\u5BB9\u63CF\u8FF0\u3001\u591A\u7EF4\u5EA6\
+        \u7D22\u5F15\u548C\u5206\u7C7B\u4F53\u7CFB\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u65F6\u95F4\u7EBF\u529F\u80FD:\n- \u6309\u65F6\u95F4\u6392\u5E8F\u7684\
+    \u4EFB\u52A1\u5217\u8868\n- \u65F6\u95F4\u8F74\u53EF\u89C6\u5316\u5C55\u793A\n\
+    - \u5FEB\u901F\u5B9A\u4F4D\u5230\u6307\u5B9A\u65E5\u671F\n- \u4EFB\u52A1\u72B6\
+    \u6001\u7B5B\u9009\n- \u4EFB\u52A1\u8BE6\u60C5\u5FEB\u6377\u5165\u53E3\n"
+  id: ISSUE-VS006~c3
+  name: "\u5386\u53F2\u4EFB\u52A1\u65F6\u95F4\u7EBF"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/VisionShare/TaskTimeline.tsx
+      - apps/mobile/src/components/Timeline/
+      prompt: "\u68C0\u67E5\u5386\u53F2\u4EFB\u52A1\u65F6\u95F4\u7EBF\uFF0C\u9A8C\u8BC1\
+        \u6709\u65F6\u95F4\u6392\u5E8F\u3001\u53EF\u89C6\u5316\u3001\u65E5\u671F\u5B9A\
+        \u4F4D\u3001\u7B5B\u9009\u548C\u5FEB\u6377\u5165\u53E3\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5206\u7C7B\u529F\u80FD:\n- AI\u81EA\u52A8\u76F8\u518C\u5206\u7EC4\
+    \n- \u5730\u7406\u4F4D\u7F6E\u805A\u7C7B\n- \u65F6\u95F4\u5468\u671F\u5206\u7EC4\
+    \n- \u573A\u666F\u7C7B\u578B\u5206\u7C7B\n- \u81EA\u5B9A\u4E49\u76F8\u518C\u521B\
+    \u5EFA\n"
+  id: ISSUE-VS006~c4
+  name: "\u667A\u80FD\u76F8\u518C\u5206\u7C7B"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/VisionShare/SmartAlbums.tsx
+      - apps/server/src/services/ai/albumClustering.ts
+      prompt: "\u68C0\u67E5\u667A\u80FD\u76F8\u518C\u5206\u7C7B\uFF0C\u9A8C\u8BC1\u6709\
+        \u81EA\u52A8\u5206\u7EC4\u3001\u5730\u7406\u805A\u7C7B\u3001\u65F6\u95F4\u5206\
+        \u7EC4\u3001\u573A\u666F\u5206\u7C7B\u548C\u81EA\u5B9A\u4E49\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u6536\u85CF\u529F\u80FD:\n- \u7167\u7247\u6536\u85CF/\u53D6\u6D88\
+    \u6536\u85CF\n- \u6536\u85CF\u5939\u7BA1\u7406\n- \u5FEB\u901F\u6536\u85CF\u6807\
+    \u7B7E\n- \u6536\u85CF\u7167\u7247\u641C\u7D22\n- \u6536\u85CF\u540C\u6B65\n"
+  id: ISSUE-VS006~c5
+  name: "\u6536\u85CF\u548C\u6807\u8BB0\u7CFB\u7EDF"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/Favorite/
+      - apps/server/src/services/favorite/favoriteService.ts
+      prompt: "\u68C0\u67E5\u6536\u85CF\u6807\u8BB0\u7CFB\u7EDF\uFF0C\u9A8C\u8BC1\u6709\
+        \u6536\u85CF\u529F\u80FD\u3001\u6536\u85CF\u5939\u7BA1\u7406\u3001\u6807\u7B7E\
+        \u3001\u641C\u7D22\u548C\u540C\u6B65\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u63A8\u8350\u529F\u80FD:\n- \u70ED\u95E8\u641C\u7D22\u63A8\u8350\n\
+    - \u57FA\u4E8E\u5386\u53F2\u641C\u7D22\u5EFA\u8BAE\n- \u76F8\u4F3C\u7167\u7247\
+    \u63A8\u8350\n- \u53D1\u73B0\u65B0\u5185\u5BB9\n- \u641C\u7D22\u8D8B\u52BF\u5C55\
+    \u793A\n"
+  id: ISSUE-VS006~c6
+  name: "\u641C\u7D22\u63A8\u8350\u548C\u53D1\u73B0"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/SearchRecommendations/
+      - apps/server/src/services/search/searchRecommendation.ts
+      prompt: "\u68C0\u67E5\u641C\u7D22\u63A8\u8350\u53D1\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \u70ED\u95E8\u63A8\u8350\u3001\u5386\u53F2\u5EFA\u8BAE\u3001\u76F8\u4F3C\u63A8\
+        \u8350\u548C\u641C\u7D22\u8D8B\u52BF\u529F\u80FD"
+current_task: null
+description: "\u5B9E\u73B0VisionShare\u573A\u666F\u7684AI\u76F8\u518C\u667A\u80FD\u68C0\
+  \u7D22\u548C\u5386\u53F2\u67E5\u8BE2\u529F\u80FD\u3002\u7528\u6237\u53EF\u4EE5\u901A\
+  \u8FC7\u81EA\u7136\u8BED\u8A00\u63CF\u8FF0\n\u641C\u7D22\u5DF2\u8D2D\u4E70\u6216\
+  \u4E0A\u4F20\u7684\u7167\u7247\uFF0CAI\u57FA\u4E8E\u56FE\u50CF\u5185\u5BB9\u5206\
+  \u6790\u548C\u5143\u6570\u636E\u8FDB\u884C\u667A\u80FD\u5339\u914D\u3002\u652F\u6301\
+  \n\u5386\u53F2\u4EFB\u52A1\u67E5\u8BE2\u3001\u65F6\u95F4\u7EBF\u6D4F\u89C8\u548C\
+  \u6536\u85CF\u7BA1\u7406\u3002\n"
+id: ISSUE-VS006
+issue_number: 706
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-VS002
+- ISSUE-AI005
+slug: ai-album-search
+status: pending
+title: "AI\u76F8\u518C\u667A\u80FD\u68C0\u7D22\u4E0E\u5386\u53F2\u67E5\u8BE2"

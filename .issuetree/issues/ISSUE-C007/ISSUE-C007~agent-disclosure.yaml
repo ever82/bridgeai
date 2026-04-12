@@ -1,119 +1,106 @@
----
-id: "ISSUE-C007"
-issue_number: 309
-title: "Agent信息披露控制机制"
-slug: "agent-disclosure"
-status: "pending"
-description: |
-  实现 Agent 信息披露控制机制，允许用户控制哪些信息
-  在匹配过程中被披露，保护用户隐私。
-prerequisites:
-  - "ISSUE-C002c"
-  - "ISSUE-COM002c"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-C007~c1"
-    name: "披露级别定义"
-    description: |
-      披露控制:
-      - 公开信息(任何人可见)
-      - 匹配后可见信息
-      - 私聊后可见信息
-      - 引荐后可见信息
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查披露级别，验证有 DisclosureLevel 枚举和字段级披露控制"
-        context_files: ["packages/shared/src/types/disclosure.ts"]
-        
-
-  - id: "ISSUE-C007~c2"
-    name: "字段级披露设置"
-    description: |
-      字段控制:
-      - 每个字段的披露级别
-      - 默认披露策略
-      - 批量设置
-      - 预览效果
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查字段披露设置，验证有 DisclosureSettings 组件可配置每个字段"
-        context_files: ["apps/mobile/src/screens/Settings/DisclosureSettings.tsx"]
-        
-
-  - id: "ISSUE-C007~c3"
-    name: "披露权限检查"
-    description: |
-      权限控制:
-      - 披露级别计算
-      - 访问权限验证
-      - 自动披露升级
-      - 披露历史记录
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查披露权限，验证有 canViewField 函数检查用户访问权限"
-        context_files: ["apps/server/src/services/disclosureService.ts"]
-        
-
-  - id: "ISSUE-C007~c4"
-    name: "信息披露预览"
-    description: |
-      预览功能:
-      - 不同角色视角预览
-      - 信息脱敏展示
-      - 披露状态可视化
-      - 对方可见信息提示
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查预览功能，验证有 DisclosurePreview 组件展示不同角色的可见信息"
-        context_files: ["apps/mobile/src/components/Disclosure/DisclosurePreview.tsx"]
-        
-
-  - id: "ISSUE-C007~c5"
-    name: "披露变更通知"
-    description: |
-      变更处理:
-      - 披露设置变更记录
-      - 已披露信息撤回
-      - 对方变更通知
-      - 披露审计日志
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查变更通知，验证有披露变更记录和通知机制"
-        context_files: ["apps/server/src/services/disclosureAuditService.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u62AB\u9732\u63A7\u5236:\n- \u516C\u5F00\u4FE1\u606F(\u4EFB\u4F55\
+    \u4EBA\u53EF\u89C1)\n- \u5339\u914D\u540E\u53EF\u89C1\u4FE1\u606F\n- \u79C1\u804A\
+    \u540E\u53EF\u89C1\u4FE1\u606F\n- \u5F15\u8350\u540E\u53EF\u89C1\u4FE1\u606F\n"
+  id: ISSUE-C007~c1
+  name: "\u62AB\u9732\u7EA7\u522B\u5B9A\u4E49"
+  verification:
+    ai:
+      context_files:
+      - packages/shared/src/types/disclosure.ts
+      prompt: "\u68C0\u67E5\u62AB\u9732\u7EA7\u522B\uFF0C\u9A8C\u8BC1\u6709 DisclosureLevel\
+        \ \u679A\u4E3E\u548C\u5B57\u6BB5\u7EA7\u62AB\u9732\u63A7\u5236"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5B57\u6BB5\u63A7\u5236:\n- \u6BCF\u4E2A\u5B57\u6BB5\u7684\u62AB\u9732\
+    \u7EA7\u522B\n- \u9ED8\u8BA4\u62AB\u9732\u7B56\u7565\n- \u6279\u91CF\u8BBE\u7F6E\
+    \n- \u9884\u89C8\u6548\u679C\n"
+  id: ISSUE-C007~c2
+  name: "\u5B57\u6BB5\u7EA7\u62AB\u9732\u8BBE\u7F6E"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Settings/DisclosureSettings.tsx
+      prompt: "\u68C0\u67E5\u5B57\u6BB5\u62AB\u9732\u8BBE\u7F6E\uFF0C\u9A8C\u8BC1\u6709\
+        \ DisclosureSettings \u7EC4\u4EF6\u53EF\u914D\u7F6E\u6BCF\u4E2A\u5B57\u6BB5"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u6743\u9650\u63A7\u5236:\n- \u62AB\u9732\u7EA7\u522B\u8BA1\u7B97\n\
+    - \u8BBF\u95EE\u6743\u9650\u9A8C\u8BC1\n- \u81EA\u52A8\u62AB\u9732\u5347\u7EA7\
+    \n- \u62AB\u9732\u5386\u53F2\u8BB0\u5F55\n"
+  id: ISSUE-C007~c3
+  name: "\u62AB\u9732\u6743\u9650\u68C0\u67E5"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/disclosureService.ts
+      prompt: "\u68C0\u67E5\u62AB\u9732\u6743\u9650\uFF0C\u9A8C\u8BC1\u6709 canViewField\
+        \ \u51FD\u6570\u68C0\u67E5\u7528\u6237\u8BBF\u95EE\u6743\u9650"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u9884\u89C8\u529F\u80FD:\n- \u4E0D\u540C\u89D2\u8272\u89C6\u89D2\u9884\
+    \u89C8\n- \u4FE1\u606F\u8131\u654F\u5C55\u793A\n- \u62AB\u9732\u72B6\u6001\u53EF\
+    \u89C6\u5316\n- \u5BF9\u65B9\u53EF\u89C1\u4FE1\u606F\u63D0\u793A\n"
+  id: ISSUE-C007~c4
+  name: "\u4FE1\u606F\u62AB\u9732\u9884\u89C8"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/Disclosure/DisclosurePreview.tsx
+      prompt: "\u68C0\u67E5\u9884\u89C8\u529F\u80FD\uFF0C\u9A8C\u8BC1\u6709 DisclosurePreview\
+        \ \u7EC4\u4EF6\u5C55\u793A\u4E0D\u540C\u89D2\u8272\u7684\u53EF\u89C1\u4FE1\
+        \u606F"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u53D8\u66F4\u5904\u7406:\n- \u62AB\u9732\u8BBE\u7F6E\u53D8\u66F4\u8BB0\
+    \u5F55\n- \u5DF2\u62AB\u9732\u4FE1\u606F\u64A4\u56DE\n- \u5BF9\u65B9\u53D8\u66F4\
+    \u901A\u77E5\n- \u62AB\u9732\u5BA1\u8BA1\u65E5\u5FD7\n"
+  id: ISSUE-C007~c5
+  name: "\u62AB\u9732\u53D8\u66F4\u901A\u77E5"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/disclosureAuditService.ts
+      prompt: "\u68C0\u67E5\u53D8\u66F4\u901A\u77E5\uFF0C\u9A8C\u8BC1\u6709\u62AB\u9732\
+        \u53D8\u66F4\u8BB0\u5F55\u548C\u901A\u77E5\u673A\u5236"
+current_task: null
+description: "\u5B9E\u73B0 Agent \u4FE1\u606F\u62AB\u9732\u63A7\u5236\u673A\u5236\uFF0C\
+  \u5141\u8BB8\u7528\u6237\u63A7\u5236\u54EA\u4E9B\u4FE1\u606F\n\u5728\u5339\u914D\
+  \u8FC7\u7A0B\u4E2D\u88AB\u62AB\u9732\uFF0C\u4FDD\u62A4\u7528\u6237\u9690\u79C1\u3002\
+  \n"
+id: ISSUE-C007
+issue_number: 309
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-C002c
+- ISSUE-COM002c
+slug: agent-disclosure
+status: pending
+title: "Agent\u4FE1\u606F\u62AB\u9732\u63A7\u5236\u673A\u5236"

@@ -22,7 +22,6 @@ criteria:
       - 未读消息红点/角标显示
       - Tab 切换动画效果
       - 适配 iOS 底部安全区域
-status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -44,7 +43,6 @@ status: passed
       - 嵌套导航结构（Tab + Stack）
       - 路由参数类型定义
       - 深链接（Deep Link）配置
-status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -67,7 +65,6 @@ status: passed
       - 内容滚动容器（ScrollView/FlatList）
       - 加载状态占位（Skeleton）
       - 空状态和错误状态页面
-status: passed
     coverage:
       unit: required
       integration: not_needed
@@ -90,7 +87,6 @@ status: passed
       - 菜单项列表（设置、帮助、反馈等）
       - 手势滑动打开/关闭
       - 遮罩层点击关闭
-status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -112,7 +108,6 @@ status: passed
       - 导航状态持久化
       - 返回按钮行为控制
       - 页面跳转动画配置
-status: passed
     coverage:
       unit: required
       integration: required
@@ -134,7 +129,6 @@ status: passed
       - 键盘弹出时布局调整
       - 底部 Tab 栏与输入法协调
       - 刘海屏/灵动岛适配
-status: passed
     coverage:
       unit: not_needed
       integration: required

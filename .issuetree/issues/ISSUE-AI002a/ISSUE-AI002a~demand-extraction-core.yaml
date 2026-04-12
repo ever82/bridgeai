@@ -23,7 +23,6 @@ criteria:
       - 意图分类
       - 需求结构化输出
       - 置信度评分
-status: implemented
     coverage:
       unit: required
       integration: required
@@ -44,7 +43,6 @@ status: implemented
       - 枚举值匹配
       - 缺失字段推断
       - 冲突检测与提示
-status: implemented
     coverage:
       unit: required
       integration: required
@@ -65,7 +63,6 @@ status: implemented
       - 合理性检查(预算范围等)
       - 用户确认流程
       - 提取结果修正
-status: implemented
     coverage:
       unit: required
       integration: required
@@ -86,7 +83,6 @@ status: implemented
       - 提取结果缓存
       - WebSocket实时反馈
       - 场景配置API
-status: implemented
     coverage:
       unit: required
       integration: required

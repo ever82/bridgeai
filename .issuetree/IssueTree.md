@@ -47,8 +47,8 @@ flowchart TD
         SEC001[🟢 ISSUE-SEC001<br/>RBAC权限控制系统]
         SEC002[🟢 ISSUE-SEC002<br/>敏感数据加密与保护]
         SEC003[🟡 ISSUE-SEC003<br/>API限流与安全防护]
-        SEC004[🟡 ISSUE-SEC004<br/>图片上传安全检查]
-        SEC005[🟡 ISSUE-SEC005<br/>举报与内容审核系统]
+        SEC004[🆘 ISSUE-SEC004<br/>图片上传安全检查]
+        SEC005[🆘 ISSUE-SEC005<br/>举报与内容审核系统]
     end
 
     subgraph Auth["🔐 认证与用户层 - Auth"]
@@ -65,28 +65,28 @@ flowchart TD
         C002c[✂️ ISSUE-C002c<br/>L3自然语言信息模型]
         C003[🟡 ISSUE-C003<br/>地域过滤系统]
         C004[🟡 ISSUE-C004<br/>属性过滤系统]
-        C005[🟡 ISSUE-C005<br/>信用过滤系统]
+        C005[🆘 ISSUE-C005<br/>信用过滤系统]
         C006[🟡 ISSUE-C006<br/>场景配置管理]
-        C007[🟡 ISSUE-C007<br/>Agent信息披露控制机制]
+        C007[🆘 ISSUE-C007<br/>Agent信息披露控制机制]
     end
 
     subgraph Matching["🎯 匹配引擎层 - Matching"]
-        M001a[✂️ ISSUE-M001a<br/>查询构建器与DSL设计]
-        M001b[✂️ ISSUE-M001b<br/>实时查询执行引擎]
-        M002[🟡 ISSUE-M002<br/>Agent智能筛选排序]
-        M003[🟡 ISSUE-M003<br/>匹配度算法实现]
-        M004[🟡 ISSUE-M004<br/>匹配结果推送通知]
+        M001a[🆘 ISSUE-M001a<br/>查询构建器与DSL设计]
+        M001b[🆘 ISSUE-M001b<br/>实时查询执行引擎]
+        M002[🔵 ISSUE-M002<br/>Agent智能筛选排序]
+        M003[🔵 ISSUE-M003<br/>匹配度算法实现]
+        M004[🆘 ISSUE-M004<br/>匹配结果推送通知]
     end
 
     subgraph Comm["💬 通信层 - Communication"]
         COM001a[✂️ ISSUE-COM001a<br/>Socket.io基础设施搭建]
         COM001b[✂️ ISSUE-COM001b<br/>连接管理与房间系统]
-        COM002a[✂️ ISSUE-COM002a<br/>聊天房间基础架构]
-        COM002b[✂️ ISSUE-COM002b<br/>消息持久化与历史记录]
-        COM002c[✂️ ISSUE-COM002c<br/>群聊状态同步与在线状态]
-        COM003[🟡 ISSUE-COM003<br/>人机切换机制]
-        COM004[🟡 ISSUE-COM004<br/>Agent通信协议定义]
-        COM005[🟡 ISSUE-COM005<br/>私聊建议系统]
+        COM002a[❌ ISSUE-COM002a<br/>聊天房间基础架构]
+        COM002b[🆘 ISSUE-COM002b<br/>消息持久化与历史记录]
+        COM002c[❌ ISSUE-COM002c<br/>群聊状态同步与在线状态]
+        COM003[🔵 ISSUE-COM003<br/>人机切换机制]
+        COM004[🔵 ISSUE-COM004<br/>Agent通信协议定义]
+        COM005[🔵 ISSUE-COM005<br/>私聊建议系统]
     end
 
     subgraph AI["🧠 AI服务层 - AI Service"]
@@ -94,8 +94,8 @@ flowchart TD
         AI002[✂️ ISSUE-AI002<br/>需求智能提炼服务]
         AI003[✂️ ISSUE-AI003<br/>供给智能提炼服务]
         AI004[🟡 ISSUE-AI004<br/>Agent对话生成服务]
-        AI005[🟡 ISSUE-AI005<br/>图像分析与Vision API]
-        AI006[🟡 ISSUE-AI006<br/>AI服务降级与容错策略]
+        AI005[🆘 ISSUE-AI005<br/>图像分析与Vision API]
+        AI006[🆘 ISSUE-AI006<br/>AI服务降级与容错策略]
     end
 
     subgraph Credit["⭐ 信用与积分层 - Credit"]
@@ -105,52 +105,52 @@ flowchart TD
     end
 
     subgraph VS["📷 VisionShare场景"]
-        VS001[🟡 ISSUE-VS001<br/>VisionShare需求发布]
-        VS002[🟡 ISSUE-VS002<br/>附近任务查询与接单]
-        VS003[🟡 ISSUE-VS003<br/>相机拍照与上传]
-        VS004[🟡 ISSUE-VS004<br/>AI隐私脱敏处理]
-        VS005[🟡 ISSUE-VS005<br/>照片查看与积分支付]
-        VS006[🟡 ISSUE-VS006<br/>AI相册智能检索与历史查询]
-        VS007[🟡 ISSUE-VS007<br/>本地相册AI智能检索]
+        VS001[🆘 ISSUE-VS001<br/>VisionShare需求发布]
+        VS002[🆘 ISSUE-VS002<br/>附近任务查询与接单]
+        VS003[🆘 ISSUE-VS003<br/>相机拍照与上传]
+        VS004[🆘 ISSUE-VS004<br/>AI隐私脱敏处理]
+        VS005[🆘 ISSUE-VS005<br/>照片查看与积分支付]
+        VS006[🆘 ISSUE-VS006<br/>AI相册智能检索与历史查询]
+        VS007[🆘 ISSUE-VS007<br/>本地相册AI智能检索]
     end
 
     subgraph Date["💕 AgentDate场景"]
-        DATE001[🟡 ISSUE-DATE001<br/>交友画像配置]
-        DATE002[🟡 ISSUE-DATE002<br/>Agent主动匹配推荐]
-        DATE003[🟡 ISSUE-DATE003<br/>Agent间对话匹配]
-        DATE004[🟡 ISSUE-DATE004<br/>双向同意引荐机制]
+        DATE001[🆘 ISSUE-DATE001<br/>交友画像配置]
+        DATE002[🆘 ISSUE-DATE002<br/>Agent主动匹配推荐]
+        DATE003[🆘 ISSUE-DATE003<br/>Agent间对话匹配]
+        DATE004[🆘 ISSUE-DATE004<br/>双向同意引荐机制]
     end
 
     subgraph Job["💼 AgentJob场景"]
-        JOB001[🟡 ISSUE-JOB001<br/>求职者画像与简历]
-        JOB002[🟡 ISSUE-JOB002<br/>招聘方职位发布]
-        JOB003[🔵 ISSUE-JOB003<br/>简历智能匹配筛选]
-        JOB004[🟡 ISSUE-JOB004<br/>薪资协商与面试安排]
+        JOB001[🆘 ISSUE-JOB001<br/>求职者画像与简历]
+        JOB002[🆘 ISSUE-JOB002<br/>招聘方职位发布]
+        JOB003[🆘 ISSUE-JOB003<br/>简历智能匹配筛选]
+        JOB004[🆘 ISSUE-JOB004<br/>薪资协商与面试安排]
     end
 
     subgraph Ad["🛒 AgentAd场景"]
-        AD001[🟡 ISSUE-AD001<br/>消费需求画像配置]
-        AD002[🟡 ISSUE-AD002<br/>商家优惠配置]
-        AD003[🟡 ISSUE-AD003<br/>Agent优惠协商谈判]
-        AD004[🟡 ISSUE-AD004<br/>一键购买与优惠码]
+        AD001[🆘 ISSUE-AD001<br/>消费需求画像配置]
+        AD002[🆘 ISSUE-AD002<br/>商家优惠配置]
+        AD003[🆘 ISSUE-AD003<br/>Agent优惠协商谈判]
+        AD004[🆘 ISSUE-AD004<br/>一键购买与优惠码]
     end
 
     subgraph UI["📱 前端UI层 - Frontend"]
         UI001[🟢 ISSUE-UI001<br/>设计系统与组件库]
         UI002[🟡 ISSUE-UI002<br/>全局导航与布局]
-        UI003[🟡 ISSUE-UI003<br/>首页与状态展示]
-        UI004a[✂️ ISSUE-UI004a<br/>聊天消息组件与输入框]
-        UI004b[✂️ ISSUE-UI004b<br/>Agent/人类用户状态指示器]
-        UI004c[✂️ ISSUE-UI004c<br/>聊天记录滚动与分页加载]
-        UI005[🟡 ISSUE-UI005<br/>Agent配置界面]
-        UI006[🟡 ISSUE-UI006<br/>消息中心]
-        UI007[🟡 ISSUE-UI007<br/>个人中心与信用展示]
+        UI003[🆘 ISSUE-UI003<br/>首页与状态展示]
+        UI004a[🆘 ISSUE-UI004a<br/>聊天消息组件与输入框]
+        UI004b[🆘 ISSUE-UI004b<br/>Agent/人类用户状态指示器]
+        UI004c[🆘 ISSUE-UI004c<br/>聊天记录滚动与分页加载]
+        UI005[🆘 ISSUE-UI005<br/>Agent配置界面]
+        UI006[🆘 ISSUE-UI006<br/>消息中心]
+        UI007[🆘 ISSUE-UI007<br/>个人中心与信用展示]
     end
 
     subgraph Integrate["🚀 集成与部署"]
         INT001[🟡 ISSUE-INT001<br/>端到端集成测试]
         INT002[✂️ ISSUE-INT002<br/>性能优化与压测]
-        INT003[🟡 ISSUE-INT003<br/>Demo演示准备]
+        INT003[🆘 ISSUE-INT003<br/>Demo演示准备]
     end
 
     %% 基础层依赖

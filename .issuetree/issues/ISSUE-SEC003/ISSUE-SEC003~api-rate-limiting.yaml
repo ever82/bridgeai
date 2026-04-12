@@ -2,7 +2,7 @@ id: ISSUE-SEC003
 issue_number: 403
 title: API限流与安全防护
 slug: api-rate-limiting
-status: checking
+status: accepting
 description: |
   实现API限流与安全防护机制，包括请求频率限制、DDoS防护、
   IP黑名单、请求大小限制、CORS配置等，保护API服务免受滥用和攻击。
@@ -19,7 +19,6 @@ criteria:
       - 基于用户的限流
       - 不同端点差异化限流
       - 限流响应头(X-RateLimit-*)
-status: checking
     coverage:
       unit: required
       integration: required
@@ -40,7 +39,6 @@ status: checking
       - 自动IP封禁机制
       - 请求频率异常告警
       - 慢速攻击防护
-status: checking
     coverage:
       unit: required
       integration: required
@@ -61,7 +59,6 @@ status: checking
       - IP黑名单机制
       - 地理位置限制
       - IP信誉检查
-status: checking
     coverage:
       unit: required
       integration: required
@@ -82,7 +79,6 @@ status: checking
       - Content-Type校验
       - 恶意Payload检测
       - SQL注入/XSS防护
-status: checking
     coverage:
       unit: required
       integration: required
@@ -103,7 +99,6 @@ status: checking
       - 安全响应头设置
       - CSP内容安全策略
       - HSTS严格传输安全
-status: checking
     coverage:
       unit: required
       integration: required
@@ -124,7 +119,6 @@ status: checking
       - 异常请求统计分析
       - 安全事件告警通知
       - 封禁IP管理界面
-status: checking
     coverage:
       unit: required
       integration: required

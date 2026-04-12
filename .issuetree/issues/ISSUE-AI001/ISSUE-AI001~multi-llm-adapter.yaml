@@ -1,223 +1,221 @@
----
-id: "ISSUE-AI001"
-issue_number: 501
-title: "多LLM适配器与熔断器"
-slug: "multi-llm-adapter"
-status: "passed"
-description: |
-  实现多LLM适配器与熔断器机制，支持OpenAI、Claude、
-  文心一言等多个大语言模型提供商的统一接入，并提供
-  熔断、降级、负载均衡等高可用能力。
-prerequisites:
-  - "ISSUE-F003"
-created_at: "2026-04-08"
-logic: sufficient_necessary
-criteria:
-  - id: "ISSUE-AI001~c1"
-    name: "LLM提供商适配器"
-    description: |
-      适配器实现:
-      - OpenAI GPT系列适配器
-      - Anthropic Claude适配器
-      - 文心一言适配器
-      - 统一接口抽象层
-      - 模型能力注册表
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查LLM适配器实现，验证有OpenAIAdapter、ClaudeAdapter等类实现统一的ILLMAdapter接口，包含chat completion和embedding方法"
-        context_files: ["apps/server/src/services/ai/adapters/"]
-
-
-  - id: "ISSUE-AI001~c2"
-    name: "熔断器机制"
-    description: |
-      熔断器实现:
-      - 失败率监控
-      - 熔断状态管理(关闭/半开/打开)
-      - 自动恢复探测
-      - 熔断事件通知
-      - 多维度熔断策略
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查熔断器实现，验证有CircuitBreaker类，包含CLOSED、HALF_OPEN、OPEN三种状态，支持failureThreshold和recoveryTimeout配置"
-        context_files: ["apps/server/src/services/ai/circuitBreaker.ts"]
-
-
-  - id: "ISSUE-AI001~c3"
-    name: "智能路由与负载均衡"
-    description: |
-      路由策略:
-      - 基于成本的智能路由
-      - 延迟优先路由
-      - 质量优先路由
-      - 轮询/权重负载均衡
-      - 模型能力匹配
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查路由实现，验证有LLMRouter类，支持cost、latency、quality路由策略，根据模型能力标签匹配请求"
-        context_files: ["apps/server/src/services/ai/llmRouter.ts"]
-
-
-  - id: "ISSUE-AI001~c4"
-    name: "降级与容错策略"
-    description: |
-      降级策略:
-      - 模型降级(cheap模型替代)
-      - 提供商降级(备用提供商)
-      - 功能降级(简化输出)
-      - 缓存响应回退
-      - 异步队列兜底
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查降级策略，验证有FallbackStrategy接口及实现类，支持model-downgrade、provider-switch、cache-fallback等策略"
-        context_files: ["apps/server/src/services/ai/fallback/"]
-
-
-  - id: "ISSUE-AI001~c5"
-    name: "API与配置管理"
-    description: |
-      API配置:
-      - LLM服务统一API
-      - 提供商配置管理
-      - API密钥安全存储
-      - 模型参数配置
-      - 流式响应支持
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查API实现，验证有/ai/chat和/ai/embeddings端点，支持stream参数，配置从environment或vault读取"
-        context_files: ["apps/server/src/routes/ai.ts"]
-
-
-  - id: "ISSUE-AI001~c6"
-    name: "监控与指标"
-    description: |
-      监控系统:
-      - 请求延迟指标
-      - 成功率/失败率统计
-      - Token使用量监控
-      - 成本追踪
-      - 熔断事件日志
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查监控实现，验证有LLMMetricsService类，暴露prometheus指标：llm_requests_total、llm_latency_seconds、llm_tokens_used"
-        context_files: ["apps/server/src/services/ai/metricsService.ts"]
-
-implementation:
-  task_id: "TASK-2"
-  completed_at: "2026-04-10T12:30:00+08:00"
-  execution_time_minutes: 90
-  result: "success"
-  notes: "All 6 acceptance criteria implemented with comprehensive test coverage"
-test_passed: true
-test_duration_seconds: 120
-merged_to_master: true
-
 check:
-  issue_id: "ISSUE-AI001"
-  checked_at: "2026-04-10T14:00:00+08:00"
-  status: passed
-  functional_verification:
-    all_criteria_passed: true
-    criteria_verified:
-      - id: "ISSUE-AI001~c1"
-        name: "LLM提供商适配器"
-        status: passed
-        notes: "BaseLLMAdapter抽象类已实现，支持OpenAI/Claude/文心一言适配器"
-      - id: "ISSUE-AI001~c2"
-        name: "熔断器机制"
-        status: passed
-        notes: "CircuitBreaker类完整实现，支持CLOSED/HALF_OPEN/OPEN状态转换"
-      - id: "ISSUE-AI001~c3"
-        name: "智能路由与负载均衡"
-        status: passed
-        notes: "LLMRouter支持cost/latency/quality/round-robin/weighted策略"
-      - id: "ISSUE-AI001~c4"
-        name: "降级与容错策略"
-        status: passed
-        notes: "CircuitBreaker.execute支持fallback参数实现降级"
-      - id: "ISSUE-AI001~c5"
-        name: "API与配置管理"
-        status: passed
-        notes: "统一API端点和配置管理实现"
-      - id: "ISSUE-AI001~c6"
-        name: "监控与指标"
-        status: passed
-        notes: "LLMMetricsService完整实现，暴露Prometheus格式指标"
-  test_execution:
-    all_tests_passed: true
-    test_summary:
-      - suite: "circuitBreaker.test.ts"
-        tests: 28
-        passed: 28
-        failed: 0
-      - suite: "metricsService.test.ts"
-        tests: 22
-        passed: 22
-        failed: 0
-      - suite: "llmRouter.test.ts"
-        tests: 18
-        passed: 18
-        failed: 0
-      - suite: "adapters.test.ts"
-        tests: 11
-        passed: 11
-        failed: 0
-    total_tests: 73
-    total_passed: 73
-    total_failed: 0
-    bug_fixes_applied:
-      - file: "src/services/ai/metricsService.ts"
-        issue: "incrementCounter方法忽略name参数导致重复计数"
-        fix: '将key从`${provider}:${model}`改为`${provider}:${model}:${name}`'
+  checked_at: '2026-04-10T14:00:00+08:00'
   code_review:
     merged_to_main: true
     pr_approved: true
     unresolved_comments: 0
   documentation:
-    code_comments: complete
-    user_docs: not_needed
     api_docs: updated
     changelog: updated
-  notes: "所有验收条件满足，所有测试通过。发现了一个metricsService计数器bug并已修复。"
+    code_comments: complete
+    user_docs: not_needed
+  functional_verification:
+    all_criteria_passed: true
+    criteria_verified:
+    - id: ISSUE-AI001~c1
+      name: "LLM\u63D0\u4F9B\u5546\u9002\u914D\u5668"
+      notes: "BaseLLMAdapter\u62BD\u8C61\u7C7B\u5DF2\u5B9E\u73B0\uFF0C\u652F\u6301\
+        OpenAI/Claude/\u6587\u5FC3\u4E00\u8A00\u9002\u914D\u5668"
+      status: accepted
+    - id: ISSUE-AI001~c2
+      name: "\u7194\u65AD\u5668\u673A\u5236"
+      notes: "CircuitBreaker\u7C7B\u5B8C\u6574\u5B9E\u73B0\uFF0C\u652F\u6301CLOSED/HALF_OPEN/OPEN\u72B6\
+        \u6001\u8F6C\u6362"
+      status: accepted
+    - id: ISSUE-AI001~c3
+      name: "\u667A\u80FD\u8DEF\u7531\u4E0E\u8D1F\u8F7D\u5747\u8861"
+      notes: "LLMRouter\u652F\u6301cost/latency/quality/round-robin/weighted\u7B56\
+        \u7565"
+      status: accepted
+    - id: ISSUE-AI001~c4
+      name: "\u964D\u7EA7\u4E0E\u5BB9\u9519\u7B56\u7565"
+      notes: "CircuitBreaker.execute\u652F\u6301fallback\u53C2\u6570\u5B9E\u73B0\u964D\
+        \u7EA7"
+      status: accepted
+    - id: ISSUE-AI001~c5
+      name: "API\u4E0E\u914D\u7F6E\u7BA1\u7406"
+      notes: "\u7EDF\u4E00API\u7AEF\u70B9\u548C\u914D\u7F6E\u7BA1\u7406\u5B9E\u73B0"
+      status: accepted
+    - id: ISSUE-AI001~c6
+      name: "\u76D1\u63A7\u4E0E\u6307\u6807"
+      notes: "LLMMetricsService\u5B8C\u6574\u5B9E\u73B0\uFF0C\u66B4\u9732Prometheus\u683C\
+        \u5F0F\u6307\u6807"
+      status: accepted
+  issue_id: ISSUE-AI001
+  notes: "\u6240\u6709\u9A8C\u6536\u6761\u4EF6\u6EE1\u8DB3\uFF0C\u6240\u6709\u6D4B\
+    \u8BD5\u901A\u8FC7\u3002\u53D1\u73B0\u4E86\u4E00\u4E2AmetricsService\u8BA1\u6570\
+    \u5668bug\u5E76\u5DF2\u4FEE\u590D\u3002"
+  status: accepted
+  test_execution:
+    all_tests_passed: true
+    bug_fixes_applied:
+    - file: src/services/ai/metricsService.ts
+      fix: "\u5C06key\u4ECE`${provider}:${model}`\u6539\u4E3A`${provider}:${model}:${name}`"
+      issue: "incrementCounter\u65B9\u6CD5\u5FFD\u7565name\u53C2\u6570\u5BFC\u81F4\
+        \u91CD\u590D\u8BA1\u6570"
+    test_summary:
+    - failed: 0
+      passed: 28
+      suite: circuitBreaker.test.ts
+      tests: 28
+    - failed: 0
+      passed: 22
+      suite: metricsService.test.ts
+      tests: 22
+    - failed: 0
+      passed: 18
+      suite: llmRouter.test.ts
+      tests: 18
+    - failed: 0
+      passed: 11
+      suite: adapters.test.ts
+      tests: 11
+    total_failed: 0
+    total_passed: 73
+    total_tests: 73
+created_at: '2026-04-08'
+criteria:
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u9002\u914D\u5668\u5B9E\u73B0:\n- OpenAI GPT\u7CFB\u5217\u9002\u914D\
+    \u5668\n- Anthropic Claude\u9002\u914D\u5668\n- \u6587\u5FC3\u4E00\u8A00\u9002\
+    \u914D\u5668\n- \u7EDF\u4E00\u63A5\u53E3\u62BD\u8C61\u5C42\n- \u6A21\u578B\u80FD\
+    \u529B\u6CE8\u518C\u8868\n"
+  id: ISSUE-AI001~c1
+  name: "LLM\u63D0\u4F9B\u5546\u9002\u914D\u5668"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/adapters/
+      prompt: "\u68C0\u67E5LLM\u9002\u914D\u5668\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        OpenAIAdapter\u3001ClaudeAdapter\u7B49\u7C7B\u5B9E\u73B0\u7EDF\u4E00\u7684\
+        ILLMAdapter\u63A5\u53E3\uFF0C\u5305\u542Bchat completion\u548Cembedding\u65B9\
+        \u6CD5"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u7194\u65AD\u5668\u5B9E\u73B0:\n- \u5931\u8D25\u7387\u76D1\u63A7\n\
+    - \u7194\u65AD\u72B6\u6001\u7BA1\u7406(\u5173\u95ED/\u534A\u5F00/\u6253\u5F00\
+    )\n- \u81EA\u52A8\u6062\u590D\u63A2\u6D4B\n- \u7194\u65AD\u4E8B\u4EF6\u901A\u77E5\
+    \n- \u591A\u7EF4\u5EA6\u7194\u65AD\u7B56\u7565\n"
+  id: ISSUE-AI001~c2
+  name: "\u7194\u65AD\u5668\u673A\u5236"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/circuitBreaker.ts
+      prompt: "\u68C0\u67E5\u7194\u65AD\u5668\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        CircuitBreaker\u7C7B\uFF0C\u5305\u542BCLOSED\u3001HALF_OPEN\u3001OPEN\u4E09\
+        \u79CD\u72B6\u6001\uFF0C\u652F\u6301failureThreshold\u548CrecoveryTimeout\u914D\
+        \u7F6E"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u8DEF\u7531\u7B56\u7565:\n- \u57FA\u4E8E\u6210\u672C\u7684\u667A\u80FD\
+    \u8DEF\u7531\n- \u5EF6\u8FDF\u4F18\u5148\u8DEF\u7531\n- \u8D28\u91CF\u4F18\u5148\
+    \u8DEF\u7531\n- \u8F6E\u8BE2/\u6743\u91CD\u8D1F\u8F7D\u5747\u8861\n- \u6A21\u578B\
+    \u80FD\u529B\u5339\u914D\n"
+  id: ISSUE-AI001~c3
+  name: "\u667A\u80FD\u8DEF\u7531\u4E0E\u8D1F\u8F7D\u5747\u8861"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/llmRouter.ts
+      prompt: "\u68C0\u67E5\u8DEF\u7531\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709LLMRouter\u7C7B\
+        \uFF0C\u652F\u6301cost\u3001latency\u3001quality\u8DEF\u7531\u7B56\u7565\uFF0C\
+        \u6839\u636E\u6A21\u578B\u80FD\u529B\u6807\u7B7E\u5339\u914D\u8BF7\u6C42"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u964D\u7EA7\u7B56\u7565:\n- \u6A21\u578B\u964D\u7EA7(cheap\u6A21\u578B\
+    \u66FF\u4EE3)\n- \u63D0\u4F9B\u5546\u964D\u7EA7(\u5907\u7528\u63D0\u4F9B\u5546\
+    )\n- \u529F\u80FD\u964D\u7EA7(\u7B80\u5316\u8F93\u51FA)\n- \u7F13\u5B58\u54CD\u5E94\
+    \u56DE\u9000\n- \u5F02\u6B65\u961F\u5217\u515C\u5E95\n"
+  id: ISSUE-AI001~c4
+  name: "\u964D\u7EA7\u4E0E\u5BB9\u9519\u7B56\u7565"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/fallback/
+      prompt: "\u68C0\u67E5\u964D\u7EA7\u7B56\u7565\uFF0C\u9A8C\u8BC1\u6709FallbackStrategy\u63A5\
+        \u53E3\u53CA\u5B9E\u73B0\u7C7B\uFF0C\u652F\u6301model-downgrade\u3001provider-switch\u3001\
+        cache-fallback\u7B49\u7B56\u7565"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "API\u914D\u7F6E:\n- LLM\u670D\u52A1\u7EDF\u4E00API\n- \u63D0\u4F9B\
+    \u5546\u914D\u7F6E\u7BA1\u7406\n- API\u5BC6\u94A5\u5B89\u5168\u5B58\u50A8\n- \u6A21\
+    \u578B\u53C2\u6570\u914D\u7F6E\n- \u6D41\u5F0F\u54CD\u5E94\u652F\u6301\n"
+  id: ISSUE-AI001~c5
+  name: "API\u4E0E\u914D\u7F6E\u7BA1\u7406"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/ai.ts
+      prompt: "\u68C0\u67E5API\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709/ai/chat\u548C/ai/embeddings\u7AEF\
+        \u70B9\uFF0C\u652F\u6301stream\u53C2\u6570\uFF0C\u914D\u7F6E\u4ECEenvironment\u6216\
+        vault\u8BFB\u53D6"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u76D1\u63A7\u7CFB\u7EDF:\n- \u8BF7\u6C42\u5EF6\u8FDF\u6307\u6807\n\
+    - \u6210\u529F\u7387/\u5931\u8D25\u7387\u7EDF\u8BA1\n- Token\u4F7F\u7528\u91CF\
+    \u76D1\u63A7\n- \u6210\u672C\u8FFD\u8E2A\n- \u7194\u65AD\u4E8B\u4EF6\u65E5\u5FD7\
+    \n"
+  id: ISSUE-AI001~c6
+  name: "\u76D1\u63A7\u4E0E\u6307\u6807"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/metricsService.ts
+      prompt: "\u68C0\u67E5\u76D1\u63A7\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709LLMMetricsService\u7C7B\
+        \uFF0C\u66B4\u9732prometheus\u6307\u6807\uFF1Allm_requests_total\u3001llm_latency_seconds\u3001\
+        llm_tokens_used"
+current_task: ''
+description: "\u5B9E\u73B0\u591ALLM\u9002\u914D\u5668\u4E0E\u7194\u65AD\u5668\u673A\
+  \u5236\uFF0C\u652F\u6301OpenAI\u3001Claude\u3001\n\u6587\u5FC3\u4E00\u8A00\u7B49\
+  \u591A\u4E2A\u5927\u8BED\u8A00\u6A21\u578B\u63D0\u4F9B\u5546\u7684\u7EDF\u4E00\u63A5\
+  \u5165\uFF0C\u5E76\u63D0\u4F9B\n\u7194\u65AD\u3001\u964D\u7EA7\u3001\u8D1F\u8F7D\
+  \u5747\u8861\u7B49\u9AD8\u53EF\u7528\u80FD\u529B\u3002\n"
+id: ISSUE-AI001
+implementation:
+  completed_at: '2026-04-10T12:30:00+08:00'
+  execution_time_minutes: 90
+  notes: All 6 acceptance criteria implemented with comprehensive test coverage
+  result: success
+  task_id: TASK-2
+issue_number: 501
+logic: sufficient_necessary
+merged_to_master: true
+prerequisites:
+- ISSUE-F003
+slug: multi-llm-adapter
+status: accepted
+test_duration_seconds: 120
+test_passed: true
+title: "\u591ALLM\u9002\u914D\u5668\u4E0E\u7194\u65AD\u5668"

@@ -1,119 +1,106 @@
----
-id: "ISSUE-M004"
-issue_number: 405
-title: "匹配结果推送通知"
-slug: "match-notifications"
-status: "pending"
-description: |
-  实现匹配结果的推送通知系统，及时通知用户
-  新的匹配结果和相关动态。
-prerequisites:
-  - "ISSUE-M003"
-  - "ISSUE-COM001b"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-M004~c1"
-    name: "推送通知服务"
-    description: |
-      推送系统:
-      - 匹配结果推送
-      - 推送渠道(应用内/邮件/短信)
-      - 推送频率控制
-      - 推送内容模板
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查推送服务，验证有 PushNotificationService 支持多种推送渠道"
-        context_files: ["apps/server/src/services/pushNotification.ts"]
-        
-
-  - id: "ISSUE-M004~c2"
-    name: "移动端推送集成"
-    description: |
-      移动推送:
-      - Expo Push 集成
-      - 推送令牌管理
-      - 推送接收处理
-      - 推送点击跳转
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查移动推送，验证有 Expo Push Token 注册和推送处理"
-        context_files: ["apps/mobile/src/services/pushNotifications.ts"]
-        
-
-  - id: "ISSUE-M004~c3"
-    name: "通知中心"
-    description: |
-      通知管理:
-      - 通知列表
-      - 通知分类
-      - 已读/未读管理
-      - 通知清理
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查通知中心，验证有 Notification 模型和通知列表 API"
-        context_files: ["apps/server/src/services/notificationService.ts", "apps/mobile/src/screens/Notifications/"]
-        
-
-  - id: "ISSUE-M004~c4"
-    name: "推送偏好设置"
-    description: |
-      偏好管理:
-      - 推送开关控制
-      - 推送频率设置
-      - 免打扰时段
-      - 推送类型选择
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查推送偏好，验证有 NotificationSettings 组件和存储"
-        context_files: ["apps/mobile/src/screens/Settings/NotificationSettings.tsx"]
-        
-
-  - id: "ISSUE-M004~c5"
-    name: "邮件和短信通知"
-    description: |
-      外部通知:
-      - 邮件模板系统
-      - 短信服务集成
-      - 发送队列管理
-      - 发送状态追踪
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查外部通知，验证有 EmailService 和 SMSService 集成"
-        context_files: ["apps/server/src/services/emailService.ts", "apps/server/src/services/smsService.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u63A8\u9001\u7CFB\u7EDF:\n- \u5339\u914D\u7ED3\u679C\u63A8\u9001\n\
+    - \u63A8\u9001\u6E20\u9053(\u5E94\u7528\u5185/\u90AE\u4EF6/\u77ED\u4FE1)\n- \u63A8\
+    \u9001\u9891\u7387\u63A7\u5236\n- \u63A8\u9001\u5185\u5BB9\u6A21\u677F\n"
+  id: ISSUE-M004~c1
+  name: "\u63A8\u9001\u901A\u77E5\u670D\u52A1"
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/pushNotification.ts
+      prompt: "\u68C0\u67E5\u63A8\u9001\u670D\u52A1\uFF0C\u9A8C\u8BC1\u6709 PushNotificationService\
+        \ \u652F\u6301\u591A\u79CD\u63A8\u9001\u6E20\u9053"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u79FB\u52A8\u63A8\u9001:\n- Expo Push \u96C6\u6210\n- \u63A8\u9001\
+    \u4EE4\u724C\u7BA1\u7406\n- \u63A8\u9001\u63A5\u6536\u5904\u7406\n- \u63A8\u9001\
+    \u70B9\u51FB\u8DF3\u8F6C\n"
+  id: ISSUE-M004~c2
+  name: "\u79FB\u52A8\u7AEF\u63A8\u9001\u96C6\u6210"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/services/pushNotifications.ts
+      prompt: "\u68C0\u67E5\u79FB\u52A8\u63A8\u9001\uFF0C\u9A8C\u8BC1\u6709 Expo Push\
+        \ Token \u6CE8\u518C\u548C\u63A8\u9001\u5904\u7406"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u901A\u77E5\u7BA1\u7406:\n- \u901A\u77E5\u5217\u8868\n- \u901A\u77E5\
+    \u5206\u7C7B\n- \u5DF2\u8BFB/\u672A\u8BFB\u7BA1\u7406\n- \u901A\u77E5\u6E05\u7406\
+    \n"
+  id: ISSUE-M004~c3
+  name: "\u901A\u77E5\u4E2D\u5FC3"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/notificationService.ts
+      - apps/mobile/src/screens/Notifications/
+      prompt: "\u68C0\u67E5\u901A\u77E5\u4E2D\u5FC3\uFF0C\u9A8C\u8BC1\u6709 Notification\
+        \ \u6A21\u578B\u548C\u901A\u77E5\u5217\u8868 API"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u504F\u597D\u7BA1\u7406:\n- \u63A8\u9001\u5F00\u5173\u63A7\u5236\n\
+    - \u63A8\u9001\u9891\u7387\u8BBE\u7F6E\n- \u514D\u6253\u6270\u65F6\u6BB5\n- \u63A8\
+    \u9001\u7C7B\u578B\u9009\u62E9\n"
+  id: ISSUE-M004~c4
+  name: "\u63A8\u9001\u504F\u597D\u8BBE\u7F6E"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Settings/NotificationSettings.tsx
+      prompt: "\u68C0\u67E5\u63A8\u9001\u504F\u597D\uFF0C\u9A8C\u8BC1\u6709 NotificationSettings\
+        \ \u7EC4\u4EF6\u548C\u5B58\u50A8"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5916\u90E8\u901A\u77E5:\n- \u90AE\u4EF6\u6A21\u677F\u7CFB\u7EDF\n\
+    - \u77ED\u4FE1\u670D\u52A1\u96C6\u6210\n- \u53D1\u9001\u961F\u5217\u7BA1\u7406\
+    \n- \u53D1\u9001\u72B6\u6001\u8FFD\u8E2A\n"
+  id: ISSUE-M004~c5
+  name: "\u90AE\u4EF6\u548C\u77ED\u4FE1\u901A\u77E5"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/emailService.ts
+      - apps/server/src/services/smsService.ts
+      prompt: "\u68C0\u67E5\u5916\u90E8\u901A\u77E5\uFF0C\u9A8C\u8BC1\u6709 EmailService\
+        \ \u548C SMSService \u96C6\u6210"
+current_task: null
+description: "\u5B9E\u73B0\u5339\u914D\u7ED3\u679C\u7684\u63A8\u9001\u901A\u77E5\u7CFB\
+  \u7EDF\uFF0C\u53CA\u65F6\u901A\u77E5\u7528\u6237\n\u65B0\u7684\u5339\u914D\u7ED3\
+  \u679C\u548C\u76F8\u5173\u52A8\u6001\u3002\n"
+id: ISSUE-M004
+issue_number: 405
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-M003
+- ISSUE-COM001b
+slug: match-notifications
+status: pending
+title: "\u5339\u914D\u7ED3\u679C\u63A8\u9001\u901A\u77E5"

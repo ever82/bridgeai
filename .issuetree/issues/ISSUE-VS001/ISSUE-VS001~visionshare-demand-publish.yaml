@@ -1,148 +1,146 @@
----
-id: "ISSUE-VS001"
-issue_number: 701
-title: "VisionShare需求发布"
-slug: "visionshare-demand-publish"
-status: "pending"
-description: |
-  实现VisionShare场景的需求发布功能。需求方通过AI Agent智能提炼服务，
-  发布实时视野共享任务，包括任务描述、预算、地理位置、时间窗口等信息。
-  支持需求智能分类和标签生成，便于后续匹配推荐。
-prerequisites:
-  - "ISSUE-C006"
-  - "ISSUE-AI002"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-VS001~c1"
-    name: "VisionShare任务发布表单"
-    description: |
-      发布界面:
-      - 任务标题和详细描述输入
-      - 预算设置(积分/金额)
-      - 地理位置选择(当前位置/手动选择)
-      - 时间窗口设定(立即/预约)
-      - 任务有效期配置
-      - 需求分类标签选择
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查VisionShare任务发布界面，验证有完整的表单组件包括标题、描述、预算、位置、时间等字段"
-        context_files: ["apps/mobile/src/screens/VisionShare/PublishScreen.tsx", "apps/mobile/src/components/VisionShare/PublishForm/"]
-        
-
-  - id: "ISSUE-VS001~c2"
-    name: "AI需求智能提炼"
-    description: |
-      智能提炼:
-      - 自然语言描述解析
-      - 自动提取关键信息(地点、时间、预算)
-      - 智能标签生成
-      - 需求质量评分
-      - 优化建议提供
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查AI需求提炼服务，验证有自然语言解析、关键信息提取、标签生成等功能"
-        context_files: ["apps/server/src/services/ai/demandRefinement.ts", "apps/server/src/services/ai/visionShareNLP.ts"]
-        
-
-  - id: "ISSUE-VS001~c3"
-    name: "任务数据模型与存储"
-    description: |
-      数据模型:
-      - VisionShare任务Schema定义
-      - 任务状态机(草稿/发布中/进行中/已完成/已取消)
-      - 地理位置索引
-      - 任务与发布者关联
-      - 任务历史记录
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查VisionShare任务数据模型，验证有完整的Prisma模型定义，包含状态机和地理位置字段"
-        context_files: ["packages/database/src/schema/visionShare.prisma", "packages/shared/src/types/visionShare.ts"]
-        
-
-  - id: "ISSUE-VS001~c4"
-    name: "发布验证与限制"
-    description: |
-      发布控制:
-      - 用户信用分检查
-      - 积分余额验证
-      - 每日发布数量限制
-      - 敏感内容过滤
-      - 地理位置合理性校验
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查发布验证逻辑，验证有信用分检查、积分验证、数量限制和内容过滤功能"
-        context_files: ["apps/server/src/services/visionShare/publishValidation.ts", "apps/server/src/middleware/publishLimit.ts"]
-        
-
-  - id: "ISSUE-VS001~c5"
-    name: "发布API与状态管理"
-    description: |
-      后端服务:
-      - 任务发布API
-      - 草稿保存API
-      - 任务编辑API
-      - 任务取消API
-      - 发布状态实时推送
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查VisionShare发布API，验证有完整的CRUD端点和状态变更处理"
-        context_files: ["apps/server/src/routes/visionShare/publish.ts", "apps/server/src/services/visionShare/taskService.ts"]
-        
-
-  - id: "ISSUE-VS001~c6"
-    name: "发布成功反馈与分享"
-    description: |
-      反馈机制:
-      - 发布成功确认页面
-      - 任务链接生成
-      - 社交分享功能
-      - 预计匹配时间显示
-      - 发布历史入口
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查发布成功界面，验证有确认页面、分享功能和发布历史入口"
-        context_files: ["apps/mobile/src/screens/VisionShare/PublishSuccess.tsx", "apps/mobile/src/components/Share/"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u53D1\u5E03\u754C\u9762:\n- \u4EFB\u52A1\u6807\u9898\u548C\u8BE6\u7EC6\
+    \u63CF\u8FF0\u8F93\u5165\n- \u9884\u7B97\u8BBE\u7F6E(\u79EF\u5206/\u91D1\u989D\
+    )\n- \u5730\u7406\u4F4D\u7F6E\u9009\u62E9(\u5F53\u524D\u4F4D\u7F6E/\u624B\u52A8\
+    \u9009\u62E9)\n- \u65F6\u95F4\u7A97\u53E3\u8BBE\u5B9A(\u7ACB\u5373/\u9884\u7EA6\
+    )\n- \u4EFB\u52A1\u6709\u6548\u671F\u914D\u7F6E\n- \u9700\u6C42\u5206\u7C7B\u6807\
+    \u7B7E\u9009\u62E9\n"
+  id: ISSUE-VS001~c1
+  name: "VisionShare\u4EFB\u52A1\u53D1\u5E03\u8868\u5355"
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/VisionShare/PublishScreen.tsx
+      - apps/mobile/src/components/VisionShare/PublishForm/
+      prompt: "\u68C0\u67E5VisionShare\u4EFB\u52A1\u53D1\u5E03\u754C\u9762\uFF0C\u9A8C\
+        \u8BC1\u6709\u5B8C\u6574\u7684\u8868\u5355\u7EC4\u4EF6\u5305\u62EC\u6807\u9898\
+        \u3001\u63CF\u8FF0\u3001\u9884\u7B97\u3001\u4F4D\u7F6E\u3001\u65F6\u95F4\u7B49\
+        \u5B57\u6BB5"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u667A\u80FD\u63D0\u70BC:\n- \u81EA\u7136\u8BED\u8A00\u63CF\u8FF0\u89E3\
+    \u6790\n- \u81EA\u52A8\u63D0\u53D6\u5173\u952E\u4FE1\u606F(\u5730\u70B9\u3001\u65F6\
+    \u95F4\u3001\u9884\u7B97)\n- \u667A\u80FD\u6807\u7B7E\u751F\u6210\n- \u9700\u6C42\
+    \u8D28\u91CF\u8BC4\u5206\n- \u4F18\u5316\u5EFA\u8BAE\u63D0\u4F9B\n"
+  id: ISSUE-VS001~c2
+  name: "AI\u9700\u6C42\u667A\u80FD\u63D0\u70BC"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/demandRefinement.ts
+      - apps/server/src/services/ai/visionShareNLP.ts
+      prompt: "\u68C0\u67E5AI\u9700\u6C42\u63D0\u70BC\u670D\u52A1\uFF0C\u9A8C\u8BC1\
+        \u6709\u81EA\u7136\u8BED\u8A00\u89E3\u6790\u3001\u5173\u952E\u4FE1\u606F\u63D0\
+        \u53D6\u3001\u6807\u7B7E\u751F\u6210\u7B49\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u6570\u636E\u6A21\u578B:\n- VisionShare\u4EFB\u52A1Schema\u5B9A\u4E49\
+    \n- \u4EFB\u52A1\u72B6\u6001\u673A(\u8349\u7A3F/\u53D1\u5E03\u4E2D/\u8FDB\u884C\
+    \u4E2D/\u5DF2\u5B8C\u6210/\u5DF2\u53D6\u6D88)\n- \u5730\u7406\u4F4D\u7F6E\u7D22\
+    \u5F15\n- \u4EFB\u52A1\u4E0E\u53D1\u5E03\u8005\u5173\u8054\n- \u4EFB\u52A1\u5386\
+    \u53F2\u8BB0\u5F55\n"
+  id: ISSUE-VS001~c3
+  name: "\u4EFB\u52A1\u6570\u636E\u6A21\u578B\u4E0E\u5B58\u50A8"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - packages/database/src/schema/visionShare.prisma
+      - packages/shared/src/types/visionShare.ts
+      prompt: "\u68C0\u67E5VisionShare\u4EFB\u52A1\u6570\u636E\u6A21\u578B\uFF0C\u9A8C\
+        \u8BC1\u6709\u5B8C\u6574\u7684Prisma\u6A21\u578B\u5B9A\u4E49\uFF0C\u5305\u542B\
+        \u72B6\u6001\u673A\u548C\u5730\u7406\u4F4D\u7F6E\u5B57\u6BB5"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u53D1\u5E03\u63A7\u5236:\n- \u7528\u6237\u4FE1\u7528\u5206\u68C0\u67E5\
+    \n- \u79EF\u5206\u4F59\u989D\u9A8C\u8BC1\n- \u6BCF\u65E5\u53D1\u5E03\u6570\u91CF\
+    \u9650\u5236\n- \u654F\u611F\u5185\u5BB9\u8FC7\u6EE4\n- \u5730\u7406\u4F4D\u7F6E\
+    \u5408\u7406\u6027\u6821\u9A8C\n"
+  id: ISSUE-VS001~c4
+  name: "\u53D1\u5E03\u9A8C\u8BC1\u4E0E\u9650\u5236"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/visionShare/publishValidation.ts
+      - apps/server/src/middleware/publishLimit.ts
+      prompt: "\u68C0\u67E5\u53D1\u5E03\u9A8C\u8BC1\u903B\u8F91\uFF0C\u9A8C\u8BC1\u6709\
+        \u4FE1\u7528\u5206\u68C0\u67E5\u3001\u79EF\u5206\u9A8C\u8BC1\u3001\u6570\u91CF\
+        \u9650\u5236\u548C\u5185\u5BB9\u8FC7\u6EE4\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u540E\u7AEF\u670D\u52A1:\n- \u4EFB\u52A1\u53D1\u5E03API\n- \u8349\
+    \u7A3F\u4FDD\u5B58API\n- \u4EFB\u52A1\u7F16\u8F91API\n- \u4EFB\u52A1\u53D6\u6D88\
+    API\n- \u53D1\u5E03\u72B6\u6001\u5B9E\u65F6\u63A8\u9001\n"
+  id: ISSUE-VS001~c5
+  name: "\u53D1\u5E03API\u4E0E\u72B6\u6001\u7BA1\u7406"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/visionShare/publish.ts
+      - apps/server/src/services/visionShare/taskService.ts
+      prompt: "\u68C0\u67E5VisionShare\u53D1\u5E03API\uFF0C\u9A8C\u8BC1\u6709\u5B8C\
+        \u6574\u7684CRUD\u7AEF\u70B9\u548C\u72B6\u6001\u53D8\u66F4\u5904\u7406"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u53CD\u9988\u673A\u5236:\n- \u53D1\u5E03\u6210\u529F\u786E\u8BA4\u9875\
+    \u9762\n- \u4EFB\u52A1\u94FE\u63A5\u751F\u6210\n- \u793E\u4EA4\u5206\u4EAB\u529F\
+    \u80FD\n- \u9884\u8BA1\u5339\u914D\u65F6\u95F4\u663E\u793A\n- \u53D1\u5E03\u5386\
+    \u53F2\u5165\u53E3\n"
+  id: ISSUE-VS001~c6
+  name: "\u53D1\u5E03\u6210\u529F\u53CD\u9988\u4E0E\u5206\u4EAB"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/VisionShare/PublishSuccess.tsx
+      - apps/mobile/src/components/Share/
+      prompt: "\u68C0\u67E5\u53D1\u5E03\u6210\u529F\u754C\u9762\uFF0C\u9A8C\u8BC1\u6709\
+        \u786E\u8BA4\u9875\u9762\u3001\u5206\u4EAB\u529F\u80FD\u548C\u53D1\u5E03\u5386\
+        \u53F2\u5165\u53E3"
+current_task: null
+description: "\u5B9E\u73B0VisionShare\u573A\u666F\u7684\u9700\u6C42\u53D1\u5E03\u529F\
+  \u80FD\u3002\u9700\u6C42\u65B9\u901A\u8FC7AI Agent\u667A\u80FD\u63D0\u70BC\u670D\
+  \u52A1\uFF0C\n\u53D1\u5E03\u5B9E\u65F6\u89C6\u91CE\u5171\u4EAB\u4EFB\u52A1\uFF0C\
+  \u5305\u62EC\u4EFB\u52A1\u63CF\u8FF0\u3001\u9884\u7B97\u3001\u5730\u7406\u4F4D\u7F6E\
+  \u3001\u65F6\u95F4\u7A97\u53E3\u7B49\u4FE1\u606F\u3002\n\u652F\u6301\u9700\u6C42\
+  \u667A\u80FD\u5206\u7C7B\u548C\u6807\u7B7E\u751F\u6210\uFF0C\u4FBF\u4E8E\u540E\u7EED\
+  \u5339\u914D\u63A8\u8350\u3002\n"
+id: ISSUE-VS001
+issue_number: 701
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-C006
+- ISSUE-AI002
+slug: visionshare-demand-publish
+status: pending
+title: "VisionShare\u9700\u6C42\u53D1\u5E03"

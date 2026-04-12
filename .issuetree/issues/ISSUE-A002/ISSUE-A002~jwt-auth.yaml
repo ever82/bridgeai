@@ -3,7 +3,7 @@ id: 'ISSUE-A002'
 issue_number: 202
 title: 'JWT认证与API安全'
 slug: 'jwt-auth'
-status: 'passed'
+status: 'accepted'
 description: |
   实现基于 JWT 的 API 认证机制，包括 Token 生成与验证、
   刷新令牌机制、Token 黑名单、API 权限控制等安全功能。
@@ -18,24 +18,24 @@ implementation:
 check:
   issue_id: 'ISSUE-A002'
   checked_at: '2026-04-10T12:00:00+08:00'
-  status: 'passed'
+  status: 'accepted'
   functional_verification:
     all_criteria_passed: true
     results:
       - criterion: 'C1: JWT Token 生成和验证'
-        status: 'passed'
+        status: 'accepted'
         evidence: 'authService.ts has generateAccessToken, generateRefreshToken, verifyToken functions using jsonwebtoken'
       - criterion: 'C2: Refresh Token 机制'
-        status: 'passed'
+        status: 'accepted'
         evidence: '/auth/refresh endpoint exists, refreshAccessToken function implements token rotation'
       - criterion: 'C3: 认证中间件'
-        status: 'passed'
+        status: 'accepted'
         evidence: 'middleware/auth.ts has authenticate, optionalAuth, requireRoles, requireAdmin with proper 401/403 handling'
       - criterion: 'C4: Token 黑名单和撤销'
-        status: 'passed'
+        status: 'accepted'
         evidence: 'services/auth/blacklist.ts implements blacklistToken, isTokenBlacklisted, logout uses blacklist'
       - criterion: 'C5: 移动端 Token 管理'
-        status: 'passed'
+        status: 'accepted'
         evidence: 'mobile uses SecureStore, api/client auto-attaches tokens, handles 401 refresh, authStore manages tokens'
   test_execution:
     all_tests_passed: true

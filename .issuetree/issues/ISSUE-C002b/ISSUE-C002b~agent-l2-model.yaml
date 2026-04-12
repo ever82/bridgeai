@@ -3,7 +3,7 @@ id: "ISSUE-C002b"
 issue_number: 303
 title: "L2结构化信息模型"
 slug: "agent-l2-model"
-status: "passed"
+status: "accepted"
 description: |
   实现 Agent L2 结构化信息模型，支持用户通过选择/填写
   预设选项来描述需求/供给，用于过滤和匹配。
@@ -20,7 +20,7 @@ criteria:
       - 字段类型: enum, range, boolean, multi_select
       - 条件字段(dependent fields)
       - Schema 版本管理
-    status: "passed"
+    status: "accepted"
     coverage:
       unit: required
       integration: required
@@ -41,7 +41,7 @@ criteria:
       - 条件字段显示逻辑
       - 字段联动
       - 移动端适配
-    status: "passed"
+    status: "accepted"
     coverage:
       unit: required
       integration: required
@@ -62,7 +62,7 @@ criteria:
       - GIN 索引支持复杂查询
       - 数据验证 middleware
       - 历史版本存储
-    status: "passed"
+    status: "accepted"
     coverage:
       unit: not_needed
       integration: required
@@ -83,7 +83,7 @@ criteria:
       - 实时预览
       - 自动保存草稿
       - 完成度展示
-    status: "passed"
+    status: "accepted"
     coverage:
       unit: not_needed
       integration: required
@@ -104,7 +104,7 @@ criteria:
       - 必填字段检查
       - 选项值白名单验证
       - 验证错误提示
-    status: "passed"
+    status: "accepted"
     coverage:
       unit: required
       integration: required
