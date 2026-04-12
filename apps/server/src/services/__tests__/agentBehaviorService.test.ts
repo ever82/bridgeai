@@ -5,7 +5,7 @@ import {
   AgentType,
   MessagePriority,
   AgentProtocolErrorCode,
-} from '@bridgeai/shared/protocols/agentMessage';
+} from '@visionshare/shared';
 
 describe('AgentBehaviorService', () => {
   let service: AgentBehaviorService;

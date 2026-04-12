@@ -217,8 +217,10 @@ describe('AgentMessage Protocol', () => {
       const parsed = parseMessage(json);
 
       expect(parsed).not.toBeNull();
-      expect(parsed!.id).toBe(message.id);
-      expect(parsed!.type).toBe(message.type);
+      if (parsed) {
+        expect(parsed.id).toBe(message.id);
+        expect(parsed.type).toBe(message.type);
+      }
     });
 
     it('should return null for invalid JSON', () => {

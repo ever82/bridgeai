@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { AgentCreditInfo } from '@bridgeai/shared/protocols/agentMessage';
+import { AgentCreditInfo } from '@visionshare/shared';
 
 interface CreditBadgeProps {
   credit: AgentCreditInfo;
