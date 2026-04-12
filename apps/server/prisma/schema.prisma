@@ -48,6 +48,7 @@ model User {
   blockedBy     BlockedUser[] @relation("BlockedByUser")
   roles         UserRole[]  // RBAC roles
   pointsAccount PointsAccount?
+  merchant      Merchant?   // 商家信息 (可选)
 
   @@map("users")
 }
@@ -843,4 +844,210 @@ model SceneTemplate {
   @@index([isPublic, usageCount])
   @@index([userId, sceneId, isDefault])
   @@map("scene_templates")
+}
+
+// ============================================
+// AgentAd - 商家与优惠相关
+// ============================================
+
+// 商家信息表
+model Merchant {
+  id          String    @id @default(uuid())
+  userId      String    @unique @map("user_id") // 关联的用户账号
+  name        String    // 店铺名称
+  description String?   // 店铺描述
+  logoUrl     String?   @map("logo_url") // 店铺Logo
+  address     String?   // 店铺地址
+  phone       String?   // 联系电话
+  creditScore Int       @default(600) @map("credit_score") // 商家信用分
+  status      MerchantStatus @default(ACTIVE)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offers      Offer[]   // 商家发布的优惠方案
+  redeemedCoupons Coupon[] @relation("MerchantRedemptions") // 核销的优惠码
+
+  @@index([userId])
+  @@index([creditScore])
+  @@index([status])
+  @@map("merchants")
+}
+
+enum MerchantStatus {
+  ACTIVE    @map("active")    // 正常营业
+  INACTIVE  @map("inactive")  // 暂停营业
+  SUSPENDED @map("suspended") // 被封禁
+}
+
+// 优惠方案表 (商家发布的商品优惠)
+model Offer {
+  id            String    @id @default(uuid())
+  merchantId    String    @map("merchant_id")
+  title         String    // 商品名称
+  description   String?   // 商品描述
+  originalPrice Decimal   @map("original_price") @db.Decimal(10, 2) // 原价
+  minPrice      Decimal   @map("min_price") @db.Decimal(10, 2) // 最低接受价
+  category      String    // 商品类别
+  images        String[]  // 商品图片
+  specs         Json?     // 商品规格 (颜色、尺码等)
+  stock         Int       @default(0) // 库存
+  autoNegotiate Boolean   @default(true) @map("auto_negotiate") // 是否允许Agent自动谈判
+  validityHours Int       @default(24) @map("validity_hours") // 优惠有效期(小时)
+  status        OfferStatus @default(ACTIVE)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  merchant      Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  coupons       Coupon[]  // 生成的优惠码
+  negotiations  Negotiation[] // 谈判记录
+
+  @@index([merchantId])
+  @@index([category])
+  @@index([status])
+  @@index([createdAt])
+  @@map("offers")
+}
+
+enum OfferStatus {
+  ACTIVE    @map("active")    // 在售
+  PAUSED    @map("paused")    // 暂停
+  SOLD_OUT  @map("sold_out")  // 售罄
+  EXPIRED   @map("expired")   // 过期
+  CLOSED    @map("closed")    // 下架
+}
+
+// 谈判记录表 (消费者Agent与商家Agent的谈判)
+model Negotiation {
+  id            String    @id @default(uuid())
+  offerId       String    @map("offer_id")
+  consumerId    String    @map("consumer_id") // 消费者userId
+  originalPrice Decimal   @map("original_price") @db.Decimal(10, 2) // 原价
+  currentPrice  Decimal   @map("current_price") @db.Decimal(10, 2) // 当前谈判价格
+  targetPrice   Decimal?  @map("target_price") @db.Decimal(10, 2) // 目标价格
+  status        NegotiationStatus @default(NEGOTIATING)
+  chatRoomId    String?   @map("chat_room_id") // 关联的群聊
+  agreedAt      DateTime? @map("agreed_at") // 达成协议时间
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  offer         Offer     @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  coupon        Coupon?   // 生成的优惠码
+
+  @@index([offerId])
+  @@index([consumerId])
+  @@index([status])
+  @@index([chatRoomId])
+  @@map("negotiations")
+}
+
+enum NegotiationStatus {
+  NEGOTIATING @map("negotiating") // 谈判中
+  AGREED      @map("agreed")      // 已达成协议
+  REJECTED    @map("rejected")    // 谈判失败
+  EXPIRED     @map("expired")     // 过期
+}
+
+// 优惠码表
+model Coupon {
+  id                String        @id @default(uuid())
+  code              String        @unique // 优惠码 (如 AD-XXXX-XXXX)
+  negotiationId     String?       @unique @map("negotiation_id") // 关联的谈判
+  offerId           String        @map("offer_id")
+  merchantId        String        @map("merchant_id")
+  consumerId        String        @map("consumer_id") // 消费者userId
+  originalPrice     Decimal       @map("original_price") @db.Decimal(10, 2) // 原价
+  discountPrice     Decimal       @map("discount_price") @db.Decimal(10, 2) // 优惠价
+  discountAmount    Decimal       @map("discount_amount") @db.Decimal(10, 2) // 优惠金额
+  status            CouponStatus  @default(ACTIVE)
+  maxUsageCount     Int           @default(1) @map("max_usage_count") // 最大使用次数
+  usedCount         Int           @default(0) @map("used_count") // 已使用次数
+  validFrom         DateTime      @map("valid_from") // 生效时间
+  validUntil        DateTime      @map("valid_until") // 过期时间
+  usedAt            DateTime?     @map("used_at") // 使用时间
+  redeemedBy        String?       @map("redeemed_by") // 核销商家userId
+  qrCodeData        String?       @map("qr_code_data") // 二维码数据
+  onlineUrl         String?       @map("online_url") // 线上购买链接
+  metadata          Json?         // 额外元数据
+  reminderSent      Boolean       @default(false) @map("reminder_sent") // 是否已发送过期提醒
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  offer             Offer         @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  merchant          Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  negotiation       Negotiation?  @relation(fields: [negotiationId], references: [id], onDelete: SetNull)
+  redeemedMerchant  Merchant?     @relation("MerchantRedemptions", fields: [redeemedBy], references: [userId], onDelete: SetNull)
+  transaction       CouponTransaction? // 关联的交易记录
+  ratings           CouponRating[] // 评价记录
+
+  @@index([code])
+  @@index([offerId])
+  @@index([merchantId])
+  @@index([consumerId])
+  @@index([status])
+  @@index([validUntil])
+  @@index([negotiationId])
+  @@map("coupons")
+}
+
+enum CouponStatus {
+  ACTIVE    @map("active")    // 未使用
+  USED      @map("used")      // 已使用
+  EXPIRED   @map("expired")   // 已过期
+  CANCELLED @map("cancelled") // 已取消
+  DISABLED  @map("disabled")  // 已禁用
+}
+
+// 优惠码交易记录表 (关联积分系统)
+model CouponTransaction {
+  id              String    @id @default(uuid())
+  couponId        String    @unique @map("coupon_id")
+  consumerId      String    @map("consumer_id")
+  merchantId      String    @map("merchant_id")
+  amount          Decimal   @db.Decimal(10, 2) // 实际支付金额
+  pointsUsed      Int       @default(0) @map("points_used") // 使用的积分
+  paymentMethod   String    @map("payment_method") // wechat, alipay, points
+  status          TransactionStatus @default(PENDING)
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  coupon          Coupon    @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  @@index([couponId])
+  @@index([consumerId])
+  @@index([merchantId])
+  @@index([status])
+  @@map("coupon_transactions")
+}
+
+// 优惠码评价表 (消费者和商家互评)
+model CouponRating {
+  id          String    @id @default(uuid())
+  couponId    String    @map("coupon_id")
+  raterId     String    @map("rater_id") // 评价人userId
+  rateeId     String    @map("ratee_id") // 被评价人userId
+  raterType   RatingType @map("rater_type") // CONSUMER, MERCHANT
+  score       Int       // 评分 (1-5)
+  comment     String?   // 评价内容
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  coupon      Coupon    @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  @@index([couponId])
+  @@index([raterId])
+  @@index([rateeId])
+  @@unique([couponId, raterId]) // 每个用户对每个优惠码只能评价一次
+  @@map("coupon_ratings")
+}
+
+enum RatingType {
+  CONSUMER  @map("consumer")  // 消费者评价
+  MERCHANT  @map("merchant")  // 商家评价
 }
