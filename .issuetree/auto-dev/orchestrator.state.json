@@ -971,7 +971,7 @@
   },
   "ISSUE-DATE001": {
     "issue_id": "ISSUE-DATE001",
-    "status": "pending",
+    "status": "implementing",
     "title": "\u4ea4\u53cb\u753b\u50cf\u914d\u7f6e - \u524d\u7aef\u754c\u9762\u4e0e\u8d28\u91cf\u8bc4\u4f30",
     "prerequisites": [
       "ISSUE-DATE001-1",
@@ -979,11 +979,11 @@
       "ISSUE-DATE001-3"
     ],
     "sub_issues": [],
-    "current_task": null,
+    "current_task": "TASK-1776018689-2816",
     "task_slug": "",
     "session_name": null,
     "session_started_at": null,
-    "last_update": "2026-04-12T22:30:43.235840",
+    "last_update": "2026-04-13T02:31:29.734346",
     "failure_count": 0,
     "notes": "Recovered from need-help (API error batch failure)",
     "has_worktree": true,

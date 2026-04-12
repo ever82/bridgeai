@@ -115,7 +115,7 @@ flowchart TD
     end
 
     subgraph Date["💕 AgentDate场景"]
-        DATE001[🆘 ISSUE-DATE001<br/>交友画像配置]
+        DATE001[🔵 ISSUE-DATE001<br/>交友画像配置]
         DATE002[🆘 ISSUE-DATE002<br/>Agent主动匹配推荐]
         DATE003[🆘 ISSUE-DATE003<br/>Agent间对话匹配]
         DATE004[🆘 ISSUE-DATE004<br/>双向同意引荐机制]
