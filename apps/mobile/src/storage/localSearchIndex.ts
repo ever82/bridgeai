@@ -24,6 +24,12 @@ export interface CompressionStats {
   compressionRatio: number;
 }
 
+export interface IncrementalChange {
+  action: string;
+  imageId: string;
+  timestamp: Date;
+}
+
 const DB_NAME = 'LocalSearchIndex.db';
 const CURRENT_VERSION = 1;
 
@@ -263,11 +269,7 @@ export class LocalSearchIndexStorage {
     return ids;
   }
 
-  async getIncrementalChanges(since: Date): Promise<Array<{
-    action: string;
-    imageId: string;
-    timestamp: Date;
-  }>>> {
+  async getIncrementalChanges(since: Date): Promise<IncrementalChange[]> {
     if (!this.db) throw new Error('Database not initialized');
 
     const [result] = await this.db.executeSql(
@@ -276,7 +278,7 @@ export class LocalSearchIndexStorage {
       [since.getTime()]
     );
 
-    const changes: Array<{ action: string; imageId: string; timestamp: Date }> = [];
+    const changes: IncrementalChange[] = [];
     for (let i = 0; i < result.rows.length; i++) {
       const row = result.rows.item(i);
       changes.push({
