@@ -31,6 +31,11 @@ export const SettingsScreen = () => {
           type: 'link',
           onPress: () => navigation.navigate('PrivacySettings'),
         },
+        {
+          title: '信息披露',
+          type: 'link',
+          onPress: () => navigation.navigate('DisclosureSettings'),
+        },
       ],
     },
     {

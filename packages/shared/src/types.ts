@@ -5,6 +5,7 @@ export * from './types/location';
 export * from './types/filter';
 export * from './types/scene';
 export * from './types/points';
+export * from './types/disclosure';
 export * from './schemas/l2';
 export * from './schemas/sceneFields';
 

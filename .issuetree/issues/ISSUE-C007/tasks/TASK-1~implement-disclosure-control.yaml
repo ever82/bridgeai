@@ -1,0 +1,49 @@
+---
+id: "TASK-1"
+title: "Implement Agent disclosure control mechanism"
+status: "in_progress"
+issue_id: "ISSUE-C007"
+parent_task: null
+child_tasks: []
+description: |-
+  Implement the Agent Information Disclosure Control Mechanism with the following components:
+
+  1. Disclosure Level Definition (c1):
+     - Create DisclosureLevel enum in packages/shared/src/types/disclosure.ts
+     - Define field-level disclosure controls
+
+  2. Field-level Disclosure Settings (c2):
+     - Create DisclosureSettings component in apps/mobile/src/screens/settings/
+     - Allow users to configure disclosure level per field
+     - Support batch settings and preview effects
+
+  3. Disclosure Permission Checking (c3):
+     - Create disclosureService.ts in apps/server/src/services/
+     - Implement canViewField function for permission verification
+     - Add disclosure level calculation and access validation
+
+  4. Information Disclosure Preview (c4):
+     - Create DisclosurePreview component in apps/mobile/src/components/Disclosure/
+     - Show visible information from different role perspectives
+     - Support info masking and disclosure status visualization
+
+  5. Disclosure Change Notification (c5):
+     - Create disclosureAuditService.ts in apps/server/src/services/
+     - Record disclosure setting changes
+     - Implement change notification mechanism and audit logs
+
+  Also write corresponding unit tests and integration tests for the services.
+result: null
+session_id: null
+session_start: null
+session_end: null
+execution_time_minutes: null
+files_modified: 0
+lines_added: 0
+lines_removed: 0
+files_touched: []
+created_at: "2026-04-13T10:00:00+08:00"
+started_at: null
+completed_at: null
+blockers: []
+notes: ""
