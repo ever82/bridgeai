@@ -1,0 +1,49 @@
+# Implementation Task: undefined
+
+**Issue:** ISSUE-DATE004
+**Task:** TASK-1
+
+## Description
+
+实现双向同意引荐机制，包括：
+1. 双向同意状态管理（pending/accepted/rejected/expired）
+2. 引荐结果处理流程
+3. 真人聊天房间创建
+4. 引荐结果通知系统
+5. 引荐记录与管理
+6. 移动端引荐交互界面
+
+涉及文件：
+- apps/server/src/models/MutualConsent.ts
+- apps/server/src/services/dating/consentStateManager.ts
+- apps/server/src/services/dating/referralService.ts
+- apps/server/src/services/dating/consentProcessor.ts
+- apps/server/src/services/dating/humanChatRoomService.ts
+- apps/server/src/services/dating/referralNotificationService.ts
+- apps/server/src/services/dating/referralHistoryService.ts
+- apps/server/src/models/ReferralRecord.ts
+- apps/mobile/src/screens/dating/ReferralScreen.tsx
+- apps/mobile/src/screens/dating/MatchSuccessScreen.tsx
+- apps/mobile/src/screens/dating/ReferralHistoryScreen.tsx
+
+
+## Files to Modify
+
+- (To be determined based on implementation)
+
+## Instructions
+
+1. Implement the features described above
+2. Make focused, incremental changes
+3. Test your changes as you go
+4. Commit your work when complete
+
+## Completion
+
+When you have completed the implementation:
+1. Run: `echo '{"status": "completed"}' > .issuetree/tmp/TASK-1-result.json`
+2. Exit the session
+
+---
+
+Start implementing now.
