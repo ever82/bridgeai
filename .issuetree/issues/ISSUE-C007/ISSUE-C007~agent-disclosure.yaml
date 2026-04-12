@@ -3,7 +3,7 @@ id: "ISSUE-C007"
 issue_number: 309
 title: "Agent信息披露控制机制"
 slug: "agent-disclosure"
-status: "pending"
+status: "implemented"
 description: |
   实现 Agent 信息披露控制机制，允许用户控制哪些信息
   在匹配过程中被披露，保护用户隐私。
@@ -21,7 +21,7 @@ criteria:
       - 匹配后可见信息
       - 私聊后可见信息
       - 引荐后可见信息
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required
@@ -42,7 +42,7 @@ criteria:
       - 默认披露策略
       - 批量设置
       - 预览效果
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: not_needed
       integration: required
@@ -63,7 +63,7 @@ criteria:
       - 访问权限验证
       - 自动披露升级
       - 披露历史记录
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required
@@ -84,7 +84,7 @@ criteria:
       - 信息脱敏展示
       - 披露状态可视化
       - 对方可见信息提示
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: not_needed
       integration: required
@@ -105,7 +105,7 @@ criteria:
       - 已披露信息撤回
       - 对方变更通知
       - 披露审计日志
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required

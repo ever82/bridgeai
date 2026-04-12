@@ -10,7 +10,7 @@ import {
   DEFAULT_FIELD_DISCLOSURES,
   DISCLOSABLE_FIELDS,
   DISCLOSURE_LEVEL_INFO,
-} from './disclosure';
+} from '../disclosure';
 
 describe('Disclosure Types', () => {
   describe('DisclosureLevel enum', () => {
