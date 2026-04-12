@@ -1,36 +1,30 @@
-created_at: '2026-04-08'
-criteria: []
-current_task: null
-description: '实现VisionShare场景的照片查看和积分支付功能。需求方可以浏览供给方上传的照片，
-
+---
+id: "ISSUE-VS005"
+issue_number: 705
+title: "照片查看与积分支付"
+slug: "photo-view-payment"
+type: "epic"
+status: "implemented"
+description: |
+  实现VisionShare场景的照片查看和积分支付功能。需求方可以浏览供给方上传的照片，
   使用积分支付解锁高清原图查看权限。支持支付确认、交易记录、退款申诉等完整流程。
 
-
   此Issue已拆分为以下子Issue:
-
   - ISSUE-VS005a: 照片浏览与画廊展示
-
   - ISSUE-VS005b: 积分支付与高清解锁
-
   - ISSUE-VS005c: 交易记录与退款申诉
-
   - ISSUE-VS005d: 支付安全与风控
 
-  '
-failure_count: 0
-id: ISSUE-VS005
-issue_number: 705
-logic: sufficient_necessary
-prerequisites:
-- ISSUE-VS004
-- ISSUE-CR003
-slug: photo-view-payment
-status: pending
+  Epic基础设施已完成，包含共享类型和目录结构。
 sub_issues:
-- ISSUE-VS005a
-- ISSUE-VS005b
-- ISSUE-VS005c
-- ISSUE-VS005d
-title: 照片查看与积分支付
-type: epic
-updated_at: '2026-04-09'
+  - "ISSUE-VS005a"
+  - "ISSUE-VS005b"
+  - "ISSUE-VS005c"
+  - "ISSUE-VS005d"
+prerequisites:
+  - "ISSUE-VS004"
+  - "ISSUE-CR003"
+created_at: "2026-04-08"
+updated_at: "2026-04-13"
+logic: sufficient_necessary
+criteria: []
