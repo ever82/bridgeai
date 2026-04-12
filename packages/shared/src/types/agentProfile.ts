@@ -37,7 +37,7 @@ export enum EducationLevel {
   OTHER = 'OTHER',
 }
 
-export interface Location {
+export interface ProfileLocation {
   province: string;
   city: string;
   district?: string;
@@ -48,7 +48,7 @@ export interface Location {
 export interface L1Profile {
   age?: AgeRange;
   gender?: Gender;
-  location?: Location;
+  location?: ProfileLocation;
   occupation?: string;
   education?: EducationLevel;
   // Additional flexible fields
@@ -166,7 +166,7 @@ export interface ProfileValidationResult {
 export interface UpdateL1ProfileRequest {
   age?: AgeRange;
   gender?: Gender;
-  location?: Location;
+  location?: ProfileLocation;
   occupation?: string;
   education?: EducationLevel;
 }
