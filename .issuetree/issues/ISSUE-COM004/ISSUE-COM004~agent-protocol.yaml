@@ -19,7 +19,7 @@ criteria:
       - 消息类型定义
       - 元数据字段
       - 协议版本管理
-    status: pending
+    status: completed
     coverage:
       unit: required
       integration: required
@@ -39,7 +39,7 @@ criteria:
       - 所属用户展示
       - Agent 类型标识
       - 可信度标识
-    status: pending
+    status: completed
     coverage:
       unit: not_needed
       integration: required
@@ -59,7 +59,7 @@ criteria:
       - 信用等级标识
       - 信用历史趋势
       - 信用解释说明
-    status: pending
+    status: completed
     coverage:
       unit: not_needed
       integration: required
@@ -79,7 +79,7 @@ criteria:
       - 内容审核规则
       - 行为异常检测
       - 违规处理机制
-    status: pending
+    status: completed
     coverage:
       unit: required
       integration: required
@@ -99,7 +99,7 @@ criteria:
       - API 接口规范
       - 消息示例
       - 错误码定义
-    status: pending
+    status: completed
     coverage:
       unit: not_needed
       integration: not_needed
