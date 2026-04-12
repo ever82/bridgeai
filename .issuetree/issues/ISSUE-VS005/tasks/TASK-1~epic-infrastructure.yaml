@@ -1,0 +1,14 @@
+---
+id: "TASK-1"
+issue_id: "ISSUE-VS005"
+type: "infrastructure"
+title: "Setup VisionShare Photo Payment Infrastructure"
+description: |
+  Create the foundational infrastructure for ISSUE-VS005 Epic:
+  - Mobile: VisionShare screens directory, PhotoViewer components
+  - Server: visionShare service, payment service directories
+  - Shared types: Photo viewing, payment, transaction types
+  - Base service files with interfaces
+status: "in_progress"
+estimated_minutes: 60
+created_at: "2026-04-13T10:00:00+08:00"
