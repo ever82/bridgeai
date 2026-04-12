@@ -3,7 +3,7 @@ id: "ISSUE-VS001"
 issue_number: 701
 title: "VisionShare需求发布"
 slug: "visionshare-demand-publish"
-status: "pending"
+status: "implemented"
 description: |
   实现VisionShare场景的需求发布功能。需求方通过AI Agent智能提炼服务，
   发布实时视野共享任务，包括任务描述、预算、地理位置、时间窗口等信息。
@@ -24,7 +24,7 @@ criteria:
       - 时间窗口设定(立即/预约)
       - 任务有效期配置
       - 需求分类标签选择
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required
@@ -46,7 +46,7 @@ criteria:
       - 智能标签生成
       - 需求质量评分
       - 优化建议提供
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required
@@ -68,7 +68,7 @@ criteria:
       - 地理位置索引
       - 任务与发布者关联
       - 任务历史记录
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required
@@ -79,7 +79,8 @@ criteria:
       ai:
         prompt: "检查VisionShare任务数据模型，验证有完整的Prisma模型定义，包含状态机和地理位置字段"
         context_files: ["packages/database/src/schema/visionShare.prisma", "packages/shared/src/types/visionShare.ts"]
-        
+        test_command: "cd apps/server && npx prisma validate"
+        expected_result: "Prisma schema is valid"
 
   - id: "ISSUE-VS001~c4"
     name: "发布验证与限制"
@@ -90,7 +91,7 @@ criteria:
       - 每日发布数量限制
       - 敏感内容过滤
       - 地理位置合理性校验
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required
@@ -101,7 +102,8 @@ criteria:
       ai:
         prompt: "检查发布验证逻辑，验证有信用分检查、积分验证、数量限制和内容过滤功能"
         context_files: ["apps/server/src/services/visionShare/publishValidation.ts", "apps/server/src/middleware/publishLimit.ts"]
-        
+        test_command: "cd apps/server && npm test -- --testPathPattern=publishValidation"
+        expected_result: "Tests passed"
 
   - id: "ISSUE-VS001~c5"
     name: "发布API与状态管理"
@@ -112,7 +114,7 @@ criteria:
       - 任务编辑API
       - 任务取消API
       - 发布状态实时推送
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required
@@ -123,7 +125,8 @@ criteria:
       ai:
         prompt: "检查VisionShare发布API，验证有完整的CRUD端点和状态变更处理"
         context_files: ["apps/server/src/routes/visionShare/publish.ts", "apps/server/src/services/visionShare/taskService.ts"]
-        
+        test_command: "cd apps/server && npm test -- --testPathPattern=taskService"
+        expected_result: "Tests passed"
 
   - id: "ISSUE-VS001~c6"
     name: "发布成功反馈与分享"
@@ -134,7 +137,7 @@ criteria:
       - 社交分享功能
       - 预计匹配时间显示
       - 发布历史入口
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: not_needed
       integration: required
@@ -145,4 +148,6 @@ criteria:
       ai:
         prompt: "检查发布成功界面，验证有确认页面、分享功能和发布历史入口"
         context_files: ["apps/mobile/src/screens/VisionShare/PublishSuccess.tsx", "apps/mobile/src/components/Share/"]
+        test_command: "cd apps/mobile && npm test -- --testPathPattern=PublishSuccess"
+        expected_result: "Tests passed"
         
