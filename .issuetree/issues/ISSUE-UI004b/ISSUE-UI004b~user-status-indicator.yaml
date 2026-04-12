@@ -3,7 +3,7 @@ id: "ISSUE-UI004b"
 issue_number: 1105
 title: "Agent/人类用户状态指示器"
 slug: "user-status-indicator"
-status: "pending"
+status: "in_progress"
 description: |
   实现在聊天和列表中显示 Agent 和真人用户状态的指示器组件，
   包括在线状态、输入状态、身份标识等，增强用户对对话对象的认知。
