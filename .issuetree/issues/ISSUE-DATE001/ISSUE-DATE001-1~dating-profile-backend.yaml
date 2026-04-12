@@ -3,7 +3,7 @@ id: "ISSUE-DATE001-1"
 issue_number: 801.1
 title: "交友画像配置 - 后端数据模型与API"
 slug: "dating-profile-backend"
-status: "pending"
+status: "implemented"
 description: |
   实现AgentDate交友场景的交友画像配置系统的后端部分。
   包含交友画像数据模型定义和相关API接口实现。
@@ -26,7 +26,7 @@ criteria:
       - 生活方式字段（作息、烟酒、宠物等）
       - 关系期望字段（交友目的、发展节奏等）
       - 与 Agent L2/L3 模型的关联
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -49,7 +49,7 @@ criteria:
       - 必填项验证
       - 选项值范围验证
       - 与场景配置的集成
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
