@@ -1,0 +1,19 @@
+created_at: '2026-04-13'
+description: |
+  实现Agent驱动的薪资协商与面试安排功能：
+  1. 创建协商对话房间 (NegotiationRoom模型和服务)
+  2. 实现AI薪资协商服务 (SalaryNegotiationService)
+  3. 实现面试安排系统 (InterviewSchedulingService)
+  4. 实现协商结果处理和人机切换 (NegotiationResultService + HumanHandoffService)
+  5. 创建RESTful API端点 (negotiationRoutes + interviewRoutes)
+  6. 实现移动端协商和面试界面 (NegotiationChatScreen + InterviewScheduleScreen)
+  7. 编写单元测试和集成测试
+execution:
+  command: implement-salary-negotiation
+  started_at: null
+  status: pending
+id: TASK-1776016795-3429
+issue_id: ISSUE-JOB004
+status: pending
+time_limit_minutes: 180
+type: implementation
