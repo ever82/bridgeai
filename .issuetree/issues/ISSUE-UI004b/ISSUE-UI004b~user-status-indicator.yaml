@@ -3,7 +3,7 @@ id: "ISSUE-UI004b"
 issue_number: 1105
 title: "Agent/人类用户状态指示器"
 slug: "user-status-indicator"
-status: need-help
+status: accepted
 implemented_at: "2026-04-13"
 implementor: "Claude Opus 4.6"
 description: |
