@@ -7,7 +7,7 @@ import { PrismaClient } from '@prisma/client';
 import {
   PointsTransactionType,
   SceneCode,
-} from '@packages/shared/types/points';
+} from '@visionshare/shared';
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
 import {

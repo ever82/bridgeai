@@ -468,3 +468,86 @@ enum TransactionStatus {
   FAILED      @map("failed")
   CANCELLED   @map("cancelled")
 }
+
+// ============================================
+// 积分系统
+// ============================================
+
+model PointsAccount {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  balance       Int      @default(0)
+  totalEarned   Int      @default(0) @map("total_earned")
+  totalSpent    Int      @default(0) @map("total_spent")
+  frozenAmount  Int      @default(0) @map("frozen_amount")
+  version       Int      @default(0)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  transactions  PointsTransaction[]
+  freezes       PointsFreeze[]
+
+  @@index([userId])
+  @@map("points_accounts")
+}
+
+model PointsTransaction {
+  id            String                @id @default(uuid())
+  accountId     String                @map("account_id")
+  userId        String                @map("user_id")
+  type          PointsTransactionType
+  amount        Int
+  balanceAfter  Int                   @map("balance_after")
+  description   String?
+  scene         SceneCode?
+  referenceId   String?               @map("reference_id")
+  metadata      String?               @db.Text
+  createdAt     DateTime              @default(now()) @map("created_at")
+
+  // Relations
+  account       PointsAccount         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([userId])
+  @@index([type])
+  @@index([scene])
+  @@index([createdAt])
+  @@map("points_transactions")
+}
+
+model PointsFreeze {
+  id            String       @id @default(uuid())
+  accountId     String       @map("account_id")
+  amount        Int
+  reason        String
+  scene         SceneCode?
+  referenceId   String?      @map("reference_id")
+  status        FreezeStatus @default(FROZEN)
+  expiresAt     DateTime?    @map("expires_at")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  account       PointsAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("points_freezes")
+}
+
+enum PointsTransactionType {
+  EARN        @map("earn")
+  SPEND       @map("spend")
+  FROZEN      @map("frozen")
+  UNFROZEN    @map("unfrozen")
+  TRANSFER_IN @map("transfer_in")
+  TRANSFER_OUT @map("transfer_out")
+}
+
+enum FreezeStatus {
+  FROZEN      @map("frozen")
+  RELEASED    @map("released")
+  USED        @map("used")
+}
