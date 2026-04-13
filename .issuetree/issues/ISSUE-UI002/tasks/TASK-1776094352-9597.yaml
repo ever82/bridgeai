@@ -1,7 +1,7 @@
 task:
   id: TASK-1776094352-9597
   issue_id: ISSUE-UI002
-  result: null
+  result: issue_already_accepted
   retry:
     attempt: 1
     next_task: null
@@ -13,6 +13,6 @@ task:
     started_at: '2026-04-13T23:32:34.758432+08:00'
     tmux_session: task-task-1776094352-9597
     worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-UI002
-  status: failed
+  status: completed
   timeout_minutes: 30
   type: accept
