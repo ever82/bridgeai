@@ -63,7 +63,7 @@ interface HeartbeatConfig {
  * - Caching: Caches frequently accessed states
  * - Heartbeat optimization: Adaptive heartbeat intervals
  */
-class StateAggregationService extends EventEmitter {
+export class StateAggregationService extends EventEmitter {
   private updateQueue: StateUpdate[] = [];
   private batchTimer: NodeJS.Timeout | null = null;
   private stateCache = new Map<string, CachedState>();
@@ -198,7 +198,9 @@ class StateAggregationService extends EventEmitter {
     // Evict oldest entries if cache is full
     if (this.stateCache.size >= this.maxCacheSize) {
       const oldestKey = this.stateCache.keys().next().value;
-      this.stateCache.delete(oldestKey);
+      if (oldestKey) {
+        this.stateCache.delete(oldestKey);
+      }
     }
 
     const existing = this.stateCache.get(key);

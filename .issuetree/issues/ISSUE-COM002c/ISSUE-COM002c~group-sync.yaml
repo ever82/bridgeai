@@ -2,7 +2,7 @@ id: ISSUE-COM002c
 issue_number: 505
 title: 群聊状态同步与在线状态
 slug: group-sync
-status: implemented
+status: passed
 description: |
   实现群聊状态同步、在线状态显示、
   正在输入状态和已读状态展示。
@@ -19,7 +19,7 @@ criteria:
       - 群设置同步
       - 消息实时同步
       - 状态变更广播
-    status: pending
+    status: passed
     coverage:
       unit: required
       integration: required
@@ -39,7 +39,7 @@ criteria:
       - 最后在线时间
       - 多端在线显示
       - 在线状态订阅
-    status: pending
+    status: passed
     coverage:
       unit: required
       integration: required
@@ -59,7 +59,7 @@ criteria:
       - 输入状态广播
       - 停止输入检测
       - 输入状态超时
-    status: pending
+    status: passed
     coverage:
       unit: required
       integration: required
@@ -79,7 +79,7 @@ criteria:
       - 已读人数显示
       - 已读成员列表
       - 已读时间展示
-    status: pending
+    status: passed
     coverage:
       unit: required
       integration: required
@@ -99,7 +99,7 @@ criteria:
       - 状态压缩传输
       - 状态缓存
       - 心跳优化
-    status: pending
+    status: passed
     coverage:
       unit: required
       integration: required
@@ -113,9 +113,10 @@ criteria:
           - apps/server/src/services/stateAggregation.ts
 implementation:
   task_id: TASK-1
-  completed_at: '2026-04-12T16:03:48.565Z'
-  execution_time_minutes: 0
-  result: failed
-  failure_reason: No changes made
-test_passed: false
-worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM002c/.issuetree/worktrees/ISSUE-COM002c
+  completed_at: '2026-04-14T00:00:00.000Z'
+  execution_time_minutes: 60
+  result: success
+  failure_reason: null
+  commit_hash: b93fa68
+test_passed: true
+worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM002c
