@@ -45,3 +45,52 @@ export {
   ValidationOptions,
   FieldValidationResult,
 } from './validators/extractionValidator';
+
+// Scene-Specific Extractors (ISSUE-AI002b)
+export {
+  SceneType,
+  SceneExtractedData,
+  SceneExtractedEntity,
+  SceneSpecificExtractor,
+  SceneDetectionResult,
+  VisionShareData,
+  AgentDateData,
+  AgentJobData,
+  AgentAdData,
+  BaseSceneExtractor,
+  VisionShareExtractor,
+  AgentDateExtractor,
+  AgentJobExtractor,
+  AgentAdExtractor,
+  SceneDetector,
+  sceneDetector,
+} from './extractors';
+
+// Clarification Service (ISSUE-AI002b)
+export {
+  ClarificationService,
+  clarificationService,
+  ClarificationSession,
+  ClarificationTurn,
+  ClarificationRequest,
+  ClarificationResponse,
+} from './clarificationService';
+
+// Agent Negotiation Service (ISSUE-AD003)
+export {
+  AgentNegotiationService,
+  agentNegotiationService,
+  NegotiationRoom,
+  NegotiationMessage,
+  NegotiationContext,
+  NegotiationConfig,
+  AgentInfo,
+  AgentType,
+  ConsumerProfile,
+  MerchantProfile,
+  MerchantOffer,
+  ComparisonResult,
+  ComparedOffer,
+  RecommendationResult,
+  FollowUpQuestion,
+} from './agentNegotiationService';

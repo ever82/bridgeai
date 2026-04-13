@@ -19,6 +19,7 @@ import { registerChatHandlers } from './handlers/chat';
 import { registerSystemHandlers } from './handlers/system';
 import { registerGroupHandlers } from './handlers/groupHandler';
 import { registerRoomHandlers } from './handlers/roomHandler';
+import { registerAgentNegotiationHandlers } from './handlers/agentNegotiation';
 
 /**
  * Socket.io server instance
@@ -115,6 +116,13 @@ function setupNamespaces(io: SocketServer): void {
   roomNsp.on('connection', (socket) => {
     handleConnection(socket, 'room');
     registerRoomHandlers(socket, roomNsp);
+  });
+
+  // Negotiation namespace for Agent negotiation (AD003)
+  const negotiationNsp = io.of('/negotiation');
+  negotiationNsp.on('connection', (socket) => {
+    handleConnection(socket, 'negotiation');
+    registerAgentNegotiationHandlers(socket, negotiationNsp);
   });
 }
 
