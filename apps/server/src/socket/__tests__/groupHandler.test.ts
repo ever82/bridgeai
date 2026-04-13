@@ -48,7 +48,7 @@ describe('Group Handler', () => {
 
   describe('group:create', () => {
     it('creates a group successfully', () => {
-      const handler = eventHandlers.get('group:create');
+      const handler = eventHandlers.get('group:create')!;
       expect(handler).toBeDefined();
 
       handler({ name: 'Test Group', memberIds: ['user456'] }, mockCallback);
@@ -67,7 +67,7 @@ describe('Group Handler', () => {
 
     it('requires authentication', () => {
       mockSocket.user = null;
-      const handler = eventHandlers.get('group:create');
+      const handler = eventHandlers.get('group:create')!;
 
       handler({ name: 'Test Group' }, mockCallback);
 
@@ -83,7 +83,7 @@ describe('Group Handler', () => {
   describe('group:join', () => {
     it('requires authentication', () => {
       mockSocket.user = null;
-      const handler = eventHandlers.get('group:join');
+      const handler = eventHandlers.get('group:join')!;
 
       handler({ groupId: 'group123' }, mockCallback);
 
@@ -98,7 +98,7 @@ describe('Group Handler', () => {
 
   describe('group:leave', () => {
     it('leaves group successfully', () => {
-      const handler = eventHandlers.get('group:leave');
+      const handler = eventHandlers.get('group:leave')!;
 
       handler({ groupId: 'group123' }, mockCallback);
 
@@ -111,10 +111,10 @@ describe('Group Handler', () => {
 
   describe('group:update_settings', () => {
     it('requires admin or owner role', () => {
-      const handler = eventHandlers.get('group:update_settings');
+      const handler = eventHandlers.get('group:update_settings')!;
 
       // First create a group
-      const createHandler = eventHandlers.get('group:create');
+      const createHandler = eventHandlers.get('group:create')!;
       createHandler({ name: 'Test Group' }, jest.fn());
 
       // Try to update settings without being a member
@@ -133,7 +133,7 @@ describe('Group Handler', () => {
 
     it('requires authentication', () => {
       mockSocket.user = null;
-      const handler = eventHandlers.get('group:update_settings');
+      const handler = eventHandlers.get('group:update_settings')!;
 
       handler({ groupId: 'group123', settings: {} }, mockCallback);
 
@@ -149,7 +149,7 @@ describe('Group Handler', () => {
   describe('group:add_member', () => {
     it('requires authentication', () => {
       mockSocket.user = null;
-      const handler = eventHandlers.get('group:add_member');
+      const handler = eventHandlers.get('group:add_member')!;
 
       handler({ groupId: 'group123', userId: 'user456' }, mockCallback);
 
@@ -165,7 +165,7 @@ describe('Group Handler', () => {
   describe('group:remove_member', () => {
     it('requires authentication', () => {
       mockSocket.user = null;
-      const handler = eventHandlers.get('group:remove_member');
+      const handler = eventHandlers.get('group:remove_member')!;
 
       handler({ groupId: 'group123', userId: 'user456' }, mockCallback);
 
@@ -180,7 +180,7 @@ describe('Group Handler', () => {
 
   describe('disconnect', () => {
     it('handles disconnect event', () => {
-      const handler = eventHandlers.get('disconnect');
+      const handler = eventHandlers.get('disconnect')!;
       expect(handler).toBeDefined();
 
       // Should not throw

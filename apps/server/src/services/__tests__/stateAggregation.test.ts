@@ -1,7 +1,7 @@
 /**
  * State Aggregation Service Tests
  */
-import { StateAggregationService } from '../services/stateAggregation';
+import { StateAggregationService } from '../stateAggregation';
 
 describe('StateAggregationService', () => {
   let service: StateAggregationService;
