@@ -8,13 +8,6 @@ import { llmService } from './llmService';
 import { metricsService } from './metricsService';
 import { LLMProvider } from './types';
 import { logger } from '../../utils/logger';
-import {
-  SceneDetector,
-  SceneSpecificExtractor,
-  SceneType,
-  sceneDetector
-} from './extractors';
-import { ClarificationService, clarificationService } from './clarificationService';
 
 /**
  * Extracted Entity Types
@@ -140,30 +133,6 @@ export interface ExtractionOptions {
 export class DemandExtractionService {
   private version = '1.0.0';
   private minConfidenceThreshold = 0.5;
-  private sceneDetector: SceneDetector;
-  private clarificationSvc: ClarificationService;
-
-  constructor(
-    sceneDetector?: SceneDetector,
-    clarificationService?: ClarificationService
-  ) {
-    this.sceneDetector = sceneDetector || new SceneDetector();
-    this.clarificationSvc = clarificationService || new ClarificationService();
-  }
-
-  /**
-   * Get scene detector
-   */
-  getSceneDetector(): SceneDetector {
-    return this.sceneDetector;
-  }
-
-  /**
-   * Get clarification service
-   */
-  getClarificationService(): ClarificationService {
-    return this.clarificationSvc;
-  }
 
   /**
    * Extract demand from natural language text
@@ -174,87 +143,63 @@ export class DemandExtractionService {
     options: ExtractionOptions = {}
   ): Promise<Demand> {
     const startTime = Date.now();
-    const { text, scene: providedScene, context } = request;
+    const { text, scene, context } = request;
     const opts = { ...this.getDefaultOptions(), ...options };
 
     try {
       logger.info('Starting demand extraction', {
         textLength: text.length,
-        scene: providedScene,
+        scene,
         hasContext: !!context,
       });
 
-      // Step 1: Detect scene if not provided
-      let detectedScene: SceneType = providedScene as SceneType || 'unknown';
-      let sceneConfidence = 1.0;
-
-      if (!providedScene) {
-        const detectionResult = await this.sceneDetector.detectScene(text);
-        detectedScene = detectionResult.scene;
-        sceneConfidence = detectionResult.confidence;
-        logger.info('Scene detected', { scene: detectedScene, confidence: sceneConfidence });
-      }
-
-      // Step 2: Try scene-specific extraction if we have a known scene
-      let sceneDemand: Partial<Demand> | null = null;
-      if (detectedScene !== 'unknown' && sceneConfidence >= 0.5) {
-        const extractor = this.sceneDetector.getExtractor(detectedScene);
-        if (extractor) {
-          sceneDemand = await extractor.extract(request);
-          logger.info('Scene-specific extraction completed', { scene: detectedScene });
-        }
-      }
-
-      // Step 3: Classify intent if enabled (or use scene demand's intent)
-      const intent = sceneDemand?.intent || (opts.classifyIntent
+      // Step 1: Classify intent if enabled
+      const intent = opts.classifyIntent
         ? await this.classifyIntent(text, context)
-        : this.getDefaultIntent());
+        : this.getDefaultIntent();
 
-      // Step 4: Extract entities if enabled (or use scene demand's entities)
-      const entities = sceneDemand?.entities || (opts.extractEntities
+      // Step 2: Extract entities if enabled
+      const entities = opts.extractEntities
         ? await this.extractEntities(text)
-        : []);
+        : [];
 
-      // Step 5: Build structured demand (prefer scene demand's structure)
-      const structured = sceneDemand?.structured || this.buildStructuredDemand(entities, text);
+      // Step 3: Build structured demand
+      const structured = this.buildStructuredDemand(entities, text);
 
-      // Step 6: Check if clarification is needed
-      const { clarificationNeeded, questions } = sceneDemand
-        ? { clarificationNeeded: sceneDemand.clarificationNeeded || false, questions: sceneDemand.clarificationQuestions || [] }
-        : this.checkClarificationNeeded(
-            structured,
-            intent,
-            opts.requireClarification
-          );
+      // Step 4: Check if clarification is needed
+      const { clarificationNeeded, questions } = this.checkClarificationNeeded(
+        structured,
+        intent,
+        opts.requireClarification
+      );
 
-      // Step 7: Calculate overall confidence
-      const confidence = sceneDemand?.confidence || this.calculateConfidence(intent, entities, structured);
+      // Step 5: Calculate overall confidence
+      const confidence = this.calculateConfidence(intent, entities, structured);
 
-      // Step 8: Build final demand object
+      // Step 6: Build final demand object
       const demand: Demand = {
         rawText: text,
         intent,
         entities,
         structured,
         confidence,
-        scene: detectedScene,
+        scene,
         clarificationNeeded,
         clarificationQuestions: questions,
         metadata: {
           processedAt: new Date(),
-          provider: LLMProvider.OPENAI,
+          provider: LLMProvider.OPENAI, // Will be set from actual LLM response
           model: 'gpt-4',
           latencyMs: Date.now() - startTime,
           version: this.version,
         },
       };
 
-      // Step 9: Record metrics
+      // Step 7: Record metrics
       await this.recordMetrics(demand, startTime);
 
       logger.info('Demand extraction completed', {
         intent: intent.intent,
-        scene: detectedScene,
         entityCount: entities.length,
         confidence,
         clarificationNeeded,
