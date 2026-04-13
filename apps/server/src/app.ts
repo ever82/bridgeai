@@ -9,14 +9,24 @@ import { errorHandler } from './middleware/errorHandler';
 import { requestId } from './middleware/requestId';
 import { timeout } from './middleware/timeout';
 import { performanceMonitor } from './middleware/performance';
+import { enhancedIpLimiter, strictAuthLimiter } from './middleware/rateLimiter';
+import { ddosProtection, slowAttackProtection } from './middleware/ddosProtection';
+import { ipFilter } from './middleware/ipFilter';
+import { securityProtection } from './middleware/security';
+import { corsConfig, securityHeaders } from './config/cors';
 import routes from './routes';
+import adminRoutes from './routes/admin';
 import { ApiResponse } from './utils/response';
 import { initSentry, Sentry } from './utils/sentry';
+import { initializeSecurityMonitoring } from './services/securityMonitor';
 
 dotenv.config();
 
 // Initialize Sentry before creating the app
 initSentry();
+
+// Initialize security monitoring
+initializeSecurityMonitoring();
 
 const app: Application = express();
 
@@ -26,18 +36,13 @@ app.use(Sentry.Handlers.requestHandler());
 // Sentry tracing handler
 app.use(Sentry.Handlers.tracingHandler());
 
-// Security middleware
-app.use(helmet());
+// Security middleware - Helmet with enhanced configuration
+app.use(helmet(securityHeaders));
 
-// CORS configuration
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
-}));
+// CORS configuration with whitelist
+app.use(cors(corsConfig));
 
-// Body parsing middleware
+// Request size limits with security
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -47,8 +52,23 @@ app.use(compression());
 // Request ID middleware
 app.use(requestId);
 
+// IP Filter middleware (whitelist/blacklist)
+app.use(ipFilter);
+
+// DDoS Protection middleware
+app.use(ddosProtection);
+
+// Rate limiting middleware
+app.use(enhancedIpLimiter);
+
+// Slow attack protection (timeout middleware)
+app.use(slowAttackProtection(parseInt(process.env.SLOW_ATTACK_TIMEOUT || '30000', 10)));
+
 // Timeout middleware (30 seconds default)
 app.use(timeout(parseInt(process.env.REQUEST_TIMEOUT_MS || '30000', 10)));
+
+// Security protection middleware (XSS, SQL injection, etc.)
+app.use(securityProtection());
 
 // Performance monitoring middleware
 app.use(performanceMonitor);
@@ -81,6 +101,9 @@ app.get('/ready', (req: Request, res: Response) => {
 
 // API routes
 app.use('/api', routes);
+
+// Admin routes with stricter rate limiting
+app.use('/admin', strictAuthLimiter, adminRoutes);
 
 // Root endpoint
 app.get('/', (req: Request, res: Response) => {
