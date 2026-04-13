@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../stores/authStore';
 import { theme } from '../../theme';
-import { api } from '../../services/api';
+import { api } from '../../services';
 
 export const EditProfileScreen = () => {
   const insets = useSafeAreaInsets();
