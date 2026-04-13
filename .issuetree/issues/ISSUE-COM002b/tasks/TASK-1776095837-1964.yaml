@@ -1,0 +1,18 @@
+task:
+  id: TASK-1776095837-1964
+  issue_id: ISSUE-COM002b
+  result: null
+  retry:
+    attempt: 1
+    next_task: null
+    previous_task: null
+  session:
+    claude_session_id: 86ebee12-1f5c-4a86-845c-a5b086248e61
+    claude_session_name: TASK-1776095837-1964
+    resumed_at: null
+    started_at: '2026-04-13T23:57:20.093183+08:00'
+    tmux_session: task-task-1776095837-1964
+    worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM002b
+  status: failed
+  timeout_minutes: 30
+  type: fix

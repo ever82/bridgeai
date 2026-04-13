@@ -1,0 +1,18 @@
+task:
+  id: TASK-1776090600-6434
+  issue_id: ISSUE-AD002
+  result: null
+  retry:
+    attempt: 1
+    next_task: null
+    previous_task: null
+  session:
+    claude_session_id: 69963cc2-1c51-4e54-a67e-fc99e71cbdcd
+    claude_session_name: TASK-1776090600-6434
+    resumed_at: null
+    started_at: '2026-04-13T22:30:02.751117+08:00'
+    tmux_session: task-task-1776090600-6434
+    worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-AD002
+  status: failed
+  timeout_minutes: 30
+  type: fix
