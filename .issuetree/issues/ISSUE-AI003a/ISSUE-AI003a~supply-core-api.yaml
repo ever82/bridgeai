@@ -3,7 +3,7 @@ issue_number: 503
 parent: ISSUE-AI003
 title: 供给智能提炼服务 - 核心解析引擎与API
 slug: supply-core-api
-status: accepting
+status: accepted
 description: |
   实现供给智能提炼服务的核心解析引擎和API端点，
   包含供给解析引擎和供给API与集成，为场景提取器提供基础能力
