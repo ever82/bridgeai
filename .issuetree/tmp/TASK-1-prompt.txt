@@ -1,21 +1,18 @@
-# Implementation Task: Implement Message Persistence and History Records
+# Implementation Task: 群聊状态同步与在线状态实现
 
-**Issue:** ISSUE-COM002b
+**Issue:** ISSUE-COM002c
 **Task:** TASK-1
 
 ## Description
 
-Implement the complete message persistence system for BridgeAI including:
-1. Message model design (Prisma schema)
-2. Message sending and storage (Socket handlers)
-3. History record query API (REST endpoints)
-4. Message sync mechanism (incremental sync)
-5. Offline message handling (queue and push)
-6. Read receipt system (status tracking)
-7. Data consistency (transactions)
-8. Performance optimization (<200ms queries)
+实现群聊状态同步、在线状态显示、正在输入状态和已读状态展示。
+包含：
+1. 群聊状态同步 - 群成员列表同步、群设置同步、消息实时同步、状态变更广播
+2. 在线状态显示 - 用户在线状态、最后在线时间、多端在线显示、在线状态订阅
+3. 正在输入状态 - 输入检测、输入状态广播、停止输入检测、输入状态超时
+4. 已读状态展示 - 消息已读状态、已读人数显示、已读成员列表、已读时间展示
+5. 状态聚合优化 - 状态批量更新、状态压缩传输、状态缓存、心跳优化
 
-This task covers all 8 acceptance criteria from ISSUE-COM002b.
 
 ## Files to Modify
 

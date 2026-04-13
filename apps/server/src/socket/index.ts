@@ -15,6 +15,7 @@ import { pubClient, subClient } from './adapter';
 import { registerUserHandlers } from './handlers/user';
 import { registerChatHandlers } from './handlers/chat';
 import { registerSystemHandlers } from './handlers/system';
+import { registerGroupHandlers } from './handlers/groupHandler';
 
 /**
  * Socket.io server instance
@@ -97,6 +98,13 @@ function setupNamespaces(io: SocketServer): void {
   systemNsp.on('connection', (socket) => {
     handleConnection(socket, 'system');
     registerSystemHandlers(socket, systemNsp);
+  });
+
+  // Group namespace for group chat events
+  const groupNsp = io.of('/group');
+  groupNsp.on('connection', (socket) => {
+    handleConnection(socket, 'group');
+    registerGroupHandlers(socket, groupNsp);
   });
 }
 
