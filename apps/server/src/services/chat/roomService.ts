@@ -2,10 +2,9 @@
  * Chat Room Service
  * 聊天房间管理服务
  */
-import { PrismaClient, ChatRoom, ChatRoomType, ChatRoomStatus, RoomParticipant, ParticipantRole } from '@prisma/client';
+import { ChatRoom, ChatRoomType, ChatRoomStatus, RoomParticipant, ParticipantRole } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../db/client';
 
 export interface CreateRoomInput {
   type: ChatRoomType;
@@ -36,7 +35,7 @@ export interface RoomQueryOptions {
 
 export interface RoomWithParticipants extends ChatRoom {
   participants: RoomParticipant[];
-  unreadCount?: number;
+  unreadCount: number;
 }
 
 /**

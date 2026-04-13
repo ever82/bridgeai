@@ -3,8 +3,8 @@
  * 聊天房间API路由
  */
 import { Router } from 'express';
-import { authenticate } from '../../middleware/auth';
-import { validateRequest } from '../../middleware/validation';
+import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
+import { validate } from '../../middleware/validation';
 import { z } from 'zod';
 import {
   createRoom,
@@ -59,8 +59,8 @@ const updateParticipantSchema = z.object({
 router.post(
   '/rooms',
   authenticate,
-  validateRequest(createRoomSchema),
-  async (req, res, next) => {
+  validate({ body: createRoomSchema }),
+  async (req: AuthenticatedRequest, res, next) => {
     try {
       const userId = req.user!.id;
       const room = await createRoom({
@@ -82,7 +82,7 @@ router.post(
  * GET /api/v1/chat/rooms
  * 获取用户房间列表
  */
-router.get('/rooms', authenticate, async (req, res, next) => {
+router.get('/rooms', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
     const userId = req.user!.id;
     const {
@@ -126,7 +126,7 @@ router.get('/rooms', authenticate, async (req, res, next) => {
  * GET /api/v1/chat/rooms/search
  * 搜索房间
  */
-router.get('/rooms/search', authenticate, async (req, res, next) => {
+router.get('/rooms/search', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
     const userId = req.user!.id;
     const { q, ...options } = req.query;
@@ -164,7 +164,7 @@ router.get('/rooms/search', authenticate, async (req, res, next) => {
  * GET /api/v1/chat/rooms/:id
  * 获取房间详情
  */
-router.get('/rooms/:id', authenticate, async (req, res, next) => {
+router.get('/rooms/:id', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
     const userId = req.user!.id;
     const { id } = req.params;
@@ -203,8 +203,8 @@ router.get('/rooms/:id', authenticate, async (req, res, next) => {
 router.patch(
   '/rooms/:id',
   authenticate,
-  validateRequest(updateRoomSchema),
-  async (req, res, next) => {
+  validate({ body: updateRoomSchema }),
+  async (req: AuthenticatedRequest, res, next) => {
     try {
       const { id } = req.params;
       const room = await updateRoom(id, req.body);
@@ -223,7 +223,7 @@ router.patch(
  * DELETE /api/v1/chat/rooms/:id
  * 关闭房间
  */
-router.delete('/rooms/:id', authenticate, async (req, res, next) => {
+router.delete('/rooms/:id', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
     const { id } = req.params;
     const room = await closeRoom(id);
@@ -241,7 +241,7 @@ router.delete('/rooms/:id', authenticate, async (req, res, next) => {
  * POST /api/v1/chat/rooms/:id/read
  * 标记房间已读
  */
-router.post('/rooms/:id/read', authenticate, async (req, res, next) => {
+router.post('/rooms/:id/read', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
     const userId = req.user!.id;
     const { id } = req.params;
@@ -263,7 +263,7 @@ router.post('/rooms/:id/read', authenticate, async (req, res, next) => {
  * GET /api/v1/chat/rooms/:id/participants
  * 获取房间参与者列表
  */
-router.get('/rooms/:id/participants', authenticate, async (req, res, next) => {
+router.get('/rooms/:id/participants', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
     const userId = req.user!.id;
     const { id } = req.params;
@@ -295,8 +295,8 @@ router.get('/rooms/:id/participants', authenticate, async (req, res, next) => {
 router.post(
   '/rooms/:id/participants',
   authenticate,
-  validateRequest(addParticipantSchema),
-  async (req, res, next) => {
+  validate({ body: addParticipantSchema }),
+  async (req: AuthenticatedRequest, res, next) => {
     try {
       const userId = req.user!.id;
       const { id } = req.params;
@@ -326,8 +326,8 @@ router.post(
 router.patch(
   '/rooms/:id/participants/:userId',
   authenticate,
-  validateRequest(updateParticipantSchema),
-  async (req, res, next) => {
+  validate({ body: updateParticipantSchema }),
+  async (req: AuthenticatedRequest, res, next) => {
     try {
       const currentUserId = req.user!.id;
       const { id, userId } = req.params;
@@ -348,7 +348,7 @@ router.patch(
  * DELETE /api/v1/chat/rooms/:id/participants/:userId
  * 移除参与者
  */
-router.delete('/rooms/:id/participants/:userId', authenticate, async (req, res, next) => {
+router.delete('/rooms/:id/participants/:userId', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
     const currentUserId = req.user!.id;
     const { id, userId } = req.params;
@@ -368,7 +368,7 @@ router.delete('/rooms/:id/participants/:userId', authenticate, async (req, res, 
  * POST /api/v1/chat/rooms/:id/transfer-ownership
  * 转移房主权限
  */
-router.post('/rooms/:id/transfer-ownership', authenticate, async (req, res, next) => {
+router.post('/rooms/:id/transfer-ownership', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
     const currentUserId = req.user!.id;
     const { id } = req.params;

@@ -2,7 +2,7 @@
  * Participant Service Unit Tests
  * 参与者服务单元测试
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from '@jest/globals';
 import {
   addParticipant,
   removeParticipant,
@@ -18,22 +18,22 @@ import { ChatRoomType, ParticipantRole } from '@prisma/client';
 // Mock Prisma
 const mockPrisma = {
   chatRoom: {
-    findUnique: vi.fn(),
-    update: vi.fn(),
+    findUnique: jest.fn(),
+    update: jest.fn(),
   },
   roomParticipant: {
-    create: vi.fn(),
-    createMany: vi.fn(),
-    findUnique: vi.fn(),
-    findMany: vi.fn(),
-    update: vi.fn(),
-    updateMany: vi.fn(),
-    count: vi.fn(),
+    create: jest.fn(),
+    createMany: jest.fn(),
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+    count: jest.fn(),
   },
 };
 
 vi.mock('@prisma/client', () => ({
-  PrismaClient: vi.fn(() => mockPrisma),
+  PrismaClient: jest.fn(() => mockPrisma),
   ChatRoomType: {
     PRIVATE: 'PRIVATE',
     GROUP: 'GROUP',
@@ -49,7 +49,7 @@ vi.mock('@prisma/client', () => ({
 
 describe('participantService', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   afterEach(() => {

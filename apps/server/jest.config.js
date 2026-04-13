@@ -10,6 +10,7 @@ module.exports = {
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       transpileOnly: true,
+      isolatedModules: true,
     }],
   },
 

@@ -2,7 +2,7 @@
  * Chat Routes Integration Tests
  * 聊天路由集成测试
  */
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 import app from '../../app';
 import { createTestUser, createTestRoom, cleanupTestData } from '../../tests/helpers';
