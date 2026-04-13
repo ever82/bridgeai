@@ -43,6 +43,14 @@ export type ProfileStackParamList = {
   CreateAgent: undefined;
 };
 
+export type JobStackParamList = {
+  JobList: undefined;
+  JobPosting: { jobId?: string } | undefined;
+  JobDetail: { jobId: string };
+  ReceivedResumes: { jobId: string };
+  CompanyVerification: undefined;
+};
+
 declare global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}

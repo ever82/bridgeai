@@ -7,6 +7,7 @@ import agentRoutes from '../agents';
 import agentProfileRoutes from '../agentProfile';
 import locationRoutes from '../locationRoutes';
 import aiExtractionRoutes from '../ai/extraction';
+import jobPostingRoutes from '../job/jobPostingRoutes';
 
 const router: Router = Router();
 
@@ -19,6 +20,7 @@ router.use('/agents', agentRoutes);
 router.use('/agents', agentProfileRoutes);
 router.use('/location', locationRoutes);
 router.use('/ai', aiExtractionRoutes);
+router.use('/jobs', jobPostingRoutes);
 
 // Placeholder for future routes
 // router.use('/auth', authRoutes);
