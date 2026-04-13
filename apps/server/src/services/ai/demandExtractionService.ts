@@ -188,7 +188,7 @@ export class DemandExtractionService {
         clarificationQuestions: questions,
         metadata: {
           processedAt: new Date(),
-          provider: LLMProvider.OPENAI, // Will be set from actual LLM response
+          provider: 'openai' as LLMProvider, // Will be set from actual LLM response
           model: 'gpt-4',
           latencyMs: Date.now() - startTime,
           version: this.version,
@@ -241,7 +241,11 @@ export class DemandExtractionService {
         model: response.model,
         latencyMs: response.latencyMs || 0,
         success: true,
-        tokenUsage: response.usage || { input: 0, output: 0, total: 0 },
+        tokenUsage: {
+          input: response.usage?.promptTokens || 0,
+          output: response.usage?.completionTokens || 0,
+          total: response.usage?.totalTokens || 0,
+        },
         costUsd: response.cost || 0,
       });
 
@@ -333,7 +337,11 @@ Respond with ONLY the JSON object.`;
         model: response.model,
         latencyMs: response.latencyMs || 0,
         success: true,
-        tokenUsage: response.usage || { input: 0, output: 0, total: 0 },
+        tokenUsage: {
+          input: response.usage?.promptTokens || 0,
+          output: response.usage?.completionTokens || 0,
+          total: response.usage?.totalTokens || 0,
+        },
         costUsd: response.cost || 0,
       });
 

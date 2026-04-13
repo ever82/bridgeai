@@ -124,7 +124,7 @@ class InMemorySessionStore implements SessionStore {
 
   private cleanup(): void {
     const now = Date.now();
-    for (const [sessionId, session] of this.sessions) {
+    for (const [sessionId, session] of this.sessions.entries()) {
       if (now - session.updatedAt.getTime() > this.maxAgeMs) {
         this.sessions.delete(sessionId);
         logger.info(`Expired clarification session cleaned: ${sessionId}`);

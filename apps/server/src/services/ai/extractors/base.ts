@@ -141,7 +141,7 @@ export abstract class BaseSceneExtractor implements SceneSpecificExtractor {
       clarificationQuestions: [],
       metadata: {
         processedAt: new Date(),
-        provider: LLMProvider.OPENAI,
+        provider: 'openai' as LLMProvider,
         model: 'gpt-4',
         latencyMs: 0,
         version: this.version

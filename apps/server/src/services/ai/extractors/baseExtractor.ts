@@ -176,7 +176,7 @@ export abstract class BaseSceneExtractor<T extends SceneExtractedData>
 
     for (const [type, regexes] of Object.entries(patterns)) {
       for (const regex of regexes) {
-        const matches = text.matchAll(regex);
+        const matches = Array.from(text.matchAll(regex));
         for (const match of matches) {
           entities.push({
             type: type as any,

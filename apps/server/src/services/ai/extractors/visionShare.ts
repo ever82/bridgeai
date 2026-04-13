@@ -11,6 +11,8 @@ import { logger } from '../../../utils/logger';
  * VisionShare Specific Fields
  */
 export interface VisionShareFields {
+  title?: string;
+  description?: string;
   photoType: string;
   style: string;
   location: string;

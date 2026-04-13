@@ -11,6 +11,8 @@ import { logger } from '../../../utils/logger';
  * AgentAd Specific Fields
  */
 export interface AgentAdFields {
+  title?: string;
+  description?: string;
   adType: string;
   productCategory: string;
   productName: string;
