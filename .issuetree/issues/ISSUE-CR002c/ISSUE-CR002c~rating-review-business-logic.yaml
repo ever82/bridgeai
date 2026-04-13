@@ -15,6 +15,7 @@ criteria:
       - 触发信用分重算事件
     id: ISSUE-CR002c~c1
     name: 评价与信用分联动
+    status: completed
     verification:
       ai:
         context_files:
@@ -36,7 +37,7 @@ criteria:
       - 通知偏好设置
     id: ISSUE-CR002c~c2
     name: 评价通知与提醒
-    status: pending
+    status: completed
     verification:
       ai:
         context_files:
@@ -56,7 +57,7 @@ part_number: 3
 prerequisites:
   - ISSUE-CR002a
 slug: rating-review-business-logic
-status: implemented
+status: completed
 title: 评分与评价系统 - 业务逻辑
 total_parts: 3
 implementation:
@@ -67,5 +68,5 @@ implementation:
   notes: All acceptance criteria implemented
 test_passed: true
 test_duration_seconds: 300
-merged_to_master: false
+merged_to_master: true
 worktree_path: null
