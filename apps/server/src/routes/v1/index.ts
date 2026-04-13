@@ -7,6 +7,8 @@ import agentRoutes from '../agents';
 import agentProfileRoutes from '../agentProfile';
 import locationRoutes from '../locationRoutes';
 import aiRoutes from '../ai';
+import aiExtractionRoutes from '../ai/extraction';
+import chatRoutes from './chat';
 
 const router: Router = Router();
 
@@ -19,10 +21,11 @@ router.use('/agents', agentRoutes);
 router.use('/agents', agentProfileRoutes);
 router.use('/location', locationRoutes);
 router.use('/ai', aiRoutes);
+router.use('/ai', aiExtractionRoutes);
+router.use('/chat', chatRoutes);
 
 // Placeholder for future routes
 // router.use('/auth', authRoutes);
-// router.use('/chats', chatRoutes);
 // router.use('/matches', matchRoutes);
 
 export default router;
