@@ -33,13 +33,13 @@ describe('Credit Score Service', () => {
 
   describe('calculateRatingCreditDelta', () => {
     it('should return positive delta for good ratings (>= 4)', () => {
-      expect(calculateRatingCreditDelta(5)).toBe(CREDIT_SCORE_CONFIG.GOOD_REVIEW_SCORE);
-      expect(calculateRatingCreditDelta(4)).toBe(CREDIT_SCORE_CONFIG.GOOD_REVIEW_SCORE);
+      expect(calculateRatingCreditDelta(5)).toBe(REVIEW_CREDIT_CONFIG.GOOD_REVIEW_SCORE);
+      expect(calculateRatingCreditDelta(4)).toBe(REVIEW_CREDIT_CONFIG.GOOD_REVIEW_SCORE);
     });
 
     it('should return negative delta for bad ratings (<= 2)', () => {
-      expect(calculateRatingCreditDelta(1)).toBe(CREDIT_SCORE_CONFIG.BAD_REVIEW_SCORE);
-      expect(calculateRatingCreditDelta(2)).toBe(CREDIT_SCORE_CONFIG.BAD_REVIEW_SCORE);
+      expect(calculateRatingCreditDelta(1)).toBe(REVIEW_CREDIT_CONFIG.BAD_REVIEW_SCORE);
+      expect(calculateRatingCreditDelta(2)).toBe(REVIEW_CREDIT_CONFIG.BAD_REVIEW_SCORE);
     });
 
     it('should return zero for neutral ratings (3)', () => {
@@ -54,8 +54,8 @@ describe('Credit Score Service', () => {
     });
 
     it('should cap bonus at maximum', () => {
-      expect(calculateReviewCountBonus(25)).toBe(CREDIT_SCORE_CONFIG.MAX_REVIEW_COUNT_BONUS);
-      expect(calculateReviewCountBonus(100)).toBe(CREDIT_SCORE_CONFIG.MAX_REVIEW_COUNT_BONUS);
+      expect(calculateReviewCountBonus(25)).toBe(REVIEW_CREDIT_CONFIG.MAX_REVIEW_COUNT_BONUS);
+      expect(calculateReviewCountBonus(100)).toBe(REVIEW_CREDIT_CONFIG.MAX_REVIEW_COUNT_BONUS);
     });
 
     it('should return 0 for 0 reviews', () => {
@@ -65,8 +65,8 @@ describe('Credit Score Service', () => {
 
   describe('calculateReplyRateBonus', () => {
     it('should return bonus when reply rate is >= threshold', () => {
-      expect(calculateReplyRateBonus(10, 8)).toBe(CREDIT_SCORE_CONFIG.REPLY_RATE_BONUS);
-      expect(calculateReplyRateBonus(10, 10)).toBe(CREDIT_SCORE_CONFIG.REPLY_RATE_BONUS);
+      expect(calculateReplyRateBonus(10, 8)).toBe(REVIEW_CREDIT_CONFIG.REPLY_RATE_BONUS);
+      expect(calculateReplyRateBonus(10, 10)).toBe(REVIEW_CREDIT_CONFIG.REPLY_RATE_BONUS);
     });
 
     it('should return 0 when reply rate is < threshold', () => {
@@ -98,7 +98,7 @@ describe('Credit Score Service', () => {
 
       const score = await getUserCreditScore('user-1');
 
-      expect(score).toBe(CREDIT_SCORE_CONFIG.DEFAULT_SCORE);
+      expect(score).toBe(REVIEW_CREDIT_CONFIG.DEFAULT_SCORE);
     });
   });
 
@@ -144,7 +144,7 @@ describe('Credit Score Service', () => {
       (prisma.creditRecord.create as jest.Mock).mockResolvedValue({
         id: 'record-1',
         userId: 'user-1',
-        score: CREDIT_SCORE_CONFIG.MAX_SCORE,
+        score: REVIEW_CREDIT_CONFIG.MAX_SCORE,
         delta: 10,
       });
 
@@ -155,7 +155,7 @@ describe('Credit Score Service', () => {
         sourceType: 'TEST',
       });
 
-      expect(result.score).toBe(CREDIT_SCORE_CONFIG.MAX_SCORE);
+      expect(result.score).toBe(REVIEW_CREDIT_CONFIG.MAX_SCORE);
     });
   });
 
@@ -189,12 +189,12 @@ describe('Credit Score Service', () => {
       (prisma.creditRecord.create as jest.Mock).mockResolvedValue({
         id: 'record-1',
         userId: 'user-1',
-        score: CREDIT_SCORE_CONFIG.DEFAULT_SCORE,
+        score: REVIEW_CREDIT_CONFIG.DEFAULT_SCORE,
       });
 
       const newScore = await recalculateCreditScore('user-1');
 
-      expect(newScore).toBe(CREDIT_SCORE_CONFIG.DEFAULT_SCORE);
+      expect(newScore).toBe(REVIEW_CREDIT_CONFIG.DEFAULT_SCORE);
     });
   });
 });
