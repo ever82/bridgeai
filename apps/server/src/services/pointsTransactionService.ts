@@ -10,7 +10,7 @@ import {
   SceneCode,
   PointsTransaction,
   PointsFreeze,
-} from '@packages/shared/types/points';
+} from '@visionshare/shared';
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
 import { PointsRuleEngine, pointsRuleEngine } from './pointsRuleEngine';

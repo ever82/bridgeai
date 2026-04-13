@@ -3,7 +3,7 @@
  * 定义积分获取、消耗规则，每日/每周上限，积分价值换算等
  */
 
-import { SceneCode } from '@packages/shared/types/points';
+import { SceneCode } from '@visionshare/shared';
 
 // 积分规则类型
 export type RuleType = 'earn' | 'spend';
