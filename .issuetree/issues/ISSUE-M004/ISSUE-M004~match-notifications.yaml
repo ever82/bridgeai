@@ -3,7 +3,7 @@ id: "ISSUE-M004"
 issue_number: 405
 title: "匹配结果推送通知"
 slug: "match-notifications"
-status: "implemented"
+status: accepted
 description: |
   实现匹配结果的推送通知系统，及时通知用户
   新的匹配结果和相关动态。

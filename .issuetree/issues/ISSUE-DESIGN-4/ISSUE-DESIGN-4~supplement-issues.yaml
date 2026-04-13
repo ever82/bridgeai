@@ -26,7 +26,7 @@ passed_at: null
 prerequisites:
 - ISSUE-DESIGN-3
 slug: supplement-issues
-status: implemented
+status: accepted
 test_duration_seconds: 0
 test_passed: true
 title: "\u8865\u5145\u5B8C\u5584 Issues"
