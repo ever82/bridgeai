@@ -6,9 +6,7 @@ import creditRoutes from '../credit';
 import agentRoutes from '../agents';
 import agentProfileRoutes from '../agentProfile';
 import locationRoutes from '../locationRoutes';
-import aiExtractionRoutes from '../ai/extraction';
-import notificationRoutes from '../notifications';
-import notificationPreferenceRoutes from '../notificationPreferences';
+import aiRoutes from '../ai';
 
 const router: Router = Router();
 
@@ -20,9 +18,7 @@ router.use('/credit', creditRoutes);
 router.use('/agents', agentRoutes);
 router.use('/agents', agentProfileRoutes);
 router.use('/location', locationRoutes);
-router.use('/ai', aiExtractionRoutes);
-router.use('/notifications', notificationRoutes);
-router.use('/notification-preferences', notificationPreferenceRoutes);
+router.use('/ai', aiRoutes);
 
 // Placeholder for future routes
 // router.use('/auth', authRoutes);
