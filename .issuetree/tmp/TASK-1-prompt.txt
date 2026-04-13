@@ -1,17 +1,30 @@
-# Implementation Task: 群聊状态同步与在线状态实现
+# Implementation Task: undefined
 
-**Issue:** ISSUE-COM002c
+**Issue:** ISSUE-DATE004
 **Task:** TASK-1
 
 ## Description
 
-实现群聊状态同步、在线状态显示、正在输入状态和已读状态展示。
-包含：
-1. 群聊状态同步 - 群成员列表同步、群设置同步、消息实时同步、状态变更广播
-2. 在线状态显示 - 用户在线状态、最后在线时间、多端在线显示、在线状态订阅
-3. 正在输入状态 - 输入检测、输入状态广播、停止输入检测、输入状态超时
-4. 已读状态展示 - 消息已读状态、已读人数显示、已读成员列表、已读时间展示
-5. 状态聚合优化 - 状态批量更新、状态压缩传输、状态缓存、心跳优化
+实现双向同意引荐机制，包括：
+1. 双向同意状态管理（pending/accepted/rejected/expired）
+2. 引荐结果处理流程
+3. 真人聊天房间创建
+4. 引荐结果通知系统
+5. 引荐记录与管理
+6. 移动端引荐交互界面
+
+涉及文件：
+- apps/server/src/models/MutualConsent.ts
+- apps/server/src/services/dating/consentStateManager.ts
+- apps/server/src/services/dating/referralService.ts
+- apps/server/src/services/dating/consentProcessor.ts
+- apps/server/src/services/dating/humanChatRoomService.ts
+- apps/server/src/services/dating/referralNotificationService.ts
+- apps/server/src/services/dating/referralHistoryService.ts
+- apps/server/src/models/ReferralRecord.ts
+- apps/mobile/src/screens/dating/ReferralScreen.tsx
+- apps/mobile/src/screens/dating/MatchSuccessScreen.tsx
+- apps/mobile/src/screens/dating/ReferralHistoryScreen.tsx
 
 
 ## Files to Modify
