@@ -558,3 +558,316 @@ export class NotificationService {
 
 // 导出单例
 export const notificationService = new NotificationService();
+
+// ============================================
+// ISSUE-CR002c: Rating & Review Notification Functions
+// ============================================
+
+import { EventEmitter } from 'events';
+
+// Review Notification Types
+export enum ReviewNotificationType {
+  NEW_REVIEW = 'NEW_REVIEW',
+  PENDING_REVIEW_REMINDER = 'PENDING_REVIEW_REMINDER',
+  REVIEW_REPLY = 'REVIEW_REPLY',
+  BAD_REVIEW_WARNING = 'BAD_REVIEW_WARNING',
+  CREDIT_SCORE_CHANGE = 'CREDIT_SCORE_CHANGE',
+}
+
+// Review Notification Events
+export const reviewNotificationEvents = new EventEmitter();
+
+// In-memory store for user preferences
+const userReviewPreferences = new Map<string, ReviewNotificationPreferences>();
+
+export interface ReviewNotificationPreferences {
+  newReview: boolean;
+  pendingReviewReminder: boolean;
+  reviewReply: boolean;
+  badReviewWarning: boolean;
+  creditScoreChange: boolean;
+}
+
+const DEFAULT_REVIEW_PREFERENCES: ReviewNotificationPreferences = {
+  newReview: true,
+  pendingReviewReminder: true,
+  reviewReply: true,
+  badReviewWarning: true,
+  creditScoreChange: true,
+};
+
+/**
+ * Get user's review notification preferences
+ * @param userId - User ID
+ * @returns Notification preferences
+ */
+export function getReviewNotificationPreferences(
+  userId: string
+): ReviewNotificationPreferences {
+  return userReviewPreferences.get(userId) ?? DEFAULT_REVIEW_PREFERENCES;
+}
+
+/**
+ * Update user's review notification preferences
+ * @param userId - User ID
+ * @param preferences - New preferences
+ */
+export function updateReviewNotificationPreferences(
+  userId: string,
+  preferences: Partial<ReviewNotificationPreferences>
+): ReviewNotificationPreferences {
+  const current = getReviewNotificationPreferences(userId);
+  const updated = { ...current, ...preferences };
+  userReviewPreferences.set(userId, updated);
+  return updated;
+}
+
+/**
+ * Send new review notification
+ * @param userId - User ID of the review recipient
+ * @param raterName - Name of the reviewer
+ * @param rating - Rating score
+ * @param ratingId - Rating ID
+ */
+export async function sendNewReviewNotification(
+  userId: string,
+  raterName: string,
+  rating: number,
+  ratingId: string
+): Promise<void> {
+  const prefs = getReviewNotificationPreferences(userId);
+  if (!prefs.newReview) return;
+
+  await notificationService.sendToUser(userId, {
+    type: NotificationType.REVIEW_RATING,
+    title: '收到新评价',
+    content: `${raterName} 给您打了 ${rating} 星评价`,
+    data: {
+      ratingId,
+      rating,
+      raterName,
+    },
+    priority: PriorityLevel.NORMAL,
+  });
+
+  reviewNotificationEvents.emit(ReviewNotificationType.NEW_REVIEW, {
+    userId,
+    ratingId,
+    rating,
+  });
+}
+
+/**
+ * Send pending review reminder
+ * @param userId - User ID
+ * @param matchId - Match ID
+ * @param partnerName - Partner's name
+ */
+export async function sendPendingReviewReminder(
+  userId: string,
+  matchId: string,
+  partnerName: string
+): Promise<void> {
+  const prefs = getReviewNotificationPreferences(userId);
+  if (!prefs.pendingReviewReminder) return;
+
+  await notificationService.sendToUser(userId, {
+    type: NotificationType.REVIEW_REMINDER,
+    title: '待评价提醒',
+    content: `交易已完成，请对 ${partnerName} 进行评价`,
+    data: {
+      matchId,
+      partnerName,
+    },
+    priority: PriorityLevel.NORMAL,
+  });
+
+  reviewNotificationEvents.emit(ReviewNotificationType.PENDING_REVIEW_REMINDER, {
+    userId,
+    matchId,
+  });
+}
+
+/**
+ * Send review reply notification
+ * @param userId - User ID of the original reviewer
+ * @param rateeName - Name of the person who replied
+ * @param ratingId - Rating ID
+ */
+export async function sendReviewReplyNotification(
+  userId: string,
+  rateeName: string,
+  ratingId: string
+): Promise<void> {
+  const prefs = getReviewNotificationPreferences(userId);
+  if (!prefs.reviewReply) return;
+
+  await notificationService.sendToUser(userId, {
+    type: NotificationType.REVIEW_REPLY,
+    title: '评价收到回复',
+    content: `${rateeName} 回复了您的评价`,
+    data: {
+      ratingId,
+      rateeName,
+    },
+    priority: PriorityLevel.NORMAL,
+  });
+
+  reviewNotificationEvents.emit(ReviewNotificationType.REVIEW_REPLY, {
+    userId,
+    ratingId,
+  });
+}
+
+/**
+ * Send bad review warning notification
+ * @param userId - User ID
+ * @param rating - The bad rating received
+ * @param creditDelta - Credit score change
+ * @param ratingId - Rating ID
+ */
+export async function sendBadReviewWarning(
+  userId: string,
+  rating: number,
+  creditDelta: number,
+  ratingId: string
+): Promise<void> {
+  const prefs = getReviewNotificationPreferences(userId);
+  if (!prefs.badReviewWarning) return;
+
+  await notificationService.sendToUser(userId, {
+    type: NotificationType.REVIEW_BAD_RATING,
+    title: '差评预警',
+    content: `您收到了 ${rating} 星评价，信用分 ${creditDelta} 分`,
+    data: {
+      ratingId,
+      rating,
+      creditDelta,
+    },
+    priority: PriorityLevel.HIGH,
+  });
+
+  reviewNotificationEvents.emit(ReviewNotificationType.BAD_REVIEW_WARNING, {
+    userId,
+    ratingId,
+    creditDelta,
+  });
+}
+
+/**
+ * Send credit score change notification
+ * @param userId - User ID
+ * @param previousScore - Previous credit score
+ * @param newScore - New credit score
+ * @param reason - Reason for change
+ */
+export async function sendCreditScoreChangeNotification(
+  userId: string,
+  previousScore: number,
+  newScore: number,
+  reason: string
+): Promise<void> {
+  const prefs = getReviewNotificationPreferences(userId);
+  if (!prefs.creditScoreChange) return;
+
+  const delta = newScore - previousScore;
+  const deltaText = delta > 0 ? `+${delta}` : `${delta}`;
+
+  await notificationService.sendToUser(userId, {
+    type: NotificationType.CREDIT_SCORE_CHANGE,
+    title: delta > 0 ? '信用分提升' : '信用分下降',
+    content: `您的信用分 ${deltaText}，当前 ${newScore} 分。原因：${reason}`,
+    data: {
+      previousScore,
+      newScore,
+      delta,
+      reason,
+    },
+    priority: PriorityLevel.NORMAL,
+  });
+
+  reviewNotificationEvents.emit(ReviewNotificationType.CREDIT_SCORE_CHANGE, {
+    userId,
+    previousScore,
+    newScore,
+    delta,
+  });
+}
+
+/**
+ * Schedule pending review reminders for a completed match
+ * @param matchId - Match ID
+ * @param completionTime - When the match was completed
+ */
+export async function scheduleReviewReminders(
+  matchId: string,
+  completionTime: Date
+): Promise<void> {
+  const REMINDER_DELAY_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    include: {
+      demand: {
+        include: {
+          agent: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
+      supply: {
+        include: {
+          agent: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!match) {
+    throw new Error(`Match not found: ${matchId}`);
+  }
+
+  const demandUser = match.demand.agent.user;
+  const supplyUser = match.supply.agent.user;
+
+  // Schedule reminders for both parties
+  setTimeout(async () => {
+    // Check if demand user has already rated
+    const demandUserRated = await prisma.rating.findFirst({
+      where: {
+        matchId,
+        raterId: demandUser.id,
+      },
+    });
+
+    if (!demandUserRated) {
+      await sendPendingReviewReminder(
+        demandUser.id,
+        matchId,
+        supplyUser.name || '对方'
+      );
+    }
+
+    // Check if supply user has already rated
+    const supplyUserRated = await prisma.rating.findFirst({
+      where: {
+        matchId,
+        raterId: supplyUser.id,
+      },
+    });
+
+    if (!supplyUserRated) {
+      await sendPendingReviewReminder(
+        supplyUser.id,
+        matchId,
+        demandUser.name || '对方'
+      );
+    }
+  }, REMINDER_DELAY_MS);
+}

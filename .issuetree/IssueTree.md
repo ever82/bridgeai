@@ -34,14 +34,21 @@ flowchart TD
     end
 
     subgraph Security["🔒 安全层 - Security"]
+<<<<<<< HEAD
         SEC001[🟢 ISSUE-SEC001<br/>RBAC权限控制系统]
         SEC002[🟢 ISSUE-SEC002<br/>敏感数据加密与保护]
         SEC003[🟢 ISSUE-SEC003<br/>API限流与安全防护]
+=======
+        SEC001[💻 ISSUE-SEC001<br/>RBAC权限控制系统]
+        SEC002[🟡 ISSUE-SEC002<br/>敏感数据加密与保护]
+        SEC003[🟡 ISSUE-SEC003<br/>API限流与安全防护]
+>>>>>>> issue/issue-com001b
         SEC004[🟡 ISSUE-SEC004<br/>图片上传安全检查]
         SEC005[🟡 ISSUE-SEC005<br/>举报与内容审核系统]
     end
 
     subgraph Auth["🔐 认证与用户层 - Auth"]
+<<<<<<< HEAD
         A001[🟢 ISSUE-A001<br/>用户注册与登录系统]
         A002[🟢 ISSUE-A002<br/>JWT认证与API安全]
         A003[🟢 ISSUE-A003<br/>用户基础资料管理]
@@ -50,6 +57,16 @@ flowchart TD
 
     subgraph Core["🤖 Agent核心层 - Core Agent"]
         C001[🟢 ISSUE-C001<br/>Agent创建与基础配置]
+=======
+        A001[💻 ISSUE-A001<br/>用户注册与登录系统]
+        A002[🟢 ISSUE-A002<br/>JWT认证与API安全]
+        A003[💻 ISSUE-A003<br/>用户基础资料管理]
+        A004[💻 ISSUE-A004<br/>输入验证与数据校验]
+    end
+
+    subgraph Core["🤖 Agent核心层 - Core Agent"]
+        C001[💻 ISSUE-C001<br/>Agent创建与基础配置]
+>>>>>>> issue/issue-com001b
         C002a[✂️ ISSUE-C002a<br/>L1基础信息模型]
         C002b[✂️ ISSUE-C002b<br/>L2结构化信息模型]
         C002c[✂️ ISSUE-C002c<br/>L3自然语言信息模型]
@@ -70,7 +87,7 @@ flowchart TD
 
     subgraph Comm["💬 通信层 - Communication"]
         COM001a[✂️ ISSUE-COM001a<br/>Socket.io基础设施搭建]
-        COM001b[✂️ ISSUE-COM001b<br/>连接管理与房间系统]
+        COM001b[🟢 ISSUE-COM001b<br/>连接管理与房间系统]
         COM002a[✂️ ISSUE-COM002a<br/>聊天房间基础架构]
         COM002b[✂️ ISSUE-COM002b<br/>消息持久化与历史记录]
         COM002c[✂️ ISSUE-COM002c<br/>群聊状态同步与在线状态]
