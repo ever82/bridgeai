@@ -150,7 +150,38 @@ export function smartFilter(
   });
 
   // Filter out agents with score below threshold (0.3)
-  return results.filter(r => r.score > 0.3);
+  // Also apply hard filters for certain criteria
+  return results.filter(r => {
+    // Must meet score threshold
+    if (r.score <= 0.3) return false;
+
+    // Hard filter: skills - if skills specified, must match at least one
+    if (criteria.skills && criteria.skills.length > 0 && r.matchDetails.skillMatch === 0) {
+      return false;
+    }
+
+    // Hard filter: minimum rating
+    if (criteria.minRating !== undefined && (r.agent.rating || 0) < criteria.minRating) {
+      return false;
+    }
+
+    // Hard filter: max hourly rate
+    if (criteria.maxHourlyRate !== undefined && r.agent.hourlyRate > criteria.maxHourlyRate) {
+      return false;
+    }
+
+    // Hard filter: availability
+    if (criteria.availability === true && !r.agent.isAvailable) {
+      return false;
+    }
+
+    // Hard filter: verification
+    if (criteria.verified === true && !r.agent.isVerified) {
+      return false;
+    }
+
+    return true;
+  });
 }
 
 /**

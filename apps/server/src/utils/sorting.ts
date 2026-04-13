@@ -4,7 +4,7 @@
  */
 
 import { Agent } from '../models/Agent';
-import { FilterResult } from './smartFilter';
+import { FilterResult } from '../services/smartFilter';
 
 export type SortingStrategy =
   | 'relevance'
