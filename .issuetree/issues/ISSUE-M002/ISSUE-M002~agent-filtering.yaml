@@ -3,7 +3,7 @@ id: "ISSUE-M002"
 issue_number: 403
 title: "Agent智能筛选排序"
 slug: "agent-filtering"
-status: "in_progress"
+status: "passed"
 description: |
   实现智能的 Agent 筛选和排序功能，根据用户需求
   和 Agent 供给进行智能匹配。
@@ -23,7 +23,7 @@ criteria:
       - 权重动态调整
       - AI 辅助筛选
       - 筛选结果排序
-    status: "in_progress"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -44,7 +44,7 @@ criteria:
       - 信用分排序
       - 活跃度排序
       - 综合排序算法
-    status: "in_progress"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -65,7 +65,7 @@ criteria:
       - 结果分页
       - 结果缓存
       - 筛选建议
-    status: "in_progress"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -86,7 +86,7 @@ criteria:
       - 排序切换
       - 筛选条件展示
       - 结果数量显示
-    status: "in_progress"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -107,7 +107,7 @@ criteria:
       - 协同过滤
       - 推荐解释
       - 推荐反馈
-    status: "in_progress"
+    status: "passed"
     coverage:
       unit: required
       integration: required
