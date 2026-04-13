@@ -49,6 +49,8 @@ model User {
   roles         UserRole[]  // RBAC roles
   pointsAccount PointsAccount?
   roomParticipants RoomParticipant[] // 聊天室参与者
+  savedFilters  SavedFilter[] // 保存的筛选器
+  sceneTemplates SceneTemplate[] // 场景模板
 
   @@map("users")
 }

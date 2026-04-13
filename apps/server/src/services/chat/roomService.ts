@@ -35,7 +35,7 @@ export interface RoomQueryOptions {
 
 export interface RoomWithParticipants extends ChatRoom {
   participants: RoomParticipant[];
-  unreadCount?: number;
+  unreadCount: number;
 }
 
 /**
