@@ -39,6 +39,14 @@ export type ProfileStackParamList = {
   EditProfile: undefined;
   MyMoments: undefined;
   LikedMoments: undefined;
+  ReviewList: undefined;
+  ReviewDetail: { reviewId: string };
+  WriteReview: {
+    matchId: string;
+    rateeId: string;
+    rateeName: string;
+    matchTitle: string;
+  };
 };
 
 declare global {
