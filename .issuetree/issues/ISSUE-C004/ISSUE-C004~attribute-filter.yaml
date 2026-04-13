@@ -2,7 +2,7 @@ id: ISSUE-C004
 issue_number: 306
 title: 属性过滤系统
 slug: attribute-filter
-status: accepting
+status: accepted
 description: |
   实现基于 Agent 属性的复杂过滤系统，支持多条件组合、
   范围筛选、枚举匹配、布尔判断等多种过滤方式。
