@@ -402,6 +402,7 @@ export class PresenceService {
       away: 0,
       busy: 0,
       offline: 0,
+      invisible: 0,
       total: this.presenceData.size,
     };
 

@@ -458,7 +458,9 @@ export class ConnectionService {
       }
 
       // OS detection
-      if (/Windows/i.test(userAgent)) {
+      if (/iOS|iPhone|iPad|iPod/i.test(userAgent)) {
+        deviceInfo.os = 'iOS';
+      } else if (/Windows/i.test(userAgent)) {
         deviceInfo.os = 'Windows';
       } else if (/Mac/i.test(userAgent)) {
         deviceInfo.os = 'macOS';
@@ -466,8 +468,6 @@ export class ConnectionService {
         deviceInfo.os = 'Linux';
       } else if (/Android/i.test(userAgent)) {
         deviceInfo.os = 'Android';
-      } else if (/iOS|iPhone|iPad|iPod/i.test(userAgent)) {
-        deviceInfo.os = 'iOS';
       }
 
       // Browser detection
