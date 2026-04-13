@@ -1,89 +1,270 @@
 {
-  "ISSUE-SEC004": {
-    "issue_id": "ISSUE-SEC004",
-    "status": "pending",
-    "title": "\u56fe\u7247\u4e0a\u4f20\u5b89\u5168\u68c0\u67e5",
-    "prerequisites": [
-      "ISSUE-VS003"
-    ],
-    "sub_issues": [],
+  "ISSUE-CR003a": {
+    "issue_id": "ISSUE-CR003a",
+    "status": "stuck",
+    "title": "\u79ef\u5206\u8d26\u6237\u6570\u636e\u6a21\u578b",
+    "user_story": "",
     "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:24.026851",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-SEC004",
+    "prerequisites": ["ISSUE-A003"],
+    "last_update": "2026-04-13T20:55:31.662381",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:55:02.596451+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-COM001b": {
+    "issue_id": "ISSUE-COM001b",
+    "status": "fixing",
+    "title": "\u8fde\u63a5\u7ba1\u7406\u4e0e\u623f\u95f4\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "TASK-1776085102-4392",
+    "prerequisites": ["ISSUE-COM001a"],
+    "last_update": "2026-04-13T20:58:26.546830",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:46:17.692775+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-INT001": {
+    "issue_id": "ISSUE-INT001",
+    "status": "stuck",
+    "title": "\u7aef\u5230\u7aef\u96c6\u6210\u6d4b\u8bd5\uff08\u7236Issue\uff09",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [],
+    "last_update": "2026-04-13T20:46:18.956203",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:46:18.950652+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-C003": {
+    "issue_id": "ISSUE-C003",
+    "status": "stuck",
+    "title": "\u5730\u57df\u8fc7\u6ee4\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-C002b"],
+    "last_update": "2026-04-13T20:46:20.238642",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:46:20.231661+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-VS005": {
+    "issue_id": "ISSUE-VS005",
+    "status": "passed",
+    "title": "\u7167\u7247\u67e5\u770b\u4e0e\u79ef\u5206\u652f\u4ed8",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-VS004", "ISSUE-CR003"],
+    "last_update": "2026-04-13T21:05:00.000000",
     "stuck_previous_status": null,
     "stuck_reason": null,
-    "stuck_at": null
+    "stuck_at": null,
+    "failure_count": 0
   },
-  "ISSUE-C002a": {
-    "issue_id": "ISSUE-C002a",
-    "status": "accepted",
-    "title": "L1\u57fa\u7840\u4fe1\u606f\u6a21\u578b",
-    "prerequisites": [
-      "ISSUE-C001"
-    ],
-    "sub_issues": [],
-    "current_task": "",
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.207390",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
+  "ISSUE-JOB003": {
+    "issue_id": "ISSUE-JOB003",
+    "status": "fixing",
+    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d\u7b5b\u9009",
+    "user_story": "",
+    "current_task": "TASK-1776084897-7817",
+    "prerequisites": ["ISSUE-JOB001", "ISSUE-JOB002", "ISSUE-M004", "ISSUE-AI004"],
+    "last_update": "2026-04-13T20:55:01.367742",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:49:05.931458+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-INT002a": {
+    "issue_id": "ISSUE-INT002a",
+    "status": "stuck",
+    "title": "\u57fa\u7840\u8bbe\u65bd\u6027\u80fd\u4f18\u5316",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [],
+    "last_update": "2026-04-13T20:46:21.336310",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:46:21.326494+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-INF002": {
+    "issue_id": "ISSUE-INF002",
+    "status": "need-help",
+    "title": "Redis \u7f13\u5b58\u5c42\u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-F001", "ISSUE-F002"],
+    "last_update": "2026-04-13T20:53:59.597928",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:49:06.260569+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-INF005": {
+    "issue_id": "ISSUE-INF005",
+    "status": "need-help",
+    "title": "\u63a8\u9001\u901a\u77e5\u670d\u52a1",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-F003", "ISSUE-A001"],
+    "last_update": "2026-04-13T20:55:02.186102",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:49:06.630568+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-AI003a": {
+    "issue_id": "ISSUE-AI003a",
+    "status": "stuck",
+    "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u6838\u5fc3\u89e3\u6790\u5f15\u64ce\u4e0eAPI",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-AI001", "ISSUE-C002a", "ISSUE-C002b"],
+    "last_update": "2026-04-13T20:49:07.042203",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:49:07.041366+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-INF004": {
+    "issue_id": "ISSUE-INF004",
+    "status": "stuck",
+    "title": "\u6570\u636e\u5e93\u8fc1\u79fb\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-F002"],
+    "last_update": "2026-04-13T20:48:13.522070",
+    "stuck_previous_status": null,
+    "stuck_reason": null,
+    "stuck_at": null,
+    "failure_count": 4
+  },
+  "ISSUE-INF003": {
+    "issue_id": "ISSUE-INF003",
+    "status": "fixing",
+    "title": "\u4efb\u52a1\u961f\u5217\u7cfb\u7edf\u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
+    "user_story": "",
+    "current_task": "TASK-1776084493-7127",
+    "prerequisites": ["ISSUE-F001", "ISSUE-F002", "ISSUE-INF002"],
+    "last_update": "2026-04-13T20:48:17.847754",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:41:49.205412+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-AI004": {
+    "issue_id": "ISSUE-AI004",
+    "status": "stuck",
+    "title": "Agent\u5bf9\u8bdd\u751f\u6210\u670d\u52a1",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-AI001"],
+    "last_update": "2026-04-13T20:54:21.101678",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:54:00.030619+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-INF006": {
+    "issue_id": "ISSUE-INF006",
+    "status": "fixing",
+    "title": "\u90ae\u4ef6\u670d\u52a1\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "TASK-1776084502-2949",
+    "prerequisites": ["ISSUE-F003"],
+    "last_update": "2026-04-13T20:48:26.658689",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:41:49.960207+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-INF001": {
+    "issue_id": "ISSUE-INF001",
+    "status": "fixing",
+    "title": "API Gateway \u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
+    "user_story": "",
+    "current_task": "TASK-1776084506-7133",
+    "prerequisites": ["ISSUE-F003", "ISSUE-A002"],
+    "last_update": "2026-04-13T20:48:31.050557",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:41:50.305503+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-DESIGN-4": {
+    "issue_id": "ISSUE-DESIGN-4",
+    "status": "passed",
+    "title": "\u8865\u5145\u5b8c\u5584 Issues",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-DESIGN-3"],
+    "last_update": "2026-04-13T20:52:31.240527",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": null,
+    "stuck_at": "2026-04-13T12:52:31.239003+00:00",
+    "failure_count": 0
+  },
+  "ISSUE-C004": {
+    "issue_id": "ISSUE-C004",
+    "status": "stuck",
+    "title": "\u5c5e\u6027\u8fc7\u6ee4\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-C002b"],
+    "last_update": "2026-04-13T20:42:39.512521",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:42:39.504783+00:00",
+    "failure_count": 3
+  },
+  "ISSUE-AI002a": {
+    "issue_id": "ISSUE-AI002a",
+    "status": "stuck",
+    "title": "\u9700\u6c42\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u6838\u5fc3\u6846\u67b6",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-AI001", "ISSUE-C002a", "ISSUE-C002b"],
+    "last_update": "2026-04-13T20:42:40.365506",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:42:40.361610+00:00",
+    "failure_count": 3
+  },
+  "ISSUE-SEC004": {
+    "issue_id": "ISSUE-SEC004",
+    "status": "stuck",
+    "title": "\u56fe\u7247\u4e0a\u4f20\u5b89\u5168\u68c0\u67e5",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-VS003"],
+    "last_update": "2026-04-13T20:42:40.967773",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:42:40.964386+00:00",
+    "failure_count": 3
   },
   "ISSUE-JOB003b": {
     "issue_id": "ISSUE-JOB003b",
-    "status": "pending",
+    "status": "stuck",
     "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - \u670d\u52a1\u5c42",
-    "prerequisites": [
-      "ISSUE-JOB003a"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:24.310759",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-JOB003b",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
-  },
-  "ISSUE-COM002a": {
-    "issue_id": "ISSUE-COM002a",
-    "status": "need-help",
-    "title": "\u804a\u5929\u623f\u95f4\u57fa\u7840\u67b6\u6784",
-    "prerequisites": [
-      "ISSUE-COM001b"
-    ],
-    "sub_issues": [],
-    "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-13T02:15:37.392323",
-    "failure_count": 1,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM002a",
-    "stuck_previous_status": "implementing",
-    "stuck_reason": "implement_failed",
-    "stuck_at": "2026-04-12T16:23:51.471417+00:00"
+    "prerequisites": ["ISSUE-JOB003a"],
+    "last_update": "2026-04-13T20:42:41.553028",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:42:41.549149+00:00",
+    "failure_count": 3
   },
   "ISSUE-INT001a": {
     "issue_id": "ISSUE-INT001a",
-    "status": "pending",
+    "status": "need-help",
     "title": "VisionShare + AgentDate E2E\u6d4b\u8bd5",
+    "user_story": "",
+    "current_task": null,
     "prerequisites": [
       "ISSUE-VS001",
       "ISSUE-VS002",
@@ -106,732 +287,796 @@
       "ISSUE-UI006",
       "ISSUE-UI007"
     ],
-    "sub_issues": [],
+    "last_update": "2026-04-13T20:58:50.736248",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:49:07.512568+00:00",
+    "failure_count": 4
+  },
+  "ISSUE-JOB003d": {
+    "issue_id": "ISSUE-JOB003d",
+    "status": "stuck",
+    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - UI\u5c42",
+    "user_story": "",
     "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:24.595593",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INT001a",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-JOB003c"],
+    "last_update": "2026-04-13T20:38:52.845945",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:38:52.845426+00:00",
+    "failure_count": 3
+  },
+  "ISSUE-JOB003c": {
+    "issue_id": "ISSUE-JOB003c",
+    "status": "stuck",
+    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - \u63a5\u53e3\u5c42",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-JOB003b", "ISSUE-M004"],
+    "last_update": "2026-04-13T20:38:53.148250",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:38:53.147552+00:00",
+    "failure_count": 3
+  },
+  "ISSUE-UI003": {
+    "issue_id": "ISSUE-UI003",
+    "status": "stuck",
+    "title": "\u9996\u9875\u4e0e\u72b6\u6001\u5c55\u793a",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-UI002", "ISSUE-C001", "ISSUE-M004"],
+    "last_update": "2026-04-13T20:38:53.436734",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:38:53.436065+00:00",
+    "failure_count": 3
+  },
+  "ISSUE-VS005b": {
+    "issue_id": "ISSUE-VS005b",
+    "status": "stuck",
+    "title": "\u79ef\u5206\u652f\u4ed8\u4e0e\u9ad8\u6e05\u89e3\u9501",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-VS005a", "ISSUE-CR003"],
+    "last_update": "2026-04-13T20:38:53.722199",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:38:53.721572+00:00",
+    "failure_count": 3
+  },
+  "ISSUE-C002a": {
+    "issue_id": "ISSUE-C002a",
+    "status": "accepted",
+    "title": "L1\u57fa\u7840\u4fe1\u606f\u6a21\u578b",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-C001"],
+    "last_update": "2026-04-13T20:19:35.314908"
+  },
+  "ISSUE-SEC003": {
+    "issue_id": "ISSUE-SEC003",
+    "status": "passed",
+    "title": "API\u9650\u6d41\u4e0e\u5b89\u5168\u9632\u62a4",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-F003"],
+    "last_update": "2026-04-13T20:19:35.341129"
   },
   "ISSUE-SEC002": {
     "issue_id": "ISSUE-SEC002",
     "status": "accepted",
     "title": "\u654f\u611f\u6570\u636e\u52a0\u5bc6\u4e0e\u4fdd\u62a4",
-    "prerequisites": [
-      "ISSUE-A002",
-      "ISSUE-C002a"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "TASK-1",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.267246",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-SEC002"
-  },
-  "ISSUE-JOB003d": {
-    "issue_id": "ISSUE-JOB003d",
-    "status": "pending",
-    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - UI\u5c42",
-    "prerequisites": [
-      "ISSUE-JOB003c"
-    ],
-    "sub_issues": [],
-    "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:24.949506",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-JOB003d",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
-  },
-  "ISSUE-JOB003c": {
-    "issue_id": "ISSUE-JOB003c",
-    "status": "pending",
-    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - \u63a5\u53e3\u5c42",
-    "prerequisites": [
-      "ISSUE-JOB003b",
-      "ISSUE-M004"
-    ],
-    "sub_issues": [],
-    "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:37.234353",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-JOB003c",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
-  },
-  "ISSUE-SEC005": {
-    "issue_id": "ISSUE-SEC005",
-    "status": "pending",
-    "title": "\u4e3e\u62a5\u4e0e\u5185\u5bb9\u5ba1\u6838\u7cfb\u7edf",
-    "prerequisites": [
-      "ISSUE-COM002c",
-      "ISSUE-CR002"
-    ],
-    "sub_issues": [],
-    "current_task": null,
-    "task_slug": "TASK-1",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:23.833184",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-SEC005",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-A002", "ISSUE-C002a"],
+    "last_update": "2026-04-13T20:19:35.382613"
   },
   "ISSUE-T001": {
     "issue_id": "ISSUE-T001",
     "status": "accepted",
     "title": "\u5355\u5143\u6d4b\u8bd5\u6846\u67b6\u642d\u5efa(Jest)",
-    "prerequisites": [
-      "ISSUE-F003",
-      "ISSUE-A001"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "TASK-2",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.318879",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
+    "prerequisites": ["ISSUE-F003", "ISSUE-A001"],
+    "last_update": "2026-04-13T20:19:35.421740"
   },
   "ISSUE-COM001a": {
     "issue_id": "ISSUE-COM001a",
     "status": "accepted",
     "title": "Socket.io\u57fa\u7840\u8bbe\u65bd\u642d\u5efa",
-    "prerequisites": [
-      "ISSUE-C001"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "TASK-1",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.336084",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM001a"
-  },
-  "ISSUE-AD001": {
-    "issue_id": "ISSUE-AD001",
-    "status": "implementing",
-    "title": "\u6d88\u8d39\u9700\u6c42\u753b\u50cf\u914d\u7f6e",
-    "prerequisites": [
-      "ISSUE-C006",
-      "ISSUE-AI002"
-    ],
-    "sub_issues": [],
-    "current_task": "TASK-1776018063-6704",
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-13T02:21:03.983631",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-AD001",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
-  },
-  "ISSUE-AI005": {
-    "issue_id": "ISSUE-AI005",
-    "status": "pending",
-    "title": "\u56fe\u50cf\u5206\u6790\u4e0eVision API",
-    "prerequisites": [
-      "ISSUE-AI001"
-    ],
-    "sub_issues": [],
-    "current_task": null,
-    "task_slug": "TASK-001",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:37.413372",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-AI005",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-C001"],
+    "last_update": "2026-04-13T20:19:35.447418"
   },
   "ISSUE-AI002": {
     "issue_id": "ISSUE-AI002",
     "status": "split",
     "title": "\u9700\u6c42\u667a\u80fd\u63d0\u70bc\u670d\u52a1",
-    "prerequisites": [
-      "ISSUE-AI001",
-      "ISSUE-C002a",
-      "ISSUE-C002b"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "",
-    "session_name": "issue-ai002a-agent",
-    "session_started_at": "2026-04-10T17:17:49+00:00",
-    "last_update": "2026-04-11T03:06:58.376284",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
-  },
-  "ISSUE-UI003": {
-    "issue_id": "ISSUE-UI003",
-    "status": "pending",
-    "title": "\u9996\u9875\u4e0e\u72b6\u6001\u5c55\u793a",
-    "prerequisites": [
-      "ISSUE-UI002",
-      "ISSUE-C001",
-      "ISSUE-M004"
-    ],
-    "sub_issues": [],
-    "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:37.641665",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-UI003",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-AI001", "ISSUE-C002a", "ISSUE-C002b"],
+    "last_update": "2026-04-13T20:19:35.468475"
   },
   "ISSUE-A002": {
     "issue_id": "ISSUE-A002",
     "status": "accepted",
     "title": "JWT\u8ba4\u8bc1\u4e0eAPI\u5b89\u5168",
-    "prerequisites": [
-      "ISSUE-A001"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.411011",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-A002"
+    "prerequisites": ["ISSUE-A001"],
+    "last_update": "2026-04-13T20:19:35.491613"
   },
   "ISSUE-UI004": {
     "issue_id": "ISSUE-UI004",
     "status": "split",
     "title": "\u804a\u5929\u754c\u9762\u7ec4\u4ef6",
-    "prerequisites": [
-      "ISSUE-UI002"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.420999",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
-  },
-  "ISSUE-COM003": {
-    "issue_id": "ISSUE-COM003",
-    "status": "implementing",
-    "title": "\u4eba\u673a\u5207\u6362\u673a\u5236",
-    "prerequisites": [
-      "ISSUE-COM002c"
-    ],
-    "sub_issues": [],
-    "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-13T02:25:18.015791",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM003",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
-  },
-  "ISSUE-COM004": {
-    "issue_id": "ISSUE-COM004",
-    "status": "implementing",
-    "title": "Agent\u901a\u4fe1\u534f\u8bae\u5b9a\u4e49",
-    "prerequisites": [
-      "ISSUE-COM002c"
-    ],
-    "sub_issues": [],
-    "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-13T02:25:18.036300",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM004",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-UI002"],
+    "last_update": "2026-04-13T20:19:35.505396"
   },
   "ISSUE-M001": {
     "issue_id": "ISSUE-M001",
     "status": "split",
     "title": "\u5339\u914d\u67e5\u8be2\u7cfb\u7edf",
-    "prerequisites": [
-      "ISSUE-C002b",
-      "ISSUE-C003",
-      "ISSUE-C004",
-      "ISSUE-C005"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.455027",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
-  },
-  "ISSUE-VS005b": {
-    "issue_id": "ISSUE-VS005b",
-    "status": "pending",
-    "title": "\u79ef\u5206\u652f\u4ed8\u4e0e\u9ad8\u6e05\u89e3\u9501",
-    "prerequisites": [
-      "ISSUE-VS005a",
-      "ISSUE-CR003"
-    ],
-    "sub_issues": [],
-    "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:37.985812",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-VS005b",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-C002b", "ISSUE-C003", "ISSUE-C004", "ISSUE-C005"],
+    "last_update": "2026-04-13T20:19:35.530029"
   },
   "ISSUE-UI005": {
     "issue_id": "ISSUE-UI005",
-    "status": "pending",
+    "status": "stuck",
     "title": "Agent\u914d\u7f6e\u754c\u9762",
-    "prerequisites": [
-      "ISSUE-UI002",
-      "ISSUE-C001",
-      "ISSUE-C006"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:38.386432",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-UI005",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-UI002", "ISSUE-C001", "ISSUE-C006"],
+    "last_update": "2026-04-13T20:46:08.594581",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:46:08.594030+00:00",
+    "failure_count": 2
   },
   "ISSUE-A003": {
     "issue_id": "ISSUE-A003",
     "status": "accepted",
     "title": "\u7528\u6237\u57fa\u7840\u8d44\u6599\u7ba1\u7406",
-    "prerequisites": [
-      "ISSUE-A002"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "TASK-1",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.499341",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-A003"
+    "prerequisites": ["ISSUE-A002"],
+    "last_update": "2026-04-13T20:19:35.577131"
   },
   "ISSUE-A004": {
     "issue_id": "ISSUE-A004",
     "status": "accepted",
     "title": "\u8f93\u5165\u9a8c\u8bc1\u4e0e\u6570\u636e\u6821\u9a8c",
-    "prerequisites": [
-      "ISSUE-A002"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "TASK-3",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.519268",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
+    "prerequisites": ["ISSUE-A002"],
+    "last_update": "2026-04-13T20:19:35.604202"
   },
   "ISSUE-AI003": {
     "issue_id": "ISSUE-AI003",
     "status": "split",
     "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1",
-    "prerequisites": [
-      "ISSUE-AI001",
-      "ISSUE-C002a",
-      "ISSUE-C002b"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-09",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
+    "prerequisites": ["ISSUE-AI001", "ISSUE-C002a", "ISSUE-C002b"],
+    "last_update": "2026-04-13T20:19:35.628027"
   },
   "ISSUE-VS005d": {
     "issue_id": "ISSUE-VS005d",
-    "status": "pending",
+    "status": "stuck",
     "title": "\u652f\u4ed8\u5b89\u5168\u4e0e\u98ce\u63a7",
-    "prerequisites": [
-      "ISSUE-VS005b"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:51.497322",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-VS005d",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-VS005b"],
+    "last_update": "2026-04-13T20:24:09.127871",
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:24:09.127217+00:00",
+    "failure_count": 1
   },
   "ISSUE-DESIGN-1": {
     "issue_id": "ISSUE-DESIGN-1",
     "status": "accepted",
     "title": "\u9879\u76ee\u521d\u59cb\u5316 - \u521b\u5efa Specs",
-    "prerequisites": [],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.554147",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
+    "prerequisites": [],
+    "last_update": "2026-04-13T20:19:35.651065"
   },
   "ISSUE-VS005c": {
     "issue_id": "ISSUE-VS005c",
-    "status": "pending",
+    "status": "stuck",
     "title": "\u4ea4\u6613\u8bb0\u5f55\u4e0e\u9000\u6b3e\u7533\u8bc9",
-    "prerequisites": [
-      "ISSUE-VS005b"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:51.724826",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-VS005c",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
-  },
-  "ISSUE-COM005": {
-    "issue_id": "ISSUE-COM005",
-    "status": "implementing",
-    "title": "\u79c1\u804a\u5efa\u8bae\u7cfb\u7edf",
-    "prerequisites": [
-      "ISSUE-COM002c",
-      "ISSUE-AI004"
-    ],
-    "sub_issues": [],
-    "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-13T02:25:18.062834",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM005",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-VS005b"],
+    "last_update": "2026-04-13T20:24:09.405302",
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:24:09.404581+00:00",
+    "failure_count": 1
   },
   "ISSUE-COM002": {
     "issue_id": "ISSUE-COM002",
     "status": "split",
     "title": "\u804a\u5929\u623f\u95f4\u7cfb\u7edf",
-    "prerequisites": [
-      "ISSUE-COM001b"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.581248",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
+    "prerequisites": ["ISSUE-COM001b"],
+    "last_update": "2026-04-13T20:19:35.676986"
   },
   "ISSUE-CR002b": {
     "issue_id": "ISSUE-CR002b",
-    "status": "pending",
+    "status": "stuck",
     "title": "\u8bc4\u5206\u4e0e\u8bc4\u4ef7\u7cfb\u7edf - \u524d\u7aefUI",
-    "prerequisites": [
-      "ISSUE-CR002a"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": null,
-    "task_slug": "TASK-1",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:51.941570",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-CR002b",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-CR002a"],
+    "last_update": "2026-04-13T20:24:09.677357",
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:24:09.676868+00:00",
+    "failure_count": 1
   },
   "ISSUE-INT002": {
     "issue_id": "ISSUE-INT002",
     "status": "split",
     "title": "\u6027\u80fd\u4f18\u5316\u4e0e\u538b\u6d4b",
-    "prerequisites": [
-      "ISSUE-INT001"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.594625",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
+    "prerequisites": ["ISSUE-INT001"],
+    "last_update": "2026-04-13T20:19:35.686921"
   },
   "ISSUE-UI004a": {
     "issue_id": "ISSUE-UI004a",
-    "status": "pending",
+    "status": "stuck",
     "title": "\u804a\u5929\u6d88\u606f\u7ec4\u4ef6\u4e0e\u8f93\u5165\u6846",
-    "prerequisites": [
-      "ISSUE-UI002",
-      "ISSUE-COM002c",
-      "ISSUE-COM003",
-      "ISSUE-COM005"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:52.272406",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-UI004a",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-UI002", "ISSUE-COM002c", "ISSUE-COM003", "ISSUE-COM005"],
+    "last_update": "2026-04-13T20:24:09.950782",
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-13T12:24:09.950177+00:00",
+    "failure_count": 1
   },
   "ISSUE-CR001": {
     "issue_id": "ISSUE-CR001",
     "status": "accepted",
     "title": "\u4fe1\u7528\u5206\u8ba1\u7b97\u7cfb\u7edf",
-    "prerequisites": [
-      "ISSUE-A003"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "TASK-1",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.632306",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
+    "prerequisites": ["ISSUE-A003"],
+    "last_update": "2026-04-13T20:19:35.746083"
   },
   "ISSUE-INT003": {
     "issue_id": "ISSUE-INT003",
     "status": "pending",
     "title": "Demo\u6f14\u793a\u51c6\u5907",
-    "prerequisites": [
-      "ISSUE-INT002"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:31:52.733256",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INT003",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-INT002"],
+    "last_update": "2026-04-13T20:19:35.771312"
   },
   "ISSUE-F006": {
     "issue_id": "ISSUE-F006",
     "status": "accepted",
     "title": "\u9519\u8bef\u8ffd\u8e2a\u4e0e\u76d1\u63a7\u96c6\u6210",
-    "prerequisites": [
-      "ISSUE-F003"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "TASK-1",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.670130",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-F006"
+    "prerequisites": ["ISSUE-F003"],
+    "last_update": "2026-04-13T20:19:35.797785"
   },
   "ISSUE-CR002c": {
     "issue_id": "ISSUE-CR002c",
     "status": "pending",
     "title": "\u8bc4\u5206\u4e0e\u8bc4\u4ef7\u7cfb\u7edf - \u4e1a\u52a1\u903b\u8f91",
-    "prerequisites": [
-      "ISSUE-CR002a"
-    ],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": null,
-    "task_slug": "TASK-1",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-12T22:32:05.005644",
-    "failure_count": 0,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-CR002c",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null
+    "prerequisites": ["ISSUE-CR002a"],
+    "last_update": "2026-04-13T20:19:35.814598"
   },
   "ISSUE-F001": {
     "issue_id": "ISSUE-F001",
     "status": "accepted",
     "title": "\u9879\u76ee\u521d\u59cb\u5316\u4e0e\u5f00\u53d1\u73af\u5883\u642d\u5efa",
-    "prerequisites": [],
-    "sub_issues": [],
+    "user_story": "",
     "current_task": "",
-    "task_slug": "TASK-1",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-11T03:06:58.701401",
-    "failure_count": 0,
-    "notes": "",
-    "has_worktree": false,
-    "worktree_path": null
+    "prerequisites": [],
+    "last_update": "2026-04-13T20:19:35.845583"
   },
   "ISSUE-VS007": {
     "issue_id": "ISSUE-VS007",
     "status": "need-help",
     "title": "\u672c\u5730\u76f8\u518cAI\u667a\u80fd\u68c0\u7d22",
-    "prerequisites": [
-      "ISSUE-VS006",
-      "ISSUE-AI005"
-    ],
-    "sub_issues": [
-      {
-        "id": "ISSUE-VS007a",
-        "title": "\u672c\u5730\u76f8\u518c\u6743\u9650\u4e0e\u9690\u79c1",
-        "criteria": [
-          "c1",
-          "c5"
-        ],
-        "focus": "\u76f8\u518c\u6743\u9650\u7ba1\u7406\u548c\u9690\u79c1\u4fdd\u62a4"
-      },
-      {
-        "id": "ISSUE-VS007b",
-        "title": "\u672c\u5730\u7167\u7247AI\u5206\u6790\u5f15\u64ce",
-        "criteria": [
-          "c2"
-        ],
-        "focus": "\u7aef\u4fa7AI\u6a21\u578b\u63a8\u7406\u548c\u56fe\u50cf\u5206\u6790"
-      },
-      {
-        "id": "ISSUE-VS007c",
-        "title": "\u672c\u5730\u641c\u7d22\u7d22\u5f15\u7cfb\u7edf",
-        "criteria": [
-          "c3",
-          "c6"
-        ],
-        "focus": "SQLite\u7d22\u5f15\u5b58\u50a8\u548c\u6027\u80fd\u4f18\u5316"
-      },
-      {
-        "id": "ISSUE-VS007d",
-        "title": "\u7edf\u4e00\u641c\u7d22\u754c\u9762",
-        "criteria": [
-          "c4"
-        ],
-        "focus": "\u4e91\u7aef/\u672c\u5730\u7edf\u4e00\u641c\u7d22UI"
-      }
-    ],
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-VS006", "ISSUE-AI005"],
+    "last_update": "2026-04-13T20:19:35.867737"
+  },
+  "ISSUE-C007": {
+    "issue_id": "ISSUE-C007",
+    "status": "need-help",
+    "title": "Agent\u4fe1\u606f\u62ab\u9732\u63a7\u5236\u673a\u5236",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-C002c", "ISSUE-COM002c"],
+    "last_update": "2026-04-13T20:19:35.887913"
+  },
+  "ISSUE-AI002b": {
+    "issue_id": "ISSUE-AI002b",
+    "status": "pending",
+    "title": "\u9700\u6c42\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u573a\u666f\u63d0\u53d6\u5668\u5b9e\u73b0",
+    "user_story": "",
     "current_task": null,
-    "task_slug": "",
-    "session_name": null,
-    "session_started_at": null,
-    "last_update": "2026-04-13T02:54:37.252327",
-    "failure_count": 1,
-    "notes": "Recovered from need-help (API error batch failure)",
-    "has_worktree": true,
-    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-VS007"
+    "prerequisites": ["ISSUE-AI002a"],
+    "last_update": "2026-04-13T20:19:35.897421"
+  },
+  "ISSUE-M001b": {
+    "issue_id": "ISSUE-M001b",
+    "status": "pending",
+    "title": "\u5b9e\u65f6\u67e5\u8be2\u6267\u884c\u5f15\u64ce",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-M001a"],
+    "last_update": "2026-04-13T20:19:35.927022"
+  },
+  "ISSUE-DATE001-2": {
+    "issue_id": "ISSUE-DATE001-2",
+    "status": "stuck",
+    "title": "\u4ea4\u53cb\u753b\u50cf\u914d\u7f6e - AI\u667a\u80fd\u63d0\u70bc\u670d\u52a1",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-AI002"],
+    "last_update": "2026-04-13T21:02:15.328554",
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "implement_failed",
+    "stuck_at": "2026-04-13T13:02:15.327002+00:00",
+    "failure_count": 1
+  },
+  "ISSUE-C001": {
+    "issue_id": "ISSUE-C001",
+    "status": "accepted",
+    "title": "Agent\u521b\u5efa\u4e0e\u57fa\u7840\u914d\u7f6e",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-A003"],
+    "last_update": "2026-04-13T20:19:35.952729"
+  },
+  "ISSUE-C006": {
+    "issue_id": "ISSUE-C006",
+    "status": "accepted",
+    "title": "\u573a\u666f\u914d\u7f6e\u7ba1\u7406",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-C001", "ISSUE-C002a"],
+    "last_update": "2026-04-13T20:19:35.971516"
+  },
+  "ISSUE-COM002b": {
+    "issue_id": "ISSUE-COM002b",
+    "status": "need-help",
+    "title": "\u6d88\u606f\u6301\u4e45\u5316\u4e0e\u5386\u53f2\u8bb0\u5f55",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-COM002a"],
+    "last_update": "2026-04-13T20:19:35.993752"
+  },
+  "ISSUE-AI003b": {
+    "issue_id": "ISSUE-AI003b",
+    "status": "pending",
+    "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u573a\u666f\u63d0\u53d6\u5668",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-AI003a"],
+    "last_update": "2026-04-13T20:19:36.013546"
+  },
+  "ISSUE-T004": {
+    "issue_id": "ISSUE-T004",
+    "status": "accepted",
+    "title": "E2E\u7aef\u5230\u7aef\u6d4b\u8bd5\u6846\u67b6",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-T001", "ISSUE-T002", "ISSUE-T003"],
+    "last_update": "2026-04-13T20:19:36.056448"
+  },
+  "ISSUE-C002b": {
+    "issue_id": "ISSUE-C002b",
+    "status": "accepted",
+    "title": "L2\u7ed3\u6784\u5316\u4fe1\u606f\u6a21\u578b",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-C002a"],
+    "last_update": "2026-04-13T20:19:36.070111"
+  },
+  "ISSUE-INT002b": {
+    "issue_id": "ISSUE-INT002b",
+    "status": "pending",
+    "title": "\u5b9e\u65f6\u670d\u52a1\u6027\u80fd\u4f18\u5316",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-INT002a"],
+    "last_update": "2026-04-13T20:19:36.081010"
+  },
+  "ISSUE-JOB003a": {
+    "issue_id": "ISSUE-JOB003a",
+    "status": "pending",
+    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - \u6838\u5fc3\u7b97\u6cd5\u5c42",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-JOB001", "ISSUE-JOB002", "ISSUE-AI004"],
+    "last_update": "2026-04-13T20:19:36.088150"
+  },
+  "ISSUE-T003": {
+    "issue_id": "ISSUE-T003",
+    "status": "accepted",
+    "title": "\u79fb\u52a8\u7aef\u6d4b\u8bd5\u6846\u67b6",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-F004"],
+    "last_update": "2026-04-13T20:19:36.123720"
+  },
+  "ISSUE-INT001c": {
+    "issue_id": "ISSUE-INT001c",
+    "status": "pending",
+    "title": "\u8de8\u6a21\u5757\u96c6\u6210\u4e0e\u6d4b\u8bd5\u6846\u67b6\u57fa\u7840\u8bbe\u65bd",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-VS001",
+      "ISSUE-VS002",
+      "ISSUE-VS003",
+      "ISSUE-VS004",
+      "ISSUE-VS005",
+      "ISSUE-VS006",
+      "ISSUE-VS007",
+      "ISSUE-DATE001",
+      "ISSUE-DATE002",
+      "ISSUE-DATE003",
+      "ISSUE-DATE004",
+      "ISSUE-JOB001",
+      "ISSUE-JOB002",
+      "ISSUE-JOB003",
+      "ISSUE-JOB004",
+      "ISSUE-AD001",
+      "ISSUE-AD002",
+      "ISSUE-AD003",
+      "ISSUE-AD004",
+      "ISSUE-T001",
+      "ISSUE-T002",
+      "ISSUE-T003",
+      "ISSUE-T004",
+      "ISSUE-F005",
+      "ISSUE-F006"
+    ],
+    "last_update": "2026-04-13T20:19:36.141899"
+  },
+  "ISSUE-AI003c": {
+    "issue_id": "ISSUE-AI003c",
+    "status": "pending",
+    "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u6620\u5c04\u3001\u8865\u5168\u4e0e\u8bc4\u4f30",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-AI003a", "ISSUE-AI003b"],
+    "last_update": "2026-04-13T20:19:36.154369"
+  },
+  "ISSUE-INT001b": {
+    "issue_id": "ISSUE-INT001b",
+    "status": "pending",
+    "title": "AgentJob + AgentAd E2E\u6d4b\u8bd5",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-JOB001",
+      "ISSUE-JOB002",
+      "ISSUE-JOB003",
+      "ISSUE-JOB004",
+      "ISSUE-AD001",
+      "ISSUE-AD002",
+      "ISSUE-AD003",
+      "ISSUE-AD004",
+      "ISSUE-UI001",
+      "ISSUE-UI002",
+      "ISSUE-UI003",
+      "ISSUE-UI004a",
+      "ISSUE-UI004b",
+      "ISSUE-UI004c",
+      "ISSUE-UI005",
+      "ISSUE-UI006",
+      "ISSUE-UI007"
+    ],
+    "last_update": "2026-04-13T20:19:36.178852"
+  },
+  "ISSUE-INT002c": {
+    "issue_id": "ISSUE-INT002c",
+    "status": "pending",
+    "title": "\u7aef\u5230\u7aef\u6027\u80fd\u9a8c\u8bc1",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-INT002b"],
+    "last_update": "2026-04-13T20:19:36.193931"
+  },
+  "ISSUE-C002c": {
+    "issue_id": "ISSUE-C002c",
+    "status": "accepted",
+    "title": "L3\u81ea\u7136\u8bed\u8a00\u4fe1\u606f\u6a21\u578b",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-C002b"],
+    "last_update": "2026-04-13T20:19:36.209300"
+  },
+  "ISSUE-T002": {
+    "issue_id": "ISSUE-T002",
+    "status": "accepted",
+    "title": "API\u96c6\u6210\u6d4b\u8bd5\u6846\u67b6",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-F003"],
+    "last_update": "2026-04-13T20:19:36.242730"
+  },
+  "ISSUE-SEC001": {
+    "issue_id": "ISSUE-SEC001",
+    "status": "accepted",
+    "title": "RBAC\u6743\u9650\u63a7\u5236\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-A002"],
+    "last_update": "2026-04-13T20:19:36.269291"
+  },
+  "ISSUE-DESIGN-3": {
+    "issue_id": "ISSUE-DESIGN-3",
+    "status": "accepted",
+    "title": "\u751f\u6210 Issues",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-DESIGN-2"],
+    "last_update": "2026-04-13T20:19:36.297257"
+  },
+  "ISSUE-VS005a": {
+    "issue_id": "ISSUE-VS005a",
+    "status": "pending",
+    "title": "\u7167\u7247\u6d4f\u89c8\u4e0e\u753b\u5eca\u5c55\u793a",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-VS004"],
+    "last_update": "2026-04-13T20:19:36.311209"
+  },
+  "ISSUE-API001": {
+    "issue_id": "ISSUE-API001",
+    "status": "pending",
+    "title": "API\u6587\u6863\u4e0eOpenAPI\u89c4\u8303",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-F003", "ISSUE-A002"],
+    "last_update": "2026-04-13T20:19:36.333646"
+  },
+  "ISSUE-AI001": {
+    "issue_id": "ISSUE-AI001",
+    "status": "accepted",
+    "title": "\u591aLLM\u9002\u914d\u5668\u4e0e\u7194\u65ad\u5668",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-F003"],
+    "last_update": "2026-04-13T20:19:36.369147"
+  },
+  "ISSUE-AI006": {
+    "issue_id": "ISSUE-AI006",
+    "status": "pending",
+    "title": "AI\u670d\u52a1\u964d\u7ea7\u4e0e\u5bb9\u9519\u7b56\u7565",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-AI001", "ISSUE-AI004"],
+    "last_update": "2026-04-13T20:19:36.392323"
+  },
+  "ISSUE-CR003c": {
+    "issue_id": "ISSUE-CR003c",
+    "status": "pending",
+    "title": "\u79ef\u5206\u4ea4\u6613\u8bb0\u5f55API",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-CR003b"],
+    "last_update": "2026-04-13T20:19:36.398992"
+  },
+  "ISSUE-UI007": {
+    "issue_id": "ISSUE-UI007",
+    "status": "pending",
+    "title": "\u4e2a\u4eba\u4e2d\u5fc3\u4e0e\u4fe1\u7528\u5c55\u793a",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-UI002", "ISSUE-CR001", "ISSUE-A003"],
+    "last_update": "2026-04-13T20:19:36.423812"
+  },
+  "ISSUE-A001": {
+    "issue_id": "ISSUE-A001",
+    "status": "accepted",
+    "title": "\u7528\u6237\u6ce8\u518c\u4e0e\u767b\u5f55\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-F002", "ISSUE-F003"],
+    "last_update": "2026-04-13T20:19:36.450028"
+  },
+  "ISSUE-CR003d": {
+    "issue_id": "ISSUE-CR003d",
+    "status": "pending",
+    "title": "\u79ef\u5206\u94b1\u5305UI\u4e0eVisionShare\u573a\u666f\u652f\u4ed8",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-CR003c"],
+    "last_update": "2026-04-13T20:19:36.462240"
+  },
+  "ISSUE-DESIGN-2": {
+    "issue_id": "ISSUE-DESIGN-2",
+    "status": "accepted",
+    "title": "\u751f\u6210\u5e76\u5b8c\u5584 IssueTree",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-DESIGN-1"],
+    "last_update": "2026-04-13T20:19:36.466829"
+  },
+  "ISSUE-COM001": {
+    "issue_id": "ISSUE-COM001",
+    "status": "split",
+    "title": "Socket.io\u901a\u4fe1\u57fa\u7840\u8bbe\u65bd",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-C001"],
+    "last_update": "2026-04-13T20:19:36.479139"
+  },
+  "ISSUE-UI001": {
+    "issue_id": "ISSUE-UI001",
+    "status": "accepted",
+    "title": "\u8bbe\u8ba1\u7cfb\u7edf\u4e0e\u7ec4\u4ef6\u5e93",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-F004"],
+    "last_update": "2026-04-13T20:19:36.518940"
+  },
+  "ISSUE-CR003b": {
+    "issue_id": "ISSUE-CR003b",
+    "status": "pending",
+    "title": "\u79ef\u5206\u4ea4\u6613\u6838\u5fc3\u670d\u52a1\u4e0e\u89c4\u5219\u914d\u7f6e",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-CR003a"],
+    "last_update": "2026-04-13T20:19:36.531701"
+  },
+  "ISSUE-UI006": {
+    "issue_id": "ISSUE-UI006",
+    "status": "pending",
+    "title": "\u6d88\u606f\u4e2d\u5fc3",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-UI002", "ISSUE-COM002c"],
+    "last_update": "2026-04-13T20:19:36.559420"
+  },
+  "ISSUE-F004": {
+    "issue_id": "ISSUE-F004",
+    "status": "accepted",
+    "title": "Expo\u79fb\u52a8\u7aef\u9879\u76ee\u521d\u59cb\u5316",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-F001"],
+    "last_update": "2026-04-13T20:19:36.582113"
+  },
+  "ISSUE-CR002a": {
+    "issue_id": "ISSUE-CR002a",
+    "status": "pending",
+    "title": "\u8bc4\u5206\u4e0e\u8bc4\u4ef7\u7cfb\u7edf - \u540e\u7aefAPI",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-CR001", "ISSUE-COM002c", "ISSUE-A003"],
+    "last_update": "2026-04-13T20:19:36.596728"
+  },
+  "ISSUE-F003": {
+    "issue_id": "ISSUE-F003",
+    "status": "accepted",
+    "title": "Express\u540e\u7aef\u57fa\u7840\u6846\u67b6",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-F001"],
+    "last_update": "2026-04-13T20:19:36.619901"
+  },
+  "ISSUE-UI004c": {
+    "issue_id": "ISSUE-UI004c",
+    "status": "pending",
+    "title": "\u804a\u5929\u8bb0\u5f55\u6eda\u52a8\u4e0e\u5206\u9875\u52a0\u8f7d",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-UI002", "ISSUE-UI004b"],
+    "last_update": "2026-04-13T20:19:36.651860"
+  },
+  "ISSUE-CR003": {
+    "issue_id": "ISSUE-CR003",
+    "status": "split",
+    "title": "\u79ef\u5206\u7cfb\u7edf\u57fa\u7840\u4e0e\u4ea4\u6613\u8bb0\u5f55",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-A003"],
+    "last_update": "2026-04-13T20:19:36.656750"
+  },
+  "ISSUE-CR002": {
+    "issue_id": "ISSUE-CR002",
+    "status": "split",
+    "title": "\u8bc4\u5206\u4e0e\u8bc4\u4ef7\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-CR002c"],
+    "last_update": "2026-04-13T20:19:36.659121"
+  },
+  "ISSUE-UI004b": {
+    "issue_id": "ISSUE-UI004b",
+    "status": "need-help",
+    "title": "Agent/\u4eba\u7c7b\u7528\u6237\u72b6\u6001\u6307\u793a\u5668",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-UI002", "ISSUE-UI004a"],
+    "last_update": "2026-04-13T20:19:36.677614"
+  },
+  "ISSUE-F002": {
+    "issue_id": "ISSUE-F002",
+    "status": "accepted",
+    "title": "\u6570\u636e\u5e93\u8bbe\u8ba1\u4e0ePrisma ORM\u642d\u5efa",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-F001"],
+    "last_update": "2026-04-13T20:19:36.704544"
+  },
+  "ISSUE-F005": {
+    "issue_id": "ISSUE-F005",
+    "status": "accepted",
+    "title": "\u65e5\u5fd7\u7cfb\u7edf\u4e0e\u7ed3\u6784\u5316\u65e5\u5fd7",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-F003"],
+    "last_update": "2026-04-13T20:19:36.729168"
+  },
+  "ISSUE-DATE003": {
+    "issue_id": "ISSUE-DATE003",
+    "status": "completed",
+    "title": "Agent\u95f4\u5bf9\u8bdd\u5339\u914d",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-COM002c"],
+    "last_update": "2026-04-13T20:19:36.768631"
+  },
+  "ISSUE-A003a": {
+    "issue_id": "ISSUE-A003a",
+    "status": "accepted",
+    "title": "\u7528\u6237\u57fa\u7840\u8d44\u6599\u7ba1\u7406 - \u540e\u7aefAPI",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-A002"],
+    "last_update": "2026-04-13T20:19:36.803885"
+  },
+  "ISSUE-C005": {
+    "issue_id": "ISSUE-C005",
+    "status": "pending",
+    "title": "\u4fe1\u7528\u8fc7\u6ee4\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-C002b", "ISSUE-CR001"],
+    "last_update": "2026-04-13T20:19:36.825755"
+  },
+  "ISSUE-C002": {
+    "issue_id": "ISSUE-C002",
+    "status": "split",
+    "title": "Agent\u4fe1\u606f\u6a21\u578b\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": ["ISSUE-C001"],
+    "last_update": "2026-04-13T20:19:36.838182"
+  },
+  "ISSUE-M001a": {
+    "issue_id": "ISSUE-M001a",
+    "status": "pending",
+    "title": "\u67e5\u8be2\u6784\u5efa\u5668\u4e0eDSL\u8bbe\u8ba1",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": ["ISSUE-C002b", "ISSUE-C003", "ISSUE-C004", "ISSUE-C005"],
+    "last_update": "2026-04-13T20:19:36.865690"
+  }
+}
