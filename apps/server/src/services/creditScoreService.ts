@@ -265,7 +265,7 @@ export class CreditScoreService {
     return 20;
   }
 
-  private async calculateResponseRate(userId: string): number {
+  private async calculateResponseRate(userId: string): Promise<number> {
     // 根据消息响应计算
     const conversations = await prisma.conversation.findMany({
       where: { participantIds: { has: userId } },
@@ -645,17 +645,7 @@ export async function getUserCreditScore(userId: string): Promise<number> {
  */
 export async function updateCreditScore(
   payload: CreditScoreUpdatePayload
-): Promise<{
-  id: string;
-  userId: string;
-  score: number;
-  delta: number;
-  reason: string;
-  sourceType: string;
-  sourceId?: string;
-  metadata?: string | null;
-  createdAt: Date;
-}> {
+): Promise<ReturnType<typeof prisma.creditRecord.create>> {
   const { userId, delta, reason, sourceType, sourceId, metadata } = payload;
 
   const currentScore = await getUserCreditScore(userId);
@@ -672,7 +662,7 @@ export async function updateCreditScore(
       reason,
       sourceType,
       sourceId,
-      metadata: metadata ? JSON.stringify(metadata) : null,
+      metadata: metadata || undefined,
     },
   });
 

@@ -4,45 +4,28 @@
     "ISSUE-A003",
     "ISSUE-A004",
     "ISSUE-AI001",
-    "ISSUE-AI002a",
-    "ISSUE-AI002b",
-    "ISSUE-AI003a",
     "ISSUE-C001",
     "ISSUE-C002a",
     "ISSUE-C002b",
-    "ISSUE-C003",
-    "ISSUE-C004",
     "ISSUE-C006",
-    "ISSUE-C007",
-    "ISSUE-COM001b",
-    "ISSUE-COM002a",
-    "ISSUE-COM002b",
     "ISSUE-CR001",
-    "ISSUE-CR003a",
     "ISSUE-F005",
     "ISSUE-F006",
-    "ISSUE-INT002a",
     "ISSUE-SEC002",
-    "ISSUE-SEC003",
-    "ISSUE-T001",
-    "ISSUE-UI004b",
-    "ISSUE-VS007"
+    "ISSUE-T001"
   ],
-  "failed": [],
+  "failed": [
+    "ISSUE-A003",
+    "ISSUE-CR001"
+  ],
   "in_progress": [],
   "merged": [
     "ISSUE-A004",
     "ISSUE-AI001",
     "ISSUE-AI002a",
-    "ISSUE-AI003a",
-    "ISSUE-C003",
-    "ISSUE-C004",
     "ISSUE-C006",
-    "ISSUE-COM001b",
-    "ISSUE-COM002a",
     "ISSUE-CR001",
-    "ISSUE-INT002a",
     "ISSUE-UI001"
   ],
-  "last_update": "2026-04-14T09:45:00.000000"
+  "last_update": "2026-04-14T01:27:18.383012"
 }
