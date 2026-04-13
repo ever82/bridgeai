@@ -5,7 +5,7 @@ import {
   getUserCreditScore,
   updateCreditScore,
   recalculateCreditScore,
-  CREDIT_SCORE_CONFIG,
+  REVIEW_CREDIT_CONFIG,
   creditScoreEvents,
 } from '../services/creditScoreService';
 import { prisma } from '../db/client';
