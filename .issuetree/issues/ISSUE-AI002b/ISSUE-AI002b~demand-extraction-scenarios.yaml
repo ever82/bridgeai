@@ -100,7 +100,7 @@ merged_to_master: true
 prerequisites:
 - ISSUE-AI002a
 slug: demand-extraction-scenarios
-status: passed
+status: accepted
 test_duration_seconds: 123
 test_passed: true
 acceptance:

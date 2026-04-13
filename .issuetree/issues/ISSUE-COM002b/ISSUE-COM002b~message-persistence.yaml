@@ -202,7 +202,7 @@ merged_to_master: true
 prerequisites:
   - ISSUE-COM002a
 slug: message-persistence
-status: passed
+status: accepted
 stuck_reason: null
 test_duration_seconds: 0
 test_passed: true
