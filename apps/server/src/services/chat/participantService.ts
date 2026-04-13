@@ -2,10 +2,9 @@
  * Participant Service
  * 聊天室参与者管理服务
  */
-import { PrismaClient, RoomParticipant, ParticipantRole, ChatRoomType, ChatRoom } from '@prisma/client';
+import { RoomParticipant, ParticipantRole, ChatRoomType, ChatRoom } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../db/client';
 
 export interface AddParticipantInput {
   roomId: string;
