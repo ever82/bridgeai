@@ -25,7 +25,7 @@ import {
   isValidInterviewStatus,
   isValidInterviewType,
   isValidInterviewRound
-} from '../models/Interview';
+} from '../../models/Interview';
 
 // In-memory storage (replace with database in production)
 const interviews = new Map<string, Interview>();
@@ -173,7 +173,7 @@ export class InterviewSchedulingService {
       ...interview,
       ...update,
       updatedAt: new Date()
-    };
+    } as Interview;
 
     interviews.set(interviewId, updatedInterview);
     return updatedInterview;
@@ -536,6 +536,16 @@ export class InterviewSchedulingService {
     schedules.delete(interviewId);
     feedbacks.delete(interviewId);
     return interviews.delete(interviewId);
+  }
+
+  /**
+   * Clear all interviews and related data (for testing only)
+   */
+  clearAll(): void {
+    interviews.clear();
+    timeSlots.clear();
+    schedules.clear();
+    feedbacks.clear();
   }
 }
 

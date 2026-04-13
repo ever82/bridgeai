@@ -19,6 +19,7 @@ describe('NegotiationRoomService', () => {
 
   beforeEach(() => {
     service = new NegotiationRoomService();
+    service.clearAll();
   });
 
   describe('createRoom', () => {
@@ -356,11 +357,12 @@ describe('NegotiationRoom Model Helpers', () => {
   describe('calculateNegotiationProgress', () => {
     it('should calculate correct progress', () => {
       const room = {
+        id: 'test_id',
         currentRound: 2,
         maxRounds: 5,
         updatedAt: new Date(),
         status: NegotiationStatus.NEGOTIATING
-      } as NegotiationRoom;
+      } as unknown as NegotiationRoom;
 
       const progress = calculateNegotiationProgress(room);
 
@@ -374,11 +376,12 @@ describe('NegotiationRoom Model Helpers', () => {
       yesterday.setHours(yesterday.getHours() - 25);
 
       const room = {
+        id: 'test_id',
         currentRound: 2,
         maxRounds: 5,
         updatedAt: yesterday,
         status: NegotiationStatus.NEGOTIATING
-      } as NegotiationRoom;
+      } as unknown as NegotiationRoom;
 
       const progress = calculateNegotiationProgress(room);
 
@@ -389,12 +392,13 @@ describe('NegotiationRoom Model Helpers', () => {
   describe('shouldHandoffToHuman', () => {
     it('should trigger handoff when max rounds reached', () => {
       const room = {
+        id: 'test_id',
         currentRound: 5,
         maxRounds: 5,
         rounds: [],
         status: NegotiationStatus.NEGOTIATING,
         updatedAt: new Date()
-      } as NegotiationRoom;
+      } as unknown as NegotiationRoom;
 
       const result = shouldHandoffToHuman(room);
 
@@ -404,6 +408,7 @@ describe('NegotiationRoom Model Helpers', () => {
 
     it('should trigger handoff on stalemate detection', () => {
       const room = {
+        id: 'test_id',
         currentRound: 3,
         maxRounds: 5,
         rounds: [
@@ -423,12 +428,13 @@ describe('NegotiationRoom Model Helpers', () => {
 
     it('should not trigger handoff during active negotiation', () => {
       const room = {
+        id: 'test_id',
         currentRound: 2,
         maxRounds: 5,
         rounds: [],
         status: NegotiationStatus.NEGOTIATING,
         updatedAt: new Date()
-      } as NegotiationRoom;
+      } as unknown as NegotiationRoom;
 
       const result = shouldHandoffToHuman(room);
 

@@ -16,7 +16,7 @@ import {
   createNegotiationMessage,
   calculateNegotiationProgress,
   shouldHandoffToHuman
-} from '../models/NegotiationRoom';
+} from '../../models/NegotiationRoom';
 
 // In-memory storage (replace with database in production)
 const rooms = new Map<string, NegotiationRoom>();
@@ -228,7 +228,7 @@ export class NegotiationRoomService {
     }
 
     // Update current round with message
-    const currentRound = room.rounds.find(r => r.roundNumber === room.currentRound);
+    const currentRound = room.rounds.find((r: NegotiationRound) => r.roundNumber === room.currentRound);
     if (currentRound) {
       currentRound.messages.push(message);
 
@@ -278,7 +278,7 @@ export class NegotiationRoomService {
     if (!room) return null;
 
     // Close current round
-    const currentRound = room.rounds.find(r => r.roundNumber === room.currentRound);
+    const currentRound = room.rounds.find((r: NegotiationRound) => r.roundNumber === room.currentRound);
     if (currentRound) {
       currentRound.endedAt = new Date();
       currentRound.status = 'completed';
@@ -479,6 +479,14 @@ export class NegotiationRoomService {
   async deleteRoom(roomId: string): Promise<boolean> {
     messages.delete(roomId);
     return rooms.delete(roomId);
+  }
+
+  /**
+   * Clear all rooms and messages (for testing only)
+   */
+  clearAll(): void {
+    rooms.clear();
+    messages.clear();
   }
 }
 

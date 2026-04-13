@@ -24,6 +24,7 @@ describe('InterviewSchedulingService', () => {
 
   beforeEach(() => {
     service = new InterviewSchedulingService();
+    service.clearAll();
   });
 
   describe('createInterview', () => {
@@ -464,17 +465,18 @@ describe('Interview Model Helpers', () => {
 
   describe('aggregateFeedback', () => {
     it('should return null for interview with no feedback', () => {
-      const interview = { feedbacks: [] } as Interview;
+      const interview = { id: 'test', feedbacks: [] } as unknown as Interview;
       expect(aggregateFeedback(interview)).toBeNull();
     });
 
     it('should aggregate multiple feedbacks', () => {
       const interview = {
+        id: 'test',
         feedbacks: [
           { rating: 4, recommendation: 'hire' as const, strengths: ['Good'], weaknesses: ['None'] },
           { rating: 5, recommendation: 'strong_hire' as const, strengths: ['Excellent'], weaknesses: ['Minor'] }
         ]
-      } as Interview;
+      } as unknown as Interview;
 
       const result = aggregateFeedback(interview);
 

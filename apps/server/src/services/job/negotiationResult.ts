@@ -8,7 +8,7 @@ import {
   NegotiationStatus,
   NegotiationMessage,
   NegotiationTopic
-} from '../models/NegotiationRoom';
+} from '../../models/NegotiationRoom';
 import { negotiationRoomService } from './negotiationRoom';
 
 export interface NegotiationResult {

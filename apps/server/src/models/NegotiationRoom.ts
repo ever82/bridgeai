@@ -108,6 +108,7 @@ export interface NegotiationRoomUpdateInput {
   agreedAmount?: number;
   agreedBenefits?: string[];
   handoffReason?: string;
+  completedAt?: Date;
   metadata?: Record<string, unknown>;
 }
 

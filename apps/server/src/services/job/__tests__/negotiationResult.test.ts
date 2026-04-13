@@ -13,6 +13,7 @@ describe('NegotiationResultService', () => {
   beforeEach(() => {
     roomService = new NegotiationRoomService();
     resultService = new NegotiationResultService();
+    roomService.clearAll();
   });
 
   async function createAndStartRoom() {
@@ -318,7 +319,8 @@ describe('NegotiationResultService', () => {
       const stats = await resultService.getStatistics(room.id);
 
       expect(stats).toBeDefined();
-      expect(stats?.totalMessages).toBe(2);
+      // 4 messages: 2 system (room creation + negotiation start) + 2 user messages
+      expect(stats?.totalMessages).toBe(4);
       expect(stats?.messagesBySender).toBeDefined();
       expect(stats?.averageResponseTime).toBeGreaterThanOrEqual(0);
     });

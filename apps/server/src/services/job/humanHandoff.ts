@@ -3,12 +3,12 @@
  * 人机切换服务
  */
 
-import { NegotiationRoom, NegotiationStatus, MessageSender } from '../models/NegotiationRoom';
+import { NegotiationRoom, NegotiationStatus, MessageSender } from '../../models/NegotiationRoom';
 import {
   Interview,
   InterviewStatus,
   InterviewRound
-} from '../models/Interview';
+} from '../../models/Interview';
 import { negotiationRoomService } from './negotiationRoom';
 import { interviewSchedulingService } from './interviewScheduling';
 

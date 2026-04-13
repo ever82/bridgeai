@@ -122,8 +122,11 @@ export interface InterviewUpdateInput {
   interviewers?: string[];
   cancellationReason?: string;
   cancelledBy?: string;
+  cancelledAt?: Date;
   notes?: string;
   completedAt?: Date;
+  proposedSlots?: TimeSlot[];
+  feedbacks?: InterviewFeedback[];
   metadata?: Record<string, unknown>;
 }
 
