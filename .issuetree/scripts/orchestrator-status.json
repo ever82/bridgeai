@@ -4,30 +4,28 @@
     "ISSUE-A003",
     "ISSUE-A004",
     "ISSUE-AI001",
-    "ISSUE-AI003a",
     "ISSUE-C001",
     "ISSUE-C002a",
     "ISSUE-C002b",
     "ISSUE-C006",
-    "ISSUE-C007",
     "ISSUE-CR001",
     "ISSUE-F005",
     "ISSUE-F006",
     "ISSUE-SEC002",
-    "ISSUE-T001",
-    "ISSUE-UI004b",
-    "ISSUE-VS007"
+    "ISSUE-T001"
   ],
-  "failed": [],
+  "failed": [
+    "ISSUE-A003",
+    "ISSUE-CR001"
+  ],
   "in_progress": [],
   "merged": [
     "ISSUE-A004",
     "ISSUE-AI001",
     "ISSUE-AI002a",
-    "ISSUE-AI003a",
     "ISSUE-C006",
     "ISSUE-CR001",
     "ISSUE-UI001"
   ],
-  "last_update": "2026-04-14T09:30:00.000000"
+  "last_update": "2026-04-14T01:19:41.069145"
 }

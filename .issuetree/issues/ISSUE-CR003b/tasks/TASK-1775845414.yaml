@@ -1,0 +1,10 @@
+id: TASK-1775845414
+issue_id: ISSUE-CR003b
+name: "Implement Points Transaction Service and Rules"
+description: "Implement the Points Transaction Core Service and Points Rule Configuration system"
+status: in_progress
+created_at: "2026-04-14T10:00:00+08:00"
+started_at: "2026-04-14T10:00:00+08:00"
+time_limit_minutes: 90
+result: null
+notes: "Starting implementation"
