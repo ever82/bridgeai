@@ -38,5 +38,5 @@ parent_issue: ISSUE-DATE001
 prerequisites:
 - ISSUE-AI002
 slug: dating-profile-ai
-status: implementing
+status: accepted
 title: "\u4EA4\u53CB\u753B\u50CF\u914D\u7F6E - AI\u667A\u80FD\u63D0\u70BC\u670D\u52A1"

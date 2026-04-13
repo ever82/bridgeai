@@ -32,7 +32,7 @@ criteria:
     \u65B0\u673A\u5236\n"
   id: ISSUE-VS006~c2
   name: "\u56FE\u50CF\u6807\u7B7E\u548C\u7D22\u5F15"
-status: implementing
+status: accepted
   verification:
     ai:
       context_files:

@@ -28,7 +28,7 @@ criteria:
     (AI)\n- \u7EFC\u5408\u5339\u914D\u5206\u6570\n"
   id: ISSUE-M003~c2
   name: "L1/L2/L3 \u5339\u914D\u8BA1\u7B97"
-status: implementing
+status: accepted
   verification:
     ai:
       context_files:

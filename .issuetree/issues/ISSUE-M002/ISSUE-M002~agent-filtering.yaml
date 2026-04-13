@@ -3,7 +3,7 @@ id: "ISSUE-M002"
 issue_number: 403
 title: "Agent智能筛选排序"
 slug: "agent-filtering"
-status: implementing
+status: accepted
 description: |
   实现智能的 Agent 筛选和排序功能，根据用户需求
   和 Agent 供给进行智能匹配。

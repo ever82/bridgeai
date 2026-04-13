@@ -28,7 +28,7 @@ criteria:
     \u5EA6\u6807\u8BC6\n"
   id: ISSUE-COM004~c2
   name: "Agent \u8EAB\u4EFD\u6807\u8BC6"
-status: implementing
+status: accepted
   verification:
     ai:
       context_files:
