@@ -1,6 +1,7 @@
 // Shared types
 export * from './types/agent';
 export * from './types/agentProfile';
+export * from './types/agentAdConsumer';
 export * from './types/location';
 export * from './types/filter';
 export * from './types/scene';

@@ -76,21 +76,12 @@ export {
   ClarificationResponse,
 } from './clarificationService';
 
-// Agent Negotiation Service (ISSUE-AD003)
+// Consumer Demand AI Integration (ISSUE-AD001)
 export {
-  AgentNegotiationService,
-  agentNegotiationService,
-  NegotiationRoom,
-  NegotiationMessage,
-  NegotiationContext,
-  NegotiationConfig,
-  AgentInfo,
-  AgentType,
-  ConsumerProfile,
-  MerchantProfile,
-  MerchantOffer,
-  ComparisonResult,
-  ComparedOffer,
-  RecommendationResult,
-  FollowUpQuestion,
-} from './agentNegotiationService';
+  extractConsumerDemand,
+  needsClarification,
+  generateClarificationQuestions,
+  processNaturalLanguageDemand,
+  ExtractedDemandData,
+} from './consumerDemandAI';
+>>>>>>> issue/issue-ad001
