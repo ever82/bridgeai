@@ -127,7 +127,7 @@ flowchart TD
 
     subgraph UI["📱 前端UI层 - Frontend"]
         UI001[🟢 ISSUE-UI001<br/>设计系统与组件库]
-        UI002[🟡 ISSUE-UI002<br/>全局导航与布局]
+        UI002[🟢 ISSUE-UI002<br/>全局导航与布局]
         UI003[🟡 ISSUE-UI003<br/>首页与状态展示]
         UI004a[✂️ ISSUE-UI004a<br/>聊天消息组件与输入框]
         UI004b[✂️ ISSUE-UI004b<br/>Agent/人类用户状态指示器]
