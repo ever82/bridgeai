@@ -37,7 +37,7 @@ criteria:
     \u5386\u8D28\u91CF\u8BC4\u5206\u4E0E\u4F18\u5316\u5EFA\u8BAE\n"
   id: ISSUE-JOB001~c2
   name: "AI\u7B80\u5386\u63D0\u70BC\u670D\u52A1"
-status: stuck
+  status: pending
   verification:
     ai:
       context_files:
