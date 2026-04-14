@@ -6,7 +6,6 @@
  *       文化匹配度预测、筛选建议生成、排序与排名算法
  */
 
-import { PrismaClient } from '@prisma/client';
 import { logger } from '../../utils/logger';
 import { LLMService } from '../ai/llmService';
 import {
@@ -14,8 +13,6 @@ import {
   SCREENING_SUGGESTION_PROMPT,
   RANKING_PROMPT,
 } from '../../ai/prompts/resumeScreening';
-
-const prisma = new PrismaClient();
 
 /** 筛选结果 */
 export interface ScreeningResult {

@@ -5,12 +5,10 @@
  * 功能：推荐结果排序与分页、推荐解释、推荐反馈学习、推荐去重与刷新
  */
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
 import { JobMatchingAlgorithm, type JobSeekerProfile, type JobRequirement } from './jobMatchingAlgorithm';
 import { ResumeScreeningService, type ScreeningResult } from './resumeScreening';
-
-const prisma = new PrismaClient();
 
 /** 推荐结果 */
 export interface Recommendation<T> {

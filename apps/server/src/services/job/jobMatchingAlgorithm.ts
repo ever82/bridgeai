@@ -7,7 +7,7 @@
  * 权重可配置
  */
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../db/client';
 import {
   calculateSkillScore,
   calculateExperienceScore,
@@ -23,8 +23,6 @@ import {
   type DimensionScore,
 } from './matchScoring';
 import { logger } from '../../utils/logger';
-
-const prisma = new PrismaClient();
 
 /** 求职者画像数据 */
 export interface JobSeekerProfile {

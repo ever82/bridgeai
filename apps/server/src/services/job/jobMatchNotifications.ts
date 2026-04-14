@@ -6,10 +6,8 @@
  *       匹配状态变更通知、通知偏好设置
  */
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
-
-const prisma = new PrismaClient();
 
 /** 通知类型 */
 export type NotificationType =
