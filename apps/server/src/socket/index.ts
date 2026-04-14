@@ -15,6 +15,7 @@ import { pubClient, subClient } from './adapter';
 import { registerUserHandlers } from './handlers/user';
 import { registerChatHandlers } from './handlers/chat';
 import { registerSystemHandlers } from './handlers/system';
+import { registerHandoffHandlers } from './handlers/handoffHandler';
 
 /**
  * Socket.io server instance
@@ -89,6 +90,13 @@ function setupNamespaces(io: SocketServer): void {
   userNsp.on('connection', (socket) => {
     handleConnection(socket, 'user');
     registerUserHandlers(socket, userNsp);
+  });
+
+  // Handoff namespace for human-agent switching
+  const handoffNsp = io.of('/handoff');
+  handoffNsp.on('connection', (socket) => {
+    handleConnection(socket, 'handoff');
+    registerHandoffHandlers(socket, handoffNsp);
   });
 
   // System namespace for admin/monitoring
