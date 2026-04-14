@@ -56,7 +56,7 @@ criteria:
           - apps/server/src/config/pointsRules.ts
           - apps/server/src/services/pointsRuleEngine.ts
         prompt: 检查积分规则配置，验证有PointsRule配置表和RuleEngine，确认获取/消耗规则和上限控制
-current_task: TASK-1775845414
+current_task: null
 description: '积分交易核心服务实现，包含积分获取、消耗、冻结、转账等操作的原子性实现，
 
   以及积分规则配置系统(获取规则、消耗规则、上限控制等)。

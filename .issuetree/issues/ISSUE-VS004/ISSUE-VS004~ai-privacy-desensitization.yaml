@@ -10,131 +10,131 @@ complexity:
   test_time: 10
 created_at: '2026-04-08'
 criteria:
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: "\u8BC6\u522B\u5F15\u64CE:\n- \u4EBA\u8138\u8BC6\u522B\u548C\u5B9A\u4F4D\
-    \n- \u8F66\u724C\u53F7\u7801\u68C0\u6D4B\n- \u6587\u5B57\u548C\u5730\u5740\u6807\
-    \u8BC6\u8BC6\u522B\n- \u654F\u611F\u7269\u4F53\u68C0\u6D4B\n- \u7F6E\u4FE1\u5EA6\
-    \u8BC4\u5206\n"
-  id: ISSUE-VS004~c1
-  name: "AI\u654F\u611F\u5185\u5BB9\u8BC6\u522B"
-  verification:
-    ai:
-      context_files:
-      - apps/server/src/services/ai/sensitiveContentDetection.ts
-      - apps/server/src/services/ai/visionAnalysis.ts
-      prompt: "\u68C0\u67E5AI\u654F\u611F\u5185\u5BB9\u8BC6\u522B\uFF0C\u9A8C\u8BC1\
-        \u6709\u4EBA\u8138\u3001\u8F66\u724C\u3001\u6587\u5B57\u3001\u7269\u4F53\u68C0\
-        \u6D4B\u548C\u7F6E\u4FE1\u5EA6\u8BC4\u5206\u529F\u80FD"
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: "\u5904\u7406\u7B97\u6CD5:\n- \u9AD8\u65AF\u6A21\u7CCA\u5904\u7406\n\
-    - \u9A6C\u8D5B\u514B\u6548\u679C\n- \u533A\u57DF\u50CF\u7D20\u5316\n- \u667A\u80FD\
-    \u80CC\u666F\u66FF\u6362\n- \u8FB9\u7F18\u7FBD\u5316\u5904\u7406\n"
-  id: ISSUE-VS004~c2
-  name: "\u8131\u654F\u5904\u7406\u7B97\u6CD5"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/server/src/services/image/desensitization.ts
-      - apps/server/src/utils/imageProcessing.ts
-      prompt: "\u68C0\u67E5\u8131\u654F\u5904\u7406\u7B97\u6CD5\uFF0C\u9A8C\u8BC1\u6709\
-        \u6A21\u7CCA\u3001\u9A6C\u8D5B\u514B\u3001\u50CF\u7D20\u5316\u3001\u80CC\u666F\
-        \u66FF\u6362\u548C\u8FB9\u7F18\u5904\u7406\u5B9E\u73B0"
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: "\u7F16\u8F91\u754C\u9762:\n- \u68C0\u6D4B\u533A\u57DF\u53EF\u89C6\u5316\
-    \u6807\u8BB0\n- \u8131\u654F\u6548\u679C\u5B9E\u65F6\u9884\u89C8\n- \u624B\u52A8\
-    \u8C03\u6574\u8131\u654F\u533A\u57DF\n- \u8131\u654F\u5F3A\u5EA6\u8C03\u8282\n\
-    - \u64A4\u9500\u548C\u91CD\u505A\u529F\u80FD\n"
-  id: ISSUE-VS004~c3
-  name: "\u8131\u654F\u9884\u89C8\u548C\u7F16\u8F91"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/mobile/src/screens/VisionShare/PrivacyEditor.tsx
-      - apps/mobile/src/components/PrivacyEditor/DesensitizationControls.tsx
-      prompt: "\u68C0\u67E5\u8131\u654F\u7F16\u8F91\u754C\u9762\uFF0C\u9A8C\u8BC1\u6709\
-        \u533A\u57DF\u6807\u8BB0\u3001\u5B9E\u65F6\u9884\u89C8\u3001\u624B\u52A8\u8C03\
-        \u6574\u548C\u5F3A\u5EA6\u8C03\u8282\u529F\u80FD"
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: "\u7B56\u7565\u7CFB\u7EDF:\n- \u9884\u8BBE\u8131\u654F\u6A21\u677F\
-    (\u4E25\u683C/\u6807\u51C6/\u5BBD\u677E)\n- \u81EA\u5B9A\u4E49\u8131\u654F\u89C4\
-    \u5219\n- \u81EA\u52A8\u8131\u654F\u5F00\u5173\n- \u767D\u540D\u5355\u8BBE\u7F6E\
-    \n- \u573A\u666F\u5316\u7B56\u7565\u63A8\u8350\n"
-  id: ISSUE-VS004~c4
-  name: "\u8131\u654F\u7B56\u7565\u914D\u7F6E"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/server/src/services/privacy/desensitizationPolicy.ts
-      - apps/mobile/src/screens/Settings/PrivacySettings.tsx
-      prompt: "\u68C0\u67E5\u8131\u654F\u7B56\u7565\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u6709\
-        \u6A21\u677F\u3001\u81EA\u5B9A\u4E49\u89C4\u5219\u3001\u81EA\u52A8\u5F00\u5173\
-        \u3001\u767D\u540D\u5355\u548C\u7B56\u7565\u63A8\u8350\u529F\u80FD"
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: "\u62A5\u544A\u529F\u80FD:\n- \u68C0\u6D4B\u5230\u7684\u654F\u611F\u9879\
-    \u5217\u8868\n- \u8131\u654F\u5904\u7406\u65E5\u5FD7\n- \u9690\u79C1\u98CE\u9669\
-    \u8BC4\u7EA7\n- \u5904\u7406\u524D\u540E\u5BF9\u6BD4\n- \u62A5\u544A\u5BFC\u51FA\
-    \u548C\u5206\u4EAB\n"
-  id: ISSUE-VS004~c5
-  name: "\u9690\u79C1\u62A5\u544A\u751F\u6210"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/mobile/src/components/PrivacyReport/
-      - apps/server/src/services/privacy/privacyReport.ts
-      prompt: "\u68C0\u67E5\u9690\u79C1\u62A5\u544A\u751F\u6210\uFF0C\u9A8C\u8BC1\u6709\
-        \u654F\u611F\u9879\u5217\u8868\u3001\u5904\u7406\u65E5\u5FD7\u3001\u98CE\u9669\
-        \u8BC4\u7EA7\u548C\u5BF9\u6BD4\u5C55\u793A\u529F\u80FD"
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: "\u667A\u80FD\u5EFA\u8BAE:\n- \u57FA\u4E8E\u573A\u666F\u7684\u5EFA\u8BAE\
-    \u751F\u6210\n- \u4E00\u952E\u5E94\u7528\u63A8\u8350\u8BBE\u7F6E\n- \u9690\u79C1\
-    \u4FDD\u62A4\u7B49\u7EA7\u5EFA\u8BAE\n- \u654F\u611F\u533A\u57DF\u9AD8\u4EAE\u63D0\
-    \u793A\n- \u6279\u91CF\u5904\u7406\u5EFA\u8BAE\n"
-  id: ISSUE-VS004~c6
-  name: "AI\u8F85\u52A9\u8131\u654F\u5EFA\u8BAE"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/server/src/services/ai/desensitizationAdvisor.ts
-      - apps/mobile/src/components/PrivacyEditor/AIRecommendations.tsx
-      prompt: "\u68C0\u67E5AI\u8F85\u52A9\u8131\u654F\u5EFA\u8BAE\uFF0C\u9A8C\u8BC1\
-        \u6709\u573A\u666F\u5EFA\u8BAE\u3001\u4E00\u952E\u5E94\u7528\u3001\u7B49\u7EA7\
-        \u5EFA\u8BAE\u548C\u9AD8\u4EAE\u63D0\u793A\u529F\u80FD"
-current_task: TASK-1776137892-1798
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: "\u8BC6\u522B\u5F15\u64CE:\n- \u4EBA\u8138\u8BC6\u522B\u548C\u5B9A\u4F4D\
+      \n- \u8F66\u724C\u53F7\u7801\u68C0\u6D4B\n- \u6587\u5B57\u548C\u5730\u5740\u6807\
+      \u8BC6\u8BC6\u522B\n- \u654F\u611F\u7269\u4F53\u68C0\u6D4B\n- \u7F6E\u4FE1\u5EA6\
+      \u8BC4\u5206\n"
+    id: ISSUE-VS004~c1
+    name: "AI\u654F\u611F\u5185\u5BB9\u8BC6\u522B"
+    verification:
+      ai:
+        context_files:
+          - apps/server/src/services/ai/sensitiveContentDetection.ts
+          - apps/server/src/services/ai/visionAnalysis.ts
+        prompt: "\u68C0\u67E5AI\u654F\u611F\u5185\u5BB9\u8BC6\u522B\uFF0C\u9A8C\u8BC1\
+          \u6709\u4EBA\u8138\u3001\u8F66\u724C\u3001\u6587\u5B57\u3001\u7269\u4F53\u68C0\
+          \u6D4B\u548C\u7F6E\u4FE1\u5EA6\u8BC4\u5206\u529F\u80FD"
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: "\u5904\u7406\u7B97\u6CD5:\n- \u9AD8\u65AF\u6A21\u7CCA\u5904\u7406\n\
+      - \u9A6C\u8D5B\u514B\u6548\u679C\n- \u533A\u57DF\u50CF\u7D20\u5316\n- \u667A\u80FD\
+      \u80CC\u666F\u66FF\u6362\n- \u8FB9\u7F18\u7FBD\u5316\u5904\u7406\n"
+    id: ISSUE-VS004~c2
+    name: "\u8131\u654F\u5904\u7406\u7B97\u6CD5"
+    status: pending
+    verification:
+      ai:
+        context_files:
+          - apps/server/src/services/image/desensitization.ts
+          - apps/server/src/utils/imageProcessing.ts
+        prompt: "\u68C0\u67E5\u8131\u654F\u5904\u7406\u7B97\u6CD5\uFF0C\u9A8C\u8BC1\u6709\
+          \u6A21\u7CCA\u3001\u9A6C\u8D5B\u514B\u3001\u50CF\u7D20\u5316\u3001\u80CC\u666F\
+          \u66FF\u6362\u548C\u8FB9\u7F18\u5904\u7406\u5B9E\u73B0"
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: "\u7F16\u8F91\u754C\u9762:\n- \u68C0\u6D4B\u533A\u57DF\u53EF\u89C6\u5316\
+      \u6807\u8BB0\n- \u8131\u654F\u6548\u679C\u5B9E\u65F6\u9884\u89C8\n- \u624B\u52A8\
+      \u8C03\u6574\u8131\u654F\u533A\u57DF\n- \u8131\u654F\u5F3A\u5EA6\u8C03\u8282\n\
+      - \u64A4\u9500\u548C\u91CD\u505A\u529F\u80FD\n"
+    id: ISSUE-VS004~c3
+    name: "\u8131\u654F\u9884\u89C8\u548C\u7F16\u8F91"
+    status: pending
+    verification:
+      ai:
+        context_files:
+          - apps/mobile/src/screens/VisionShare/PrivacyEditor.tsx
+          - apps/mobile/src/components/PrivacyEditor/DesensitizationControls.tsx
+        prompt: "\u68C0\u67E5\u8131\u654F\u7F16\u8F91\u754C\u9762\uFF0C\u9A8C\u8BC1\u6709\
+          \u533A\u57DF\u6807\u8BB0\u3001\u5B9E\u65F6\u9884\u89C8\u3001\u624B\u52A8\u8C03\
+          \u6574\u548C\u5F3A\u5EA6\u8C03\u8282\u529F\u80FD"
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: "\u7B56\u7565\u7CFB\u7EDF:\n- \u9884\u8BBE\u8131\u654F\u6A21\u677F\
+      (\u4E25\u683C/\u6807\u51C6/\u5BBD\u677E)\n- \u81EA\u5B9A\u4E49\u8131\u654F\u89C4\
+      \u5219\n- \u81EA\u52A8\u8131\u654F\u5F00\u5173\n- \u767D\u540D\u5355\u8BBE\u7F6E\
+      \n- \u573A\u666F\u5316\u7B56\u7565\u63A8\u8350\n"
+    id: ISSUE-VS004~c4
+    name: "\u8131\u654F\u7B56\u7565\u914D\u7F6E"
+    status: pending
+    verification:
+      ai:
+        context_files:
+          - apps/server/src/services/privacy/desensitizationPolicy.ts
+          - apps/mobile/src/screens/Settings/PrivacySettings.tsx
+        prompt: "\u68C0\u67E5\u8131\u654F\u7B56\u7565\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u6709\
+          \u6A21\u677F\u3001\u81EA\u5B9A\u4E49\u89C4\u5219\u3001\u81EA\u52A8\u5F00\u5173\
+          \u3001\u767D\u540D\u5355\u548C\u7B56\u7565\u63A8\u8350\u529F\u80FD"
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: "\u62A5\u544A\u529F\u80FD:\n- \u68C0\u6D4B\u5230\u7684\u654F\u611F\u9879\
+      \u5217\u8868\n- \u8131\u654F\u5904\u7406\u65E5\u5FD7\n- \u9690\u79C1\u98CE\u9669\
+      \u8BC4\u7EA7\n- \u5904\u7406\u524D\u540E\u5BF9\u6BD4\n- \u62A5\u544A\u5BFC\u51FA\
+      \u548C\u5206\u4EAB\n"
+    id: ISSUE-VS004~c5
+    name: "\u9690\u79C1\u62A5\u544A\u751F\u6210"
+    status: pending
+    verification:
+      ai:
+        context_files:
+          - apps/mobile/src/components/PrivacyReport/
+          - apps/server/src/services/privacy/privacyReport.ts
+        prompt: "\u68C0\u67E5\u9690\u79C1\u62A5\u544A\u751F\u6210\uFF0C\u9A8C\u8BC1\u6709\
+          \u654F\u611F\u9879\u5217\u8868\u3001\u5904\u7406\u65E5\u5FD7\u3001\u98CE\u9669\
+          \u8BC4\u7EA7\u548C\u5BF9\u6BD4\u5C55\u793A\u529F\u80FD"
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: "\u667A\u80FD\u5EFA\u8BAE:\n- \u57FA\u4E8E\u573A\u666F\u7684\u5EFA\u8BAE\
+      \u751F\u6210\n- \u4E00\u952E\u5E94\u7528\u63A8\u8350\u8BBE\u7F6E\n- \u9690\u79C1\
+      \u4FDD\u62A4\u7B49\u7EA7\u5EFA\u8BAE\n- \u654F\u611F\u533A\u57DF\u9AD8\u4EAE\u63D0\
+      \u793A\n- \u6279\u91CF\u5904\u7406\u5EFA\u8BAE\n"
+    id: ISSUE-VS004~c6
+    name: "AI\u8F85\u52A9\u8131\u654F\u5EFA\u8BAE"
+    status: pending
+    verification:
+      ai:
+        context_files:
+          - apps/server/src/services/ai/desensitizationAdvisor.ts
+          - apps/mobile/src/components/PrivacyEditor/AIRecommendations.tsx
+        prompt: "\u68C0\u67E5AI\u8F85\u52A9\u8131\u654F\u5EFA\u8BAE\uFF0C\u9A8C\u8BC1\
+          \u6709\u573A\u666F\u5EFA\u8BAE\u3001\u4E00\u952E\u5E94\u7528\u3001\u7B49\u7EA7\
+          \u5EFA\u8BAE\u548C\u9AD8\u4EAE\u63D0\u793A\u529F\u80FD"
+current_task: null
 description: "\u5B9E\u73B0VisionShare\u573A\u666F\u7684AI\u9690\u79C1\u8131\u654F\u5904\
   \u7406\u529F\u80FD\u3002\u4F7F\u7528AI\u56FE\u50CF\u5206\u6790\u548CVision API\n\
   \u81EA\u52A8\u8BC6\u522B\u7167\u7247\u4E2D\u7684\u654F\u611F\u4FE1\u606F(\u4EBA\u8138\
@@ -146,8 +146,8 @@ id: ISSUE-VS004
 issue_number: 704
 logic: sufficient_necessary
 prerequisites:
-- ISSUE-VS003
-- ISSUE-AI005
+  - ISSUE-VS003
+  - ISSUE-AI005
 slug: ai-privacy-desensitization
-status: implementing
+status: stuck
 title: "AI\u9690\u79C1\u8131\u654F\u5904\u7406"

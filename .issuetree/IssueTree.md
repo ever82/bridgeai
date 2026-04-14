@@ -134,13 +134,13 @@ flowchart TD
         VS001[❌ ISSUE-VS001<br/>VisionShare需求发布]
         VS002[🟡 ISSUE-VS002<br/>附近任务查询与接单]
         VS003[❌ ISSUE-VS003<br/>相机拍照与上传]
-        VS004[🔵 ISSUE-VS004<br/>AI隐私脱敏处理]
+        VS004[❌ ISSUE-VS004<br/>AI隐私脱敏处理]
         VS005[🔍 ISSUE-VS005<br/>照片查看与积分支付]
 =======
         VS001[💻 ISSUE-VS001<br/>VisionShare需求发布]
         VS002[🟡 ISSUE-VS002<br/>附近任务查询与接单]
         VS003[🟡 ISSUE-VS003<br/>相机拍照与上传]
-        VS004[🟡 ISSUE-VS004<br/>AI隐私脱敏处理]
+        VS004[❌ ISSUE-VS004<br/>AI隐私脱敏处理]
         VS005[💻 ISSUE-VS005<br/>照片查看与积分支付]
 >>>>>>> issue/issue-job002
         VS006[🟡 ISSUE-VS006<br/>AI相册智能检索与历史查询]
@@ -149,7 +149,7 @@ flowchart TD
 
     subgraph Date["💕 AgentDate场景"]
         DATE001[🟡 ISSUE-DATE001<br/>交友画像配置]
-        DATE002[🟡 ISSUE-DATE002<br/>Agent主动匹配推荐]
+        DATE002[💻 ISSUE-DATE002<br/>Agent主动匹配推荐]
         DATE003[🟢 ISSUE-DATE003<br/>Agent间对话匹配]
 <<<<<<< HEAD
         DATE004[🔵 ISSUE-DATE004<br/>双向同意引荐机制]

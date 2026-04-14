@@ -44,7 +44,7 @@ criteria:
           - apps/server/src/services/notificationService.ts
           - apps/server/src/events/reviewNotificationHandlers.ts
         prompt: 检查评价通知系统，验证有新评价、待评价、差评等场景的通知触发逻辑
-current_task: TASK-2
+current_task: null
 description: |
   实现评分与评价系统的业务逻辑部分，包括评价与信用分联动机制、
   评价相关的通知与提醒功能。本Issue是ISSUE-CR002的拆分部分，专注于业务逻辑实现。
