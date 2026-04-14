@@ -65,7 +65,7 @@ flowchart TD
         M001b[✂️ ISSUE-M001b<br/>实时查询执行引擎]
         M002[❌ ISSUE-M002<br/>Agent智能筛选排序]
         M003[💻 ISSUE-M003<br/>匹配度算法实现]
-        M004[✅ ISSUE-M004<br/>匹配结果推送通知]
+        M004[🔍 ISSUE-M004<br/>匹配结果推送通知]
     end
 
     subgraph Comm["💬 通信层 - Communication"]
@@ -95,10 +95,10 @@ flowchart TD
     end
 
     subgraph VS["📷 VisionShare场景"]
-        VS001[❌ ISSUE-VS001<br/>VisionShare需求发布]
+        VS001[🔍 ISSUE-VS001<br/>VisionShare需求发布]
         VS002[🟡 ISSUE-VS002<br/>附近任务查询与接单]
-        VS003[❌ ISSUE-VS003<br/>相机拍照与上传]
-        VS004[🔵 ISSUE-VS004<br/>AI隐私脱敏处理]
+        VS003[🟡 ISSUE-VS003<br/>相机拍照与上传]
+        VS004[🟡 ISSUE-VS004<br/>AI隐私脱敏处理]
         VS005[🔍 ISSUE-VS005<br/>照片查看与积分支付]
         VS006[🟡 ISSUE-VS006<br/>AI相册智能检索与历史查询]
         VS007[🟡 ISSUE-VS007<br/>本地相册AI智能检索]
@@ -113,7 +113,7 @@ flowchart TD
 
     subgraph Job["💼 AgentJob场景"]
         JOB001[🟡 ISSUE-JOB001<br/>求职者画像与简历]
-        JOB002[🔵 ISSUE-JOB002<br/>招聘方职位发布]
+        JOB002[🟡 ISSUE-JOB002<br/>招聘方职位发布]
         JOB003[🟡 ISSUE-JOB003<br/>简历智能匹配筛选]
         JOB004[🟡 ISSUE-JOB004<br/>薪资协商与面试安排]
     end

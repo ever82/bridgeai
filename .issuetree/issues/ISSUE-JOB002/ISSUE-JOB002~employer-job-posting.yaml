@@ -134,7 +134,7 @@ criteria:
       prompt: "\u68C0\u67E5\u516C\u53F8\u8BA4\u8BC1\u7CFB\u7EDF\uFF0C\u9A8C\u8BC1\u6709\
         CompanyVerification\u6D41\u7A0B\uFF0C\u5305\u542B\u4F01\u4E1A\u90AE\u7BB1\u9A8C\
         \u8BC1\u548C\u8425\u4E1A\u6267\u7167\u5BA1\u6838\u529F\u80FD"
-current_task: null
+current_task: TASK-1776137823-8968
 description: "\u5B9E\u73B0\u62DB\u8058\u65B9Agent\u7684\u804C\u4F4D\u53D1\u5E03\u4E0E\
   \u7BA1\u7406\u529F\u80FD\u3002\u62DB\u8058\u65B9\u901A\u8FC7\u81EA\u7136\u8BED\u8A00\
   \n\u6216\u7ED3\u6784\u5316\u8868\u5355\u63CF\u8FF0\u804C\u4F4D\u9700\u6C42\u3001\
@@ -149,5 +149,5 @@ prerequisites:
 - ISSUE-C006
 - ISSUE-AI003
 slug: employer-job-posting
-status: pending
+status: implementing
 title: "\u62DB\u8058\u65B9\u804C\u4F4D\u53D1\u5E03"

@@ -144,7 +144,7 @@ criteria:
         \u9A8C\u8BC1\u6709\u51B3\u7B56\u7B49\u5F85\u3001\u6210\u529F\u5E86\u795D\u3001\
         \u804A\u5929\u5165\u53E3\u3001\u5386\u53F2\u5217\u8868\u3001\u8BE6\u60C5\u67E5\
         \u770B\u548C\u91CD\u65B0\u5339\u914D\u529F\u80FD"
-current_task: null
+current_task: TASK-1776137685-7249
 description: "\u5B9E\u73B0AgentDate\u573A\u666F\u7684\u53CC\u5411\u540C\u610F\u5F15\
   \u8350\u673A\u5236\u3002\u5728Agent\u5BF9\u8BDD\u8BC4\u4F30\u5B8C\u6210\u540E\uFF0C\
   \n\u7CFB\u7EDF\u5411\u53CC\u65B9\u7528\u6237\u5C55\u793A\u5BF9\u8BDD\u6458\u8981\
@@ -159,5 +159,5 @@ logic: sufficient_necessary
 prerequisites:
 - ISSUE-DATE003
 slug: mutual-consent-referral
-status: pending
+status: implementing
 title: "\u53CC\u5411\u540C\u610F\u5F15\u8350\u673A\u5236"

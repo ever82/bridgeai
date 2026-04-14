@@ -1,5 +1,5 @@
 task:
-  id: TASK-1776136641-4106
+  id: TASK-1776136954-2346
   issue_id: ISSUE-VS001
   result: null
   retry:
@@ -7,11 +7,11 @@ task:
     next_task: null
     previous_task: null
   session:
-    claude_session_id: 4ced4e4b-c7b4-405c-98dc-f644a7ec6043
-    claude_session_name: TASK-1776136641-4106
+    claude_session_id: afd098ea-1882-439e-a68b-097e3a9c6430
+    claude_session_name: TASK-1776136954-2346
     resumed_at: null
-    started_at: '2026-04-14T11:17:25.323799+08:00'
-    tmux_session: task-task-1776136641-4106
+    started_at: '2026-04-14T11:22:38.590478+08:00'
+    tmux_session: task-task-1776136954-2346
     worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-VS001
   status: failed
   timeout_minutes: 30

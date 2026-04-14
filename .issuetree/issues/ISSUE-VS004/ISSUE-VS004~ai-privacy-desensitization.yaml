@@ -134,7 +134,7 @@ criteria:
       prompt: "\u68C0\u67E5AI\u8F85\u52A9\u8131\u654F\u5EFA\u8BAE\uFF0C\u9A8C\u8BC1\
         \u6709\u573A\u666F\u5EFA\u8BAE\u3001\u4E00\u952E\u5E94\u7528\u3001\u7B49\u7EA7\
         \u5EFA\u8BAE\u548C\u9AD8\u4EAE\u63D0\u793A\u529F\u80FD"
-current_task: null
+current_task: TASK-1776137892-1798
 description: "\u5B9E\u73B0VisionShare\u573A\u666F\u7684AI\u9690\u79C1\u8131\u654F\u5904\
   \u7406\u529F\u80FD\u3002\u4F7F\u7528AI\u56FE\u50CF\u5206\u6790\u548CVision API\n\
   \u81EA\u52A8\u8BC6\u522B\u7167\u7247\u4E2D\u7684\u654F\u611F\u4FE1\u606F(\u4EBA\u8138\
@@ -149,5 +149,5 @@ prerequisites:
 - ISSUE-VS003
 - ISSUE-AI005
 slug: ai-privacy-desensitization
-status: pending
+status: implementing
 title: "AI\u9690\u79C1\u8131\u654F\u5904\u7406"
