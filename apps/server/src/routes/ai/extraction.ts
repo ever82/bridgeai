@@ -11,6 +11,7 @@ import { demandExtractionService, DemandExtractionRequest } from '../../services
 import { demandToL2Mapper, MappingResult } from '../../services/ai/mappers/demandToL2Mapper';
 import { extractionValidator, ValidationReport } from '../../services/ai/validators/extractionValidator';
 import { extractL2FromL3, ExtractionResult } from '../../services/ai/extractionService';
+import { processNaturalLanguageDemand } from '../../services/ai/consumerDemandAI';
 import { logger } from '../../utils/logger';
 import offerExtractionRoutes from './offerExtraction';
 
@@ -735,5 +736,84 @@ interface BatchExtractionError {
   success: false;
   error: string;
 }
+
+/**
+ * POST /api/v1/ai/extract-consumer-demand
+ * Consumer demand extraction (AD001 - AI Integration)
+ * 消费者需求 AI 提取端点
+ */
+router.post('/extract-consumer-demand', async (req: Request, res: Response) => {
+  const startTime = Date.now();
+  const { text, agentId, options } = req.body;
+  const userId = req.user?.id;
+
+  try {
+    logger.info('Consumer demand extraction request received', {
+      textLength: text?.length,
+      agentId,
+      userId,
+    });
+
+    // Validate request
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Text is required',
+        },
+      });
+    }
+
+    // Process natural language demand
+    const result = await processNaturalLanguageDemand(text, {
+      userId,
+      requireConfirmation: options?.requireConfirmation ?? true,
+      previousContext: options?.context,
+    });
+
+    const response = {
+      success: true,
+      data: {
+        extractedData: result.extractedData,
+        needsClarification: result.needsClarification,
+        clarificationQuestions: result.clarificationQuestions,
+        summary: result.summary,
+        agentId,
+      },
+      meta: {
+        requestId: `${userId}-${Date.now()}`,
+        latencyMs: Date.now() - startTime,
+        version: '1.0.0',
+      },
+    };
+
+    logger.info('Consumer demand extraction completed', {
+      confidence: result.extractedData.confidence,
+      needsClarification: result.needsClarification,
+      latencyMs: response.meta.latencyMs,
+    });
+
+    return res.status(200).json(response);
+  } catch (error) {
+    logger.error('Consumer demand extraction failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      agentId,
+      userId,
+    });
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'EXTRACTION_FAILED',
+        message: error instanceof Error ? error.message : 'Extraction failed',
+      },
+      meta: {
+        requestId: `${userId}-${Date.now()}`,
+        latencyMs: Date.now() - startTime,
+      },
+    });
+  }
+});
 
 export default router;

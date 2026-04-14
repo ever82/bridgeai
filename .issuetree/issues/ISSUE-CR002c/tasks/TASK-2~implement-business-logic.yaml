@@ -1,0 +1,30 @@
+id: TASK-2
+issue_id: ISSUE-CR002c
+title: 实现评分与评价系统业务逻辑
+description: |
+  实现ISSUE-CR002c的业务逻辑部分：
+  1. 评价与信用分联动机制（好评加分、差评扣分、回复率影响）
+  2. 评价通知系统（新评价、待评价提醒、差评预警）
+
+  需要创建/修改：
+  - apps/server/src/events/reviewEventHandlers.ts
+  - apps/server/src/events/reviewNotificationHandlers.ts
+  - apps/server/src/services/creditScoreService.ts
+  - apps/server/src/services/notificationService.ts
+  - 相关测试文件
+
+  验收标准：
+  - 好评增加信用分，差评扣除信用分
+  - 评价数量影响信用
+  - 评价回复率计入信用
+  - 新评价推送通知
+  - 待评价提醒（交易完成后24小时）
+  - 差评预警通知
+status: completed
+created_at: '2026-04-14'
+time_limit_minutes: 90
+session_start: '2026-04-13T17:03:02.875Z'
+session_end: '2026-04-13T17:15:55.692Z'
+execution_time_minutes: 90
+result: success
+completed_at: '2026-04-13T17:15:55.693Z'

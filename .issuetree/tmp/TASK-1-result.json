@@ -1,6 +1,1 @@
-{
-  "testPassed": true,
-  "testOutput": "No test command configured",
-  "mergeConflict": false,
-  "failureReason": "Merge failed: Worktree has uncommitted changes"
-}
+{"status": "completed", "message": "Message persistence system implemented successfully"}

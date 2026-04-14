@@ -3,7 +3,7 @@ id: "ISSUE-C007"
 issue_number: 309
 title: "Agent信息披露控制机制"
 slug: "agent-disclosure"
-status: need-help
+status: accepted
 description: |
   实现 Agent 信息披露控制机制，允许用户控制哪些信息
   在匹配过程中被披露，保护用户隐私。

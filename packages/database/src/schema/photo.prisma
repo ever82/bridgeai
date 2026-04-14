@@ -1,0 +1,284 @@
+// Photo Storage Schema for VisionShare
+// This schema defines the database structure for photo storage and management
+
+model Photo {
+  id            String    @id @default(uuid())
+  originalName  String    @map("original_name")
+  url           String
+  thumbnailUrl  String?   @map("thumbnail_url")
+  size          Int       // Size in bytes
+  width         Int
+  height        Int
+  format        String    // jpeg, png, webp, etc.
+  mimeType      String    @map("mime_type")
+  hash          String    @unique // SHA256 hash for deduplication
+
+  // Metadata
+  description   String?
+  tags          String[]  // Array of tags
+  exif          Json?     // EXIF data as JSON
+
+  // Location info (if available)
+  latitude      Float?
+  longitude     Float?
+
+  // Device info
+  device        String?
+  deviceModel   String?   @map("device_model")
+  os            String?
+  osVersion     String?   @map("os_version")
+  appVersion    String?   @map("app_version")
+
+  // Source tracking
+  source        PhotoSource @default(CAMERA) // CAMERA, GALLERY, IMPORT
+  sourceUrl     String?   @map("source_url") // Original source if imported
+
+  // Storage lifecycle
+  storageTier   StorageTier @default(HOT) @map("storage_tier")
+  lastAccessed  DateTime  @default(now()) @map("last_accessed")
+  accessCount   Int       @default(0) @map("access_count")
+  expiresAt     DateTime? @map("expires_at")
+
+  // Security
+  securityCheckStatus SecurityStatus @default(PENDING) @map("security_check_status")
+  securityViolations  String[]    @map("security_violations") // Any violations found
+  faceCount       Int?        @map("face_count")
+  isBlurred       Boolean     @default(false) @map("is_blurred")
+
+  // Relations
+  userId        String    @map("user_id")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  taskId        String?   @map("task_id")
+  task          Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at") // Soft delete
+
+  // Indexes
+  @@index([userId, createdAt])
+  @@index([taskId])
+  @@index([hash])
+  @@index([storageTier, lastAccessed])
+  @@index([securityCheckStatus])
+  @@map("photos")
+}
+
+// Photo metadata for quick access (caching layer)
+model PhotoMetadata {
+  id            String    @id @default(uuid())
+  photoId       String    @unique @map("photo_id")
+  photo         Photo     @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  // Quick access fields (denormalized for performance)
+  url           String
+  thumbnailUrl  String?   @map("thumbnail_url")
+  width         Int
+  height        Int
+  size          Int
+  format        String
+
+  // Usage stats
+  downloadCount Int       @default(0) @map("download_count")
+  shareCount    Int       @default(0) @map("share_count")
+  viewCount     Int       @default(0) @map("view_count")
+
+  // CDN
+  cdnUrl        String?   @map("cdn_url")
+  cdnStatus     CdnStatus @default(PENDING) @map("cdn_status")
+
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([photoId])
+  @@map("photo_metadata")
+}
+
+// Photo albums/collections
+model PhotoAlbum {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  coverPhotoId String?  @map("cover_photo_id")
+
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relations
+  photos      PhotoInAlbum[]
+
+  // Settings
+  isPublic    Boolean   @default(false) @map("is_public")
+  allowDownload Boolean @default(true) @map("allow_download")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId, createdAt])
+  @@map("photo_albums")
+}
+
+// Junction table for photos in albums
+model PhotoInAlbum {
+  id        String    @id @default(uuid())
+  albumId   String    @map("album_id")
+  album     PhotoAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  photoId   String    @map("photo_id")
+  photo     Photo     @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  order     Int       @default(0) // Position in album
+  addedAt   DateTime  @default(now()) @map("added_at")
+
+  @@unique([albumId, photoId])
+  @@index([albumId, order])
+  @@map("photos_in_albums")
+}
+
+// Upload sessions for tracking chunked uploads
+model UploadSession {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+
+  originalName  String    @map("original_name")
+  fileSize      Int       @map("file_size")
+  mimeType      String    @map("mime_type")
+
+  totalChunks   Int       @map("total_chunks")
+  receivedChunks Int     @default(0) @map("received_chunks")
+  chunkStatus   Json      @map("chunk_status") // Array of received chunk indices
+
+  status        UploadStatus @default(PENDING)
+  photoId       String?   @map("photo_id") // Linked photo when completed
+
+  // Resume info
+  resumeToken   String?   @unique @map("resume_token")
+  expiresAt     DateTime  @map("expires_at")
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId, status])
+  @@index([resumeToken])
+  @@map("upload_sessions")
+}
+
+// Storage configuration per user/tenant
+model StorageConfig {
+  id            String    @id @default(uuid())
+  userId        String?   @unique @map("user_id") // null for default config
+
+  provider      StorageProvider @default(MINIO)
+  bucket        String
+  region        String?
+  endpoint      String?
+  cdnDomain     String?   @map("cdn_domain")
+
+  // Lifecycle rules (JSON)
+  lifecycleRules Json     @map("lifecycle_rules")
+
+  // Quotas
+  maxStorageSize  BigInt  @map("max_storage_size") // bytes, 0 = unlimited
+  maxFileSize     Int     @map("max_file_size")    // bytes
+  maxPhotos       Int     @map("max_photos")        // 0 = unlimited
+
+  // Usage tracking
+  usedStorage   BigInt    @default(0) @map("used_storage")
+  photoCount    Int       @default(0) @map("photo_count")
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("storage_configs")
+}
+
+// Storage audit log
+model StorageAuditLog {
+  id            String    @id @default(uuid())
+  photoId       String?   @map("photo_id")
+  userId        String    @map("user_id")
+
+  action        StorageAction
+  ipAddress     String?   @map("ip_address")
+  userAgent     String?   @map("user_agent")
+
+  metadata      Json?     // Additional context
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([photoId, createdAt])
+  @@index([userId, createdAt])
+  @@map("storage_audit_logs")
+}
+
+// Enums
+enum PhotoSource {
+  CAMERA
+  GALLERY
+  IMPORT
+  SHARE
+}
+
+enum StorageTier {
+  HOT     // Frequently accessed, standard storage
+  WARM    // Infrequently accessed, cheaper storage
+  COLD    // Archive, glacier/cold storage
+}
+
+enum SecurityStatus {
+  PENDING
+  PASSED
+  FAILED
+  WARNING
+}
+
+enum CdnStatus {
+  PENDING
+  PROCESSING
+  ACTIVE
+  FAILED
+  INVALIDATED
+}
+
+enum UploadStatus {
+  PENDING
+  UPLOADING
+  PAUSED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum StorageProvider {
+  S3
+  OSS
+  MINIO
+  GCS
+  AZURE
+}
+
+enum StorageAction {
+  UPLOAD
+  DOWNLOAD
+  DELETE
+  VIEW
+  SHARE
+  UPDATE_METADATA
+  TRANSFER_TIER
+  RESTORE
+}
+
+// Relations placeholder - assuming these models exist in other schema files
+model User {
+  id        String    @id
+  photos    Photo[]
+  albums    PhotoAlbum[]
+  // ... other fields from main user schema
+}
+
+model Task {
+  id        String    @id
+  photos    Photo[]
+  // ... other fields from task schema
+}

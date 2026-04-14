@@ -11,6 +11,8 @@ import { logger } from '../../../utils/logger';
  * AgentJob Specific Fields
  */
 export interface AgentJobFields {
+  title?: string;
+  description?: string;
   jobType: 'hire' | 'seek' | '';
   position: string;
   jobCategory: string;

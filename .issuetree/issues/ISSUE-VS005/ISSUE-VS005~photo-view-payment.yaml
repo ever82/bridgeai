@@ -1,8 +1,20 @@
+<<<<<<< HEAD
 created_at: '2026-04-08'
 criteria: []
 current_task: null
 description: '实现VisionShare场景的照片查看和积分支付功能。需求方可以浏览供给方上传的照片，
 
+=======
+---
+id: "ISSUE-VS005"
+issue_number: 705
+title: "照片查看与积分支付"
+slug: "photo-view-payment"
+type: "epic"
+status: accepted
+description: |
+  实现VisionShare场景的照片查看和积分支付功能。需求方可以浏览供给方上传的照片，
+>>>>>>> issue/issue-job002
   使用积分支付解锁高清原图查看权限。支持支付确认、交易记录、退款申诉等完整流程。
 
 

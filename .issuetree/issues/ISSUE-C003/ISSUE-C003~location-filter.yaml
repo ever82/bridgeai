@@ -155,11 +155,27 @@ description: '实现基于地理位置的过滤系统，支持按省市区、
   '
 id: ISSUE-C003
 issue_number: 305
+<<<<<<< HEAD
+=======
+title: 地域过滤系统
+slug: location-filter
+status: implemented
+description: |
+  实现基于地理位置的过滤系统，支持按省市区、
+  距离范围、地理围栏等方式筛选 Agent。
+prerequisites:
+  - ISSUE-C002b
+created_at: '2026-04-08'
+>>>>>>> issue/issue-job002
 logic: sufficient_necessary
 prerequisites:
 - ISSUE-C002b
 slug: location-filter
 started_at: '2026-04-10T17:28:05.046Z'
+<<<<<<< HEAD
 status: accepted
 stuck_reason: start_failed
 title: 地域过滤系统
+=======
+completed_at: '2026-04-10T17:48:49.813Z'
+>>>>>>> issue/issue-job002

@@ -17,20 +17,11 @@ datasource db {
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
-  emailVerified Boolean   @default(false) @map("email_verified")
   passwordHash  String    @map("password_hash")
   name          String?
-  displayName   String?   @map("display_name")
   avatarUrl     String?   @map("avatar_url")
-  bio           String?
-  website       String?
-  location      String?
-  phone         String?    /// @encrypted - PII field
-  phoneVerified Boolean   @default(false) @map("phone_verified")
+  phone         String?
   status        UserStatus @default(ACTIVE)
-  privacySettings Json?   @map("privacy_settings") // Profile visibility, online status, etc.
-  lastLoginAt   DateTime? @map("last_login_at")
-  loginAttempts Int       @default(0) @map("login_attempts")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
@@ -40,9 +31,9 @@ model User {
   ratingsGiven  Rating[]  @relation("Rater")
   ratingsReceived Rating[] @relation("Ratee")
   creditRecords CreditRecord[]
-  creditScore   CreditScore?
   transactions  Transaction[]
   connections   Connection[]
+<<<<<<< HEAD
   devices       UserDevice[]
   blockedUsers  BlockedUser[] @relation("BlockingUser")
   blockedBy     BlockedUser[] @relation("BlockedByUser")
@@ -53,6 +44,8 @@ model User {
   pushTokens    PushToken[]
   savedFilters  SavedFilter[]
   sceneTemplates SceneTemplate[]
+=======
+>>>>>>> issue/issue-job002
 
   @@map("users")
 }
@@ -72,8 +65,6 @@ model Agent {
   userId      String     @map("user_id")
   type        AgentType
   name        String
-  description String?
-  status      AgentStatus @default(DRAFT)
   config      Json?
   latitude    Float?
   longitude   Float?
@@ -90,23 +81,13 @@ model Agent {
 
   @@index([userId])
   @@index([type])
-  @@index([status])
   @@index([latitude, longitude])
   @@map("agents")
 }
 
 enum AgentType {
-  VISIONSHARE @map("visionshare")
-  AGENTDATE   @map("agentdate")
-  AGENTJOB    @map("agentjob")
-  AGENTAD     @map("agentad")
-}
-
-enum AgentStatus {
-  DRAFT     @map("draft")
-  ACTIVE    @map("active")
-  PAUSED    @map("paused")
-  ARCHIVED  @map("archived")
+  DEMAND
+  SUPPLY
 }
 
 // ============================================
@@ -235,7 +216,7 @@ model Message {
   id              String        @id @default(uuid())
   conversationId  String        @map("conversation_id")
   senderId        String        @map("sender_id")
-  content         String    /// @encrypted - Message content encryption
+  content         String
   type            MessageType   @default(TEXT)
   attachments     Json?
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -324,13 +305,7 @@ model AgentProfile {
   l2Data    Json     @map("l2_data")  // description, requirements, capabilities
 
   // L3 - 自然语言描述（完整描述）
-  l3Text            String?   @map("l3_text") @db.Text  // 原始文本
-  l3Description     String?   @map("l3_description")    // AI提炼后的描述
-  l3ExtractionData  Json?     @map("l3_extraction_data") // 从L3提取的L2数据
-  l3ExtractionConfidence Float? @map("l3_extraction_confidence") // 提炼置信度
-
-  // 提炼历史
-  extractionHistory Json?     @map("extraction_history") // 提炼历史记录
+  l3Description String? @map("l3_description")
 
   // 场景专属配置
   sceneConfig   Json?    @map("scene_config")
@@ -346,7 +321,6 @@ model AgentProfile {
   @@unique([agentId, sceneId])
   @@index([agentId])
   @@index([sceneId])
-  @@index([l3ExtractionConfidence])
   @@map("agent_profiles")
 }
 
@@ -395,7 +369,7 @@ model ChatMessage {
   chatRoomId   String       @map("chat_room_id")
   senderId     String       @map("sender_id")
   senderType   SenderType   @map("sender_type")  // USER 或 AGENT
-  content      String    /// @encrypted - Chat message content encryption
+  content      String
   type         MessageType  @default(TEXT)
   attachments  Json?
   metadata     Json?        // 包含私聊建议标记等
@@ -472,76 +446,6 @@ model CreditRecord {
   @@map("credit_records")
 }
 
-// 信用分主表 - 存储用户当前信用分
-model CreditScore {
-  id            String      @id @default(uuid())
-  userId        String      @unique @map("user_id")
-  score         Int         @default(600)  // 当前信用分 (0-1000)
-  level         CreditLevel @default(GENERAL) // 信用等级
-  lastUpdatedAt DateTime    @default(now()) @map("last_updated_at")
-  updateCount   Int         @default(0) @map("update_count") // 更新次数(防刷分)
-  nextUpdateAt  DateTime?   @map("next_update_at") // 下次可更新时间
-  createdAt     DateTime    @default(now()) @map("created_at")
-
-  // Relations
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  histories     CreditHistory[]
-  factors       CreditFactor[]
-
-  @@index([userId])
-  @@index([score])
-  @@index([level])
-  @@map("credit_scores")
-}
-
-// 信用分历史记录
-model CreditHistory {
-  id          String   @id @default(uuid())
-  creditId    String   @map("credit_id")
-  oldScore    Int      @map("old_score")
-  newScore    Int      @map("new_score")
-  delta       Int      // 变化值
-  reason      String   // 变化原因
-  sourceType  String   @map("source_type") // PROFILE_UPDATE, TRANSACTION, RATING, SCHEDULED 等
-  sourceId    String?  @map("source_id")   // 关联记录ID
-  metadata    Json?    // 额外信息
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  // Relations
-  creditScore CreditScore @relation(fields: [creditId], references: [id], onDelete: Cascade)
-
-  @@index([creditId])
-  @@index([createdAt])
-  @@map("credit_histories")
-}
-
-// 信用分维度评分
-model CreditFactor {
-  id            String   @id @default(uuid())
-  creditId      String   @map("credit_id")
-  factorType    String   @map("factor_type") // PROFILE, BEHAVIOR, TRANSACTION, SOCIAL
-  subFactor     String   @map("sub_factor")  // 子维度，如 profile_completeness
-  score         Int      // 该维度得分 (0-100)
-  weight        Float    // 权重
-  calculatedAt  DateTime @default(now()) @map("calculated_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-
-  // Relations
-  creditScore   CreditScore @relation(fields: [creditId], references: [id], onDelete: Cascade)
-
-  @@unique([creditId, factorType, subFactor])
-  @@index([creditId])
-  @@index([factorType])
-  @@map("credit_factors")
-}
-
-enum CreditLevel {
-  EXCELLENT @map("excellent") // 优秀 900-1000
-  GOOD      @map("good")      // 良好 750-899
-  GENERAL   @map("general")   // 一般 600-749
-  POOR      @map("poor")      // 较差 <600
-}
-
 model Transaction {
   id          String          @id @default(uuid())
   userId      String          @map("user_id")
@@ -580,48 +484,43 @@ enum TransactionStatus {
 }
 
 // ============================================
-// 积分系统相关 (Points System)
+// 积分系统
 // ============================================
 
-// 积分账户 - 每个用户有一个积分账户
 model PointsAccount {
   id            String   @id @default(uuid())
   userId        String   @unique @map("user_id")
-  balance       Int      @default(0) // 当前可用余额
-  totalEarned   Int      @default(0) @map("total_earned") // 总获取积分
-  totalSpent    Int      @default(0) @map("total_spent") // 总消耗积分
-  frozenAmount  Int      @default(0) @map("frozen_amount") // 冻结金额（交易担保）
-  version       Int      @default(0) // 乐观锁版本号
+  balance       Int      @default(0)
+  totalEarned   Int      @default(0) @map("total_earned")
+  totalSpent    Int      @default(0) @map("total_spent")
+  frozenAmount  Int      @default(0) @map("frozen_amount")
+  version       Int      @default(0)
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions  PointsTransaction[]
-  freezeRecords PointsFreeze[]
+  freezes       PointsFreeze[]
 
   @@index([userId])
-  @@index([balance])
   @@map("points_accounts")
 }
 
-// 积分交易记录
 model PointsTransaction {
-  id          String              @id @default(uuid())
-  accountId   String              @map("account_id")
-  userId      String              @map("user_id")
-  type        PointsTransactionType // 交易类型
-  amount      Int                 // 交易金额（正数为收入，负数为支出）
-  balanceAfter Int                @map("balance_after") // 交易后余额
-  description String?             // 交易描述
-  scene       SceneCode?          // 关联场景
-  referenceId String?             @map("reference_id") // 关联记录ID（如订单ID）
-  metadata    Json?               // 额外元数据
-  createdAt   DateTime            @default(now()) @map("created_at")
+  id            String                @id @default(uuid())
+  accountId     String                @map("account_id")
+  userId        String                @map("user_id")
+  type          PointsTransactionType
+  amount        Int
+  balanceAfter  Int                   @map("balance_after")
+  description   String?
+  scene         SceneCode?
+  referenceId   String?               @map("reference_id")
+  metadata      String?               @db.Text
+  createdAt     DateTime              @default(now()) @map("created_at")
 
   // Relations
-  account     PointsAccount       @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  freezeRecord PointsFreeze?      // 可选关联的冻结记录
+  account       PointsAccount         @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@index([accountId])
   @@index([userId])
@@ -631,44 +530,38 @@ model PointsTransaction {
   @@map("points_transactions")
 }
 
-// 积分冻结记录（用于交易担保）
 model PointsFreeze {
-  id            String          @id @default(uuid())
-  accountId     String          @map("account_id")
-  transactionId String?         @unique @map("transaction_id") // 关联的交易记录
-  amount        Int             // 冻结金额
-  reason        String          // 冻结原因/用途
-  scene         SceneCode?      // 关联场景
-  referenceId   String?         @map("reference_id") // 关联业务记录ID
-  status        FreezeStatus    @default(FROZEN) // 冻结状态
-  expiresAt     DateTime?       @map("expires_at") // 过期时间（自动解冻）
-  createdAt     DateTime        @default(now()) @map("created_at")
-  updatedAt     DateTime        @updatedAt @map("updated_at")
+  id            String       @id @default(uuid())
+  accountId     String       @map("account_id")
+  amount        Int
+  reason        String
+  scene         SceneCode?
+  referenceId   String?      @map("reference_id")
+  status        FreezeStatus @default(FROZEN)
+  expiresAt     DateTime?    @map("expires_at")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
 
   // Relations
-  account       PointsAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  transaction   PointsTransaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  account       PointsAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@index([accountId])
   @@index([status])
   @@index([expiresAt])
-  @@index([referenceId])
   @@map("points_freezes")
 }
 
 enum PointsTransactionType {
-  EARN        @map("earn")        // 获取积分（任务奖励、注册奖励等）
-  SPEND       @map("spend")       // 消耗积分（查看照片等）
-  RECHARGE    @map("recharge")    // 充值
-  REFUND      @map("refund")      // 退款
-  FROZEN      @map("frozen")      // 冻结
-  UNFROZEN    @map("unfrozen")    // 解冻
-  DEDUCT      @map("deduct")      // 扣除（惩罚）
-  TRANSFER_IN @map("transfer_in")  // 转入
-  TRANSFER_OUT @map("transfer_out") // 转出
+  EARN        @map("earn")
+  SPEND       @map("spend")
+  FROZEN      @map("frozen")
+  UNFROZEN    @map("unfrozen")
+  TRANSFER_IN @map("transfer_in")
+  TRANSFER_OUT @map("transfer_out")
 }
 
 enum FreezeStatus {
+<<<<<<< HEAD
   FROZEN      @map("frozen")      // 冻结中
   USED        @map("used")         // 已使用（完成交易）
   RELEASED    @map("released")     // 已释放（取消交易）
@@ -1183,4 +1076,9 @@ enum SMSStatus {
   SENT      @map("sent")
   DELIVERED @map("delivered")
   FAILED    @map("failed")
+=======
+  FROZEN      @map("frozen")
+  RELEASED    @map("released")
+  USED        @map("used")
+>>>>>>> issue/issue-job002
 }

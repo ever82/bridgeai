@@ -2,7 +2,11 @@ id: ISSUE-AI004
 issue_number: 504
 title: Agent对话生成服务
 slug: agent-dialogue
+<<<<<<< HEAD
 status: accepted
+=======
+status: pending
+>>>>>>> issue/issue-job002
 description: |
   实现Agent对话生成服务，为AI Agent提供智能对话能力，
   支持Agent间的自主沟通、协商、匹配对话，以及Agent与用户

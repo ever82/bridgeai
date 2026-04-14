@@ -1,4 +1,10 @@
 {
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+  "tasks": []
+=======
+>>>>>>> issue/issue-job002
   "tasks": [
     {
       "id": "2fc97f3c",
@@ -9,4 +15,8 @@
       "recurring": true
     }
   ]
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-com001b
+>>>>>>> issue/issue-job002
 }

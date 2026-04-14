@@ -1,10 +1,17 @@
+<<<<<<< HEAD
 # Implementation Task: Implement Message Persistence and History Records
 
 **Issue:** ISSUE-COM002b
+=======
+# Implementation Task: undefined
+
+**Issue:** ISSUE-DATE004
+>>>>>>> issue/issue-job002
 **Task:** TASK-1
 
 ## Description
 
+<<<<<<< HEAD
 Implement the complete message persistence system for BridgeAI including:
 1. Message model design (Prisma schema)
 2. Message sending and storage (Socket handlers)
@@ -16,6 +23,29 @@ Implement the complete message persistence system for BridgeAI including:
 8. Performance optimization (<200ms queries)
 
 This task covers all 8 acceptance criteria from ISSUE-COM002b.
+=======
+实现双向同意引荐机制，包括：
+1. 双向同意状态管理（pending/accepted/rejected/expired）
+2. 引荐结果处理流程
+3. 真人聊天房间创建
+4. 引荐结果通知系统
+5. 引荐记录与管理
+6. 移动端引荐交互界面
+
+涉及文件：
+- apps/server/src/models/MutualConsent.ts
+- apps/server/src/services/dating/consentStateManager.ts
+- apps/server/src/services/dating/referralService.ts
+- apps/server/src/services/dating/consentProcessor.ts
+- apps/server/src/services/dating/humanChatRoomService.ts
+- apps/server/src/services/dating/referralNotificationService.ts
+- apps/server/src/services/dating/referralHistoryService.ts
+- apps/server/src/models/ReferralRecord.ts
+- apps/mobile/src/screens/dating/ReferralScreen.tsx
+- apps/mobile/src/screens/dating/MatchSuccessScreen.tsx
+- apps/mobile/src/screens/dating/ReferralHistoryScreen.tsx
+
+>>>>>>> issue/issue-job002
 
 ## Files to Modify
 

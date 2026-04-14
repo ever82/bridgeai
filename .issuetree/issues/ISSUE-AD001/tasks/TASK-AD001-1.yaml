@@ -1,0 +1,27 @@
+id: TASK-AD001-1
+issue_id: ISSUE-AD001
+title: Implement consumer demand profile configuration for AgentAd scenario
+description: |
+  Implement the complete consumer demand profile configuration module for AgentAd scenario.
+  Includes:
+  1. Consumer Agent creation with AGENT_AD scene
+  2. Product category configuration (multi-level, max 5)
+  3. Budget range settings with disclosure control
+  4. Brand and merchant preferences
+  5. AI demand extraction integration (AI002)
+  6. Demand preview and publish functionality
+status: completed
+priority: high
+estimated_minutes: 90
+created_at: 2026-04-13T00:00:00+08:00
+acceptance_criteria:
+  - AD001-CR01
+  - AD001-CR02
+  - AD001-CR03
+  - AD001-CR04
+  - AD001-CR05
+  - AD001-CR06
+verification:
+  unit_tests: true
+  integration_tests: true
+  test_command: "cd apps/server && npm test -- --testPathPattern='consumerDemand'"

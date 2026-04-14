@@ -1,55 +1,53 @@
 created_at: '2026-04-08'
 criteria:
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: "\u8BC4\u4EF7\u5BF9\u4FE1\u7528\u5206\u7684\u5F71\u54CD:\n- \u6536\u5230\
-    \u597D\u8BC4\u589E\u52A0\u4FE1\u7528\u5206\n- \u6536\u5230\u5DEE\u8BC4\u6263\u9664\
-    \u4FE1\u7528\u5206\n- \u8BC4\u4EF7\u6570\u91CF\u5BF9\u4FE1\u7528\u7684\u5F71\u54CD\
-    \n- \u8BC4\u4EF7\u56DE\u590D\u7387\u8BA1\u5165\u4FE1\u7528\n- \u89E6\u53D1\u4FE1\
-    \u7528\u5206\u91CD\u7B97\u4E8B\u4EF6\n"
-  id: ISSUE-CR002c~c1
-  name: "\u8BC4\u4EF7\u4E0E\u4FE1\u7528\u5206\u8054\u52A8"
-  verification:
-    ai:
-      context_files:
-      - apps/server/src/events/reviewEventHandlers.ts
-      - apps/server/src/services/creditScoreService.ts
-      prompt: "\u68C0\u67E5\u8BC4\u4EF7\u4E0E\u4FE1\u7528\u5206\u8054\u52A8\uFF0C\u9A8C\
-        \u8BC1\u8BC4\u4EF7\u63D0\u4EA4\u540E\u89E6\u53D1\u4FE1\u7528\u5206\u66F4\u65B0\
-        \uFF0C\u786E\u8BA4\u597D\u8BC4/\u5DEE\u8BC4\u5BF9\u4FE1\u7528\u5206\u7684\u5F71\
-        \u54CD\u89C4\u5219"
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: "\u8BC4\u4EF7\u76F8\u5173\u901A\u77E5:\n- \u6536\u5230\u65B0\u8BC4\u4EF7\
-    \u63A8\u9001\u901A\u77E5\n- \u5F85\u8BC4\u4EF7\u63D0\u9192(\u4EA4\u6613\u5B8C\u6210\
-    \u540E24\u5C0F\u65F6)\n- \u8BC4\u4EF7\u56DE\u590D\u901A\u77E5\n- \u5DEE\u8BC4\u9884\
-    \u8B66\u901A\u77E5(\u4FE1\u7528\u5206\u4E0B\u964D\u65F6)\n- \u901A\u77E5\u504F\
-    \u597D\u8BBE\u7F6E\n"
-  id: ISSUE-CR002c~c2
-  name: "\u8BC4\u4EF7\u901A\u77E5\u4E0E\u63D0\u9192"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/server/src/services/notificationService.ts
-      - apps/server/src/events/reviewNotificationHandlers.ts
-      prompt: "\u68C0\u67E5\u8BC4\u4EF7\u901A\u77E5\u7CFB\u7EDF\uFF0C\u9A8C\u8BC1\u6709\
-        \u65B0\u8BC4\u4EF7\u3001\u5F85\u8BC4\u4EF7\u3001\u5DEE\u8BC4\u7B49\u573A\u666F\
-        \u7684\u901A\u77E5\u89E6\u53D1\u903B\u8F91"
-current_task: null
-description: "\u5B9E\u73B0\u8BC4\u5206\u4E0E\u8BC4\u4EF7\u7CFB\u7EDF\u7684\u4E1A\u52A1\
-  \u903B\u8F91\u90E8\u5206\uFF0C\u5305\u62EC\u8BC4\u4EF7\u4E0E\u4FE1\u7528\u5206\u8054\
-  \u52A8\u673A\u5236\u3001\n\u8BC4\u4EF7\u76F8\u5173\u7684\u901A\u77E5\u4E0E\u63D0\
-  \u9192\u529F\u80FD\u3002\u672CIssue\u662FISSUE-CR002\u7684\u62C6\u5206\u90E8\u5206\
-  \uFF0C\u4E13\u6CE8\u4E8E\u4E1A\u52A1\u903B\u8F91\u5B9E\u73B0\u3002\n"
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: |
+      评价对信用分的影响:
+      - 收到好评增加信用分
+      - 收到差评扣除信用分
+      - 评价数量对信用的影响
+      - 评价回复率计入信用
+      - 触发信用分重算事件
+    id: ISSUE-CR002c~c1
+    name: 评价与信用分联动
+    status: completed
+    verification:
+      ai:
+        context_files:
+          - apps/server/src/events/reviewEventHandlers.ts
+          - apps/server/src/services/creditScoreService.ts
+        prompt: 检查评价与信用分联动，验证评价提交后触发信用分更新，确认好评/差评对信用分的影响规则
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: |
+      评价相关通知:
+      - 收到新评价推送通知
+      - 待评价提醒(交易完成后24小时)
+      - 评价回复通知
+      - 差评预警通知(信用分下降时)
+      - 通知偏好设置
+    id: ISSUE-CR002c~c2
+    name: 评价通知与提醒
+    status: completed
+    verification:
+      ai:
+        context_files:
+          - apps/server/src/services/notificationService.ts
+          - apps/server/src/events/reviewNotificationHandlers.ts
+        prompt: 检查评价通知系统，验证有新评价、待评价、差评等场景的通知触发逻辑
+current_task: TASK-2
+description: |
+  实现评分与评价系统的业务逻辑部分，包括评价与信用分联动机制、
+  评价相关的通知与提醒功能。本Issue是ISSUE-CR002的拆分部分，专注于业务逻辑实现。
 estimated_lines: 450
 id: ISSUE-CR002c
 issue_number: 602.3
@@ -57,8 +55,18 @@ logic: sufficient_necessary
 parent_issue: ISSUE-CR002
 part_number: 3
 prerequisites:
-- ISSUE-CR002a
+  - ISSUE-CR002a
 slug: rating-review-business-logic
-status: pending
-title: "\u8BC4\u5206\u4E0E\u8BC4\u4EF7\u7CFB\u7EDF - \u4E1A\u52A1\u903B\u8F91"
+status: completed
+title: 评分与评价系统 - 业务逻辑
 total_parts: 3
+implementation:
+  task_id: TASK-2
+  completed_at: '2026-04-13T17:16:04.599Z'
+  execution_time_minutes: 90
+  result: success
+  notes: All acceptance criteria implemented
+test_passed: true
+test_duration_seconds: 300
+merged_to_master: true
+worktree_path: null

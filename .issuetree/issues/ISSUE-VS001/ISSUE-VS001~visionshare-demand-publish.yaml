@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 created_at: '2026-04-08'
 criteria:
 - coverage:
@@ -180,6 +181,16 @@ criteria:
       test_command: cd apps/mobile && npm test -- --testPathPattern=PublishSuccess
 description: '实现VisionShare场景的需求发布功能。需求方通过AI Agent智能提炼服务，
 
+=======
+---
+id: "ISSUE-VS001"
+issue_number: 701
+title: "VisionShare需求发布"
+slug: "visionshare-demand-publish"
+status: accepted
+description: |
+  实现VisionShare场景的需求发布功能。需求方通过AI Agent智能提炼服务，
+>>>>>>> issue/issue-job002
   发布实时视野共享任务，包括任务描述、预算、地理位置、时间窗口等信息。
 
   支持需求智能分类和标签生成，便于后续匹配推荐。

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # API Load Test Configuration
 # Using k6 for load testing
 # Run with: k6 run perf/api-load-test.yml
@@ -220,3 +221,368 @@ export function teardown(data) {
   console.log('  - Error rate < 1%');
   console.log('  - Availability > 99%');
 }
+=======
+# API Performance Test Report
+
+**Date:** 2026-04-11
+**Issue:** ISSUE-INT002a - Infrastructure Performance Optimization
+**Target:** API P95 < 200ms
+
+## Executive Summary
+
+This report documents the API performance testing implementation for the BridgeAI platform using k6 load testing framework.
+
+## Test Framework Setup
+
+### Test Files Created
+
+1. **`apps/server/perf/api-baseline-test.js`**
+   - Baseline performance test with 50 VUs
+   - 5-minute duration
+   - Tests core API endpoints
+
+2. **`apps/server/perf/api-load-test.js`**
+   - Full load test with ramping
+   - Up to 1000 concurrent users
+   - Tests system under sustained load
+
+3. **`apps/server/perf/api-rate-limit-test.js`**
+   - Rate limiter stress test
+   - Circuit breaker verification
+   - Burst traffic simulation
+
+4. **`apps/server/perf/db-performance-test.js`**
+   - Database query performance tests
+   - Simple and complex query benchmarks
+   - Concurrent write operation tests
+
+5. **`apps/server/perf/run-tests.sh`**
+   - Test runner script
+   - Automated report generation
+
+## Performance Thresholds
+
+| Endpoint Type | Metric | Target | Priority |
+|--------------|--------|--------|----------|
+| Health Check | P95 | < 50ms | High |
+| User Endpoints | P95 | < 150ms | High |
+| Agent List | P95 | < 200ms | High |
+| Match Queries | P95 | < 300ms | Medium |
+| Search | P95 | < 400ms | Medium |
+| Error Rate | - | < 1% | High |
+
+## Test Scenarios
+
+### 1. Baseline Test
+
+**Configuration:**
+- Virtual Users: 50
+- Duration: 5 minutes
+- Ramp-up: None (immediate start)
+
+**Endpoints Tested:**
+- `/api/v1/health` - Health check
+- `/api/users/me` - Current user
+- `/api/agents?page=1&limit=20` - Agent list
+- `/api/agents/matches` - Match list
+- `/api/agents/search` - Search with filters
+
+**Expected Results:**
+- Health endpoint: P95 < 50ms
+- User endpoint: P95 < 150ms
+- Agent list: P95 < 200ms
+- Match list: P95 < 300ms
+- Search: P95 < 400ms
+
+### 2. Load Test
+
+**Configuration:**
+- Stage 1: Ramp to 100 users (2 minutes)
+- Stage 2: Ramp to 500 users (2 minutes)
+- Stage 3: Hold at 500 users (5 minutes)
+- Stage 4: Ramp to 1000 users (3 minutes)
+- Stage 5: Hold at 1000 users (5 minutes)
+- Stage 6: Ramp down (2 minutes)
+
+**Total Duration:** ~19 minutes
+
+**Custom Metrics:**
+- `api_latency_p95` - P95 latency tracking
+- `api_latency_p99` - P99 latency tracking
+- `api_errors` - Error rate tracking
+- `requests_per_second` - Throughput tracking
+
+### 3. Rate Limiter Test
+
+**Configuration:**
+- Tests rate limiting behavior
+- Verifies 429 responses
+- Tests circuit breaker (503 responses)
+- Burst traffic simulation
+
+**Custom Metrics:**
+- `rate_limit_hits` - Count of 429 responses
+- `circuit_breaker_trips` - Count of 503 responses
+- `rate_limit_latency` - Response times during rate limiting
+
+### 4. Database Performance Test
+
+**Configuration:**
+- 100 VUs
+- 10-minute duration
+- Tests various query types
+
+**Query Types:**
+- Simple queries (single table, indexed)
+- Complex queries (multiple filters, sorting)
+- Join queries (agents with user data)
+- Aggregation queries (credit scores)
+- Geographic queries (spatial search)
+- Concurrent writes
+
+## Running Tests
+
+### Prerequisites
+
+1. Install k6:
+```bash
+# macOS
+brew install k6
+
+# Linux
+curl -s https://dl.k6.io/key.gpg | sudo apt-key add -
+echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+sudo apt-get update
+sudo apt-get install k6
+```
+
+2. Start the server:
+```bash
+cd apps/server
+npm run dev
+```
+
+### Run All Tests
+
+```bash
+cd apps/server
+./perf/run-tests.sh
+```
+
+### Run Individual Tests
+
+```bash
+# Baseline test
+./perf/run-tests.sh baseline
+
+# Load test
+./perf/run-tests.sh load
+
+# Rate limit test
+./perf/run-tests.sh stress
+
+# Database test
+./perf/run-tests.sh db
+```
+
+### Run with Custom URL
+
+```bash
+BASE_URL=http://api.example.com ./perf/run-tests.sh
+```
+
+## Performance Optimizations Implemented
+
+### 1. Redis Caching Layer
+
+**Location:** `apps/server/src/cache/redis.ts`
+
+**Features:**
+- TTL-based caching
+- Namespace support
+- Batch operations
+- Distributed locking
+- Cache warming
+- Statistics tracking
+
+**Cache Namespaces:**
+- `user:` - User data (300s TTL)
+- `agent:` - Agent data (300s TTL)
+- `match:` - Match data (60s TTL)
+- `credit:` - Credit scores (300s TTL)
+- `search:` - Search results (60s TTL)
+
+### 2. Database Connection Pool
+
+**Location:** `apps/server/src/db/client.ts`
+
+**Optimizations:**
+- Connection pooling (20 connections)
+- Query timeout (10s)
+- Slow query logging (500ms threshold)
+- Exponential backoff retry
+- Performance tracking middleware
+
+### 3. Optimized Matching Service
+
+**Location:** `apps/server/src/services/matching/optimizedMatchingService.ts`
+
+**Optimizations:**
+- Select-based queries instead of deep includes
+- Redis caching integration
+- Parallel query execution
+- Cache invalidation on updates
+
+### 4. Enhanced Rate Limiting
+
+**Location:** `apps/server/src/middleware/rateLimiter.ts`
+
+**Features:**
+- Redis-backed rate limiting
+- Circuit breaker pattern
+- Multiple rate limit strategies:
+  - Standard API: 100 req/15min
+  - Auth endpoints: 5 req/15min
+  - Write operations: 30 req/min
+  - Search: 20 req/min
+  - Burst: 10 req/sec
+
+## Expected Test Results
+
+### Baseline Test Results (Expected)
+
+```
+Checks:
+✓ health status is 200
+✓ health P95 < 50ms
+✓ get user status is 200
+✓ get user P95 < 150ms
+✓ get agents status is 200
+✓ get agents P95 < 200ms
+
+Metrics:
+http_req_duration: avg=~100ms, min=~20ms, med=~80ms, max=~500ms, p(95)=~180ms
+http_req_failed: ~0%
+```
+
+### Load Test Results (Expected)
+
+```
+Stages:
+100 VUs: P95 ~150ms, Error rate < 0.1%
+500 VUs: P95 ~180ms, Error rate < 0.5%
+1000 VUs: P95 ~200ms, Error rate < 1%
+
+Custom Metrics:
+api_latency_p95: p(95) < 200ms
+api_latency_p99: p(99) < 500ms
+api_errors: rate < 0.01
+```
+
+### Rate Limit Test Results (Expected)
+
+```
+Rate Limiting:
+✓ Rate limits triggered at expected thresholds
+✓ 429 responses returned correctly
+✓ Circuit breaker opens on failures
+✓ Circuit breaker recovers after timeout
+
+Metrics:
+rate_limit_hits: count > 0 (expected behavior)
+circuit_breaker_trips: count >= 0
+```
+
+## Monitoring and Observability
+
+### Performance Headers
+
+All API responses include:
+- `X-Response-Time` - Response time in milliseconds
+- `X-RateLimit-Limit` - Rate limit cap
+- `X-RateLimit-Remaining` - Remaining requests
+- `X-RateLimit-Reset` - Reset timestamp
+
+### Sentry Integration
+
+- Transaction tracking
+- Performance breadcrumbs
+- Slow request alerts (>1000ms)
+- Database query monitoring (>500ms)
+
+### Cache Statistics
+
+Access via:
+```typescript
+import { getStats } from './cache';
+const stats = getStats();
+console.log(`Hit rate: ${stats.hitRate}%`);
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **k6 not found**
+   - Install k6 following the instructions above
+
+2. **Server not running**
+   - Ensure the server is started on port 3001
+   - Check `BASE_URL` environment variable
+
+3. **Rate limit test failures**
+   - Expected behavior - tests verify rate limiting works
+   - Check that 429 responses are returned
+
+4. **Database connection errors**
+   - Check DATABASE_URL in .env
+   - Verify PostgreSQL is running
+
+### Debug Mode
+
+Run tests with verbose output:
+```bash
+k6 run --verbose perf/api-baseline-test.js
+```
+
+### Export Results
+
+Export results to JSON:
+```bash
+k6 run --out json=results.json perf/api-load-test.js
+```
+
+## Next Steps
+
+1. **Run Tests in CI/CD**
+   - Integrate k6 tests into CI pipeline
+   - Set up automated performance regression detection
+
+2. **Add More Test Scenarios**
+   - WebSocket load testing
+   - File upload performance
+   - AI service performance
+
+3. **Performance Monitoring**
+   - Set up continuous monitoring
+   - Alert on performance degradation
+
+4. **Load Testing Schedule**
+   - Weekly baseline tests
+   - Monthly full load tests
+   - Pre-release performance validation
+
+## Conclusion
+
+The performance testing framework is now in place with:
+
+- ✅ k6 load testing scripts
+- ✅ Multiple test scenarios
+- ✅ Redis caching layer
+- ✅ Database optimizations
+- ✅ Circuit breaker and rate limiting
+- ✅ Automated test runner
+- ✅ Performance monitoring
+
+The system is prepared for high concurrency with proper testing and monitoring in place.
+>>>>>>> issue/issue-job002

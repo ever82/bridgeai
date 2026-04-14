@@ -63,6 +63,15 @@ id: ISSUE-AI003a
 issue_number: 503
 logic: sufficient_necessary
 parent: ISSUE-AI003
+<<<<<<< HEAD
+=======
+title: 供给智能提炼服务 - 核心解析引擎与API
+slug: supply-core-api
+status: accepted
+description: |
+  实现供给智能提炼服务的核心解析引擎和API端点，
+  包含供给解析引擎和供给API与集成，为场景提取器提供基础能力
+>>>>>>> issue/issue-job002
 prerequisites:
 - ISSUE-AI001
 - ISSUE-C002a

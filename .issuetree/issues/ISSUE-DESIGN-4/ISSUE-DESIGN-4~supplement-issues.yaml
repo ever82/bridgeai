@@ -28,7 +28,10 @@ prerequisites:
 - ISSUE-DESIGN-3
 slug: supplement-issues
 status: accepted
+<<<<<<< HEAD
 stuck_reason: start_failed
+=======
+>>>>>>> issue/issue-job002
 test_duration_seconds: 0
 test_passed: true
 title: 补充完善 Issues

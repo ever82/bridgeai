@@ -1,4 +1,21 @@
+<<<<<<< HEAD
 created_at: '2026-04-08'
+=======
+---
+id: "ISSUE-M004"
+issue_number: 405
+title: "匹配结果推送通知"
+slug: "match-notifications"
+status: accepted
+description: |
+  实现匹配结果的推送通知系统，及时通知用户
+  新的匹配结果和相关动态。
+prerequisites:
+  - "ISSUE-M003"
+  - "ISSUE-COM001b"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+>>>>>>> issue/issue-job002
 criteria:
 - coverage:
     ai: sufficient

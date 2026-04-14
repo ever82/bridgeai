@@ -95,7 +95,7 @@ export interface StreamChunk {
 }
 
 // 路由策略
-export type RoutingStrategy = 'cost' | 'latency' | 'quality' | 'round-robin' | 'weighted';
+export type RoutingStrategy = 'cost' | 'latency' | 'quality' | 'round-robin' | 'weighted' | 'direct';
 
 // 路由配置
 export interface RoutingConfig {

@@ -1,0 +1,18 @@
+task:
+  id: TASK-1776095659-4970
+  issue_id: ISSUE-SEC005
+  result: null
+  retry:
+    attempt: 1
+    next_task: null
+    previous_task: null
+  session:
+    claude_session_id: c1239ffc-ca61-4519-a67d-8bc57a633755
+    claude_session_name: TASK-1776095659-4970
+    resumed_at: null
+    started_at: '2026-04-13T23:54:21.773069+08:00'
+    tmux_session: task-task-1776095659-4970
+    worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-SEC005
+  status: failed
+  timeout_minutes: 30
+  type: fix

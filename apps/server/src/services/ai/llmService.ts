@@ -467,7 +467,7 @@ export class LLMService {
   }> {
     const results: Array<{ provider: LLMProvider; healthy: boolean }> = [];
 
-    for (const [provider, adapter] of this.adapters) {
+    for (const [provider, adapter] of this.adapters.entries()) {
       const healthy = await adapter.healthCheck();
       results.push({ provider, healthy });
     }

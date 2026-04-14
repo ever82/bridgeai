@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 created_at: '2026-04-08'
 criteria:
 - coverage:
@@ -102,3 +103,118 @@ prerequisites:
 slug: chat-room
 status: pending
 title: "\u804A\u5929\u623F\u95F4\u57FA\u7840\u67B6\u6784"
+=======
+title: "聊天房间基础架构"
+slug: "chat-room"
+status: accepted
+description: |
+  实现聊天房间基础架构，支持多人群聊、私聊、
+  房间类型管理和参与者管理。
+prerequisites:
+  - "ISSUE-COM001b"
+created_at: "2026-04-08"
+logic: sufficient_necessary
+criteria:
+  - id: "ISSUE-COM002a~c1"
+    name: "聊天房间模型"
+    description: |
+      房间数据:
+      - ChatRoom 数据库模型
+      - 房间类型: private, group
+      - 房间元数据
+      - 房间设置
+    status: "completed"
+    coverage:
+      unit: required
+      integration: required
+      e2e: not_needed
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查聊天房间模型，验证 ChatRoom 模型包含 type, participants, settings 字段"
+        context_files: ["prisma/schema.prisma"]
+
+  - id: "ISSUE-COM002a~c2"
+    name: "房间创建 API"
+    description: |
+      创建接口:
+      - 创建私聊房间
+      - 创建群聊房间
+      - 房间创建验证
+      - 初始化房间设置
+    status: "completed"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查房间创建 API，验证有 /api/v1/chat/rooms POST 端点"
+        context_files: ["apps/server/src/routes/chat.ts"]
+
+  - id: "ISSUE-COM002a~c3"
+    name: "参与者管理"
+    description: |
+      成员管理:
+      - 添加参与者
+      - 移除参与者
+      - 参与者角色
+      - 参与者权限
+    status: "completed"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查参与者管理，验证有 RoomParticipant 模型和相关 API"
+        context_files: ["apps/server/src/services/participantService.ts"]
+
+  - id: "ISSUE-COM002a~c4"
+    name: "房间列表和查询"
+    description: |
+      房间查询:
+      - 获取用户房间列表
+      - 房间搜索
+      - 房间排序
+      - 房间筛选
+    status: "completed"
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查房间查询，验证有 /api/v1/chat/rooms GET 端点返回用户房间列表"
+        context_files: ["apps/server/src/routes/chat.ts"]
+
+  - id: "ISSUE-COM002a~c5"
+    name: "移动端房间列表界面"
+    description: |
+      房间列表 UI:
+      - 房间列表组件
+      - 最后消息预览
+      - 未读数显示
+      - 房间头像
+    status: "completed"
+    coverage:
+      unit: not_needed
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: "检查房间列表界面，验证有 ChatRoomList 组件展示房间和最后消息"
+        context_files: ["apps/mobile/src/components/Chat/ChatRoomList.tsx"]
+id: ISSUE-COM002a
+issue_number: 503
+current_task: TASK-1776087284-6609
+>>>>>>> issue/issue-job002

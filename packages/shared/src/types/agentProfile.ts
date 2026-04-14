@@ -35,9 +35,10 @@ export enum EducationLevel {
   MASTER = 'MASTER',
   DOCTORATE = 'DOCTORATE',
   OTHER = 'OTHER',
+  NO_REQUIREMENT = 'NO_REQUIREMENT',
 }
 
-export interface Location {
+export interface ProfileLocation {
   province: string;
   city: string;
   district?: string;
@@ -48,7 +49,7 @@ export interface Location {
 export interface L1Profile {
   age?: AgeRange;
   gender?: Gender;
-  location?: Location;
+  location?: ProfileLocation;
   occupation?: string;
   education?: EducationLevel;
   // Additional flexible fields
@@ -102,6 +103,7 @@ export const EDUCATION_LABELS: Record<EducationLevel, string> = {
   [EducationLevel.MASTER]: '硕士',
   [EducationLevel.DOCTORATE]: '博士',
   [EducationLevel.OTHER]: '其他',
+  [EducationLevel.NO_REQUIREMENT]: '不限',
 };
 
 // ============================================
@@ -166,7 +168,7 @@ export interface ProfileValidationResult {
 export interface UpdateL1ProfileRequest {
   age?: AgeRange;
   gender?: Gender;
-  location?: Location;
+  location?: ProfileLocation;
   occupation?: string;
   education?: EducationLevel;
 }
