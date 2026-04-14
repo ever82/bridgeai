@@ -195,6 +195,7 @@ export function ddosProtection(req: Request, res: Response, next: NextFunction):
 
   // Skip for whitelisted IPs
   if (isWhitelisted(ip)) {
+    res.setHeader('X-DDOS-Protection', 'active');
     next();
     return;
   }
@@ -278,7 +279,9 @@ export function ddosProtection(req: Request, res: Response, next: NextFunction):
  * Slow attack protection middleware
  * Adds timeout for slow requests
  */
-export function slowAttackProtection(timeoutMs: number = 30000): (req: Request, res: Response, next: NextFunction) => void {
+export function slowAttackProtection(
+  timeoutMs: number = 30000
+): (req: Request, res: Response, next: NextFunction) => void {
   return (req: Request, res: Response, next: NextFunction): void => {
     const timer = setTimeout(() => {
       if (!res.headersSent) {
@@ -348,11 +351,7 @@ export function getDDoSStats(): {
 /**
  * Manually block an IP
  */
-export function manuallyBlockIP(
-  ip: string,
-  durationMinutes: number,
-  reason: string
-): boolean {
+export function manuallyBlockIP(ip: string, durationMinutes: number, reason: string): boolean {
   if (isWhitelisted(ip)) {
     return false;
   }

@@ -2,6 +2,7 @@
  * Tests for DDoS Protection Middleware
  */
 import { Request, Response } from 'express';
+
 import {
   ddosProtection,
   slowAttackProtection,
@@ -21,15 +22,25 @@ jest.mock('../requestContext', () => ({
   }),
 }));
 
+// Type for mock request with writable properties
+interface MockRequest extends Partial<Request> {
+  ip: string;
+  path: string;
+  user?: Record<string, unknown>;
+}
+
 // Mock console methods
 const originalWarn = console.warn;
 const originalLog = console.log;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MockFn = (...args: any[]) => any;
+
 describe('DDoS Protection Middleware', () => {
-  let mockReq: Partial<Request>;
+  let mockReq: MockRequest;
   let mockRes: Partial<Response>;
   let mockNext: jest.Mock;
-  let responseListeners: Map<string, Function[]>;
+  let responseListeners: Map<string, MockFn[]>;
 
   beforeEach(() => {
     responseListeners = new Map();
@@ -37,6 +48,7 @@ describe('DDoS Protection Middleware', () => {
       path: '/api/test',
       method: 'GET',
       ip: '127.0.0.1',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       socket: { remoteAddress: '127.0.0.1' } as any,
       headers: { 'user-agent': 'test-agent' },
       body: {},
@@ -46,13 +58,14 @@ describe('DDoS Protection Middleware', () => {
       json: jest.fn().mockReturnThis(),
       setHeader: jest.fn().mockReturnThis(),
       headersSent: false,
-      on: jest.fn((event, handler) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      on: jest.fn((event: string, handler: MockFn) => {
         if (!responseListeners.has(event)) {
           responseListeners.set(event, []);
         }
         responseListeners.get(event)!.push(handler);
         return mockRes;
-      }),
+      }) as any,
     };
     mockNext = jest.fn();
 
@@ -213,7 +226,9 @@ describe('DDoS Protection Middleware', () => {
     });
 
     it('should allow normal requests', () => {
-      mockReq.headers = { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' };
+      mockReq.headers = {
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      };
       mockReq.path = '/api/users';
 
       const result = isMaliciousRequest(mockReq as Request);

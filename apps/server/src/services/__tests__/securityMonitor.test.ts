@@ -10,7 +10,6 @@ import {
   resetAggregations,
   exportSecurityData,
 } from '../securityMonitor';
-import { logSecurityEvent, getSecurityEvents } from '../firewall';
 import { SecurityEvent } from '../firewall';
 
 // Mock console
@@ -22,6 +21,7 @@ describe('Security Monitor Service', () => {
     console.log = jest.fn();
     console.warn = jest.fn();
     resetAggregations();
+    updateConfig({ realTimeMonitoring: true });
   });
 
   afterEach(() => {
@@ -65,7 +65,7 @@ describe('Security Monitor Service', () => {
       const event: SecurityEvent = {
         id: 'test-2',
         type: 'RATE_LIMIT_EXCEEDED',
-        severity: 'warning',
+        severity: 'low',
         ip: '192.168.1.2',
         timestamp: new Date(),
         details: {},
@@ -289,7 +289,7 @@ describe('Security Monitor Service', () => {
         const event: SecurityEvent = {
           id: `test-rate-${i}`,
           type: 'RATE_LIMIT_EXCEEDED',
-          severity: 'warning',
+          severity: 'medium',
           timestamp: new Date(),
           details: {},
           resolved: false,

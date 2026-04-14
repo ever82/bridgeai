@@ -5,7 +5,6 @@
  */
 import type { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
-import { getRequestContext } from './requestContext';
 
 // ============================================================================
 // XSS Protection
@@ -35,7 +34,7 @@ const XSS_PATTERNS = [
  * Detect if string contains potential XSS payload
  */
 function containsXSS(input: string): boolean {
-  return XSS_PATTERNS.some((pattern) => pattern.test(input));
+  return XSS_PATTERNS.some(pattern => pattern.test(input));
 }
 
 /**
@@ -73,11 +72,9 @@ export function escapeHtml(input: string): string {
  */
 export function xssProtection(req: Request, res: Response, next: NextFunction): void {
   try {
-    const context = getRequestContext(req);
-
     // Check request body
     if (req.body && containsXSSInObject(req.body)) {
-      context?.logWarning('XSS attempt detected in request body', {
+      console.warn('[SECURITY] XSS attempt detected in request body', {
         path: req.path,
         method: req.method,
         ip: req.ip,
@@ -95,7 +92,7 @@ export function xssProtection(req: Request, res: Response, next: NextFunction): 
 
     // Check query parameters
     if (containsXSSInObject(req.query)) {
-      context?.logWarning('XSS attempt detected in query parameters', {
+      console.warn('[SECURITY] XSS attempt detected in query parameters', {
         path: req.path,
         method: req.method,
         ip: req.ip,
@@ -125,10 +122,10 @@ export function xssProtection(req: Request, res: Response, next: NextFunction): 
  * Patterns for detecting SQL injection attempts
  */
 const SQL_INJECTION_PATTERNS = [
-  /(\%27)|(\')|(\-\-)|(\%23)|(#)/gi,
-  /((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))/gi,
-  /\w*((\%27)|(\'))((\%6F)|o|(\%4F))((\%72)|r|(\%52))/gi,
-  /((\%27)|(\'))union/gi,
+  /((%27)|('))\s*(union|select|insert|update|delete|drop|alter|create|exec)/gi,
+  /((%27)|('))\s*or\s+/gi,
+  /((%27)|('))\s*and\s+/gi,
+  /((%27)|('))\s*;\s*/gi,
   /exec\s*\(\s*@/gi,
   /UNION\s+SELECT/gi,
   /INSERT\s+INTO/gi,
@@ -145,7 +142,7 @@ const SQL_INJECTION_PATTERNS = [
 function containsSQLInjection(input: string): boolean {
   // Skip if input is too short
   if (input.length < 3) return false;
-  return SQL_INJECTION_PATTERNS.some((pattern) => pattern.test(input));
+  return SQL_INJECTION_PATTERNS.some(pattern => pattern.test(input));
 }
 
 /**
@@ -170,11 +167,9 @@ function containsSQLInjectionInObject(obj: unknown): boolean {
  */
 export function sqlInjectionProtection(req: Request, res: Response, next: NextFunction): void {
   try {
-    const context = getRequestContext(req);
-
     // Check request body
     if (req.body && containsSQLInjectionInObject(req.body)) {
-      context?.logWarning('SQL injection attempt detected', {
+      console.warn('[SECURITY] SQL injection attempt detected', {
         path: req.path,
         method: req.method,
         ip: req.ip,
@@ -192,7 +187,7 @@ export function sqlInjectionProtection(req: Request, res: Response, next: NextFu
 
     // Check query parameters
     if (containsSQLInjectionInObject(req.query)) {
-      context?.logWarning('SQL injection attempt in query detected', {
+      console.warn('[SECURITY] SQL injection attempt in query detected', {
         path: req.path,
         method: req.method,
         ip: req.ip,
@@ -266,7 +261,7 @@ function containsNoSQLOperators(obj: unknown): boolean {
 
     // Check string values
     if (typeof value === 'string') {
-      if (NOSQL_INJECTION_PATTERNS.some((pattern) => pattern.test(value))) {
+      if (NOSQL_INJECTION_PATTERNS.some(pattern => pattern.test(value))) {
         return true;
       }
     }
@@ -281,11 +276,9 @@ function containsNoSQLOperators(obj: unknown): boolean {
  */
 export function nosqlInjectionProtection(req: Request, res: Response, next: NextFunction): void {
   try {
-    const context = getRequestContext(req);
-
     // Check request body
     if (req.body && containsNoSQLOperators(req.body)) {
-      context?.logWarning('NoSQL injection attempt detected', {
+      console.warn('[SECURITY] NoSQL injection attempt detected', {
         path: req.path,
         method: req.method,
         ip: req.ip,
@@ -303,7 +296,7 @@ export function nosqlInjectionProtection(req: Request, res: Response, next: Next
 
     // Check query parameters
     if (containsNoSQLOperators(req.query)) {
-      context?.logWarning('NoSQL injection attempt in query detected', {
+      console.warn('[SECURITY] NoSQL injection attempt in query detected', {
         path: req.path,
         method: req.method,
         ip: req.ip,
@@ -374,12 +367,7 @@ export const helmetMiddleware = helmet({
  * Usage: app.use(securityProtection())
  */
 export function securityProtection() {
-  return [
-    helmetMiddleware,
-    xssProtection,
-    sqlInjectionProtection,
-    nosqlInjectionProtection,
-  ];
+  return [helmetMiddleware, xssProtection, sqlInjectionProtection, nosqlInjectionProtection];
 }
 
 export default securityProtection;

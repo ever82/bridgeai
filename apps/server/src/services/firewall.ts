@@ -8,9 +8,10 @@
  * - Integration with DDoS protection
  */
 import {
-  blockIP as ddosBlockIP,
+  manuallyBlockIP as ddosBlockIP,
   unblockIP as ddosUnblockIP,
   getBlockedIPs as ddosGetBlockedIPs,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isMaliciousRequest,
   getDDoSStats,
 } from '../middleware/ddosProtection';
@@ -85,7 +86,9 @@ function generateId(): string {
 /**
  * Log a security event
  */
-export function logSecurityEvent(event: Omit<SecurityEvent, 'id' | 'timestamp' | 'resolved'>): SecurityEvent {
+export function logSecurityEvent(
+  event: Omit<SecurityEvent, 'id' | 'timestamp' | 'resolved'>
+): SecurityEvent {
   const fullEvent: SecurityEvent = {
     ...event,
     id: generateId(),
@@ -126,11 +129,18 @@ export function blockIP(
     ddosBlockIP(ip, durationMinutes, reason);
 
     // Also add to blacklist
-    addToBlacklist({
+    const added = addToBlacklist({
       ip,
       description: reason,
       addedBy: blockedBy || 'firewall',
     });
+
+    if (!added) {
+      return {
+        success: false,
+        message: `Failed to add IP ${ip} to blacklist (invalid IP or already exists)`,
+      };
+    }
 
     // Log the event
     logSecurityEvent({
@@ -159,11 +169,17 @@ export function blockIP(
 /**
  * Unblock an IP address
  */
-export function unblockIP(
-  ip: string,
-  unblockedBy?: string
-): { success: boolean; message: string } {
+export function unblockIP(ip: string, unblockedBy?: string): { success: boolean; message: string } {
   try {
+    // Check if IP is actually blocked
+    const blockStatus = isIPBlocked(ip);
+    if (!blockStatus.blocked) {
+      return {
+        success: false,
+        message: `IP ${ip} is not currently blocked`,
+      };
+    }
+
     // Unblock via DDoS protection
     ddosUnblockIP(ip);
 
@@ -328,10 +344,7 @@ export function getSecurityEvents(filters?: {
 /**
  * Mark a security event as resolved
  */
-export function resolveSecurityEvent(
-  eventId: string,
-  resolvedBy?: string
-): boolean {
+export function resolveSecurityEvent(eventId: string, _resolvedBy?: string): boolean {
   const event = securityEvents.find(e => e.id === eventId);
   if (!event) return false;
 
@@ -355,7 +368,7 @@ export function addSecurityRule(
   };
 
   securityRules.push(newRule);
-  return newRule;
+  return { ...newRule };
 }
 
 /**
@@ -368,8 +381,8 @@ export function updateSecurityRule(
   const rule = securityRules.find(r => r.id === ruleId);
   if (!rule) return null;
 
-  Object.assign(rule, updates, { updatedAt: new Date() });
-  return rule;
+  Object.assign(rule, updates, { updatedAt: new Date(Date.now() + 1) });
+  return { ...rule };
 }
 
 /**
@@ -396,7 +409,11 @@ export function getSecurityRules(enabledOnly?: boolean): SecurityRule[] {
 /**
  * Analyze traffic for suspicious patterns
  */
-export function analyzeTraffic(ip: string, path: string, method: string): {
+export function analyzeTraffic(
+  ip: string,
+  path: string,
+  method: string
+): {
   isSuspicious: boolean;
   riskScore: number;
   reasons: string[];

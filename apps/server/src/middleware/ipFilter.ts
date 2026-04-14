@@ -5,6 +5,7 @@
  * CIDR range matching, and geographic restrictions.
  */
 import { Request, Response, NextFunction } from 'express';
+
 import {
   IPListConfig,
   IPEntry,
@@ -67,7 +68,7 @@ function matchesCIDR(ip: string, ranges: CIDRRange[]): boolean {
 }
 
 // Check if IP is whitelisted
-function isWhitelisted(ip: string, req: Request): boolean {
+function isWhitelisted(ip: string, _req: Request): boolean {
   // Check explicit whitelist
   if (config.whitelist.some(entry => entry.ip === ip)) {
     return true;
@@ -82,7 +83,7 @@ function isWhitelisted(ip: string, req: Request): boolean {
 }
 
 // Check if IP is blacklisted
-function isBlacklisted(ip: string, req: Request): boolean {
+function isBlacklisted(ip: string, _req: Request): boolean {
   // Check explicit blacklist
   if (config.blacklist.some(entry => entry.ip === ip)) {
     return true;
@@ -191,7 +192,13 @@ export function ipFilter(req: Request, res: Response, next: NextFunction): void 
   // Check geographic restrictions
   const geoCheck = checkGeoRestrictions(req);
   if (!geoCheck.allowed) {
-    handleBlocked(req, res, next, 'GEO_BLOCKED', geoCheck.reason || 'Access blocked for your region');
+    handleBlocked(
+      req,
+      res,
+      next,
+      'GEO_BLOCKED',
+      geoCheck.reason || 'Access blocked for your region'
+    );
     return;
   }
 
@@ -263,7 +270,16 @@ function handleBlocked(
  * Update IP filter configuration
  */
 export function updateConfig(newConfig: Partial<IPListConfig>): void {
-  config = { ...config, ...newConfig };
+  config = {
+    ...config,
+    ...newConfig,
+    // Deep-clone arrays to prevent shared reference mutations
+    whitelist: [...(newConfig.whitelist ?? config.whitelist)],
+    blacklist: [...(newConfig.blacklist ?? config.blacklist)],
+    whitelistRanges: [...(newConfig.whitelistRanges ?? config.whitelistRanges)],
+    blacklistRanges: [...(newConfig.blacklistRanges ?? config.blacklistRanges)],
+    geoRestrictions: [...(newConfig.geoRestrictions ?? config.geoRestrictions)],
+  };
 }
 
 /**
@@ -438,3 +454,6 @@ export function getWhitelistedIPs(): string[] {
     .filter(entry => !entry.expiresAt || entry.expiresAt > now)
     .map(entry => entry.ip);
 }
+
+// Re-export utility functions for tests
+export { isValidIP, isValidCIDR, isIPInCIDR } from '../config/ipList';

@@ -6,12 +6,23 @@
  */
 import { Request, Response, NextFunction } from 'express';
 import { rateLimit, RateLimitRequestHandler } from 'express-rate-limit';
+
 import {
   rateLimitConfigs,
   userTierLimits,
   getRateLimitConfig,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   rateLimitEnv,
 } from '../config/rateLimit';
+
+// Extend Express Request type to include user property
+interface RateLimitRequest extends Request {
+  user?: {
+    id?: string;
+    role?: string;
+    isPremium?: boolean;
+  };
+}
 
 // In-memory store for user-based rate limiting (replace with Redis in production)
 interface UserRequestRecord {
@@ -22,7 +33,7 @@ interface UserRequestRecord {
 const userRequestStore = new Map<string, UserRequestRecord>();
 
 // Get client identifier (user ID if authenticated, IP otherwise)
-function getClientIdentifier(req: Request): string {
+function getClientIdentifier(req: RateLimitRequest): string {
   // If user is authenticated, use user ID
   if (req.user?.id) {
     return `user:${req.user.id}`;
@@ -32,7 +43,7 @@ function getClientIdentifier(req: Request): string {
 }
 
 // Get user tier for rate limiting
-function getUserTier(req: Request): keyof typeof userTierLimits {
+function getUserTier(req: RateLimitRequest): keyof typeof userTierLimits {
   if (req.user?.role === 'admin') return 'admin';
   if (req.user?.isPremium) return 'premium';
   if (req.user?.id) return 'authenticated';
@@ -83,11 +94,7 @@ export function getRateLimitHeaders(
  * User-based rate limiter middleware
  * Checks and updates rate limit for authenticated users
  */
-export function userRateLimiter(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
+export function userRateLimiter(req: RateLimitRequest, res: Response, next: NextFunction): void {
   const identifier = getClientIdentifier(req);
   const tier = getUserTier(req);
   const tierConfig = userTierLimits[tier];
@@ -140,17 +147,17 @@ export function userRateLimiter(
 export function endpointRateLimiter(): RateLimitRequestHandler {
   return rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: (req: Request) => {
+    max: (req: RateLimitRequest) => {
       const config = getRateLimitConfig(req.path);
       return config.maxRequests;
     },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req: Request) => {
+    keyGenerator: (req: RateLimitRequest) => {
       // Use user ID if available, otherwise IP
       return req.user?.id?.toString() || req.ip || 'unknown';
     },
-    handler: (req: Request, res: Response) => {
+    handler: (req: RateLimitRequest, res: Response) => {
       const config = getRateLimitConfig(req.path);
       res.status(429).json({
         success: false,
@@ -160,7 +167,7 @@ export function endpointRateLimiter(): RateLimitRequestHandler {
         },
       });
     },
-    skip: (req: Request) => {
+    skip: (req: RateLimitRequest) => {
       // Skip rate limiting for health checks
       return req.path === '/health' || req.path === '/ready';
     },
@@ -273,12 +280,12 @@ export function combinedRateLimiter(): RateLimitRequestHandler {
     max: 100, // Default max
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req: Request): string => {
+    keyGenerator: (req: RateLimitRequest): string => {
       const userId = req.user?.id;
       const ip = req.ip || req.socket.remoteAddress || 'unknown';
       return userId ? `user:${userId}` : `ip:${ip}`;
     },
-    handler: (req: Request, res: Response) => {
+    handler: (req: RateLimitRequest, res: Response) => {
       res.status(429).json({
         success: false,
         error: {
@@ -288,14 +295,15 @@ export function combinedRateLimiter(): RateLimitRequestHandler {
         },
       });
     },
-    skip: (req: Request) => {
+    skip: (req: RateLimitRequest) => {
       // Skip health checks and internal endpoints
-      return req.path === '/health' ||
-             req.path === '/ready' ||
-             req.path.startsWith('/internal/');
+      return req.path === '/health' || req.path === '/ready' || req.path.startsWith('/internal/');
     },
   });
 }
 
 // Export the original limiters for backward compatibility
 export { apiLimiter, authLimiter } from './rateLimit';
+
+// Re-export config for tests and external use
+export { getRateLimitConfig, rateLimitConfigs } from '../config/rateLimit';

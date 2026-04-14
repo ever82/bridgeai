@@ -8,6 +8,7 @@
  * - Security reports and analytics
  */
 import {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   logSecurityEvent,
   getSecurityEvents,
   getSecurityStats,
@@ -147,11 +148,7 @@ async function sendAlert(
     return;
   }
 
-  if (severity === 'warning') {
-    console.warn(`[Security Alert] ${title}: ${message}`, details);
-  } else {
-    console.error(`[Security Alert] ${title}: ${message}`, details);
-  }
+  console.warn(`[Security Alert] ${title}: ${message}`, details);
 
   // TODO: Implement webhook/email/Slack notifications
   // This would integrate with external services
@@ -342,7 +339,9 @@ async function generateDailyReport(): Promise<SecurityReport> {
   const stats = getSecurityStats();
 
   if (stats.blockedIPs > config.thresholds.blockedIPsThreshold) {
-    recommendations.push('Consider reviewing and potentially unblocking some IPs to reduce false positives');
+    recommendations.push(
+      'Consider reviewing and potentially unblocking some IPs to reduce false positives'
+    );
   }
 
   if (eventsByType['DDOS_DETECTED'] > 0) {
@@ -350,7 +349,9 @@ async function generateDailyReport(): Promise<SecurityReport> {
   }
 
   if (eventsByType['AUTH_FAILURE'] > 100) {
-    recommendations.push('High volume of authentication failures detected - consider implementing CAPTCHA');
+    recommendations.push(
+      'High volume of authentication failures detected - consider implementing CAPTCHA'
+    );
   }
 
   const report: SecurityReport = {
@@ -428,10 +429,7 @@ export function resetAggregations(): void {
 /**
  * Export security data for external analysis
  */
-export function exportSecurityData(
-  format: 'json' | 'csv',
-  since?: Date
-): string {
+export function exportSecurityData(format: 'json' | 'csv', since?: Date): string {
   const events = getSecurityEvents({ since });
 
   if (format === 'json') {

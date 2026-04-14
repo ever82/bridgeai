@@ -2,6 +2,7 @@
  * Tests for Rate Limiter Middleware
  */
 import { Request, Response } from 'express';
+
 import {
   userRateLimiter,
   enhancedIpLimiter,
@@ -19,8 +20,25 @@ jest.mock('../requestContext', () => ({
   }),
 }));
 
+// Type for mock request with user property
+interface MockRateLimitRequest {
+  path: string;
+  method: string;
+  ip: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  socket: any;
+  headers: Record<string, string | string[] | undefined>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  body?: any;
+  user?: {
+    id?: string;
+    role?: string;
+    isPremium?: boolean;
+  };
+}
+
 describe('Rate Limiter Middleware', () => {
-  let mockReq: Partial<Request>;
+  let mockReq: MockRateLimitRequest;
   let mockRes: Partial<Response>;
   let mockNext: jest.Mock;
 
@@ -29,7 +47,7 @@ describe('Rate Limiter Middleware', () => {
       path: '/api/test',
       method: 'GET',
       ip: '127.0.0.1',
-      socket: { remoteAddress: '127.0.0.1' } as any,
+      socket: { remoteAddress: '127.0.0.1' },
       headers: {},
       user: undefined,
     };
