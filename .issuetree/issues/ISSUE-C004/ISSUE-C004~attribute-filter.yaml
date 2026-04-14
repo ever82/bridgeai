@@ -2,7 +2,7 @@ id: ISSUE-C004
 issue_number: 306
 title: 属性过滤系统
 slug: attribute-filter
-status: implemented
+status: checking
 description: |
   实现基于 Agent 属性的复杂过滤系统，支持多条件组合、
   范围筛选、枚举匹配、布尔判断等多种过滤方式。
@@ -19,7 +19,7 @@ criteria:
       - 操作符: eq, ne, gt, lt, in, contains
       - 逻辑组合: AND, OR, NOT
       - 嵌套条件支持
-    status: passed
+status: checking
     coverage:
       unit: required
       integration: required
@@ -39,7 +39,7 @@ criteria:
       - JSON 字段查询支持
       - 类型安全查询构建
       - 查询优化
-    status: passed
+status: checking
     coverage:
       unit: required
       integration: required
@@ -59,7 +59,7 @@ criteria:
       - 条件添加/删除
       - 范围选择器
       - 多选组件
-    status: passed
+status: checking
     coverage:
       unit: not_needed
       integration: required
@@ -79,7 +79,7 @@ criteria:
       - 分页和排序
       - 结果计数
       - 筛选建议
-    status: passed
+status: checking
     coverage:
       unit: required
       integration: required
@@ -99,7 +99,7 @@ criteria:
       - 查询计划分析
       - 缓存常用筛选结果
       - 大数据量分页优化
-    status: passed
+status: checking
     coverage:
       unit: required
       integration: required
@@ -120,7 +120,7 @@ criteria:
       - 命名和分类
       - 快速应用已保存条件
       - 筛选条件分享
-    status: passed
+status: checking
     coverage:
       unit: required
       integration: required
@@ -135,4 +135,4 @@ criteria:
 started_at: '2026-04-10T17:28:31.832Z'
 completed_at: '2026-04-10T17:39:09.437Z'
 
-current_task: TASK-1775845414
+current_task: TASK-1775846486

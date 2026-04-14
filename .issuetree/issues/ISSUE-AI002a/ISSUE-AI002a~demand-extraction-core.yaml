@@ -23,7 +23,7 @@ criteria:
       - 意图分类
       - 需求结构化输出
       - 置信度评分
-    status: pending
+status: implemented
     coverage:
       unit: required
       integration: required
@@ -44,7 +44,7 @@ criteria:
       - 枚举值匹配
       - 缺失字段推断
       - 冲突检测与提示
-    status: pending
+status: implemented
     coverage:
       unit: required
       integration: required
@@ -65,7 +65,7 @@ criteria:
       - 合理性检查(预算范围等)
       - 用户确认流程
       - 提取结果修正
-    status: pending
+status: implemented
     coverage:
       unit: required
       integration: required
@@ -86,7 +86,7 @@ criteria:
       - 提取结果缓存
       - WebSocket实时反馈
       - 场景配置API
-    status: pending
+status: implemented
     coverage:
       unit: required
       integration: required
@@ -101,4 +101,38 @@ criteria:
 started_at: '2026-04-10T16:47:32.886Z'
 completed_at: '2026-04-10T17:28:31.581Z'
 
-current_task: TASK-1775845414
+current_task: TASK-1775846486
+
+implementation:
+  task_id: TASK-002
+  completed_at: '2026-04-11T12:00:00+08:00'
+  execution_time_minutes: 45
+  result: success
+  notes: |
+    All 4 acceptance criteria implemented:
+    1. Demand Extraction Service (demandExtractionService.ts) - 328 lines
+       - extract() method with natural language processing
+       - Entity recognition for time/location/people/budget
+       - Intent classification (create_demand, search_demand, etc.)
+       - Structured Demand output with confidence field
+
+    2. Demand to L2 Mapper (demandToL2Mapper.ts) - 478 lines
+       - Maps extracted fields to AgentL2Model properties
+       - Attribute standardization (price/time formats)
+       - Enum matching and multi-select handling
+       - Missing field inference and conflict detection
+
+    3. Extraction Validator (extractionValidator.ts) - 542 lines
+       - Field completeness checking
+       - Business rules validation (budget/time ranges)
+       - Range and format validation
+       - User confirmation flow support
+
+    4. API & Integration (extraction.ts) - 485 lines
+       - POST /api/v1/ai/extract-demand endpoint
+       - Batch extraction support
+       - WebSocket real-time feedback
+       - Scene configuration API
+
+    Unit tests: 64 test cases covering all components
+    Commit: 5c154ed feat(AI002a): Implement demand extraction core framework

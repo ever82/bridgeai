@@ -83,6 +83,8 @@ class SmartMonitor:
         self.completed = set()
         self.failed = set()
         self.in_progress = set()
+        self.merged = set()
+        self.ready_for_check = set()
 
         if os.path.exists(STATUS_FILE):
             try:
@@ -91,6 +93,8 @@ class SmartMonitor:
                     self.completed = set(data.get("completed", []))
                     self.failed = set(data.get("failed", []))
                     self.in_progress = set(data.get("in_progress", []))
+                    self.merged = set(data.get("merged", []))
+                    self.ready_for_check = set(data.get("ready_for_check", []))
             except:
                 pass
 
@@ -100,6 +104,8 @@ class SmartMonitor:
             "completed": sorted(list(self.completed)),
             "failed": sorted(list(self.failed)),
             "in_progress": sorted(list(self.in_progress)),
+            "merged": sorted(list(self.merged)),
+            "ready_for_check": sorted(list(self.ready_for_check)),
             "last_update": datetime.now().isoformat()
         }
         try:

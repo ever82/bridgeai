@@ -2,7 +2,7 @@ id: ISSUE-C006
 issue_number: 308
 title: 场景配置管理
 slug: scene-config
-status: implemented
+status: "passed"
 description: |
   实现四大场景的配置管理系统，包括场景特定字段定义、
   场景模板、场景能力配置等。
@@ -20,7 +20,6 @@ criteria:
       - AgentDate 场景配置
       - AgentJob 场景配置
       - AgentAd 场景配置
-    status: passed
     coverage:
       unit: required
       integration: required
@@ -41,7 +40,6 @@ criteria:
       - 字段验证规则
       - 字段依赖关系
       - 字段国际化
-    status: passed
     coverage:
       unit: required
       integration: required
@@ -61,7 +59,6 @@ criteria:
       - 模板应用和复制
       - 用户自定义模板
       - 模板分享
-    status: passed
     coverage:
       unit: required
       integration: required
@@ -81,7 +78,6 @@ criteria:
       - 能力启用/禁用
       - 能力依赖检查
       - 能力版本管理
-    status: passed
     coverage:
       unit: required
       integration: required
@@ -101,7 +97,6 @@ criteria:
       - 配置转换规则
       - 迁移预览
       - 迁移确认
-    status: passed
     coverage:
       unit: required
       integration: required
@@ -116,7 +111,6 @@ criteria:
   - id: ISSUE-C006~c6
     name: 场景配置管理UI
     description: 提供场景配置的可视化管理界面，支持场景切换和配置预览
-    status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -165,3 +159,15 @@ implementation_summary: |
      - Scene API 服务封装
 
   所有验收标准已完成，单元测试已编写。
+
+
+implementation:
+
+check:
+  checked_at: "2026-04-10"
+  status: "passed"
+  functional_verification:
+    all_criteria_passed: true
+  test_execution:
+    all_tests_passed: true
+  notes: "Issue checked and marked as passed"

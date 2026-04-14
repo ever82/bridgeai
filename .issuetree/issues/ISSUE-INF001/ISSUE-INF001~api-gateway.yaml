@@ -1,0 +1,66 @@
+id: ISSUE-INF001
+issue_number: 1
+module: INF
+title: API Gateway 设计与实现
+slug: api-gateway
+status: draft
+description: |
+  设计并实现统一的 API Gateway，作为所有后端服务的入口。
+  提供路由、负载均衡、认证、限流、日志聚合等功能。
+  支持微服务架构下的服务发现和动态路由。
+prerequisites:
+  - ISSUE-F003
+  - ISSUE-A002
+logic: sufficient_necessary
+criteria:
+  - id: CRIT-INF001-1
+    name: 路由配置
+    description: |
+      支持基于路径、方法、Header 的路由规则配置。
+      支持动态路由更新，无需重启网关。
+    verification:
+      test:
+        command: npm test -- gateway/routes
+        expected: "All route tests passed"
+  - id: CRIT-INF001-2
+    name: 负载均衡
+    description: |
+      实现轮询、权重、最少连接等负载均衡算法。
+      支持健康检查和自动剔除故障节点。
+    verification:
+      test:
+        command: npm test -- gateway/loadbalance
+        expected: "All load balance tests passed"
+  - id: CRIT-INF001-3
+    name: 认证集成
+    description: |
+      集成 JWT 认证，支持 Token 解析和验证。
+      支持黑白名单和 Token 刷新机制。
+    verification:
+      test:
+        command: npm test -- gateway/auth
+        expected: "All auth integration tests passed"
+  - id: CRIT-INF001-4
+    name: 限流熔断
+    description: |
+      实现基于令牌桶的限流算法。
+      集成熔断器模式，防止级联故障。
+    verification:
+      test:
+        command: npm test -- gateway/ratelimit
+        expected: "All rate limit tests passed"
+  - id: CRIT-INF001-5
+    name: 日志聚合
+    description: |
+      统一收集和输出请求/响应日志。
+      支持分布式追踪 ID 传递。
+    verification:
+      test:
+        command: npm test -- gateway/logging
+        expected: "All logging tests passed"
+complexity: high
+estimated_effort_hours: 16
+assigned_to: null
+created_at: '2026-04-12'
+updated_at: '2026-04-12'
+passed_at: null

@@ -1,0 +1,39 @@
+# Implementation Task: 场景配置管理系统实现验证
+
+**Issue:** ISSUE-C006
+**Task:** TASK-IMP
+
+## Description
+
+验证并实现 ISSUE-C006 场景配置管理系统：
+1. 验证场景配置 Schema (VisionShare, AgentDate, AgentJob, AgentAd)
+2. 验证场景字段定义和验证规则
+3. 验证场景模板系统功能
+4. 验证场景能力声明和检查
+5. 验证场景切换和迁移功能
+6. 验证场景配置管理 UI
+7. 运行所有单元测试确保通过
+
+如发现问题，修复并完善实现。
+
+
+## Files to Modify
+
+- (To be determined based on implementation)
+
+## Instructions
+
+1. Implement the features described above
+2. Make focused, incremental changes
+3. Test your changes as you go
+4. Commit your work when complete
+
+## Completion
+
+When you have completed the implementation:
+1. Run: `echo '{"status": "completed"}' > .issuetree/tmp/TASK-IMP-result.json`
+2. Exit the session
+
+---
+
+Start implementing now.

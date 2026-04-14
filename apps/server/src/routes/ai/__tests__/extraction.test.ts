@@ -3,386 +3,429 @@
  */
 
 import request from 'supertest';
-import express, { Application } from 'express';
-import extractionRoutes from '../extraction';
-import { authenticateToken } from '../../../middleware/auth';
+import express, { Express, Request, Response, NextFunction } from 'express';
+import aiExtractionRoutes from '../extraction';
 
-// Mock middleware
-jest.mock('../../../middleware/auth', () => ({
-  authenticateToken: (req: any, res: any, next: any) => {
-    req.user = { id: 'test-user-id', email: 'test@example.com' };
-    next();
+// Mock dependencies
+jest.mock('../../../services/ai/demandExtractionService');
+jest.mock('../../../services/ai/mappers/demandToL2Mapper');
+jest.mock('../../../services/ai/validators/extractionValidator');
+jest.mock('@visionshare/shared', () => ({
+  getL2Schema: jest.fn(),
+  L2FieldType: {
+    TEXT: 'text',
+    NUMBER: 'number',
+    ENUM: 'enum',
   },
 }));
 
-// Mock services
-jest.mock('../../../services/ai/demandExtractionService', () => ({
-  DemandExtractionService: jest.fn().mockImplementation(() => ({
-    initialize: jest.fn().mockResolvedValue(undefined),
-    extract: jest.fn().mockResolvedValue({
-      id: 'demand-test-123',
-      scene: 'VISIONSHARE',
-      intent: {
-        primary: 'find_collaborator',
-        confidence: 85,
-        alternatives: [],
-      },
-      entities: {
-        time: [],
-        location: [],
-        people: [],
-        organizations: [],
-        keywords: ['摄影'],
-      },
-      attributes: {
-        contentType: ['photography'],
-        purpose: 'collaborate',
-        skillLevel: 'intermediate',
-      },
-      rawText: '我想找个一起拍照的朋友',
-      confidence: 82,
-      fieldConfidence: { contentType: 90 },
-      extractedAt: new Date(),
-      clarificationNeeded: false,
-      missingFields: [],
-      suggestedQuestions: [],
-    }),
-  })),
-}));
+import { demandExtractionService } from '../../../services/ai/demandExtractionService';
+import { demandToL2Mapper } from '../../../services/ai/mappers/demandToL2Mapper';
+import { extractionValidator } from '../../../services/ai/validators/extractionValidator';
+import { getL2Schema } from '@visionshare/shared';
 
-jest.mock('../../../services/ai/mappers/demandToL2Mapper', () => ({
-  DemandToL2Mapper: jest.fn().mockImplementation(() => ({
-    map: jest.fn().mockReturnValue({
-      success: true,
-      data: {
-        contentType: ['photography'],
-        purpose: 'collaborate',
-        skillLevel: 'intermediate',
-      },
-      mappedFields: ['contentType', 'purpose', 'skillLevel'],
-      unmappedFields: [],
-      standardizedFields: [],
-      inferredFields: [],
-      conflicts: [],
-      errors: [],
-    }),
-  })),
-}));
-
-jest.mock('../../../services/ai/validators/extractionValidator', () => ({
-  ExtractionValidator: jest.fn().mockImplementation(() => ({
-    validate: jest.fn().mockReturnValue({
-      valid: true,
-      isComplete: true,
-      canProceed: true,
-      errors: [],
-      warnings: [],
-      missingRequired: [],
-      invalidFields: [],
-      suggestions: [],
-    }),
-    recordConfirmation: jest.fn(),
-  })),
-}));
+const mockedDemandExtractionService = demandExtractionService as jest.Mocked<typeof demandExtractionService>;
+const mockedDemandToL2Mapper = demandToL2Mapper as jest.Mocked<typeof demandToL2Mapper>;
+const mockedExtractionValidator = extractionValidator as jest.Mocked<typeof extractionValidator>;
+const mockedGetL2Schema = getL2Schema as jest.MockedFunction<typeof getL2Schema>;
 
 describe('AI Extraction Routes', () => {
-  let app: Application;
+  let app: Express;
 
-  beforeAll(() => {
+  beforeEach(() => {
     app = express();
     app.use(express.json());
-    app.use('/api/v1/ai/extract', extractionRoutes);
-  });
 
-  describe('POST /api/v1/ai/extract/extract-demand', () => {
-    it('should extract demand from text', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/extract-demand')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          text: '我想找个一起拍照的朋友',
-          scene: 'VISIONSHARE',
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(response.body.data.extraction).toBeDefined();
-      expect(response.body.data.extraction.scene).toBe('VISIONSHARE');
-      expect(response.body.data.extraction.confidence).toBe(82);
-      expect(response.body.data.clarificationNeeded).toBeDefined();
+    // Mock authentication middleware
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      req.user = { id: 'test-user-id' };
+      next();
     });
 
-    it('should return 400 for invalid scene', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/extract-demand')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          text: 'test text',
-          scene: 'INVALID_SCENE',
-        });
+    app.use('/api/v1/ai', aiExtractionRoutes);
 
-      expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
-      expect(response.body.error).toContain('Invalid scene');
+    jest.clearAllMocks();
+  });
+
+  describe('POST /api/v1/ai/extract-demand', () => {
+    const mockSchema = {
+      id: 'vision-share',
+      version: '1.0.0',
+      scene: 'visionShare',
+      title: 'Vision Share',
+      fields: [
+        { id: 'title', type: 'text', label: 'Title', required: true },
+        { id: 'location', type: 'text', label: 'Location', required: false },
+      ],
+    };
+
+    const mockDemand = {
+      id: 'test-demand-id',
+      rawText: '我想在北京拍摄',
+      intent: {
+        intent: 'create_demand',
+        confidence: 0.95,
+        alternatives: [],
+      },
+      entities: [
+        { type: 'location', value: '北京', confidence: 0.9, startIndex: 3, endIndex: 5 },
+      ],
+      confidence: 0.9,
+      clarificationNeeded: false,
+      clarificationQuestions: [],
+      structured: {
+        title: '拍摄需求',
+        location: { city: '北京' },
+      },
+      metadata: {
+        processedAt: new Date(),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+        version: '1.0.0',
+      },
+    };
+
+    const mockMappingResult = {
+      success: true,
+      data: {
+        title: '拍摄需求',
+        location: '北京',
+      },
+      mappedFields: ['title', 'location'],
+      unmappedFields: [],
+      inferredFields: [],
+      conflicts: [],
+      transformations: [],
+    };
+
+    const mockValidationReport = {
+      valid: true,
+      errors: [],
+      warnings: [],
+      infos: [],
+      summary: {
+        totalIssues: 0,
+        errorCount: 0,
+        warningCount: 0,
+        infoCount: 0,
+        completenessScore: 85,
+      },
+      suggestions: [],
+      confirmationNeeded: false,
+    };
+
+    it('should extract demand successfully', async () => {
+      mockedGetL2Schema.mockReturnValue(mockSchema as any);
+      mockedDemandExtractionService.extract.mockResolvedValue(mockDemand as any);
+      mockedDemandToL2Mapper.map.mockReturnValue(mockMappingResult as any);
+      mockedExtractionValidator.validate.mockReturnValue(mockValidationReport as any);
+
+      const response = await request(app)
+        .post('/api/v1/ai/extract-demand')
+        .send({
+          text: '我想在北京拍摄',
+          scene: 'visionShare',
+        })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.demand.rawText).toBe('我想在北京拍摄');
+      expect(response.body.data.demand.intent.intent).toBe('create_demand');
+      expect(response.body.data.l2Data).toBeDefined();
+      expect(response.body.data.validation.valid).toBe(true);
+      expect(response.body.meta).toBeDefined();
     });
 
     it('should return 400 for missing text', async () => {
       const response = await request(app)
-        .post('/api/v1/ai/extract/extract-demand')
-        .set('Authorization', 'Bearer test-token')
+        .post('/api/v1/ai/extract-demand')
         .send({
-          scene: 'VISIONSHARE',
-        });
+          scene: 'visionShare',
+        })
+        .expect(400);
 
-      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('INVALID_REQUEST');
     });
 
     it('should return 400 for missing scene', async () => {
       const response = await request(app)
-        .post('/api/v1/ai/extract/extract-demand')
-        .set('Authorization', 'Bearer test-token')
+        .post('/api/v1/ai/extract-demand')
         .send({
-          text: 'test text',
-        });
+          text: '我想在北京拍摄',
+        })
+        .expect(400);
 
-      expect(response.status).toBe(400);
-    });
-
-    it('should accept optional agentId and context', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/extract-demand')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          text: '我想找个一起拍照的朋友',
-          scene: 'VISIONSHARE',
-          agentId: 'test-agent-id',
-          context: {
-            conversationHistory: [
-              { role: 'user', content: 'hello' },
-            ],
-          },
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-    });
-
-    it('should return mapped data in response', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/extract-demand')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          text: '我想找个一起拍照的朋友',
-          scene: 'VISIONSHARE',
-        });
-
-      expect(response.body.data.mappedData).toBeDefined();
-      expect(response.body.data.mappedData.attributes).toBeDefined();
-      expect(response.body.data.mappedData.mappedFields).toBeInstanceOf(Array);
-    });
-
-    it('should return validation results', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/extract-demand')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          text: '我想找个一起拍照的朋友',
-          scene: 'VISIONSHARE',
-        });
-
-      expect(response.body.data.validation).toBeDefined();
-      expect(response.body.data.validation.valid).toBe(true);
-      expect(response.body.data.validation.isComplete).toBe(true);
-    });
-  });
-
-  describe('POST /api/v1/ai/extract/extract-batch', () => {
-    it('should extract multiple demands in batch', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/extract-batch')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          requests: [
-            { text: '需求1', scene: 'VISIONSHARE' },
-            { text: '需求2', scene: 'VISIONSHARE' },
-          ],
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(response.body.data.total).toBe(2);
-      expect(response.body.data.results).toBeInstanceOf(Array);
-    });
-
-    it('should validate batch size limit', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/extract-batch')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          requests: [], // Empty array should fail validation
-        });
-
-      expect(response.status).toBe(400);
-    });
-
-    it('should accept options', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/extract-batch')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          requests: [
-            { text: '需求1', scene: 'VISIONSHARE' },
-          ],
-          options: {
-            continueOnError: true,
-            priority: 'high',
-          },
-        });
-
-      expect(response.status).toBe(200);
-    });
-  });
-
-  describe('POST /api/v1/ai/extract/validate-extraction', () => {
-    it('should validate extracted data', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/validate-extraction')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          data: {
-            contentType: ['photography'],
-            purpose: 'share',
-            skillLevel: 'intermediate',
-          },
-          scene: 'VISIONSHARE',
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(response.body.data.validation).toBeDefined();
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('INVALID_REQUEST');
     });
 
     it('should return 400 for invalid scene', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/validate-extraction')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          data: { field: 'value' },
-          scene: 'INVALID_SCENE',
-        });
+      mockedGetL2Schema.mockReturnValue(null);
 
-      expect(response.status).toBe(400);
+      const response = await request(app)
+        .post('/api/v1/ai/extract-demand')
+        .send({
+          text: '我想在北京拍摄',
+          scene: 'invalid-scene',
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('INVALID_SCENE');
     });
 
-    it('should return confirmation summary', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/validate-extraction')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          data: {
-            contentType: ['photography'],
-            purpose: 'share',
-            skillLevel: 'intermediate',
-          },
-          scene: 'VISIONSHARE',
-        });
+    it('should handle extraction errors', async () => {
+      mockedGetL2Schema.mockReturnValue(mockSchema as any);
+      mockedDemandExtractionService.extract.mockRejectedValue(new Error('Extraction failed'));
 
-      expect(response.body.data.confirmation).toBeDefined();
-      expect(response.body.data.confirmation.isValid).toBeDefined();
-      expect(response.body.data.confirmation.requiresConfirmation).toBeDefined();
+      const response = await request(app)
+        .post('/api/v1/ai/extract-demand')
+        .send({
+          text: '我想在北京拍摄',
+          scene: 'visionShare',
+        })
+        .expect(500);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('EXTRACTION_FAILED');
+    });
+
+    it('should include clarification needed flag', async () => {
+      const demandWithClarification = {
+        ...mockDemand,
+        clarificationNeeded: true,
+        clarificationQuestions: ['请问您的预算是多少？'],
+      };
+
+      mockedGetL2Schema.mockReturnValue(mockSchema as any);
+      mockedDemandExtractionService.extract.mockResolvedValue(demandWithClarification as any);
+      mockedDemandToL2Mapper.map.mockReturnValue(mockMappingResult as any);
+      mockedExtractionValidator.validate.mockReturnValue(mockValidationReport as any);
+
+      const response = await request(app)
+        .post('/api/v1/ai/extract-demand')
+        .send({
+          text: '我想在北京拍摄',
+          scene: 'visionShare',
+          options: {
+            requireClarification: true,
+          },
+        })
+        .expect(200);
+
+      expect(response.body.data.demand.clarificationNeeded).toBe(true);
+      expect(response.body.data.demand.clarificationQuestions).toHaveLength(1);
+      expect(response.body.data.summary.clarificationNeeded).toBe(true);
+    });
+
+    it('should handle validation errors', async () => {
+      const validationWithErrors = {
+        ...mockValidationReport,
+        valid: false,
+        errors: [
+          {
+            ruleId: 'required_field_missing',
+            field: 'title',
+            message: 'Required field "Title" is missing',
+            severity: 'error',
+            category: 'completeness',
+          },
+        ],
+        summary: {
+          ...mockValidationReport.summary,
+          errorCount: 1,
+          completenessScore: 50,
+        },
+      };
+
+      mockedGetL2Schema.mockReturnValue(mockSchema as any);
+      mockedDemandExtractionService.extract.mockResolvedValue(mockDemand as any);
+      mockedDemandToL2Mapper.map.mockReturnValue(mockMappingResult as any);
+      mockedExtractionValidator.validate.mockReturnValue(validationWithErrors as any);
+
+      const response = await request(app)
+        .post('/api/v1/ai/extract-demand')
+        .send({
+          text: '我想在北京拍摄',
+          scene: 'visionShare',
+        })
+        .expect(200);
+
+      expect(response.body.data.validation.valid).toBe(false);
+      expect(response.body.data.validation.errors).toHaveLength(1);
+      expect(response.body.data.summary.validationPassed).toBe(false);
     });
   });
 
-  describe('POST /api/v1/ai/extract/confirm-extraction', () => {
-    it('should confirm extraction', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/confirm-extraction')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          extractionId: 'extraction-123',
-          confirmed: true,
-          confirmedFields: ['contentType', 'purpose'],
-        });
+  describe('POST /api/v1/ai/extract-demand/batch', () => {
+    it('should process batch extraction', async () => {
+      const mockSchema = {
+        id: 'vision-share',
+        scene: 'visionShare',
+        fields: [],
+      };
 
-      expect(response.status).toBe(200);
+      mockedGetL2Schema.mockReturnValue(mockSchema as any);
+      mockedDemandExtractionService.extract.mockResolvedValue({
+        rawText: 'test',
+        intent: { intent: 'create_demand', confidence: 0.9 },
+        entities: [],
+        confidence: 0.9,
+      } as any);
+
+      const response = await request(app)
+        .post('/api/v1/ai/extract-demand/batch')
+        .send({
+          items: [
+            { id: '1', text: '需求1' },
+            { id: '2', text: '需求2' },
+          ],
+          scene: 'visionShare',
+        })
+        .expect(200);
+
       expect(response.body.success).toBe(true);
-      expect(response.body.data.extractionId).toBe('extraction-123');
-      expect(response.body.data.confirmed).toBe(true);
+      expect(response.body.data.results).toHaveLength(2);
+      expect(response.body.data.summary.total).toBe(2);
     });
 
-    it('should accept corrections', async () => {
+    it('should return 400 for empty items array', async () => {
       const response = await request(app)
-        .post('/api/v1/ai/extract/confirm-extraction')
-        .set('Authorization', 'Bearer test-token')
+        .post('/api/v1/ai/extract-demand/batch')
         .send({
-          extractionId: 'extraction-123',
-          confirmed: true,
-          corrections: {
-            purpose: 'share',
-          },
-          feedback: 'Purpose was incorrect',
-        });
+          items: [],
+          scene: 'visionShare',
+        })
+        .expect(400);
 
-      expect(response.status).toBe(200);
-      expect(response.body.data.feedback).toBe('Purpose was incorrect');
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('INVALID_REQUEST');
     });
 
-    it('should reject extraction', async () => {
+    it('should return 400 for missing items', async () => {
       const response = await request(app)
-        .post('/api/v1/ai/extract/confirm-extraction')
-        .set('Authorization', 'Bearer test-token')
+        .post('/api/v1/ai/extract-demand/batch')
         .send({
-          extractionId: 'extraction-123',
-          confirmed: false,
-        });
+          scene: 'visionShare',
+        })
+        .expect(400);
 
-      expect(response.status).toBe(200);
-      expect(response.body.data.confirmed).toBe(false);
-    });
-
-    it('should require extractionId', async () => {
-      const response = await request(app)
-        .post('/api/v1/ai/extract/confirm-extraction')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          confirmed: true,
-        });
-
-      expect(response.status).toBe(400);
-    });
-  });
-
-  describe('GET /api/v1/ai/extract/scene-config/:scene', () => {
-    it('should return scene configuration', async () => {
-      const response = await request(app)
-        .get('/api/v1/ai/extract/scene-config/VISIONSHARE')
-        .set('Authorization', 'Bearer test-token');
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(response.body.data.scene).toBe('VISIONSHARE');
-      expect(response.body.data.schema).toBeDefined();
-    });
-
-    it('should return 404 for invalid scene', async () => {
-      const response = await request(app)
-        .get('/api/v1/ai/extract/scene-config/INVALID_SCENE')
-        .set('Authorization', 'Bearer test-token');
-
-      expect(response.status).toBe(404);
       expect(response.body.success).toBe(false);
     });
   });
 
-  describe('GET /api/v1/ai/extract/scenes', () => {
-    it('should return list of available scenes', async () => {
+  describe('POST /api/v1/ai/extract-demand/:id/confirm', () => {
+    it('should confirm extraction', async () => {
       const response = await request(app)
-        .get('/api/v1/ai/extract/scenes')
-        .set('Authorization', 'Bearer test-token');
+        .post('/api/v1/ai/extract-demand/test-id/confirm')
+        .send({
+          confirmed: true,
+          corrections: {
+            title: 'Corrected Title',
+          },
+        })
+        .expect(200);
 
-      expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(response.body.data.scenes).toBeInstanceOf(Array);
+      expect(response.body.data.extractionId).toBe('test-id');
+      expect(response.body.data.confirmed).toBe(true);
+    });
+
+    it('should return 400 when not confirmed', async () => {
+      const response = await request(app)
+        .post('/api/v1/ai/extract-demand/test-id/confirm')
+        .send({
+          confirmed: false,
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('NOT_CONFIRMED');
+    });
+  });
+
+  describe('GET /api/v1/ai/extract-demand/:id/status', () => {
+    it('should return extraction status', async () => {
+      const response = await request(app)
+        .get('/api/v1/ai/extract-demand/test-id/status')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.extractionId).toBe('test-id');
+      expect(response.body.data.status).toBeDefined();
+    });
+  });
+
+  describe('POST /api/v1/ai/extract-demand/feedback', () => {
+    it('should accept feedback', async () => {
+      const response = await request(app)
+        .post('/api/v1/ai/extract-demand/feedback')
+        .send({
+          extractionId: 'test-id',
+          rating: 5,
+          feedback: 'Great extraction!',
+        })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.received).toBe(true);
+    });
+
+    it('should handle feedback submission', async () => {
+      const response = await request(app)
+        .post('/api/v1/ai/extract-demand/feedback')
+        .send({
+          extractionId: 'test-id',
+          rating: 3,
+          feedback: 'Could be better',
+          corrections: {
+            location: 'Corrected Location',
+          },
+        })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.feedbackId).toBeDefined();
+    });
+  });
+
+  describe('GET /api/v1/ai/scenes/:scene/config', () => {
+    it('should return scene configuration', async () => {
+      const mockSchema = {
+        id: 'vision-share',
+        version: '1.0.0',
+        scene: 'visionShare',
+        title: 'Vision Share',
+        description: '摄影分享场景',
+        fields: [
+          { id: 'title', type: 'text', label: 'Title', required: true },
+          { id: 'location', type: 'text', label: 'Location', required: false },
+        ],
+      };
+
+      mockedGetL2Schema.mockReturnValue(mockSchema as any);
+
+      const response = await request(app)
+        .get('/api/v1/ai/scenes/visionShare/config')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.scene).toBe('visionShare');
+      expect(response.body.data.schema).toBeDefined();
+      expect(response.body.data.schema.fields).toHaveLength(2);
+    });
+
+    it('should return 404 for unknown scene', async () => {
+      mockedGetL2Schema.mockReturnValue(null);
+
+      const response = await request(app)
+        .get('/api/v1/ai/scenes/unknown/config')
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('SCENE_NOT_FOUND');
     });
   });
 });

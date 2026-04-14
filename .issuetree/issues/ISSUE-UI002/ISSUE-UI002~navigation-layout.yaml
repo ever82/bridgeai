@@ -1,19 +1,20 @@
----
-id: "ISSUE-UI002"
+id: ISSUE-UI002
 issue_number: 1102
-title: "全局导航与布局"
-slug: "navigation-layout"
-status: "pending"
+title: 全局导航与布局
+slug: navigation-layout
+status: implemented
 description: |
   实现应用全局导航结构和布局系统，包括底部 Tab 导航、
   侧边抽屉导航、导航状态管理、页面布局容器等。
 prerequisites:
-  - "ISSUE-UI001"
-created_at: "2026-04-08"
+  - ISSUE-UI001
+created_at: '2026-04-08'
+started_at: '2026-04-11'
+completed_at: '2026-04-11'
 logic: sufficient_necessary
 criteria:
-  - id: "ISSUE-UI002~c1"
-    name: "底部 Tab 导航"
+  - id: ISSUE-UI002~c1
+    name: 底部 Tab 导航
     description: |
       实现底部 Tab 导航栏:
       - Tab 项：首页、消息、发现、我的
@@ -21,7 +22,7 @@ criteria:
       - 未读消息红点/角标显示
       - Tab 切换动画效果
       - 适配 iOS 底部安全区域
-    status: "pending"
+status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -30,12 +31,12 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查底部 Tab 导航实现，验证有 BottomTabNavigator 或等效组件，包含 Home、Messages、Discover、Profile 四个 Tab，支持 badge 显示和切换动画"
-        context_files: ["apps/mobile/src/navigation/BottomTabNavigator.tsx", "apps/mobile/src/navigation/AppNavigator.tsx"]
-        
-
-  - id: "ISSUE-UI002~c2"
-    name: "导航结构与路由配置"
+        prompt: 检查底部 Tab 导航实现，验证有 BottomTabNavigator 或等效组件，包含 Home、Messages、Discover、Profile 四个 Tab，支持 badge 显示和切换动画
+        context_files:
+          - apps/mobile/src/navigation/BottomTabNavigator.tsx
+          - apps/mobile/src/navigation/AppNavigator.tsx
+  - id: ISSUE-UI002~c2
+    name: 导航结构与路由配置
     description: |
       配置完整的路由系统:
       - 使用 React Navigation 配置导航栈
@@ -43,7 +44,7 @@ criteria:
       - 嵌套导航结构（Tab + Stack）
       - 路由参数类型定义
       - 深链接（Deep Link）配置
-    status: "pending"
+status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -52,12 +53,13 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查导航结构实现，验证使用 @react-navigation/native 配置，有 AuthStack 和 MainStack 分离，路由参数有 TypeScript 类型定义，支持深链接"
-        context_files: ["apps/mobile/src/navigation/AppNavigator.tsx", "apps/mobile/src/navigation/types.ts", "apps/mobile/src/navigation/linking.ts"]
-        
-
-  - id: "ISSUE-UI002~c3"
-    name: "页面布局容器"
+        prompt: 检查导航结构实现，验证使用 @react-navigation/native 配置，有 AuthStack 和 MainStack 分离，路由参数有 TypeScript 类型定义，支持深链接
+        context_files:
+          - apps/mobile/src/navigation/AppNavigator.tsx
+          - apps/mobile/src/navigation/types.ts
+          - apps/mobile/src/navigation/linking.ts
+  - id: ISSUE-UI002~c3
+    name: 页面布局容器
     description: |
       实现通用页面布局组件:
       - SafeAreaView 安全区域适配
@@ -65,7 +67,7 @@ criteria:
       - 内容滚动容器（ScrollView/FlatList）
       - 加载状态占位（Skeleton）
       - 空状态和错误状态页面
-    status: "pending"
+status: passed
     coverage:
       unit: required
       integration: not_needed
@@ -74,12 +76,13 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查页面布局组件实现，验证有 ScreenContainer、Header、LoadingSkeleton、EmptyState、ErrorState 等组件，支持安全区域和滚动"
-        context_files: ["apps/mobile/src/components/ScreenContainer/ScreenContainer.tsx", "apps/mobile/src/components/Header/Header.tsx", "apps/mobile/src/components/EmptyState/EmptyState.tsx"]
-        
-
-  - id: "ISSUE-UI002~c4"
-    name: "侧边抽屉导航"
+        prompt: 检查页面布局组件实现，验证有 ScreenContainer、Header、LoadingSkeleton、EmptyState、ErrorState 等组件，支持安全区域和滚动
+        context_files:
+          - apps/mobile/src/components/ScreenContainer/ScreenContainer.tsx
+          - apps/mobile/src/components/Header/Header.tsx
+          - apps/mobile/src/components/EmptyState/EmptyState.tsx
+  - id: ISSUE-UI002~c4
+    name: 侧边抽屉导航
     description: |
       实现侧边抽屉菜单:
       - 从左侧滑出的抽屉导航
@@ -87,7 +90,7 @@ criteria:
       - 菜单项列表（设置、帮助、反馈等）
       - 手势滑动打开/关闭
       - 遮罩层点击关闭
-    status: "pending"
+status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -96,12 +99,12 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查侧边抽屉导航实现，验证有 DrawerNavigator 组件，包含用户头像、菜单列表，支持手势滑动和遮罩点击关闭"
-        context_files: ["apps/mobile/src/navigation/DrawerNavigator.tsx", "apps/mobile/src/components/DrawerMenu/DrawerMenu.tsx"]
-        
-
-  - id: "ISSUE-UI002~c5"
-    name: "导航状态与权限控制"
+        prompt: 检查侧边抽屉导航实现，验证有 DrawerNavigator 组件，包含用户头像、菜单列表，支持手势滑动和遮罩点击关闭
+        context_files:
+          - apps/mobile/src/navigation/DrawerNavigator.tsx
+          - apps/mobile/src/components/DrawerMenu/DrawerMenu.tsx
+  - id: ISSUE-UI002~c5
+    name: 导航状态与权限控制
     description: |
       实现导航状态管理:
       - 基于认证状态的条件导航
@@ -109,7 +112,7 @@ criteria:
       - 导航状态持久化
       - 返回按钮行为控制
       - 页面跳转动画配置
-    status: "pending"
+status: passed
     coverage:
       unit: required
       integration: required
@@ -118,12 +121,12 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查导航状态管理实现，验证有基于 auth 状态的导航控制，路由守卫实现，导航状态持久化存储"
-        context_files: ["apps/mobile/src/navigation/AuthGuard.tsx", "apps/mobile/src/hooks/useAuthNavigation.ts"]
-        
-
-  - id: "ISSUE-UI002~c6"
-    name: "响应式布局适配"
+        prompt: 检查导航状态管理实现，验证有基于 auth 状态的导航控制，路由守卫实现，导航状态持久化存储
+        context_files:
+          - apps/mobile/src/navigation/AuthGuard.tsx
+          - apps/mobile/src/hooks/useAuthNavigation.ts
+  - id: ISSUE-UI002~c6
+    name: 响应式布局适配
     description: |
       实现响应式布局:
       - 不同屏幕尺寸适配（手机/平板）
@@ -131,7 +134,7 @@ criteria:
       - 键盘弹出时布局调整
       - 底部 Tab 栏与输入法协调
       - 刘海屏/灵动岛适配
-    status: "pending"
+status: passed
     coverage:
       unit: not_needed
       integration: required
@@ -140,6 +143,9 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查响应式布局实现，验证使用了 react-native-safe-area-context，有横竖屏适配处理，键盘避免遮挡输入框的处理"
-        context_files: ["apps/mobile/src/hooks/useScreenDimensions.ts", "apps/mobile/src/components/KeyboardAvoidingView/KeyboardAvoidingView.tsx"]
-        
+        prompt: 检查响应式布局实现，验证使用了 react-native-safe-area-context，有横竖屏适配处理，键盘避免遮挡输入框的处理
+        context_files:
+          - apps/mobile/src/hooks/useScreenDimensions.ts
+          - apps/mobile/src/components/KeyboardAvoidingView/KeyboardAvoidingView.tsx
+started_at: '2026-04-11'
+completed_at: '2026-04-11'

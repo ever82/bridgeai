@@ -2,295 +2,400 @@
  * Demand Extraction Service Tests
  */
 
-import { DemandExtractionService, ExtractionRequest, Demand } from '../demandExtractionService';
-import { LLMService, GenerateTextResponse } from '../llmService';
+import {
+  DemandExtractionService,
+  Demand,
+  DemandExtractionRequest,
+  IntentType,
+  EntityType,
+} from '../demandExtractionService';
 
-// Mock LLMService
+// Mock dependencies
 jest.mock('../llmService');
+jest.mock('../metricsService');
+jest.mock('../../../utils/logger', () => ({
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+  },
+}));
+
+import { llmService } from '../llmService';
+import { metricsService } from '../metricsService';
+
+const mockedLlmService = llmService as jest.Mocked<typeof llmService>;
+const mockedMetricsService = metricsService as jest.Mocked<typeof metricsService>;
 
 describe('DemandExtractionService', () => {
   let service: DemandExtractionService;
-  let mockGenerateText: jest.Mock;
 
   beforeEach(() => {
-    mockGenerateText = jest.fn().mockResolvedValue({
-      text: JSON.stringify({
-        intent: {
-          primary: 'find_collaborator',
-          confidence: 85,
-          alternatives: [{ intent: 'seek_inspiration', confidence: 30 }],
-        },
-        entities: {
-          time: [{ text: '周末下午', type: 'datetime', normalized: 'weekend afternoon', value: '2024-04-13T14:00:00Z' }],
-          location: [],
-          people: [{ text: '朋友', type: 'group', normalized: 'friend' }],
-          organizations: [],
-          keywords: ['拍照', '摄影'],
-        },
-        attributes: {
-          contentType: ['photography'],
-          purpose: 'collaborate',
-          skillLevel: 'intermediate',
-          availability: ['weekend_afternoon'],
-        },
-        fieldConfidence: {
-          contentType: { confidence: 90, reasoning: 'explicitly mentioned', source: 'explicit' },
-          purpose: { confidence: 80, reasoning: 'inferred from context', source: 'inferred' },
-        },
-        missingFields: [],
-        suggestedQuestions: [],
-        overallConfidence: 82,
-        clarificationNeeded: false,
-      }),
-      provider: 'openai',
-      model: 'gpt-4',
-      latencyMs: 500,
-      cost: 0.02,
-    } as GenerateTextResponse);
+    service = new DemandExtractionService();
+    jest.clearAllMocks();
 
-    const mockLLMService = {
-      initialize: jest.fn().mockResolvedValue(undefined),
-      generateText: mockGenerateText,
-    } as unknown as LLMService;
-
-    service = new DemandExtractionService(mockLLMService);
-  });
-
-  describe('initialize', () => {
-    it('should initialize the service', async () => {
-      await service.initialize();
-      expect(mockGenerateText).not.toHaveBeenCalled();
-    });
+    // Default mock for metrics
+    mockedMetricsService.recordRequest.mockResolvedValue(undefined);
   });
 
   describe('extract', () => {
-    const validRequest: ExtractionRequest = {
-      text: '我想找个周末下午能一起拍照的朋友',
-      scene: 'VISIONSHARE',
-      agentId: 'test-agent-1',
-      userId: 'test-user-1',
-    };
-
     it('should extract demand from text', async () => {
-      const demand = await service.extract(validRequest);
+      // Mock LLM response for intent classification
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({
+          intent: 'create_demand',
+          confidence: 0.95,
+          alternatives: [],
+        }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
 
-      expect(demand).toBeDefined();
-      expect(demand.scene).toBe('VISIONSHARE');
-      expect(demand.rawText).toBe(validRequest.text);
-      expect(demand.intent.primary).toBe('find_collaborator');
-      expect(demand.confidence).toBe(82);
-      expect(demand.clarificationNeeded).toBe(false);
-    });
+      // Mock LLM response for entity extraction
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({
+          entities: [
+            {
+              type: 'location',
+              value: '北京朝阳区',
+              normalizedValue: '北京朝阳区',
+              confidence: 0.9,
+            },
+            {
+              type: 'time',
+              value: '明天下午3点',
+              normalizedValue: '2024-01-16T15:00:00',
+              confidence: 0.85,
+            },
+          ],
+        }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
 
-    it('should have required Demand fields', async () => {
-      const demand = await service.extract(validRequest);
-
-      expect(demand.id).toBeDefined();
-      expect(demand.id.startsWith('demand-')).toBe(true);
-      expect(demand.scene).toBe('VISIONSHARE');
-      expect(demand.intent).toBeDefined();
-      expect(demand.intent.confidence).toBeDefined();
-      expect(demand.entities).toBeDefined();
-      expect(demand.attributes).toBeDefined();
-      expect(demand.rawText).toBeDefined();
-      expect(demand.confidence).toBeDefined();
-      expect(demand.fieldConfidence).toBeDefined();
-      expect(demand.extractedAt).toBeInstanceOf(Date);
-      expect(demand.clarificationNeeded).toBeDefined();
-      expect(demand.missingFields).toBeInstanceOf(Array);
-      expect(demand.suggestedQuestions).toBeInstanceOf(Array);
-    });
-
-    it('should extract entities correctly', async () => {
-      const demand = await service.extract(validRequest);
-
-      expect(demand.entities.time).toHaveLength(1);
-      expect(demand.entities.time[0].text).toBe('周末下午');
-      expect(demand.entities.time[0].type).toBe('datetime');
-
-      expect(demand.entities.people).toHaveLength(1);
-      expect(demand.entities.people[0].text).toBe('朋友');
-      expect(demand.entities.people[0].type).toBe('group');
-
-      expect(demand.entities.keywords).toContain('拍照');
-      expect(demand.entities.keywords).toContain('摄影');
-    });
-
-    it('should include confidence field', async () => {
-      const demand = await service.extract(validRequest);
-      expect(typeof demand.confidence).toBe('number');
-      expect(demand.confidence).toBeGreaterThanOrEqual(0);
-      expect(demand.confidence).toBeLessThanOrEqual(100);
-    });
-
-    it('should throw error for invalid scene', async () => {
-      const invalidRequest: ExtractionRequest = {
-        text: 'test text',
-        scene: 'INVALID_SCENE',
+      const request: DemandExtractionRequest = {
+        text: '我想在北京朝阳区拍摄，明天下午3点，需要一个摄影师',
+        scene: 'visionShare',
       };
 
-      await expect(service.extract(invalidRequest)).rejects.toThrow('Schema not found');
+      const result = await service.extract(request);
+
+      expect(result).toBeDefined();
+      expect(result.rawText).toBe(request.text);
+      expect(result.intent.intent).toBe('create_demand');
+      expect(result.intent.confidence).toBe(0.95);
+      expect(result.entities).toHaveLength(2);
+      expect(result.entities[0].type).toBe('location');
+      expect(result.metadata).toBeDefined();
+      expect(result.metadata.version).toBe('1.0.0');
     });
 
-    it('should handle LLM service errors', async () => {
-      mockGenerateText.mockRejectedValueOnce(new Error('LLM error'));
-
-      await expect(service.extract(validRequest)).rejects.toThrow('LLM error');
-    });
-
-    it('should handle malformed LLM responses', async () => {
-      mockGenerateText.mockResolvedValueOnce({
-        text: 'not valid json',
-        provider: 'openai',
-        model: 'gpt-4',
-        latencyMs: 500,
-        cost: 0.02,
-      } as GenerateTextResponse);
-
-      const demand = await service.extract(validRequest);
-
-      // Should return default values on parse failure
-      expect(demand.clarificationNeeded).toBe(true);
-      expect(demand.confidence).toBe(0);
-    });
-  });
-
-  describe('extractEntities', () => {
-    it('should extract entities from text', async () => {
-      mockGenerateText.mockResolvedValueOnce({
+    it('should handle entity extraction', async () => {
+      mockedLlmService.generateText.mockResolvedValueOnce({
         text: JSON.stringify({
-          time: [{ text: '明天', type: 'relative', normalized: 'tomorrow' }],
-          location: [{ text: '北京', type: 'city', normalized: 'Beijing' }],
-          people: [{ text: '张三', type: 'name', normalized: 'Zhang San' }],
-          organizations: ['ABC公司'],
-          keywords: ['会议', '项目'],
+          intent: 'search_demand',
+          confidence: 0.88,
+          alternatives: [],
         }),
         provider: 'openai',
         model: 'gpt-4',
-        latencyMs: 300,
-        cost: 0.01,
-      } as GenerateTextResponse);
+        latencyMs: 100,
+      });
 
-      const entities = await service.extractEntities('明天在北京和张三开会讨论项目');
-
-      expect(entities.time).toHaveLength(1);
-      expect(entities.location).toHaveLength(1);
-      expect(entities.people).toHaveLength(1);
-      expect(entities.organizations).toContain('ABC公司');
-      expect(entities.keywords).toContain('会议');
-    });
-  });
-
-  describe('classifyIntent', () => {
-    it('should classify intent from text', async () => {
-      mockGenerateText.mockResolvedValueOnce({
+      mockedLlmService.generateText.mockResolvedValueOnce({
         text: JSON.stringify({
-          primary: 'seek_help',
-          confidence: 90,
-          alternatives: [{ intent: 'ask_question', confidence: 40 }],
+          entities: [
+            {
+              type: 'budget',
+              value: '1000-2000元',
+              normalizedValue: { min: 1000, max: 2000 },
+              confidence: 0.92,
+            },
+            {
+              type: 'person',
+              value: '2个人',
+              normalizedValue: 2,
+              confidence: 0.9,
+            },
+          ],
         }),
         provider: 'openai',
         model: 'gpt-4',
-        latencyMs: 300,
-        cost: 0.01,
-      } as GenerateTextResponse);
+        latencyMs: 100,
+      });
 
-      const intent = await service.classifyIntent('请问有人能帮我吗？', ['seek_help', 'ask_question', 'share_info']);
+      const request: DemandExtractionRequest = {
+        text: '预算1000-2000元，需要2个人',
+        scene: 'agentAd',
+      };
 
-      expect(intent.primary).toBe('seek_help');
-      expect(intent.confidence).toBe(90);
-      expect(intent.alternatives).toHaveLength(1);
+      const result = await service.extract(request);
+
+      expect(result.entities).toHaveLength(2);
+      expect(result.structured.budget?.max).toBe(2000);
+      expect(result.structured.people?.count).toBe(2);
+    });
+
+    it('should calculate confidence score', async () => {
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({
+          intent: 'create_demand',
+          confidence: 0.9,
+          alternatives: [],
+        }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({
+          entities: [
+            { type: 'location', value: '上海', confidence: 0.95 },
+            { type: 'time', value: '下周', confidence: 0.8 },
+          ],
+        }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      const request: DemandExtractionRequest = {
+        text: '下周在上海拍摄',
+        scene: 'visionShare',
+      };
+
+      const result = await service.extract(request);
+
+      expect(result.confidence).toBeGreaterThan(0);
+      expect(result.confidence).toBeLessThanOrEqual(1);
+    });
+
+    it('should detect clarification needed', async () => {
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({
+          intent: 'create_demand',
+          confidence: 0.7,
+          alternatives: [],
+        }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({
+          entities: [],
+        }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      const request: DemandExtractionRequest = {
+        text: '我想找个摄影师',
+        scene: 'visionShare',
+        options: {
+          requireClarification: true,
+        },
+      };
+
+      const result = await service.extract(request);
+
+      expect(result.clarificationNeeded).toBe(true);
+      expect(result.clarificationQuestions?.length).toBeGreaterThan(0);
+    });
+
+    it('should handle errors gracefully', async () => {
+      mockedLlmService.generateText.mockRejectedValueOnce(new Error('LLM Error'));
+
+      const request: DemandExtractionRequest = {
+        text: '测试文本',
+        scene: 'visionShare',
+      };
+
+      await expect(service.extract(request)).rejects.toThrow('LLM Error');
+    });
+
+    it('should process location entities correctly', async () => {
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({ intent: 'create_demand', confidence: 0.9, alternatives: [] }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({
+          entities: [
+            { type: 'location', value: '北京市朝阳区三里屯', confidence: 0.95 },
+            { type: 'location', value: '海淀区', confidence: 0.88 },
+          ],
+        }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      const result = await service.extract({ text: '北京拍摄', scene: 'visionShare' });
+
+      expect(result.structured.location?.address).toContain('三里屯');
+    });
+
+    it('should process budget entities correctly', async () => {
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({ intent: 'create_demand', confidence: 0.9, alternatives: [] }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({
+          entities: [
+            { type: 'budget', value: '5000元', normalizedValue: 5000, confidence: 0.9 },
+          ],
+        }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      const result = await service.extract({ text: '预算5000元', scene: 'visionShare' });
+
+      expect(result.structured.budget?.max).toBe(5000);
+      expect(result.structured.budget?.currency).toBe('CNY');
+    });
+
+    it('should process time entities correctly', async () => {
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({ intent: 'create_demand', confidence: 0.9, alternatives: [] }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({
+          entities: [
+            { type: 'time', value: '随时都可以', confidence: 0.85 },
+          ],
+        }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      const result = await service.extract({ text: '时间灵活', scene: 'visionShare' });
+
+      expect(result.structured.time?.flexibility).toBe('anytime');
     });
   });
 
-  describe('getConfidenceLevel', () => {
-    it('should return high for confidence >= 80', () => {
-      expect(service.getConfidenceLevel(80)).toBe('high');
-      expect(service.getConfidenceLevel(100)).toBe('high');
+  describe('intent classification', () => {
+    it('should classify create_demand intent', async () => {
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({
+          intent: 'create_demand',
+          confidence: 0.95,
+          alternatives: [{ intent: 'search_demand', confidence: 0.05 }],
+        }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({ entities: [] }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      const result = await service.extract({
+        text: '我想发布一个拍摄需求',
+        scene: 'visionShare',
+      });
+
+      expect(result.intent.intent).toBe('create_demand');
+      expect(result.intent.confidence).toBe(0.95);
     });
 
-    it('should return medium for confidence >= 50', () => {
-      expect(service.getConfidenceLevel(50)).toBe('medium');
-      expect(service.getConfidenceLevel(79)).toBe('medium');
-    });
+    it('should classify search_demand intent', async () => {
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({
+          intent: 'search_demand',
+          confidence: 0.92,
+          alternatives: [],
+        }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
 
-    it('should return low for confidence < 50', () => {
-      expect(service.getConfidenceLevel(0)).toBe('low');
-      expect(service.getConfidenceLevel(49)).toBe('low');
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({ entities: [] }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      const result = await service.extract({
+        text: '搜索北京的摄影师',
+        scene: 'visionShare',
+      });
+
+      expect(result.intent.intent).toBe('search_demand');
     });
   });
 
-  describe('needsClarification', () => {
-    it('should return true if clarificationNeeded flag is set', () => {
-      const demand = {
-        id: 'test',
-        scene: 'VISIONSHARE',
-        intent: { primary: 'test', confidence: 80, alternatives: [] },
-        entities: { time: [], location: [], people: [], organizations: [], keywords: [] },
-        attributes: {},
-        rawText: 'test',
-        confidence: 90,
-        fieldConfidence: {},
-        extractedAt: new Date(),
-        clarificationNeeded: true,
-        missingFields: [],
-        suggestedQuestions: [],
-      } as Demand;
-      expect(service.needsClarification(demand)).toBe(true);
+  describe('configuration', () => {
+    it('should return version', () => {
+      expect(service.getVersion()).toBe('1.0.0');
     });
 
-    it('should return true if confidence is below 50', () => {
-      const demand = {
-        id: 'test',
-        scene: 'VISIONSHARE',
-        intent: { primary: 'test', confidence: 80, alternatives: [] },
-        entities: { time: [], location: [], people: [], organizations: [], keywords: [] },
-        attributes: {},
-        rawText: 'test',
-        confidence: 30,
-        fieldConfidence: {},
-        extractedAt: new Date(),
-        clarificationNeeded: false,
-        missingFields: [],
-        suggestedQuestions: [],
-      } as Demand;
-      expect(service.needsClarification(demand)).toBe(true);
+    it('should set confidence threshold', () => {
+      service.setMinConfidenceThreshold(0.7);
+      expect(service['minConfidenceThreshold']).toBe(0.7);
+    });
+  });
+
+  describe('options handling', () => {
+    it('should respect extractEntities option', async () => {
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({ intent: 'create_demand', confidence: 0.9, alternatives: [] }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
+
+      const result = await service.extract(
+        { text: '测试', scene: 'visionShare' },
+        { extractEntities: false }
+      );
+
+      // Should only call LLM once for intent
+      expect(mockedLlmService.generateText).toHaveBeenCalledTimes(1);
+      expect(result.entities).toHaveLength(0);
     });
 
-    it('should return true if there are missing fields', () => {
-      const demand = {
-        id: 'test',
-        scene: 'VISIONSHARE',
-        intent: { primary: 'test', confidence: 80, alternatives: [] },
-        entities: { time: [], location: [], people: [], organizations: [], keywords: [] },
-        attributes: {},
-        rawText: 'test',
-        confidence: 90,
-        fieldConfidence: {},
-        extractedAt: new Date(),
-        clarificationNeeded: false,
-        missingFields: ['field1'],
-        suggestedQuestions: [],
-      } as Demand;
-      expect(service.needsClarification(demand)).toBe(true);
-    });
+    it('should respect classifyIntent option', async () => {
+      mockedLlmService.generateText.mockResolvedValueOnce({
+        text: JSON.stringify({ entities: [] }),
+        provider: 'openai',
+        model: 'gpt-4',
+        latencyMs: 100,
+      });
 
-    it('should return false if none of the conditions are met', () => {
-      const demand = {
-        id: 'test',
-        scene: 'VISIONSHARE',
-        intent: { primary: 'test', confidence: 80, alternatives: [] },
-        entities: { time: [], location: [], people: [], organizations: [], keywords: [] },
-        attributes: {},
-        rawText: 'test',
-        confidence: 90,
-        fieldConfidence: {},
-        extractedAt: new Date(),
-        clarificationNeeded: false,
-        missingFields: [],
-        suggestedQuestions: [],
-      } as Demand;
-      expect(service.needsClarification(demand)).toBe(false);
+      const result = await service.extract(
+        { text: '测试', scene: 'visionShare' },
+        { classifyIntent: false }
+      );
+
+      expect(result.intent.intent).toBe('unknown');
+      expect(result.intent.confidence).toBe(0);
     });
   });
 });

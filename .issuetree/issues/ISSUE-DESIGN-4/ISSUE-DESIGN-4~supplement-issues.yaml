@@ -1,14 +1,36 @@
-id: 'ISSUE-DESIGN-4'
+id: ISSUE-DESIGN-4
 issue_number: 4
-title: '补充完善 Issues'
-slug: 'supplement-issues'
-status: 'in_progress'
+title: 补充完善 Issues
+slug: supplement-issues
+status: implemented
 description: |
   回顾已生成的 Issues 列表，检查是否有遗漏。
   补充缺失的 issue 或完善现有 issue 的描述、验收标准、依赖关系。
   此 issue 长期开放，在开发阶段也会不断通过此 issue 添加新的设计。
-prerequisites: ['ISSUE-DESIGN-3']
+prerequisites:
+  - ISSUE-DESIGN-3
 created_at: '2026-04-08'
 passed_at: null
 logic: sufficient_necessary
 criteria: []
+implementation:
+  task_id: TASK-3
+  completed_at: '2026-04-12T00:00:00+08:00'
+  execution_time_minutes: 30
+  result: success
+  notes: |
+    Re-implemented ISSUE-DESIGN-4 with infrastructure issues:
+    - Created 6 new infrastructure issues (INF001-INF006):
+      * ISSUE-INF001: API Gateway
+      * ISSUE-INF002: Redis Cache
+      * ISSUE-INF003: Job Queue
+      * ISSUE-INF004: DB Migration
+      * ISSUE-INF005: Push Notification
+      * ISSUE-INF006: Email Service
+    - Updated IssueTree.md with Infrastructure section
+    - Added dependencies in Mermaid graph
+    - Added Infrastructure table with complexity and dependencies
+test_passed: true
+test_duration_seconds: 0
+merged_to_master: true
+worktree_path: null

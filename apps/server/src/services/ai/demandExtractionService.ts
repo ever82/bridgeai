@@ -1,498 +1,763 @@
 /**
  * Demand Extraction Service
- * 需求智能提炼服务 - 核心解析引擎
- *
- * Provides:
- * - Natural language understanding
- * - Entity recognition (time/location/people)
- * - Intent classification
- * - Structured demand output
- * - Confidence scoring
+ * 需求智能提炼服务 - 核心框架
+ * 提供自然语言理解、实体识别、意图分类和结构化输出
  */
 
-import { LLMService } from './llmService';
+import { llmService } from './llmService';
+import { metricsService } from './metricsService';
 import { LLMProvider } from './types';
-import { getL2Schema, L2Schema, L2Data, L2FieldType } from '@visionshare/shared';
-import logger from '../../utils/logger';
+import { logger } from '../../utils/logger';
+import {
+  SceneDetector,
+  SceneSpecificExtractor,
+  SceneType,
+  sceneDetector
+} from './extractors';
+import { ClarificationService, clarificationService } from './clarificationService';
 
 /**
- * Extracted entity types
+ * Extracted Entity Types
  */
-export interface ExtractedEntities {
-  time: TimeEntity[];
-  location: LocationEntity[];
-  people: PeopleEntity[];
-  organizations: string[];
-  keywords: string[];
+export type EntityType = 'time' | 'location' | 'person' | 'budget' | 'requirement' | 'preference';
+
+/**
+ * Extracted Entity
+ */
+export interface ExtractedEntity {
+  type: EntityType;
+  value: string;
+  normalizedValue?: string | number | { min: number; max: number };
+  startIndex: number;
+  endIndex: number;
+  confidence: number;
 }
 
 /**
- * Time entity
+ * Intent Type
  */
-export interface TimeEntity {
-  text: string;
-  type: 'date' | 'time' | 'datetime' | 'duration' | 'relative';
-  value?: string; // ISO format or relative description
-  normalized: string;
-}
+export type IntentType =
+  | 'create_demand'
+  | 'update_demand'
+  | 'search_demand'
+  | 'clarify_demand'
+  | 'confirm_demand'
+  | 'cancel_demand'
+  | 'unknown';
 
 /**
- * Location entity
- */
-export interface LocationEntity {
-  text: string;
-  type: 'city' | 'district' | 'address' | 'poi' | 'region';
-  normalized: string;
-  coordinates?: { lat: number; lng: number };
-}
-
-/**
- * People entity
- */
-export interface PeopleEntity {
-  text: string;
-  type: 'name' | 'role' | 'group';
-  normalized: string;
-}
-
-/**
- * Intent classification result
+ * Intent Classification Result
  */
 export interface IntentResult {
-  primary: string;
+  intent: IntentType;
   confidence: number;
-  alternatives: { intent: string; confidence: number }[];
+  alternatives: { intent: IntentType; confidence: number }[];
 }
 
 /**
- * Demand object - structured extraction result
+ * Structured Demand Object
  */
 export interface Demand {
-  id: string;
-  scene: string;
-  intent: IntentResult;
-  entities: ExtractedEntities;
-  attributes: L2Data;
+  id?: string;
   rawText: string;
-  confidence: number; // Overall confidence score (0-100)
-  fieldConfidence: Record<string, number>; // Per-field confidence
-  extractedAt: Date;
+  intent: IntentResult;
+  entities: ExtractedEntity[];
+  structured: {
+    title?: string;
+    description?: string;
+    location?: {
+      city?: string;
+      district?: string;
+      address?: string;
+    };
+    time?: {
+      startTime?: string;
+      endTime?: string;
+      duration?: string;
+      flexibility?: 'strict' | 'flexible' | 'anytime';
+    };
+    people?: {
+      count?: number;
+      roles?: string[];
+    };
+    budget?: {
+      min?: number;
+      max?: number;
+      currency?: string;
+      unit?: string;
+    };
+    requirements?: string[];
+    preferences?: string[];
+    constraints?: string[];
+  };
+  confidence: number;
+  scene?: string;
   clarificationNeeded: boolean;
-  missingFields: string[];
-  suggestedQuestions: string[];
+  clarificationQuestions?: string[];
+  metadata: {
+    processedAt: Date;
+    provider: LLMProvider;
+    model: string;
+    latencyMs: number;
+    version: string;
+  };
 }
 
 /**
- * Extraction request
+ * Extraction Request
  */
-export interface ExtractionRequest {
+export interface DemandExtractionRequest {
   text: string;
-  scene: string;
-  agentId?: string;
-  userId?: string;
+  scene?: string;
   context?: {
     previousDemands?: Demand[];
     userPreferences?: Record<string, any>;
-    conversationHistory?: { role: string; content: string }[];
+    conversationHistory?: { role: 'user' | 'assistant'; content: string }[];
+  };
+  options?: {
+    extractEntities?: boolean;
+    classifyIntent?: boolean;
+    requireClarification?: boolean;
+    language?: string;
   };
 }
 
 /**
- * Field extraction with confidence
+ * Extraction Options
  */
-interface FieldExtraction {
-  field: string;
-  value: any;
-  confidence: number;
-  reasoning: string;
-  source: 'explicit' | 'inferred' | 'default';
+export interface ExtractionOptions {
+  extractEntities?: boolean;
+  classifyIntent?: boolean;
+  requireClarification?: boolean;
+  language?: string;
+  minConfidence?: number;
 }
 
 /**
- * LLM extraction response
- */
-interface LLMExtractionResponse {
-  intent: {
-    primary: string;
-    confidence: number;
-    alternatives: { intent: string; confidence: number }[];
-  };
-  entities: {
-    time: TimeEntity[];
-    location: LocationEntity[];
-    people: PeopleEntity[];
-    organizations: string[];
-    keywords: string[];
-  };
-  attributes: Record<string, any>;
-  fieldConfidence: Record<string, { confidence: number; reasoning: string; source: string }>;
-  missingFields: string[];
-  suggestedQuestions: string[];
-  overallConfidence: number;
-  clarificationNeeded: boolean;
-}
-
-/**
- * Demand Extraction Service
- * Main class for extracting structured demand from natural language
+ * Demand Extraction Service Class
+ * 需求解析引擎核心类
  */
 export class DemandExtractionService {
-  private llmService: LLMService;
+  private version = '1.0.0';
+  private minConfidenceThreshold = 0.5;
+  private sceneDetector: SceneDetector;
+  private clarificationSvc: ClarificationService;
 
-  constructor(llmService?: LLMService) {
-    this.llmService = llmService || new LLMService();
+  constructor(
+    sceneDetector?: SceneDetector,
+    clarificationService?: ClarificationService
+  ) {
+    this.sceneDetector = sceneDetector || new SceneDetector();
+    this.clarificationSvc = clarificationService || new ClarificationService();
   }
 
   /**
-   * Initialize the service
+   * Get scene detector
    */
-  async initialize(): Promise<void> {
-    await this.llmService.initialize();
-    logger.info('DemandExtractionService initialized');
+  getSceneDetector(): SceneDetector {
+    return this.sceneDetector;
   }
 
   /**
-   * Extract structured demand from natural language text
-   *
-   * @param request - Extraction request containing text and scene
-   * @returns Promise<Demand> - Structured demand with confidence
+   * Get clarification service
    */
-  async extract(request: ExtractionRequest): Promise<Demand> {
+  getClarificationService(): ClarificationService {
+    return this.clarificationSvc;
+  }
+
+  /**
+   * Extract demand from natural language text
+   * 从自然语言文本中提取需求
+   */
+  async extract(
+    request: DemandExtractionRequest,
+    options: ExtractionOptions = {}
+  ): Promise<Demand> {
     const startTime = Date.now();
-    const { text, scene, agentId, userId, context } = request;
-
-    logger.info('Starting demand extraction', {
-      scene,
-      textLength: text.length,
-      agentId,
-      userId,
-    });
+    const { text, scene: providedScene, context } = request;
+    const opts = { ...this.getDefaultOptions(), ...options };
 
     try {
-      // Get schema for the scene
-      const schema = getL2Schema(scene);
-      if (!schema) {
-        throw new Error(`Schema not found for scene: ${scene}`);
-      }
-
-      // Build extraction prompt
-      const prompt = this.buildExtractionPrompt(text, scene, schema, context);
-
-      // Call LLM for extraction
-      const response = await this.llmService.generateText(prompt, {
-        temperature: 0.2, // Low temperature for consistent extraction
-        maxTokens: 2500,
+      logger.info('Starting demand extraction', {
+        textLength: text.length,
+        scene: providedScene,
+        hasContext: !!context,
       });
 
-      // Parse LLM response
-      const extractionResult = this.parseExtractionResult(response.text);
+      // Step 1: Detect scene if not provided
+      let detectedScene: SceneType = providedScene as SceneType || 'unknown';
+      let sceneConfidence = 1.0;
 
-      // Build Demand object
+      if (!providedScene) {
+        const detectionResult = await this.sceneDetector.detectScene(text);
+        detectedScene = detectionResult.scene;
+        sceneConfidence = detectionResult.confidence;
+        logger.info('Scene detected', { scene: detectedScene, confidence: sceneConfidence });
+      }
+
+      // Step 2: Try scene-specific extraction if we have a known scene
+      let sceneDemand: Partial<Demand> | null = null;
+      if (detectedScene !== 'unknown' && sceneConfidence >= 0.5) {
+        const extractor = this.sceneDetector.getExtractor(detectedScene);
+        if (extractor) {
+          sceneDemand = await extractor.extract(request);
+          logger.info('Scene-specific extraction completed', { scene: detectedScene });
+        }
+      }
+
+      // Step 3: Classify intent if enabled (or use scene demand's intent)
+      const intent = sceneDemand?.intent || (opts.classifyIntent
+        ? await this.classifyIntent(text, context)
+        : this.getDefaultIntent());
+
+      // Step 4: Extract entities if enabled (or use scene demand's entities)
+      const entities = sceneDemand?.entities || (opts.extractEntities
+        ? await this.extractEntities(text)
+        : []);
+
+      // Step 5: Build structured demand (prefer scene demand's structure)
+      const structured = sceneDemand?.structured || this.buildStructuredDemand(entities, text);
+
+      // Step 6: Check if clarification is needed
+      const { clarificationNeeded, questions } = sceneDemand
+        ? { clarificationNeeded: sceneDemand.clarificationNeeded || false, questions: sceneDemand.clarificationQuestions || [] }
+        : this.checkClarificationNeeded(
+            structured,
+            intent,
+            opts.requireClarification
+          );
+
+      // Step 7: Calculate overall confidence
+      const confidence = sceneDemand?.confidence || this.calculateConfidence(intent, entities, structured);
+
+      // Step 8: Build final demand object
       const demand: Demand = {
-        id: `demand-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        scene,
-        intent: extractionResult.intent,
-        entities: extractionResult.entities,
-        attributes: extractionResult.attributes,
         rawText: text,
-        confidence: extractionResult.overallConfidence,
-        fieldConfidence: Object.fromEntries(
-          Object.entries(extractionResult.fieldConfidence).map(([k, v]) => [k, v.confidence])
-        ),
-        extractedAt: new Date(),
-        clarificationNeeded: extractionResult.clarificationNeeded,
-        missingFields: extractionResult.missingFields,
-        suggestedQuestions: extractionResult.suggestedQuestions,
+        intent,
+        entities,
+        structured,
+        confidence,
+        scene: detectedScene,
+        clarificationNeeded,
+        clarificationQuestions: questions,
+        metadata: {
+          processedAt: new Date(),
+          provider: LLMProvider.OPENAI,
+          model: 'gpt-4',
+          latencyMs: Date.now() - startTime,
+          version: this.version,
+        },
       };
 
-      const latencyMs = Date.now() - startTime;
+      // Step 9: Record metrics
+      await this.recordMetrics(demand, startTime);
 
       logger.info('Demand extraction completed', {
-        demandId: demand.id,
-        scene,
-        confidence: demand.confidence,
-        fieldsExtracted: Object.keys(demand.attributes).length,
-        missingFields: demand.missingFields.length,
-        latencyMs,
+        intent: intent.intent,
+        scene: detectedScene,
+        entityCount: entities.length,
+        confidence,
+        clarificationNeeded,
+        latencyMs: demand.metadata.latencyMs,
       });
 
       return demand;
     } catch (error) {
       logger.error('Demand extraction failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        scene,
-        agentId,
+        textLength: text.length,
       });
       throw error;
     }
   }
 
   /**
-   * Build extraction prompt for LLM
+   * Classify intent from text
+   * 意图分类
    */
-  private buildExtractionPrompt(
+  private async classifyIntent(
     text: string,
-    scene: string,
-    schema: L2Schema,
-    context?: ExtractionRequest['context']
-  ): string {
-    const fieldDescriptions = schema.fields.map(field => {
-      let description = `- ${field.id}: ${field.label}`;
-      if (field.description) {
-        description += ` (${field.description})`;
-      }
-      if (field.type === L2FieldType.ENUM && field.options) {
-        const options = field.options.map(o => `"${o.value}"`).join(', ');
-        description += ` [可选值: ${options}]`;
-      } else if (field.type === L2FieldType.MULTI_SELECT && field.options) {
-        const options = field.options.map(o => `"${o.value}"`).join(', ');
-        description += ` [多选值: ${options}]`;
-      } else if (field.type === L2FieldType.RANGE) {
-        description += ` [范围格式: {"min": 数值, "max": 数值}]`;
-      } else if (field.type === L2FieldType.NUMBER) {
-        description += ` [数值]`;
-      } else if (field.type === L2FieldType.BOOLEAN) {
-        description += ` [布尔值: true/false]`;
-      } else {
-        description += ` [${field.type}]`;
-      }
-      if (field.required) {
-        description += ' (必填)';
-      }
-      return description;
-    }).join('\n');
-
-    const contextPrompt = context?.conversationHistory
-      ? `\n## 对话历史:\n${context.conversationHistory
-          .map(h => `${h.role}: ${h.content}`)
-          .join('\n')}`
-      : '';
-
-    return `你是一位专业的需求解析专家。请从用户的自然语言描述中提取结构化信息。
-
-## 场景: ${schema.title}
-${schema.description || ''}
-场景代码: ${scene}
-
-## 需要提取的字段:
-${fieldDescriptions}
-
-## 用户输入:
-"""${text}"""${contextPrompt}
-
-## 提取要求:
-1. 意图识别: 分析用户的主要意图和可能的替代意图
-2. 实体识别: 提取时间、地点、人物等关键实体
-3. 属性提取: 从文本中提取符合schema的字段值
-4. 字段标准化:
-   - 价格统一转换为数值（如"1000元"转为1000）
-   - 时间统一转换为ISO格式或相对描述
-   - 枚举值必须匹配预定义选项
-5. 置信度评估: 为每个提取的字段提供置信度分数(0-100)
-6. 缺失推断: 识别缺失的必填字段并提供建议问题
-
-## 响应格式 (JSON):
-{
-  "intent": {
-    "primary": "主要意图",
-    "confidence": 85,
-    "alternatives": [
-      {"intent": "替代意图1", "confidence": 30}
-    ]
-  },
-  "entities": {
-    "time": [
-      {"text": "原文", "type": "date|time|datetime|duration|relative", "value": "标准化值", "normalized": "标准化描述"}
-    ],
-    "location": [
-      {"text": "原文", "type": "city|district|address|poi|region", "normalized": "标准化值"}
-    ],
-    "people": [
-      {"text": "原文", "type": "name|role|group", "normalized": "标准化值"}
-    ],
-    "organizations": ["组织名称"],
-    "keywords": ["关键词1", "关键词2"]
-  },
-  "attributes": {
-    "field_id": "提取的值"
-  },
-  "fieldConfidence": {
-    "field_id": {"confidence": 90, "reasoning": "明确提及", "source": "explicit|inferred|default"}
-  },
-  "missingFields": ["缺失的必填字段"],
-  "suggestedQuestions": ["用于澄清的问题"],
-  "overallConfidence": 75,
-  "clarificationNeeded": false
-}
-
-请只返回JSON对象，不要添加其他文本。`;
-  }
-
-  /**
-   * Parse LLM extraction result
-   */
-  private parseExtractionResult(text: string): LLMExtractionResponse {
-    try {
-      // Extract JSON from text (handle markdown code blocks)
-      const jsonMatch = text.match(/```json\n?([\s\S]*?)\n?```/) ||
-                        text.match(/```\n?([\s\S]*?)\n?```/) ||
-                        text.match(/(\{[\s\S]*\})/);
-
-      const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : text;
-      const result = JSON.parse(jsonStr.trim());
-
-      // Normalize and validate the result
-      return {
-        intent: {
-          primary: result.intent?.primary || 'unknown',
-          confidence: result.intent?.confidence || 0,
-          alternatives: result.intent?.alternatives || [],
-        },
-        entities: {
-          time: result.entities?.time || [],
-          location: result.entities?.location || [],
-          people: result.entities?.people || [],
-          organizations: result.entities?.organizations || [],
-          keywords: result.entities?.keywords || [],
-        },
-        attributes: result.attributes || {},
-        fieldConfidence: result.fieldConfidence || {},
-        missingFields: result.missingFields || [],
-        suggestedQuestions: result.suggestedQuestions || [],
-        overallConfidence: result.overallConfidence || 0,
-        clarificationNeeded: result.clarificationNeeded || false,
-      };
-    } catch (error) {
-      logger.error('Failed to parse extraction result', { error, text });
-      // Return empty result on parse failure
-      return {
-        intent: { primary: 'unknown', confidence: 0, alternatives: [] },
-        entities: { time: [], location: [], people: [], organizations: [], keywords: [] },
-        attributes: {},
-        fieldConfidence: {},
-        missingFields: [],
-        suggestedQuestions: [],
-        overallConfidence: 0,
-        clarificationNeeded: true,
-      };
-    }
-  }
-
-  /**
-   * Extract entities from text (standalone method for specific use cases)
-   *
-   * @param text - Text to analyze
-   * @returns Promise<ExtractedEntities> - Extracted entities
-   */
-  async extractEntities(text: string): Promise<ExtractedEntities> {
-    const prompt = `从以下文本中提取实体信息:
-
-"""${text}"""
-
-请识别并提取:
-1. 时间实体 (日期、时间、持续时间、相对时间)
-2. 地点实体 (城市、区域、地址、POI)
-3. 人物实体 (姓名、角色、群体)
-4. 组织实体 (公司、机构)
-5. 关键词
-
-以JSON格式返回:
-{
-  "time": [{"text": "原文", "type": "date|time|datetime|duration|relative", "normalized": "标准化值"}],
-  "location": [{"text": "原文", "type": "city|district|address|poi|region", "normalized": "标准化值"}],
-  "people": [{"text": "原文", "type": "name|role|group", "normalized": "标准化值"}],
-  "organizations": ["组织名称"],
-  "keywords": ["关键词"]
-}`;
+    context?: DemandExtractionRequest['context']
+  ): Promise<IntentResult> {
+    const prompt = this.buildIntentClassificationPrompt(text, context);
 
     try {
-      const response = await this.llmService.generateText(prompt, {
-        temperature: 0.3,
-        maxTokens: 1500,
-      });
-
-      const result = JSON.parse(response.text);
-      return {
-        time: result.time || [],
-        location: result.location || [],
-        people: result.people || [],
-        organizations: result.organizations || [],
-        keywords: result.keywords || [],
-      };
-    } catch (error) {
-      logger.error('Entity extraction failed', { error, text });
-      return {
-        time: [],
-        location: [],
-        people: [],
-        organizations: [],
-        keywords: [],
-      };
-    }
-  }
-
-  /**
-   * Classify intent from text (standalone method)
-   *
-   * @param text - Text to classify
-   * @param possibleIntents - List of possible intent categories
-   * @returns Promise<IntentResult> - Intent classification result
-   */
-  async classifyIntent(text: string, possibleIntents: string[]): Promise<IntentResult> {
-    const prompt = `分析以下文本的意图:
-
-"""${text}"""
-
-可能的意图类别:
-${possibleIntents.map(i => `- ${i}`).join('\n')}
-
-以JSON格式返回:
-{
-  "primary": "主要意图",
-  "confidence": 85,
-  "alternatives": [
-    {"intent": "替代意图", "confidence": 30}
-  ]
-}`;
-
-    try {
-      const response = await this.llmService.generateText(prompt, {
+      const response = await llmService.generateText(prompt, {
         temperature: 0.3,
         maxTokens: 500,
       });
 
-      const result = JSON.parse(response.text);
-      return {
-        primary: result.primary || 'unknown',
-        confidence: result.confidence || 0,
-        alternatives: result.alternatives || [],
-      };
+      const result = this.parseIntentResult(response.text);
+
+      // Record metrics for intent classification
+      await metricsService.recordRequest({
+        requestId: `intent-${Date.now()}`,
+        provider: response.provider,
+        model: response.model,
+        latencyMs: response.latencyMs || 0,
+        success: true,
+        tokenUsage: response.usage || { input: 0, output: 0, total: 0 },
+        costUsd: response.cost || 0,
+      });
+
+      return result;
     } catch (error) {
-      logger.error('Intent classification failed', { error, text });
-      return {
-        primary: 'unknown',
-        confidence: 0,
-        alternatives: [],
-      };
+      logger.error('Intent classification failed', { error });
+      return this.getDefaultIntent();
     }
   }
 
   /**
-   * Get confidence level description
+   * Build intent classification prompt
    */
-  getConfidenceLevel(confidence: number): 'high' | 'medium' | 'low' {
-    if (confidence >= 80) return 'high';
-    if (confidence >= 50) return 'medium';
-    return 'low';
+  private buildIntentClassificationPrompt(
+    text: string,
+    context?: DemandExtractionRequest['context']
+  ): string {
+    const history = context?.conversationHistory
+      ?.map(h => `${h.role}: ${h.content}`)
+      .join('\n');
+
+    return `You are an intent classification system. Analyze the user's message and classify their intent.
+
+${history ? `Conversation History:\n${history}\n\n` : ''}
+User Message: "${text}"
+
+Classify the intent into one of these categories:
+- create_demand: User wants to create a new demand/requirement
+- update_demand: User wants to modify an existing demand
+- search_demand: User is looking for something/someone
+- clarify_demand: User is providing clarification or additional info
+- confirm_demand: User is confirming or approving something
+- cancel_demand: User wants to cancel or delete a demand
+- unknown: Cannot determine the intent
+
+Respond in JSON format:
+{
+  "intent": "category_name",
+  "confidence": 0.95,
+  "alternatives": [
+    {"intent": "other_category", "confidence": 0.05}
+  ]
+}
+
+Respond with ONLY the JSON object.`;
   }
 
   /**
-   * Check if extraction needs clarification
+   * Parse intent classification result
    */
-  needsClarification(demand: Demand): boolean {
-    return demand.clarificationNeeded ||
-           demand.confidence < 50 ||
-           demand.missingFields.length > 0;
+  private parseIntentResult(text: string): IntentResult {
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        return this.getDefaultIntent();
+      }
+
+      const result = JSON.parse(jsonMatch[0]);
+      return {
+        intent: result.intent as IntentType,
+        confidence: result.confidence || 0,
+        alternatives: result.alternatives || [],
+      };
+    } catch (error) {
+      logger.error('Failed to parse intent result', { error, text });
+      return this.getDefaultIntent();
+    }
+  }
+
+  /**
+   * Extract entities from text
+   * 实体识别
+   */
+  private async extractEntities(text: string): Promise<ExtractedEntity[]> {
+    const prompt = this.buildEntityExtractionPrompt(text);
+
+    try {
+      const response = await llmService.generateText(prompt, {
+        temperature: 0.3,
+        maxTokens: 1000,
+      });
+
+      const entities = this.parseEntities(response.text, text);
+
+      // Record metrics for entity extraction
+      await metricsService.recordRequest({
+        requestId: `entity-${Date.now()}`,
+        provider: response.provider,
+        model: response.model,
+        latencyMs: response.latencyMs || 0,
+        success: true,
+        tokenUsage: response.usage || { input: 0, output: 0, total: 0 },
+        costUsd: response.cost || 0,
+      });
+
+      return entities;
+    } catch (error) {
+      logger.error('Entity extraction failed', { error });
+      return [];
+    }
+  }
+
+  /**
+   * Build entity extraction prompt
+   */
+  private buildEntityExtractionPrompt(text: string): string {
+    return `You are an entity extraction system. Extract the following entity types from the text:
+
+Entity Types:
+- time: Time-related mentions (dates, times, duration, deadlines)
+- location: Location mentions (cities, districts, addresses, venues)
+- person: People mentions (names, roles, counts)
+- budget: Budget or price mentions (amounts, ranges, currencies)
+- requirement: Specific requirements or must-haves
+- preference: Preferences or nice-to-haves
+
+Text: "${text}"
+
+Extract entities and return as JSON:
+{
+  "entities": [
+    {
+      "type": "entity_type",
+      "value": "exact text from input",
+      "normalizedValue": "normalized value (optional)",
+      "confidence": 0.95
+    }
+  ]
+}
+
+Respond with ONLY the JSON object.`;
+  }
+
+  /**
+   * Parse entity extraction result
+   */
+  private parseEntities(responseText: string, originalText: string): ExtractedEntity[] {
+    try {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        return [];
+      }
+
+      const result = JSON.parse(jsonMatch[0]);
+      const entities: ExtractedEntity[] = [];
+
+      for (const entity of result.entities || []) {
+        // Find position in original text
+        const startIndex = originalText.indexOf(entity.value);
+        const endIndex = startIndex >= 0 ? startIndex + entity.value.length : -1;
+
+        entities.push({
+          type: entity.type as EntityType,
+          value: entity.value,
+          normalizedValue: entity.normalizedValue,
+          startIndex: startIndex >= 0 ? startIndex : 0,
+          endIndex: endIndex >= 0 ? endIndex : 0,
+          confidence: entity.confidence || 0.5,
+        });
+      }
+
+      return entities;
+    } catch (error) {
+      logger.error('Failed to parse entity result', { error, responseText });
+      return [];
+    }
+  }
+
+  /**
+   * Build structured demand from entities
+   */
+  private buildStructuredDemand(
+    entities: ExtractedEntity[],
+    rawText: string
+  ): Demand['structured'] {
+    const structured: Demand['structured'] = {
+      title: undefined,
+      description: rawText,
+      location: {},
+      time: {},
+      people: {},
+      budget: {},
+      requirements: [],
+      preferences: [],
+      constraints: [],
+    };
+
+    // Process entities by type
+    for (const entity of entities) {
+      switch (entity.type) {
+        case 'location':
+          this.processLocationEntity(entity, structured.location);
+          break;
+        case 'time':
+          this.processTimeEntity(entity, structured.time);
+          break;
+        case 'person':
+          this.processPersonEntity(entity, structured.people);
+          break;
+        case 'budget':
+          this.processBudgetEntity(entity, structured.budget);
+          break;
+        case 'requirement':
+          structured.requirements?.push(entity.value);
+          break;
+        case 'preference':
+          structured.preferences?.push(entity.value);
+          break;
+      }
+    }
+
+    return structured;
+  }
+
+  /**
+   * Process location entity
+   */
+  private processLocationEntity(
+    entity: ExtractedEntity,
+    location: Demand['structured']['location']
+  ): void {
+    const value = entity.normalizedValue?.toString() || entity.value;
+
+    // Simple heuristic: longer text with numbers is likely an address
+    if (/\d+/.test(value) && value.length > 10) {
+      location.address = value;
+    } else if (value.includes('区') || value.includes('县')) {
+      location.district = value;
+    } else {
+      location.city = value;
+    }
+  }
+
+  /**
+   * Process time entity
+   */
+  private processTimeEntity(
+    entity: ExtractedEntity,
+    time: Demand['structured']['time']
+  ): void {
+    const value = entity.normalizedValue?.toString() || entity.value;
+
+    // Try to parse as datetime
+    if (/\d{4}[-/]\d{1,2}[-/]\d{1,2}/.test(value)) {
+      time.startTime = value;
+    } else if (/\d{1,2}:\d{2}/.test(value)) {
+      time.startTime = value;
+    } else if (/\d+[天小时分]/.test(value)) {
+      time.duration = value;
+    }
+
+    // Check flexibility
+    if (value.includes('随时') || value.includes('都可以')) {
+      time.flexibility = 'anytime';
+    } else if (value.includes('左右') || value.includes('前后')) {
+      time.flexibility = 'flexible';
+    }
+  }
+
+  /**
+   * Process person entity
+   */
+  private processPersonEntity(
+    entity: ExtractedEntity,
+    people: Demand['structured']['people']
+  ): void {
+    const value = entity.normalizedValue?.toString() || entity.value;
+
+    // Try to extract count
+    const countMatch = value.match(/(\d+)\s*[个人]/);
+    if (countMatch) {
+      people.count = parseInt(countMatch[1], 10);
+    }
+
+    // Extract roles
+    const roleKeywords = ['摄影师', '模特', '设计师', '导演', '演员', '助理'];
+    for (const role of roleKeywords) {
+      if (value.includes(role)) {
+        people.roles = people.roles || [];
+        if (!people.roles.includes(role)) {
+          people.roles.push(role);
+        }
+      }
+    }
+  }
+
+  /**
+   * Process budget entity
+   */
+  private processBudgetEntity(
+    entity: ExtractedEntity,
+    budget: Demand['structured']['budget']
+  ): void {
+    const value = entity.normalizedValue;
+
+    if (typeof value === 'object' && value !== null && 'min' in value && 'max' in value) {
+      budget.min = value.min;
+      budget.max = value.max;
+    } else if (typeof value === 'number') {
+      budget.max = value;
+    } else {
+      // Parse from text
+      const text = value?.toString() || entity.value;
+      const rangeMatch = text.match(/(\d+)\s*[-~到至]\s*(\d+)/);
+      if (rangeMatch) {
+        budget.min = parseInt(rangeMatch[1], 10);
+        budget.max = parseInt(rangeMatch[2], 10);
+      } else {
+        const singleMatch = text.match(/(\d+)/);
+        if (singleMatch) {
+          budget.max = parseInt(singleMatch[1], 10);
+        }
+      }
+    }
+
+    // Extract currency
+    if (/元|块|￥/.test(entity.value)) {
+      budget.currency = 'CNY';
+    } else if (/\$|USD|美元/.test(entity.value)) {
+      budget.currency = 'USD';
+    }
+  }
+
+  /**
+   * Check if clarification is needed
+   */
+  private checkClarificationNeeded(
+    structured: Demand['structured'],
+    intent: IntentResult,
+    requireClarification?: boolean
+  ): { clarificationNeeded: boolean; questions: string[] } {
+    const questions: string[] = [];
+
+    if (!requireClarification) {
+      return { clarificationNeeded: false, questions: [] };
+    }
+
+    // Check for missing critical information
+    if (!structured.title) {
+      questions.push('请简要描述您的需求标题');
+    }
+
+    if (!structured.location?.city && !structured.location?.address) {
+      questions.push('请问您希望在哪个城市或地点进行？');
+    }
+
+    if (!structured.time?.startTime && !structured.time?.flexibility) {
+      questions.push('请问您期望什么时间进行？');
+    }
+
+    if (!structured.budget?.min && !structured.budget?.max) {
+      questions.push('请问您的预算范围是多少？');
+    }
+
+    return {
+      clarificationNeeded: questions.length > 0,
+      questions,
+    };
+  }
+
+  /**
+   * Calculate overall confidence score
+   */
+  private calculateConfidence(
+    intent: IntentResult,
+    entities: ExtractedEntity[],
+    structured: Demand['structured']
+  ): number {
+    const scores: number[] = [];
+
+    // Intent confidence
+    scores.push(intent.confidence);
+
+    // Entity confidence (average)
+    if (entities.length > 0) {
+      const entityAvg =
+        entities.reduce((sum, e) => sum + e.confidence, 0) / entities.length;
+      scores.push(entityAvg);
+    }
+
+    // Structured data completeness
+    let completenessScore = 0;
+    let fieldCount = 0;
+
+    if (structured.title) {
+      completenessScore++;
+      fieldCount++;
+    }
+    if (structured.location?.city || structured.location?.address) {
+      completenessScore++;
+      fieldCount++;
+    }
+    if (structured.time?.startTime || structured.time?.flexibility) {
+      completenessScore++;
+      fieldCount++;
+    }
+    if (structured.budget?.min || structured.budget?.max) {
+      completenessScore++;
+      fieldCount++;
+    }
+
+    if (fieldCount > 0) {
+      scores.push(completenessScore / fieldCount);
+    }
+
+    // Calculate weighted average
+    const average = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+    return Math.round(average * 100) / 100;
+  }
+
+  /**
+   * Record metrics for the extraction
+   */
+  private async recordMetrics(demand: Demand, startTime: number): Promise<void> {
+    await metricsService.recordRequest({
+      requestId: `demand-${Date.now()}`,
+      provider: demand.metadata.provider,
+      model: demand.metadata.model,
+      latencyMs: Date.now() - startTime,
+      success: true,
+      tokenUsage: { input: 0, output: 0, total: 0 }, // Will be populated from actual usage
+      costUsd: 0,
+    });
+  }
+
+  /**
+   * Get default extraction options
+   */
+  private getDefaultOptions(): ExtractionOptions {
+    return {
+      extractEntities: true,
+      classifyIntent: true,
+      requireClarification: true,
+      language: 'zh-CN',
+      minConfidence: this.minConfidenceThreshold,
+    };
+  }
+
+  /**
+   * Get default intent result
+   */
+  private getDefaultIntent(): IntentResult {
+    return {
+      intent: 'unknown',
+      confidence: 0,
+      alternatives: [],
+    };
+  }
+
+  /**
+   * Get service version
+   */
+  getVersion(): string {
+    return this.version;
+  }
+
+  /**
+   * Set minimum confidence threshold
+   */
+  setMinConfidenceThreshold(threshold: number): void {
+    this.minConfidenceThreshold = threshold;
   }
 }
 

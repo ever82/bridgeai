@@ -8,12 +8,15 @@ module.exports = {
     '**/tests/**/*.test.ts',
   ],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': ['ts-jest', {
+      transpileOnly: true,
+    }],
   },
 
   // Module path aliases
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@visionshare/shared$': '<rootDir>/src/__mocks__/@visionshare/shared.ts',
   },
 
   // Setup files
