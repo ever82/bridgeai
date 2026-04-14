@@ -3,7 +3,7 @@
  * A/B 测试服务单元测试
  */
 
-import { MatchABTestService, ABTestExperiment, ABTestVariant } from './matchABTest';
+import { MatchABTestService, ABTestExperiment, ABTestVariant } from '../matchABTest';
 
 describe('MatchABTestService', () => {
   let service: MatchABTestService;

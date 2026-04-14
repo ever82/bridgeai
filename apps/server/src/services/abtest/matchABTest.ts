@@ -55,7 +55,7 @@ export class MatchABTestService {
   /**
    * 创建 A/B 测试实验
    */
-  createExperiment(experiment: Omit<ABTestExperiment, 'id' | 'startTime'>): ABTestExperiment {
+  createExperiment(experiment: Omit<ABTestExperiment, 'id' | 'startTime' | 'status'>): ABTestExperiment {
     const id = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     const newExperiment: ABTestExperiment = {
@@ -270,6 +270,13 @@ export class MatchABTestService {
    * 获取优胜 variant
    */
   getWinningVariant(experimentId: string, metric: 'successRate' | 'contactRate' = 'successRate'): ABTestVariant | null {
+    const experiment = this.experiments.get(experimentId);
+    if (!experiment) return null;
+
+    // Check if there's any actual data (any events tracked for this experiment)
+    const hasData = this.events.some(e => e.experimentId === experimentId);
+    if (!hasData) return null;
+
     const metrics = this.calculateMetrics(experimentId);
     if (metrics.length === 0) return null;
 
@@ -278,8 +285,7 @@ export class MatchABTestService {
 
     if (!winner) return null;
 
-    const experiment = this.experiments.get(experimentId);
-    return experiment?.variants.find((v) => v.id === winner.variantId) || null;
+    return experiment.variants.find((v) => v.id === winner.variantId) || null;
   }
 
   /**
