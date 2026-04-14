@@ -34,47 +34,47 @@ flowchart TD
     end
 
     subgraph Security["🔒 安全层 - Security"]
-        SEC001[💻 ISSUE-SEC001<br/>RBAC权限控制系统]
-        SEC002[🟡 ISSUE-SEC002<br/>敏感数据加密与保护]
+        SEC001[🟢 ISSUE-SEC001<br/>RBAC权限控制系统]
+        SEC002[🟢 ISSUE-SEC002<br/>敏感数据加密与保护]
         SEC003[🟡 ISSUE-SEC003<br/>API限流与安全防护]
         SEC004[🟡 ISSUE-SEC004<br/>图片上传安全检查]
         SEC005[🟡 ISSUE-SEC005<br/>举报与内容审核系统]
     end
 
     subgraph Auth["🔐 认证与用户层 - Auth"]
-        A001[💻 ISSUE-A001<br/>用户注册与登录系统]
+        A001[🟢 ISSUE-A001<br/>用户注册与登录系统]
         A002[🟢 ISSUE-A002<br/>JWT认证与API安全]
-        A003[💻 ISSUE-A003<br/>用户基础资料管理]
-        A004[💻 ISSUE-A004<br/>输入验证与数据校验]
+        A003[🟢 ISSUE-A003<br/>用户基础资料管理]
+        A004[🟢 ISSUE-A004<br/>输入验证与数据校验]
     end
 
     subgraph Core["🤖 Agent核心层 - Core Agent"]
-        C001[💻 ISSUE-C001<br/>Agent创建与基础配置]
+        C001[🟢 ISSUE-C001<br/>Agent创建与基础配置]
         C002a[✂️ ISSUE-C002a<br/>L1基础信息模型]
         C002b[✂️ ISSUE-C002b<br/>L2结构化信息模型]
         C002c[✂️ ISSUE-C002c<br/>L3自然语言信息模型]
         C003[🟡 ISSUE-C003<br/>地域过滤系统]
         C004[🟡 ISSUE-C004<br/>属性过滤系统]
         C005[🟡 ISSUE-C005<br/>信用过滤系统]
-        C006[🟡 ISSUE-C006<br/>场景配置管理]
+        C006[🟢 ISSUE-C006<br/>场景配置管理]
         C007[🟡 ISSUE-C007<br/>Agent信息披露控制机制]
     end
 
     subgraph Matching["🎯 匹配引擎层 - Matching"]
         M001a[✂️ ISSUE-M001a<br/>查询构建器与DSL设计]
         M001b[✂️ ISSUE-M001b<br/>实时查询执行引擎]
-        M002[🔵 ISSUE-M002<br/>Agent智能筛选排序]
-        M003[🔵 ISSUE-M003<br/>匹配度算法实现]
+        M002[🟢 ISSUE-M002<br/>Agent智能筛选排序]
+        M003[💻 ISSUE-M003<br/>匹配度算法实现]
         M004[🟡 ISSUE-M004<br/>匹配结果推送通知]
     end
 
     subgraph Comm["💬 通信层 - Communication"]
         COM001a[✂️ ISSUE-COM001a<br/>Socket.io基础设施搭建]
         COM001b[🟢 ISSUE-COM001b<br/>连接管理与房间系统]
-        COM002a[🔵 ISSUE-COM002a<br/>聊天房间基础架构]
+        COM002a[✂️ ISSUE-COM002a<br/>聊天房间基础架构]
         COM002b[✂️ ISSUE-COM002b<br/>消息持久化与历史记录]
-        COM002c[🔵 ISSUE-COM002c<br/>群聊状态同步与在线状态]
-        COM003[🔵 ISSUE-COM003<br/>人机切换机制]
+        COM002c[✂️ ISSUE-COM002c<br/>群聊状态同步与在线状态]
+        COM003[💻 ISSUE-COM003<br/>人机切换机制]
         COM004[🟡 ISSUE-COM004<br/>Agent通信协议定义]
         COM005[🟡 ISSUE-COM005<br/>私聊建议系统]
     end
@@ -120,14 +120,14 @@ flowchart TD
 
     subgraph Ad["🛒 AgentAd场景"]
         AD001[🟡 ISSUE-AD001<br/>消费需求画像配置]
-        AD002[🟡 ISSUE-AD002<br/>商家优惠配置]
+        AD002[🟢 ISSUE-AD002<br/>商家优惠配置]
         AD003[🟡 ISSUE-AD003<br/>Agent优惠协商谈判]
         AD004[🟡 ISSUE-AD004<br/>一键购买与优惠码]
     end
 
     subgraph UI["📱 前端UI层 - Frontend"]
-        UI001[🟡 ISSUE-UI001<br/>设计系统与组件库]
-        UI002[🟡 ISSUE-UI002<br/>全局导航与布局]
+        UI001[🟢 ISSUE-UI001<br/>设计系统与组件库]
+        UI002[🟢 ISSUE-UI002<br/>全局导航与布局]
         UI003[🟡 ISSUE-UI003<br/>首页与状态展示]
         UI004a[✂️ ISSUE-UI004a<br/>聊天消息组件与输入框]
         UI004b[✂️ ISSUE-UI004b<br/>Agent/人类用户状态指示器]
