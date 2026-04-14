@@ -15,7 +15,7 @@ import {
   getAllSceneInfos,
   hasScene,
 } from './index';
-import { SCENE_IDS, SceneConfig } from '../../types/scene';
+import { SCENE_IDS, SceneConfig, SceneId } from '../../types/scene';
 
 describe('Scene Configurations', () => {
   describe('Scene Config Exports', () => {
@@ -131,7 +131,7 @@ describe('Scene Configurations', () => {
     });
 
     it('should return undefined for invalid scene', () => {
-      expect(getSceneConfig('invalid' as any)).toBeUndefined();
+      expect(getSceneConfig('invalid' as string as SceneId)).toBeUndefined();
     });
   });
 
