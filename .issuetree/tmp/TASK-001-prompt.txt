@@ -1,0 +1,36 @@
+# Implementation Task: 实现附近任务查询与接单功能
+
+**Issue:** ISSUE-VS002
+**Task:** TASK-001
+
+## Description
+
+实现VisionShare场景的附近任务查询和接单功能，包括：
+1. 附近任务地图展示 - 地图组件、任务标记、位置显示
+2. 任务筛选与排序 - 距离、预算、类型、时间筛选
+3. 任务详情查看 - 完整信息、信用分、评价
+4. 接单操作与确认 - 接单流程、资格检查
+5. 任务推荐推送 - 基于位置的实时推送
+6. 任务状态追踪 - 已接任务、状态管理
+
+
+## Files to Modify
+
+- (To be determined based on implementation)
+
+## Instructions
+
+1. Implement the features described above
+2. Make focused, incremental changes
+3. Test your changes as you go
+4. Commit your work when complete
+
+## Completion
+
+When you have completed the implementation:
+1. Run: `echo '{"status": "completed"}' > .issuetree/tmp/TASK-001-result.json`
+2. Exit the session
+
+---
+
+Start implementing now.
