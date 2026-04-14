@@ -12,8 +12,12 @@ import { demandToL2Mapper, MappingResult } from '../../services/ai/mappers/deman
 import { extractionValidator, ValidationReport } from '../../services/ai/validators/extractionValidator';
 import { extractL2FromL3, ExtractionResult } from '../../services/ai/extractionService';
 import { logger } from '../../utils/logger';
+import offerExtractionRoutes from './offerExtraction';
 
 const router: Router = Router();
+
+// Mount offer extraction routes
+router.use('/', offerExtractionRoutes);
 
 // Active WebSocket connections
 const activeConnections: Map<string, WebSocket> = new Map();

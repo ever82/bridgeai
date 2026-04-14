@@ -7,6 +7,8 @@ import agentRoutes from '../agents';
 import agentProfileRoutes from '../agentProfile';
 import locationRoutes from '../locationRoutes';
 import aiExtractionRoutes from '../ai/extraction';
+import merchantRoutes from '../merchants';
+import offerRoutes from '../offers';
 
 const router: Router = Router();
 
@@ -19,6 +21,8 @@ router.use('/agents', agentRoutes);
 router.use('/agents', agentProfileRoutes);
 router.use('/location', locationRoutes);
 router.use('/ai', aiExtractionRoutes);
+router.use('/merchants', merchantRoutes);
+router.use('/offers', offerRoutes);
 
 // Placeholder for future routes
 // router.use('/auth', authRoutes);

@@ -1,0 +1,42 @@
+id: TASK-AD002-001
+title: Implement Merchant Offer Configuration Module
+description: |
+  Implement the merchant offer configuration module for AgentAd scene.
+
+  This includes:
+  1. Merchant Agent creation for AgentAd scene with MERCHANT role
+  2. Offer configuration (discount types, amounts, descriptions)
+  3. Applicable scope settings (products, time periods, stores)
+  4. Validity period and inventory management
+  5. Integration with AI003 for natural language offer extraction
+  6. Offer status management (publish/unpublish/pause/schedule)
+
+  The implementation should support:
+  - L1 and L2 model storage for merchant and offer data
+  - Offer types: DISCOUNT, REDUCTION, GIFT, PACKAGE
+  - Inventory deduction logic
+  - Stock warning notifications
+  - Automatic offer expiration
+criteria:
+  - AD002-CR01: Merchant scene Agent creation
+  - AD002-CR02: Offer configuration
+  - AD002-CR03: Applicable scope settings
+  - AD002-CR04: Validity period & inventory management
+  - AD002-CR05: AI extraction integration
+  - AD002-CR06: Offer status management
+files_to_modify:
+  - packages/server/src/models/merchant.model.ts
+  - packages/server/src/models/offer.model.ts
+  - packages/server/src/routes/merchant.routes.ts
+  - packages/server/src/routes/offer.routes.ts
+  - packages/server/src/services/merchant.service.ts
+  - packages/server/src/services/offer.service.ts
+  - packages/server/src/types/merchant.types.ts
+  - packages/server/src/types/offer.types.ts
+status: completed
+session_start: '2026-04-12T17:37:04.945Z'
+session_end: '2026-04-13T01:40:00.000Z'
+execution_time_minutes: 6
+result: success
+test_commands:
+  - cd packages/server && npm test -- --testPathPattern="merchant|offer"

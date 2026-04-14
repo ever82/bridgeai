@@ -1,93 +1,128 @@
-id: ISSUE-AD002
-issue_number: 1002
-title: 商家优惠配置
-slug: merchant-offer-config
-status: pending
-description: |
-  AgentAd场景的商家优惠配置模块。商家创建Agent并配置可提供的优惠方案，
-  包括优惠类型(折扣、满减、赠品等)、适用范围、有效期、库存数量等。
-  通过AI服务(AI003)将商家的自然语言描述提炼为结构化的优惠供给信息，
-  用于匹配消费需求和自动化优惠协商。
-prerequisites:
-  - ISSUE-C006
-  - ISSUE-AI003
-logic: sufficient_necessary
-created_at: 2026-04-08
+created_at: 2026-04-08T00:00:00.000Z
 criteria:
-  - id: AD002-CR01
-    name: 商家场景Agent创建
+  - coverage: 95
     description: |
       商家能够创建专属于AgentAd场景的Agent实例，选择"商家"角色类型，
       配置商家基础信息如店名、门店地址、营业时间、联系方式等。
-    status: pending
-    coverage: 95
+    id: AD002-CR01
+    name: 商家场景Agent创建
+status: "passed"
     verification:
       ai_prompt: |
         检查Agent创建API是否支持AgentAd场景的商家角色，
         验证创建后Agent的scene字段为"AGENT_AD"，role字段为"MERCHANT"，
         并确认商家基础信息(店名、地址、营业时间)正确存储在L1和L2模型中。
-
-  - id: AD002-CR02
-    name: 优惠方案基础配置
+  - coverage: 92
     description: |
       商家可以配置优惠方案的基础信息，包括优惠标题、详细描述、
       优惠类型(折扣/满减/赠品/套餐等)、优惠力度(如8折、满100减20)。
-    status: pending
-    coverage: 92
+    id: AD002-CR02
+    name: 优惠方案基础配置
+    status: completed
     verification:
       ai_prompt: |
         验证优惠配置表单支持多种优惠类型选择和对应参数设置，
         检查优惠数据是否正确存储在L2结构化信息的offer字段中，
         确认优惠类型字段符合预定义枚举值，优惠力度数值正确。
-
-  - id: AD002-CR03
-    name: 优惠适用范围设置
+  - coverage: 88
     description: |
       商家能够设置优惠的适用范围，包括适用商品/服务、排除商品、
       适用时段、适用门店(多门店情况)、适用人群限制(如新客专享)。
-    status: pending
-    coverage: 88
+    id: AD002-CR03
+    name: 优惠适用范围设置
+    status: completed
     verification:
       ai_prompt: |
         检查适用范围配置界面支持商品选择、时段设置、门店选择等功能，
         验证适用范围数据正确存储在offer.applicableScope字段中，
         测试M002匹配时是否正确根据适用范围筛选目标消费者。
-
-  - id: AD002-CR04
-    name: 优惠有效期与库存管理
+  - coverage: 90
     description: |
       商家可以设置优惠的有效期(开始时间-结束时间)、每日限量、总库存数量。
       系统支持库存预警，当库存低于阈值时通知商家补充。
-    status: pending
-    coverage: 90
+    id: AD002-CR04
+    name: 优惠有效期与库存管理
+    status: completed
     verification:
       ai_prompt: |
         验证有效期设置支持日期时间选择，库存管理支持总库存和每日限额，
         检查库存扣减逻辑是否正确，测试库存预警功能在库存低于阈值时
         是否触发通知，确认过期优惠自动下架。
-
-  - id: AD002-CR05
-    name: AI供给提炼集成
+  - coverage: 88
     description: |
       集成AI003供给智能提炼服务，商家可以通过自然语言描述优惠方案，
       AI自动提取关键信息(优惠类型、力度、适用范围等)并生成结构化配置。
-    status: pending
-    coverage: 88
+    id: AD002-CR05
+    name: AI供给提炼集成
+    status: completed
     verification:
       ai_prompt: |
         测试自然语言输入"新店开业全场8折，饮品买一送一，仅限本周"
         验证AI003服务是否正确提取出优惠类型(折扣/赠品)、优惠力度(8折/买一送一)、
         适用范围(全场/仅饮品)、有效期(本周)等信息并自动填充配置。
-
-  - id: AD002-CR06
-    name: 优惠上下架与状态管理
+  - coverage: 85
     description: |
       商家可以灵活控制优惠的上下架状态，支持手动上架/下架、暂停发放、
       定时上架等功能。已发布的优惠修改后需重新审核或即时生效。
-    status: pending
-    coverage: 85
+    id: AD002-CR06
+    name: 优惠上下架与状态管理
+    status: completed
     verification:
       ai_prompt: |
         检查优惠状态管理API支持上架、下架、暂停等操作，
         验证状态变更后是否影响匹配引擎的推荐结果，
         确认定时上架功能在指定时间自动将优惠状态变更为"ACTIVE"。
+current_task: TASK-AD002-001
+description: |
+  AgentAd场景的商家优惠配置模块。商家创建Agent并配置可提供的优惠方案，
+  包括优惠类型(折扣、满减、赠品等)、适用范围、有效期、库存数量等。
+  通过AI服务(AI003)将商家的自然语言描述提炼为结构化的优惠供给信息，
+  用于匹配消费需求和自动化优惠协商。
+id: ISSUE-AD002
+issue_number: 1002
+logic: sufficient_necessary
+prerequisites:
+  - ISSUE-C006
+  - ISSUE-AI003
+slug: merchant-offer-config
+status: passed
+title: 商家优惠配置
+implementation:
+  task_id: TASK-AD002-001
+  completed_at: '2026-04-13T01:40:00.000Z'
+  execution_time_minutes: 6
+  result: success
+  notes: |
+    Implemented merchant offer configuration module with:
+    - Prisma models for Merchant and Offer
+    - CRUD APIs for merchants and offers
+    - Offer status management (DRAFT, PENDING, ACTIVE, PAUSED, EXPIRED, SOLD_OUT, DISABLED)
+    - Inventory management with stock alerts
+    - AI extraction service for natural language offers
+    - Scheduled jobs for expiration and activation
+test_passed: true
+merged_to_master: false
+worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-AD002
+files_created:
+  - apps/server/prisma/schema.prisma (updated with Merchant and Offer models)
+  - apps/server/src/types/merchant.types.ts
+  - apps/server/src/types/offer.types.ts
+  - apps/server/src/services/merchantService.ts
+  - apps/server/src/services/offerService.ts
+  - apps/server/src/services/ai/offerExtractionService.ts
+  - apps/server/src/routes/merchants.ts
+  - apps/server/src/routes/offers.ts
+  - apps/server/src/routes/ai/offerExtraction.ts
+  - apps/server/src/jobs/offerJobs.ts
+  - apps/server/src/routes/v1/index.ts (updated)
+  - apps/server/src/routes/ai/extraction.ts (updated)
+
+
+check:
+  checked_at: "2026-04-14"
+  status: "passed"
+  functional_verification:
+    all_criteria_passed: true
+  test_execution:
+    all_tests_passed: true
+  notes: "Issue checked and marked as passed"
