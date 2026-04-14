@@ -10,14 +10,11 @@ import { createAdapter } from '@socket.io/redis-adapter';
 import { socketAuthMiddleware } from './middleware/auth';
 import { connectionManager } from './connectionManager';
 import { pubClient, subClient } from './adapter';
-import { connectionService } from '../services/connectionService';
-import { presenceService } from '../services/presenceService';
 
 // Event handlers
 import { registerUserHandlers } from './handlers/user';
 import { registerChatHandlers } from './handlers/chat';
 import { registerSystemHandlers } from './handlers/system';
-import { registerRoomHandlers } from './handlers/roomHandler';
 import { registerGroupHandlers } from './handlers/groupHandler';
 
 /**
@@ -103,13 +100,6 @@ function setupNamespaces(io: SocketServer): void {
     registerSystemHandlers(socket, systemNsp);
   });
 
-  // Room namespace for room management
-  const roomNsp = io.of('/room');
-  roomNsp.on('connection', (socket) => {
-    handleConnection(socket, 'room');
-    registerRoomHandlers(socket, roomNsp);
-  });
-
   // Group namespace for group chat events
   const groupNsp = io.of('/group');
   groupNsp.on('connection', (socket) => {
@@ -127,53 +117,18 @@ function handleConnection(socket: any, namespace: string): void {
 
   console.log(`[Socket.io] Connected: ${socketId} (user: ${userId}, ns: ${namespace})`);
 
-  // Track connection in connection manager
+  // Track connection
   connectionManager.addConnection(socket, namespace);
-
-  // Track in connection service for multi-device management
-  if (userId) {
-    const deviceInfo = connectionService.parseDeviceInfo(
-      socket.handshake.headers['user-agent'],
-      socket.handshake.query as Record<string, any>
-    );
-    connectionService.registerConnection(
-      socketId,
-      userId,
-      deviceInfo,
-      socket.handshake.address,
-      namespace
-    );
-
-    // Update presence status
-    presenceService.setPresence(userId, 'online');
-  }
 
   // Handle disconnection
   socket.on('disconnect', (reason: string) => {
     console.log(`[Socket.io] Disconnected: ${socketId} (reason: ${reason})`);
-
-    // Update connection service
-    connectionService.unregisterConnection(socketId);
-
-    // Update presence if no more connections
-    if (userId && !connectionService.isUserConnected(userId)) {
-      presenceService.markOffline(userId);
-    }
-
     connectionManager.removeConnection(socketId);
   });
 
   // Handle errors
   socket.on('error', (error: Error) => {
     console.error(`[Socket.io] Error on ${socketId}:`, error);
-  });
-
-  // Track activity
-  socket.onAny(() => {
-    if (userId) {
-      connectionService.updateActivity(socketId);
-      presenceService.updateActivity(userId);
-    }
   });
 
   // Emit connection acknowledgment

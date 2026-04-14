@@ -25,10 +25,17 @@ export type SocketEventType =
   | 'error'
   | 'message'
   | 'user:status_update'
+  | 'user:typing'
   | 'chat:message'
   | 'chat:user_joined'
   | 'chat:user_left'
   | 'chat:read_receipt'
+  | 'group:state_sync'
+  | 'group:member_online'
+  | 'group:member_offline'
+  | 'group:member_added'
+  | 'group:member_removed'
+  | 'group:settings_updated'
   | 'system:broadcast';
 
 /**
@@ -172,6 +179,31 @@ class SocketClient extends EventEmitter {
       this.emit('user:typing', data);
     });
 
+    // Group events
+    this.socket.on('group:state_sync', (data) => {
+      this.emit('group:state_sync', data);
+    });
+
+    this.socket.on('group:member_online', (data) => {
+      this.emit('group:member_online', data);
+    });
+
+    this.socket.on('group:member_offline', (data) => {
+      this.emit('group:member_offline', data);
+    });
+
+    this.socket.on('group:member_added', (data) => {
+      this.emit('group:member_added', data);
+    });
+
+    this.socket.on('group:member_removed', (data) => {
+      this.emit('group:member_removed', data);
+    });
+
+    this.socket.on('group:settings_updated', (data) => {
+      this.emit('group:settings_updated', data);
+    });
+
     // System events
     this.socket.on('system:broadcast', (data) => {
       this.emit('system:broadcast', data);
@@ -309,6 +341,115 @@ class SocketClient extends EventEmitter {
       this.socket.connect();
     }
   }
+
+  // ==================== Group Methods ====================
+
+  /**
+   * Create a group
+   */
+  createGroup(name: string, memberIds?: string[]): Promise<{ groupId: string; state: any }> {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('group:create', { name, memberIds }, (response: any) => {
+        if (response?.success) {
+          resolve(response.data);
+        } else {
+          reject(new Error(response?.error || 'Failed to create group'));
+        }
+      });
+    });
+  }
+
+  /**
+   * Join a group
+   */
+  joinGroup(groupId: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('group:join', { groupId }, (response: any) => {
+        if (response?.success) {
+          resolve(response.data);
+        } else {
+          reject(new Error(response?.error || 'Failed to join group'));
+        }
+      });
+    });
+  }
+
+  /**
+   * Leave a group
+   */
+  leaveGroup(groupId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('group:leave', { groupId }, (response: any) => {
+        if (response?.success) {
+          resolve();
+        } else {
+          reject(new Error(response?.error || 'Failed to leave group'));
+        }
+      });
+    });
+  }
+
+  /**
+   * Sync group state
+   */
+  syncGroup(groupId: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('group:sync', { groupId }, (response: any) => {
+        if (response?.success) {
+          resolve(response.data);
+        } else {
+          reject(new Error(response?.error || 'Failed to sync group'));
+        }
+      });
+    });
+  }
+
+  /**
+   * Update group settings
+   */
+  updateGroupSettings(groupId: string, settings: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('group:update_settings', { groupId, settings }, (response: any) => {
+        if (response?.success) {
+          resolve(response.data);
+        } else {
+          reject(new Error(response?.error || 'Failed to update settings'));
+        }
+      });
+    });
+  }
+
+  /**
+   * Add member to group
+   */
+  addGroupMember(groupId: string, userId: string, role?: 'admin' | 'member'): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('group:add_member', { groupId, userId, role }, (response: any) => {
+        if (response?.success) {
+          resolve();
+        } else {
+          reject(new Error(response?.error || 'Failed to add member'));
+        }
+      });
+    });
+  }
+
+  /**
+   * Remove member from group
+   */
+  removeGroupMember(groupId: string, userId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('group:remove_member', { groupId, userId }, (response: any) => {
+        if (response?.success) {
+          resolve();
+        } else {
+          reject(new Error(response?.error || 'Failed to remove member'));
+        }
+      });
+    });
+  }
+
+  // ==================== Cleanup ====================
 
   /**
    * Clean up and destroy
