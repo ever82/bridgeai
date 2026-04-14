@@ -2,7 +2,7 @@ id: ISSUE-AI005
 issue_number: 505
 title: 图像分析与Vision API
 slug: vision-api
-status: accepted
+status: pending
 description: |
   实现图像分析与Vision API服务，集成多模态大语言模型，
   提供图像理解、内容审核、OCR文字识别、场景分析等能力，

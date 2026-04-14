@@ -3,7 +3,7 @@ id: "ISSUE-F006"
 issue_number: 106
 title: "错误追踪与监控集成"
 slug: "error-monitoring"
-status: "passed"
+status: passed
 description: |
   集成错误追踪和监控服务(Sentry)，实现错误自动上报、
   性能监控、用户反馈收集，以及告警机制。

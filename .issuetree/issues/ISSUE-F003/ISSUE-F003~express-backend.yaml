@@ -3,7 +3,7 @@ id: 'ISSUE-F003'
 issue_number: 103
 title: 'Express后端基础框架'
 slug: 'express-backend'
-status: 'passed'
+status: passed
 checked_at: '2026-04-09'
 check:
   status: passed

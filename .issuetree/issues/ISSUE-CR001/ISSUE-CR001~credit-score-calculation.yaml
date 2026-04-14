@@ -3,7 +3,7 @@ id: "ISSUE-CR001"
 issue_number: 601
 title: "信用分计算系统"
 slug: "credit-score-calculation"
-status: "passed"
+status: passed
 description: |
   实现用户信用分计算系统，包括信用分模型设计、多维度评分算法、
   信用等级划分、信用分历史追踪、以及信用分的实时更新机制。

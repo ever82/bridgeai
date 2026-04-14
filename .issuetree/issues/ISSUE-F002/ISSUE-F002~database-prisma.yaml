@@ -3,7 +3,7 @@ id: 'ISSUE-F002'
 issue_number: 102
 title: '数据库设计与Prisma ORM搭建'
 slug: 'database-prisma'
-status: 'passed'
+status: passed
 checked_at: '2026-04-09'
 check:
   status: passed

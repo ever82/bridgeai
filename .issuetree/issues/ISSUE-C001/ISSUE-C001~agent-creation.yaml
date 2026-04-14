@@ -3,7 +3,7 @@ id: "ISSUE-C001"
 issue_number: 301
 title: "Agent创建与基础配置"
 slug: "agent-creation"
-status: "passed"
+status: passed
 description: |
   实现 Agent 创建和基础配置功能，包括 Agent 类型定义、
   基础属性设置、场景关联、初始状态配置等。

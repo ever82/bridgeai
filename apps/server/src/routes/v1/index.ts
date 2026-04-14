@@ -9,6 +9,7 @@ import locationRoutes from '../locationRoutes';
 import aiExtractionRoutes from '../ai/extraction';
 import merchantRoutes from '../merchants';
 import offerRoutes from '../offers';
+import chatRoutes from '../chat';
 
 const router: Router = Router();
 
@@ -23,6 +24,7 @@ router.use('/location', locationRoutes);
 router.use('/ai', aiExtractionRoutes);
 router.use('/merchants', merchantRoutes);
 router.use('/offers', offerRoutes);
+router.use('/chat', chatRoutes);
 
 // Placeholder for future routes
 // router.use('/auth', authRoutes);

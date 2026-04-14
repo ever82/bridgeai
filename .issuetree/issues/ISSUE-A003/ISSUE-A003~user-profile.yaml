@@ -2,7 +2,7 @@ id: ISSUE-A003
 issue_number: 203
 title: 用户基础资料管理
 slug: user-profile
-status: "passed"
+status: passed
 description: |
   实现用户资料管理功能，包括头像上传、基本信息编辑、
   隐私设置、账号安全等功能。

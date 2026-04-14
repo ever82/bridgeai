@@ -3,7 +3,7 @@ id: 'ISSUE-T002'
 issue_number: 302
 title: 'API集成测试框架'
 slug: 'api-integration-test'
-status: 'passed'
+status: passed
 description: |
   搭建API集成测试框架，使用supertest测试HTTP端点，验证API的整体功能。
   包括测试数据库管理、请求辅助工具、认证辅助、响应验证等。

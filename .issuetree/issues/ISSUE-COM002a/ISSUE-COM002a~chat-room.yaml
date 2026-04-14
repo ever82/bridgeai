@@ -3,7 +3,7 @@ id: "ISSUE-COM002a"
 issue_number: 503
 title: "聊天房间基础架构"
 slug: "chat-room"
-status: "pending"
+status: implementing
 description: |
   实现聊天房间基础架构，支持多人群聊、私聊、
   房间类型管理和参与者管理。

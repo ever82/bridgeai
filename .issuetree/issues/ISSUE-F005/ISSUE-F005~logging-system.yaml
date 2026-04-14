@@ -3,7 +3,7 @@ id: "ISSUE-F005"
 issue_number: 105
 title: "日志系统与结构化日志"
 slug: "logging-system"
-status: "passed"
+status: passed
 description: |
   实现统一的结构化日志系统，支持日志级别控制、上下文追踪、
   多输出目标(控制台、文件、远程)，以及日志聚合和分析。

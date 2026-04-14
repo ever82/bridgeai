@@ -3,7 +3,7 @@ id: 'ISSUE-F004'
 issue_number: 104
 title: 'Expo移动端项目初始化'
 slug: 'expo-mobile'
-status: 'passed'
+status: passed
 checked_at: '2026-04-09'
 check:
   status: passed

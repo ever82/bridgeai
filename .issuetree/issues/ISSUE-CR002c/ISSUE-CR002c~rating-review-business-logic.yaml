@@ -3,7 +3,7 @@ id: "ISSUE-CR002c"
 issue_number: 602.3
 title: "评分与评价系统 - 业务逻辑"
 slug: "rating-review-business-logic"
-status: "pending"
+status: pending
 description: |
   实现评分与评价系统的业务逻辑部分，包括评价与信用分联动机制、
   评价相关的通知与提醒功能。本Issue是ISSUE-CR002的拆分部分，专注于业务逻辑实现。
