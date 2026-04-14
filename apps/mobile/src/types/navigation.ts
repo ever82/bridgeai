@@ -67,12 +67,16 @@ export type JobStackParamList = {
   JobDetail: { jobId: string };
   ReceivedResumes: { jobId: string };
   CompanyVerification: undefined;
+  JobRecommendations: undefined;
+  CandidateRecommendations: { jobId?: string } | undefined;
 };
 
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}
   }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 export type RootStackNavigationProp = NavigationProp<RootStackParamList>;
