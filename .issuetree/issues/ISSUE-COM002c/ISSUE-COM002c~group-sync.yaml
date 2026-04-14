@@ -119,4 +119,5 @@ implementation:
   failure_reason: null
   commit_hash: b93fa68
 test_passed: true
-worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM002c
+merged_to_master: true
+worktree_path: null
