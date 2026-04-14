@@ -32,6 +32,7 @@ model User {
   ratingsReceived Rating[] @relation("Ratee")
   creditRecords CreditRecord[]
   transactions  Transaction[]
+  pointsAccount PointsAccount?
   connections   Connection[]
 
   @@map("users")
@@ -467,4 +468,99 @@ enum TransactionStatus {
   SUCCESS     @map("success")
   FAILED      @map("failed")
   CANCELLED   @map("cancelled")
+}
+
+// ============================================
+// 积分系统相关 (Points System)
+// ============================================
+
+model PointsAccount {
+  id            String    @id @default(uuid())
+  userId        String    @unique @map("user_id")
+  balance       Int       @default(0)  // 当前余额
+  totalEarned   Int       @default(0) @map("total_earned")  // 总获取
+  totalSpent    Int       @default(0) @map("total_spent")   // 总消耗
+  frozenAmount  Int       @default(0) @map("frozen_amount") // 冻结金额
+  version       Int       @default(0)  // 乐观锁版本号
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  PointsTransaction[]
+  freezes       PointsFreeze[]
+
+  @@index([userId])
+  @@map("points_accounts")
+}
+
+model PointsTransaction {
+  id            String              @id @default(uuid())
+  accountId     String              @map("account_id")
+  userId        String              @map("user_id")
+  type          PointsTransactionType
+  amount        Int                 // 正数=收入, 负数=支出
+  balanceAfter  Int                 @map("balance_after") // 交易后余额
+  description   String?
+  scene         PointsScene?        // 关联场景
+  referenceId   String?             @map("reference_id") // 关联记录ID(如订单ID)
+  metadata      Json?
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  // Relations
+  account       PointsAccount       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([userId])
+  @@index([type])
+  @@index([scene])
+  @@index([createdAt])
+  @@map("points_transactions")
+}
+
+model PointsFreeze {
+  id            String          @id @default(uuid())
+  accountId     String          @map("account_id")
+  transactionId String          @unique @map("transaction_id") // 关联交易ID
+  amount        Int             // 冻结金额
+  reason        String          // 冻结原因
+  scene         PointsScene?    // 关联场景
+  referenceId   String?         @map("reference_id") // 关联业务ID
+  status        FreezeStatus    @default(FROZEN)
+  expiresAt     DateTime?       @map("expires_at") // 自动解冻时间
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  account       PointsAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("points_freezes")
+}
+
+enum PointsTransactionType {
+  EARN          @map("earn")        // 获取积分
+  SPEND         @map("spend")       // 消耗积分
+  FREEZE        @map("freeze")      // 冻结积分
+  UNFREEZE      @map("unfreeze")    // 解冻积分
+  REFUND        @map("refund")      // 退款
+  TRANSFER_IN   @map("transfer_in") // 转入
+  TRANSFER_OUT  @map("transfer_out") // 转出
+}
+
+enum PointsScene {
+  VISION_SHARE  @map("vision_share") // VisionShare场景
+  AGENT_DATE    @map("agent_date")   // Agent约会场景
+  AGENT_JOB     @map("agent_job")    // Agent招聘场景
+  AGENT_AD      @map("agent_ad")     // Agent广告场景
+  SYSTEM        @map("system")       // 系统操作
+}
+
+enum FreezeStatus {
+  FROZEN        @map("frozen")      // 冻结中
+  UNFROZEN      @map("unfrozen")    // 已解冻
+  EXPIRED       @map("expired")     // 已过期
+  CONSUMED      @map("consumed")    // 已消费
 }
