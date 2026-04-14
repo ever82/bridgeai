@@ -221,7 +221,7 @@ prerequisites:
   - ISSUE-F004
   - ISSUE-SEC004
 slug: camera-photo-upload
-status: pending
+status: implemented
 test_duration_seconds: 120
 test_passed: true
 title: 相机拍照与上传

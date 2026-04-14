@@ -3,7 +3,7 @@ id: "ISSUE-VS004"
 issue_number: 704
 title: "AI隐私脱敏处理"
 slug: "ai-privacy-desensitization"
-status: "implemented"
+status: stuck
 description: |
   实现VisionShare场景的AI隐私脱敏处理功能。使用AI图像分析和Vision API
   自动识别照片中的敏感信息(人脸、车牌、地址标识等)，并提供智能脱敏处理选项，

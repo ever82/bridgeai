@@ -1,12 +1,7 @@
 /**
- * VisionShare Service Index
- * Entry point for VisionShare server services
+ * VisionShare Services
  */
 
-export * from './types';
-
-// Services will be exported here once implemented
-// export { PhotoService } from './photoService';
-// export { PaymentService } from './paymentService';
-// export { UnlockService } from './unlockService';
-// export { RefundService } from './refundService';
+export * from './taskFilter';
+export * from './taskRecommendation';
+export * from './acceptTask';

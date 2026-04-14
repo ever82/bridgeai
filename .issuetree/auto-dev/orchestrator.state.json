@@ -561,7 +561,7 @@
     "prerequisites": [
       "ISSUE-AI002"
     ],
-    "last_update": "2026-04-14T11:54:18.868219"
+    "last_update": "2026-04-14T11:58:38.768285"
   },
   "ISSUE-C001": {
     "issue_id": "ISSUE-C001",
@@ -1105,10 +1105,10 @@
       "ISSUE-VS003",
       "ISSUE-AI005"
     ],
-    "last_update": "2026-04-14T11:51:57.887204",
-    "stuck_previous_status": "implementing",
+    "last_update": "2026-04-14T11:58:27.059262",
+    "stuck_previous_status": "fixing",
     "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-14T03:51:57.884476+00:00",
+    "stuck_at": "2026-04-14T03:58:27.055418+00:00",
     "failure_count": 1
   },
   "ISSUE-A003a": {

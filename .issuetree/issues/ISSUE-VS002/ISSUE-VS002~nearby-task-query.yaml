@@ -1,145 +1,155 @@
-created_at: '2026-04-08'
-criteria:
-- coverage:
-    ai: sufficient
-    e2e: sufficient
-    integration: sufficient
-    manual: not_needed
-    unit: sufficient
-  description: "\u5730\u56FE\u754C\u9762:\n- \u57FA\u4E8E\u5730\u56FE\u7684\u4EFB\u52A1\
-    \u5206\u5E03\u5C55\u793A\n- \u5F53\u524D\u4F4D\u7F6E\u5B9A\u4F4D\u548C\u663E\u793A\
-    \n- \u4EFB\u52A1\u6807\u8BB0\u548C\u4FE1\u606F\u6C14\u6CE1\n- \u5730\u56FE\u7F29\
-    \u653E\u548C\u533A\u57DF\u7B5B\u9009\n- \u5217\u8868/\u5730\u56FE\u89C6\u56FE\u5207\
-    \u6362\n"
-  id: ISSUE-VS002~c1
-  name: "\u9644\u8FD1\u4EFB\u52A1\u5730\u56FE\u5C55\u793A"
-  verification:
-    ai:
-      context_files:
-      - apps/mobile/src/screens/VisionShare/NearbyTasksMap.tsx
-      - apps/mobile/src/components/Map/TaskMarker.tsx
-      prompt: "\u68C0\u67E5\u9644\u8FD1\u4EFB\u52A1\u5730\u56FE\u754C\u9762\uFF0C\u9A8C\
-        \u8BC1\u6709\u5730\u56FE\u7EC4\u4EF6\u3001\u4EFB\u52A1\u6807\u8BB0\u3001\u4F4D\
-        \u7F6E\u663E\u793A\u548C\u89C6\u56FE\u5207\u6362\u529F\u80FD"
-- coverage:
-    ai: sufficient
-    e2e: sufficient
-    integration: sufficient
-    manual: not_needed
-    unit: sufficient
-  description: "\u7B5B\u9009\u529F\u80FD:\n- \u8DDD\u79BB\u8303\u56F4\u7B5B\u9009\
-    (1km/5km/10km/\u5168\u57CE)\n- \u9884\u7B97\u8303\u56F4\u7B5B\u9009\n- \u4EFB\u52A1\
-    \u7C7B\u578B\u7B5B\u9009\n- \u53D1\u5E03\u65F6\u95F4\u7B5B\u9009\n- \u6392\u5E8F\
-    \u65B9\u5F0F(\u8DDD\u79BB/\u65F6\u95F4/\u9884\u7B97)\n"
-  id: ISSUE-VS002~c2
-  name: "\u4EFB\u52A1\u7B5B\u9009\u4E0E\u6392\u5E8F"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/mobile/src/components/VisionShare/TaskFilter/
-      - apps/server/src/services/visionShare/taskFilter.ts
-      prompt: "\u68C0\u67E5\u4EFB\u52A1\u7B5B\u9009\u7EC4\u4EF6\uFF0C\u9A8C\u8BC1\u6709\
-        \u8DDD\u79BB\u3001\u9884\u7B97\u3001\u7C7B\u578B\u3001\u65F6\u95F4\u7B49\u7B5B\
-        \u9009\u6761\u4EF6\u548C\u6392\u5E8F\u9009\u9879"
-- coverage:
-    ai: sufficient
-    e2e: sufficient
-    integration: sufficient
-    manual: not_needed
-    unit: sufficient
-  description: "\u8BE6\u60C5\u5C55\u793A:\n- \u4EFB\u52A1\u5B8C\u6574\u4FE1\u606F\u5C55\
-    \u793A\n- \u53D1\u5E03\u8005\u4FE1\u7528\u5206\u663E\u793A\n- \u8DDD\u79BB\u548C\
-    \u9884\u8BA1\u5230\u8FBE\u65F6\u95F4\n- \u4EFB\u52A1\u56FE\u7247\u9884\u89C8(\u5982\
-    \u6709)\n- \u5386\u53F2\u8BC4\u4EF7\u67E5\u770B\n"
-  id: ISSUE-VS002~c3
-  name: "\u4EFB\u52A1\u8BE6\u60C5\u67E5\u770B"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/mobile/src/screens/VisionShare/TaskDetail.tsx
-      - apps/mobile/src/components/VisionShare/TaskInfo/
-      prompt: "\u68C0\u67E5\u4EFB\u52A1\u8BE6\u60C5\u9875\u9762\uFF0C\u9A8C\u8BC1\u6709\
-        \u5B8C\u6574\u4FE1\u606F\u5C55\u793A\u3001\u4FE1\u7528\u5206\u3001\u8DDD\u79BB\
-        \u8BA1\u7B97\u548C\u8BC4\u4EF7\u67E5\u770B\u529F\u80FD"
-- coverage:
-    ai: sufficient
-    e2e: sufficient
-    integration: sufficient
-    manual: not_needed
-    unit: sufficient
-  description: "\u63A5\u5355\u6D41\u7A0B:\n- \u63A5\u5355\u6309\u94AE\u548C\u786E\u8BA4\
-    \u5F39\u7A97\n- \u63A5\u5355\u8D44\u683C\u68C0\u67E5(\u4FE1\u7528\u5206/\u79EF\
-    \u5206/\u4F4D\u7F6E)\n- \u63A5\u5355\u6210\u529F\u72B6\u6001\u53D8\u66F4\n- \u4EFB\
-    \u52A1\u72B6\u6001\u5B9E\u65F6\u540C\u6B65\n- \u63A5\u5355\u540E\u5BFC\u822A\u5165\
-    \u53E3\n"
-  id: ISSUE-VS002~c4
-  name: "\u63A5\u5355\u64CD\u4F5C\u4E0E\u786E\u8BA4"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/mobile/src/screens/VisionShare/AcceptTask.tsx
-      - apps/server/src/services/visionShare/acceptTask.ts
-      prompt: "\u68C0\u67E5\u63A5\u5355\u529F\u80FD\uFF0C\u9A8C\u8BC1\u6709\u63A5\u5355\
-        \u786E\u8BA4\u3001\u8D44\u683C\u68C0\u67E5\u3001\u72B6\u6001\u540C\u6B65\u548C\
-        \u5BFC\u822A\u5165\u53E3"
-- coverage:
-    ai: sufficient
-    e2e: sufficient
-    integration: sufficient
-    manual: not_needed
-    unit: sufficient
-  description: "\u63A8\u8350\u7CFB\u7EDF:\n- \u57FA\u4E8E\u4F4D\u7F6E\u7684\u5B9E\u65F6\
-    \u63A8\u9001\n- \u5339\u914D\u5EA6\u8BC4\u5206\u5C55\u793A\n- \u63A8\u9001\u901A\
-    \u77E5\u5904\u7406\n- \u63A8\u8350\u4EFB\u52A1\u5FEB\u6377\u5165\u53E3\n- \u63A8\
-    \u8350\u504F\u597D\u8BBE\u7F6E\n"
-  id: ISSUE-VS002~c5
-  name: "\u4EFB\u52A1\u63A8\u8350\u63A8\u9001"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/server/src/services/visionShare/taskRecommendation.ts
-      - apps/mobile/src/components/VisionShare/RecommendationCard.tsx
-      prompt: "\u68C0\u67E5\u4EFB\u52A1\u63A8\u8350\u63A8\u9001\uFF0C\u9A8C\u8BC1\u6709\
-        \u4F4D\u7F6E\u63A8\u9001\u3001\u5339\u914D\u5EA6\u5C55\u793A\u3001\u901A\u77E5\
-        \u5904\u7406\u548C\u504F\u597D\u8BBE\u7F6E"
-- coverage:
-    ai: sufficient
-    e2e: sufficient
-    integration: sufficient
-    manual: not_needed
-    unit: sufficient
-  description: "\u72B6\u6001\u7BA1\u7406:\n- \u5DF2\u63A5\u4EFB\u52A1\u5217\u8868\n\
-    - \u8FDB\u884C\u4E2D\u7684\u4EFB\u52A1\u72B6\u6001\n- \u4EFB\u52A1\u5B8C\u6210\
-    \u786E\u8BA4\n- \u5386\u53F2\u63A5\u5355\u8BB0\u5F55\n- \u4EFB\u52A1\u53D6\u6D88\
-    \u548C\u7533\u8BC9\n"
-  id: ISSUE-VS002~c6
-  name: "\u4EFB\u52A1\u72B6\u6001\u8FFD\u8E2A"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/mobile/src/screens/VisionShare/MyTasks.tsx
-      - apps/mobile/src/components/VisionShare/TaskStatusTracker.tsx
-      prompt: "\u68C0\u67E5\u4EFB\u52A1\u72B6\u6001\u8FFD\u8E2A\uFF0C\u9A8C\u8BC1\u6709\
-        \u5DF2\u63A5\u4EFB\u52A1\u5217\u8868\u3001\u72B6\u6001\u7BA1\u7406\u3001\u5B8C\
-        \u6210\u786E\u8BA4\u548C\u5386\u53F2\u8BB0\u5F55"
-current_task: null
-description: "\u5B9E\u73B0VisionShare\u573A\u666F\u7684\u9644\u8FD1\u4EFB\u52A1\u67E5\
-  \u8BE2\u548C\u63A5\u5355\u529F\u80FD\u3002\u4F9B\u7ED9\u65B9\u53EF\u4EE5\u57FA\u4E8E\
-  \u5730\u7406\u4F4D\u7F6E\n\u67E5\u770B\u9644\u8FD1\u7684\u9700\u6C42\u4EFB\u52A1\
-  \uFF0C\u4F7F\u7528\u5339\u914D\u5F15\u64CE\u7684\u63A8\u9001\u901A\u77E5\u83B7\u53D6\
-  \u63A8\u8350\u4EFB\u52A1\uFF0C\u5E76\u53EF\u4EE5\n\u63A5\u53D7\u6216\u62D2\u7EDD\
-  \u4EFB\u52A1\u9080\u8BF7\u3002\n"
 id: ISSUE-VS002
 issue_number: 702
-logic: sufficient_necessary
-prerequisites:
-- ISSUE-C006
-- ISSUE-M004
+title: 附近任务查询与接单
 slug: nearby-task-query
-status: pending
-title: "\u9644\u8FD1\u4EFB\u52A1\u67E5\u8BE2\u4E0E\u63A5\u5355"
+status: failed
+description: |
+  实现VisionShare场景的附近任务查询和接单功能。供给方可以基于地理位置
+  查看附近的需求任务，使用匹配引擎的推送通知获取推荐任务，并可以
+  接受或拒绝任务邀请。
+prerequisites:
+  - ISSUE-C006
+  - ISSUE-M004
+created_at: '2026-04-08'
+logic: sufficient_necessary
+criteria:
+  - id: ISSUE-VS002~c1
+    name: 附近任务地图展示
+    description: |
+      地图界面:
+      - 基于地图的任务分布展示
+      - 当前位置定位和显示
+      - 任务标记和信息气泡
+      - 地图缩放和区域筛选
+      - 列表/地图视图切换
+    status: pending
+    coverage:
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: 检查附近任务地图界面，验证有地图组件、任务标记、位置显示和视图切换功能
+        context_files:
+          - apps/mobile/src/screens/VisionShare/NearbyTasksMap.tsx
+          - apps/mobile/src/components/Map/TaskMarker.tsx
+  - id: ISSUE-VS002~c2
+    name: 任务筛选与排序
+    description: |
+      筛选功能:
+      - 距离范围筛选(1km/5km/10km/全城)
+      - 预算范围筛选
+      - 任务类型筛选
+      - 发布时间筛选
+      - 排序方式(距离/时间/预算)
+    status: pending
+    coverage:
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: 检查任务筛选组件，验证有距离、预算、类型、时间等筛选条件和排序选项
+        context_files:
+          - apps/mobile/src/components/VisionShare/TaskFilter/
+          - apps/server/src/services/visionShare/taskFilter.ts
+  - id: ISSUE-VS002~c3
+    name: 任务详情查看
+    description: |
+      详情展示:
+      - 任务完整信息展示
+      - 发布者信用分显示
+      - 距离和预计到达时间
+      - 任务图片预览(如有)
+      - 历史评价查看
+    status: pending
+    coverage:
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: 检查任务详情页面，验证有完整信息展示、信用分、距离计算和评价查看功能
+        context_files:
+          - apps/mobile/src/screens/VisionShare/TaskDetail.tsx
+          - apps/mobile/src/components/VisionShare/TaskInfo/
+  - id: ISSUE-VS002~c4
+    name: 接单操作与确认
+    description: |
+      接单流程:
+      - 接单按钮和确认弹窗
+      - 接单资格检查(信用分/积分/位置)
+      - 接单成功状态变更
+      - 任务状态实时同步
+      - 接单后导航入口
+    status: pending
+    coverage:
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: 检查接单功能，验证有接单确认、资格检查、状态同步和导航入口
+        context_files:
+          - apps/mobile/src/screens/VisionShare/AcceptTask.tsx
+          - apps/server/src/services/visionShare/acceptTask.ts
+  - id: ISSUE-VS002~c5
+    name: 任务推荐推送
+    description: |
+      推荐系统:
+      - 基于位置的实时推送
+      - 匹配度评分展示
+      - 推送通知处理
+      - 推荐任务快捷入口
+      - 推荐偏好设置
+    status: pending
+    coverage:
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: 检查任务推荐推送，验证有位置推送、匹配度展示、通知处理和偏好设置
+        context_files:
+          - apps/server/src/services/visionShare/taskRecommendation.ts
+          - apps/mobile/src/components/VisionShare/RecommendationCard.tsx
+  - id: ISSUE-VS002~c6
+    name: 任务状态追踪
+    description: |
+      状态管理:
+      - 已接任务列表
+      - 进行中的任务状态
+      - 任务完成确认
+      - 历史接单记录
+      - 任务取消和申诉
+    status: pending
+    coverage:
+      unit: sufficient
+      integration: sufficient
+      e2e: sufficient
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: 检查任务状态追踪，验证有已接任务列表、状态管理、完成确认和历史记录
+        context_files:
+          - apps/mobile/src/screens/VisionShare/MyTasks.tsx
+          - apps/mobile/src/components/VisionShare/TaskStatusTracker.tsx
+implementation:
+  task_id: TASK-001
+  completed_at: '2026-04-12T18:06:17.889Z'
+  execution_time_minutes: 0
+  result: failed
+  failure_reason: No changes made
+test_passed: false
+worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-VS002/.issuetree/worktrees/ISSUE-VS002
