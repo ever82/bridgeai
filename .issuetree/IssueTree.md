@@ -63,9 +63,9 @@ flowchart TD
     subgraph Matching["🎯 匹配引擎层 - Matching"]
         M001a[✂️ ISSUE-M001a<br/>查询构建器与DSL设计]
         M001b[✂️ ISSUE-M001b<br/>实时查询执行引擎]
-        M002[🔧 ISSUE-M002<br/>Agent智能筛选排序]
+        M002[❌ ISSUE-M002<br/>Agent智能筛选排序]
         M003[💻 ISSUE-M003<br/>匹配度算法实现]
-        M004[💻 ISSUE-M004<br/>匹配结果推送通知]
+        M004[🔍 ISSUE-M004<br/>匹配结果推送通知]
     end
 
     subgraph Comm["💬 通信层 - Communication"]
@@ -99,7 +99,7 @@ flowchart TD
         VS002[🟡 ISSUE-VS002<br/>附近任务查询与接单]
         VS003[🟡 ISSUE-VS003<br/>相机拍照与上传]
         VS004[🟡 ISSUE-VS004<br/>AI隐私脱敏处理]
-        VS005[🔍 ISSUE-VS005<br/>照片查看与积分支付]
+        VS005[🟡 ISSUE-VS005<br/>照片查看与积分支付]
         VS006[🟡 ISSUE-VS006<br/>AI相册智能检索与历史查询]
         VS007[🟡 ISSUE-VS007<br/>本地相册AI智能检索]
     end
@@ -108,7 +108,7 @@ flowchart TD
         DATE001[🟡 ISSUE-DATE001<br/>交友画像配置]
         DATE002[🟡 ISSUE-DATE002<br/>Agent主动匹配推荐]
         DATE003[🟢 ISSUE-DATE003<br/>Agent间对话匹配]
-        DATE004[🟡 ISSUE-DATE004<br/>双向同意引荐机制]
+        DATE004[🔵 ISSUE-DATE004<br/>双向同意引荐机制]
     end
 
     subgraph Job["💼 AgentJob场景"]
