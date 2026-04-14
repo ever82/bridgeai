@@ -182,4 +182,23 @@ export function sanitizedString() {
   return (val: string) => sanitizeString(val);
 }
 
+/**
+ * Shortcut for validateRequest - validates a single target
+ * Supports both signatures:
+ * - validateRequest(schema, 'query') for single target
+ * - validateRequest({ query: schema }) for multiple targets
+ */
+export function validateRequest(
+  schemasOrSchema: ValidationSchemas | ZodSchema<any>,
+  target?: ValidationTarget
+) {
+  if (target) {
+    // Single target: validateRequest(schema, 'query')
+    const schema = schemasOrSchema as ZodSchema<any>;
+    return validate({ [target]: schema });
+  }
+  // Multiple targets: validateRequest({ query: schema })
+  return validate(schemasOrSchema as ValidationSchemas);
+}
+
 export default validate;
