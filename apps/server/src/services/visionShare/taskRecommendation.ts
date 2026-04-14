@@ -101,8 +101,8 @@ function calculateMatchScore(
   let score = 0;
 
   // Distance score (closer is better, max 30 points)
-  const distance = calculateDistance(userLocation, task.coordinates);
-  const distanceScore = Math.max(0, 30 - distance * 3);
+  const { distanceKm } = calculateDistance(userLocation, task.coordinates);
+  const distanceScore = Math.max(0, 30 - distanceKm * 3);
   score += distanceScore;
 
   // Budget score (higher budget is better, max 25 points)

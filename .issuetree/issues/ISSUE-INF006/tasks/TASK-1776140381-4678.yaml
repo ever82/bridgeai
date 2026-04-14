@@ -1,0 +1,18 @@
+task:
+  id: TASK-1776140381-4678
+  issue_id: ISSUE-INF006
+  result: null
+  retry:
+    attempt: 1
+    next_task: null
+    previous_task: null
+  session:
+    claude_session_id: abaf61a4-1d6c-4682-87aa-72eba2bec69f
+    claude_session_name: TASK-1776140381-4678
+    resumed_at: null
+    started_at: '2026-04-14T12:19:45.761567+08:00'
+    tmux_session: task-task-1776140381-4678
+    worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INF006
+  status: failed
+  timeout_minutes: 30
+  type: review

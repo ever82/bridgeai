@@ -3,7 +3,7 @@
  * VisionShare场景任务类型定义
  */
 
-import { GeoCoordinates, Location, EARTH_RADIUS_KM } from './location';
+import { GeoCoordinates, Location } from './location';
 
 // ============================================
 // Task Status
@@ -385,28 +385,5 @@ export const PUBLISH_TIME_OPTIONS = [
   { value: 'all', label: 'All Time', labelZh: '全部' },
 ];
 
-/**
- * Calculate distance between two coordinates using Haversine formula
- * Returns distance in kilometers
- */
-export function calculateDistance(
-  coord1: GeoCoordinates,
-  coord2: GeoCoordinates
-): number {
-  const toRadians = (degrees: number): number => (degrees * Math.PI) / 180;
-
-  const lat1Rad = toRadians(coord1.latitude);
-  const lat2Rad = toRadians(coord2.latitude);
-  const deltaLatRad = toRadians(coord2.latitude - coord1.latitude);
-  const deltaLngRad = toRadians(coord2.longitude - coord1.longitude);
-
-  const a =
-    Math.sin(deltaLatRad / 2) * Math.sin(deltaLatRad / 2) +
-    Math.cos(lat1Rad) *
-      Math.cos(lat2Rad) *
-      Math.sin(deltaLngRad / 2) *
-      Math.sin(deltaLngRad / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return EARTH_RADIUS_KM * c;
-}
+// Note: calculateDistance function is exported from utils/geoUtils.ts
+// Import it from there: import { calculateDistance } from '@visionshare/shared';

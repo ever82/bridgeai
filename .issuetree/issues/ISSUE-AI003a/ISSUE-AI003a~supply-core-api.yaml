@@ -59,4 +59,4 @@ criteria:
         context_files:
           - apps/server/src/routes/ai/supply.ts
 
-current_task: TASK-1775846486
+current_task: null

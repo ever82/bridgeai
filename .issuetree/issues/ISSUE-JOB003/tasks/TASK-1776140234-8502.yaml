@@ -1,0 +1,18 @@
+task:
+  id: TASK-1776140234-8502
+  issue_id: ISSUE-JOB003
+  result: null
+  retry:
+    attempt: 1
+    next_task: null
+    previous_task: null
+  session:
+    claude_session_id: 0deb07eb-81fe-40eb-b96e-120f2f6ce688
+    claude_session_name: TASK-1776140234-8502
+    resumed_at: null
+    started_at: '2026-04-14T12:17:18.294133+08:00'
+    tmux_session: task-task-1776140234-8502
+    worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-JOB003
+  status: failed
+  timeout_minutes: 30
+  type: implement

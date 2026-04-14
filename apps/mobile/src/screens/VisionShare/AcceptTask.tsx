@@ -85,7 +85,7 @@ export const AcceptTaskScreen: React.FC = () => {
         updatedAt: new Date(),
       };
 
-      const distance = calculateDistance(userLocation, mockTask.coordinates);
+      const { distanceKm } = calculateDistance(userLocation, mockTask.coordinates);
 
       const mockEligibility: TaskEligibilityResult = {
         eligible: true,
@@ -95,7 +95,7 @@ export const AcceptTaskScreen: React.FC = () => {
         requiredPoints: 100,
         currentPoints: userPoints,
         maxDistanceKm: 50,
-        currentDistanceKm: distance,
+        currentDistanceKm: distanceKm,
       };
 
       setTask(mockTask);

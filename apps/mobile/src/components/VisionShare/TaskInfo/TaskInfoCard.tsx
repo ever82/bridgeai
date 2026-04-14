@@ -26,7 +26,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   onPress,
   compact = false,
 }) => {
-  const distance = calculateDistance(userLocation, task.coordinates);
+  const { distanceKm } = calculateDistance(userLocation, task.coordinates);
   const typeLabel = TASK_TYPE_LABELS[task.type]?.zh || task.type;
   const priorityStyle = TASK_PRIORITY_LABELS[task.priority];
 
@@ -65,7 +65,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
           <Text style={styles.compactBudget}>
             {formatBudget(task.budgetMin, task.budgetMax)}
           </Text>
-          <Text style={styles.compactDistance}>{formatDistance(distance)}</Text>
+          <Text style={styles.compactDistance}>{formatDistance(distanceKm * 1000)}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -84,7 +84,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
             {typeLabel}
           </Text>
         </View>
-        <Text style={styles.distanceBadge}>{formatDistance(distance)}</Text>
+        <Text style={styles.distanceBadge}>{formatDistance(distanceKm * 1000)}</Text>
       </View>
 
       {/* Title */}

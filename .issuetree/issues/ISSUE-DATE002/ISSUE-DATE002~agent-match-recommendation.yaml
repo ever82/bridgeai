@@ -1,207 +1,251 @@
 created_at: '2026-04-08'
 criteria:
-  - coverage:
-      ai: required
-      e2e: not_needed
-      integration: required
-      manual: not_needed
-      unit: required
-    description: "\u5339\u914D\u7B97\u6CD5:\n- \u591A\u7EF4\u5EA6\u76F8\u4F3C\u5EA6\u8BA1\
-      \u7B97\uFF08\u57FA\u7840\u6761\u4EF6\u3001\u6027\u683C\u3001\u5174\u8DA3\u3001\
-      \u751F\u6D3B\u65B9\u5F0F\uFF09\n- \u6743\u91CD\u914D\u7F6E\uFF08\u786C\u6761\u4EF6\
-      vs\u8F6F\u504F\u597D\uFF09\n- \u4E92\u8865\u6027\u8BC4\u5206\uFF08\u6027\u683C\
-      \u4E92\u8865\u3001\u6280\u80FD\u4E92\u8865\uFF09\n- \u5730\u7406\u4F4D\u7F6E\u63A5\
-      \u8FD1\u5EA6\u8BA1\u7B97\n- \u7EFC\u5408\u5339\u914D\u5EA6\u5206\u6570\uFF080-100\uFF09\
-      \n"
-    id: ISSUE-DATE002~c1
-    name: "\u4EA4\u53CB\u5339\u914D\u5EA6\u7B97\u6CD5"
-    verification:
-      ai:
-        context_files:
-          - apps/server/src/services/dating/matchAlgorithm.ts
-          - packages/shared/src/utils/datingSimilarity.ts
-        prompt: "\u68C0\u67E5\u4EA4\u53CB\u5339\u914D\u5EA6\u7B97\u6CD5\u5B9E\u73B0\uFF0C\
-          \u9A8C\u8BC1\u6709\u591A\u7EF4\u5EA6\u76F8\u4F3C\u5EA6\u8BA1\u7B97\u3001\u786C\
-          \u8F6F\u6761\u4EF6\u6743\u91CD\u3001\u4E92\u8865\u6027\u8BC4\u5206\uFF0C\u8F93\
-          \u51FA0-100\u7684\u7EFC\u5408\u5339\u914D\u5EA6\u5206\u6570"
-  - coverage:
-      ai: sufficient
-      e2e: required
-      integration: required
-      manual: not_needed
-      unit: required
-    description: "\u63A8\u8350\u903B\u8F91:\n- \u6BCF\u65E5\u5339\u914D\u5019\u9009\u6C60\
-      \u751F\u6210\n- Agent\u81EA\u52A8\u7B5B\u9009\u9AD8\u5339\u914D\u5EA6\u5BF9\u8C61\
-      \n- \u6279\u91CF\u5339\u914D\u5019\u9009\u4EBA\u7684\u6392\u5E8F\u7B97\u6CD5\n\
-      - \u8FC7\u6EE4\u5DF2\u5339\u914D/\u5DF2\u62D2\u7EDD/\u9ED1\u540D\u5355\u7528\u6237\
-      \n- \u63A8\u8350\u591A\u6837\u6027\u4FDD\u8BC1\uFF08\u907F\u514D\u540C\u8D28\u5316\
-      \uFF09\n"
-    id: ISSUE-DATE002~c2
-    name: "Agent\u4E3B\u52A8\u63A8\u8350\u903B\u8F91"
-    status: pending
-    verification:
-      ai:
-        context_files:
-          - apps/server/src/services/dating/recommendationService.ts
-        prompt: "\u68C0\u67E5Agent\u4E3B\u52A8\u63A8\u8350\u903B\u8F91\uFF0C\u9A8C\u8BC1\
-          \u6709\u6BCF\u65E5\u5019\u9009\u6C60\u751F\u6210\u3001\u81EA\u52A8\u7B5B\u9009\
-          \u3001\u6392\u5E8F\u7B97\u6CD5\u3001\u8FC7\u6EE4\u673A\u5236\u548C\u591A\u6837\
-          \u6027\u4FDD\u8BC1\u529F\u80FD"
-  - coverage:
-      ai: sufficient
-      e2e: required
-      integration: required
-      manual: required
-      unit: required
-    description: "\u63A8\u9001\u7CFB\u7EDF:\n- \u6BCF\u65E5\u63A8\u8350\u63A8\u9001\uFF08\
-      \u65B0\u5339\u914D\u5BF9\u8C61\u63D0\u9192\uFF09\n- \u63A8\u9001\u5185\u5BB9\u4E2A\
-      \u6027\u5316\uFF08\u5C55\u793A\u5339\u914D\u4EAE\u70B9\uFF09\n- \u63A8\u9001\u9891\
-      \u7387\u63A7\u5236\uFF08\u907F\u514D\u6253\u6270\uFF09\n- \u7528\u6237\u504F\u597D\
-      \u5B66\u4E60\u65F6\u95F4\u8BBE\u7F6E\n- \u63A8\u9001\u70B9\u51FB\u8DF3\u8F6C\u5339\
-      \u914D\u8BE6\u60C5\n"
-    id: ISSUE-DATE002~c3
-    name: "\u5339\u914D\u7ED3\u679C\u63A8\u9001\u901A\u77E5"
-    status: pending
-    verification:
-      ai:
-        context_files:
-          - apps/server/src/services/dating/matchNotificationService.ts
-          - apps/mobile/src/services/notifications.ts
-        prompt: "\u68C0\u67E5\u5339\u914D\u7ED3\u679C\u63A8\u9001\u901A\u77E5\u7CFB\u7EDF\
-          \uFF0C\u9A8C\u8BC1\u6709\u6BCF\u65E5\u63A8\u8350\u63A8\u9001\u3001\u4E2A\u6027\
-          \u5316\u5185\u5BB9\u3001\u9891\u7387\u63A7\u5236\u3001\u65F6\u95F4\u504F\u597D\
-          \u8BBE\u7F6E\u548C\u8DF3\u8F6C\u529F\u80FD"
-  - coverage:
-      ai: required
-      e2e: required
-      integration: required
-      manual: not_needed
-      unit: required
-    description: "\u5BF9\u8BDD\u542F\u52A8:\n- Agent\u81EA\u52A8\u53D1\u8D77\u5BF9\u8BDD\
-      \u6D41\u7A0B\n- \u4E2A\u6027\u5316\u5F00\u573A\u767D\u751F\u6210\uFF08\u57FA\u4E8E\
-      \u5339\u914D\u70B9\uFF09\n- \u5BF9\u65B9Agent\u7684\u81EA\u52A8\u54CD\u5E94\n\
-      - \u5BF9\u8BDD\u76EE\u6807\u8BBE\u5B9A\uFF08\u4E86\u89E3\u7279\u5B9A\u4FE1\u606F\
-      \uFF09\n- \u5BF9\u8BDD\u8F6E\u6B21\u63A7\u5236\uFF08\u521D\u6B65\u4EA4\u6D41\u540E\
-      \u6682\u505C\u7B49\u5F85\u7528\u6237\uFF09\n"
-    id: ISSUE-DATE002~c4
-    name: "Agent\u53D1\u8D77\u5BF9\u8BDD\u5339\u914D"
-    status: pending
-    verification:
-      ai:
-        context_files:
-          - apps/server/src/services/dating/agentInitiatedChat.ts
-          - apps/server/src/services/ai/openingLineService.ts
-        prompt: "\u68C0\u67E5Agent\u53D1\u8D77\u5BF9\u8BDD\u5339\u914D\u529F\u80FD\uFF0C\
-          \u9A8C\u8BC1\u80FD\u81EA\u52A8\u53D1\u8D77\u5BF9\u8BDD\u3001\u751F\u6210\u4E2A\
-          \u6027\u5316\u5F00\u573A\u767D\u3001\u63A7\u5236\u5BF9\u8BDD\u8F6E\u6B21\uFF0C\
-          \u5728\u521D\u6B65\u4EA4\u6D41\u540E\u6682\u505C\u7B49\u5F85\u7528\u6237\u4ECB\
-          \u5165"
-  - coverage:
-      ai: sufficient
-      e2e: required
-      integration: required
-      manual: required
-      unit: not_needed
-    description: "\u79FB\u52A8\u7AEFUI:\n- \u6BCF\u65E5\u63A8\u8350\u5217\u8868\uFF08\
-      \u5361\u7247\u5F0F\u5C55\u793A\uFF09\n- \u5339\u914D\u8BE6\u60C5\u9875\uFF08\u7167\
-      \u7247\u3001\u57FA\u672C\u4FE1\u606F\u3001\u5339\u914D\u5EA6\u3001\u5171\u540C\
-      \u5174\u8DA3\uFF09\n- \u5339\u914D\u4EAE\u70B9\u9AD8\u4EAE\u5C55\u793A\n- \u5FEB\
-      \u901F\u64CD\u4F5C\uFF08\u559C\u6B22/\u8DF3\u8FC7/\u67E5\u770B\u8BE6\u60C5\uFF09\
-      \n- \u5339\u914D\u5386\u53F2\u8BB0\u5F55\n"
-    id: ISSUE-DATE002~c5
-    name: "\u5339\u914D\u7ED3\u679C\u5C55\u793A\u754C\u9762"
-    status: pending
-    verification:
-      ai:
-        context_files:
-          - apps/mobile/src/screens/dating/RecommendationsScreen.tsx
-          - apps/mobile/src/components/dating/MatchCard.tsx
-        prompt: "\u68C0\u67E5\u79FB\u52A8\u7AEF\u5339\u914D\u7ED3\u679C\u5C55\u793A\u754C\
-          \u9762\uFF0C\u9A8C\u8BC1\u6709\u5361\u7247\u5F0F\u63A8\u8350\u5217\u8868\u3001\
-          \u5339\u914D\u8BE6\u60C5\u9875\u3001\u4EAE\u70B9\u9AD8\u4EAE\u3001\u5FEB\u901F\
-          \u64CD\u4F5C\u6309\u94AE\u548C\u5339\u914D\u5386\u53F2\u529F\u80FD"
-  - coverage:
-      ai: sufficient
-      e2e: required
-      integration: required
-      manual: not_needed
-      unit: required
-    description: "\u53CD\u9988\u7CFB\u7EDF:\n- \u559C\u6B22/\u8DF3\u8FC7\u5FEB\u6377\
-      \u53CD\u9988\n- \u4E0D\u611F\u5174\u8DA3\u539F\u56E0\u6536\u96C6\uFF08\u53EF\u9009\
-      \uFF09\n- \u63A8\u8350\u51C6\u786E\u6027\u8BC4\u5206\n- \u53CD\u9988\u6570\u636E\
-      \u7528\u4E8E\u7B97\u6CD5\u4F18\u5316\n- \u7528\u6237\u504F\u597D\u5B66\u4E60\n"
-    id: ISSUE-DATE002~c6
-    name: "\u7528\u6237\u53CD\u9988\u4E0E\u63A8\u8350\u4F18\u5316"
-    status: pending
-    verification:
-      ai:
-        context_files:
-          - apps/server/src/services/dating/feedbackService.ts
-          - apps/server/src/services/dating/preferenceLearning.ts
-        prompt: "\u68C0\u67E5\u7528\u6237\u53CD\u9988\u4E0E\u63A8\u8350\u4F18\u5316\u7CFB\
-          \u7EDF\uFF0C\u9A8C\u8BC1\u6709\u5FEB\u6377\u53CD\u9988\u3001\u539F\u56E0\u6536\
-          \u96C6\u3001\u51C6\u786E\u6027\u8BC4\u5206\u529F\u80FD\uFF0C\u4E14\u53CD\u9988\
-          \u6570\u636E\u7528\u4E8E\u6301\u7EED\u4F18\u5316\u63A8\u8350\u7B97\u6CD5"
+- coverage:
+    ai: required
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: '匹配算法:
+
+    - 多维度相似度计算（基础条件、性格、兴趣、生活方式）
+
+    - 权重配置（硬条件vs软偏好）
+
+    - 互补性评分（性格互补、技能互补）
+
+    - 地理位置接近度计算
+
+    - 综合匹配度分数（0-100）
+
+    '
+  id: ISSUE-DATE002~c1
+  name: 交友匹配度算法
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/dating/matchAlgorithm.ts
+      - packages/shared/src/utils/datingSimilarity.ts
+      prompt: 检查交友匹配度算法实现，验证有多维度相似度计算、硬软条件权重、互补性评分，输出0-100的综合匹配度分数
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: '推荐逻辑:
+
+    - 每日匹配候选池生成
+
+    - Agent自动筛选高匹配度对象
+
+    - 批量匹配候选人的排序算法
+
+    - 过滤已匹配/已拒绝/黑名单用户
+
+    - 推荐多样性保证（避免同质化）
+
+    '
+  id: ISSUE-DATE002~c2
+  name: Agent主动推荐逻辑
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/dating/recommendationService.ts
+      prompt: 检查Agent主动推荐逻辑，验证有每日候选池生成、自动筛选、排序算法、过滤机制和多样性保证功能
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: required
+    unit: required
+  description: '推送系统:
+
+    - 每日推荐推送（新匹配对象提醒）
+
+    - 推送内容个性化（展示匹配亮点）
+
+    - 推送频率控制（避免打扰）
+
+    - 用户偏好学习时间设置
+
+    - 推送点击跳转匹配详情
+
+    '
+  id: ISSUE-DATE002~c3
+  name: 匹配结果推送通知
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/dating/matchNotificationService.ts
+      - apps/mobile/src/services/notifications.ts
+      prompt: 检查匹配结果推送通知系统，验证有每日推荐推送、个性化内容、频率控制、时间偏好设置和跳转功能
+- coverage:
+    ai: required
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: '对话启动:
+
+    - Agent自动发起对话流程
+
+    - 个性化开场白生成（基于匹配点）
+
+    - 对方Agent的自动响应
+
+    - 对话目标设定（了解特定信息）
+
+    - 对话轮次控制（初步交流后暂停等待用户）
+
+    '
+  id: ISSUE-DATE002~c4
+  name: Agent发起对话匹配
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/dating/agentInitiatedChat.ts
+      - apps/server/src/services/ai/openingLineService.ts
+      prompt: 检查Agent发起对话匹配功能，验证能自动发起对话、生成个性化开场白、控制对话轮次，在初步交流后暂停等待用户介入
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: required
+    unit: not_needed
+  description: '移动端UI:
+
+    - 每日推荐列表（卡片式展示）
+
+    - 匹配详情页（照片、基本信息、匹配度、共同兴趣）
+
+    - 匹配亮点高亮展示
+
+    - 快速操作（喜欢/跳过/查看详情）
+
+    - 匹配历史记录
+
+    '
+  id: ISSUE-DATE002~c5
+  name: 匹配结果展示界面
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/dating/RecommendationsScreen.tsx
+      - apps/mobile/src/components/dating/MatchCard.tsx
+      prompt: 检查移动端匹配结果展示界面，验证有卡片式推荐列表、匹配详情页、亮点高亮、快速操作按钮和匹配历史功能
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: '反馈系统:
+
+    - 喜欢/跳过快捷反馈
+
+    - 不感兴趣原因收集（可选）
+
+    - 推荐准确性评分
+
+    - 反馈数据用于算法优化
+
+    - 用户偏好学习
+
+    '
+  id: ISSUE-DATE002~c6
+  name: 用户反馈与推荐优化
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/dating/feedbackService.ts
+      - apps/server/src/services/dating/preferenceLearning.ts
+      prompt: 检查用户反馈与推荐优化系统，验证有快捷反馈、原因收集、准确性评分功能，且反馈数据用于持续优化推荐算法
 current_task: null
-description: "\u5B9E\u73B0AgentDate\u573A\u666F\u7684Agent\u4E3B\u52A8\u5339\u914D\
-  \u63A8\u8350\u7CFB\u7EDF\u3002\u7CFB\u7EDF\u6839\u636E\u7528\u6237\u7684\u4EA4\u53CB\
-  \u753B\u50CF\uFF0C\n\u81EA\u52A8\u7B5B\u9009\u5339\u914D\u5BF9\u8C61\uFF0C\u7531\
-  \u7528\u6237\u7684Agent\u4E3B\u52A8\u53D1\u8D77\u5BF9\u8BDD\uFF0C\u7ECF\u8FC7\u521D\
-  \u6B65\u4EA4\u6D41\u540E\u5411\u7528\u6237\u63A8\u8350\u5408\u9002\u7684\u4EA4\u53CB\
-  \u5BF9\u8C61\u3002\n\u652F\u6301\u5339\u914D\u5EA6\u7B97\u6CD5\u3001\u4E2A\u6027\
-  \u5316\u63A8\u8350\u6392\u5E8F\u3001\u6BCF\u65E5\u63A8\u8350\u63A8\u9001\u7B49\u529F\
-  \u80FD\u3002\n"
+description: '实现AgentDate场景的Agent主动匹配推荐系统。系统根据用户的交友画像，
+
+  自动筛选匹配对象，由用户的Agent主动发起对话，经过初步交流后向用户推荐合适的交友对象。
+
+  支持匹配度算法、个性化推荐排序、每日推荐推送等功能。
+
+  '
 id: ISSUE-DATE002
 issue_number: 802
 logic: sufficient_necessary
 prerequisites:
-  - ISSUE-C006
-  - ISSUE-M004
-  - ISSUE-DATE001
+- ISSUE-C006
+- ISSUE-M004
+- ISSUE-DATE001
 slug: agent-match-recommendation
-status: implemented
+status: stuck
+stuck_reason: start_failed
 sub_issues:
-  - criteria:
-      - ISSUE-DATE002~c1
-      - ISSUE-DATE002~c2
-      - ISSUE-DATE002~c6
-    description: "\u5B9E\u73B0\u4EA4\u53CB\u5339\u914D\u5EA6\u7B97\u6CD5\u548C\u63A8\
-      \u8350\u5F15\u64CE\u6838\u5FC3\u529F\u80FD\uFF1A\n- \u591A\u7EF4\u5EA6\u76F8\u4F3C\
-      \u5EA6\u8BA1\u7B97\uFF08\u57FA\u7840\u6761\u4EF6\u3001\u6027\u683C\u3001\u5174\
-      \u8DA3\u3001\u751F\u6D3B\u65B9\u5F0F\uFF09\n- \u6743\u91CD\u914D\u7F6E\uFF08\u786C\
-      \u6761\u4EF6vs\u8F6F\u504F\u597D\uFF09\n- \u4E92\u8865\u6027\u8BC4\u5206\uFF08\
-      \u6027\u683C\u4E92\u8865\u3001\u6280\u80FD\u4E92\u8865\uFF09\n- \u5730\u7406\u4F4D\
-      \u7F6E\u63A5\u8FD1\u5EA6\u8BA1\u7B97\n- \u6BCF\u65E5\u5339\u914D\u5019\u9009\u6C60\
-      \u751F\u6210\u4E0E\u6392\u5E8F\u7B97\u6CD5\n- \u63A8\u8350\u591A\u6837\u6027\u4FDD\
-      \u8BC1\n- \u7528\u6237\u53CD\u9988\u6536\u96C6\u4E0E\u504F\u597D\u5B66\u4E60\n"
-    estimated_lines: 400-600
-    id: DATE002-1
-    title: "\u5339\u914D\u7B97\u6CD5\u4E0E\u63A8\u8350\u5F15\u64CE"
-  - criteria:
-      - ISSUE-DATE002~c4
-    description: "\u5B9E\u73B0Agent\u4E3B\u52A8\u53D1\u8D77\u5BF9\u8BDD\u5339\u914D\u529F\
-      \u80FD\uFF1A\n- Agent\u81EA\u52A8\u53D1\u8D77\u5BF9\u8BDD\u6D41\u7A0B\n- \u4E2A\
-      \u6027\u5316\u5F00\u573A\u767D\u751F\u6210\uFF08\u57FA\u4E8E\u5339\u914D\u70B9\
-      \uFF09\n- \u5BF9\u65B9Agent\u7684\u81EA\u52A8\u54CD\u5E94\n- \u5BF9\u8BDD\u76EE\
-      \u6807\u8BBE\u5B9A\uFF08\u4E86\u89E3\u7279\u5B9A\u4FE1\u606F\uFF09\n- \u5BF9\u8BDD\
-      \u8F6E\u6B21\u63A7\u5236\uFF08\u521D\u6B65\u4EA4\u6D41\u540E\u6682\u505C\u7B49\
-      \u5F85\u7528\u6237\uFF09\n"
-    estimated_lines: 250-350
-    id: DATE002-2
-    title: "Agent\u5BF9\u8BDD\u7CFB\u7EDF"
-  - criteria:
-      - ISSUE-DATE002~c3
-      - ISSUE-DATE002~c5
-    description: "\u5B9E\u73B0\u5339\u914D\u7ED3\u679C\u63A8\u9001\u901A\u77E5\u548C\
-      \u79FB\u52A8\u7AEF\u5C55\u793A\u754C\u9762\uFF1A\n- \u6BCF\u65E5\u63A8\u8350\u63A8\
-      \u9001\uFF08\u65B0\u5339\u914D\u5BF9\u8C61\u63D0\u9192\uFF09\n- \u63A8\u9001\u5185\
-      \u5BB9\u4E2A\u6027\u5316\uFF08\u5C55\u793A\u5339\u914D\u4EAE\u70B9\uFF09\n- \u63A8\
-      \u9001\u9891\u7387\u63A7\u5236\uFF08\u907F\u514D\u6253\u6270\uFF09\n- \u6BCF\u65E5\
-      \u63A8\u8350\u5217\u8868\uFF08\u5361\u7247\u5F0F\u5C55\u793A\uFF09\n- \u5339\u914D\
-      \u8BE6\u60C5\u9875\uFF08\u7167\u7247\u3001\u57FA\u672C\u4FE1\u606F\u3001\u5339\
-      \u914D\u5EA6\u3001\u5171\u540C\u5174\u8DA3\uFF09\n- \u5FEB\u901F\u64CD\u4F5C\uFF08\
-      \u559C\u6B22/\u8DF3\u8FC7/\u67E5\u770B\u8BE6\u60C5\uFF09\n"
-    estimated_lines: 300-450
-    id: DATE002-3
-    title: "\u901A\u77E5\u4E0EUI\u5C55\u793A"
-title: "Agent\u4E3B\u52A8\u5339\u914D\u63A8\u8350"
+- criteria:
+  - ISSUE-DATE002~c1
+  - ISSUE-DATE002~c2
+  - ISSUE-DATE002~c6
+  description: '实现交友匹配度算法和推荐引擎核心功能：
+
+    - 多维度相似度计算（基础条件、性格、兴趣、生活方式）
+
+    - 权重配置（硬条件vs软偏好）
+
+    - 互补性评分（性格互补、技能互补）
+
+    - 地理位置接近度计算
+
+    - 每日匹配候选池生成与排序算法
+
+    - 推荐多样性保证
+
+    - 用户反馈收集与偏好学习
+
+    '
+  estimated_lines: 400-600
+  id: DATE002-1
+  title: 匹配算法与推荐引擎
+- criteria:
+  - ISSUE-DATE002~c4
+  description: '实现Agent主动发起对话匹配功能：
+
+    - Agent自动发起对话流程
+
+    - 个性化开场白生成（基于匹配点）
+
+    - 对方Agent的自动响应
+
+    - 对话目标设定（了解特定信息）
+
+    - 对话轮次控制（初步交流后暂停等待用户）
+
+    '
+  estimated_lines: 250-350
+  id: DATE002-2
+  title: Agent对话系统
+- criteria:
+  - ISSUE-DATE002~c3
+  - ISSUE-DATE002~c5
+  description: '实现匹配结果推送通知和移动端展示界面：
+
+    - 每日推荐推送（新匹配对象提醒）
+
+    - 推送内容个性化（展示匹配亮点）
+
+    - 推送频率控制（避免打扰）
+
+    - 每日推荐列表（卡片式展示）
+
+    - 匹配详情页（照片、基本信息、匹配度、共同兴趣）
+
+    - 快速操作（喜欢/跳过/查看详情）
+
+    '
+  estimated_lines: 300-450
+  id: DATE002-3
+  title: 通知与UI展示
+title: Agent主动匹配推荐

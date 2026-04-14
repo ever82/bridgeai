@@ -194,7 +194,7 @@ export const MyTasksScreen: React.FC = () => {
     : tasks.filter((task) => task.status === activeTab);
 
   const renderTaskItem = useCallback(({ item }: { item: Task }) => {
-    const distance = calculateDistance(userLocation, item.coordinates);
+    const { distanceKm } = calculateDistance(userLocation, item.coordinates);
     const typeLabel = TASK_TYPE_LABELS[item.type]?.zh || item.type;
     const statusLabel = TASK_STATUS_LABELS[item.status]?.zh || item.status;
 
@@ -228,7 +228,7 @@ export const MyTasksScreen: React.FC = () => {
         {/* Info */}
         <View style={styles.taskInfo}>
           <Text style={styles.taskBudget}>¥{item.budgetMax}</Text>
-          <Text style={styles.taskDistance}>{distance.toFixed(1)}km</Text>
+          <Text style={styles.taskDistance}>{distanceKm.toFixed(1)}km</Text>
         </View>
 
         {/* Publisher */}

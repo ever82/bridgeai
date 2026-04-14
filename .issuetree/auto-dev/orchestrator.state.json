@@ -1,14 +1,14 @@
 {
   "ISSUE-CR002b": {
     "issue_id": "ISSUE-CR002b",
-    "status": "stuck",
+    "status": "need-help",
     "title": "\u8bc4\u5206\u4e0e\u8bc4\u4ef7\u7cfb\u7edf - \u524d\u7aefUI",
     "user_story": "",
     "current_task": null,
     "prerequisites": [
       "ISSUE-CR002a"
     ],
-    "last_update": "2026-04-14T11:53:26.284501",
+    "last_update": "2026-04-14T12:30:42.351112",
     "stuck_previous_status": "implemented",
     "stuck_reason": "accept_failed",
     "stuck_at": "2026-04-14T03:53:26.283576+00:00",
@@ -27,27 +27,31 @@
   },
   "ISSUE-DATE002": {
     "issue_id": "ISSUE-DATE002",
-    "status": "accepting",
+    "status": "stuck",
     "title": "Agent\u4e3b\u52a8\u5339\u914d\u63a8\u8350",
     "user_story": "",
-    "current_task": "TASK-1776138863-7243",
+    "current_task": null,
     "prerequisites": [
       "ISSUE-C006",
       "ISSUE-M004",
       "ISSUE-DATE001"
     ],
-    "last_update": "2026-04-14T11:54:23.798805"
+    "last_update": "2026-04-14T12:21:59.494269",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-14T04:21:59.493781+00:00",
+    "failure_count": 2
   },
   "ISSUE-SEC004": {
     "issue_id": "ISSUE-SEC004",
-    "status": "pending",
+    "status": "implementing",
     "title": "\u56fe\u7247\u4e0a\u4f20\u5b89\u5168\u68c0\u67e5",
     "user_story": "",
-    "current_task": null,
+    "current_task": "TASK-1776140454-4282",
     "prerequisites": [
       "ISSUE-VS003"
     ],
-    "last_update": "2026-04-14T11:51:47.101869"
+    "last_update": "2026-04-14T12:20:58.657074"
   },
   "ISSUE-C002a": {
     "issue_id": "ISSUE-C002a",
@@ -84,38 +88,49 @@
   },
   "ISSUE-INF002": {
     "issue_id": "ISSUE-INF002",
-    "status": "draft",
+    "status": "stuck",
     "title": "Redis \u7f13\u5b58\u5c42\u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
     "user_story": "",
-    "current_task": "",
+    "current_task": null,
     "prerequisites": [
       "ISSUE-F001",
       "ISSUE-F002"
     ],
-    "last_update": "2026-04-14T11:51:47.274129"
+    "last_update": "2026-04-14T12:24:57.056560",
+    "stuck_previous_status": "accepting",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-14T04:24:45.632759+00:00"
   },
   "ISSUE-INF005": {
     "issue_id": "ISSUE-INF005",
-    "status": "draft",
+    "status": "stuck",
     "title": "\u63a8\u9001\u901a\u77e5\u670d\u52a1",
     "user_story": "",
-    "current_task": "",
+    "current_task": null,
     "prerequisites": [
       "ISSUE-F003",
       "ISSUE-A001"
     ],
-    "last_update": "2026-04-14T11:51:47.326266"
+    "last_update": "2026-04-14T12:29:24.755844",
+    "stuck_previous_status": "accepting",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-14T04:29:24.755353+00:00",
+    "failure_count": 2
   },
   "ISSUE-INF004": {
     "issue_id": "ISSUE-INF004",
-    "status": "draft",
+    "status": "fixing",
     "title": "\u6570\u636e\u5e93\u8fc1\u79fb\u7cfb\u7edf",
     "user_story": "",
-    "current_task": "",
+    "current_task": "TASK-1776140527-6609",
     "prerequisites": [
       "ISSUE-F002"
     ],
-    "last_update": "2026-04-14T11:51:47.428532"
+    "last_update": "2026-04-14T12:22:11.922137",
+    "stuck_previous_status": "reviewing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-14T04:16:37.685095+00:00",
+    "failure_count": 1
   },
   "ISSUE-INF003": {
     "issue_id": "ISSUE-INF003",
@@ -508,7 +523,7 @@
   },
   "ISSUE-JOB001": {
     "issue_id": "ISSUE-JOB001",
-    "status": "pending",
+    "status": "stuck",
     "title": "\u6c42\u804c\u8005\u753b\u50cf\u4e0e\u7b80\u5386",
     "user_story": "",
     "current_task": null,
@@ -516,7 +531,11 @@
       "ISSUE-C006",
       "ISSUE-AI002"
     ],
-    "last_update": "2026-04-14T11:51:49.931163"
+    "last_update": "2026-04-14T12:21:28.916696",
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-14T04:21:28.916227+00:00",
+    "failure_count": 1
   },
   "ISSUE-C007": {
     "issue_id": "ISSUE-C007",
@@ -557,11 +576,11 @@
     "status": "accepted",
     "title": "\u4ea4\u53cb\u753b\u50cf\u914d\u7f6e - AI\u667a\u80fd\u63d0\u70bc\u670d\u52a1",
     "user_story": "",
-    "current_task": null,
+    "current_task": "TASK-1776018689-2816",
     "prerequisites": [
       "ISSUE-AI002"
     ],
-    "last_update": "2026-04-14T11:58:38.768285"
+    "last_update": "2026-04-14T12:30:42.401635"
   },
   "ISSUE-C001": {
     "issue_id": "ISSUE-C001",
@@ -669,14 +688,18 @@
   },
   "ISSUE-INF006": {
     "issue_id": "ISSUE-INF006",
-    "status": "draft",
+    "status": "stuck",
     "title": "\u90ae\u4ef6\u670d\u52a1\u7cfb\u7edf",
     "user_story": "",
-    "current_task": "",
+    "current_task": null,
     "prerequisites": [
       "ISSUE-F003"
     ],
-    "last_update": "2026-04-14T11:51:51.065314"
+    "last_update": "2026-04-14T12:21:29.118219",
+    "stuck_previous_status": "reviewing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-14T04:21:29.117775+00:00",
+    "failure_count": 1
   },
   "ISSUE-INT001c": {
     "issue_id": "ISSUE-INT001c",
@@ -947,14 +970,18 @@
   },
   "ISSUE-CR003b": {
     "issue_id": "ISSUE-CR003b",
-    "status": "implemented",
+    "status": "stuck",
     "title": "\u79ef\u5206\u4ea4\u6613\u6838\u5fc3\u670d\u52a1\u4e0e\u89c4\u5219\u914d\u7f6e",
     "user_story": "",
     "current_task": null,
     "prerequisites": [
       "ISSUE-CR003a"
     ],
-    "last_update": "2026-04-14T11:51:54.577652"
+    "last_update": "2026-04-14T12:18:32.751629",
+    "stuck_previous_status": "accepting",
+    "stuck_reason": "accept_failed",
+    "stuck_at": "2026-04-14T04:18:32.750839+00:00",
+    "failure_count": 1
   },
   "ISSUE-UI006": {
     "issue_id": "ISSUE-UI006",
@@ -1084,16 +1111,19 @@
   },
   "ISSUE-VS003": {
     "issue_id": "ISSUE-VS003",
-    "status": "stuck",
+    "status": "fixing",
     "title": "\u76f8\u673a\u62cd\u7167\u4e0e\u4e0a\u4f20",
     "user_story": "",
-    "current_task": null,
+    "current_task": "TASK-1776140662-3927",
     "prerequisites": [
       "ISSUE-VS002",
       "ISSUE-F004",
       "ISSUE-SEC004"
     ],
-    "last_update": "2026-04-14T11:51:56.161766"
+    "last_update": "2026-04-14T12:24:26.804057",
+    "stuck_previous_status": "fixing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-14T04:17:38.403314+00:00"
   },
   "ISSUE-VS004": {
     "issue_id": "ISSUE-VS004",
@@ -1105,11 +1135,11 @@
       "ISSUE-VS003",
       "ISSUE-AI005"
     ],
-    "last_update": "2026-04-14T11:58:27.059262",
+    "last_update": "2026-04-14T12:21:29.243680",
     "stuck_previous_status": "fixing",
     "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-14T03:58:27.055418+00:00",
-    "failure_count": 1
+    "stuck_at": "2026-04-14T04:21:29.243184+00:00",
+    "failure_count": 2
   },
   "ISSUE-A003a": {
     "issue_id": "ISSUE-A003a",
@@ -1147,14 +1177,17 @@
   },
   "ISSUE-JOB004": {
     "issue_id": "ISSUE-JOB004",
-    "status": "implemented",
+    "status": "accepting",
     "title": "\u85aa\u8d44\u534f\u5546\u4e0e\u9762\u8bd5\u5b89\u6392",
     "user_story": "",
-    "current_task": null,
+    "current_task": "TASK-1776140930-6150",
     "prerequisites": [
       "ISSUE-COM002c"
     ],
-    "last_update": "2026-04-14T11:51:56.692467"
+    "last_update": "2026-04-14T12:28:54.444257",
+    "stuck_previous_status": "accepting",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-14T04:17:38.422574+00:00"
   },
   "ISSUE-M001a": {
     "issue_id": "ISSUE-M001a",
@@ -1172,19 +1205,19 @@
   },
   "ISSUE-VS002": {
     "issue_id": "ISSUE-VS002",
-    "status": "pending",
+    "status": "implementing",
     "title": "\u9644\u8fd1\u4efb\u52a1\u67e5\u8be2\u4e0e\u63a5\u5355",
     "user_story": "",
-    "current_task": null,
+    "current_task": "TASK-1776140160-4336",
     "prerequisites": [
       "ISSUE-C006",
       "ISSUE-M004"
     ],
-    "last_update": "2026-04-14T11:51:56.861585"
+    "last_update": "2026-04-14T12:16:04.909918"
   },
   "ISSUE-JOB003": {
     "issue_id": "ISSUE-JOB003",
-    "status": "pending",
+    "status": "stuck",
     "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d\u7b5b\u9009",
     "user_story": "",
     "current_task": null,
@@ -1194,6 +1227,92 @@
       "ISSUE-M004",
       "ISSUE-AI004"
     ],
-    "last_update": "2026-04-14T11:51:56.908531"
+    "last_update": "2026-04-14T12:22:42.294434",
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-14T04:22:42.293564+00:00",
+    "failure_count": 1
+  },
+  "ISSUE-AI003a": {
+    "issue_id": "ISSUE-AI003a",
+    "status": "checking",
+    "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u6838\u5fc3\u89e3\u6790\u5f15\u64ce\u4e0eAPI",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-AI001",
+      "ISSUE-C002a",
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T12:14:31.725748"
+  },
+  "ISSUE-AI004": {
+    "issue_id": "ISSUE-AI004",
+    "status": "checking",
+    "title": "Agent\u5bf9\u8bdd\u751f\u6210\u670d\u52a1",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-AI001"
+    ],
+    "last_update": "2026-04-14T12:14:31.901158"
+  },
+  "ISSUE-C003": {
+    "issue_id": "ISSUE-C003",
+    "status": "checking",
+    "title": "\u5730\u57df\u8fc7\u6ee4\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T12:14:32.056419"
+  },
+  "ISSUE-C004": {
+    "issue_id": "ISSUE-C004",
+    "status": "checking",
+    "title": "\u5c5e\u6027\u8fc7\u6ee4\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T12:14:32.184952"
+  },
+  "ISSUE-AI002a": {
+    "issue_id": "ISSUE-AI002a",
+    "status": "stuck",
+    "title": "\u9700\u6c42\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u6838\u5fc3\u6846\u67b6",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-AI001",
+      "ISSUE-C002a",
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T12:20:14.086596",
+    "stuck_previous_status": "accepting",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-14T04:19:41.338288+00:00"
+  },
+  "ISSUE-INT002a": {
+    "issue_id": "ISSUE-INT002a",
+    "status": "checking",
+    "title": "\u57fa\u7840\u8bbe\u65bd\u6027\u80fd\u4f18\u5316",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [],
+    "last_update": "2026-04-14T12:17:38.239618"
+  },
+  "ISSUE-COM001b": {
+    "issue_id": "ISSUE-COM001b",
+    "status": "checking",
+    "title": "\u8fde\u63a5\u7ba1\u7406\u4e0e\u623f\u95f4\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-COM001a"
+    ],
+    "last_update": "2026-04-14T12:17:38.294518"
   }
 }

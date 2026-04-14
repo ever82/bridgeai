@@ -13,6 +13,6 @@ task:
     started_at: '2026-04-14T11:58:08.188356+08:00'
     tmux_session: task-task-1776139085-3756
     worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-VS004
-  status: running
+  status: failed
   timeout_minutes: 30
   type: fix

@@ -26,7 +26,7 @@ export const TaskListItem: React.FC<TaskListItemProps> = ({
   onPress,
   isSelected = false,
 }) => {
-  const distance = calculateDistance(userLocation, task.coordinates);
+  const { distanceKm } = calculateDistance(userLocation, task.coordinates);
   const typeLabel = TASK_TYPE_LABELS[task.type]?.zh || task.type;
   const priorityStyle = TASK_PRIORITY_LABELS[task.priority];
 
@@ -93,7 +93,7 @@ export const TaskListItem: React.FC<TaskListItemProps> = ({
           {formatBudget(task.budgetMin, task.budgetMax)}
         </Text>
         <View style={styles.distanceContainer}>
-          <Text style={styles.distanceText}>{formatDistance(distance)}</Text>
+          <Text style={styles.distanceText}>{formatDistance(distanceKm * 1000)}</Text>
         </View>
       </View>
 

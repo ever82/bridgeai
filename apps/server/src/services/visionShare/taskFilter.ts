@@ -265,11 +265,11 @@ export async function searchTasks(
     // Filter by distance
     if (mergedFilter.distanceRange && mergedFilter.distanceRange > 0) {
       tasks = tasks.filter((task) => {
-        const distance = calculateDistance(
+        const { distanceKm } = calculateDistance(
           userLocation,
           task.coordinates
         );
-        return distance <= mergedFilter.distanceRange!;
+        return distanceKm <= mergedFilter.distanceRange!;
       });
     }
 
@@ -277,8 +277,8 @@ export async function searchTasks(
     switch (mergedFilter.sortBy) {
       case 'distance':
         tasks.sort((a, b) => {
-          const distA = calculateDistance(userLocation, a.coordinates);
-          const distB = calculateDistance(userLocation, b.coordinates);
+          const { distanceKm: distA } = calculateDistance(userLocation, a.coordinates);
+          const { distanceKm: distB } = calculateDistance(userLocation, b.coordinates);
           return mergedFilter.sortOrder === 'asc' ? distA - distB : distB - distA;
         });
         break;
@@ -343,7 +343,7 @@ export async function getNearbyTasks(
 
     return response.tasks.map((task) => ({
       task,
-      distanceKm: calculateDistance(userLocation, task.coordinates),
+      distanceKm: calculateDistance(userLocation, task.coordinates).distanceKm,
       estimatedArrivalMinutes: calculateEstimatedArrival(
         userLocation,
         task.coordinates
@@ -372,7 +372,7 @@ function calculateEstimatedArrival(
   from: { latitude: number; longitude: number },
   to: { latitude: number; longitude: number }
 ): number {
-  const distanceKm = calculateDistance(from, to);
+  const { distanceKm } = calculateDistance(from, to);
   // Assume average speed of 30km/h in city
   const estimatedMinutes = Math.ceil((distanceKm / 30) * 60);
   return Math.max(estimatedMinutes, 5); // Minimum 5 minutes

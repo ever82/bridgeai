@@ -90,8 +90,8 @@ export async function checkTaskEligibility(
     }
 
     // Check distance
-    const distance = calculateDistance(userLocation, task.coordinates);
-    if (distance > MAX_DISTANCE_KM) {
+    const { distanceKm } = calculateDistance(userLocation, task.coordinates);
+    if (distanceKm > MAX_DISTANCE_KM) {
       eligible = false;
       reasons.push(`距离过远，超过${MAX_DISTANCE_KM}km限制`);
     }
@@ -117,7 +117,7 @@ export async function checkTaskEligibility(
       requiredPoints: MIN_POINTS,
       currentPoints: userPoints,
       maxDistanceKm: MAX_DISTANCE_KM,
-      currentDistanceKm: calculateDistance(userLocation, task.coordinates),
+      currentDistanceKm: calculateDistance(userLocation, task.coordinates).distanceKm,
     };
   } catch (error) {
     logger.error('Error checking task eligibility', { error, taskId, userId });

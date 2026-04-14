@@ -5,9 +5,8 @@
 
 export * from './types';
 
-// Screens will be exported here once implemented
-// export { PhotoGalleryScreen } from './PhotoGallery';
-// export { PhotoViewerScreen } from './PhotoViewer';
-// export { PhotoPaymentScreen } from './PhotoPayment';
-// export { TransactionHistoryScreen } from './TransactionHistory';
-// export { RefundRequestScreen } from './RefundRequest';
+// Nearby Task Query and Acceptance Screens
+export { NearbyTasksMapScreen } from './NearbyTasksMap';
+export { TaskDetailScreen } from './TaskDetail';
+export { AcceptTaskScreen } from './AcceptTask';
+export { MyTasksScreen } from './MyTasks';

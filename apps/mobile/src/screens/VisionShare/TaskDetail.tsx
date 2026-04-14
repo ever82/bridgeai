@@ -185,7 +185,7 @@ export const TaskDetailScreen: React.FC = () => {
     );
   }
 
-  const distance = calculateDistance(userLocation, task.coordinates);
+  const { distanceKm } = calculateDistance(userLocation, task.coordinates);
   const typeLabel = TASK_TYPE_LABELS[task.type]?.zh || task.type;
   const priorityStyle = TASK_PRIORITY_LABELS[task.priority];
   const statusLabel = TASK_STATUS_LABELS[task.status]?.zh || task.status;
@@ -236,7 +236,7 @@ export const TaskDetailScreen: React.FC = () => {
             <Text style={styles.address}>{task.address}</Text>
             <View style={styles.distanceRow}>
               <Text style={styles.distanceText}>
-                距您 {formatDistance(distance)}
+                距您 {formatDistance(distanceKm * 1000)}
               </Text>
               <TouchableOpacity onPress={handleNavigate}>
                 <Text style={styles.navigateText}>导航</Text>

@@ -1,138 +1,151 @@
-id: ISSUE-AI002a
-issue_number: 502
-slug: demand-extraction-core
-title: 需求智能提炼服务 - 核心框架
-status: implemented
-description: |
-  实现需求智能提炼服务的核心框架部分，提供基础的解析引擎、
-  结构化映射、验证系统和API接口，为后续场景特定提取器提供
-  基础设施和扩展点。
-prerequisites:
-  - ISSUE-AI001
-  - ISSUE-C002a
-  - ISSUE-C002b
-created_at: '2026-04-09'
-logic: sufficient_necessary
-criteria:
-  - id: ISSUE-AI002a~c1
-    name: 需求解析引擎
-    description: |
-      解析引擎:
-      - 自然语言理解
-      - 实体识别(时间/地点/人物)
-      - 意图分类
-      - 需求结构化输出
-      - 置信度评分
-    status: implemented
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: 检查需求解析引擎，验证有DemandExtractionService类，包含extract方法返回结构化的Demand对象，含confidence字段
-        context_files:
-          - apps/server/src/services/ai/demandExtractionService.ts
-  - id: ISSUE-AI002a~c3
-    name: 需求结构化映射
-    description: |
-      映射系统:
-      - 提取字段到L2模型映射
-      - 属性标准化(价格/时间格式)
-      - 枚举值匹配
-      - 缺失字段推断
-      - 冲突检测与提示
-    status: implemented
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: 检查映射系统，验证有DemandToL2Mapper类，将提取的需求字段映射到AgentL2Model的属性，支持属性转换和验证
-        context_files:
-          - apps/server/src/services/ai/mappers/demandToL2Mapper.ts
-  - id: ISSUE-AI002a~c5
-    name: 提取结果验证
-    description: |
-      验证系统:
-      - 字段完整性检查
-      - 业务规则验证
-      - 合理性检查(预算范围等)
-      - 用户确认流程
-      - 提取结果修正
-    status: implemented
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: 检查验证系统，验证有ExtractionValidator类，包含validate方法，检查required字段、数值范围、枚举有效性
-        context_files:
-          - apps/server/src/services/ai/validators/extractionValidator.ts
-  - id: ISSUE-AI002a~c6
-    name: API与集成
-    description: |
-      API实现:
-      - 需求提取API端点
-      - 批量提取支持
-      - 提取结果缓存
-      - WebSocket实时反馈
-      - 场景配置API
-    status: implemented
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: 检查API实现，验证有/api/v1/ai/extract-demand端点，支持scene参数，返回提取结果和clarification_needed标志
-        context_files:
-          - apps/server/src/routes/ai/extraction.ts
-started_at: '2026-04-10T16:47:32.886Z'
 completed_at: '2026-04-10T17:28:31.581Z'
+created_at: '2026-04-09'
+criteria:
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: '解析引擎:
 
-current_task: TASK-1775846486
+    - 自然语言理解
 
+    - 实体识别(时间/地点/人物)
+
+    - 意图分类
+
+    - 需求结构化输出
+
+    - 置信度评分
+
+    '
+  id: ISSUE-AI002a~c1
+  name: 需求解析引擎
+  status: implemented
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/demandExtractionService.ts
+      prompt: 检查需求解析引擎，验证有DemandExtractionService类，包含extract方法返回结构化的Demand对象，含confidence字段
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: '映射系统:
+
+    - 提取字段到L2模型映射
+
+    - 属性标准化(价格/时间格式)
+
+    - 枚举值匹配
+
+    - 缺失字段推断
+
+    - 冲突检测与提示
+
+    '
+  id: ISSUE-AI002a~c3
+  name: 需求结构化映射
+  status: implemented
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/mappers/demandToL2Mapper.ts
+      prompt: 检查映射系统，验证有DemandToL2Mapper类，将提取的需求字段映射到AgentL2Model的属性，支持属性转换和验证
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: '验证系统:
+
+    - 字段完整性检查
+
+    - 业务规则验证
+
+    - 合理性检查(预算范围等)
+
+    - 用户确认流程
+
+    - 提取结果修正
+
+    '
+  id: ISSUE-AI002a~c5
+  name: 提取结果验证
+  status: implemented
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/validators/extractionValidator.ts
+      prompt: 检查验证系统，验证有ExtractionValidator类，包含validate方法，检查required字段、数值范围、枚举有效性
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: 'API实现:
+
+    - 需求提取API端点
+
+    - 批量提取支持
+
+    - 提取结果缓存
+
+    - WebSocket实时反馈
+
+    - 场景配置API
+
+    '
+  id: ISSUE-AI002a~c6
+  name: API与集成
+  status: implemented
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/ai/extraction.ts
+      prompt: 检查API实现，验证有/api/v1/ai/extract-demand端点，支持scene参数，返回提取结果和clarification_needed标志
+current_task: null
+description: '实现需求智能提炼服务的核心框架部分，提供基础的解析引擎、
+
+  结构化映射、验证系统和API接口，为后续场景特定提取器提供
+
+  基础设施和扩展点。
+
+  '
+id: ISSUE-AI002a
 implementation:
-  task_id: TASK-002
   completed_at: '2026-04-11T12:00:00+08:00'
   execution_time_minutes: 45
+  notes: "All 4 acceptance criteria implemented:\n1. Demand Extraction Service (demandExtractionService.ts)\
+    \ - 328 lines\n   - extract() method with natural language processing\n   - Entity\
+    \ recognition for time/location/people/budget\n   - Intent classification (create_demand,\
+    \ search_demand, etc.)\n   - Structured Demand output with confidence field\n\n\
+    2. Demand to L2 Mapper (demandToL2Mapper.ts) - 478 lines\n   - Maps extracted\
+    \ fields to AgentL2Model properties\n   - Attribute standardization (price/time\
+    \ formats)\n   - Enum matching and multi-select handling\n   - Missing field inference\
+    \ and conflict detection\n\n3. Extraction Validator (extractionValidator.ts) -\
+    \ 542 lines\n   - Field completeness checking\n   - Business rules validation\
+    \ (budget/time ranges)\n   - Range and format validation\n   - User confirmation\
+    \ flow support\n\n4. API & Integration (extraction.ts) - 485 lines\n   - POST\
+    \ /api/v1/ai/extract-demand endpoint\n   - Batch extraction support\n   - WebSocket\
+    \ real-time feedback\n   - Scene configuration API\n\nUnit tests: 64 test cases\
+    \ covering all components\nCommit: 5c154ed feat(AI002a): Implement demand extraction\
+    \ core framework\n"
   result: success
-  notes: |
-    All 4 acceptance criteria implemented:
-    1. Demand Extraction Service (demandExtractionService.ts) - 328 lines
-       - extract() method with natural language processing
-       - Entity recognition for time/location/people/budget
-       - Intent classification (create_demand, search_demand, etc.)
-       - Structured Demand output with confidence field
-
-    2. Demand to L2 Mapper (demandToL2Mapper.ts) - 478 lines
-       - Maps extracted fields to AgentL2Model properties
-       - Attribute standardization (price/time formats)
-       - Enum matching and multi-select handling
-       - Missing field inference and conflict detection
-
-    3. Extraction Validator (extractionValidator.ts) - 542 lines
-       - Field completeness checking
-       - Business rules validation (budget/time ranges)
-       - Range and format validation
-       - User confirmation flow support
-
-    4. API & Integration (extraction.ts) - 485 lines
-       - POST /api/v1/ai/extract-demand endpoint
-       - Batch extraction support
-       - WebSocket real-time feedback
-       - Scene configuration API
-
-    Unit tests: 64 test cases covering all components
-    Commit: 5c154ed feat(AI002a): Implement demand extraction core framework
+  task_id: TASK-002
+issue_number: 502
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-AI001
+- ISSUE-C002a
+- ISSUE-C002b
+slug: demand-extraction-core
+started_at: '2026-04-10T16:47:32.886Z'
+status: stuck
+stuck_reason: start_failed
+title: 需求智能提炼服务 - 核心框架

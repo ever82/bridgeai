@@ -184,7 +184,7 @@ criteria:
           - apps/mobile/src/components/PhotoPicker/
           - apps/mobile/src/screens/VisionShare/ImportPhotos.tsx
         prompt: 检查相册导入功能，验证有本地相册访问、多选导入、预览和安全检查
-current_task: null
+current_task: TASK-1776140662-3927
 description: '实现VisionShare场景的相机拍照和照片上传功能。接单用户通过相机拍摄实时照片，
 
   支持拍照预览、照片编辑、批量上传等功能。集成图片安全检查，
