@@ -4,8 +4,8 @@
  */
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
-import app from '../../app';
-import { createTestUser, createTestRoom, cleanupTestData } from '../../tests/helpers';
+import app from '../../../app';
+import { createTestUser, cleanupTestUsers } from '../../../tests/helpers';
 
 describe('Chat Routes Integration', () => {
   let authToken: string;
@@ -24,7 +24,7 @@ describe('Chat Routes Integration', () => {
   });
 
   afterAll(async () => {
-    await cleanupTestData();
+    await cleanupTestUsers();
   });
 
   describe('POST /api/v1/chat/rooms', () => {

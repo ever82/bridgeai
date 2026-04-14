@@ -2,7 +2,7 @@
  * Participant Service Unit Tests
  * 参与者服务单元测试
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from '@jest/globals';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import {
   addParticipant,
   removeParticipant,
@@ -14,46 +14,32 @@ import {
   getRolePermissions,
 } from '../participantService';
 import { ChatRoomType, ParticipantRole } from '@prisma/client';
+import { prisma } from '../../../db/client';
 
-// Mock Prisma
-const mockPrisma = {
-  chatRoom: {
-    findUnique: jest.fn(),
-    update: jest.fn(),
-  },
-  roomParticipant: {
-    create: jest.fn(),
-    createMany: jest.fn(),
-    findUnique: jest.fn(),
-    findMany: jest.fn(),
-    update: jest.fn(),
-    updateMany: jest.fn(),
-    count: jest.fn(),
-  },
-};
-
-vi.mock('@prisma/client', () => ({
-  PrismaClient: jest.fn(() => mockPrisma),
-  ChatRoomType: {
-    PRIVATE: 'PRIVATE',
-    GROUP: 'GROUP',
-    QUAD: 'QUAD',
-  },
-  ParticipantRole: {
-    OWNER: 'OWNER',
-    ADMIN: 'ADMIN',
-    MEMBER: 'MEMBER',
-    GUEST: 'GUEST',
+// Mock the prisma client - mock db/client directly since that's what the service imports
+jest.mock('../../../db/client', () => ({
+  prisma: {
+    chatRoom: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    roomParticipant: {
+      create: jest.fn(),
+      createMany: jest.fn(),
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn(),
+      updateMany: jest.fn(),
+      count: jest.fn(),
+    },
   },
 }));
+
+const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 
 describe('participantService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.resetAllMocks();
   });
 
   describe('addParticipant', () => {
@@ -81,11 +67,11 @@ describe('participantService', () => {
         isActive: true,
       };
 
-      mockPrisma.chatRoom.findUnique.mockResolvedValue(roomMock);
-      mockPrisma.roomParticipant.findUnique
+      (mockPrisma.chatRoom.findUnique as jest.Mock).mockResolvedValue(roomMock);
+      (mockPrisma.roomParticipant.findUnique as jest.Mock)
         .mockResolvedValueOnce(adderMock)
         .mockResolvedValueOnce(null);
-      mockPrisma.roomParticipant.create.mockResolvedValue(newParticipantMock);
+      (mockPrisma.roomParticipant.create as jest.Mock).mockResolvedValue(newParticipantMock);
 
       const result = await addParticipant({
         roomId: 'room-1',
@@ -98,7 +84,7 @@ describe('participantService', () => {
     });
 
     it('should throw error if room not found', async () => {
-      mockPrisma.chatRoom.findUnique.mockResolvedValue(null);
+      (mockPrisma.chatRoom.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(
         addParticipant({
@@ -123,8 +109,8 @@ describe('participantService', () => {
         isActive: true,
       };
 
-      mockPrisma.chatRoom.findUnique.mockResolvedValue(roomMock);
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue(adderMock);
+      (mockPrisma.chatRoom.findUnique as jest.Mock).mockResolvedValue(roomMock);
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(adderMock);
 
       await expect(
         addParticipant({
@@ -150,8 +136,8 @@ describe('participantService', () => {
         isActive: true,
       };
 
-      mockPrisma.chatRoom.findUnique.mockResolvedValue(roomMock);
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue(adderMock);
+      (mockPrisma.chatRoom.findUnique as jest.Mock).mockResolvedValue(roomMock);
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(adderMock);
 
       await expect(
         addParticipant({
@@ -183,11 +169,11 @@ describe('participantService', () => {
         isActive: false,
       };
 
-      mockPrisma.chatRoom.findUnique.mockResolvedValue(roomMock);
-      mockPrisma.roomParticipant.findUnique
+      (mockPrisma.chatRoom.findUnique as jest.Mock).mockResolvedValue(roomMock);
+      (mockPrisma.roomParticipant.findUnique as jest.Mock)
         .mockResolvedValueOnce(adderMock)
         .mockResolvedValueOnce(existingParticipant);
-      mockPrisma.roomParticipant.update.mockResolvedValue({
+      (mockPrisma.roomParticipant.update as jest.Mock).mockResolvedValue({
         ...existingParticipant,
         isActive: true,
         role: ParticipantRole.MEMBER,
@@ -219,8 +205,8 @@ describe('participantService', () => {
         settings: { allowLeave: true },
       };
 
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue(removerMock);
-      mockPrisma.chatRoom.findUnique.mockResolvedValue(roomMock);
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(removerMock);
+      (mockPrisma.chatRoom.findUnique as jest.Mock).mockResolvedValue(roomMock);
 
       await removeParticipant('room-1', 'user1', 'user1');
 
@@ -246,8 +232,8 @@ describe('participantService', () => {
         settings: { allowLeave: false },
       };
 
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue(removerMock);
-      mockPrisma.chatRoom.findUnique.mockResolvedValue(roomMock);
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(removerMock);
+      (mockPrisma.chatRoom.findUnique as jest.Mock).mockResolvedValue(roomMock);
 
       await expect(removeParticipant('room-1', 'user1', 'user1')).rejects.toThrow(
         'Cannot leave this room'
@@ -274,10 +260,10 @@ describe('participantService', () => {
         participantIds: ['admin', 'member'],
       };
 
-      mockPrisma.roomParticipant.findUnique
+      (mockPrisma.roomParticipant.findUnique as jest.Mock)
         .mockResolvedValueOnce(removerMock)
         .mockResolvedValueOnce(targetMock);
-      mockPrisma.chatRoom.findUnique.mockResolvedValue(roomMock);
+      (mockPrisma.chatRoom.findUnique as jest.Mock).mockResolvedValue(roomMock);
 
       await removeParticipant('room-1', 'member', 'admin');
 
@@ -299,7 +285,7 @@ describe('participantService', () => {
         isActive: true,
       };
 
-      mockPrisma.roomParticipant.findUnique
+      (mockPrisma.roomParticipant.findUnique as jest.Mock)
         .mockResolvedValueOnce(removerMock)
         .mockResolvedValueOnce(targetMock);
 
@@ -318,8 +304,8 @@ describe('participantService', () => {
         isActive: true,
       };
 
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue(participantMock);
-      mockPrisma.roomParticipant.update.mockResolvedValue({
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(participantMock);
+      (mockPrisma.roomParticipant.update as jest.Mock).mockResolvedValue({
         ...participantMock,
         permissions: { canPin: true },
       });
@@ -337,7 +323,7 @@ describe('participantService', () => {
         isActive: true,
       };
 
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue(participantMock);
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(participantMock);
 
       await expect(
         updateParticipant('room-1', 'user1', { role: ParticipantRole.ADMIN }, 'user1')
@@ -359,10 +345,10 @@ describe('participantService', () => {
         isActive: true,
       };
 
-      mockPrisma.roomParticipant.findUnique
+      (mockPrisma.roomParticipant.findUnique as jest.Mock)
         .mockResolvedValueOnce(updaterMock)
         .mockResolvedValueOnce(targetMock);
-      mockPrisma.roomParticipant.update.mockResolvedValue({
+      (mockPrisma.roomParticipant.update as jest.Mock).mockResolvedValue({
         ...targetMock,
         role: ParticipantRole.ADMIN,
       });
@@ -397,7 +383,7 @@ describe('participantService', () => {
         },
       ];
 
-      mockPrisma.roomParticipant.findMany.mockResolvedValue(participantsMock);
+      (mockPrisma.roomParticipant.findMany as jest.Mock).mockResolvedValue(participantsMock);
 
       const result = await getRoomParticipants('room-1');
 
@@ -434,7 +420,7 @@ describe('participantService', () => {
         user: { id: 'user1', name: 'User 1' },
       };
 
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue(participantMock);
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(participantMock);
 
       const result = await getParticipant('room-1', 'user1');
 
@@ -442,7 +428,7 @@ describe('participantService', () => {
     });
 
     it('should return null if participant not found', async () => {
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue(null);
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await getParticipant('room-1', 'non-existent');
 
@@ -465,7 +451,7 @@ describe('participantService', () => {
         isActive: true,
       };
 
-      mockPrisma.roomParticipant.findUnique
+      (mockPrisma.roomParticipant.findUnique as jest.Mock)
         .mockResolvedValueOnce(currentOwnerMock)
         .mockResolvedValueOnce(newOwnerMock);
 
@@ -481,7 +467,7 @@ describe('participantService', () => {
         role: ParticipantRole.ADMIN,
       };
 
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue(nonOwnerMock);
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(nonOwnerMock);
 
       await expect(transferOwnership('room-1', 'new-owner', 'admin')).rejects.toThrow(
         'Only owner can transfer ownership'
@@ -502,7 +488,7 @@ describe('participantService', () => {
         isActive: false,
       };
 
-      mockPrisma.roomParticipant.findUnique
+      (mockPrisma.roomParticipant.findUnique as jest.Mock)
         .mockResolvedValueOnce(currentOwnerMock)
         .mockResolvedValueOnce(inactiveUserMock);
 
@@ -542,7 +528,7 @@ describe('participantService', () => {
 
   describe('hasPermission', () => {
     it('should return true if user has role permission', async () => {
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue({
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue({
         role: ParticipantRole.ADMIN,
         isActive: true,
         permissions: null,
@@ -554,7 +540,7 @@ describe('participantService', () => {
     });
 
     it('should return true if user has custom permission', async () => {
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue({
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue({
         role: ParticipantRole.MEMBER,
         isActive: true,
         permissions: { 'custom:permission': true },
@@ -566,7 +552,7 @@ describe('participantService', () => {
     });
 
     it('should return false if user is not active participant', async () => {
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue(null);
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await hasPermission('room-1', 'user1', 'message:send');
 
@@ -574,7 +560,7 @@ describe('participantService', () => {
     });
 
     it('should return false if user lacks permission', async () => {
-      mockPrisma.roomParticipant.findUnique.mockResolvedValue({
+      (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue({
         role: ParticipantRole.MEMBER,
         isActive: true,
         permissions: {},
