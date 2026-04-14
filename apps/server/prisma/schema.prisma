@@ -793,8 +793,115 @@ model UserRole {
 }
 
 // ============================================
-// 保存的筛选器
+// 商家优惠相关 (Merchant & Offer)
 // ============================================
+
+model Merchant {
+  id          String    @id @default(uuid())
+  agentId     String    @unique @map("agent_id")
+  name        String    // 店名
+  address     String?   // 门店地址
+  phone       String?   // 联系电话
+  businessHours Json?   @map("business_hours") // 营业时间
+  description String?   // 商家描述
+  logoUrl     String?   @map("logo_url") // 商家logo
+  category    String?   // 经营类目
+  status      MerchantStatus @default(ACTIVE)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  agent       Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  offers      Offer[]
+
+  @@index([agentId])
+  @@index([status])
+  @@map("merchants")
+}
+
+enum MerchantStatus {
+  ACTIVE    @map("active")
+  INACTIVE  @map("inactive")
+  SUSPENDED @map("suspended")
+}
+
+model Offer {
+  id          String    @id @default(uuid())
+  merchantId  String    @map("merchant_id")
+  title       String    // 优惠标题
+  description String?   // 详细描述
+  type        OfferType // 优惠类型
+
+  // 优惠力度
+  discountValue     Decimal?  @map("discount_value") @db.Decimal(5, 2) // 折扣值或减免金额
+  minPurchaseAmount Decimal?  @map("min_purchase_amount") @db.Decimal(10, 2) // 最低消费金额
+  maxDiscountAmount Decimal?  @map("max_discount_amount") @db.Decimal(10, 2) // 最高减免金额
+
+  // 适用范围
+  applicableScope   Json?     @map("applicable_scope") // {products: [], excludedProducts: [], timeRanges: [], storeIds: [], userGroups: []}
+
+  // 有效期
+  validFrom   DateTime  @map("valid_from")
+  validUntil  DateTime  @map("valid_until")
+
+  // 库存管理
+  totalStock  Int       @map("total_stock") // 总库存数量
+  dailyLimit  Int?      @map("daily_limit") // 每日限额
+  remainingStock Int    @default(0) @map("remaining_stock") // 剩余库存
+  stockAlertThreshold Int @default(10) @map("stock_alert_threshold") // 库存预警阈值
+
+  // 状态管理
+  status      OfferStatus @default(DRAFT)
+  publishType OfferPublishType @default(MANUAL) @map("publish_type") // 发布类型
+  scheduledPublishAt DateTime? @map("scheduled_publish_at") // 定时发布时间
+
+  // AI提取相关
+  aiExtracted       Boolean   @default(false) @map("ai_extracted") // 是否AI提取
+  aiExtractionData  Json?     @map("ai_extraction_data") // AI提取的原始数据
+  aiConfidence      Float?    @map("ai_confidence") // AI提取置信度
+
+  // 统计
+  usageCount  Int       @default(0) @map("usage_count") // 使用次数
+  viewCount   Int       @default(0) @map("view_count") // 浏览次数
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  merchant    Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([merchantId])
+  @@index([status])
+  @@index([type])
+  @@index([validFrom, validUntil])
+  @@index([aiExtracted])
+  @@map("offers")
+}
+
+enum OfferType {
+  DISCOUNT      @map("discount")      // 折扣 (如8折)
+  REDUCTION     @map("reduction")     // 满减 (如满100减20)
+  GIFT          @map("gift")          // 赠品
+  PACKAGE       @map("package")       // 套餐
+  PERCENTAGE    @map("percentage")    // 百分比折扣
+  FIXED_AMOUNT  @map("fixed_amount")  // 固定金额优惠
+}
+
+enum OfferStatus {
+  DRAFT       @map("draft")       // 草稿
+  PENDING     @map("pending")      // 待审核
+  ACTIVE      @map("active")       // 生效中
+  PAUSED      @map("paused")       // 暂停
+  EXPIRED     @map("expired")      // 已过期
+  SOLD_OUT    @map("sold_out")     // 已售罄
+  DISABLED    @map("disabled")     // 已下架
+}
+
+enum OfferPublishType {
+  MANUAL      @map("manual")       // 手动发布
+  SCHEDULED   @map("scheduled")    // 定时发布
+  IMMEDIATE   @map("immediate")    // 立即发布
+}
 
 model SavedFilter {
   id          String   @id @default(uuid())

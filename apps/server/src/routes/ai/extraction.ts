@@ -1,581 +1,739 @@
 /**
  * AI Extraction Routes
- * 需求提取API端点
- *
- * Provides:
- * - POST /api/v1/ai/extract-demand - Extract demand from natural language
- * - POST /api/v1/ai/extract-batch - Batch extraction
- * - POST /api/v1/ai/validate-extraction - Validate extraction result
- * - POST /api/v1/ai/confirm-extraction - Confirm/correct extraction
- * - WebSocket support for real-time feedback
+ * AI需求提取API端点
+ * 提供需求提取、批量提取、WebSocket实时反馈等功能
  */
 
 import { Router, Request, Response } from 'express';
-import { z } from 'zod';
-import { authenticateToken } from '../../middleware/auth';
-import { validateRequest } from '../../middleware/validation';
-import { DemandExtractionService, ExtractionRequest } from '../../services/ai/demandExtractionService';
-import { DemandToL2Mapper } from '../../services/ai/mappers/demandToL2Mapper';
-import { ExtractionValidator } from '../../services/ai/validators/extractionValidator';
-import { getL2Schema } from '@visionshare/shared';
-import logger from '../../utils/logger';
-import { Server as SocketIOServer } from 'socket.io';
+import { WebSocketServer, WebSocket } from 'ws';
+import { getL2Schema, L2Schema } from '@visionshare/shared';
+import { demandExtractionService, DemandExtractionRequest } from '../../services/ai/demandExtractionService';
+import { demandToL2Mapper, MappingResult } from '../../services/ai/mappers/demandToL2Mapper';
+import { extractionValidator, ValidationReport } from '../../services/ai/validators/extractionValidator';
+import { extractL2FromL3, ExtractionResult } from '../../services/ai/extractionService';
+import { logger } from '../../utils/logger';
+import offerExtractionRoutes from './offerExtraction';
 
-const router = Router();
+const router: Router = Router();
 
-// Initialize services
-const extractionService = new DemandExtractionService();
-const mapper = new DemandToL2Mapper();
-const validator = new ExtractionValidator();
+// Mount offer extraction routes
+router.use('/', offerExtractionRoutes);
 
-let serviceInitialized = false;
+// Active WebSocket connections
+const activeConnections: Map<string, WebSocket> = new Map();
 
 /**
- * Ensure services are initialized
+ * POST /api/v1/ai/extract-demand
+ * 需求提取主端点
  */
-async function ensureService(): Promise<void> {
-  if (!serviceInitialized) {
-    await extractionService.initialize();
-    serviceInitialized = true;
-    logger.info('Demand extraction services initialized');
+router.post('/extract-demand', async (req: Request, res: Response) => {
+  const startTime = Date.now();
+  const { text, scene, context, options } = req.body;
+  const userId = req.user?.id;
+
+  try {
+    logger.info('Extract demand request received', {
+      textLength: text?.length,
+      scene,
+      userId,
+    });
+
+    // Validate request
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Text is required',
+        },
+      });
+    }
+
+    if (!scene || typeof scene !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Scene is required',
+        },
+      });
+    }
+
+    // Get schema for the scene
+    const schema = getL2Schema(scene);
+    if (!schema) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_SCENE',
+          message: `Scene not found: ${scene}`,
+        },
+      });
+    }
+
+    // Build extraction request
+    const extractionRequest: DemandExtractionRequest = {
+      text,
+      scene,
+      context: context || {},
+      options: {
+        extractEntities: true,
+        classifyIntent: true,
+        requireClarification: options?.requireClarification ?? true,
+        language: options?.language || 'zh-CN',
+        ...options,
+      },
+    };
+
+    // Step 1: Extract demand using new service
+    const demand = await demandExtractionService.extract(extractionRequest);
+
+    // Step 2: Map to L2
+    const mappingResult = demandToL2Mapper.map(demand, schema);
+
+    // Step 3: Validate
+    const validationReport = extractionValidator.validate(
+      mappingResult.data,
+      schema,
+      demand,
+      {
+        checkCompleteness: true,
+        checkBusinessRules: true,
+        checkRanges: true,
+        checkFormats: true,
+        strictMode: options?.strictMode ?? false,
+      }
+    );
+
+    // Step 4: Determine if clarification is needed
+    const clarificationNeeded =
+      demand.clarificationNeeded ||
+      validationReport.confirmationNeeded ||
+      mappingResult.conflicts.length > 0;
+
+    // Step 5: Build response
+    const response = {
+      success: true,
+      data: {
+        // Original demand extraction
+        demand: {
+          id: demand.id,
+          rawText: demand.rawText,
+          intent: demand.intent,
+          entities: demand.entities,
+          confidence: demand.confidence,
+          clarificationNeeded: demand.clarificationNeeded,
+          clarificationQuestions: demand.clarificationQuestions,
+        },
+        // Mapped L2 data
+        l2Data: mappingResult.data,
+        mapping: {
+          mappedFields: mappingResult.mappedFields,
+          unmappedFields: mappingResult.unmappedFields,
+          inferredFields: mappingResult.inferredFields,
+          conflicts: mappingResult.conflicts,
+          transformations: mappingResult.transformations,
+        },
+        // Validation results
+        validation: {
+          valid: validationReport.valid,
+          completenessScore: validationReport.summary.completenessScore,
+          errors: validationReport.errors,
+          warnings: validationReport.warnings,
+          confirmationNeeded: validationReport.confirmationNeeded,
+        },
+        // Summary
+        summary: {
+          scene,
+          confidence: demand.confidence,
+          clarificationNeeded,
+          mappedFieldCount: mappingResult.mappedFields.length,
+          requiredFieldCount: schema.fields.filter(f => f.required).length,
+          validationPassed: validationReport.valid,
+        },
+      },
+      meta: {
+        requestId: `${userId}-${Date.now()}`,
+        latencyMs: Date.now() - startTime,
+        version: '1.0.0',
+      },
+    };
+
+    logger.info('Extract demand completed', {
+      scene,
+      confidence: demand.confidence,
+      clarificationNeeded,
+      latencyMs: response.meta.latencyMs,
+    });
+
+    return res.status(200).json(response);
+  } catch (error) {
+    logger.error('Extract demand failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      scene,
+      userId,
+    });
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'EXTRACTION_FAILED',
+        message: error instanceof Error ? error.message : 'Extraction failed',
+      },
+      meta: {
+        requestId: `${userId}-${Date.now()}`,
+        latencyMs: Date.now() - startTime,
+      },
+    });
+  }
+});
+
+/**
+ * POST /api/v1/ai/extract-demand/batch
+ * 批量需求提取
+ */
+router.post('/extract-demand/batch', async (req: Request, res: Response) => {
+  const startTime = Date.now();
+  const { items, scene, options } = req.body;
+  const userId = req.user?.id;
+
+  try {
+    logger.info('Batch extract demand request received', {
+      itemCount: items?.length,
+      scene,
+      userId,
+    });
+
+    // Validate request
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Items array is required and must not be empty',
+        },
+      });
+    }
+
+    if (!scene) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Scene is required',
+        },
+      });
+    }
+
+    // Process batch with concurrency limit
+    const concurrencyLimit = options?.concurrency || 5;
+    const results: BatchExtractionResult[] = [];
+    const errors: BatchExtractionError[] = [];
+
+    // Process in chunks
+    for (let i = 0; i < items.length; i += concurrencyLimit) {
+      const chunk = items.slice(i, i + concurrencyLimit);
+
+      const chunkPromises = chunk.map(async (item: BatchExtractionItem, index: number) => {
+        try {
+          const extractionRequest: DemandExtractionRequest = {
+            text: item.text,
+            scene,
+            context: item.context || {},
+            options: {
+              extractEntities: true,
+              classifyIntent: true,
+              requireClarification: false, // Disable for batch
+              ...options,
+            },
+          };
+
+          const demand = await demandExtractionService.extract(extractionRequest);
+
+          return {
+            index: i + index,
+            id: item.id,
+            success: true,
+            demand: {
+              intent: demand.intent,
+              entities: demand.entities,
+              confidence: demand.confidence,
+            },
+            latencyMs: Date.now() - startTime,
+          };
+        } catch (error) {
+          return {
+            index: i + index,
+            id: item.id,
+            success: false,
+            error: error instanceof Error ? error.message : 'Extraction failed',
+          };
+        }
+      });
+
+      const chunkResults = await Promise.all(chunkPromises);
+
+      for (const result of chunkResults) {
+        if (result.success) {
+          results.push(result as BatchExtractionResult);
+        } else {
+          errors.push(result as BatchExtractionError);
+        }
+      }
+    }
+
+    const response = {
+      success: true,
+      data: {
+        results,
+        errors,
+        summary: {
+          total: items.length,
+          success: results.length,
+          failed: errors.length,
+          successRate: Math.round((results.length / items.length) * 100),
+        },
+      },
+      meta: {
+        requestId: `${userId}-${Date.now()}`,
+        latencyMs: Date.now() - startTime,
+        version: '1.0.0',
+      },
+    };
+
+    logger.info('Batch extract demand completed', {
+      scene,
+      total: items.length,
+      success: results.length,
+      failed: errors.length,
+      latencyMs: response.meta.latencyMs,
+    });
+
+    return res.status(200).json(response);
+  } catch (error) {
+    logger.error('Batch extract demand failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      scene,
+      userId,
+    });
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'BATCH_EXTRACTION_FAILED',
+        message: error instanceof Error ? error.message : 'Batch extraction failed',
+      },
+    });
+  }
+});
+
+/**
+ * POST /api/v1/ai/extract-demand/:id/confirm
+ * 确认提取结果
+ */
+router.post('/extract-demand/:id/confirm', async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { corrections, confirmed } = req.body;
+  const userId = req.user?.id;
+
+  try {
+    logger.info('Confirm extraction request received', {
+      extractionId: id,
+      userId,
+      hasCorrections: !!corrections,
+    });
+
+    if (!confirmed) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'NOT_CONFIRMED',
+          message: 'Extraction not confirmed',
+        },
+      });
+    }
+
+    // TODO: Store confirmation and corrections
+    // This would typically update a database record
+
+    const response = {
+      success: true,
+      data: {
+        extractionId: id,
+        confirmed: true,
+        corrections: corrections || {},
+        confirmedAt: new Date().toISOString(),
+      },
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    logger.error('Confirm extraction failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      extractionId: id,
+      userId,
+    });
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'CONFIRMATION_FAILED',
+        message: error instanceof Error ? error.message : 'Confirmation failed',
+      },
+    });
+  }
+});
+
+/**
+ * GET /api/v1/ai/extract-demand/:id/status
+ * 获取提取状态
+ */
+router.get('/extract-demand/:id/status', async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    // TODO: Retrieve extraction status from cache/database
+    // For now, return a mock response
+
+    const response = {
+      success: true,
+      data: {
+        extractionId: id,
+        status: 'completed',
+        progress: 100,
+        result: null, // Would contain actual result
+      },
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    logger.error('Get extraction status failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      extractionId: id,
+    });
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'STATUS_CHECK_FAILED',
+        message: error instanceof Error ? error.message : 'Status check failed',
+      },
+    });
+  }
+});
+
+/**
+ * POST /api/v1/ai/extract-demand/feedback
+ * 提交提取反馈
+ */
+router.post('/extract-demand/feedback', async (req: Request, res: Response) => {
+  const { extractionId, rating, feedback, corrections } = req.body;
+  const userId = req.user?.id;
+
+  try {
+    logger.info('Extraction feedback received', {
+      extractionId,
+      userId,
+      rating,
+    });
+
+    // TODO: Store feedback for model improvement
+
+    const response = {
+      success: true,
+      data: {
+        feedbackId: `fb-${Date.now()}`,
+        extractionId,
+        received: true,
+        receivedAt: new Date().toISOString(),
+      },
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    logger.error('Submit feedback failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      extractionId,
+      userId,
+    });
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'FEEDBACK_FAILED',
+        message: error instanceof Error ? error.message : 'Feedback submission failed',
+      },
+    });
+  }
+});
+
+/**
+ * WebSocket handler for real-time extraction
+ * WebSocket实时提取反馈
+ */
+export function handleWebSocketConnection(ws: WebSocket, requestId: string): void {
+  logger.info('WebSocket connection established', { requestId });
+
+  activeConnections.set(requestId, ws);
+
+  ws.on('message', async (message: string) => {
+    try {
+      const data = JSON.parse(message);
+
+      switch (data.type) {
+        case 'extract':
+          await handleRealtimeExtraction(ws, data.payload);
+          break;
+
+        case 'ping':
+          ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
+          break;
+
+        default:
+          ws.send(JSON.stringify({
+            type: 'error',
+            message: `Unknown message type: ${data.type}`,
+          }));
+      }
+    } catch (error) {
+      logger.error('WebSocket message handling failed', { error, requestId });
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'Invalid message format',
+      }));
+    }
+  });
+
+  ws.on('close', () => {
+    logger.info('WebSocket connection closed', { requestId });
+    activeConnections.delete(requestId);
+  });
+
+  ws.on('error', (error) => {
+    logger.error('WebSocket error', { error, requestId });
+    activeConnections.delete(requestId);
+  });
+
+  // Send initial connection confirmation
+  ws.send(JSON.stringify({
+    type: 'connected',
+    requestId,
+    timestamp: Date.now(),
+  }));
+}
+
+/**
+ * Handle real-time extraction via WebSocket
+ */
+async function handleRealtimeExtraction(ws: WebSocket, payload: any): Promise<void> {
+  const { text, scene, options } = payload;
+  const requestId = `ws-${Date.now()}`;
+
+  try {
+    // Send initial progress
+    ws.send(JSON.stringify({
+      type: 'progress',
+      requestId,
+      stage: 'started',
+      progress: 0,
+      message: 'Starting extraction...',
+    }));
+
+    // Validate
+    const schema = getL2Schema(scene);
+    if (!schema) {
+      ws.send(JSON.stringify({
+        type: 'error',
+        requestId,
+        message: `Scene not found: ${scene}`,
+      }));
+      return;
+    }
+
+    // Progress: 25%
+    ws.send(JSON.stringify({
+      type: 'progress',
+      requestId,
+      stage: 'extracting',
+      progress: 25,
+      message: 'Extracting entities and intent...',
+    }));
+
+    // Extract
+    const extractionRequest: DemandExtractionRequest = {
+      text,
+      scene,
+      options: {
+        extractEntities: true,
+        classifyIntent: true,
+        requireClarification: options?.requireClarification ?? true,
+      },
+    };
+
+    const demand = await demandExtractionService.extract(extractionRequest);
+
+    // Progress: 50%
+    ws.send(JSON.stringify({
+      type: 'progress',
+      requestId,
+      stage: 'mapping',
+      progress: 50,
+      message: 'Mapping to L2 schema...',
+      partialResult: {
+        entities: demand.entities.length,
+        intent: demand.intent.intent,
+        confidence: demand.confidence,
+      },
+    }));
+
+    // Map
+    const mappingResult = demandToL2Mapper.map(demand, schema);
+
+    // Progress: 75%
+    ws.send(JSON.stringify({
+      type: 'progress',
+      requestId,
+      stage: 'validating',
+      progress: 75,
+      message: 'Validating results...',
+      partialResult: {
+        mappedFields: mappingResult.mappedFields.length,
+        conflicts: mappingResult.conflicts.length,
+      },
+    }));
+
+    // Validate
+    const validationReport = extractionValidator.validate(
+      mappingResult.data,
+      schema,
+      demand
+    );
+
+    // Progress: 100%
+    ws.send(JSON.stringify({
+      type: 'complete',
+      requestId,
+      stage: 'completed',
+      progress: 100,
+      data: {
+        demand: {
+          rawText: demand.rawText,
+          intent: demand.intent,
+          entities: demand.entities,
+          confidence: demand.confidence,
+          clarificationNeeded: demand.clarificationNeeded,
+          clarificationQuestions: demand.clarificationQuestions,
+        },
+        l2Data: mappingResult.data,
+        mapping: {
+          mappedFields: mappingResult.mappedFields,
+          unmappedFields: mappingResult.unmappedFields,
+          conflicts: mappingResult.conflicts,
+        },
+        validation: {
+          valid: validationReport.valid,
+          completenessScore: validationReport.summary.completenessScore,
+          errors: validationReport.errors,
+          warnings: validationReport.warnings,
+        },
+      },
+    }));
+  } catch (error) {
+    logger.error('Real-time extraction failed', { error, requestId });
+    ws.send(JSON.stringify({
+      type: 'error',
+      requestId,
+      message: error instanceof Error ? error.message : 'Extraction failed',
+    }));
   }
 }
 
-// Validation schemas
-const extractDemandSchema = z.object({
-  text: z.string().min(1).max(5000).describe('Natural language text to extract from'),
-  scene: z.string().min(1).describe('Scene code (e.g., VISIONSHARE, AGENTDATE)'),
-  agentId: z.string().optional().describe('Optional agent ID for context'),
-  context: z.object({
-    previousDemands: z.array(z.any()).optional(),
-    userPreferences: z.record(z.any()).optional(),
-    conversationHistory: z.array(z.object({
-      role: z.enum(['user', 'assistant']),
-      content: z.string(),
-    })).optional(),
-  }).optional(),
-});
-
-const batchExtractSchema = z.object({
-  requests: z.array(extractDemandSchema).min(1).max(10).describe('Batch of extraction requests'),
-  options: z.object({
-    continueOnError: z.boolean().optional().default(true),
-    priority: z.enum(['low', 'normal', 'high']).optional().default('normal'),
-  }).optional(),
-});
-
-const validateExtractionSchema = z.object({
-  data: z.record(z.any()).describe('Extracted data to validate'),
-  scene: z.string().describe('Scene code for schema lookup'),
-});
-
-const confirmExtractionSchema = z.object({
-  extractionId: z.string().describe('Extraction ID to confirm'),
-  confirmed: z.boolean().describe('Whether the extraction is confirmed'),
-  corrections: z.record(z.any()).optional().describe('Field corrections if any'),
-  confirmedFields: z.array(z.string()).optional().describe('List of confirmed field IDs'),
-  feedback: z.string().optional().describe('Optional user feedback'),
-});
-
-const sceneConfigSchema = z.object({
-  scene: z.string().describe('Scene code'),
-});
-
 /**
- * @route   POST /api/v1/ai/extract-demand
- * @desc    Extract structured demand from natural language text
- * @access  Private
- *
- * Request body:
- * {
- *   "text": "我想找个周末下午能一起拍照的朋友",
- *   "scene": "VISIONSHARE",
- *   "agentId": "optional-agent-id"
- * }
- *
- * Response:
- * {
- *   "success": true,
- *   "data": {
- *     "demand": { ... },
- *     "mappedData": { ... },
- *     "validation": { ... },
- *     "clarificationNeeded": false
- *   }
- * }
+ * GET /api/v1/ai/scenes/:scene/config
+ * 获取场景配置
  */
-router.post(
-  '/extract-demand',
-  authenticateToken,
-  validateRequest(extractDemandSchema),
-  async (req: Request, res: Response) => {
-    try {
-      await ensureService();
+router.get('/scenes/:scene/config', async (req: Request, res: Response) => {
+  const { scene } = req.params;
 
-      const { text, scene, agentId, context } = req.body;
-      const userId = req.user?.id;
+  try {
+    const schema = getL2Schema(scene);
+    if (!schema) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'SCENE_NOT_FOUND',
+          message: `Scene not found: ${scene}`,
+        },
+      });
+    }
 
-      logger.info('Extract demand request', { scene, agentId, userId, textLength: text.length });
-
-      // Validate scene exists
-      const schema = getL2Schema(scene);
-      if (!schema) {
-        return res.status(400).json({
-          success: false,
-          error: `Invalid scene: ${scene}. Available scenes: VISIONSHARE, AGENTDATE, AGENTJOB, AGENTAD`,
-        });
-      }
-
-      // Perform extraction
-      const extractionRequest: ExtractionRequest = {
-        text,
+    const response = {
+      success: true,
+      data: {
         scene,
-        agentId,
-        userId,
-        context,
-      };
-
-      const demand = await extractionService.extract(extractionRequest);
-
-      // Map to L2 model
-      const mappingResult = mapper.map(demand);
-
-      // Validate extraction
-      const validationResult = validator.validate(mappingResult.data, scene);
-
-      // Build response
-      const response = {
-        success: true,
-        data: {
-          extraction: {
-            id: demand.id,
-            scene: demand.scene,
-            intent: demand.intent,
-            entities: demand.entities,
-            confidence: demand.confidence,
-            fieldConfidence: demand.fieldConfidence,
-            extractedAt: demand.extractedAt.toISOString(),
-          },
-          mappedData: {
-            attributes: mappingResult.data,
-            mappedFields: mappingResult.mappedFields,
-            unmappedFields: mappingResult.unmappedFields,
-            standardizedFields: mappingResult.standardizedFields,
-            inferredFields: mappingResult.inferredFields,
-          },
-          validation: {
-            valid: validationResult.valid,
-            isComplete: validationResult.isComplete,
-            canProceed: validationResult.canProceed,
-            errors: validationResult.errors,
-            warnings: validationResult.warnings,
-            missingRequired: validationResult.missingRequired,
-            suggestions: validationResult.suggestions,
-          },
-          conflicts: mappingResult.conflicts,
-          clarificationNeeded: demand.clarificationNeeded ||
-                               !validationResult.isComplete ||
-                               validationResult.errors.length > 0,
-          suggestedQuestions: demand.suggestedQuestions,
-        },
-      };
-
-      res.json(response);
-    } catch (error) {
-      logger.error('Extract demand failed', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        scene: req.body.scene,
-      });
-
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Extraction failed',
-      });
-    }
-  }
-);
-
-/**
- * @route   POST /api/v1/ai/extract-batch
- * @desc    Batch extract demands from multiple texts
- * @access  Private
- */
-router.post(
-  '/extract-batch',
-  authenticateToken,
-  validateRequest(batchExtractSchema),
-  async (req: Request, res: Response) => {
-    try {
-      await ensureService();
-
-      const { requests, options } = req.body;
-      const userId = req.user?.id;
-
-      logger.info('Batch extract request', { count: requests.length, userId });
-
-      const results = [];
-      const errors = [];
-
-      for (let i = 0; i < requests.length; i++) {
-        const request = requests[i];
-
-        try {
-          const extractionRequest: ExtractionRequest = {
-            ...request,
-            userId,
-          };
-
-          const demand = await extractionService.extract(extractionRequest);
-          const mappingResult = mapper.map(demand);
-          const validationResult = validator.validate(mappingResult.data, request.scene);
-
-          results.push({
-            index: i,
-            success: true,
-            extraction: {
-              id: demand.id,
-              scene: demand.scene,
-              confidence: demand.confidence,
-              extractedAt: demand.extractedAt.toISOString(),
-            },
-            mappedData: mappingResult.data,
-            validation: validationResult,
-            clarificationNeeded: demand.clarificationNeeded || !validationResult.isComplete,
-          });
-        } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : 'Extraction failed';
-          errors.push({
-            index: i,
-            success: false,
-            error: errorMsg,
-          });
-
-          if (!options?.continueOnError) {
-            break;
-          }
-        }
-      }
-
-      res.json({
-        success: true,
-        data: {
-          total: requests.length,
-          successful: results.length,
-          failed: errors.length,
-          results,
-          errors: options?.continueOnError ? errors : undefined,
-        },
-      });
-    } catch (error) {
-      logger.error('Batch extract failed', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Batch extraction failed',
-      });
-    }
-  }
-);
-
-/**
- * @route   POST /api/v1/ai/validate-extraction
- * @desc    Validate extracted data against schema
- * @access  Private
- */
-router.post(
-  '/validate-extraction',
-  authenticateToken,
-  validateRequest(validateExtractionSchema),
-  async (req: Request, res: Response) => {
-    try {
-      const { data, scene } = req.body;
-
-      // Validate scene exists
-      const schema = getL2Schema(scene);
-      if (!schema) {
-        return res.status(400).json({
-          success: false,
-          error: `Invalid scene: ${scene}`,
-        });
-      }
-
-      const validationResult = validator.validate(data, scene);
-      const confirmationSummary = validator.getConfirmationSummary(data, scene);
-
-      res.json({
-        success: true,
-        data: {
-          validation: validationResult,
-          confirmation: confirmationSummary,
-        },
-      });
-    } catch (error) {
-      logger.error('Validate extraction failed', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Validation failed',
-      });
-    }
-  }
-);
-
-/**
- * @route   POST /api/v1/ai/confirm-extraction
- * @desc    Confirm or correct extraction result
- * @access  Private
- */
-router.post(
-  '/confirm-extraction',
-  authenticateToken,
-  validateRequest(confirmExtractionSchema),
-  async (req: Request, res: Response) => {
-    try {
-      const { extractionId, confirmed, corrections, confirmedFields, feedback } = req.body;
-      const userId = req.user?.id;
-
-      logger.info('Extraction confirmation', {
-        extractionId,
-        confirmed,
-        userId,
-        hasCorrections: !!corrections && Object.keys(corrections).length > 0,
-      });
-
-      // Record confirmation status
-      validator.recordConfirmation({
-        extractionId,
-        confirmed,
-        confirmedFields: confirmedFields || [],
-        correctedFields: corrections
-          ? Object.entries(corrections).map(([field, correctedValue]) => ({
-              field,
-              originalValue: null, // Would be retrieved from original extraction
-              correctedValue,
-            }))
-          : [],
-        rejectedFields: confirmed ? [] : (confirmedFields || []),
-        confirmedAt: confirmed ? new Date() : undefined,
-      });
-
-      res.json({
-        success: true,
-        data: {
-          extractionId,
-          confirmed,
-          recordedAt: new Date().toISOString(),
-          feedback: feedback || null,
-        },
-      });
-    } catch (error) {
-      logger.error('Confirm extraction failed', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Confirmation failed',
-      });
-    }
-  }
-);
-
-/**
- * @route   GET /api/v1/ai/scene-config/:scene
- * @desc    Get scene configuration and schema
- * @access  Private
- */
-router.get(
-  '/scene-config/:scene',
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    try {
-      const { scene } = req.params;
-      const schema = getL2Schema(scene);
-
-      if (!schema) {
-        return res.status(404).json({
-          success: false,
-          error: `Scene not found: ${scene}`,
-        });
-      }
-
-      res.json({
-        success: true,
-        data: {
-          scene,
-          schema: {
-            id: schema.id,
-            version: schema.version,
-            title: schema.title,
-            description: schema.description,
-            fields: schema.fields,
-            groups: schema.groups,
-            steps: schema.steps,
-          },
-        },
-      });
-    } catch (error) {
-      logger.error('Get scene config failed', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to get scene config',
-      });
-    }
-  }
-);
-
-/**
- * @route   GET /api/v1/ai/scenes
- * @desc    Get list of available scenes
- * @access  Private
- */
-router.get(
-  '/scenes',
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    try {
-      const { getAllL2Schemas } = await import('@visionshare/shared');
-      const schemas = getAllL2Schemas();
-
-      res.json({
-        success: true,
-        data: {
-          scenes: schemas.map(s => ({
-            id: s.scene,
-            title: s.title,
-            description: s.description,
-            version: s.version,
-            fieldCount: s.fields.length,
+        schema: {
+          id: schema.id,
+          version: schema.version,
+          title: schema.title,
+          description: schema.description,
+          fields: schema.fields.map(f => ({
+            id: f.id,
+            type: f.type,
+            label: f.label,
+            description: f.description,
+            required: f.required,
+            options: f.options,
+            min: f.min,
+            max: f.max,
+            validation: f.validation,
           })),
+          groups: schema.groups,
+          steps: schema.steps,
         },
-      });
-    } catch (error) {
-      logger.error('Get scenes failed', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      },
+    };
 
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to get scenes',
-      });
-    }
+    return res.status(200).json(response);
+  } catch (error) {
+    logger.error('Get scene config failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      scene,
+    });
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'CONFIG_FETCH_FAILED',
+        message: error instanceof Error ? error.message : 'Failed to fetch config',
+      },
+    });
   }
-);
+});
 
-/**
- * Setup WebSocket handlers for real-time extraction feedback
- * @param io - Socket.IO server instance
- */
-export function setupExtractionWebSocket(io: SocketIOServer): void {
-  io.on('connection', (socket) => {
-    logger.info('Client connected to extraction WebSocket', { socketId: socket.id });
+// Type definitions
+interface BatchExtractionItem {
+  id: string;
+  text: string;
+  context?: Record<string, any>;
+}
 
-    // Handle real-time extraction requests
-    socket.on('extract-demand-stream', async (data: {
-      text: string;
-      scene: string;
-      requestId: string;
-    }) => {
-      try {
-        await ensureService();
+interface BatchExtractionResult {
+  index: number;
+  id: string;
+  success: true;
+  demand: {
+    intent: any;
+    entities: any[];
+    confidence: number;
+  };
+  latencyMs: number;
+}
 
-        const { text, scene, requestId } = data;
-
-        // Emit start event
-        socket.emit('extraction-progress', {
-          requestId,
-          status: 'started',
-          progress: 0,
-        });
-
-        // Get schema
-        const schema = getL2Schema(scene);
-        if (!schema) {
-          socket.emit('extraction-error', {
-            requestId,
-            error: `Invalid scene: ${scene}`,
-          });
-          return;
-        }
-
-        // Emit progress
-        socket.emit('extraction-progress', {
-          requestId,
-          status: 'extracting',
-          progress: 30,
-        });
-
-        // Perform extraction
-        const extractionRequest: ExtractionRequest = {
-          text,
-          scene,
-        };
-
-        const demand = await extractionService.extract(extractionRequest);
-
-        socket.emit('extraction-progress', {
-          requestId,
-          status: 'mapping',
-          progress: 60,
-        });
-
-        // Map to L2
-        const mappingResult = mapper.map(demand);
-
-        socket.emit('extraction-progress', {
-          requestId,
-          status: 'validating',
-          progress: 80,
-        });
-
-        // Validate
-        const validationResult = validator.validate(mappingResult.data, scene);
-
-        socket.emit('extraction-progress', {
-          requestId,
-          status: 'completed',
-          progress: 100,
-        });
-
-        // Emit result
-        socket.emit('extraction-result', {
-          requestId,
-          demand: {
-            id: demand.id,
-            scene: demand.scene,
-            intent: demand.intent,
-            entities: demand.entities,
-            confidence: demand.confidence,
-            extractedAt: demand.extractedAt.toISOString(),
-          },
-          mappedData: mappingResult.data,
-          validation: validationResult,
-          clarificationNeeded: demand.clarificationNeeded || !validationResult.isComplete,
-        });
-      } catch (error) {
-        logger.error('WebSocket extraction failed', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          socketId: socket.id,
-        });
-
-        socket.emit('extraction-error', {
-          requestId: data.requestId,
-          error: error instanceof Error ? error.message : 'Extraction failed',
-        });
-      }
-    });
-
-    socket.on('disconnect', () => {
-      logger.info('Client disconnected from extraction WebSocket', { socketId: socket.id });
-    });
-  });
+interface BatchExtractionError {
+  index: number;
+  id: string;
+  success: false;
+  error: string;
 }
 
 export default router;
