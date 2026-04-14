@@ -2,7 +2,7 @@ id: ISSUE-COM002c
 issue_number: 505
 title: 群聊状态同步与在线状态
 slug: group-sync
-status: passed
+status: "passed"
 description: |
   实现群聊状态同步、在线状态显示、
   正在输入状态和已读状态展示。
@@ -121,3 +121,14 @@ implementation:
 test_passed: true
 merged_to_master: true
 worktree_path: null
+
+check:
+  checked_at: "2026-04-14"
+  status: passed
+  functional_verification:
+    all_criteria_passed: true
+  test_execution:
+    all_tests_passed: true
+  code_review:
+    merged_to_main: true
+  notes: "Merged to master after resolving worktree merge conflicts"
