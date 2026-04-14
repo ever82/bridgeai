@@ -29,3 +29,8 @@ export * from './jobPosting';
 export * from './location';
 export * from './points';
 export * from './scene';
+export * from './agentAdConsumer';
+export * from './disclosure';
+export * from './visionShare';
+export * from '../schemas/l2';
+export * from '../schemas/sceneFields';
