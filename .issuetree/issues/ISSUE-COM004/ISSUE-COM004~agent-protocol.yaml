@@ -28,7 +28,7 @@ criteria:
     \u5EA6\u6807\u8BC6\n"
   id: ISSUE-COM004~c2
   name: "Agent \u8EAB\u4EFD\u6807\u8BC6"
-status: implementing
+status: implemented
   verification:
     ai:
       context_files:
@@ -46,7 +46,7 @@ status: implementing
     \u7528\u89E3\u91CA\u8BF4\u660E\n"
   id: ISSUE-COM004~c3
   name: "\u4FE1\u7528\u5206\u5C55\u793A"
-  status: pending
+  status: completed
   verification:
     ai:
       context_files:
@@ -64,7 +64,7 @@ status: implementing
     \n- \u8FDD\u89C4\u5904\u7406\u673A\u5236\n"
   id: ISSUE-COM004~c4
   name: "\u884C\u4E3A\u7EA6\u675F\u89C4\u5219"
-  status: pending
+  status: completed
   verification:
     ai:
       context_files:
@@ -82,7 +82,7 @@ status: implementing
     \u5B9A\u4E49\n"
   id: ISSUE-COM004~c5
   name: "\u534F\u8BAE\u6587\u6863\u548C\u89C4\u8303"
-  status: pending
+  status: completed
   verification:
     ai:
       context_files:
@@ -99,5 +99,5 @@ logic: sufficient_necessary
 prerequisites:
 - ISSUE-COM002c
 slug: agent-protocol
-status: pending
+status: implemented
 title: "Agent\u901A\u4FE1\u534F\u8BAE\u5B9A\u4E49"
