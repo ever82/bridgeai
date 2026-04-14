@@ -65,7 +65,7 @@ flowchart TD
         M001b[✂️ ISSUE-M001b<br/>实时查询执行引擎]
         M002[🟡 ISSUE-M002<br/>Agent智能筛选排序]
         M003[🟡 ISSUE-M003<br/>匹配度算法实现]
-        M004[🟡 ISSUE-M004<br/>匹配结果推送通知]
+        M004[🔍 ISSUE-M004<br/>匹配结果推送通知]
     end
 
     subgraph Comm["💬 通信层 - Communication"]
@@ -95,7 +95,7 @@ flowchart TD
     end
 
     subgraph VS["📷 VisionShare场景"]
-        VS001[🟡 ISSUE-VS001<br/>VisionShare需求发布]
+        VS001[🔍 ISSUE-VS001<br/>VisionShare需求发布]
         VS002[🟡 ISSUE-VS002<br/>附近任务查询与接单]
         VS003[🟡 ISSUE-VS003<br/>相机拍照与上传]
         VS004[🟡 ISSUE-VS004<br/>AI隐私脱敏处理]
