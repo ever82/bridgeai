@@ -4,12 +4,6 @@ issue_number: 506
 title: "人机切换机制"
 slug: "human-handoff"
 status: "implemented"
-implementation:
-  task_id: "TASK-COM003"
-  completed_at: "2026-04-14T10:30:00+08:00"
-  execution_time_minutes: 45
-  result: "success"
-  notes: "All acceptance criteria implemented and tested"
 description: |
   实现人机切换机制，允许用户从 Agent 接管对话，
   或将对话交还给 Agent。
@@ -26,7 +20,7 @@ criteria:
       - 人工模式状态
       - 切换请求状态
       - 切换历史记录
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -47,7 +41,7 @@ criteria:
       - 请求交还 Agent
       - 切换确认机制
       - 切换超时处理
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -68,7 +62,7 @@ criteria:
       - 交还按钮
       - 切换状态提示
       - 切换确认对话框
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -89,7 +83,7 @@ criteria:
       - 用户发送标识
       - 切换过渡标识
       - 发送者切换动画
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -110,7 +104,7 @@ criteria:
       - 频繁切换限制
       - 强制切换机制
       - 切换审计日志
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
