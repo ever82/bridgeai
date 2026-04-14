@@ -48,6 +48,8 @@ model User {
   blockedBy     BlockedUser[] @relation("BlockedByUser")
   roles         UserRole[]  // RBAC roles
   pointsAccount PointsAccount?
+  savedFilters  SavedFilter[]
+  sceneTemplates SceneTemplate[]
 
   @@map("users")
 }
@@ -81,6 +83,7 @@ model Agent {
   demands     Demand[]
   supplies    Supply[]
   profiles    AgentProfile[]
+  merchant    Merchant?
 
   @@index([userId])
   @@index([type])
