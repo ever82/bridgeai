@@ -3,7 +3,13 @@ id: "ISSUE-JOB002"
 issue_number: 902
 title: "招聘方职位发布"
 slug: "employer-job-posting"
-status: "implemented"
+status: "failed"
+implementation:
+  result: "failed"
+  failure_reason: "Merge failed due to conflicts in: packages/shared/src/types/index.ts, packages/shared/src/types.ts, apps/server/src/routes/v1/index.ts, .issuetree/issues/ISSUE-JOB002/ISSUE-JOB002~employer-job-posting.yaml"
+  attempted_at: "2026-04-14"
+merge_conflict: true
+worktree_path: ".issuetree/worktrees/ISSUE-JOB002"
 description: |
   实现招聘方Agent的职位发布与管理功能。招聘方通过自然语言
   或结构化表单描述职位需求、公司信息、薪资福利等，AI提炼
