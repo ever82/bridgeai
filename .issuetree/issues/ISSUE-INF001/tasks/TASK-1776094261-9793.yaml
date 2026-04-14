@@ -16,3 +16,5 @@ task:
   status: failed
   timeout_minutes: 30
   type: accept
+  stuck_reason: start_failed
+  failure_count: 1
