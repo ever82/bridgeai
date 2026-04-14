@@ -160,6 +160,6 @@ prerequisites:
 - ISSUE-C002b
 slug: location-filter
 started_at: '2026-04-10T17:28:05.046Z'
-status: accepted
+status: stuck
 stuck_reason: start_failed
 title: 地域过滤系统

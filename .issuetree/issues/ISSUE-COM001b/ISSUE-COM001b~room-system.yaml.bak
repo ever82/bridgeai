@@ -133,6 +133,6 @@ prerequisites:
 - ISSUE-COM001a
 slug: room-system
 started_at: '2026-04-10T17:48:49.817Z'
-status: accepted
+status: stuck
 stuck_reason: start_failed
 title: 连接管理与房间系统

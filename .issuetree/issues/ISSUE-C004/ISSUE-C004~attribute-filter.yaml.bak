@@ -159,6 +159,6 @@ prerequisites:
 - ISSUE-C002b
 slug: attribute-filter
 started_at: '2026-04-10T17:28:31.832Z'
-status: accepted
+status: stuck
 stuck_reason: start_failed
 title: 属性过滤系统

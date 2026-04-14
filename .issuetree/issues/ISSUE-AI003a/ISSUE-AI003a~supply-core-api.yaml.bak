@@ -69,6 +69,6 @@ prerequisites:
 - ISSUE-C002b
 slug: supply-core-api
 started_at: '2026-04-10T16:47:33.136Z'
-status: accepted
+status: stuck
 stuck_reason: start_failed
 title: 供给智能提炼服务 - 核心解析引擎与API

@@ -147,7 +147,7 @@ prerequisites:
 - ISSUE-AI003
 - ISSUE-AI004
 slug: agent-filtering
-status: accepted
+status: stuck
 test_passed: true
 title: Agent智能筛选排序
 worktree_path: .issuetree/worktrees/ISSUE-M002

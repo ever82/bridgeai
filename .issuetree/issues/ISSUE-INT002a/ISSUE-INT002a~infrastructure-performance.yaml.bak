@@ -71,6 +71,6 @@ parent_issue: ISSUE-INT002
 phase: 1
 slug: infrastructure-performance
 started_at: '2026-04-10T18:20:06.618Z'
-status: accepted
+status: stuck
 stuck_reason: start_failed
 title: 基础设施性能优化

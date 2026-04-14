@@ -28,7 +28,7 @@ criteria:
     \u8BAE\u5237\u65B0\u529F\u80FD\n"
   id: ISSUE-COM005~c2
   name: "\u5EFA\u8BAE\u5C55\u793A\u754C\u9762"
-status: accepted
+status: implementing
   verification:
     ai:
       context_files:
