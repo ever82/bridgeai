@@ -1,267 +1,151 @@
 {
-  "ISSUE-CR003a": {
-    "issue_id": "ISSUE-CR003a",
+  "ISSUE-VS001": {
+    "issue_id": "ISSUE-VS001",
     "status": "stuck",
-    "title": "\u79ef\u5206\u8d26\u6237\u6570\u636e\u6a21\u578b",
+    "title": "VisionShare\u9700\u6c42\u53d1\u5e03",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-A003"],
-    "last_update": "2026-04-13T20:55:31.662381",
-    "stuck_previous_status": "fixing",
+    "prerequisites": [
+      "ISSUE-C006",
+      "ISSUE-AI002"
+    ],
+    "last_update": "2026-04-14T11:34:07.484145",
+    "stuck_previous_status": "accepting",
     "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:55:02.596451+00:00",
-    "failure_count": 4
+    "stuck_at": "2026-04-14T03:33:56.917366+00:00"
   },
-  "ISSUE-COM001b": {
-    "issue_id": "ISSUE-COM001b",
-    "status": "fixing",
-    "title": "\u8fde\u63a5\u7ba1\u7406\u4e0e\u623f\u95f4\u7cfb\u7edf",
-    "user_story": "",
-    "current_task": "TASK-1776085102-4392",
-    "prerequisites": ["ISSUE-COM001a"],
-    "last_update": "2026-04-13T20:58:26.546830",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:46:17.692775+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-INT001": {
-    "issue_id": "ISSUE-INT001",
+  "ISSUE-M004": {
+    "issue_id": "ISSUE-M004",
     "status": "stuck",
-    "title": "\u7aef\u5230\u7aef\u96c6\u6210\u6d4b\u8bd5\uff08\u7236Issue\uff09",
+    "title": "\u5339\u914d\u7ed3\u679c\u63a8\u9001\u901a\u77e5",
     "user_story": "",
     "current_task": null,
-    "prerequisites": [],
-    "last_update": "2026-04-13T20:46:18.956203",
-    "stuck_previous_status": "fixing",
+    "prerequisites": [
+      "ISSUE-M003",
+      "ISSUE-COM001b"
+    ],
+    "last_update": "2026-04-14T11:34:07.569560",
+    "stuck_previous_status": "accepting",
     "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:46:18.950652+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-C003": {
-    "issue_id": "ISSUE-C003",
-    "status": "stuck",
-    "title": "\u5730\u57df\u8fc7\u6ee4\u7cfb\u7edf",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-C002b"],
-    "last_update": "2026-04-13T20:46:20.238642",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:46:20.231661+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-VS005": {
-    "issue_id": "ISSUE-VS005",
-    "status": "passed",
-    "title": "\u7167\u7247\u67e5\u770b\u4e0e\u79ef\u5206\u652f\u4ed8",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-VS004", "ISSUE-CR003"],
-    "last_update": "2026-04-13T21:05:00.000000",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null,
-    "failure_count": 0
-  },
-  "ISSUE-JOB003": {
-    "issue_id": "ISSUE-JOB003",
-    "status": "fixing",
-    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d\u7b5b\u9009",
-    "user_story": "",
-    "current_task": "TASK-1776084897-7817",
-    "prerequisites": ["ISSUE-JOB001", "ISSUE-JOB002", "ISSUE-M004", "ISSUE-AI004"],
-    "last_update": "2026-04-13T20:55:01.367742",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:49:05.931458+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-INT002a": {
-    "issue_id": "ISSUE-INT002a",
-    "status": "stuck",
-    "title": "\u57fa\u7840\u8bbe\u65bd\u6027\u80fd\u4f18\u5316",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": [],
-    "last_update": "2026-04-13T20:46:21.336310",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:46:21.326494+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-INF002": {
-    "issue_id": "ISSUE-INF002",
-    "status": "need-help",
-    "title": "Redis \u7f13\u5b58\u5c42\u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-F001", "ISSUE-F002"],
-    "last_update": "2026-04-13T20:53:59.597928",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:49:06.260569+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-INF005": {
-    "issue_id": "ISSUE-INF005",
-    "status": "need-help",
-    "title": "\u63a8\u9001\u901a\u77e5\u670d\u52a1",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-F003", "ISSUE-A001"],
-    "last_update": "2026-04-13T20:55:02.186102",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:49:06.630568+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-AI003a": {
-    "issue_id": "ISSUE-AI003a",
-    "status": "stuck",
-    "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u6838\u5fc3\u89e3\u6790\u5f15\u64ce\u4e0eAPI",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-AI001", "ISSUE-C002a", "ISSUE-C002b"],
-    "last_update": "2026-04-13T20:49:07.042203",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:49:07.041366+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-INF004": {
-    "issue_id": "ISSUE-INF004",
-    "status": "stuck",
-    "title": "\u6570\u636e\u5e93\u8fc1\u79fb\u7cfb\u7edf",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-F002"],
-    "last_update": "2026-04-13T20:48:13.522070",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null,
-    "failure_count": 4
-  },
-  "ISSUE-INF003": {
-    "issue_id": "ISSUE-INF003",
-    "status": "fixing",
-    "title": "\u4efb\u52a1\u961f\u5217\u7cfb\u7edf\u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
-    "user_story": "",
-    "current_task": "TASK-1776084493-7127",
-    "prerequisites": ["ISSUE-F001", "ISSUE-F002", "ISSUE-INF002"],
-    "last_update": "2026-04-13T20:48:17.847754",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:41:49.205412+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-AI004": {
-    "issue_id": "ISSUE-AI004",
-    "status": "stuck",
-    "title": "Agent\u5bf9\u8bdd\u751f\u6210\u670d\u52a1",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-AI001"],
-    "last_update": "2026-04-13T20:54:21.101678",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:54:00.030619+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-INF006": {
-    "issue_id": "ISSUE-INF006",
-    "status": "fixing",
-    "title": "\u90ae\u4ef6\u670d\u52a1\u7cfb\u7edf",
-    "user_story": "",
-    "current_task": "TASK-1776084502-2949",
-    "prerequisites": ["ISSUE-F003"],
-    "last_update": "2026-04-13T20:48:26.658689",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:41:49.960207+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-INF001": {
-    "issue_id": "ISSUE-INF001",
-    "status": "fixing",
-    "title": "API Gateway \u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
-    "user_story": "",
-    "current_task": "TASK-1776084506-7133",
-    "prerequisites": ["ISSUE-F003", "ISSUE-A002"],
-    "last_update": "2026-04-13T20:48:31.050557",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:41:50.305503+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-DESIGN-4": {
-    "issue_id": "ISSUE-DESIGN-4",
-    "status": "passed",
-    "title": "\u8865\u5145\u5b8c\u5584 Issues",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-DESIGN-3"],
-    "last_update": "2026-04-13T20:52:31.240527",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": null,
-    "stuck_at": "2026-04-13T12:52:31.239003+00:00",
-    "failure_count": 0
-  },
-  "ISSUE-C004": {
-    "issue_id": "ISSUE-C004",
-    "status": "stuck",
-    "title": "\u5c5e\u6027\u8fc7\u6ee4\u7cfb\u7edf",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-C002b"],
-    "last_update": "2026-04-13T20:42:39.512521",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:42:39.504783+00:00",
-    "failure_count": 3
-  },
-  "ISSUE-AI002a": {
-    "issue_id": "ISSUE-AI002a",
-    "status": "stuck",
-    "title": "\u9700\u6c42\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u6838\u5fc3\u6846\u67b6",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-AI001", "ISSUE-C002a", "ISSUE-C002b"],
-    "last_update": "2026-04-13T20:42:40.365506",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:42:40.361610+00:00",
-    "failure_count": 3
+    "stuck_at": "2026-04-14T03:33:56.933439+00:00"
   },
   "ISSUE-SEC004": {
     "issue_id": "ISSUE-SEC004",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u56fe\u7247\u4e0a\u4f20\u5b89\u5168\u68c0\u67e5",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-VS003"],
-    "last_update": "2026-04-13T20:42:40.967773",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:42:40.964386+00:00",
-    "failure_count": 3
+    "prerequisites": [
+      "ISSUE-VS003"
+    ],
+    "last_update": "2026-04-14T11:33:54.987514"
+  },
+  "ISSUE-C002a": {
+    "issue_id": "ISSUE-C002a",
+    "status": "accepted",
+    "title": "L1\u57fa\u7840\u4fe1\u606f\u6a21\u578b",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-C001"
+    ],
+    "last_update": "2026-04-14T11:33:55.001442"
   },
   "ISSUE-JOB003b": {
     "issue_id": "ISSUE-JOB003b",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - \u670d\u52a1\u5c42",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-JOB003a"],
-    "last_update": "2026-04-13T20:42:41.553028",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:42:41.549149+00:00",
-    "failure_count": 3
+    "prerequisites": [
+      "ISSUE-JOB003a"
+    ],
+    "last_update": "2026-04-14T11:33:55.009809"
+  },
+  "ISSUE-INT002a": {
+    "issue_id": "ISSUE-INT002a",
+    "status": "accepted",
+    "title": "\u57fa\u7840\u8bbe\u65bd\u6027\u80fd\u4f18\u5316",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [],
+    "last_update": "2026-04-14T11:33:55.016140"
+  },
+  "ISSUE-SEC003": {
+    "issue_id": "ISSUE-SEC003",
+    "status": "accepted",
+    "title": "API\u9650\u6d41\u4e0e\u5b89\u5168\u9632\u62a4",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F003"
+    ],
+    "last_update": "2026-04-14T11:33:55.034176"
+  },
+  "ISSUE-INF002": {
+    "issue_id": "ISSUE-INF002",
+    "status": "draft",
+    "title": "Redis \u7f13\u5b58\u5c42\u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F001",
+      "ISSUE-F002"
+    ],
+    "last_update": "2026-04-14T11:33:55.040890"
+  },
+  "ISSUE-INF005": {
+    "issue_id": "ISSUE-INF005",
+    "status": "draft",
+    "title": "\u63a8\u9001\u901a\u77e5\u670d\u52a1",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F003",
+      "ISSUE-A001"
+    ],
+    "last_update": "2026-04-14T11:33:55.048773"
+  },
+  "ISSUE-AI003a": {
+    "issue_id": "ISSUE-AI003a",
+    "status": "accepted",
+    "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u6838\u5fc3\u89e3\u6790\u5f15\u64ce\u4e0eAPI",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-AI001",
+      "ISSUE-C002a",
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T11:33:55.059973"
+  },
+  "ISSUE-INF004": {
+    "issue_id": "ISSUE-INF004",
+    "status": "draft",
+    "title": "\u6570\u636e\u5e93\u8fc1\u79fb\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F002"
+    ],
+    "last_update": "2026-04-14T11:33:55.066846"
+  },
+  "ISSUE-INF003": {
+    "issue_id": "ISSUE-INF003",
+    "status": "draft",
+    "title": "\u4efb\u52a1\u961f\u5217\u7cfb\u7edf\u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F001",
+      "ISSUE-F002",
+      "ISSUE-INF002"
+    ],
+    "last_update": "2026-04-14T11:33:55.075958"
   },
   "ISSUE-INT001a": {
     "issue_id": "ISSUE-INT001a",
-    "status": "need-help",
+    "status": "pending",
     "title": "VisionShare + AgentDate E2E\u6d4b\u8bd5",
     "user_story": "",
     "current_task": null,
@@ -287,81 +171,7 @@
       "ISSUE-UI006",
       "ISSUE-UI007"
     ],
-    "last_update": "2026-04-13T20:58:50.736248",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:49:07.512568+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-JOB003d": {
-    "issue_id": "ISSUE-JOB003d",
-    "status": "stuck",
-    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - UI\u5c42",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-JOB003c"],
-    "last_update": "2026-04-13T20:38:52.845945",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:38:52.845426+00:00",
-    "failure_count": 3
-  },
-  "ISSUE-JOB003c": {
-    "issue_id": "ISSUE-JOB003c",
-    "status": "stuck",
-    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - \u63a5\u53e3\u5c42",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-JOB003b", "ISSUE-M004"],
-    "last_update": "2026-04-13T20:38:53.148250",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:38:53.147552+00:00",
-    "failure_count": 3
-  },
-  "ISSUE-UI003": {
-    "issue_id": "ISSUE-UI003",
-    "status": "stuck",
-    "title": "\u9996\u9875\u4e0e\u72b6\u6001\u5c55\u793a",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-UI002", "ISSUE-C001", "ISSUE-M004"],
-    "last_update": "2026-04-13T20:38:53.436734",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:38:53.436065+00:00",
-    "failure_count": 3
-  },
-  "ISSUE-VS005b": {
-    "issue_id": "ISSUE-VS005b",
-    "status": "stuck",
-    "title": "\u79ef\u5206\u652f\u4ed8\u4e0e\u9ad8\u6e05\u89e3\u9501",
-    "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-VS005a", "ISSUE-CR003"],
-    "last_update": "2026-04-13T20:38:53.722199",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:38:53.721572+00:00",
-    "failure_count": 3
-  },
-  "ISSUE-C002a": {
-    "issue_id": "ISSUE-C002a",
-    "status": "accepted",
-    "title": "L1\u57fa\u7840\u4fe1\u606f\u6a21\u578b",
-    "user_story": "",
-    "current_task": "",
-    "prerequisites": ["ISSUE-C001"],
-    "last_update": "2026-04-13T20:19:35.314908"
-  },
-  "ISSUE-SEC003": {
-    "issue_id": "ISSUE-SEC003",
-    "status": "passed",
-    "title": "API\u9650\u6d41\u4e0e\u5b89\u5168\u9632\u62a4",
-    "user_story": "",
-    "current_task": "",
-    "prerequisites": ["ISSUE-F003"],
-    "last_update": "2026-04-13T20:19:35.341129"
+    "last_update": "2026-04-14T11:33:55.086509"
   },
   "ISSUE-SEC002": {
     "issue_id": "ISSUE-SEC002",
@@ -369,8 +179,46 @@
     "title": "\u654f\u611f\u6570\u636e\u52a0\u5bc6\u4e0e\u4fdd\u62a4",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-A002", "ISSUE-C002a"],
-    "last_update": "2026-04-13T20:19:35.382613"
+    "prerequisites": [
+      "ISSUE-A002",
+      "ISSUE-C002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.113107"
+  },
+  "ISSUE-JOB003d": {
+    "issue_id": "ISSUE-JOB003d",
+    "status": "pending",
+    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - UI\u5c42",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-JOB003c"
+    ],
+    "last_update": "2026-04-14T11:33:55.119758"
+  },
+  "ISSUE-JOB003c": {
+    "issue_id": "ISSUE-JOB003c",
+    "status": "pending",
+    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - \u63a5\u53e3\u5c42",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-JOB003b",
+      "ISSUE-M004"
+    ],
+    "last_update": "2026-04-14T11:33:55.127814"
+  },
+  "ISSUE-SEC005": {
+    "issue_id": "ISSUE-SEC005",
+    "status": "pending",
+    "title": "\u4e3e\u62a5\u4e0e\u5185\u5bb9\u5ba1\u6838\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-COM002c",
+      "ISSUE-CR002"
+    ],
+    "last_update": "2026-04-14T11:33:55.147001"
   },
   "ISSUE-T001": {
     "issue_id": "ISSUE-T001",
@@ -378,8 +226,11 @@
     "title": "\u5355\u5143\u6d4b\u8bd5\u6846\u67b6\u642d\u5efa(Jest)",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F003", "ISSUE-A001"],
-    "last_update": "2026-04-13T20:19:35.421740"
+    "prerequisites": [
+      "ISSUE-F003",
+      "ISSUE-A001"
+    ],
+    "last_update": "2026-04-14T11:33:55.171482"
   },
   "ISSUE-COM001a": {
     "issue_id": "ISSUE-COM001a",
@@ -387,8 +238,21 @@
     "title": "Socket.io\u57fa\u7840\u8bbe\u65bd\u642d\u5efa",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-C001"],
-    "last_update": "2026-04-13T20:19:35.447418"
+    "prerequisites": [
+      "ISSUE-C001"
+    ],
+    "last_update": "2026-04-14T11:33:55.193265"
+  },
+  "ISSUE-AI005": {
+    "issue_id": "ISSUE-AI005",
+    "status": "implemented",
+    "title": "\u56fe\u50cf\u5206\u6790\u4e0eVision API",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-AI001"
+    ],
+    "last_update": "2026-04-14T11:33:55.214182"
   },
   "ISSUE-AI002": {
     "issue_id": "ISSUE-AI002",
@@ -396,8 +260,25 @@
     "title": "\u9700\u6c42\u667a\u80fd\u63d0\u70bc\u670d\u52a1",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-AI001", "ISSUE-C002a", "ISSUE-C002b"],
-    "last_update": "2026-04-13T20:19:35.468475"
+    "prerequisites": [
+      "ISSUE-AI001",
+      "ISSUE-C002a",
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T11:33:55.228571"
+  },
+  "ISSUE-UI003": {
+    "issue_id": "ISSUE-UI003",
+    "status": "pending",
+    "title": "\u9996\u9875\u4e0e\u72b6\u6001\u5c55\u793a",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-UI002",
+      "ISSUE-C001",
+      "ISSUE-M004"
+    ],
+    "last_update": "2026-04-14T11:33:55.252820"
   },
   "ISSUE-A002": {
     "issue_id": "ISSUE-A002",
@@ -405,8 +286,10 @@
     "title": "JWT\u8ba4\u8bc1\u4e0eAPI\u5b89\u5168",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-A001"],
-    "last_update": "2026-04-13T20:19:35.491613"
+    "prerequisites": [
+      "ISSUE-A001"
+    ],
+    "last_update": "2026-04-14T11:33:55.273039"
   },
   "ISSUE-UI004": {
     "issue_id": "ISSUE-UI004",
@@ -414,8 +297,10 @@
     "title": "\u804a\u5929\u754c\u9762\u7ec4\u4ef6",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-UI002"],
-    "last_update": "2026-04-13T20:19:35.505396"
+    "prerequisites": [
+      "ISSUE-UI002"
+    ],
+    "last_update": "2026-04-14T11:33:55.283396"
   },
   "ISSUE-M001": {
     "issue_id": "ISSUE-M001",
@@ -423,21 +308,49 @@
     "title": "\u5339\u914d\u67e5\u8be2\u7cfb\u7edf",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-C002b", "ISSUE-C003", "ISSUE-C004", "ISSUE-C005"],
-    "last_update": "2026-04-13T20:19:35.530029"
+    "prerequisites": [
+      "ISSUE-C002b",
+      "ISSUE-C003",
+      "ISSUE-C004",
+      "ISSUE-C005"
+    ],
+    "last_update": "2026-04-14T11:33:55.305133"
+  },
+  "ISSUE-VS005b": {
+    "issue_id": "ISSUE-VS005b",
+    "status": "pending",
+    "title": "\u79ef\u5206\u652f\u4ed8\u4e0e\u9ad8\u6e05\u89e3\u9501",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-VS005a",
+      "ISSUE-CR003"
+    ],
+    "last_update": "2026-04-14T11:33:55.313433"
+  },
+  "ISSUE-CR003a": {
+    "issue_id": "ISSUE-CR003a",
+    "status": "accepted",
+    "title": "\u79ef\u5206\u8d26\u6237\u6570\u636e\u6a21\u578b",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-A003"
+    ],
+    "last_update": "2026-04-14T11:33:55.321010"
   },
   "ISSUE-UI005": {
     "issue_id": "ISSUE-UI005",
-    "status": "stuck",
+    "status": "pending",
     "title": "Agent\u914d\u7f6e\u754c\u9762",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-UI002", "ISSUE-C001", "ISSUE-C006"],
-    "last_update": "2026-04-13T20:46:08.594581",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:46:08.594030+00:00",
-    "failure_count": 2
+    "prerequisites": [
+      "ISSUE-UI002",
+      "ISSUE-C001",
+      "ISSUE-C006"
+    ],
+    "last_update": "2026-04-14T11:33:55.353571"
   },
   "ISSUE-A003": {
     "issue_id": "ISSUE-A003",
@@ -445,8 +358,10 @@
     "title": "\u7528\u6237\u57fa\u7840\u8d44\u6599\u7ba1\u7406",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-A002"],
-    "last_update": "2026-04-13T20:19:35.577131"
+    "prerequisites": [
+      "ISSUE-A002"
+    ],
+    "last_update": "2026-04-14T11:33:55.372961"
   },
   "ISSUE-A004": {
     "issue_id": "ISSUE-A004",
@@ -454,8 +369,21 @@
     "title": "\u8f93\u5165\u9a8c\u8bc1\u4e0e\u6570\u636e\u6821\u9a8c",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-A002"],
-    "last_update": "2026-04-13T20:19:35.604202"
+    "prerequisites": [
+      "ISSUE-A002"
+    ],
+    "last_update": "2026-04-14T11:33:55.393179"
+  },
+  "ISSUE-UI002": {
+    "issue_id": "ISSUE-UI002",
+    "status": "implemented",
+    "title": "\u5168\u5c40\u5bfc\u822a\u4e0e\u5e03\u5c40",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-UI001"
+    ],
+    "last_update": "2026-04-14T11:33:55.409944"
   },
   "ISSUE-AI003": {
     "issue_id": "ISSUE-AI003",
@@ -463,21 +391,34 @@
     "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-AI001", "ISSUE-C002a", "ISSUE-C002b"],
-    "last_update": "2026-04-13T20:19:35.628027"
+    "prerequisites": [
+      "ISSUE-AI001",
+      "ISSUE-C002a",
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T11:33:55.427316"
+  },
+  "ISSUE-AI004": {
+    "issue_id": "ISSUE-AI004",
+    "status": "accepted",
+    "title": "Agent\u5bf9\u8bdd\u751f\u6210\u670d\u52a1",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-AI001"
+    ],
+    "last_update": "2026-04-14T11:33:55.442809"
   },
   "ISSUE-VS005d": {
     "issue_id": "ISSUE-VS005d",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u652f\u4ed8\u5b89\u5168\u4e0e\u98ce\u63a7",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-VS005b"],
-    "last_update": "2026-04-13T20:24:09.127871",
-    "stuck_previous_status": "implementing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:24:09.127217+00:00",
-    "failure_count": 1
+    "prerequisites": [
+      "ISSUE-VS005b"
+    ],
+    "last_update": "2026-04-14T11:33:55.449836"
   },
   "ISSUE-DESIGN-1": {
     "issue_id": "ISSUE-DESIGN-1",
@@ -486,20 +427,18 @@
     "user_story": "",
     "current_task": "",
     "prerequisites": [],
-    "last_update": "2026-04-13T20:19:35.651065"
+    "last_update": "2026-04-14T11:33:55.461968"
   },
   "ISSUE-VS005c": {
     "issue_id": "ISSUE-VS005c",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u4ea4\u6613\u8bb0\u5f55\u4e0e\u9000\u6b3e\u7533\u8bc9",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-VS005b"],
-    "last_update": "2026-04-13T20:24:09.405302",
-    "stuck_previous_status": "implementing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:24:09.404581+00:00",
-    "failure_count": 1
+    "prerequisites": [
+      "ISSUE-VS005b"
+    ],
+    "last_update": "2026-04-14T11:33:55.470092"
   },
   "ISSUE-COM002": {
     "issue_id": "ISSUE-COM002",
@@ -507,21 +446,21 @@
     "title": "\u804a\u5929\u623f\u95f4\u7cfb\u7edf",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-COM001b"],
-    "last_update": "2026-04-13T20:19:35.676986"
+    "prerequisites": [
+      "ISSUE-COM001b"
+    ],
+    "last_update": "2026-04-14T11:33:55.486585"
   },
   "ISSUE-CR002b": {
     "issue_id": "ISSUE-CR002b",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u8bc4\u5206\u4e0e\u8bc4\u4ef7\u7cfb\u7edf - \u524d\u7aefUI",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-CR002a"],
-    "last_update": "2026-04-13T20:24:09.677357",
-    "stuck_previous_status": "implementing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:24:09.676868+00:00",
-    "failure_count": 1
+    "prerequisites": [
+      "ISSUE-CR002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.494491"
   },
   "ISSUE-INT002": {
     "issue_id": "ISSUE-INT002",
@@ -529,21 +468,24 @@
     "title": "\u6027\u80fd\u4f18\u5316\u4e0e\u538b\u6d4b",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-INT001"],
-    "last_update": "2026-04-13T20:19:35.686921"
+    "prerequisites": [
+      "ISSUE-INT001"
+    ],
+    "last_update": "2026-04-14T11:33:55.498404"
   },
   "ISSUE-UI004a": {
     "issue_id": "ISSUE-UI004a",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u804a\u5929\u6d88\u606f\u7ec4\u4ef6\u4e0e\u8f93\u5165\u6846",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-UI002", "ISSUE-COM002c", "ISSUE-COM003", "ISSUE-COM005"],
-    "last_update": "2026-04-13T20:24:09.950782",
-    "stuck_previous_status": "implementing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:24:09.950177+00:00",
-    "failure_count": 1
+    "prerequisites": [
+      "ISSUE-UI002",
+      "ISSUE-COM002c",
+      "ISSUE-COM003",
+      "ISSUE-COM005"
+    ],
+    "last_update": "2026-04-14T11:33:55.523843"
   },
   "ISSUE-CR001": {
     "issue_id": "ISSUE-CR001",
@@ -551,8 +493,10 @@
     "title": "\u4fe1\u7528\u5206\u8ba1\u7b97\u7cfb\u7edf",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-A003"],
-    "last_update": "2026-04-13T20:19:35.746083"
+    "prerequisites": [
+      "ISSUE-A003"
+    ],
+    "last_update": "2026-04-14T11:33:55.549961"
   },
   "ISSUE-INT003": {
     "issue_id": "ISSUE-INT003",
@@ -560,8 +504,10 @@
     "title": "Demo\u6f14\u793a\u51c6\u5907",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-INT002"],
-    "last_update": "2026-04-13T20:19:35.771312"
+    "prerequisites": [
+      "ISSUE-INT002"
+    ],
+    "last_update": "2026-04-14T11:33:55.573308"
   },
   "ISSUE-F006": {
     "issue_id": "ISSUE-F006",
@@ -569,8 +515,10 @@
     "title": "\u9519\u8bef\u8ffd\u8e2a\u4e0e\u76d1\u63a7\u96c6\u6210",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F003"],
-    "last_update": "2026-04-13T20:19:35.797785"
+    "prerequisites": [
+      "ISSUE-F003"
+    ],
+    "last_update": "2026-04-14T11:33:55.596289"
   },
   "ISSUE-CR002c": {
     "issue_id": "ISSUE-CR002c",
@@ -578,8 +526,10 @@
     "title": "\u8bc4\u5206\u4e0e\u8bc4\u4ef7\u7cfb\u7edf - \u4e1a\u52a1\u903b\u8f91",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-CR002a"],
-    "last_update": "2026-04-13T20:19:35.814598"
+    "prerequisites": [
+      "ISSUE-CR002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.604704"
   },
   "ISSUE-F001": {
     "issue_id": "ISSUE-F001",
@@ -588,7 +538,7 @@
     "user_story": "",
     "current_task": "",
     "prerequisites": [],
-    "last_update": "2026-04-13T20:19:35.845583"
+    "last_update": "2026-04-14T11:33:55.629671"
   },
   "ISSUE-VS007": {
     "issue_id": "ISSUE-VS007",
@@ -596,8 +546,11 @@
     "title": "\u672c\u5730\u76f8\u518cAI\u667a\u80fd\u68c0\u7d22",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-VS006", "ISSUE-AI005"],
-    "last_update": "2026-04-13T20:19:35.867737"
+    "prerequisites": [
+      "ISSUE-VS006",
+      "ISSUE-AI005"
+    ],
+    "last_update": "2026-04-14T11:33:55.648063"
   },
   "ISSUE-C007": {
     "issue_id": "ISSUE-C007",
@@ -605,8 +558,11 @@
     "title": "Agent\u4fe1\u606f\u62ab\u9732\u63a7\u5236\u673a\u5236",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-C002c", "ISSUE-COM002c"],
-    "last_update": "2026-04-13T20:19:35.887913"
+    "prerequisites": [
+      "ISSUE-C002c",
+      "ISSUE-COM002c"
+    ],
+    "last_update": "2026-04-14T11:33:55.669881"
   },
   "ISSUE-AI002b": {
     "issue_id": "ISSUE-AI002b",
@@ -614,8 +570,10 @@
     "title": "\u9700\u6c42\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u573a\u666f\u63d0\u53d6\u5668\u5b9e\u73b0",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-AI002a"],
-    "last_update": "2026-04-13T20:19:35.897421"
+    "prerequisites": [
+      "ISSUE-AI002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.678351"
   },
   "ISSUE-M001b": {
     "issue_id": "ISSUE-M001b",
@@ -623,8 +581,10 @@
     "title": "\u5b9e\u65f6\u67e5\u8be2\u6267\u884c\u5f15\u64ce",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-M001a"],
-    "last_update": "2026-04-13T20:19:35.927022"
+    "prerequisites": [
+      "ISSUE-M001a"
+    ],
+    "last_update": "2026-04-14T11:33:55.703344"
   },
   "ISSUE-DATE001-2": {
     "issue_id": "ISSUE-DATE001-2",
@@ -632,11 +592,13 @@
     "title": "\u4ea4\u53cb\u753b\u50cf\u914d\u7f6e - AI\u667a\u80fd\u63d0\u70bc\u670d\u52a1",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-AI002"],
-    "last_update": "2026-04-13T21:02:15.328554",
+    "prerequisites": [
+      "ISSUE-AI002"
+    ],
+    "last_update": "2026-04-14T11:39:16.982557",
     "stuck_previous_status": "implementing",
     "stuck_reason": "implement_failed",
-    "stuck_at": "2026-04-13T13:02:15.327002+00:00",
+    "stuck_at": "2026-04-14T03:39:16.982066+00:00",
     "failure_count": 1
   },
   "ISSUE-C001": {
@@ -645,8 +607,10 @@
     "title": "Agent\u521b\u5efa\u4e0e\u57fa\u7840\u914d\u7f6e",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-A003"],
-    "last_update": "2026-04-13T20:19:35.952729"
+    "prerequisites": [
+      "ISSUE-A003"
+    ],
+    "last_update": "2026-04-14T11:33:55.727027"
   },
   "ISSUE-C006": {
     "issue_id": "ISSUE-C006",
@@ -654,8 +618,11 @@
     "title": "\u573a\u666f\u914d\u7f6e\u7ba1\u7406",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-C001", "ISSUE-C002a"],
-    "last_update": "2026-04-13T20:19:35.971516"
+    "prerequisites": [
+      "ISSUE-C001",
+      "ISSUE-C002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.744344"
   },
   "ISSUE-COM002b": {
     "issue_id": "ISSUE-COM002b",
@@ -663,8 +630,10 @@
     "title": "\u6d88\u606f\u6301\u4e45\u5316\u4e0e\u5386\u53f2\u8bb0\u5f55",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-COM002a"],
-    "last_update": "2026-04-13T20:19:35.993752"
+    "prerequisites": [
+      "ISSUE-COM002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.767872"
   },
   "ISSUE-AI003b": {
     "issue_id": "ISSUE-AI003b",
@@ -672,8 +641,10 @@
     "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u573a\u666f\u63d0\u53d6\u5668",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-AI003a"],
-    "last_update": "2026-04-13T20:19:36.013546"
+    "prerequisites": [
+      "ISSUE-AI003a"
+    ],
+    "last_update": "2026-04-14T11:33:55.787514"
   },
   "ISSUE-T004": {
     "issue_id": "ISSUE-T004",
@@ -681,8 +652,12 @@
     "title": "E2E\u7aef\u5230\u7aef\u6d4b\u8bd5\u6846\u67b6",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-T001", "ISSUE-T002", "ISSUE-T003"],
-    "last_update": "2026-04-13T20:19:36.056448"
+    "prerequisites": [
+      "ISSUE-T001",
+      "ISSUE-T002",
+      "ISSUE-T003"
+    ],
+    "last_update": "2026-04-14T11:33:55.842473"
   },
   "ISSUE-C002b": {
     "issue_id": "ISSUE-C002b",
@@ -690,8 +665,10 @@
     "title": "L2\u7ed3\u6784\u5316\u4fe1\u606f\u6a21\u578b",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-C002a"],
-    "last_update": "2026-04-13T20:19:36.070111"
+    "prerequisites": [
+      "ISSUE-C002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.867182"
   },
   "ISSUE-INT002b": {
     "issue_id": "ISSUE-INT002b",
@@ -699,8 +676,10 @@
     "title": "\u5b9e\u65f6\u670d\u52a1\u6027\u80fd\u4f18\u5316",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-INT002a"],
-    "last_update": "2026-04-13T20:19:36.081010"
+    "prerequisites": [
+      "ISSUE-INT002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.882504"
   },
   "ISSUE-JOB003a": {
     "issue_id": "ISSUE-JOB003a",
@@ -708,8 +687,12 @@
     "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - \u6838\u5fc3\u7b97\u6cd5\u5c42",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-JOB001", "ISSUE-JOB002", "ISSUE-AI004"],
-    "last_update": "2026-04-13T20:19:36.088150"
+    "prerequisites": [
+      "ISSUE-JOB001",
+      "ISSUE-JOB002",
+      "ISSUE-AI004"
+    ],
+    "last_update": "2026-04-14T11:33:55.890674"
   },
   "ISSUE-T003": {
     "issue_id": "ISSUE-T003",
@@ -717,8 +700,21 @@
     "title": "\u79fb\u52a8\u7aef\u6d4b\u8bd5\u6846\u67b6",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F004"],
-    "last_update": "2026-04-13T20:19:36.123720"
+    "prerequisites": [
+      "ISSUE-F004"
+    ],
+    "last_update": "2026-04-14T11:33:55.923120"
+  },
+  "ISSUE-INF006": {
+    "issue_id": "ISSUE-INF006",
+    "status": "draft",
+    "title": "\u90ae\u4ef6\u670d\u52a1\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F003"
+    ],
+    "last_update": "2026-04-14T11:33:55.935979"
   },
   "ISSUE-INT001c": {
     "issue_id": "ISSUE-INT001c",
@@ -753,7 +749,30 @@
       "ISSUE-F005",
       "ISSUE-F006"
     ],
-    "last_update": "2026-04-13T20:19:36.141899"
+    "last_update": "2026-04-14T11:33:55.951654"
+  },
+  "ISSUE-INF001": {
+    "issue_id": "ISSUE-INF001",
+    "status": "draft",
+    "title": "API Gateway \u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F003",
+      "ISSUE-A002"
+    ],
+    "last_update": "2026-04-14T11:33:55.961047"
+  },
+  "ISSUE-COM001b": {
+    "issue_id": "ISSUE-COM001b",
+    "status": "accepted",
+    "title": "\u8fde\u63a5\u7ba1\u7406\u4e0e\u623f\u95f4\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-COM001a"
+    ],
+    "last_update": "2026-04-14T11:33:55.976972"
   },
   "ISSUE-AI003c": {
     "issue_id": "ISSUE-AI003c",
@@ -761,8 +780,11 @@
     "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u6620\u5c04\u3001\u8865\u5168\u4e0e\u8bc4\u4f30",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-AI003a", "ISSUE-AI003b"],
-    "last_update": "2026-04-13T20:19:36.154369"
+    "prerequisites": [
+      "ISSUE-AI003a",
+      "ISSUE-AI003b"
+    ],
+    "last_update": "2026-04-14T11:33:55.992056"
   },
   "ISSUE-INT001b": {
     "issue_id": "ISSUE-INT001b",
@@ -789,7 +811,7 @@
       "ISSUE-UI006",
       "ISSUE-UI007"
     ],
-    "last_update": "2026-04-13T20:19:36.178852"
+    "last_update": "2026-04-14T11:33:56.013100"
   },
   "ISSUE-INT002c": {
     "issue_id": "ISSUE-INT002c",
@@ -797,8 +819,10 @@
     "title": "\u7aef\u5230\u7aef\u6027\u80fd\u9a8c\u8bc1",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-INT002b"],
-    "last_update": "2026-04-13T20:19:36.193931"
+    "prerequisites": [
+      "ISSUE-INT002b"
+    ],
+    "last_update": "2026-04-14T11:33:56.027500"
   },
   "ISSUE-C002c": {
     "issue_id": "ISSUE-C002c",
@@ -806,8 +830,10 @@
     "title": "L3\u81ea\u7136\u8bed\u8a00\u4fe1\u606f\u6a21\u578b",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-C002b"],
-    "last_update": "2026-04-13T20:19:36.209300"
+    "prerequisites": [
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T11:33:56.042735"
   },
   "ISSUE-T002": {
     "issue_id": "ISSUE-T002",
@@ -815,8 +841,10 @@
     "title": "API\u96c6\u6210\u6d4b\u8bd5\u6846\u67b6",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F003"],
-    "last_update": "2026-04-13T20:19:36.242730"
+    "prerequisites": [
+      "ISSUE-F003"
+    ],
+    "last_update": "2026-04-14T11:33:56.071035"
   },
   "ISSUE-SEC001": {
     "issue_id": "ISSUE-SEC001",
@@ -824,8 +852,24 @@
     "title": "RBAC\u6743\u9650\u63a7\u5236\u7cfb\u7edf",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-A002"],
-    "last_update": "2026-04-13T20:19:36.269291"
+    "prerequisites": [
+      "ISSUE-A002"
+    ],
+    "last_update": "2026-04-14T11:33:56.100819"
+  },
+  "ISSUE-M002": {
+    "issue_id": "ISSUE-M002",
+    "status": "accepted",
+    "title": "Agent\u667a\u80fd\u7b5b\u9009\u6392\u5e8f",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-M001b",
+      "ISSUE-AI002",
+      "ISSUE-AI003",
+      "ISSUE-AI004"
+    ],
+    "last_update": "2026-04-14T11:33:56.116476"
   },
   "ISSUE-DESIGN-3": {
     "issue_id": "ISSUE-DESIGN-3",
@@ -833,8 +877,21 @@
     "title": "\u751f\u6210 Issues",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-DESIGN-2"],
-    "last_update": "2026-04-13T20:19:36.297257"
+    "prerequisites": [
+      "ISSUE-DESIGN-2"
+    ],
+    "last_update": "2026-04-14T11:33:56.138498"
+  },
+  "ISSUE-DESIGN-4": {
+    "issue_id": "ISSUE-DESIGN-4",
+    "status": "accepted",
+    "title": "\u8865\u5145\u5b8c\u5584 Issues",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-DESIGN-3"
+    ],
+    "last_update": "2026-04-14T11:33:56.143606"
   },
   "ISSUE-VS005a": {
     "issue_id": "ISSUE-VS005a",
@@ -842,8 +899,10 @@
     "title": "\u7167\u7247\u6d4f\u89c8\u4e0e\u753b\u5eca\u5c55\u793a",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-VS004"],
-    "last_update": "2026-04-13T20:19:36.311209"
+    "prerequisites": [
+      "ISSUE-VS004"
+    ],
+    "last_update": "2026-04-14T11:33:56.149958"
   },
   "ISSUE-API001": {
     "issue_id": "ISSUE-API001",
@@ -851,8 +910,11 @@
     "title": "API\u6587\u6863\u4e0eOpenAPI\u89c4\u8303",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F003", "ISSUE-A002"],
-    "last_update": "2026-04-13T20:19:36.333646"
+    "prerequisites": [
+      "ISSUE-F003",
+      "ISSUE-A002"
+    ],
+    "last_update": "2026-04-14T11:33:56.172141"
   },
   "ISSUE-AI001": {
     "issue_id": "ISSUE-AI001",
@@ -860,8 +922,10 @@
     "title": "\u591aLLM\u9002\u914d\u5668\u4e0e\u7194\u65ad\u5668",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F003"],
-    "last_update": "2026-04-13T20:19:36.369147"
+    "prerequisites": [
+      "ISSUE-F003"
+    ],
+    "last_update": "2026-04-14T11:33:56.208050"
   },
   "ISSUE-AI006": {
     "issue_id": "ISSUE-AI006",
@@ -869,8 +933,11 @@
     "title": "AI\u670d\u52a1\u964d\u7ea7\u4e0e\u5bb9\u9519\u7b56\u7565",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-AI001", "ISSUE-AI004"],
-    "last_update": "2026-04-13T20:19:36.392323"
+    "prerequisites": [
+      "ISSUE-AI001",
+      "ISSUE-AI004"
+    ],
+    "last_update": "2026-04-14T11:33:56.229023"
   },
   "ISSUE-CR003c": {
     "issue_id": "ISSUE-CR003c",
@@ -878,8 +945,10 @@
     "title": "\u79ef\u5206\u4ea4\u6613\u8bb0\u5f55API",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-CR003b"],
-    "last_update": "2026-04-13T20:19:36.398992"
+    "prerequisites": [
+      "ISSUE-CR003b"
+    ],
+    "last_update": "2026-04-14T11:33:56.235529"
   },
   "ISSUE-UI007": {
     "issue_id": "ISSUE-UI007",
@@ -887,8 +956,12 @@
     "title": "\u4e2a\u4eba\u4e2d\u5fc3\u4e0e\u4fe1\u7528\u5c55\u793a",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-UI002", "ISSUE-CR001", "ISSUE-A003"],
-    "last_update": "2026-04-13T20:19:36.423812"
+    "prerequisites": [
+      "ISSUE-UI002",
+      "ISSUE-CR001",
+      "ISSUE-A003"
+    ],
+    "last_update": "2026-04-14T11:33:56.261362"
   },
   "ISSUE-A001": {
     "issue_id": "ISSUE-A001",
@@ -896,8 +969,11 @@
     "title": "\u7528\u6237\u6ce8\u518c\u4e0e\u767b\u5f55\u7cfb\u7edf",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F002", "ISSUE-F003"],
-    "last_update": "2026-04-13T20:19:36.450028"
+    "prerequisites": [
+      "ISSUE-F002",
+      "ISSUE-F003"
+    ],
+    "last_update": "2026-04-14T11:33:56.284221"
   },
   "ISSUE-CR003d": {
     "issue_id": "ISSUE-CR003d",
@@ -905,8 +981,10 @@
     "title": "\u79ef\u5206\u94b1\u5305UI\u4e0eVisionShare\u573a\u666f\u652f\u4ed8",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-CR003c"],
-    "last_update": "2026-04-13T20:19:36.462240"
+    "prerequisites": [
+      "ISSUE-CR003c"
+    ],
+    "last_update": "2026-04-14T11:33:56.295693"
   },
   "ISSUE-DESIGN-2": {
     "issue_id": "ISSUE-DESIGN-2",
@@ -914,8 +992,10 @@
     "title": "\u751f\u6210\u5e76\u5b8c\u5584 IssueTree",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-DESIGN-1"],
-    "last_update": "2026-04-13T20:19:36.466829"
+    "prerequisites": [
+      "ISSUE-DESIGN-1"
+    ],
+    "last_update": "2026-04-14T11:33:56.300516"
   },
   "ISSUE-COM001": {
     "issue_id": "ISSUE-COM001",
@@ -923,8 +1003,10 @@
     "title": "Socket.io\u901a\u4fe1\u57fa\u7840\u8bbe\u65bd",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-C001"],
-    "last_update": "2026-04-13T20:19:36.479139"
+    "prerequisites": [
+      "ISSUE-C001"
+    ],
+    "last_update": "2026-04-14T11:33:56.315308"
   },
   "ISSUE-UI001": {
     "issue_id": "ISSUE-UI001",
@@ -932,8 +1014,10 @@
     "title": "\u8bbe\u8ba1\u7cfb\u7edf\u4e0e\u7ec4\u4ef6\u5e93",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F004"],
-    "last_update": "2026-04-13T20:19:36.518940"
+    "prerequisites": [
+      "ISSUE-F004"
+    ],
+    "last_update": "2026-04-14T11:33:56.375768"
   },
   "ISSUE-CR003b": {
     "issue_id": "ISSUE-CR003b",
@@ -941,8 +1025,10 @@
     "title": "\u79ef\u5206\u4ea4\u6613\u6838\u5fc3\u670d\u52a1\u4e0e\u89c4\u5219\u914d\u7f6e",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-CR003a"],
-    "last_update": "2026-04-13T20:19:36.531701"
+    "prerequisites": [
+      "ISSUE-CR003a"
+    ],
+    "last_update": "2026-04-14T11:33:56.387928"
   },
   "ISSUE-UI006": {
     "issue_id": "ISSUE-UI006",
@@ -950,8 +1036,11 @@
     "title": "\u6d88\u606f\u4e2d\u5fc3",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-UI002", "ISSUE-COM002c"],
-    "last_update": "2026-04-13T20:19:36.559420"
+    "prerequisites": [
+      "ISSUE-UI002",
+      "ISSUE-COM002c"
+    ],
+    "last_update": "2026-04-14T11:33:56.414511"
   },
   "ISSUE-F004": {
     "issue_id": "ISSUE-F004",
@@ -959,8 +1048,10 @@
     "title": "Expo\u79fb\u52a8\u7aef\u9879\u76ee\u521d\u59cb\u5316",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F001"],
-    "last_update": "2026-04-13T20:19:36.582113"
+    "prerequisites": [
+      "ISSUE-F001"
+    ],
+    "last_update": "2026-04-14T11:33:56.435861"
   },
   "ISSUE-CR002a": {
     "issue_id": "ISSUE-CR002a",
@@ -968,8 +1059,12 @@
     "title": "\u8bc4\u5206\u4e0e\u8bc4\u4ef7\u7cfb\u7edf - \u540e\u7aefAPI",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-CR001", "ISSUE-COM002c", "ISSUE-A003"],
-    "last_update": "2026-04-13T20:19:36.596728"
+    "prerequisites": [
+      "ISSUE-CR001",
+      "ISSUE-COM002c",
+      "ISSUE-A003"
+    ],
+    "last_update": "2026-04-14T11:33:56.449183"
   },
   "ISSUE-F003": {
     "issue_id": "ISSUE-F003",
@@ -977,8 +1072,10 @@
     "title": "Express\u540e\u7aef\u57fa\u7840\u6846\u67b6",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F001"],
-    "last_update": "2026-04-13T20:19:36.619901"
+    "prerequisites": [
+      "ISSUE-F001"
+    ],
+    "last_update": "2026-04-14T11:33:56.471310"
   },
   "ISSUE-UI004c": {
     "issue_id": "ISSUE-UI004c",
@@ -986,8 +1083,11 @@
     "title": "\u804a\u5929\u8bb0\u5f55\u6eda\u52a8\u4e0e\u5206\u9875\u52a0\u8f7d",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-UI002", "ISSUE-UI004b"],
-    "last_update": "2026-04-13T20:19:36.651860"
+    "prerequisites": [
+      "ISSUE-UI002",
+      "ISSUE-UI004b"
+    ],
+    "last_update": "2026-04-14T11:33:56.492980"
   },
   "ISSUE-CR003": {
     "issue_id": "ISSUE-CR003",
@@ -995,8 +1095,19 @@
     "title": "\u79ef\u5206\u7cfb\u7edf\u57fa\u7840\u4e0e\u4ea4\u6613\u8bb0\u5f55",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-A003"],
-    "last_update": "2026-04-13T20:19:36.656750"
+    "prerequisites": [
+      "ISSUE-A003"
+    ],
+    "last_update": "2026-04-14T11:33:56.498064"
+  },
+  "ISSUE-INT001": {
+    "issue_id": "ISSUE-INT001",
+    "status": "accepted",
+    "title": "\u7aef\u5230\u7aef\u96c6\u6210\u6d4b\u8bd5\uff08\u7236Issue\uff09",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [],
+    "last_update": "2026-04-14T11:33:56.504173"
   },
   "ISSUE-CR002": {
     "issue_id": "ISSUE-CR002",
@@ -1004,8 +1115,10 @@
     "title": "\u8bc4\u5206\u4e0e\u8bc4\u4ef7\u7cfb\u7edf",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-CR002c"],
-    "last_update": "2026-04-13T20:19:36.659121"
+    "prerequisites": [
+      "ISSUE-CR002c"
+    ],
+    "last_update": "2026-04-14T11:33:56.506350"
   },
   "ISSUE-UI004b": {
     "issue_id": "ISSUE-UI004b",
@@ -1013,8 +1126,11 @@
     "title": "Agent/\u4eba\u7c7b\u7528\u6237\u72b6\u6001\u6307\u793a\u5668",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-UI002", "ISSUE-UI004a"],
-    "last_update": "2026-04-13T20:19:36.677614"
+    "prerequisites": [
+      "ISSUE-UI002",
+      "ISSUE-UI004a"
+    ],
+    "last_update": "2026-04-14T11:33:56.523787"
   },
   "ISSUE-F002": {
     "issue_id": "ISSUE-F002",
@@ -1022,8 +1138,10 @@
     "title": "\u6570\u636e\u5e93\u8bbe\u8ba1\u4e0ePrisma ORM\u642d\u5efa",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F001"],
-    "last_update": "2026-04-13T20:19:36.704544"
+    "prerequisites": [
+      "ISSUE-F001"
+    ],
+    "last_update": "2026-04-14T11:33:56.547504"
   },
   "ISSUE-F005": {
     "issue_id": "ISSUE-F005",
@@ -1031,8 +1149,43 @@
     "title": "\u65e5\u5fd7\u7cfb\u7edf\u4e0e\u7ed3\u6784\u5316\u65e5\u5fd7",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F003"],
-    "last_update": "2026-04-13T20:19:36.729168"
+    "prerequisites": [
+      "ISSUE-F003"
+    ],
+    "last_update": "2026-04-14T11:33:56.565054"
+  },
+  "ISSUE-C003": {
+    "issue_id": "ISSUE-C003",
+    "status": "accepted",
+    "title": "\u5730\u57df\u8fc7\u6ee4\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T11:33:56.578818"
+  },
+  "ISSUE-C004": {
+    "issue_id": "ISSUE-C004",
+    "status": "accepted",
+    "title": "\u5c5e\u6027\u8fc7\u6ee4\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T11:33:56.592055"
+  },
+  "ISSUE-DATE004": {
+    "issue_id": "ISSUE-DATE004",
+    "status": "implementing",
+    "title": "\u53cc\u5411\u540c\u610f\u5f15\u8350\u673a\u5236",
+    "user_story": "",
+    "current_task": "TASK-1776137685-7249",
+    "prerequisites": [
+      "ISSUE-DATE003"
+    ],
+    "last_update": "2026-04-14T11:34:50.119255"
   },
   "ISSUE-DATE003": {
     "issue_id": "ISSUE-DATE003",
@@ -1040,8 +1193,53 @@
     "title": "Agent\u95f4\u5bf9\u8bdd\u5339\u914d",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-COM002c"],
-    "last_update": "2026-04-13T20:19:36.768631"
+    "prerequisites": [
+      "ISSUE-COM002c"
+    ],
+    "last_update": "2026-04-14T11:33:56.646742"
+  },
+  "ISSUE-VS003": {
+    "issue_id": "ISSUE-VS003",
+    "status": "stuck",
+    "title": "\u76f8\u673a\u62cd\u7167\u4e0e\u4e0a\u4f20",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-VS002",
+      "ISSUE-F004",
+      "ISSUE-SEC004"
+    ],
+    "last_update": "2026-04-14T11:37:38.264199",
+    "has_worktree": true,
+    "worktree_path": "/Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-VS003",
+    "stuck_previous_status": "implementing",
+    "stuck_reason": "start_failed",
+    "stuck_at": "2026-04-14T03:37:38.263680+00:00",
+    "failure_count": 1
+  },
+  "ISSUE-JOB002": {
+    "issue_id": "ISSUE-JOB002",
+    "status": "implementing",
+    "title": "\u62db\u8058\u65b9\u804c\u4f4d\u53d1\u5e03",
+    "user_story": "",
+    "current_task": "TASK-1776137823-8968",
+    "prerequisites": [
+      "ISSUE-C006",
+      "ISSUE-AI003"
+    ],
+    "last_update": "2026-04-14T11:37:07.905638"
+  },
+  "ISSUE-VS004": {
+    "issue_id": "ISSUE-VS004",
+    "status": "implementing",
+    "title": "AI\u9690\u79c1\u8131\u654f\u5904\u7406",
+    "user_story": "",
+    "current_task": "TASK-1776137892-1798",
+    "prerequisites": [
+      "ISSUE-VS003",
+      "ISSUE-AI005"
+    ],
+    "last_update": "2026-04-14T11:38:16.492325"
   },
   "ISSUE-A003a": {
     "issue_id": "ISSUE-A003a",
@@ -1049,8 +1247,23 @@
     "title": "\u7528\u6237\u57fa\u7840\u8d44\u6599\u7ba1\u7406 - \u540e\u7aefAPI",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-A002"],
-    "last_update": "2026-04-13T20:19:36.803885"
+    "prerequisites": [
+      "ISSUE-A002"
+    ],
+    "last_update": "2026-04-14T11:33:56.723390"
+  },
+  "ISSUE-DATE002": {
+    "issue_id": "ISSUE-DATE002",
+    "status": "pending",
+    "title": "Agent\u4e3b\u52a8\u5339\u914d\u63a8\u8350",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-C006",
+      "ISSUE-M004",
+      "ISSUE-DATE001"
+    ],
+    "last_update": "2026-04-14T11:33:56.750494"
   },
   "ISSUE-C005": {
     "issue_id": "ISSUE-C005",
@@ -1058,8 +1271,11 @@
     "title": "\u4fe1\u7528\u8fc7\u6ee4\u7cfb\u7edf",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-C002b", "ISSUE-CR001"],
-    "last_update": "2026-04-13T20:19:36.825755"
+    "prerequisites": [
+      "ISSUE-C002b",
+      "ISSUE-CR001"
+    ],
+    "last_update": "2026-04-14T11:33:56.763022"
   },
   "ISSUE-C002": {
     "issue_id": "ISSUE-C002",
@@ -1067,8 +1283,33 @@
     "title": "Agent\u4fe1\u606f\u6a21\u578b\u7cfb\u7edf",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-C001"],
-    "last_update": "2026-04-13T20:19:36.838182"
+    "prerequisites": [
+      "ISSUE-C001"
+    ],
+    "last_update": "2026-04-14T11:33:56.771395"
+  },
+  "ISSUE-VS005": {
+    "issue_id": "ISSUE-VS005",
+    "status": "accepting",
+    "title": "\u7167\u7247\u67e5\u770b\u4e0e\u79ef\u5206\u652f\u4ed8",
+    "user_story": "",
+    "current_task": "TASK-1776137681-5750",
+    "prerequisites": [
+      "ISSUE-VS004",
+      "ISSUE-CR003"
+    ],
+    "last_update": "2026-04-14T11:34:45.811211"
+  },
+  "ISSUE-JOB004": {
+    "issue_id": "ISSUE-JOB004",
+    "status": "pending",
+    "title": "\u85aa\u8d44\u534f\u5546\u4e0e\u9762\u8bd5\u5b89\u6392",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-COM002c"
+    ],
+    "last_update": "2026-04-14T11:33:56.793011"
   },
   "ISSUE-M001a": {
     "issue_id": "ISSUE-M001a",
@@ -1076,7 +1317,51 @@
     "title": "\u67e5\u8be2\u6784\u5efa\u5668\u4e0eDSL\u8bbe\u8ba1",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-C002b", "ISSUE-C003", "ISSUE-C004", "ISSUE-C005"],
-    "last_update": "2026-04-13T20:19:36.865690"
+    "prerequisites": [
+      "ISSUE-C002b",
+      "ISSUE-C003",
+      "ISSUE-C004",
+      "ISSUE-C005"
+    ],
+    "last_update": "2026-04-14T11:33:56.806490"
+  },
+  "ISSUE-VS002": {
+    "issue_id": "ISSUE-VS002",
+    "status": "pending",
+    "title": "\u9644\u8fd1\u4efb\u52a1\u67e5\u8be2\u4e0e\u63a5\u5355",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-C006",
+      "ISSUE-M004"
+    ],
+    "last_update": "2026-04-14T11:33:56.824649"
+  },
+  "ISSUE-AI002a": {
+    "issue_id": "ISSUE-AI002a",
+    "status": "implemented",
+    "title": "\u9700\u6c42\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u6838\u5fc3\u6846\u67b6",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-AI001",
+      "ISSUE-C002a",
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T11:33:56.836833"
+  },
+  "ISSUE-JOB003": {
+    "issue_id": "ISSUE-JOB003",
+    "status": "pending",
+    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d\u7b5b\u9009",
+    "user_story": "",
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-JOB001",
+      "ISSUE-JOB002",
+      "ISSUE-M004",
+      "ISSUE-AI004"
+    ],
+    "last_update": "2026-04-14T11:33:56.839135"
   }
 }
