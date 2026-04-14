@@ -28,7 +28,7 @@ criteria:
     \n- \u521D\u59CB\u5316\u623F\u95F4\u8BBE\u7F6E\n"
   id: ISSUE-COM002a~c2
   name: "\u623F\u95F4\u521B\u5EFA API"
-status: need-help
+status: accepted
   verification:
     ai:
       context_files:

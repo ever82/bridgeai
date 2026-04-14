@@ -36,7 +36,7 @@ logic: sufficient_necessary
 prerequisites: []
 slug: end-to-end-integration-test
 started_at: '2026-04-10T18:11:14.295Z'
-status: "passed"
+status: accepted
 sub_issues:
 - ISSUE-INT001a
 - ISSUE-INT001b
