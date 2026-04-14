@@ -3,7 +3,7 @@ id: "ISSUE-C002a"
 issue_number: 302
 title: "L1基础信息模型"
 slug: "agent-l1-model"
-status: "passed"
+status: "accepted"
 description: |
   实现 Agent L1 基础信息模型，包括用户可编辑的
   结构化基础字段：年龄、性别、地域、职业等。
@@ -22,7 +22,7 @@ criteria:
       - occupation: 职业
       - education: 教育水平
       - 字段验证规则
-    status: "passed"
+    status: "accepted"
     coverage:
       unit: required
       integration: required
@@ -43,7 +43,7 @@ criteria:
       - JSON 字段存储灵活数据
       - 索引优化
       - 数据迁移
-    status: "passed"
+    status: "accepted"
     coverage:
       unit: not_needed
       integration: required
@@ -64,7 +64,7 @@ criteria:
       - 更新 L1 信息
       - 字段级验证
       - 变更历史
-    status: "passed"
+    status: "accepted"
     coverage:
       unit: required
       integration: required
@@ -85,7 +85,7 @@ criteria:
       - 地理位置选择器
       - 职业/教育选择器
       - 实时验证
-    status: "passed"
+    status: "accepted"
     coverage:
       unit: not_needed
       integration: required
@@ -106,7 +106,7 @@ criteria:
       - 完成度百分比计算
       - 缺失字段提示
       - 完成度展示
-    status: "passed"
+    status: "accepted"
     coverage:
       unit: required
       integration: required

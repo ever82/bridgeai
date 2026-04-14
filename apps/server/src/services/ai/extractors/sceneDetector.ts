@@ -57,7 +57,7 @@ export class SceneDetector {
     const results: Array<{ scene: SceneType; confidence: number }> = [];
 
     // Check each extractor
-    for (const [sceneType, extractor] of this.extractors) {
+    for (const [sceneType, extractor] of this.extractors.entries()) {
       const { canHandle, confidence } = await extractor.canHandle(text);
       if (canHandle) {
         results.push({ scene: sceneType, confidence });
@@ -100,7 +100,7 @@ export class SceneDetector {
 
     const results: SceneDetectionResult[] = [];
 
-    for (const [sceneType, extractor] of this.extractors) {
+    for (const [sceneType, extractor] of this.extractors.entries()) {
       const { canHandle, confidence } = await extractor.canHandle(text);
       if (canHandle) {
         results.push({
@@ -182,7 +182,7 @@ export class SceneDetector {
       }
     }
 
-    return [...new Set(keywords)]; // Remove duplicates
+    return Array.from(new Set(keywords)); // Remove duplicates
   }
 
   /**

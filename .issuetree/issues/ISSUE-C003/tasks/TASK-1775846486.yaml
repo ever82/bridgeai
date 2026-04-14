@@ -4,6 +4,8 @@ task:
   id: TASK-1775846486
   issue: ISSUE-C003
   started_at: '2026-04-10T18:41:26.907188+00:00'
-  status: in_progress
+  status: failed
   timeout_minutes: 30
-  type: check
+  type: accept
+  stuck_reason: accept_timeout
+  failure_count: 1

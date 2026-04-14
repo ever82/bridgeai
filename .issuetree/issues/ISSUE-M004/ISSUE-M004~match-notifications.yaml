@@ -3,7 +3,7 @@ id: "ISSUE-M004"
 issue_number: 405
 title: "匹配结果推送通知"
 slug: "match-notifications"
-status: "pending"
+status: accepted
 description: |
   实现匹配结果的推送通知系统，及时通知用户
   新的匹配结果和相关动态。
@@ -21,7 +21,7 @@ criteria:
       - 推送渠道(应用内/邮件/短信)
       - 推送频率控制
       - 推送内容模板
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: required
@@ -32,7 +32,6 @@ criteria:
       ai:
         prompt: "检查推送服务，验证有 PushNotificationService 支持多种推送渠道"
         context_files: ["apps/server/src/services/pushNotification.ts"]
-        
 
   - id: "ISSUE-M004~c2"
     name: "移动端推送集成"
@@ -42,7 +41,7 @@ criteria:
       - 推送令牌管理
       - 推送接收处理
       - 推送点击跳转
-    status: "pending"
+    status: "completed"
     coverage:
       unit: not_needed
       integration: required
@@ -53,7 +52,6 @@ criteria:
       ai:
         prompt: "检查移动推送，验证有 Expo Push Token 注册和推送处理"
         context_files: ["apps/mobile/src/services/pushNotifications.ts"]
-        
 
   - id: "ISSUE-M004~c3"
     name: "通知中心"
@@ -63,7 +61,7 @@ criteria:
       - 通知分类
       - 已读/未读管理
       - 通知清理
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: required
@@ -74,7 +72,6 @@ criteria:
       ai:
         prompt: "检查通知中心，验证有 Notification 模型和通知列表 API"
         context_files: ["apps/server/src/services/notificationService.ts", "apps/mobile/src/screens/Notifications/"]
-        
 
   - id: "ISSUE-M004~c4"
     name: "推送偏好设置"
@@ -84,7 +81,7 @@ criteria:
       - 推送频率设置
       - 免打扰时段
       - 推送类型选择
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: required
@@ -94,8 +91,7 @@ criteria:
     verification:
       ai:
         prompt: "检查推送偏好，验证有 NotificationSettings 组件和存储"
-        context_files: ["apps/mobile/src/screens/Settings/NotificationSettings.tsx"]
-        
+        context_files: ["apps/mobile/src/screens/Settings/NotificationSettingsScreen.tsx"]
 
   - id: "ISSUE-M004~c5"
     name: "邮件和短信通知"
@@ -105,7 +101,7 @@ criteria:
       - 短信服务集成
       - 发送队列管理
       - 发送状态追踪
-    status: "pending"
+    status: "completed"
     coverage:
       unit: not_needed
       integration: required
@@ -116,4 +112,12 @@ criteria:
       ai:
         prompt: "检查外部通知，验证有 EmailService 和 SMSService 集成"
         context_files: ["apps/server/src/services/emailService.ts", "apps/server/src/services/smsService.ts"]
-        
+
+implementation:
+  task_id: "TASK-1"
+  completed_at: "2026-04-13"
+  execution_time_minutes: 120
+  result: "success"
+  notes: "All acceptance criteria implemented and merged to master"
+test_passed: true
+merged_to_master: true

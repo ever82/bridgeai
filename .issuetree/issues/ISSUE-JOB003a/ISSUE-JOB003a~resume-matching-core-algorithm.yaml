@@ -1,40 +1,42 @@
----
-id: "ISSUE-JOB003a"
-issue_number: 903.1
-title: "简历智能匹配 - 核心算法层"
-slug: "resume-matching-core-algorithm"
-status: "pending"
-description: |
-  实现职位匹配度核心算法，包括技能匹配、经验评估、
-  薪资匹配等多维度计算，输出0-100的综合匹配度评分。
-  预估代码量: 200-300行
-parent: "ISSUE-JOB003"
-prerequisites:
-  - "ISSUE-JOB001"
-  - "ISSUE-JOB002"
-  - "ISSUE-AI004"
-created_at: "2026-04-09"
-logic: sufficient_necessary
+created_at: '2026-04-09'
 criteria:
-  - id: "ISSUE-JOB003a~c1"
-    name: "职位匹配度算法"
-    description: |
-      匹配算法:
-      - 技能匹配度计算(关键词匹配+语义相似度)
-      - 经验匹配评估(年限/行业/职级)
-      - 薪资期望匹配度计算
-      - 地域与工作方式兼容性评估
-      - 综合匹配度评分(0-100分)
-      - 匹配度权重可配置
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查职位匹配度算法，验证有JobMatchingAlgorithm实现，包含技能匹配、经验评估、薪资匹配等多维度计算"
-        context_files: ["apps/server/src/services/job/jobMatchingAlgorithm.ts", "apps/server/src/services/job/matchScoring.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5339\u914D\u7B97\u6CD5:\n- \u6280\u80FD\u5339\u914D\u5EA6\u8BA1\u7B97\
+    (\u5173\u952E\u8BCD\u5339\u914D+\u8BED\u4E49\u76F8\u4F3C\u5EA6)\n- \u7ECF\u9A8C\
+    \u5339\u914D\u8BC4\u4F30(\u5E74\u9650/\u884C\u4E1A/\u804C\u7EA7)\n- \u85AA\u8D44\
+    \u671F\u671B\u5339\u914D\u5EA6\u8BA1\u7B97\n- \u5730\u57DF\u4E0E\u5DE5\u4F5C\u65B9\
+    \u5F0F\u517C\u5BB9\u6027\u8BC4\u4F30\n- \u7EFC\u5408\u5339\u914D\u5EA6\u8BC4\u5206\
+    (0-100\u5206)\n- \u5339\u914D\u5EA6\u6743\u91CD\u53EF\u914D\u7F6E\n"
+  id: ISSUE-JOB003a~c1
+  name: "\u804C\u4F4D\u5339\u914D\u5EA6\u7B97\u6CD5"
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/job/jobMatchingAlgorithm.ts
+      - apps/server/src/services/job/matchScoring.ts
+      prompt: "\u68C0\u67E5\u804C\u4F4D\u5339\u914D\u5EA6\u7B97\u6CD5\uFF0C\u9A8C\u8BC1\
+        \u6709JobMatchingAlgorithm\u5B9E\u73B0\uFF0C\u5305\u542B\u6280\u80FD\u5339\
+        \u914D\u3001\u7ECF\u9A8C\u8BC4\u4F30\u3001\u85AA\u8D44\u5339\u914D\u7B49\u591A\
+        \u7EF4\u5EA6\u8BA1\u7B97"
+current_task: null
+description: "\u5B9E\u73B0\u804C\u4F4D\u5339\u914D\u5EA6\u6838\u5FC3\u7B97\u6CD5\uFF0C\
+  \u5305\u62EC\u6280\u80FD\u5339\u914D\u3001\u7ECF\u9A8C\u8BC4\u4F30\u3001\n\u85AA\
+  \u8D44\u5339\u914D\u7B49\u591A\u7EF4\u5EA6\u8BA1\u7B97\uFF0C\u8F93\u51FA0-100\u7684\
+  \u7EFC\u5408\u5339\u914D\u5EA6\u8BC4\u5206\u3002\n\u9884\u4F30\u4EE3\u7801\u91CF\
+  : 200-300\u884C\n"
+id: ISSUE-JOB003a
+issue_number: 903.1
+logic: sufficient_necessary
+parent: ISSUE-JOB003
+prerequisites:
+- ISSUE-JOB001
+- ISSUE-JOB002
+- ISSUE-AI004
+slug: resume-matching-core-algorithm
+status: pending
+title: "\u7B80\u5386\u667A\u80FD\u5339\u914D - \u6838\u5FC3\u7B97\u6CD5\u5C42"

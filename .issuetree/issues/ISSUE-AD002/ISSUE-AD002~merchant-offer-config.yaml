@@ -1,93 +1,118 @@
-id: ISSUE-AD002
-issue_number: 1002
-title: 商家优惠配置
-slug: merchant-offer-config
-status: pending
-description: |
-  AgentAd场景的商家优惠配置模块。商家创建Agent并配置可提供的优惠方案，
-  包括优惠类型(折扣、满减、赠品等)、适用范围、有效期、库存数量等。
-  通过AI服务(AI003)将商家的自然语言描述提炼为结构化的优惠供给信息，
-  用于匹配消费需求和自动化优惠协商。
-prerequisites:
-  - ISSUE-C006
-  - ISSUE-AI003
-logic: sufficient_necessary
 created_at: 2026-04-08
 criteria:
-  - id: AD002-CR01
-    name: 商家场景Agent创建
-    description: |
-      商家能够创建专属于AgentAd场景的Agent实例，选择"商家"角色类型，
-      配置商家基础信息如店名、门店地址、营业时间、联系方式等。
-    status: pending
-    coverage: 95
-    verification:
-      ai_prompt: |
-        检查Agent创建API是否支持AgentAd场景的商家角色，
-        验证创建后Agent的scene字段为"AGENT_AD"，role字段为"MERCHANT"，
-        并确认商家基础信息(店名、地址、营业时间)正确存储在L1和L2模型中。
-
-  - id: AD002-CR02
-    name: 优惠方案基础配置
-    description: |
-      商家可以配置优惠方案的基础信息，包括优惠标题、详细描述、
-      优惠类型(折扣/满减/赠品/套餐等)、优惠力度(如8折、满100减20)。
-    status: pending
-    coverage: 92
-    verification:
-      ai_prompt: |
-        验证优惠配置表单支持多种优惠类型选择和对应参数设置，
-        检查优惠数据是否正确存储在L2结构化信息的offer字段中，
-        确认优惠类型字段符合预定义枚举值，优惠力度数值正确。
-
-  - id: AD002-CR03
-    name: 优惠适用范围设置
-    description: |
-      商家能够设置优惠的适用范围，包括适用商品/服务、排除商品、
-      适用时段、适用门店(多门店情况)、适用人群限制(如新客专享)。
-    status: pending
-    coverage: 88
-    verification:
-      ai_prompt: |
-        检查适用范围配置界面支持商品选择、时段设置、门店选择等功能，
-        验证适用范围数据正确存储在offer.applicableScope字段中，
-        测试M002匹配时是否正确根据适用范围筛选目标消费者。
-
-  - id: AD002-CR04
-    name: 优惠有效期与库存管理
-    description: |
-      商家可以设置优惠的有效期(开始时间-结束时间)、每日限量、总库存数量。
-      系统支持库存预警，当库存低于阈值时通知商家补充。
-    status: pending
-    coverage: 90
-    verification:
-      ai_prompt: |
-        验证有效期设置支持日期时间选择，库存管理支持总库存和每日限额，
-        检查库存扣减逻辑是否正确，测试库存预警功能在库存低于阈值时
-        是否触发通知，确认过期优惠自动下架。
-
-  - id: AD002-CR05
-    name: AI供给提炼集成
-    description: |
-      集成AI003供给智能提炼服务，商家可以通过自然语言描述优惠方案，
-      AI自动提取关键信息(优惠类型、力度、适用范围等)并生成结构化配置。
-    status: pending
-    coverage: 88
-    verification:
-      ai_prompt: |
-        测试自然语言输入"新店开业全场8折，饮品买一送一，仅限本周"
-        验证AI003服务是否正确提取出优惠类型(折扣/赠品)、优惠力度(8折/买一送一)、
-        适用范围(全场/仅饮品)、有效期(本周)等信息并自动填充配置。
-
-  - id: AD002-CR06
-    name: 优惠上下架与状态管理
-    description: |
-      商家可以灵活控制优惠的上下架状态，支持手动上架/下架、暂停发放、
-      定时上架等功能。已发布的优惠修改后需重新审核或即时生效。
-    status: pending
-    coverage: 85
-    verification:
-      ai_prompt: |
-        检查优惠状态管理API支持上架、下架、暂停等操作，
-        验证状态变更后是否影响匹配引擎的推荐结果，
-        确认定时上架功能在指定时间自动将优惠状态变更为"ACTIVE"。
+- coverage: 95
+  description: "\u5546\u5BB6\u80FD\u591F\u521B\u5EFA\u4E13\u5C5E\u4E8EAgentAd\u573A\
+    \u666F\u7684Agent\u5B9E\u4F8B\uFF0C\u9009\u62E9\"\u5546\u5BB6\"\u89D2\u8272\u7C7B\
+    \u578B\uFF0C\n\u914D\u7F6E\u5546\u5BB6\u57FA\u7840\u4FE1\u606F\u5982\u5E97\u540D\
+    \u3001\u95E8\u5E97\u5730\u5740\u3001\u8425\u4E1A\u65F6\u95F4\u3001\u8054\u7CFB\
+    \u65B9\u5F0F\u7B49\u3002\n"
+  id: AD002-CR01
+  name: "\u5546\u5BB6\u573A\u666FAgent\u521B\u5EFA"
+  verification:
+    ai_prompt: "\u68C0\u67E5Agent\u521B\u5EFAAPI\u662F\u5426\u652F\u6301AgentAd\u573A\
+      \u666F\u7684\u5546\u5BB6\u89D2\u8272\uFF0C\n\u9A8C\u8BC1\u521B\u5EFA\u540EAgent\u7684\
+      scene\u5B57\u6BB5\u4E3A\"AGENT_AD\"\uFF0Crole\u5B57\u6BB5\u4E3A\"MERCHANT\"\uFF0C\
+      \n\u5E76\u786E\u8BA4\u5546\u5BB6\u57FA\u7840\u4FE1\u606F(\u5E97\u540D\u3001\u5730\
+      \u5740\u3001\u8425\u4E1A\u65F6\u95F4)\u6B63\u786E\u5B58\u50A8\u5728L1\u548C\
+      L2\u6A21\u578B\u4E2D\u3002\n"
+- coverage: 92
+  description: "\u5546\u5BB6\u53EF\u4EE5\u914D\u7F6E\u4F18\u60E0\u65B9\u6848\u7684\
+    \u57FA\u7840\u4FE1\u606F\uFF0C\u5305\u62EC\u4F18\u60E0\u6807\u9898\u3001\u8BE6\
+    \u7EC6\u63CF\u8FF0\u3001\n\u4F18\u60E0\u7C7B\u578B(\u6298\u6263/\u6EE1\u51CF/\u8D60\
+    \u54C1/\u5957\u9910\u7B49)\u3001\u4F18\u60E0\u529B\u5EA6(\u59828\u6298\u3001\u6EE1\
+    100\u51CF20)\u3002\n"
+  id: AD002-CR02
+  name: "\u4F18\u60E0\u65B9\u6848\u57FA\u7840\u914D\u7F6E"
+  status: pending
+  verification:
+    ai_prompt: "\u9A8C\u8BC1\u4F18\u60E0\u914D\u7F6E\u8868\u5355\u652F\u6301\u591A\
+      \u79CD\u4F18\u60E0\u7C7B\u578B\u9009\u62E9\u548C\u5BF9\u5E94\u53C2\u6570\u8BBE\
+      \u7F6E\uFF0C\n\u68C0\u67E5\u4F18\u60E0\u6570\u636E\u662F\u5426\u6B63\u786E\u5B58\
+      \u50A8\u5728L2\u7ED3\u6784\u5316\u4FE1\u606F\u7684offer\u5B57\u6BB5\u4E2D\uFF0C\
+      \n\u786E\u8BA4\u4F18\u60E0\u7C7B\u578B\u5B57\u6BB5\u7B26\u5408\u9884\u5B9A\u4E49\
+      \u679A\u4E3E\u503C\uFF0C\u4F18\u60E0\u529B\u5EA6\u6570\u503C\u6B63\u786E\u3002\
+      \n"
+- coverage: 88
+  description: "\u5546\u5BB6\u80FD\u591F\u8BBE\u7F6E\u4F18\u60E0\u7684\u9002\u7528\
+    \u8303\u56F4\uFF0C\u5305\u62EC\u9002\u7528\u5546\u54C1/\u670D\u52A1\u3001\u6392\
+    \u9664\u5546\u54C1\u3001\n\u9002\u7528\u65F6\u6BB5\u3001\u9002\u7528\u95E8\u5E97\
+    (\u591A\u95E8\u5E97\u60C5\u51B5)\u3001\u9002\u7528\u4EBA\u7FA4\u9650\u5236(\u5982\
+    \u65B0\u5BA2\u4E13\u4EAB)\u3002\n"
+  id: AD002-CR03
+  name: "\u4F18\u60E0\u9002\u7528\u8303\u56F4\u8BBE\u7F6E"
+  status: pending
+  verification:
+    ai_prompt: "\u68C0\u67E5\u9002\u7528\u8303\u56F4\u914D\u7F6E\u754C\u9762\u652F\
+      \u6301\u5546\u54C1\u9009\u62E9\u3001\u65F6\u6BB5\u8BBE\u7F6E\u3001\u95E8\u5E97\
+      \u9009\u62E9\u7B49\u529F\u80FD\uFF0C\n\u9A8C\u8BC1\u9002\u7528\u8303\u56F4\u6570\
+      \u636E\u6B63\u786E\u5B58\u50A8\u5728offer.applicableScope\u5B57\u6BB5\u4E2D\uFF0C\
+      \n\u6D4B\u8BD5M002\u5339\u914D\u65F6\u662F\u5426\u6B63\u786E\u6839\u636E\u9002\
+      \u7528\u8303\u56F4\u7B5B\u9009\u76EE\u6807\u6D88\u8D39\u8005\u3002\n"
+- coverage: 90
+  description: "\u5546\u5BB6\u53EF\u4EE5\u8BBE\u7F6E\u4F18\u60E0\u7684\u6709\u6548\
+    \u671F(\u5F00\u59CB\u65F6\u95F4-\u7ED3\u675F\u65F6\u95F4)\u3001\u6BCF\u65E5\u9650\
+    \u91CF\u3001\u603B\u5E93\u5B58\u6570\u91CF\u3002\n\u7CFB\u7EDF\u652F\u6301\u5E93\
+    \u5B58\u9884\u8B66\uFF0C\u5F53\u5E93\u5B58\u4F4E\u4E8E\u9608\u503C\u65F6\u901A\
+    \u77E5\u5546\u5BB6\u8865\u5145\u3002\n"
+  id: AD002-CR04
+  name: "\u4F18\u60E0\u6709\u6548\u671F\u4E0E\u5E93\u5B58\u7BA1\u7406"
+  status: pending
+  verification:
+    ai_prompt: "\u9A8C\u8BC1\u6709\u6548\u671F\u8BBE\u7F6E\u652F\u6301\u65E5\u671F\
+      \u65F6\u95F4\u9009\u62E9\uFF0C\u5E93\u5B58\u7BA1\u7406\u652F\u6301\u603B\u5E93\
+      \u5B58\u548C\u6BCF\u65E5\u9650\u989D\uFF0C\n\u68C0\u67E5\u5E93\u5B58\u6263\u51CF\
+      \u903B\u8F91\u662F\u5426\u6B63\u786E\uFF0C\u6D4B\u8BD5\u5E93\u5B58\u9884\u8B66\
+      \u529F\u80FD\u5728\u5E93\u5B58\u4F4E\u4E8E\u9608\u503C\u65F6\n\u662F\u5426\u89E6\
+      \u53D1\u901A\u77E5\uFF0C\u786E\u8BA4\u8FC7\u671F\u4F18\u60E0\u81EA\u52A8\u4E0B\
+      \u67B6\u3002\n"
+- coverage: 88
+  description: "\u96C6\u6210AI003\u4F9B\u7ED9\u667A\u80FD\u63D0\u70BC\u670D\u52A1\uFF0C\
+    \u5546\u5BB6\u53EF\u4EE5\u901A\u8FC7\u81EA\u7136\u8BED\u8A00\u63CF\u8FF0\u4F18\
+    \u60E0\u65B9\u6848\uFF0C\nAI\u81EA\u52A8\u63D0\u53D6\u5173\u952E\u4FE1\u606F(\u4F18\
+    \u60E0\u7C7B\u578B\u3001\u529B\u5EA6\u3001\u9002\u7528\u8303\u56F4\u7B49)\u5E76\
+    \u751F\u6210\u7ED3\u6784\u5316\u914D\u7F6E\u3002\n"
+  id: AD002-CR05
+  name: "AI\u4F9B\u7ED9\u63D0\u70BC\u96C6\u6210"
+  status: pending
+  verification:
+    ai_prompt: "\u6D4B\u8BD5\u81EA\u7136\u8BED\u8A00\u8F93\u5165\"\u65B0\u5E97\u5F00\
+      \u4E1A\u5168\u573A8\u6298\uFF0C\u996E\u54C1\u4E70\u4E00\u9001\u4E00\uFF0C\u4EC5\
+      \u9650\u672C\u5468\"\n\u9A8C\u8BC1AI003\u670D\u52A1\u662F\u5426\u6B63\u786E\u63D0\
+      \u53D6\u51FA\u4F18\u60E0\u7C7B\u578B(\u6298\u6263/\u8D60\u54C1)\u3001\u4F18\u60E0\
+      \u529B\u5EA6(8\u6298/\u4E70\u4E00\u9001\u4E00)\u3001\n\u9002\u7528\u8303\u56F4\
+      (\u5168\u573A/\u4EC5\u996E\u54C1)\u3001\u6709\u6548\u671F(\u672C\u5468)\u7B49\
+      \u4FE1\u606F\u5E76\u81EA\u52A8\u586B\u5145\u914D\u7F6E\u3002\n"
+- coverage: 85
+  description: "\u5546\u5BB6\u53EF\u4EE5\u7075\u6D3B\u63A7\u5236\u4F18\u60E0\u7684\
+    \u4E0A\u4E0B\u67B6\u72B6\u6001\uFF0C\u652F\u6301\u624B\u52A8\u4E0A\u67B6/\u4E0B\
+    \u67B6\u3001\u6682\u505C\u53D1\u653E\u3001\n\u5B9A\u65F6\u4E0A\u67B6\u7B49\u529F\
+    \u80FD\u3002\u5DF2\u53D1\u5E03\u7684\u4F18\u60E0\u4FEE\u6539\u540E\u9700\u91CD\
+    \u65B0\u5BA1\u6838\u6216\u5373\u65F6\u751F\u6548\u3002\n"
+  id: AD002-CR06
+  name: "\u4F18\u60E0\u4E0A\u4E0B\u67B6\u4E0E\u72B6\u6001\u7BA1\u7406"
+  status: pending
+  verification:
+    ai_prompt: "\u68C0\u67E5\u4F18\u60E0\u72B6\u6001\u7BA1\u7406API\u652F\u6301\u4E0A\
+      \u67B6\u3001\u4E0B\u67B6\u3001\u6682\u505C\u7B49\u64CD\u4F5C\uFF0C\n\u9A8C\u8BC1\
+      \u72B6\u6001\u53D8\u66F4\u540E\u662F\u5426\u5F71\u54CD\u5339\u914D\u5F15\u64CE\
+      \u7684\u63A8\u8350\u7ED3\u679C\uFF0C\n\u786E\u8BA4\u5B9A\u65F6\u4E0A\u67B6\u529F\
+      \u80FD\u5728\u6307\u5B9A\u65F6\u95F4\u81EA\u52A8\u5C06\u4F18\u60E0\u72B6\u6001\
+      \u53D8\u66F4\u4E3A\"ACTIVE\"\u3002\n"
+current_task: null
+description: "AgentAd\u573A\u666F\u7684\u5546\u5BB6\u4F18\u60E0\u914D\u7F6E\u6A21\u5757\
+  \u3002\u5546\u5BB6\u521B\u5EFAAgent\u5E76\u914D\u7F6E\u53EF\u63D0\u4F9B\u7684\u4F18\
+  \u60E0\u65B9\u6848\uFF0C\n\u5305\u62EC\u4F18\u60E0\u7C7B\u578B(\u6298\u6263\u3001\
+  \u6EE1\u51CF\u3001\u8D60\u54C1\u7B49)\u3001\u9002\u7528\u8303\u56F4\u3001\u6709\u6548\
+  \u671F\u3001\u5E93\u5B58\u6570\u91CF\u7B49\u3002\n\u901A\u8FC7AI\u670D\u52A1(AI003)\u5C06\
+  \u5546\u5BB6\u7684\u81EA\u7136\u8BED\u8A00\u63CF\u8FF0\u63D0\u70BC\u4E3A\u7ED3\u6784\
+  \u5316\u7684\u4F18\u60E0\u4F9B\u7ED9\u4FE1\u606F\uFF0C\n\u7528\u4E8E\u5339\u914D\
+  \u6D88\u8D39\u9700\u6C42\u548C\u81EA\u52A8\u5316\u4F18\u60E0\u534F\u5546\u3002\n"
+id: ISSUE-AD002
+issue_number: 1002
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-C006
+- ISSUE-AI003
+slug: merchant-offer-config
+status: pending
+title: "\u5546\u5BB6\u4F18\u60E0\u914D\u7F6E"

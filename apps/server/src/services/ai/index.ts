@@ -75,3 +75,13 @@ export {
   ClarificationRequest,
   ClarificationResponse,
 } from './clarificationService';
+
+// Consumer Demand AI Integration (ISSUE-AD001)
+export {
+  extractConsumerDemand,
+  needsClarification,
+  generateClarificationQuestions,
+  processNaturalLanguageDemand,
+  ExtractedDemandData,
+} from './consumerDemandAI';
+>>>>>>> issue/issue-ad001

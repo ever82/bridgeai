@@ -4,7 +4,7 @@
  * Provides Zod-based validation for request body, params, and query.
  */
 import type { Request, Response, NextFunction } from 'express';
-import { ZodError, ZodSchema, ZodTypeAny } from 'zod';
+import { ZodError, ZodSchema, ZodType, ZodTypeAny } from 'zod';
 import { ValidationError } from '../errors';
 import { getRequestContext } from './requestContext';
 
@@ -17,10 +17,10 @@ export type ValidationTarget = 'body' | 'params' | 'query' | 'headers';
  * Validation schema configuration
  */
 export interface ValidationSchemas {
-  body?: ZodSchema<ZodTypeAny>;
-  params?: ZodSchema<ZodTypeAny>;
-  query?: ZodSchema<ZodTypeAny>;
-  headers?: ZodSchema<ZodTypeAny>;
+  body?: ZodType<any, any, any>;
+  params?: ZodType<any, any, any>;
+  query?: ZodType<any, any, any>;
+  headers?: ZodType<any, any, any>;
 }
 
 /**
@@ -36,13 +36,21 @@ function formatZodError(error: ZodError): string {
  * Create validation error from Zod error
  */
 function createValidationError(error: ZodError, target: ValidationTarget): ValidationError {
-  const details = error.errors.map((err) => ({
-    field: err.path.join('.'),
-    message: err.message,
-    code: err.code,
-    ...(err.expected && { expected: err.expected }),
-    ...(err.received && { received: err.received }),
-  }));
+  const details = error.errors.map((err) => {
+    const detail: Record<string, any> = {
+      field: err.path.join('.'),
+      message: err.message,
+      code: err.code,
+    };
+    // Only add expected/received for types that have them
+    if ('expected' in err) {
+      detail.expected = err.expected;
+    }
+    if ('received' in err) {
+      detail.received = err.received;
+    }
+    return detail;
+  });
 
   return new ValidationError(
     `Validation failed for ${target}: ${formatZodError(error)}`,
@@ -55,7 +63,7 @@ function createValidationError(error: ZodError, target: ValidationTarget): Valid
  */
 function validateTarget<T>(
   data: unknown,
-  schema: ZodSchema<T> | undefined,
+  schema: ZodType<T, any, any> | undefined,
   target: ValidationTarget
 ): T | undefined {
   if (!schema) return undefined;
@@ -82,7 +90,7 @@ function validateTarget<T>(
 export function validate(schemas: ValidationSchemas) {
   return (req: Request, _res: Response, next: NextFunction): void => {
     try {
-      const context = getRequestContext(req);
+      const context = getRequestContext();
 
       // Validate each target
       const validatedBody = validateTarget(req.body, schemas.body, 'body');
@@ -98,12 +106,13 @@ export function validate(schemas: ValidationSchemas) {
         req.params = validatedParams as Record<string, string>;
       }
       if (validatedQuery !== undefined) {
-        req.query = validatedQuery as Record<string, unknown>;
+        req.query = validatedQuery as any;
       }
 
       // Log validation success in debug mode
       if (context && process.env.NODE_ENV === 'development') {
-        context.logDebug('Request validation passed', {
+        // eslint-disable-next-line no-console
+        console.log('Request validation passed', {
           hasBody: !!schemas.body,
           hasParams: !!schemas.params,
           hasQuery: !!schemas.query,
@@ -124,7 +133,7 @@ export function validate(schemas: ValidationSchemas) {
  * @example
  * router.post('/users', validateBody(createUserSchema), userController.create);
  */
-export function validateBody<T>(schema: ZodSchema<T>) {
+export function validateBody<T>(schema: ZodType<T, any, any>) {
   return validate({ body: schema });
 }
 
@@ -134,7 +143,7 @@ export function validateBody<T>(schema: ZodSchema<T>) {
  * @example
  * router.get('/users/:id', validateParams(userIdParamsSchema), userController.getById);
  */
-export function validateParams<T>(schema: ZodSchema<T>) {
+export function validateParams<T>(schema: ZodType<T, any, any>) {
   return validate({ params: schema });
 }
 
@@ -144,7 +153,7 @@ export function validateParams<T>(schema: ZodSchema<T>) {
  * @example
  * router.get('/users', validateQuery(listUsersQuerySchema), userController.list);
  */
-export function validateQuery<T>(schema: ZodSchema<T>) {
+export function validateQuery<T>(schema: ZodType<T, any, any>) {
   return validate({ query: schema });
 }
 

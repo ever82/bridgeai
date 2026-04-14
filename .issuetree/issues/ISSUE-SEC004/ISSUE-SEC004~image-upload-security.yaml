@@ -1,139 +1,140 @@
----
-id: "ISSUE-SEC004"
-issue_number: 404
-title: "图片上传安全检查"
-slug: "image-upload-security"
-status: "pending"
-description: |
-  实现图片上传的安全检查机制，包括文件类型验证、大小限制、
-  恶意内容检测、病毒扫描、图片元数据清理等，确保上传的图片文件安全可靠。
-prerequisites:
-  - "ISSUE-VS003"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-SEC004~c1"
-    name: "文件类型与大小验证"
-    description: |
-      基础上传验证:
-      - 允许的图片格式(白名单)
-      - 文件大小限制
-      - 文件头Magic Number校验
-      - 双重扩展名检查
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查文件上传验证，验证只允许jpg/png/gif/webp，文件大小限制，确认Magic Number校验文件真实类型"
-        context_files: ["apps/server/src/middleware/upload.ts", "apps/server/src/utils/fileValidator.ts"]
-        
-
-  - id: "ISSUE-SEC004~c2"
-    name: "图片内容安全检测"
-    description: |
-      内容安全:
-      - 色情图片检测
-      - 暴力恐怖图片识别
-      - 敏感政治内容检测
-      - 图片分类与标签
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查图片内容检测，验证集成阿里云/腾讯云内容安全API或自研AI模型，确认色情/暴力检测准确率高"
-        context_files: ["apps/server/src/services/imageModeration.ts", "apps/server/src/services/ai/imageAnalysis.ts"]
-        
-
-  - id: "ISSUE-SEC004~c3"
-    name: "病毒与恶意代码扫描"
-    description: |
-      安全扫描:
-      - 文件病毒扫描
-      - 嵌入式恶意代码检测
-      - 可执行文件伪装检查
-      - 扫描结果缓存
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查病毒扫描，验证集成ClamAV或其他杀毒引擎，确认检测EICAR测试文件，扫描结果有缓存"
-        context_files: ["apps/server/src/services/virusScan.ts", "apps/server/src/config/clamav.ts"]
-        
-
-  - id: "ISSUE-SEC004~c4"
-    name: "图片元数据处理"
-    description: |
-      元数据安全:
-      - EXIF数据清理
-      - GPS位置信息移除
-      - 拍摄设备信息清除
-      - 缩略图重建
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查图片元数据处理，验证使用sharp/exiftool清理EXIF，确认GPS和设备信息已移除，保留必要的方向信息"
-        context_files: ["apps/server/src/utils/imageProcessor.ts"]
-        
-
-  - id: "ISSUE-SEC004~c5"
-    name: "存储与访问安全"
-    description: |
-      安全存储:
-      - 文件名随机化重命名
-      - 分离存储目录结构
-      - 存储路径不直接暴露
-      - CDN访问控制
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查存储安全，验证文件名使用UUID随机化，确认存储路径按日期分片，通过代理访问而非直接URL"
-        context_files: ["apps/server/src/services/storage.ts", "apps/server/src/routes/images.ts"]
-        
-
-  - id: "ISSUE-SEC004~c6"
-    name: "上传审计与违规处理"
-    description: |
-      审计与管理:
-      - 上传记录审计日志
-      - 违规图片自动标记
-      - 用户上传历史追踪
-      - 违规用户限制上传
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查上传审计，验证有上传日志记录，违规图片标记并隔离，确认违规用户被限制上传权限"
-        context_files: ["apps/server/src/services/uploadAudit.ts", "apps/server/src/models/uploadLog.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u57FA\u7840\u4E0A\u4F20\u9A8C\u8BC1:\n- \u5141\u8BB8\u7684\u56FE\u7247\
+    \u683C\u5F0F(\u767D\u540D\u5355)\n- \u6587\u4EF6\u5927\u5C0F\u9650\u5236\n- \u6587\
+    \u4EF6\u5934Magic Number\u6821\u9A8C\n- \u53CC\u91CD\u6269\u5C55\u540D\u68C0\u67E5\
+    \n"
+  id: ISSUE-SEC004~c1
+  name: "\u6587\u4EF6\u7C7B\u578B\u4E0E\u5927\u5C0F\u9A8C\u8BC1"
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/middleware/upload.ts
+      - apps/server/src/utils/fileValidator.ts
+      prompt: "\u68C0\u67E5\u6587\u4EF6\u4E0A\u4F20\u9A8C\u8BC1\uFF0C\u9A8C\u8BC1\u53EA\
+        \u5141\u8BB8jpg/png/gif/webp\uFF0C\u6587\u4EF6\u5927\u5C0F\u9650\u5236\uFF0C\
+        \u786E\u8BA4Magic Number\u6821\u9A8C\u6587\u4EF6\u771F\u5B9E\u7C7B\u578B"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5185\u5BB9\u5B89\u5168:\n- \u8272\u60C5\u56FE\u7247\u68C0\u6D4B\n\
+    - \u66B4\u529B\u6050\u6016\u56FE\u7247\u8BC6\u522B\n- \u654F\u611F\u653F\u6CBB\
+    \u5185\u5BB9\u68C0\u6D4B\n- \u56FE\u7247\u5206\u7C7B\u4E0E\u6807\u7B7E\n"
+  id: ISSUE-SEC004~c2
+  name: "\u56FE\u7247\u5185\u5BB9\u5B89\u5168\u68C0\u6D4B"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/imageModeration.ts
+      - apps/server/src/services/ai/imageAnalysis.ts
+      prompt: "\u68C0\u67E5\u56FE\u7247\u5185\u5BB9\u68C0\u6D4B\uFF0C\u9A8C\u8BC1\u96C6\
+        \u6210\u963F\u91CC\u4E91/\u817E\u8BAF\u4E91\u5185\u5BB9\u5B89\u5168API\u6216\
+        \u81EA\u7814AI\u6A21\u578B\uFF0C\u786E\u8BA4\u8272\u60C5/\u66B4\u529B\u68C0\
+        \u6D4B\u51C6\u786E\u7387\u9AD8"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B89\u5168\u626B\u63CF:\n- \u6587\u4EF6\u75C5\u6BD2\u626B\u63CF\n\
+    - \u5D4C\u5165\u5F0F\u6076\u610F\u4EE3\u7801\u68C0\u6D4B\n- \u53EF\u6267\u884C\
+    \u6587\u4EF6\u4F2A\u88C5\u68C0\u67E5\n- \u626B\u63CF\u7ED3\u679C\u7F13\u5B58\n"
+  id: ISSUE-SEC004~c3
+  name: "\u75C5\u6BD2\u4E0E\u6076\u610F\u4EE3\u7801\u626B\u63CF"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/virusScan.ts
+      - apps/server/src/config/clamav.ts
+      prompt: "\u68C0\u67E5\u75C5\u6BD2\u626B\u63CF\uFF0C\u9A8C\u8BC1\u96C6\u6210\
+        ClamAV\u6216\u5176\u4ED6\u6740\u6BD2\u5F15\u64CE\uFF0C\u786E\u8BA4\u68C0\u6D4B\
+        EICAR\u6D4B\u8BD5\u6587\u4EF6\uFF0C\u626B\u63CF\u7ED3\u679C\u6709\u7F13\u5B58"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5143\u6570\u636E\u5B89\u5168:\n- EXIF\u6570\u636E\u6E05\u7406\n\
+    - GPS\u4F4D\u7F6E\u4FE1\u606F\u79FB\u9664\n- \u62CD\u6444\u8BBE\u5907\u4FE1\u606F\
+    \u6E05\u9664\n- \u7F29\u7565\u56FE\u91CD\u5EFA\n"
+  id: ISSUE-SEC004~c4
+  name: "\u56FE\u7247\u5143\u6570\u636E\u5904\u7406"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/utils/imageProcessor.ts
+      prompt: "\u68C0\u67E5\u56FE\u7247\u5143\u6570\u636E\u5904\u7406\uFF0C\u9A8C\u8BC1\
+        \u4F7F\u7528sharp/exiftool\u6E05\u7406EXIF\uFF0C\u786E\u8BA4GPS\u548C\u8BBE\
+        \u5907\u4FE1\u606F\u5DF2\u79FB\u9664\uFF0C\u4FDD\u7559\u5FC5\u8981\u7684\u65B9\
+        \u5411\u4FE1\u606F"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B89\u5168\u5B58\u50A8:\n- \u6587\u4EF6\u540D\u968F\u673A\u5316\u91CD\
+    \u547D\u540D\n- \u5206\u79BB\u5B58\u50A8\u76EE\u5F55\u7ED3\u6784\n- \u5B58\u50A8\
+    \u8DEF\u5F84\u4E0D\u76F4\u63A5\u66B4\u9732\n- CDN\u8BBF\u95EE\u63A7\u5236\n"
+  id: ISSUE-SEC004~c5
+  name: "\u5B58\u50A8\u4E0E\u8BBF\u95EE\u5B89\u5168"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/storage.ts
+      - apps/server/src/routes/images.ts
+      prompt: "\u68C0\u67E5\u5B58\u50A8\u5B89\u5168\uFF0C\u9A8C\u8BC1\u6587\u4EF6\u540D\
+        \u4F7F\u7528UUID\u968F\u673A\u5316\uFF0C\u786E\u8BA4\u5B58\u50A8\u8DEF\u5F84\
+        \u6309\u65E5\u671F\u5206\u7247\uFF0C\u901A\u8FC7\u4EE3\u7406\u8BBF\u95EE\u800C\
+        \u975E\u76F4\u63A5URL"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5BA1\u8BA1\u4E0E\u7BA1\u7406:\n- \u4E0A\u4F20\u8BB0\u5F55\u5BA1\u8BA1\
+    \u65E5\u5FD7\n- \u8FDD\u89C4\u56FE\u7247\u81EA\u52A8\u6807\u8BB0\n- \u7528\u6237\
+    \u4E0A\u4F20\u5386\u53F2\u8FFD\u8E2A\n- \u8FDD\u89C4\u7528\u6237\u9650\u5236\u4E0A\
+    \u4F20\n"
+  id: ISSUE-SEC004~c6
+  name: "\u4E0A\u4F20\u5BA1\u8BA1\u4E0E\u8FDD\u89C4\u5904\u7406"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/uploadAudit.ts
+      - apps/server/src/models/uploadLog.ts
+      prompt: "\u68C0\u67E5\u4E0A\u4F20\u5BA1\u8BA1\uFF0C\u9A8C\u8BC1\u6709\u4E0A\u4F20\
+        \u65E5\u5FD7\u8BB0\u5F55\uFF0C\u8FDD\u89C4\u56FE\u7247\u6807\u8BB0\u5E76\u9694\
+        \u79BB\uFF0C\u786E\u8BA4\u8FDD\u89C4\u7528\u6237\u88AB\u9650\u5236\u4E0A\u4F20\
+        \u6743\u9650"
+current_task: null
+description: "\u5B9E\u73B0\u56FE\u7247\u4E0A\u4F20\u7684\u5B89\u5168\u68C0\u67E5\u673A\
+  \u5236\uFF0C\u5305\u62EC\u6587\u4EF6\u7C7B\u578B\u9A8C\u8BC1\u3001\u5927\u5C0F\u9650\
+  \u5236\u3001\n\u6076\u610F\u5185\u5BB9\u68C0\u6D4B\u3001\u75C5\u6BD2\u626B\u63CF\
+  \u3001\u56FE\u7247\u5143\u6570\u636E\u6E05\u7406\u7B49\uFF0C\u786E\u4FDD\u4E0A\u4F20\
+  \u7684\u56FE\u7247\u6587\u4EF6\u5B89\u5168\u53EF\u9760\u3002\n"
+id: ISSUE-SEC004
+issue_number: 404
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-VS003
+slug: image-upload-security
+status: pending
+title: "\u56FE\u7247\u4E0A\u4F20\u5B89\u5168\u68C0\u67E5"

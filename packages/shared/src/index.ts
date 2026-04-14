@@ -4,3 +4,4 @@ export * from './schemas';
 export * from './utils';
 export * from './env';
 export * from './config/scenes';
+export * from './protocols/agentMessage';

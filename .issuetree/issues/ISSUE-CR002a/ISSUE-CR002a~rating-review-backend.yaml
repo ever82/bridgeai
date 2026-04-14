@@ -1,87 +1,95 @@
----
-id: "ISSUE-CR002a"
-issue_number: 602.1
-title: "评分与评价系统 - 后端API"
-slug: "rating-review-backend"
-status: "pending"
-description: |
-  实现评分与评价系统的后端API部分，包括数据模型设计和核心API接口。
-  提供评价的提交、查询、回复、删除等基础功能，以及评价审核与反作弊机制。
-  本Issue是ISSUE-CR002的拆分部分，专注于后端实现。
-prerequisites:
-  - "ISSUE-CR001"
-  - "ISSUE-COM002c"
-  - "ISSUE-A003"
-parent_issue: "ISSUE-CR002"
-part_number: 1
-total_parts: 3
-estimated_lines: 900
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-CR002a~c1"
-    name: "评价数据模型"
-    description: |
-      评价系统数据库设计:
-      - Review 表设计(评价ID、评价者、被评价者、评分、内容、场景类型)
-      - ReviewReply 表设计(评价回复)
-      - ReviewReport 表设计(评价举报)
-      - ReviewStats 表设计(评价统计缓存)
-      - 索引优化(按用户ID和场景类型查询)
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查评价数据模型，验证Prisma schema中有Review、ReviewReply、ReviewReport、ReviewStats模型，确认关联关系和索引"
-        context_files: ["packages/database/prisma/schema.prisma", "packages/shared/src/types/review.ts"]
-        
-
-  - id: "ISSUE-CR002a~c2"
-    name: "双向评分API"
-    description: |
-      评分提交和查询接口:
-      - POST /api/v1/reviews - 提交评价
-      - GET /api/v1/reviews/received - 获取收到的评价
-      - GET /api/v1/reviews/given - 获取发出的评价
-      - PUT /api/v1/reviews/:id/reply - 回复评价
-      - DELETE /api/v1/reviews/:id - 删除评价(管理员)
-      - 评价权限验证(交易完成后才可评价)
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查评分API，验证有reviews端点支持CRUD操作，确认权限控制和交易关联验证"
-        context_files: ["apps/server/src/routes/reviews.ts", "apps/server/src/services/reviewService.ts"]
-        
-
-  - id: "ISSUE-CR002a~c3"
-    name: "评价审核与反作弊"
-    description: |
-      评价内容审核机制:
-      - 敏感词过滤和AI内容审核
-      - 恶意刷评价检测(同一用户多次评价)
-      - 评价真实性验证(需有实际交互)
-      - 申诉和举报处理流程
-      - 异常评价自动标记
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查评价审核机制，验证有内容审核服务和反作弊检测，确认敏感词过滤和异常评价标记逻辑"
-        context_files: ["apps/server/src/services/reviewModerationService.ts", "apps/server/src/services/reviewAntiCheatService.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u8BC4\u4EF7\u7CFB\u7EDF\u6570\u636E\u5E93\u8BBE\u8BA1:\n- Review\
+    \ \u8868\u8BBE\u8BA1(\u8BC4\u4EF7ID\u3001\u8BC4\u4EF7\u8005\u3001\u88AB\u8BC4\u4EF7\
+    \u8005\u3001\u8BC4\u5206\u3001\u5185\u5BB9\u3001\u573A\u666F\u7C7B\u578B)\n- ReviewReply\
+    \ \u8868\u8BBE\u8BA1(\u8BC4\u4EF7\u56DE\u590D)\n- ReviewReport \u8868\u8BBE\u8BA1\
+    (\u8BC4\u4EF7\u4E3E\u62A5)\n- ReviewStats \u8868\u8BBE\u8BA1(\u8BC4\u4EF7\u7EDF\
+    \u8BA1\u7F13\u5B58)\n- \u7D22\u5F15\u4F18\u5316(\u6309\u7528\u6237ID\u548C\u573A\
+    \u666F\u7C7B\u578B\u67E5\u8BE2)\n"
+  id: ISSUE-CR002a~c1
+  name: "\u8BC4\u4EF7\u6570\u636E\u6A21\u578B"
+  verification:
+    ai:
+      context_files:
+      - packages/database/prisma/schema.prisma
+      - packages/shared/src/types/review.ts
+      prompt: "\u68C0\u67E5\u8BC4\u4EF7\u6570\u636E\u6A21\u578B\uFF0C\u9A8C\u8BC1\
+        Prisma schema\u4E2D\u6709Review\u3001ReviewReply\u3001ReviewReport\u3001ReviewStats\u6A21\
+        \u578B\uFF0C\u786E\u8BA4\u5173\u8054\u5173\u7CFB\u548C\u7D22\u5F15"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u8BC4\u5206\u63D0\u4EA4\u548C\u67E5\u8BE2\u63A5\u53E3:\n- POST /api/v1/reviews\
+    \ - \u63D0\u4EA4\u8BC4\u4EF7\n- GET /api/v1/reviews/received - \u83B7\u53D6\u6536\
+    \u5230\u7684\u8BC4\u4EF7\n- GET /api/v1/reviews/given - \u83B7\u53D6\u53D1\u51FA\
+    \u7684\u8BC4\u4EF7\n- PUT /api/v1/reviews/:id/reply - \u56DE\u590D\u8BC4\u4EF7\
+    \n- DELETE /api/v1/reviews/:id - \u5220\u9664\u8BC4\u4EF7(\u7BA1\u7406\u5458)\n\
+    - \u8BC4\u4EF7\u6743\u9650\u9A8C\u8BC1(\u4EA4\u6613\u5B8C\u6210\u540E\u624D\u53EF\
+    \u8BC4\u4EF7)\n"
+  id: ISSUE-CR002a~c2
+  name: "\u53CC\u5411\u8BC4\u5206API"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/reviews.ts
+      - apps/server/src/services/reviewService.ts
+      prompt: "\u68C0\u67E5\u8BC4\u5206API\uFF0C\u9A8C\u8BC1\u6709reviews\u7AEF\u70B9\
+        \u652F\u6301CRUD\u64CD\u4F5C\uFF0C\u786E\u8BA4\u6743\u9650\u63A7\u5236\u548C\
+        \u4EA4\u6613\u5173\u8054\u9A8C\u8BC1"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u8BC4\u4EF7\u5185\u5BB9\u5BA1\u6838\u673A\u5236:\n- \u654F\u611F\u8BCD\
+    \u8FC7\u6EE4\u548CAI\u5185\u5BB9\u5BA1\u6838\n- \u6076\u610F\u5237\u8BC4\u4EF7\
+    \u68C0\u6D4B(\u540C\u4E00\u7528\u6237\u591A\u6B21\u8BC4\u4EF7)\n- \u8BC4\u4EF7\
+    \u771F\u5B9E\u6027\u9A8C\u8BC1(\u9700\u6709\u5B9E\u9645\u4EA4\u4E92)\n- \u7533\
+    \u8BC9\u548C\u4E3E\u62A5\u5904\u7406\u6D41\u7A0B\n- \u5F02\u5E38\u8BC4\u4EF7\u81EA\
+    \u52A8\u6807\u8BB0\n"
+  id: ISSUE-CR002a~c3
+  name: "\u8BC4\u4EF7\u5BA1\u6838\u4E0E\u53CD\u4F5C\u5F0A"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/reviewModerationService.ts
+      - apps/server/src/services/reviewAntiCheatService.ts
+      prompt: "\u68C0\u67E5\u8BC4\u4EF7\u5BA1\u6838\u673A\u5236\uFF0C\u9A8C\u8BC1\u6709\
+        \u5185\u5BB9\u5BA1\u6838\u670D\u52A1\u548C\u53CD\u4F5C\u5F0A\u68C0\u6D4B\uFF0C\
+        \u786E\u8BA4\u654F\u611F\u8BCD\u8FC7\u6EE4\u548C\u5F02\u5E38\u8BC4\u4EF7\u6807\
+        \u8BB0\u903B\u8F91"
+current_task: null
+description: "\u5B9E\u73B0\u8BC4\u5206\u4E0E\u8BC4\u4EF7\u7CFB\u7EDF\u7684\u540E\u7AEF\
+  API\u90E8\u5206\uFF0C\u5305\u62EC\u6570\u636E\u6A21\u578B\u8BBE\u8BA1\u548C\u6838\
+  \u5FC3API\u63A5\u53E3\u3002\n\u63D0\u4F9B\u8BC4\u4EF7\u7684\u63D0\u4EA4\u3001\u67E5\
+  \u8BE2\u3001\u56DE\u590D\u3001\u5220\u9664\u7B49\u57FA\u7840\u529F\u80FD\uFF0C\u4EE5\
+  \u53CA\u8BC4\u4EF7\u5BA1\u6838\u4E0E\u53CD\u4F5C\u5F0A\u673A\u5236\u3002\n\u672C\
+  Issue\u662FISSUE-CR002\u7684\u62C6\u5206\u90E8\u5206\uFF0C\u4E13\u6CE8\u4E8E\u540E\
+  \u7AEF\u5B9E\u73B0\u3002\n"
+estimated_lines: 900
+id: ISSUE-CR002a
+issue_number: 602.1
+logic: sufficient_necessary
+parent_issue: ISSUE-CR002
+part_number: 1
+prerequisites:
+- ISSUE-CR001
+- ISSUE-COM002c
+- ISSUE-A003
+slug: rating-review-backend
+status: pending
+title: "\u8BC4\u5206\u4E0E\u8BC4\u4EF7\u7CFB\u7EDF - \u540E\u7AEFAPI"
+total_parts: 3

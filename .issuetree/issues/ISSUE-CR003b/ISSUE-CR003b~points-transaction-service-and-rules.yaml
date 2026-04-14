@@ -1,62 +1,77 @@
----
-id: "ISSUE-CR003b"
-issue_number: 603.2
-title: "积分交易核心服务与规则配置"
-slug: "points-transaction-service-and-rules"
-status: "pending"
-description: |
-  积分交易核心服务实现，包含积分获取、消耗、冻结、转账等操作的原子性实现，
-  以及积分规则配置系统(获取规则、消耗规则、上限控制等)。
-  作为积分系统的服务层，提供完整的积分操作API。
-prerequisites:
-  - "ISSUE-CR003a"
-created_at: "2026-04-09"
-logic: sufficient_necessary
+created_at: '2026-04-09'
 criteria:
-  - id: "ISSUE-CR003b~c1"
-    name: "积分交易核心服务"
-    description: |
-      积分操作原子性实现:
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: '积分操作原子性实现:
+
       - 积分获取接口(任务奖励、签到等)
+
       - 积分消耗接口(购买服务、打赏等)
+
       - 积分冻结/解冻(交易担保)
+
       - 积分转账(用户间转移)
+
       - 事务安全(防止超卖和并发问题)
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
+
+      '
+    id: ISSUE-CR003b~c1
+    name: 积分交易核心服务
     verification:
       ai:
-        prompt: "检查积分交易服务，验证有PointsService类实现获取、消耗、冻结、转账方法，确认事务和并发控制"
-        context_files: ["apps/server/src/services/pointsService.ts", "apps/server/src/services/pointsTransactionService.ts"]
-        
+        context_files:
+          - apps/server/src/services/pointsService.ts
+          - apps/server/src/services/pointsTransactionService.ts
+        prompt: 检查积分交易服务，验证有PointsService类实现获取、消耗、冻结、转账方法，确认事务和并发控制
+    status: passed
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: '积分获取和消耗规则:
 
-  - id: "ISSUE-CR003b~c2"
-    name: "积分规则配置"
-    description: |
-      积分获取和消耗规则:
       - 获取规则配置(签到、分享、完成任务等)
+
       - 消耗规则配置(查看照片、发起匹配等)
+
       - 每日/每周获取上限
+
       - 积分价值换算(人民币->积分)
+
       - 规则动态调整接口(管理员)
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
+
+      '
+    id: ISSUE-CR003b~c2
+    name: 积分规则配置
+    status: passed
     verification:
       ai:
-        prompt: "检查积分规则配置，验证有PointsRule配置表和RuleEngine，确认获取/消耗规则和上限控制"
-        context_files: ["apps/server/src/config/pointsRules.ts", "apps/server/src/services/pointsRuleEngine.ts"]
-        
+        context_files:
+          - apps/server/src/config/pointsRules.ts
+          - apps/server/src/services/pointsRuleEngine.ts
+        prompt: 检查积分规则配置，验证有PointsRule配置表和RuleEngine，确认获取/消耗规则和上限控制
+current_task: TASK-1775845414
+description: '积分交易核心服务实现，包含积分获取、消耗、冻结、转账等操作的原子性实现，
 
-parent_issue: "ISSUE-CR003"
-part_of: "积分系统基础与交易记录拆分"
+  以及积分规则配置系统(获取规则、消耗规则、上限控制等)。
+
+  作为积分系统的服务层，提供完整的积分操作API。
+
+  '
 estimated_lines: 350
+id: ISSUE-CR003b
+issue_number: 603.2
+logic: sufficient_necessary
+parent_issue: ISSUE-CR003
+part_of: 积分系统基础与交易记录拆分
+prerequisites:
+  - ISSUE-CR003a
+slug: points-transaction-service-and-rules
+status: implemented
+title: 积分交易核心服务与规则配置

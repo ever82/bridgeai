@@ -1,0 +1,20 @@
+---
+id: "TASK-VS001-001"
+issue_id: "ISSUE-VS001"
+title: "VisionShare需求发布功能完整实现"
+description: |
+  实现VisionShare场景的需求发布完整功能，包括：
+  1. 移动端发布表单UI (PublishScreen, PublishForm组件)
+  2. AI需求提炼服务 (自然语言解析、标签生成)
+  3. 数据库模型 (VisionShare任务Schema、状态机)
+  4. 发布验证逻辑 (信用分、积分、内容过滤)
+  5. 后端API (发布、草稿、编辑、取消、状态推送)
+  6. 成功反馈页面 (确认页、分享功能)
+status: "completed"
+created_at: "2026-04-13T10:00:00+08:00"
+started_at: "2026-04-13T10:00:00+08:00"
+completed_at: "2026-04-13T11:30:00+08:00"
+time_limit_minutes: 90
+execution_time_minutes: 90
+result: "success"
+notes: "All 6 acceptance criteria implemented successfully"

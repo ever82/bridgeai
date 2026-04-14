@@ -3,7 +3,7 @@
  * 能力类型定义
  */
 
-import { SceneId } from '../scene';
+import { SceneId } from './scene';
 
 // ============================================
 // Capability Status

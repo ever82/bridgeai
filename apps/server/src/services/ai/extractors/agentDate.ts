@@ -11,6 +11,8 @@ import { logger } from '../../../utils/logger';
  * AgentDate Specific Fields
  */
 export interface AgentDateFields {
+  title?: string;
+  description?: string;
   gender: string;
   ageRange: { min?: number; max?: number };
   heightRange: { min?: number; max?: number };

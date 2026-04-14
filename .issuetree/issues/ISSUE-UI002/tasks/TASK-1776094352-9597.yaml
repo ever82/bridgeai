@@ -1,0 +1,18 @@
+task:
+  id: TASK-1776094352-9597
+  issue_id: ISSUE-UI002
+  result: issue_already_accepted
+  retry:
+    attempt: 1
+    next_task: null
+    previous_task: null
+  session:
+    claude_session_id: 935fac80-470e-4bdd-8ebf-921b38934853
+    claude_session_name: TASK-1776094352-9597
+    resumed_at: null
+    started_at: '2026-04-13T23:32:34.758432+08:00'
+    tmux_session: task-task-1776094352-9597
+    worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-UI002
+  status: completed
+  timeout_minutes: 30
+  type: accept

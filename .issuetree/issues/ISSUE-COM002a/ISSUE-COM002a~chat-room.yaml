@@ -1,9 +1,6 @@
----
-id: "ISSUE-COM002a"
-issue_number: 503
 title: "聊天房间基础架构"
 slug: "chat-room"
-status: "pending"
+status: accepted
 description: |
   实现聊天房间基础架构，支持多人群聊、私聊、
   房间类型管理和参与者管理。
@@ -20,7 +17,7 @@ criteria:
       - 房间类型: private, group
       - 房间元数据
       - 房间设置
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: required
@@ -31,7 +28,6 @@ criteria:
       ai:
         prompt: "检查聊天房间模型，验证 ChatRoom 模型包含 type, participants, settings 字段"
         context_files: ["prisma/schema.prisma"]
-        
 
   - id: "ISSUE-COM002a~c2"
     name: "房间创建 API"
@@ -41,7 +37,7 @@ criteria:
       - 创建群聊房间
       - 房间创建验证
       - 初始化房间设置
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: required
@@ -52,7 +48,6 @@ criteria:
       ai:
         prompt: "检查房间创建 API，验证有 /api/v1/chat/rooms POST 端点"
         context_files: ["apps/server/src/routes/chat.ts"]
-        
 
   - id: "ISSUE-COM002a~c3"
     name: "参与者管理"
@@ -62,7 +57,7 @@ criteria:
       - 移除参与者
       - 参与者角色
       - 参与者权限
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: required
@@ -73,7 +68,6 @@ criteria:
       ai:
         prompt: "检查参与者管理，验证有 RoomParticipant 模型和相关 API"
         context_files: ["apps/server/src/services/participantService.ts"]
-        
 
   - id: "ISSUE-COM002a~c4"
     name: "房间列表和查询"
@@ -83,7 +77,7 @@ criteria:
       - 房间搜索
       - 房间排序
       - 房间筛选
-    status: "pending"
+    status: "completed"
     coverage:
       unit: required
       integration: required
@@ -94,7 +88,6 @@ criteria:
       ai:
         prompt: "检查房间查询，验证有 /api/v1/chat/rooms GET 端点返回用户房间列表"
         context_files: ["apps/server/src/routes/chat.ts"]
-        
 
   - id: "ISSUE-COM002a~c5"
     name: "移动端房间列表界面"
@@ -104,7 +97,7 @@ criteria:
       - 最后消息预览
       - 未读数显示
       - 房间头像
-    status: "pending"
+    status: "completed"
     coverage:
       unit: not_needed
       integration: required
@@ -115,4 +108,6 @@ criteria:
       ai:
         prompt: "检查房间列表界面，验证有 ChatRoomList 组件展示房间和最后消息"
         context_files: ["apps/mobile/src/components/Chat/ChatRoomList.tsx"]
-        
+id: ISSUE-COM002a
+issue_number: 503
+current_task: TASK-1776087284-6609

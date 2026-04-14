@@ -101,7 +101,11 @@ export async function extractL2FromL3(
       model: response.model,
       latencyMs,
       success: true,
-      tokenUsage: response.usage || { input: 0, output: 0, total: 0 },
+      tokenUsage: {
+        input: response.usage?.promptTokens || 0,
+        output: response.usage?.completionTokens || 0,
+        total: response.usage?.totalTokens || 0,
+      },
       costUsd: response.cost || 0,
     });
 

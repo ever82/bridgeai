@@ -1,36 +1,33 @@
-id: ISSUE-DESIGN-4
-issue_number: 4
-title: 补充完善 Issues
-slug: supplement-issues
-status: implemented
-description: |
-  回顾已生成的 Issues 列表，检查是否有遗漏。
-  补充缺失的 issue 或完善现有 issue 的描述、验收标准、依赖关系。
-  此 issue 长期开放，在开发阶段也会不断通过此 issue 添加新的设计。
-prerequisites:
-  - ISSUE-DESIGN-3
 created_at: '2026-04-08'
-passed_at: null
-logic: sufficient_necessary
 criteria: []
+current_task: null
+description: "\u56DE\u987E\u5DF2\u751F\u6210\u7684 Issues \u5217\u8868\uFF0C\u68C0\
+  \u67E5\u662F\u5426\u6709\u9057\u6F0F\u3002\n\u8865\u5145\u7F3A\u5931\u7684 issue\
+  \ \u6216\u5B8C\u5584\u73B0\u6709 issue \u7684\u63CF\u8FF0\u3001\u9A8C\u6536\u6807\
+  \u51C6\u3001\u4F9D\u8D56\u5173\u7CFB\u3002\n\u6B64 issue \u957F\u671F\u5F00\u653E\
+  \uFF0C\u5728\u5F00\u53D1\u9636\u6BB5\u4E5F\u4F1A\u4E0D\u65AD\u901A\u8FC7\u6B64 issue\
+  \ \u6DFB\u52A0\u65B0\u7684\u8BBE\u8BA1\u3002\n"
+id: ISSUE-DESIGN-4
 implementation:
-  task_id: TASK-3
   completed_at: '2026-04-12T00:00:00+08:00'
   execution_time_minutes: 30
+  notes: "Re-implemented ISSUE-DESIGN-4 with infrastructure issues:\n- Created 6 new\
+    \ infrastructure issues (INF001-INF006):\n  * ISSUE-INF001: API Gateway\n  * ISSUE-INF002:\
+    \ Redis Cache\n  * ISSUE-INF003: Job Queue\n  * ISSUE-INF004: DB Migration\n \
+    \ * ISSUE-INF005: Push Notification\n  * ISSUE-INF006: Email Service\n- Updated\
+    \ IssueTree.md with Infrastructure section\n- Added dependencies in Mermaid graph\n\
+    - Added Infrastructure table with complexity and dependencies\n"
   result: success
-  notes: |
-    Re-implemented ISSUE-DESIGN-4 with infrastructure issues:
-    - Created 6 new infrastructure issues (INF001-INF006):
-      * ISSUE-INF001: API Gateway
-      * ISSUE-INF002: Redis Cache
-      * ISSUE-INF003: Job Queue
-      * ISSUE-INF004: DB Migration
-      * ISSUE-INF005: Push Notification
-      * ISSUE-INF006: Email Service
-    - Updated IssueTree.md with Infrastructure section
-    - Added dependencies in Mermaid graph
-    - Added Infrastructure table with complexity and dependencies
-test_passed: true
-test_duration_seconds: 0
+  task_id: TASK-3
+issue_number: 4
+logic: sufficient_necessary
 merged_to_master: true
+passed_at: null
+prerequisites:
+- ISSUE-DESIGN-3
+slug: supplement-issues
+status: accepted
+test_duration_seconds: 0
+test_passed: true
+title: "\u8865\u5145\u5B8C\u5584 Issues"
 worktree_path: null

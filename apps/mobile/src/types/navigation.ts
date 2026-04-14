@@ -2,9 +2,21 @@
  * Navigation types for the app
  */
 
+import { NavigationProp } from '@react-navigation/native';
+
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
+  Purchase: { couponId: string };
+  CouponList: undefined;
+  CouponStatistics: undefined;
+  Rating: {
+    couponId: string;
+    rateeId: string;
+    raterType: 'CONSUMER' | 'MERCHANT';
+    merchantName: string;
+  };
+  MerchantRedeem: undefined;
 };
 
 export type AuthStackParamList = {
@@ -39,8 +51,14 @@ export type ProfileStackParamList = {
   EditProfile: undefined;
   MyMoments: undefined;
   LikedMoments: undefined;
-  AgentList: undefined;
-  CreateAgent: undefined;
+  ReviewList: undefined;
+  ReviewDetail: { reviewId: string };
+  WriteReview: {
+    matchId: string;
+    rateeId: string;
+    rateeName: string;
+    matchTitle: string;
+  };
 };
 
 export type JobStackParamList = {
@@ -56,3 +74,5 @@ declare global {
     interface RootParamList extends RootStackParamList {}
   }
 }
+
+export type RootStackNavigationProp = NavigationProp<RootStackParamList>;

@@ -2,7 +2,7 @@ id: 'ISSUE-DESIGN-3'
 issue_number: 3
 title: '生成 Issues'
 slug: 'generate-issues'
-status: 'passed'
+status: 'accepted'
 description: |
   根据完善的 IssueTree.md，生成所有 Issue 的 YAML 文件。
   每个 issue 包含完整的 acceptance criteria。
@@ -14,7 +14,7 @@ criteria:
   - id: 'ISSUE-DESIGN-3~c1'
     name: '所有 Issues 已生成'
     description: 'IssueTree.md 中每个 issue 都有对应的 YAML 文件'
-    status: 'passed'
+    status: 'accepted'
     coverage:
       unit: not_needed
       integration: not_needed
@@ -27,7 +27,7 @@ criteria:
   - id: 'ISSUE-DESIGN-3~c2'
     name: 'YAML格式验证'
     description: '所有生成的YAML文件语法正确'
-    status: 'passed'
+    status: 'accepted'
     coverage:
       unit: not_needed
       integration: not_needed
@@ -42,7 +42,7 @@ criteria:
   - id: 'ISSUE-DESIGN-3~c3'
     name: '字段完整性'
     description: '每个YAML包含必需字段 (id, title, status, description, criteria等)'
-    status: 'passed'
+    status: 'accepted'
     coverage:
       unit: not_needed
       integration: not_needed
@@ -57,7 +57,7 @@ criteria:
   - id: 'ISSUE-DESIGN-3~c4'
     name: 'ID唯一性'
     description: '所有Issue ID不重复'
-    status: 'passed'
+    status: 'accepted'
     coverage:
       unit: not_needed
       integration: not_needed
@@ -72,7 +72,7 @@ criteria:
   - id: 'ISSUE-DESIGN-3~c5'
     name: '依赖关系验证'
     description: 'prerequisites引用的Issue真实存在'
-    status: 'passed'
+    status: 'accepted'
     coverage:
       unit: not_needed
       integration: not_needed
@@ -87,7 +87,7 @@ criteria:
   - id: 'ISSUE-DESIGN-3~c2'
     name: 'YAML格式验证'
     description: '所有生成的YAML文件语法正确'
-    status: 'passed'
+    status: 'accepted'
     coverage:
       unit: not_needed
       integration: not_needed
@@ -102,7 +102,7 @@ criteria:
   - id: 'ISSUE-DESIGN-3~c3'
     name: '字段完整性'
     description: '每个YAML包含必需字段 (id, title, status, description, criteria等)'
-    status: 'passed'
+    status: 'accepted'
     coverage:
       unit: not_needed
       integration: not_needed
@@ -117,7 +117,7 @@ criteria:
   - id: 'ISSUE-DESIGN-3~c4'
     name: 'ID唯一性'
     description: '所有Issue ID不重复'
-    status: 'passed'
+    status: 'accepted'
     coverage:
       unit: not_needed
       integration: not_needed
@@ -132,7 +132,7 @@ criteria:
   - id: 'ISSUE-DESIGN-3~c5'
     name: '依赖关系验证'
     description: 'prerequisites引用的Issue真实存在'
-    status: 'passed'
+    status: 'accepted'
     coverage:
       unit: not_needed
       integration: not_needed

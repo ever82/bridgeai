@@ -1,60 +1,59 @@
----
-id: "ISSUE-VS005b"
-issue_number: 705
-parent: "ISSUE-VS005"
-title: "积分支付与高清解锁"
-slug: "payment-core"
-status: "pending"
-description: |
-  实现VisionShare场景的积分支付核心功能和高清原图解锁机制。
-  支持单图/多图支付、支付确认、支付后自动解锁高清原图下载。
-estimated_lines: 500
-prerequisites:
-  - "ISSUE-VS005a"
-  - "ISSUE-CR003"
-created_at: "2026-04-09"
-logic: sufficient_necessary
+created_at: '2026-04-09'
 criteria:
-  - id: "ISSUE-VS005b~c1"
-    name: "积分支付系统"
-    description: |
-      支付功能:
-      - 单图/多图支付选项
-      - 积分余额显示
-      - 支付确认弹窗
-      - 支付密码验证
-      - 支付结果通知
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查积分支付系统，验证有支付选项、余额显示、确认弹窗、密码验证和结果通知"
-        context_files: ["apps/mobile/src/screens/VisionShare/PhotoPayment.tsx", "apps/server/src/services/payment/creditPayment.ts"]
-        
-
-  - id: "ISSUE-VS005b~c2"
-    name: "高清原图解锁"
-    description: |
-      解锁机制:
-      - 支付后自动解锁
-      - 原图下载链接生成
-      - 下载次数限制
-      - 有效期管理
-      - 水印移除
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查高清原图解锁，验证有自动解锁、下载链接、次数限制、有效期和水印处理"
-        context_files: ["apps/server/src/services/visionShare/unlockService.ts", "apps/server/src/middleware/downloadAuth.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u652F\u4ED8\u529F\u80FD:\n- \u5355\u56FE/\u591A\u56FE\u652F\u4ED8\
+    \u9009\u9879\n- \u79EF\u5206\u4F59\u989D\u663E\u793A\n- \u652F\u4ED8\u786E\u8BA4\
+    \u5F39\u7A97\n- \u652F\u4ED8\u5BC6\u7801\u9A8C\u8BC1\n- \u652F\u4ED8\u7ED3\u679C\
+    \u901A\u77E5\n"
+  id: ISSUE-VS005b~c1
+  name: "\u79EF\u5206\u652F\u4ED8\u7CFB\u7EDF"
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/VisionShare/PhotoPayment.tsx
+      - apps/server/src/services/payment/creditPayment.ts
+      prompt: "\u68C0\u67E5\u79EF\u5206\u652F\u4ED8\u7CFB\u7EDF\uFF0C\u9A8C\u8BC1\u6709\
+        \u652F\u4ED8\u9009\u9879\u3001\u4F59\u989D\u663E\u793A\u3001\u786E\u8BA4\u5F39\
+        \u7A97\u3001\u5BC6\u7801\u9A8C\u8BC1\u548C\u7ED3\u679C\u901A\u77E5"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u89E3\u9501\u673A\u5236:\n- \u652F\u4ED8\u540E\u81EA\u52A8\u89E3\u9501\
+    \n- \u539F\u56FE\u4E0B\u8F7D\u94FE\u63A5\u751F\u6210\n- \u4E0B\u8F7D\u6B21\u6570\
+    \u9650\u5236\n- \u6709\u6548\u671F\u7BA1\u7406\n- \u6C34\u5370\u79FB\u9664\n"
+  id: ISSUE-VS005b~c2
+  name: "\u9AD8\u6E05\u539F\u56FE\u89E3\u9501"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/visionShare/unlockService.ts
+      - apps/server/src/middleware/downloadAuth.ts
+      prompt: "\u68C0\u67E5\u9AD8\u6E05\u539F\u56FE\u89E3\u9501\uFF0C\u9A8C\u8BC1\u6709\
+        \u81EA\u52A8\u89E3\u9501\u3001\u4E0B\u8F7D\u94FE\u63A5\u3001\u6B21\u6570\u9650\
+        \u5236\u3001\u6709\u6548\u671F\u548C\u6C34\u5370\u5904\u7406"
+current_task: null
+description: "\u5B9E\u73B0VisionShare\u573A\u666F\u7684\u79EF\u5206\u652F\u4ED8\u6838\
+  \u5FC3\u529F\u80FD\u548C\u9AD8\u6E05\u539F\u56FE\u89E3\u9501\u673A\u5236\u3002\n\
+  \u652F\u6301\u5355\u56FE/\u591A\u56FE\u652F\u4ED8\u3001\u652F\u4ED8\u786E\u8BA4\u3001\
+  \u652F\u4ED8\u540E\u81EA\u52A8\u89E3\u9501\u9AD8\u6E05\u539F\u56FE\u4E0B\u8F7D\u3002\
+  \n"
+estimated_lines: 500
+id: ISSUE-VS005b
+issue_number: 705
+logic: sufficient_necessary
+parent: ISSUE-VS005
+prerequisites:
+- ISSUE-VS005a
+- ISSUE-CR003
+slug: payment-core
+status: pending
+title: "\u79EF\u5206\u652F\u4ED8\u4E0E\u9AD8\u6E05\u89E3\u9501"

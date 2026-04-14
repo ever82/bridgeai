@@ -1,61 +1,71 @@
----
-id: "ISSUE-INT002c"
+created_at: '2026-04-09'
+criteria:
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: required
+    unit: not_needed
+  description: "\u79FB\u52A8\u7AEF\u6027\u80FD\u4F18\u5316:\n- \u5E94\u7528\u542F\u52A8\
+    \u65F6\u95F4\u6D4B\u8BD5\u4E0E\u4F18\u5316(\u76EE\u6807<3s)\n- \u5217\u8868\u6EDA\
+    \u52A8\u6027\u80FD\u6D4B\u8BD5(\u76EE\u680760fps)\n- \u5185\u5B58\u5360\u7528\u5206\
+    \u6790\u4E0E\u4F18\u5316\n- \u56FE\u7247\u52A0\u8F7D\u4E0E\u7F13\u5B58\u6027\u80FD\
+    \u4F18\u5316\n- \u7535\u6C60\u6D88\u8017\u4E0E\u7F51\u7EDC\u6D41\u91CF\u4F18\u5316\
+    \n"
+  id: ISSUE-INT002c~c1
+  name: "\u79FB\u52A8\u7AEF\u6027\u80FD\u6D4B\u8BD5\u4E0E\u4F18\u5316"
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/performance/
+      - apps/mobile/e2e/perf.test.ts
+      - apps/mobile/metro.config.js
+      prompt: "\u68C0\u67E5\u79FB\u52A8\u7AEF\u6027\u80FD\u6D4B\u8BD5\u5B9E\u73B0\uFF0C\
+        \u9A8C\u8BC1\u6709\u6027\u80FD\u6D4B\u8BD5\u65B9\u6848\uFF0C\u5305\u542B\u542F\
+        \u52A8\u65F6\u95F4\u3001\u6EDA\u52A8\u6027\u80FD\u3001\u5185\u5B58\u5206\u6790\
+        \u3001\u56FE\u7247\u7F13\u5B58\u7B49\u6D4B\u8BD5"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: required
+    unit: not_needed
+  description: "\u5168\u94FE\u8DEF\u538B\u529B\u6D4B\u8BD5:\n- \u7AEF\u5230\u7AEF\u573A\
+    \u666F\u538B\u6D4B(\u6A21\u62DF\u771F\u5B9E\u7528\u6237\u884C\u4E3A)\n- \u5CF0\
+    \u503C\u6D41\u91CF\u627F\u8F7D\u80FD\u529B\u6D4B\u8BD5\n- \u7CFB\u7EDF\u74F6\u9888\
+    \u8BC6\u522B\u4E0E\u4F18\u5316\u62A5\u544A\n- \u76D1\u63A7\u544A\u8B66\u9608\u503C\
+    \u914D\u7F6E\u9A8C\u8BC1\n- \u6027\u80FD\u6D4B\u8BD5\u62A5\u544A\u4E0E\u4F18\u5316\
+    \u5EFA\u8BAE\u6587\u6863\n"
+  id: ISSUE-INT002c~c2
+  name: "\u5168\u94FE\u8DEF\u538B\u529B\u6D4B\u8BD5\u4E0E\u62A5\u544A"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - perf/full-load-test.yml
+      - perf/reports/
+      - docs/PERFORMANCE_REPORT.md
+      - apps/server/src/monitoring/
+      prompt: "\u68C0\u67E5\u5168\u94FE\u8DEF\u538B\u529B\u6D4B\u8BD5\u5B9E\u73B0\uFF0C\
+        \u9A8C\u8BC1\u6709\u5B8C\u6574\u538B\u6D4B\u65B9\u6848\u3001\u74F6\u9888\u5206\
+        \u6790\u62A5\u544A\u3001\u6027\u80FD\u4F18\u5316\u5EFA\u8BAE\uFF0C\u786E\u8BA4\
+        \u76D1\u63A7\u544A\u8B66\u914D\u7F6E"
+current_task: null
+description: "\u6267\u884C\u7AEF\u5230\u7AEF\u6027\u80FD\u9A8C\u8BC1\uFF0C\u5305\u62EC\
+  \u79FB\u52A8\u7AEF\u6027\u80FD\u6D4B\u8BD5\u4F18\u5316\u548C\u5168\u94FE\u8DEF\u538B\
+  \u529B\u6D4B\u8BD5\u3002\n\u8FD9\u662FISSUE-INT002\u7684\u9636\u6BB53\uFF0C\u4F9D\
+  \u8D56\u4E8E\u5B9E\u65F6\u670D\u52A1\u6027\u80FD\u4F18\u5316\u5B8C\u6210\uFF08INT002b\uFF09\
+  \uFF0C\n\u662F\u6574\u4E2A\u6027\u80FD\u4F18\u5316\u5DE5\u4F5C\u7684\u6700\u7EC8\
+  \u9A8C\u8BC1\u9636\u6BB5\u3002\n\u76EE\u6807\uFF1A\u79FB\u52A8\u7AEF\u4F53\u9A8C\
+  \u6D41\u7545\uFF08\u542F\u52A8<3s\uFF0C\u6EDA\u52A860fps\uFF09\uFF0C\u7CFB\u7EDF\
+  \u652F\u64911000+\u5E76\u53D1\u7528\u6237\u3002\n"
+id: ISSUE-INT002c
 issue_number: 1202.3
-title: "端到端性能验证"
-slug: "end-to-end-performance"
-status: "pending"
-description: |
-  执行端到端性能验证，包括移动端性能测试优化和全链路压力测试。
-  这是ISSUE-INT002的阶段3，依赖于实时服务性能优化完成（INT002b），
-  是整个性能优化工作的最终验证阶段。
-  目标：移动端体验流畅（启动<3s，滚动60fps），系统支撑1000+并发用户。
-parent_issue: "ISSUE-INT002"
+logic: sufficient_necessary
+parent_issue: ISSUE-INT002
 phase: 3
 prerequisites:
-  - "ISSUE-INT002b"
-created_at: "2026-04-09"
-logic: sufficient_necessary
-criteria:
-  - id: "ISSUE-INT002c~c1"
-    name: "移动端性能测试与优化"
-    description: |
-      移动端性能优化:
-      - 应用启动时间测试与优化(目标<3s)
-      - 列表滚动性能测试(目标60fps)
-      - 内存占用分析与优化
-      - 图片加载与缓存性能优化
-      - 电池消耗与网络流量优化
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: required
-    verification:
-      ai:
-        prompt: "检查移动端性能测试实现，验证有性能测试方案，包含启动时间、滚动性能、内存分析、图片缓存等测试"
-        context_files: ["apps/mobile/src/performance/", "apps/mobile/e2e/perf.test.ts", "apps/mobile/metro.config.js"]
-        
-
-  - id: "ISSUE-INT002c~c2"
-    name: "全链路压力测试与报告"
-    description: |
-      全链路压力测试:
-      - 端到端场景压测(模拟真实用户行为)
-      - 峰值流量承载能力测试
-      - 系统瓶颈识别与优化报告
-      - 监控告警阈值配置验证
-      - 性能测试报告与优化建议文档
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: required
-    verification:
-      ai:
-        prompt: "检查全链路压力测试实现，验证有完整压测方案、瓶颈分析报告、性能优化建议，确认监控告警配置"
-        context_files: ["perf/full-load-test.yml", "perf/reports/", "docs/PERFORMANCE_REPORT.md", "apps/server/src/monitoring/"]
-        
+- ISSUE-INT002b
+slug: end-to-end-performance
+status: pending
+title: "\u7AEF\u5230\u7AEF\u6027\u80FD\u9A8C\u8BC1"

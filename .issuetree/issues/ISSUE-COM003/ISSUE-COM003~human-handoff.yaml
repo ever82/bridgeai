@@ -1,118 +1,103 @@
----
-id: "ISSUE-COM003"
-issue_number: 506
-title: "人机切换机制"
-slug: "human-handoff"
-status: "pending"
-description: |
-  实现人机切换机制，允许用户从 Agent 接管对话，
-  或将对话交还给 Agent。
-prerequisites:
-  - "ISSUE-COM002c"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-COM003~c1"
-    name: "切换状态管理"
-    description: |
-      状态管理:
-      - Agent 模式状态
-      - 人工模式状态
-      - 切换请求状态
-      - 切换历史记录
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查切换状态，验证有 HandoffStatus 枚举和相关状态管理"
-        context_files: ["packages/shared/src/types/handoff.ts"]
-        
-
-  - id: "ISSUE-COM003~c2"
-    name: "切换请求和响应"
-    description: |
-      切换流程:
-      - 请求接管对话
-      - 请求交还 Agent
-      - 切换确认机制
-      - 切换超时处理
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查切换流程，验证有 handoff 请求和响应的 socket 事件"
-        context_files: ["apps/server/src/socket/handlers/handoffHandler.ts"]
-        
-
-  - id: "ISSUE-COM003~c3"
-    name: "切换界面组件"
-    description: |
-      切换 UI:
-      - 接管按钮
-      - 交还按钮
-      - 切换状态提示
-      - 切换确认对话框
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查切换界面，验证有 HandoffButton 和 HandoffStatus 组件"
-        context_files: ["apps/mobile/src/components/Handoff/"]
-        
-
-  - id: "ISSUE-COM003~c4"
-    name: "消息发送者标识"
-    description: |
-      发送者标识:
-      - Agent 发送标识
-      - 用户发送标识
-      - 切换过渡标识
-      - 发送者切换动画
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查发送者标识，验证有 senderType 字段和切换过渡 UI"
-        context_files: ["apps/mobile/src/components/Chat/SenderIndicator.tsx"]
-        
-
-  - id: "ISSUE-COM003~c5"
-    name: "切换权限控制"
-    description: |
-      权限控制:
-      - 切换权限验证
-      - 频繁切换限制
-      - 强制切换机制
-      - 切换审计日志
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查切换权限，验证有 handoff 权限检查和限制机制"
-        context_files: ["apps/server/src/middleware/handoffAuth.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u72B6\u6001\u7BA1\u7406:\n- Agent \u6A21\u5F0F\u72B6\u6001\n- \u4EBA\
+    \u5DE5\u6A21\u5F0F\u72B6\u6001\n- \u5207\u6362\u8BF7\u6C42\u72B6\u6001\n- \u5207\
+    \u6362\u5386\u53F2\u8BB0\u5F55\n"
+  id: ISSUE-COM003~c1
+  name: "\u5207\u6362\u72B6\u6001\u7BA1\u7406"
+  verification:
+    ai:
+      context_files:
+      - packages/shared/src/types/handoff.ts
+      prompt: "\u68C0\u67E5\u5207\u6362\u72B6\u6001\uFF0C\u9A8C\u8BC1\u6709 HandoffStatus\
+        \ \u679A\u4E3E\u548C\u76F8\u5173\u72B6\u6001\u7BA1\u7406"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5207\u6362\u6D41\u7A0B:\n- \u8BF7\u6C42\u63A5\u7BA1\u5BF9\u8BDD\n\
+    - \u8BF7\u6C42\u4EA4\u8FD8 Agent\n- \u5207\u6362\u786E\u8BA4\u673A\u5236\n- \u5207\
+    \u6362\u8D85\u65F6\u5904\u7406\n"
+  id: ISSUE-COM003~c2
+  name: "\u5207\u6362\u8BF7\u6C42\u548C\u54CD\u5E94"
+status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/socket/handlers/handoffHandler.ts
+      prompt: "\u68C0\u67E5\u5207\u6362\u6D41\u7A0B\uFF0C\u9A8C\u8BC1\u6709 handoff\
+        \ \u8BF7\u6C42\u548C\u54CD\u5E94\u7684 socket \u4E8B\u4EF6"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5207\u6362 UI:\n- \u63A5\u7BA1\u6309\u94AE\n- \u4EA4\u8FD8\u6309\
+    \u94AE\n- \u5207\u6362\u72B6\u6001\u63D0\u793A\n- \u5207\u6362\u786E\u8BA4\u5BF9\
+    \u8BDD\u6846\n"
+  id: ISSUE-COM003~c3
+  name: "\u5207\u6362\u754C\u9762\u7EC4\u4EF6"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/Handoff/
+      prompt: "\u68C0\u67E5\u5207\u6362\u754C\u9762\uFF0C\u9A8C\u8BC1\u6709 HandoffButton\
+        \ \u548C HandoffStatus \u7EC4\u4EF6"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u53D1\u9001\u8005\u6807\u8BC6:\n- Agent \u53D1\u9001\u6807\u8BC6\n\
+    - \u7528\u6237\u53D1\u9001\u6807\u8BC6\n- \u5207\u6362\u8FC7\u6E21\u6807\u8BC6\
+    \n- \u53D1\u9001\u8005\u5207\u6362\u52A8\u753B\n"
+  id: ISSUE-COM003~c4
+  name: "\u6D88\u606F\u53D1\u9001\u8005\u6807\u8BC6"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/Chat/SenderIndicator.tsx
+      prompt: "\u68C0\u67E5\u53D1\u9001\u8005\u6807\u8BC6\uFF0C\u9A8C\u8BC1\u6709\
+        \ senderType \u5B57\u6BB5\u548C\u5207\u6362\u8FC7\u6E21 UI"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u6743\u9650\u63A7\u5236:\n- \u5207\u6362\u6743\u9650\u9A8C\u8BC1\n\
+    - \u9891\u7E41\u5207\u6362\u9650\u5236\n- \u5F3A\u5236\u5207\u6362\u673A\u5236\
+    \n- \u5207\u6362\u5BA1\u8BA1\u65E5\u5FD7\n"
+  id: ISSUE-COM003~c5
+  name: "\u5207\u6362\u6743\u9650\u63A7\u5236"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/middleware/handoffAuth.ts
+      prompt: "\u68C0\u67E5\u5207\u6362\u6743\u9650\uFF0C\u9A8C\u8BC1\u6709 handoff\
+        \ \u6743\u9650\u68C0\u67E5\u548C\u9650\u5236\u673A\u5236"
+current_task: null
+description: "\u5B9E\u73B0\u4EBA\u673A\u5207\u6362\u673A\u5236\uFF0C\u5141\u8BB8\u7528\
+  \u6237\u4ECE Agent \u63A5\u7BA1\u5BF9\u8BDD\uFF0C\n\u6216\u5C06\u5BF9\u8BDD\u4EA4\
+  \u8FD8\u7ED9 Agent\u3002\n"
+id: ISSUE-COM003
+issue_number: 506
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-COM002c
+slug: human-handoff
+status: pending
+title: "\u4EBA\u673A\u5207\u6362\u673A\u5236"

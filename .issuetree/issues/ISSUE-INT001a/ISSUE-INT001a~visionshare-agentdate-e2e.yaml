@@ -1,80 +1,87 @@
----
-id: "ISSUE-INT001a"
-issue_number: 1201
-parent_issue: "ISSUE-INT001"
-title: "VisionShare + AgentDate E2E测试"
-slug: "visionshare-agentdate-e2e"
-status: "pending"
-description: |
-  VisionShare和AgentDate两大核心场景的端到端集成测试。
-  验证需求发布到接单、相机拍照与AI脱敏、照片查看与积分支付、
-  AI相册智能检索、交友画像配置、Agent匹配推荐、Agent间对话匹配、
-  双向同意引荐、人机切换等完整流程。
-  确保用户场景模块与核心服务模块的协同工作正常。
-prerequisites:
-  - "ISSUE-VS001"
-  - "ISSUE-VS002"
-  - "ISSUE-VS003"
-  - "ISSUE-VS004"
-  - "ISSUE-VS005"
-  - "ISSUE-VS006"
-  - "ISSUE-VS007"
-  - "ISSUE-DATE001"
-  - "ISSUE-DATE002"
-  - "ISSUE-DATE003"
-  - "ISSUE-DATE004"
-  - "ISSUE-UI001"
-  - "ISSUE-UI002"
-  - "ISSUE-UI003"
-  - "ISSUE-UI004a"
-  - "ISSUE-UI004b"
-  - "ISSUE-UI004c"
-  - "ISSUE-UI005"
-  - "ISSUE-UI006"
-  - "ISSUE-UI007"
-created_at: "2026-04-09"
-logic: sufficient_necessary
+created_at: '2026-04-09'
 criteria:
-  - id: "ISSUE-INT001a~c1"
-    name: "VisionShare场景完整流程测试"
-    description: |
-      VisionShare端到端测试:
-      - 需求发布到接单完整流程
-      - 相机拍照上传与AI脱敏处理
-      - 照片查看与积分支付流程
-      - AI相册智能检索功能验证
-      - 移动端与后端API集成验证
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: required
-    verification:
-      ai:
-        prompt: "检查VisionShare端到端测试实现，验证包含完整的场景测试用例，覆盖需求发布、接单、拍照上传、AI脱敏、积分支付等全流程"
-        context_files: ["apps/e2e/tests/visionshare/", "apps/e2e/tests/scenarios/visionshare.test.ts"]
-        
-
-  - id: "ISSUE-INT001a~c2"
-    name: "AgentDate场景完整流程测试"
-    description: |
-      AgentDate端到端测试:
-      - 交友画像配置完整流程
-      - Agent主动匹配推荐机制
-      - Agent间对话匹配流程
-      - 双向同意引荐机制验证
-      - 人机切换场景测试
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: required
-    verification:
-      ai:
-        prompt: "检查AgentDate端到端测试实现，验证包含交友画像配置、匹配推荐、Agent对话、双向引荐等完整流程测试"
-        context_files: ["apps/e2e/tests/agentdate/", "apps/e2e/tests/scenarios/agentdate.test.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: required
+    unit: not_needed
+  description: "VisionShare\u7AEF\u5230\u7AEF\u6D4B\u8BD5:\n- \u9700\u6C42\u53D1\u5E03\
+    \u5230\u63A5\u5355\u5B8C\u6574\u6D41\u7A0B\n- \u76F8\u673A\u62CD\u7167\u4E0A\u4F20\
+    \u4E0EAI\u8131\u654F\u5904\u7406\n- \u7167\u7247\u67E5\u770B\u4E0E\u79EF\u5206\
+    \u652F\u4ED8\u6D41\u7A0B\n- AI\u76F8\u518C\u667A\u80FD\u68C0\u7D22\u529F\u80FD\
+    \u9A8C\u8BC1\n- \u79FB\u52A8\u7AEF\u4E0E\u540E\u7AEFAPI\u96C6\u6210\u9A8C\u8BC1\
+    \n"
+  id: ISSUE-INT001a~c1
+  name: "VisionShare\u573A\u666F\u5B8C\u6574\u6D41\u7A0B\u6D4B\u8BD5"
+  verification:
+    ai:
+      context_files:
+      - apps/e2e/tests/visionshare/
+      - apps/e2e/tests/scenarios/visionshare.test.ts
+      prompt: "\u68C0\u67E5VisionShare\u7AEF\u5230\u7AEF\u6D4B\u8BD5\u5B9E\u73B0\uFF0C\
+        \u9A8C\u8BC1\u5305\u542B\u5B8C\u6574\u7684\u573A\u666F\u6D4B\u8BD5\u7528\u4F8B\
+        \uFF0C\u8986\u76D6\u9700\u6C42\u53D1\u5E03\u3001\u63A5\u5355\u3001\u62CD\u7167\
+        \u4E0A\u4F20\u3001AI\u8131\u654F\u3001\u79EF\u5206\u652F\u4ED8\u7B49\u5168\
+        \u6D41\u7A0B"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: required
+    unit: not_needed
+  description: "AgentDate\u7AEF\u5230\u7AEF\u6D4B\u8BD5:\n- \u4EA4\u53CB\u753B\u50CF\
+    \u914D\u7F6E\u5B8C\u6574\u6D41\u7A0B\n- Agent\u4E3B\u52A8\u5339\u914D\u63A8\u8350\
+    \u673A\u5236\n- Agent\u95F4\u5BF9\u8BDD\u5339\u914D\u6D41\u7A0B\n- \u53CC\u5411\
+    \u540C\u610F\u5F15\u8350\u673A\u5236\u9A8C\u8BC1\n- \u4EBA\u673A\u5207\u6362\u573A\
+    \u666F\u6D4B\u8BD5\n"
+  id: ISSUE-INT001a~c2
+  name: "AgentDate\u573A\u666F\u5B8C\u6574\u6D41\u7A0B\u6D4B\u8BD5"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/e2e/tests/agentdate/
+      - apps/e2e/tests/scenarios/agentdate.test.ts
+      prompt: "\u68C0\u67E5AgentDate\u7AEF\u5230\u7AEF\u6D4B\u8BD5\u5B9E\u73B0\uFF0C\
+        \u9A8C\u8BC1\u5305\u542B\u4EA4\u53CB\u753B\u50CF\u914D\u7F6E\u3001\u5339\u914D\
+        \u63A8\u8350\u3001Agent\u5BF9\u8BDD\u3001\u53CC\u5411\u5F15\u8350\u7B49\u5B8C\
+        \u6574\u6D41\u7A0B\u6D4B\u8BD5"
+current_task: null
+description: "VisionShare\u548CAgentDate\u4E24\u5927\u6838\u5FC3\u573A\u666F\u7684\
+  \u7AEF\u5230\u7AEF\u96C6\u6210\u6D4B\u8BD5\u3002\n\u9A8C\u8BC1\u9700\u6C42\u53D1\
+  \u5E03\u5230\u63A5\u5355\u3001\u76F8\u673A\u62CD\u7167\u4E0EAI\u8131\u654F\u3001\
+  \u7167\u7247\u67E5\u770B\u4E0E\u79EF\u5206\u652F\u4ED8\u3001\nAI\u76F8\u518C\u667A\
+  \u80FD\u68C0\u7D22\u3001\u4EA4\u53CB\u753B\u50CF\u914D\u7F6E\u3001Agent\u5339\u914D\
+  \u63A8\u8350\u3001Agent\u95F4\u5BF9\u8BDD\u5339\u914D\u3001\n\u53CC\u5411\u540C\u610F\
+  \u5F15\u8350\u3001\u4EBA\u673A\u5207\u6362\u7B49\u5B8C\u6574\u6D41\u7A0B\u3002\n\
+  \u786E\u4FDD\u7528\u6237\u573A\u666F\u6A21\u5757\u4E0E\u6838\u5FC3\u670D\u52A1\u6A21\
+  \u5757\u7684\u534F\u540C\u5DE5\u4F5C\u6B63\u5E38\u3002\n"
+id: ISSUE-INT001a
+issue_number: 1201
+logic: sufficient_necessary
+parent_issue: ISSUE-INT001
+prerequisites:
+- ISSUE-VS001
+- ISSUE-VS002
+- ISSUE-VS003
+- ISSUE-VS004
+- ISSUE-VS005
+- ISSUE-VS006
+- ISSUE-VS007
+- ISSUE-DATE001
+- ISSUE-DATE002
+- ISSUE-DATE003
+- ISSUE-DATE004
+- ISSUE-UI001
+- ISSUE-UI002
+- ISSUE-UI003
+- ISSUE-UI004a
+- ISSUE-UI004b
+- ISSUE-UI004c
+- ISSUE-UI005
+- ISSUE-UI006
+- ISSUE-UI007
+slug: visionshare-agentdate-e2e
+status: pending
+title: "VisionShare + AgentDate E2E\u6D4B\u8BD5"

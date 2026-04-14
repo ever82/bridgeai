@@ -1,191 +1,215 @@
-id: ISSUE-UI001
-issue_number: 1101
-title: 设计系统与组件库
-slug: design-system
-status: passed
-description: |
-  建立 BridgeAI 统一设计系统，包含色彩、字体、间距规范，
-  以及基础UI组件库（Button、Input、Card、Modal等）。
-  使用 React Native 实现跨平台一致的视觉体验。
-prerequisites:
-  - ISSUE-F004
-created_at: '2026-04-08'
-logic: sufficient_necessary
-criteria:
-  - id: ISSUE-UI001~c1
-    name: 设计令牌（Design Tokens）定义
-    description: |
-      建立完整的设计令牌体系:
-      - 色彩系统：主色、辅色、功能色（成功、警告、错误、信息）
-      - 字体规范：字号层级（标题/正文/辅助文字）、字重、行高
-      - 间距系统：基础单位、内边距、外边距层级
-      - 圆角、阴影、边框等视觉属性
-      - 支持亮色/暗色主题切换
-    status: passed
-    coverage:
-      unit: not_needed
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: 检查设计令牌实现，验证有 theme.ts 或 designTokens.ts 文件，包含 colors、typography、spacing、borderRadius 等完整定义，支持主题切换
-        context_files:
-          - apps/mobile/src/theme/theme.ts
-          - apps/mobile/src/theme/designTokens.ts
-  - id: ISSUE-UI001~c2
-    name: 基础组件 - Button 按钮
-    description: |
-      实现多功能 Button 组件:
-      - 变体：实心(primary)、轮廓(outline)、幽灵(ghost)、文字(text)
-      - 尺寸：大、中、小
-      - 状态：正常、禁用、加载中
-      - 图标支持：前置图标、后置图标
-      - 颜色主题适配
-    status: passed
-    coverage:
-      unit: required
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: 检查 Button 组件实现，验证有 Button.tsx 组件文件，支持 variant、size、loading、disabled、icon 等 props，有对应的单元测试
-        context_files:
-          - apps/mobile/src/components/Button/Button.tsx
-          - apps/mobile/src/components/Button/Button.test.tsx
-  - id: ISSUE-UI001~c3
-    name: 基础组件 - Input 输入框
-    description: |
-      实现 Input 输入组件:
-      - 类型：文本、密码、数字、邮箱、手机号
-      - 状态：正常、错误、禁用、只读
-      - 前缀/后缀支持：图标、文字
-      - 清除按钮功能
-      - 错误提示和字符计数
-    status: passed
-    coverage:
-      unit: required
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: 检查 Input 组件实现，验证有 Input.tsx 组件文件，支持 type、error、disabled、prefix、suffix、clearable 等 props，有对应的单元测试
-        context_files:
-          - apps/mobile/src/components/Input/Input.tsx
-          - apps/mobile/src/components/Input/Input.test.tsx
-  - id: ISSUE-UI001~c4
-    name: 基础组件 - Card 卡片与 Modal 弹窗
-    description: |
-      实现 Card 和 Modal 组件:
-      - Card：可点击、带阴影、圆角、支持头部/内容/底部结构
-      - Modal：遮罩层、动画过渡、点击遮罩关闭、手势滑动关闭
-      - 支持自定义内容和操作按钮
-    status: passed
-    coverage:
-      unit: required
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: 检查 Card 和 Modal 组件实现，验证有 Card.tsx 和 Modal.tsx 文件，Card 支持 pressable、header/content/footer 结构；Modal 支持 visible 控制、动画、遮罩点击关闭
-        context_files:
-          - apps/mobile/src/components/Card/Card.tsx
-          - apps/mobile/src/components/Modal/Modal.tsx
-  - id: ISSUE-UI001~c5
-    name: 图标系统与资源管理
-    description: |
-      建立图标系统:
-      - 使用统一的图标库（如 react-native-vector-icons 或自定义 SVG）
-      - 图标分类：导航、操作、状态、场景
-      - 支持尺寸和颜色自定义
-      - 图片资源优化和缓存策略
-    status: passed
-    coverage:
-      unit: not_needed
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: 检查图标系统实现，验证有 Icon 组件或图标导出文件，支持 name、size、color props，确认使用了统一的图标库
-        context_files:
-          - apps/mobile/src/components/Icon/Icon.tsx
-          - apps/mobile/src/assets/icons/index.ts
-  - id: ISSUE-UI001~c6
-    name: 组件文档与 Storybook
-    description: |
-      建立组件文档体系:
-      - 配置 Storybook 或等效工具展示组件
-      - 每个组件包含用法示例、Props 说明
-      - 视觉回归测试基础
-      - 设计系统文档网站
-    status: passed
-    coverage:
-      unit: not_needed
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: 检查组件文档实现，验证有 .storybook 配置或组件文档目录，包含 Button、Input、Card、Modal 等组件的使用示例和 Props 表格
-        context_files:
-          - .storybook/main.js
-          - apps/mobile/src/components/README.md
-implementation:
-  task_id: TASK-2
-  completed_at: '2026-04-10T16:00:00+08:00'
-  execution_time_minutes: 30
-  result: success
-  notes: Successfully implemented all design system components
-test_passed: true
-merged_to_master: true
-worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-UI001
 check:
-  issue_id: ISSUE-UI001
   checked_at: '2026-04-10T16:05:00+08:00'
-  status: passed
-  functional_verification:
-    all_criteria_passed: true
-    criteria:
-      - id: ISSUE-UI001~c1
-        name: 设计令牌（Design Tokens）定义
-        status: passed
-        notes: Theme with colors, typography, spacing, borderRadius, shadows; light/dark theme support
-      - id: ISSUE-UI001~c2
-        name: 基础组件 - Button 按钮
-        status: passed
-        notes: 5 variants, 3 sizes, loading/disabled states, left/right icons, unit tests
-      - id: ISSUE-UI001~c3
-        name: 基础组件 - Input 输入框
-        status: passed
-        notes: 5 types, 4 states, prefix/suffix, clearable, character count, unit tests
-      - id: ISSUE-UI001~c4
-        name: 基础组件 - Card 卡片与 Modal 弹窗
-        status: passed
-        notes: Card with 3 variants, header/content/footer, pressable; Modal with animations, gestures
-      - id: ISSUE-UI001~c5
-        name: 图标系统与资源管理
-        status: passed
-        notes: Icon component with 28 icons, 4 categories, customizable size/color
-      - id: ISSUE-UI001~c6
-        name: 组件文档与 Storybook
-        status: passed
-        notes: README.md with full documentation, stories for all components
-  test_execution:
-    all_tests_passed: true
-    unit_tests: passed
   code_review:
     merged_to_main: true
     pr_approved: true
   documentation:
     all_updated: true
+  functional_verification:
+    all_criteria_passed: true
+    criteria:
+    - id: ISSUE-UI001~c1
+      name: "\u8BBE\u8BA1\u4EE4\u724C\uFF08Design Tokens\uFF09\u5B9A\u4E49"
+      notes: Theme with colors, typography, spacing, borderRadius, shadows; light/dark
+        theme support
+      status: accepted
+    - id: ISSUE-UI001~c2
+      name: "\u57FA\u7840\u7EC4\u4EF6 - Button \u6309\u94AE"
+      notes: 5 variants, 3 sizes, loading/disabled states, left/right icons, unit
+        tests
+      status: accepted
+    - id: ISSUE-UI001~c3
+      name: "\u57FA\u7840\u7EC4\u4EF6 - Input \u8F93\u5165\u6846"
+      notes: 5 types, 4 states, prefix/suffix, clearable, character count, unit tests
+      status: accepted
+    - id: ISSUE-UI001~c4
+      name: "\u57FA\u7840\u7EC4\u4EF6 - Card \u5361\u7247\u4E0E Modal \u5F39\u7A97"
+      notes: Card with 3 variants, header/content/footer, pressable; Modal with animations,
+        gestures
+      status: accepted
+    - id: ISSUE-UI001~c5
+      name: "\u56FE\u6807\u7CFB\u7EDF\u4E0E\u8D44\u6E90\u7BA1\u7406"
+      notes: Icon component with 28 icons, 4 categories, customizable size/color
+      status: accepted
+    - id: ISSUE-UI001~c6
+      name: "\u7EC4\u4EF6\u6587\u6863\u4E0E Storybook"
+      notes: README.md with full documentation, stories for all components
+      status: accepted
+  issue_id: ISSUE-UI001
   notes: All acceptance criteria met. Design system implementation complete.
+  status: accepted
+  test_execution:
+    all_tests_passed: true
+    unit_tests: passed
+created_at: '2026-04-08'
+criteria:
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: not_needed
+    unit: not_needed
+  description: "\u5EFA\u7ACB\u5B8C\u6574\u7684\u8BBE\u8BA1\u4EE4\u724C\u4F53\u7CFB\
+    :\n- \u8272\u5F69\u7CFB\u7EDF\uFF1A\u4E3B\u8272\u3001\u8F85\u8272\u3001\u529F\u80FD\
+    \u8272\uFF08\u6210\u529F\u3001\u8B66\u544A\u3001\u9519\u8BEF\u3001\u4FE1\u606F\
+    \uFF09\n- \u5B57\u4F53\u89C4\u8303\uFF1A\u5B57\u53F7\u5C42\u7EA7\uFF08\u6807\u9898\
+    /\u6B63\u6587/\u8F85\u52A9\u6587\u5B57\uFF09\u3001\u5B57\u91CD\u3001\u884C\u9AD8\
+    \n- \u95F4\u8DDD\u7CFB\u7EDF\uFF1A\u57FA\u7840\u5355\u4F4D\u3001\u5185\u8FB9\u8DDD\
+    \u3001\u5916\u8FB9\u8DDD\u5C42\u7EA7\n- \u5706\u89D2\u3001\u9634\u5F71\u3001\u8FB9\
+    \u6846\u7B49\u89C6\u89C9\u5C5E\u6027\n- \u652F\u6301\u4EAE\u8272/\u6697\u8272\u4E3B\
+    \u9898\u5207\u6362\n"
+  id: ISSUE-UI001~c1
+  name: "\u8BBE\u8BA1\u4EE4\u724C\uFF08Design Tokens\uFF09\u5B9A\u4E49"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/theme/theme.ts
+      - apps/mobile/src/theme/designTokens.ts
+      prompt: "\u68C0\u67E5\u8BBE\u8BA1\u4EE4\u724C\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \ theme.ts \u6216 designTokens.ts \u6587\u4EF6\uFF0C\u5305\u542B colors\u3001\
+        typography\u3001spacing\u3001borderRadius \u7B49\u5B8C\u6574\u5B9A\u4E49\uFF0C\
+        \u652F\u6301\u4E3B\u9898\u5207\u6362"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u591A\u529F\u80FD Button \u7EC4\u4EF6:\n- \u53D8\u4F53\
+    \uFF1A\u5B9E\u5FC3(primary)\u3001\u8F6E\u5ED3(outline)\u3001\u5E7D\u7075(ghost)\u3001\
+    \u6587\u5B57(text)\n- \u5C3A\u5BF8\uFF1A\u5927\u3001\u4E2D\u3001\u5C0F\n- \u72B6\
+    \u6001\uFF1A\u6B63\u5E38\u3001\u7981\u7528\u3001\u52A0\u8F7D\u4E2D\n- \u56FE\u6807\
+    \u652F\u6301\uFF1A\u524D\u7F6E\u56FE\u6807\u3001\u540E\u7F6E\u56FE\u6807\n- \u989C\
+    \u8272\u4E3B\u9898\u9002\u914D\n"
+  id: ISSUE-UI001~c2
+  name: "\u57FA\u7840\u7EC4\u4EF6 - Button \u6309\u94AE"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/Button/Button.tsx
+      - apps/mobile/src/components/Button/Button.test.tsx
+      prompt: "\u68C0\u67E5 Button \u7EC4\u4EF6\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \ Button.tsx \u7EC4\u4EF6\u6587\u4EF6\uFF0C\u652F\u6301 variant\u3001size\u3001\
+        loading\u3001disabled\u3001icon \u7B49 props\uFF0C\u6709\u5BF9\u5E94\u7684\
+        \u5355\u5143\u6D4B\u8BD5"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0 Input \u8F93\u5165\u7EC4\u4EF6:\n- \u7C7B\u578B\uFF1A\
+    \u6587\u672C\u3001\u5BC6\u7801\u3001\u6570\u5B57\u3001\u90AE\u7BB1\u3001\u624B\
+    \u673A\u53F7\n- \u72B6\u6001\uFF1A\u6B63\u5E38\u3001\u9519\u8BEF\u3001\u7981\u7528\
+    \u3001\u53EA\u8BFB\n- \u524D\u7F00/\u540E\u7F00\u652F\u6301\uFF1A\u56FE\u6807\u3001\
+    \u6587\u5B57\n- \u6E05\u9664\u6309\u94AE\u529F\u80FD\n- \u9519\u8BEF\u63D0\u793A\
+    \u548C\u5B57\u7B26\u8BA1\u6570\n"
+  id: ISSUE-UI001~c3
+  name: "\u57FA\u7840\u7EC4\u4EF6 - Input \u8F93\u5165\u6846"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/Input/Input.tsx
+      - apps/mobile/src/components/Input/Input.test.tsx
+      prompt: "\u68C0\u67E5 Input \u7EC4\u4EF6\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \ Input.tsx \u7EC4\u4EF6\u6587\u4EF6\uFF0C\u652F\u6301 type\u3001error\u3001\
+        disabled\u3001prefix\u3001suffix\u3001clearable \u7B49 props\uFF0C\u6709\u5BF9\
+        \u5E94\u7684\u5355\u5143\u6D4B\u8BD5"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0 Card \u548C Modal \u7EC4\u4EF6:\n- Card\uFF1A\u53EF\u70B9\
+    \u51FB\u3001\u5E26\u9634\u5F71\u3001\u5706\u89D2\u3001\u652F\u6301\u5934\u90E8\
+    /\u5185\u5BB9/\u5E95\u90E8\u7ED3\u6784\n- Modal\uFF1A\u906E\u7F69\u5C42\u3001\u52A8\
+    \u753B\u8FC7\u6E21\u3001\u70B9\u51FB\u906E\u7F69\u5173\u95ED\u3001\u624B\u52BF\
+    \u6ED1\u52A8\u5173\u95ED\n- \u652F\u6301\u81EA\u5B9A\u4E49\u5185\u5BB9\u548C\u64CD\
+    \u4F5C\u6309\u94AE\n"
+  id: ISSUE-UI001~c4
+  name: "\u57FA\u7840\u7EC4\u4EF6 - Card \u5361\u7247\u4E0E Modal \u5F39\u7A97"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/Card/Card.tsx
+      - apps/mobile/src/components/Modal/Modal.tsx
+      prompt: "\u68C0\u67E5 Card \u548C Modal \u7EC4\u4EF6\u5B9E\u73B0\uFF0C\u9A8C\
+        \u8BC1\u6709 Card.tsx \u548C Modal.tsx \u6587\u4EF6\uFF0CCard \u652F\u6301\
+        \ pressable\u3001header/content/footer \u7ED3\u6784\uFF1BModal \u652F\u6301\
+        \ visible \u63A7\u5236\u3001\u52A8\u753B\u3001\u906E\u7F69\u70B9\u51FB\u5173\
+        \u95ED"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: not_needed
+    unit: not_needed
+  description: "\u5EFA\u7ACB\u56FE\u6807\u7CFB\u7EDF:\n- \u4F7F\u7528\u7EDF\u4E00\u7684\
+    \u56FE\u6807\u5E93\uFF08\u5982 react-native-vector-icons \u6216\u81EA\u5B9A\u4E49\
+    \ SVG\uFF09\n- \u56FE\u6807\u5206\u7C7B\uFF1A\u5BFC\u822A\u3001\u64CD\u4F5C\u3001\
+    \u72B6\u6001\u3001\u573A\u666F\n- \u652F\u6301\u5C3A\u5BF8\u548C\u989C\u8272\u81EA\
+    \u5B9A\u4E49\n- \u56FE\u7247\u8D44\u6E90\u4F18\u5316\u548C\u7F13\u5B58\u7B56\u7565\
+    \n"
+  id: ISSUE-UI001~c5
+  name: "\u56FE\u6807\u7CFB\u7EDF\u4E0E\u8D44\u6E90\u7BA1\u7406"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/Icon/Icon.tsx
+      - apps/mobile/src/assets/icons/index.ts
+      prompt: "\u68C0\u67E5\u56FE\u6807\u7CFB\u7EDF\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \ Icon \u7EC4\u4EF6\u6216\u56FE\u6807\u5BFC\u51FA\u6587\u4EF6\uFF0C\u652F\u6301\
+        \ name\u3001size\u3001color props\uFF0C\u786E\u8BA4\u4F7F\u7528\u4E86\u7EDF\
+        \u4E00\u7684\u56FE\u6807\u5E93"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: not_needed
+    unit: not_needed
+  description: "\u5EFA\u7ACB\u7EC4\u4EF6\u6587\u6863\u4F53\u7CFB:\n- \u914D\u7F6E\
+    \ Storybook \u6216\u7B49\u6548\u5DE5\u5177\u5C55\u793A\u7EC4\u4EF6\n- \u6BCF\u4E2A\
+    \u7EC4\u4EF6\u5305\u542B\u7528\u6CD5\u793A\u4F8B\u3001Props \u8BF4\u660E\n- \u89C6\
+    \u89C9\u56DE\u5F52\u6D4B\u8BD5\u57FA\u7840\n- \u8BBE\u8BA1\u7CFB\u7EDF\u6587\u6863\
+    \u7F51\u7AD9\n"
+  id: ISSUE-UI001~c6
+  name: "\u7EC4\u4EF6\u6587\u6863\u4E0E Storybook"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - .storybook/main.js
+      - apps/mobile/src/components/README.md
+      prompt: "\u68C0\u67E5\u7EC4\u4EF6\u6587\u6863\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \ .storybook \u914D\u7F6E\u6216\u7EC4\u4EF6\u6587\u6863\u76EE\u5F55\uFF0C\u5305\
+        \u542B Button\u3001Input\u3001Card\u3001Modal \u7B49\u7EC4\u4EF6\u7684\u4F7F\
+        \u7528\u793A\u4F8B\u548C Props \u8868\u683C"
+current_task: ''
+description: "\u5EFA\u7ACB BridgeAI \u7EDF\u4E00\u8BBE\u8BA1\u7CFB\u7EDF\uFF0C\u5305\
+  \u542B\u8272\u5F69\u3001\u5B57\u4F53\u3001\u95F4\u8DDD\u89C4\u8303\uFF0C\n\u4EE5\
+  \u53CA\u57FA\u7840UI\u7EC4\u4EF6\u5E93\uFF08Button\u3001Input\u3001Card\u3001Modal\u7B49\
+  \uFF09\u3002\n\u4F7F\u7528 React Native \u5B9E\u73B0\u8DE8\u5E73\u53F0\u4E00\u81F4\
+  \u7684\u89C6\u89C9\u4F53\u9A8C\u3002\n"
+id: ISSUE-UI001
+implementation:
+  completed_at: '2026-04-10T16:00:00+08:00'
+  execution_time_minutes: 30
+  notes: Successfully implemented all design system components
+  result: success
+  task_id: TASK-2
+issue_number: 1101
+logic: sufficient_necessary
+merged_to_master: true
+prerequisites:
+- ISSUE-F004
+slug: design-system
+status: accepted
+test_passed: true
+title: "\u8BBE\u8BA1\u7CFB\u7EDF\u4E0E\u7EC4\u4EF6\u5E93"
+worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-UI001

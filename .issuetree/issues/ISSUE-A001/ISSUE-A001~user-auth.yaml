@@ -1,155 +1,153 @@
----
-id: "ISSUE-A001"
-issue_number: 201
-title: "用户注册与登录系统"
-slug: "user-auth"
-status: "passed"
-description: |
-  实现用户注册和登录功能，支持手机号/邮箱注册、
-  密码登录、验证码登录、第三方登录(微信/Google)等认证方式。
-prerequisites:
-  - "ISSUE-F002"
-  - "ISSUE-F003"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-A001~c1"
-    name: "用户注册 API"
-    description: |
-      实现注册接口:
-      - 手机号/邮箱注册
-      - 密码强度验证
-      - 验证码发送和校验
-      - 用户唯一性检查
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查用户注册 API 实现，验证有 /api/v1/auth/register 端点，包含手机号/邮箱验证和密码加密"
-        context_files: ["apps/server/src/routes/auth.ts", "apps/server/src/services/authService.ts"]
-        
-
-  - id: "ISSUE-A001~c2"
-    name: "用户登录 API"
-    description: |
-      实现登录接口:
-      - 密码登录
-      - 验证码登录
-      - 登录失败处理(限制重试)
-      - 登录日志记录
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查用户登录 API 实现，验证有 /api/v1/auth/login 端点，包含密码验证和失败限制机制"
-        context_files: ["apps/server/src/routes/auth.ts", "apps/server/src/services/authService.ts"]
-        
-
-  - id: "ISSUE-A001~c3"
-    name: "第三方登录集成"
-    description: |
-      第三方登录:
-      - 微信 OAuth 登录
-      - Google OAuth 登录
-      - OAuth 回调处理
-      - 账号绑定和解绑
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查第三方登录实现，验证有微信和 Google OAuth 集成，确认回调处理正确"
-        context_files: ["apps/server/src/services/oauthService.ts", "apps/server/src/routes/oauth.ts"]
-        
-
-  - id: "ISSUE-A001~c4"
-    name: "密码重置功能"
-    description: |
-      密码重置:
-      - 忘记密码申请
-      - 重置验证码发送
-      - 密码重置确认
-      - 重置令牌有效期
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查密码重置功能，验证有 /api/v1/auth/forgot-password 和 reset-password 端点"
-        context_files: ["apps/server/src/routes/auth.ts"]
-        
-
-  - id: "ISSUE-A001~c5"
-    name: "移动端登录界面"
-    description: |
-      移动端登录 UI:
-      - 登录表单(手机号/密码)
-      - 验证码输入界面
-      - 第三方登录按钮
-      - 注册入口
-    status: "passed"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查移动端登录界面，验证有 LoginScreen 组件，包含表单验证和第三方登录按钮"
-        context_files: ["apps/mobile/src/screens/Auth/LoginScreen.tsx"]
-        
-
-  - id: "ISSUE-A001~c6"
-    name: "注册界面和安全"
-    description: |
-      注册流程:
-      - 注册表单验证
-      - 密码确认
-      - 服务条款同意
-      - 密码加密存储(bcrypt)
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查注册实现，验证密码使用 bcrypt 加密存储，确认有密码强度验证"
-        context_files: ["apps/server/src/services/authService.ts", "apps/mobile/src/screens/Auth/RegisterScreen.tsx"]
-        
-
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u6CE8\u518C\u63A5\u53E3:\n- \u624B\u673A\u53F7/\u90AE\
+    \u7BB1\u6CE8\u518C\n- \u5BC6\u7801\u5F3A\u5EA6\u9A8C\u8BC1\n- \u9A8C\u8BC1\u7801\
+    \u53D1\u9001\u548C\u6821\u9A8C\n- \u7528\u6237\u552F\u4E00\u6027\u68C0\u67E5\n"
+  id: ISSUE-A001~c1
+  name: "\u7528\u6237\u6CE8\u518C API"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/auth.ts
+      - apps/server/src/services/authService.ts
+      prompt: "\u68C0\u67E5\u7528\u6237\u6CE8\u518C API \u5B9E\u73B0\uFF0C\u9A8C\u8BC1\
+        \u6709 /api/v1/auth/register \u7AEF\u70B9\uFF0C\u5305\u542B\u624B\u673A\u53F7\
+        /\u90AE\u7BB1\u9A8C\u8BC1\u548C\u5BC6\u7801\u52A0\u5BC6"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u767B\u5F55\u63A5\u53E3:\n- \u5BC6\u7801\u767B\u5F55\n\
+    - \u9A8C\u8BC1\u7801\u767B\u5F55\n- \u767B\u5F55\u5931\u8D25\u5904\u7406(\u9650\
+    \u5236\u91CD\u8BD5)\n- \u767B\u5F55\u65E5\u5FD7\u8BB0\u5F55\n"
+  id: ISSUE-A001~c2
+  name: "\u7528\u6237\u767B\u5F55 API"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/auth.ts
+      - apps/server/src/services/authService.ts
+      prompt: "\u68C0\u67E5\u7528\u6237\u767B\u5F55 API \u5B9E\u73B0\uFF0C\u9A8C\u8BC1\
+        \u6709 /api/v1/auth/login \u7AEF\u70B9\uFF0C\u5305\u542B\u5BC6\u7801\u9A8C\
+        \u8BC1\u548C\u5931\u8D25\u9650\u5236\u673A\u5236"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u7B2C\u4E09\u65B9\u767B\u5F55:\n- \u5FAE\u4FE1 OAuth \u767B\u5F55\
+    \n- Google OAuth \u767B\u5F55\n- OAuth \u56DE\u8C03\u5904\u7406\n- \u8D26\u53F7\
+    \u7ED1\u5B9A\u548C\u89E3\u7ED1\n"
+  id: ISSUE-A001~c3
+  name: "\u7B2C\u4E09\u65B9\u767B\u5F55\u96C6\u6210"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/oauthService.ts
+      - apps/server/src/routes/oauth.ts
+      prompt: "\u68C0\u67E5\u7B2C\u4E09\u65B9\u767B\u5F55\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\
+        \u6709\u5FAE\u4FE1\u548C Google OAuth \u96C6\u6210\uFF0C\u786E\u8BA4\u56DE\
+        \u8C03\u5904\u7406\u6B63\u786E"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5BC6\u7801\u91CD\u7F6E:\n- \u5FD8\u8BB0\u5BC6\u7801\u7533\u8BF7\n\
+    - \u91CD\u7F6E\u9A8C\u8BC1\u7801\u53D1\u9001\n- \u5BC6\u7801\u91CD\u7F6E\u786E\
+    \u8BA4\n- \u91CD\u7F6E\u4EE4\u724C\u6709\u6548\u671F\n"
+  id: ISSUE-A001~c4
+  name: "\u5BC6\u7801\u91CD\u7F6E\u529F\u80FD"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/auth.ts
+      prompt: "\u68C0\u67E5\u5BC6\u7801\u91CD\u7F6E\u529F\u80FD\uFF0C\u9A8C\u8BC1\u6709\
+        \ /api/v1/auth/forgot-password \u548C reset-password \u7AEF\u70B9"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u79FB\u52A8\u7AEF\u767B\u5F55 UI:\n- \u767B\u5F55\u8868\u5355(\u624B\
+    \u673A\u53F7/\u5BC6\u7801)\n- \u9A8C\u8BC1\u7801\u8F93\u5165\u754C\u9762\n- \u7B2C\
+    \u4E09\u65B9\u767B\u5F55\u6309\u94AE\n- \u6CE8\u518C\u5165\u53E3\n"
+  id: ISSUE-A001~c5
+  name: "\u79FB\u52A8\u7AEF\u767B\u5F55\u754C\u9762"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Auth/LoginScreen.tsx
+      prompt: "\u68C0\u67E5\u79FB\u52A8\u7AEF\u767B\u5F55\u754C\u9762\uFF0C\u9A8C\u8BC1\
+        \u6709 LoginScreen \u7EC4\u4EF6\uFF0C\u5305\u542B\u8868\u5355\u9A8C\u8BC1\u548C\
+        \u7B2C\u4E09\u65B9\u767B\u5F55\u6309\u94AE"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u6CE8\u518C\u6D41\u7A0B:\n- \u6CE8\u518C\u8868\u5355\u9A8C\u8BC1\n\
+    - \u5BC6\u7801\u786E\u8BA4\n- \u670D\u52A1\u6761\u6B3E\u540C\u610F\n- \u5BC6\u7801\
+    \u52A0\u5BC6\u5B58\u50A8(bcrypt)\n"
+  id: ISSUE-A001~c6
+  name: "\u6CE8\u518C\u754C\u9762\u548C\u5B89\u5168"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/authService.ts
+      - apps/mobile/src/screens/Auth/RegisterScreen.tsx
+      prompt: "\u68C0\u67E5\u6CE8\u518C\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u5BC6\u7801\u4F7F\
+        \u7528 bcrypt \u52A0\u5BC6\u5B58\u50A8\uFF0C\u786E\u8BA4\u6709\u5BC6\u7801\
+        \u5F3A\u5EA6\u9A8C\u8BC1"
+current_task: ''
+description: "\u5B9E\u73B0\u7528\u6237\u6CE8\u518C\u548C\u767B\u5F55\u529F\u80FD\uFF0C\
+  \u652F\u6301\u624B\u673A\u53F7/\u90AE\u7BB1\u6CE8\u518C\u3001\n\u5BC6\u7801\u767B\
+  \u5F55\u3001\u9A8C\u8BC1\u7801\u767B\u5F55\u3001\u7B2C\u4E09\u65B9\u767B\u5F55(\u5FAE\
+  \u4FE1/Google)\u7B49\u8BA4\u8BC1\u65B9\u5F0F\u3002\n"
+id: ISSUE-A001
 implementation:
-  completed_at: "2026-04-10"
-  result: "success"
-  notes: |
-    All 6 criteria implemented:
+  completed_at: '2026-04-10'
+  notes: 'All 6 criteria implemented:
+
     - C1: User registration API with phone/email, password validation
+
     - C2: User login API with password/code login, rate limiting
+
     - C3: Third-party OAuth (WeChat/Google) with bind/unbind
+
     - C4: Password reset with token-based flow
+
     - C5: Mobile login UI with third-party buttons
+
     - C6: Registration UI with bcrypt password encryption
 
-test_passed: true
+    '
+  result: success
+issue_number: 201
+logic: sufficient_necessary
 merged_to_master: true
+prerequisites:
+- ISSUE-F002
+- ISSUE-F003
+slug: user-auth
+status: accepted
+test_passed: true
+title: "\u7528\u6237\u6CE8\u518C\u4E0E\u767B\u5F55\u7CFB\u7EDF"

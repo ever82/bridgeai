@@ -1,347 +1,301 @@
+/**
+ * Enhanced Rate Limiter Middleware
+ *
+ * Provides IP-based, user-based, and endpoint-differentiated rate limiting
+ * with X-RateLimit-* response headers.
+ */
 import { Request, Response, NextFunction } from 'express';
 import { rateLimit, RateLimitRequestHandler } from 'express-rate-limit';
-import RedisStore from 'rate-limit-redis';
-import { redis } from '../services/redis';
+import {
+  rateLimitConfigs,
+  userTierLimits,
+  getRateLimitConfig,
+  rateLimitEnv,
+} from '../config/rateLimit';
 
-/**
- * Circuit Breaker State
- */
-enum CircuitState {
-  CLOSED = 'CLOSED',     // Normal operation
-  OPEN = 'OPEN',         // Circuit open, rejecting requests
-  HALF_OPEN = 'HALF_OPEN', // Testing if service recovered
+// In-memory store for user-based rate limiting (replace with Redis in production)
+interface UserRequestRecord {
+  count: number;
+  resetTime: number;
 }
 
-interface CircuitBreakerOptions {
-  failureThreshold: number;      // Number of failures before opening
-  timeoutDuration: number;       // Time before attempting reset (ms)
-  successThreshold: number;      // Successes required to close circuit
+const userRequestStore = new Map<string, UserRequestRecord>();
+
+// Get client identifier (user ID if authenticated, IP otherwise)
+function getClientIdentifier(req: Request): string {
+  // If user is authenticated, use user ID
+  if (req.user?.id) {
+    return `user:${req.user.id}`;
+  }
+  // Otherwise use IP address
+  return `ip:${req.ip || req.socket.remoteAddress || 'unknown'}`;
 }
 
+// Get user tier for rate limiting
+function getUserTier(req: Request): keyof typeof userTierLimits {
+  if (req.user?.role === 'admin') return 'admin';
+  if (req.user?.isPremium) return 'premium';
+  if (req.user?.id) return 'authenticated';
+  return 'anonymous';
+}
+
+// Clean up expired entries from the store (called periodically)
+function cleanupExpiredEntries(): void {
+  const now = Date.now();
+  for (const [key, record] of userRequestStore.entries()) {
+    if (record.resetTime <= now) {
+      userRequestStore.delete(key);
+    }
+  }
+}
+
+// Run cleanup every 5 minutes
+setInterval(cleanupExpiredEntries, 5 * 60 * 1000);
+
 /**
- * Circuit Breaker for API protection
+ * Get rate limit headers for response
  */
-class CircuitBreaker {
-  private state: CircuitState = CircuitState.CLOSED;
-  private failureCount = 0;
-  private successCount = 0;
-  private nextAttempt = Date.now();
-  private options: CircuitBreakerOptions;
+export function getRateLimitHeaders(
+  identifier: string,
+  config: typeof rateLimitConfigs.default
+): Record<string, string> {
+  const record = userRequestStore.get(identifier);
+  const now = Date.now();
 
-  constructor(options: Partial<CircuitBreakerOptions> = {}) {
-    this.options = {
-      failureThreshold: options.failureThreshold || 5,
-      timeoutDuration: options.timeoutDuration || 60000, // 1 minute
-      successThreshold: options.successThreshold || 2,
-    };
-  }
-
-  /**
-   * Check if request should be allowed
-   */
-  canExecute(): boolean {
-    switch (this.state) {
-      case CircuitState.CLOSED:
-        return true;
-      case CircuitState.OPEN:
-        if (Date.now() >= this.nextAttempt) {
-          this.state = CircuitState.HALF_OPEN;
-          return true;
-        }
-        return false;
-      case CircuitState.HALF_OPEN:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Record successful request
-   */
-  recordSuccess(): void {
-    this.failureCount = 0;
-
-    if (this.state === CircuitState.HALF_OPEN) {
-      this.successCount++;
-      if (this.successCount >= this.options.successThreshold) {
-        this.state = CircuitState.CLOSED;
-        this.successCount = 0;
-        console.log('[CircuitBreaker] Circuit closed');
-      }
-    }
-  }
-
-  /**
-   * Record failed request
-   */
-  recordFailure(): void {
-    this.failureCount++;
-
-    if (this.failureCount >= this.options.failureThreshold) {
-      this.state = CircuitState.OPEN;
-      this.nextAttempt = Date.now() + this.options.timeoutDuration;
-      console.log(`[CircuitBreaker] Circuit opened, retry after ${this.options.timeoutDuration}ms`);
-    }
-  }
-
-  /**
-   * Get current state
-   */
-  getState(): CircuitState {
-    return this.state;
-  }
-
-  /**
-   * Get metrics
-   */
-  getMetrics(): {
-    state: CircuitState;
-    failureCount: number;
-    successCount: number;
-    nextAttempt: number;
-  } {
+  if (!record || record.resetTime <= now) {
+    // New window
     return {
-      state: this.state,
-      failureCount: this.failureCount,
-      successCount: this.successCount,
-      nextAttempt: this.nextAttempt,
+      'X-RateLimit-Limit': config.maxRequests.toString(),
+      'X-RateLimit-Remaining': (config.maxRequests - 1).toString(),
+      'X-RateLimit-Reset': Math.ceil((now + config.windowMs) / 1000).toString(),
     };
   }
-}
 
-// Circuit breakers per route
-const circuitBreakers = new Map<string, CircuitBreaker>();
-
-/**
- * Get or create circuit breaker for a route
- */
-function getCircuitBreaker(route: string): CircuitBreaker {
-  if (!circuitBreakers.has(route)) {
-    circuitBreakers.set(route, new CircuitBreaker({
-      failureThreshold: 5,
-      timeoutDuration: 30000, // 30 seconds
-      successThreshold: 2,
-    }));
-  }
-  return circuitBreakers.get(route)!;
-}
-
-/**
- * Circuit breaker middleware
- */
-export function circuitBreakerMiddleware(route: string = 'default') {
-  const breaker = getCircuitBreaker(route);
-
-  return (req: Request, res: Response, next: NextFunction): void => {
-    if (!breaker.canExecute()) {
-      res.status(503).json({
-        success: false,
-        message: 'Service temporarily unavailable. Please try again later.',
-        errorCode: 'CIRCUIT_OPEN',
-        retryAfter: Math.ceil((breaker.getMetrics().nextAttempt - Date.now()) / 1000),
-      });
-      return;
-    }
-
-    // Track response
-    const originalSend = res.send.bind(res);
-    res.send = function(body: unknown): Response {
-      const statusCode = res.statusCode;
-
-      if (statusCode >= 500) {
-        breaker.recordFailure();
-      } else {
-        breaker.recordSuccess();
-      }
-
-      return originalSend(body);
-    };
-
-    next();
-  };
-}
-
-/**
- * Redis-backed rate limiter
- */
-function createRedisRateLimiter(options: {
-  windowMs: number;
-  max: number;
-  keyPrefix: string;
-  handler?: (req: Request, res: Response) => void;
-}): RateLimitRequestHandler {
-  return rateLimit({
-    windowMs: options.windowMs,
-    max: options.max,
-    standardHeaders: true,
-    legacyHeaders: false,
-    keyGenerator: (req: Request) => {
-      // Use user ID if authenticated, otherwise IP
-      const userId = (req as any).user?.id;
-      const identifier = userId || req.ip;
-      return `${options.keyPrefix}:${identifier}`;
-    },
-    store: new RedisStore({
-      sendCommand: (...args: string[]) => redis.call(...args),
-      prefix: options.keyPrefix,
-    }),
-    handler: options.handler || ((req: Request, res: Response) => {
-      res.status(429).json({
-        success: false,
-        message: 'Too many requests, please try again later.',
-        errorCode: 'RATE_LIMIT_EXCEEDED',
-      });
-    }),
-  });
-}
-
-/**
- * Standard API rate limiter
- * 100 requests per 15 minutes per IP/user
- */
-export const apiLimiter = createRedisRateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  keyPrefix: 'ratelimit:api',
-});
-
-/**
- * Stricter rate limiter for auth endpoints
- * 5 requests per 15 minutes per IP
- */
-export const authLimiter = createRedisRateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
-  keyPrefix: 'ratelimit:auth',
-  handler: (req: Request, res: Response) => {
-    res.status(429).json({
-      success: false,
-      message: 'Too many login attempts, please try again later.',
-      errorCode: 'AUTH_RATE_LIMIT_EXCEEDED',
-    });
-  },
-});
-
-/**
- * Rate limiter for write operations
- * 30 requests per minute per user
- */
-export const writeLimiter = createRedisRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  max: 30, // Limit each user to 30 write operations per minute
-  keyPrefix: 'ratelimit:write',
-  handler: (req: Request, res: Response) => {
-    res.status(429).json({
-      success: false,
-      message: 'Write operations limit exceeded. Please slow down.',
-      errorCode: 'WRITE_RATE_LIMIT_EXCEEDED',
-    });
-  },
-});
-
-/**
- * Rate limiter for search endpoints
- * 20 requests per minute per user
- */
-export const searchLimiter = createRedisRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  max: 20, // Limit each user to 20 searches per minute
-  keyPrefix: 'ratelimit:search',
-  handler: (req: Request, res: Response) => {
-    res.status(429).json({
-      success: false,
-      message: 'Search rate limit exceeded. Please try again later.',
-      errorCode: 'SEARCH_RATE_LIMIT_EXCEEDED',
-    });
-  },
-});
-
-/**
- * Burst rate limiter for high-traffic endpoints
- * Allows burst traffic but throttles sustained load
- */
-export const burstLimiter = createRedisRateLimiter({
-  windowMs: 1000, // 1 second
-  max: 10, // 10 requests per second
-  keyPrefix: 'ratelimit:burst',
-});
-
-/**
- * Get rate limit status for a user
- */
-export async function getRateLimitStatus(
-  identifier: string
-): Promise<{
-  remaining: number;
-  resetTime: Date;
-  total: number;
-}> {
-  const keys = ['ratelimit:api', 'ratelimit:auth', 'ratelimit:write', 'ratelimit:search'];
-  const results: { remaining: number; resetTime: number; total: number }[] = [];
-
-  for (const keyPrefix of keys) {
-    const key = `${keyPrefix}:${identifier}`;
-    const ttl = await redis.ttl(key);
-    const current = await redis.get(key);
-    const limit = keyPrefix.includes('auth') ? 5 :
-                  keyPrefix.includes('write') ? 30 :
-                  keyPrefix.includes('search') ? 20 : 100;
-
-    results.push({
-      remaining: Math.max(0, limit - (parseInt(current || '0', 10))),
-      resetTime: Date.now() + (ttl * 1000),
-      total: limit,
-    });
-  }
-
-  // Return the most restrictive
-  const mostRestrictive = results.reduce((prev, current) =>
-    prev.remaining < current.remaining ? prev : current
-  );
-
+  const remaining = Math.max(0, config.maxRequests - record.count);
   return {
-    remaining: mostRestrictive.remaining,
-    resetTime: new Date(mostRestrictive.resetTime),
-    total: mostRestrictive.total,
+    'X-RateLimit-Limit': config.maxRequests.toString(),
+    'X-RateLimit-Remaining': remaining.toString(),
+    'X-RateLimit-Reset': Math.ceil(record.resetTime / 1000).toString(),
   };
 }
 
 /**
- * Reset rate limit for a user
+ * User-based rate limiter middleware
+ * Checks and updates rate limit for authenticated users
  */
-export async function resetRateLimit(identifier: string): Promise<void> {
-  const keys = ['ratelimit:api', 'ratelimit:auth', 'ratelimit:write', 'ratelimit:search'];
+export function userRateLimiter(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  const identifier = getClientIdentifier(req);
+  const tier = getUserTier(req);
+  const tierConfig = userTierLimits[tier];
 
-  for (const keyPrefix of keys) {
-    const key = `${keyPrefix}:${identifier}`;
-    await redis.del(key);
+  // Convert per-minute to window-based
+  const windowMs = 60 * 1000; // 1 minute window for user-based limiting
+  const maxRequests = tierConfig.requestsPerMinute;
+
+  const now = Date.now();
+  let record = userRequestStore.get(identifier);
+
+  if (!record || record.resetTime <= now) {
+    // Start new window
+    record = {
+      count: 1,
+      resetTime: now + windowMs,
+    };
+    userRequestStore.set(identifier, record);
+  } else {
+    record.count++;
   }
-}
 
-/**
- * Middleware to add rate limit headers
- */
-export function rateLimitHeaders(req: Request, res: Response, next: NextFunction): void {
-  res.on('finish', () => {
-    // Add rate limit info headers if available
-    const remaining = res.getHeader('X-RateLimit-Remaining');
-    if (remaining) {
-      res.setHeader('X-RateLimit-Policy', '100;w=900');
-    }
+  // Set rate limit headers
+  const headers = getRateLimitHeaders(identifier, {
+    windowMs,
+    maxRequests,
   });
+  res.set(headers);
+
+  // Check if limit exceeded
+  if (record.count > maxRequests) {
+    res.status(429).json({
+      success: false,
+      error: {
+        code: 'USER_RATE_LIMIT_EXCEEDED',
+        message: `Rate limit exceeded for ${tier} users. Please try again later.`,
+        retryAfter: Math.ceil((record.resetTime - now) / 1000),
+      },
+    });
+    return;
+  }
 
   next();
 }
 
-export default {
-  apiLimiter,
-  authLimiter,
-  writeLimiter,
-  searchLimiter,
-  burstLimiter,
-  circuitBreakerMiddleware,
-  getRateLimitStatus,
-  resetRateLimit,
-  rateLimitHeaders,
-};
+/**
+ * Endpoint-differentiated rate limiter
+ * Creates a rate limiter based on the endpoint being accessed
+ */
+export function endpointRateLimiter(): RateLimitRequestHandler {
+  return rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: (req: Request) => {
+      const config = getRateLimitConfig(req.path);
+      return config.maxRequests;
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: Request) => {
+      // Use user ID if available, otherwise IP
+      return req.user?.id?.toString() || req.ip || 'unknown';
+    },
+    handler: (req: Request, res: Response) => {
+      const config = getRateLimitConfig(req.path);
+      res.status(429).json({
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: config.message || 'Too many requests, please try again later.',
+        },
+      });
+    },
+    skip: (req: Request) => {
+      // Skip rate limiting for health checks
+      return req.path === '/health' || req.path === '/ready';
+    },
+  });
+}
+
+/**
+ * Enhanced IP-based rate limiter with tiered limits
+ */
+export const enhancedIpLimiter = rateLimit({
+  windowMs: rateLimitConfigs.default.windowMs,
+  max: rateLimitConfigs.default.maxRequests,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request): string => {
+    // Get real client IP behind proxy
+    const forwarded = req.headers['x-forwarded-for'];
+    if (typeof forwarded === 'string') {
+      return forwarded.split(',')[0].trim();
+    }
+    return req.ip || req.socket.remoteAddress || 'unknown';
+  },
+  handler: (req: Request, res: Response) => {
+    res.status(429).json({
+      success: false,
+      error: {
+        code: 'IP_RATE_LIMIT_EXCEEDED',
+        message: 'Too many requests from this IP, please try again later.',
+      },
+    });
+  },
+  skip: (req: Request) => {
+    // Skip health checks
+    return req.path === '/health' || req.path === '/ready';
+  },
+});
+
+/**
+ * Strict rate limiter for authentication endpoints
+ */
+export const strictAuthLimiter = rateLimit({
+  windowMs: rateLimitConfigs.auth.windowMs,
+  max: rateLimitConfigs.auth.maxRequests,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: rateLimitConfigs.auth.skipSuccessfulRequests,
+  keyGenerator: (req: Request): string => {
+    // Use combination of IP and username/email if available
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const username = req.body?.username || req.body?.email || '';
+    return username ? `${ip}:${username}` : ip;
+  },
+  handler: (req: Request, res: Response) => {
+    res.status(429).json({
+      success: false,
+      error: {
+        code: 'AUTH_RATE_LIMIT_EXCEEDED',
+        message: rateLimitConfigs.auth.message!,
+        retryAfter: Math.ceil(rateLimitConfigs.auth.windowMs / 1000),
+      },
+    });
+  },
+});
+
+/**
+ * Upload rate limiter
+ */
+export const uploadLimiter = rateLimit({
+  windowMs: rateLimitConfigs.upload.windowMs,
+  max: rateLimitConfigs.upload.maxRequests,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    res.status(429).json({
+      success: false,
+      error: {
+        code: 'UPLOAD_RATE_LIMIT_EXCEEDED',
+        message: rateLimitConfigs.upload.message!,
+      },
+    });
+  },
+});
+
+/**
+ * Search rate limiter
+ */
+export const searchLimiter = rateLimit({
+  windowMs: rateLimitConfigs.search.windowMs,
+  max: rateLimitConfigs.search.maxRequests,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    res.status(429).json({
+      success: false,
+      error: {
+        code: 'SEARCH_RATE_LIMIT_EXCEEDED',
+        message: rateLimitConfigs.search.message!,
+      },
+    });
+  },
+});
+
+/**
+ * Combined rate limiter that applies multiple strategies
+ * Use this as the main rate limiting middleware
+ */
+export function combinedRateLimiter(): RateLimitRequestHandler {
+  return rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Default max
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: Request): string => {
+      const userId = req.user?.id;
+      const ip = req.ip || req.socket.remoteAddress || 'unknown';
+      return userId ? `user:${userId}` : `ip:${ip}`;
+    },
+    handler: (req: Request, res: Response) => {
+      res.status(429).json({
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many requests, please try again later.',
+          retryAfter: 900, // 15 minutes in seconds
+        },
+      });
+    },
+    skip: (req: Request) => {
+      // Skip health checks and internal endpoints
+      return req.path === '/health' ||
+             req.path === '/ready' ||
+             req.path.startsWith('/internal/');
+    },
+  });
+}
+
+// Export the original limiters for backward compatibility
+export { apiLimiter, authLimiter } from './rateLimit';

@@ -1,118 +1,105 @@
----
-id: "ISSUE-M003"
-issue_number: 404
-title: "匹配度算法实现"
-slug: "match-algorithm"
-status: "pending"
-description: |
-  实现高精度的匹配度算法，综合计算需求与供给的
-  匹配程度，支持多种场景的匹配需求。
-prerequisites:
-  - "ISSUE-M002"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-M003~c1"
-    name: "匹配度计算模型"
-    description: |
-      算法模型:
-      - 多维度匹配评分
-      - 权重配置系统
-      - 场景特定算法
-      - 机器学习优化
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查匹配度模型，验证有 MatchScoringModel 和维度权重配置"
-        context_files: ["apps/server/src/services/matchAlgorithm.ts"]
-        
-
-  - id: "ISSUE-M003~c2"
-    name: "L1/L2/L3 匹配计算"
-    description: |
-      分层匹配:
-      - L1 基础属性匹配
-      - L2 结构化信息匹配
-      - L3 语义匹配(AI)
-      - 综合匹配分数
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查分层匹配，验证有 L1Matcher, L2Matcher, L3Matcher 分别计算匹配度"
-        context_files: ["apps/server/src/services/matchers/"]
-        
-
-  - id: "ISSUE-M003~c3"
-    name: "匹配度 API"
-    description: |
-      匹配接口:
-      - 计算匹配度端点
-      - 批量匹配计算
-      - 匹配度缓存
-      - 匹配解释
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查匹配度 API，验证有 /api/v1/matches/calculate 端点计算匹配度"
-        context_files: ["apps/server/src/routes/matches.ts"]
-        
-
-  - id: "ISSUE-M003~c4"
-    name: "匹配度可视化"
-    description: |
-      可视化展示:
-      - 匹配度分数展示
-      - 匹配维度雷达图
-      - 匹配解释说明
-      - 匹配建议
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查匹配度可视化，验证有 MatchScore 组件展示匹配分数和维度分析"
-        context_files: ["apps/mobile/src/components/MatchScore/"]
-        
-
-  - id: "ISSUE-M003~c5"
-    name: "匹配算法 A/B 测试"
-    description: |
-      算法优化:
-      - 多算法版本支持
-      - A/B 测试框架
-      - 效果数据收集
-      - 算法迭代优化
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 A/B 测试，验证有算法版本切换和效果追踪"
-        context_files: ["apps/server/src/services/matchABTest.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u7B97\u6CD5\u6A21\u578B:\n- \u591A\u7EF4\u5EA6\u5339\u914D\u8BC4\u5206\
+    \n- \u6743\u91CD\u914D\u7F6E\u7CFB\u7EDF\n- \u573A\u666F\u7279\u5B9A\u7B97\u6CD5\
+    \n- \u673A\u5668\u5B66\u4E60\u4F18\u5316\n"
+  id: ISSUE-M003~c1
+  name: "\u5339\u914D\u5EA6\u8BA1\u7B97\u6A21\u578B"
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/matchAlgorithm.ts
+      prompt: "\u68C0\u67E5\u5339\u914D\u5EA6\u6A21\u578B\uFF0C\u9A8C\u8BC1\u6709\
+        \ MatchScoringModel \u548C\u7EF4\u5EA6\u6743\u91CD\u914D\u7F6E"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5206\u5C42\u5339\u914D:\n- L1 \u57FA\u7840\u5C5E\u6027\u5339\u914D\
+    \n- L2 \u7ED3\u6784\u5316\u4FE1\u606F\u5339\u914D\n- L3 \u8BED\u4E49\u5339\u914D\
+    (AI)\n- \u7EFC\u5408\u5339\u914D\u5206\u6570\n"
+  id: ISSUE-M003~c2
+  name: "L1/L2/L3 \u5339\u914D\u8BA1\u7B97"
+status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/matchers/
+      prompt: "\u68C0\u67E5\u5206\u5C42\u5339\u914D\uFF0C\u9A8C\u8BC1\u6709 L1Matcher,\
+        \ L2Matcher, L3Matcher \u5206\u522B\u8BA1\u7B97\u5339\u914D\u5EA6"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5339\u914D\u63A5\u53E3:\n- \u8BA1\u7B97\u5339\u914D\u5EA6\u7AEF\u70B9\
+    \n- \u6279\u91CF\u5339\u914D\u8BA1\u7B97\n- \u5339\u914D\u5EA6\u7F13\u5B58\n-\
+    \ \u5339\u914D\u89E3\u91CA\n"
+  id: ISSUE-M003~c3
+  name: "\u5339\u914D\u5EA6 API"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/matches.ts
+      prompt: "\u68C0\u67E5\u5339\u914D\u5EA6 API\uFF0C\u9A8C\u8BC1\u6709 /api/v1/matches/calculate\
+        \ \u7AEF\u70B9\u8BA1\u7B97\u5339\u914D\u5EA6"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u53EF\u89C6\u5316\u5C55\u793A:\n- \u5339\u914D\u5EA6\u5206\u6570\u5C55\
+    \u793A\n- \u5339\u914D\u7EF4\u5EA6\u96F7\u8FBE\u56FE\n- \u5339\u914D\u89E3\u91CA\
+    \u8BF4\u660E\n- \u5339\u914D\u5EFA\u8BAE\n"
+  id: ISSUE-M003~c4
+  name: "\u5339\u914D\u5EA6\u53EF\u89C6\u5316"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/MatchScore/
+      prompt: "\u68C0\u67E5\u5339\u914D\u5EA6\u53EF\u89C6\u5316\uFF0C\u9A8C\u8BC1\u6709\
+        \ MatchScore \u7EC4\u4EF6\u5C55\u793A\u5339\u914D\u5206\u6570\u548C\u7EF4\u5EA6\
+        \u5206\u6790"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u7B97\u6CD5\u4F18\u5316:\n- \u591A\u7B97\u6CD5\u7248\u672C\u652F\u6301\
+    \n- A/B \u6D4B\u8BD5\u6846\u67B6\n- \u6548\u679C\u6570\u636E\u6536\u96C6\n- \u7B97\
+    \u6CD5\u8FED\u4EE3\u4F18\u5316\n"
+  id: ISSUE-M003~c5
+  name: "\u5339\u914D\u7B97\u6CD5 A/B \u6D4B\u8BD5"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/matchABTest.ts
+      prompt: "\u68C0\u67E5 A/B \u6D4B\u8BD5\uFF0C\u9A8C\u8BC1\u6709\u7B97\u6CD5\u7248\
+        \u672C\u5207\u6362\u548C\u6548\u679C\u8FFD\u8E2A"
+current_task: null
+description: "\u5B9E\u73B0\u9AD8\u7CBE\u5EA6\u7684\u5339\u914D\u5EA6\u7B97\u6CD5\uFF0C\
+  \u7EFC\u5408\u8BA1\u7B97\u9700\u6C42\u4E0E\u4F9B\u7ED9\u7684\n\u5339\u914D\u7A0B\
+  \u5EA6\uFF0C\u652F\u6301\u591A\u79CD\u573A\u666F\u7684\u5339\u914D\u9700\u6C42\u3002\
+  \n"
+id: ISSUE-M003
+issue_number: 404
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-M002
+slug: match-algorithm
+status: pending
+title: "\u5339\u914D\u5EA6\u7B97\u6CD5\u5B9E\u73B0"

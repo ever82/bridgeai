@@ -3,7 +3,7 @@ id: "ISSUE-M002"
 issue_number: 403
 title: "Agent智能筛选排序"
 slug: "agent-filtering"
-status: "pending"
+status: accepted
 description: |
   实现智能的 Agent 筛选和排序功能，根据用户需求
   和 Agent 供给进行智能匹配。
@@ -119,3 +119,13 @@ criteria:
         prompt: "检查推荐系统，验证有推荐算法和个性化排序"
         context_files: ["apps/server/src/services/recommendation.ts"]
         
+
+implementation:
+  task_id: "TASK-M002-001"
+  completed_at: "2026-04-13T10:45:00+08:00"
+  execution_time_minutes: 45
+  result: "success"
+  notes: "All 5 acceptance criteria implemented successfully"
+test_passed: true
+merged_to_master: false
+worktree_path: ".issuetree/worktrees/ISSUE-M002"

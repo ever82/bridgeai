@@ -2,7 +2,7 @@ id: ISSUE-AI002a
 issue_number: 502
 slug: demand-extraction-core
 title: 需求智能提炼服务 - 核心框架
-status: implemented
+status: completed
 description: |
   实现需求智能提炼服务的核心框架部分，提供基础的解析引擎、
   结构化映射、验证系统和API接口，为后续场景特定提取器提供
@@ -16,6 +16,7 @@ logic: sufficient_necessary
 criteria:
   - id: ISSUE-AI002a~c1
     name: 需求解析引擎
+    status: passed
     description: |
       解析引擎:
       - 自然语言理解
@@ -23,7 +24,6 @@ criteria:
       - 意图分类
       - 需求结构化输出
       - 置信度评分
-status: implemented
     coverage:
       unit: required
       integration: required
@@ -37,6 +37,7 @@ status: implemented
           - apps/server/src/services/ai/demandExtractionService.ts
   - id: ISSUE-AI002a~c3
     name: 需求结构化映射
+    status: passed
     description: |
       映射系统:
       - 提取字段到L2模型映射
@@ -44,7 +45,6 @@ status: implemented
       - 枚举值匹配
       - 缺失字段推断
       - 冲突检测与提示
-status: implemented
     coverage:
       unit: required
       integration: required
@@ -58,6 +58,7 @@ status: implemented
           - apps/server/src/services/ai/mappers/demandToL2Mapper.ts
   - id: ISSUE-AI002a~c5
     name: 提取结果验证
+    status: passed
     description: |
       验证系统:
       - 字段完整性检查
@@ -65,7 +66,6 @@ status: implemented
       - 合理性检查(预算范围等)
       - 用户确认流程
       - 提取结果修正
-status: implemented
     coverage:
       unit: required
       integration: required
@@ -79,6 +79,7 @@ status: implemented
           - apps/server/src/services/ai/validators/extractionValidator.ts
   - id: ISSUE-AI002a~c6
     name: API与集成
+    status: passed
     description: |
       API实现:
       - 需求提取API端点
@@ -86,7 +87,6 @@ status: implemented
       - 提取结果缓存
       - WebSocket实时反馈
       - 场景配置API
-status: implemented
     coverage:
       unit: required
       integration: required
@@ -99,9 +99,9 @@ status: implemented
         context_files:
           - apps/server/src/routes/ai/extraction.ts
 started_at: '2026-04-10T16:47:32.886Z'
-completed_at: '2026-04-10T17:28:31.581Z'
+completed_at: '2026-04-14T00:55:00Z'
 
-current_task: TASK-1775846486
+completed_task: TASK-1775846486
 
 implementation:
   task_id: TASK-002
@@ -136,3 +136,14 @@ implementation:
 
     Unit tests: 64 test cases covering all components
     Commit: 5c154ed feat(AI002a): Implement demand extraction core framework
+
+acceptance:
+  task_id: TASK-1775846486
+  completed_at: '2026-04-14T01:35:00+00:00'
+  result: passed
+  notes: |
+    All acceptance criteria verified and passed:
+    - ISSUE-AI002a~c1: DemandExtractionService with extract() and confidence
+    - ISSUE-AI002a~c3: DemandToL2Mapper mapping to AgentL2Model
+    - ISSUE-AI002a~c5: ExtractionValidator with validate() method
+    - ISSUE-AI002a~c6: /api/v1/ai/extract-demand endpoint with scene parameter

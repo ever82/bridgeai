@@ -2,7 +2,7 @@ id: ISSUE-CR003a
 issue_number: 603.1
 title: 积分账户数据模型
 slug: points-account-data-model
-status: checking
+status: accepted
 description: |
   积分系统数据库设计与基础数据模型实现。
   包括积分账户、交易记录、冻结记录等核心数据表设计。
@@ -21,7 +21,6 @@ criteria:
       - PointsFreeze 表设计(冻结记录用于交易担保)
       - 账户唯一性约束和用户关联
       - 余额非负约束
-status: checking
     coverage:
       unit: required
       integration: required

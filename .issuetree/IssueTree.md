@@ -26,32 +26,29 @@ flowchart TD
         F006[🟢 ISSUE-F006<br/>错误追踪与监控集成]
     end
 
-    subgraph Infrastructure["⚙️ 基础设施层 - Infrastructure"]
-        INF001[⚪ ISSUE-INF001<br/>API Gateway 设计与实现]
-        INF002[⚪ ISSUE-INF002<br/>Redis 缓存层设计与实现]
-        INF003[⚪ ISSUE-INF003<br/>任务队列系统设计与实现]
-        INF004[⚪ ISSUE-INF004<br/>数据库迁移系统]
-        INF005[⚪ ISSUE-INF005<br/>推送通知服务]
-        INF006[⚪ ISSUE-INF006<br/>邮件服务系统]
-    end
-
     subgraph Test["🧪 测试框架层 - Test"]
         T001[🟢 ISSUE-T001<br/>单元测试框架搭建]
         T002[🟢 ISSUE-T002<br/>API集成测试框架]
         T003[🟢 ISSUE-T003<br/>移动端测试框架]
-        API001[🟡 ISSUE-API001<br/>API文档与OpenAPI规范]
         T004[🟢 ISSUE-T004<br/>E2E端到端测试框架<br/>⚡严格标准: flaky<2%]
     end
 
     subgraph Security["🔒 安全层 - Security"]
+<<<<<<< HEAD
         SEC001[🟢 ISSUE-SEC001<br/>RBAC权限控制系统]
         SEC002[🟢 ISSUE-SEC002<br/>敏感数据加密与保护]
+        SEC003[🟢 ISSUE-SEC003<br/>API限流与安全防护]
+=======
+        SEC001[💻 ISSUE-SEC001<br/>RBAC权限控制系统]
+        SEC002[🟡 ISSUE-SEC002<br/>敏感数据加密与保护]
         SEC003[🟡 ISSUE-SEC003<br/>API限流与安全防护]
+>>>>>>> issue/issue-com001b
         SEC004[🟡 ISSUE-SEC004<br/>图片上传安全检查]
         SEC005[🟡 ISSUE-SEC005<br/>举报与内容审核系统]
     end
 
     subgraph Auth["🔐 认证与用户层 - Auth"]
+<<<<<<< HEAD
         A001[🟢 ISSUE-A001<br/>用户注册与登录系统]
         A002[🟢 ISSUE-A002<br/>JWT认证与API安全]
         A003[🟢 ISSUE-A003<br/>用户基础资料管理]
@@ -60,13 +57,23 @@ flowchart TD
 
     subgraph Core["🤖 Agent核心层 - Core Agent"]
         C001[🟢 ISSUE-C001<br/>Agent创建与基础配置]
+=======
+        A001[💻 ISSUE-A001<br/>用户注册与登录系统]
+        A002[🟢 ISSUE-A002<br/>JWT认证与API安全]
+        A003[💻 ISSUE-A003<br/>用户基础资料管理]
+        A004[💻 ISSUE-A004<br/>输入验证与数据校验]
+    end
+
+    subgraph Core["🤖 Agent核心层 - Core Agent"]
+        C001[💻 ISSUE-C001<br/>Agent创建与基础配置]
+>>>>>>> issue/issue-com001b
         C002a[✂️ ISSUE-C002a<br/>L1基础信息模型]
         C002b[✂️ ISSUE-C002b<br/>L2结构化信息模型]
         C002c[✂️ ISSUE-C002c<br/>L3自然语言信息模型]
         C003[🟡 ISSUE-C003<br/>地域过滤系统]
         C004[🟡 ISSUE-C004<br/>属性过滤系统]
         C005[🟡 ISSUE-C005<br/>信用过滤系统]
-        C006[🟡 ISSUE-C006<br/>场景配置管理]
+        C006[🔵 ISSUE-C006<br/>场景配置管理]
         C007[🟡 ISSUE-C007<br/>Agent信息披露控制机制]
     end
 
@@ -75,12 +82,12 @@ flowchart TD
         M001b[✂️ ISSUE-M001b<br/>实时查询执行引擎]
         M002[🟡 ISSUE-M002<br/>Agent智能筛选排序]
         M003[🟡 ISSUE-M003<br/>匹配度算法实现]
-        M004[🟡 ISSUE-M004<br/>匹配结果推送通知]
+        M004[💻 ISSUE-M004<br/>匹配结果推送通知]
     end
 
     subgraph Comm["💬 通信层 - Communication"]
         COM001a[✂️ ISSUE-COM001a<br/>Socket.io基础设施搭建]
-        COM001b[✂️ ISSUE-COM001b<br/>连接管理与房间系统]
+        COM001b[🟢 ISSUE-COM001b<br/>连接管理与房间系统]
         COM002a[✂️ ISSUE-COM002a<br/>聊天房间基础架构]
         COM002b[✂️ ISSUE-COM002b<br/>消息持久化与历史记录]
         COM002c[✂️ ISSUE-COM002c<br/>群聊状态同步与在线状态]
@@ -94,7 +101,7 @@ flowchart TD
         AI002[✂️ ISSUE-AI002<br/>需求智能提炼服务]
         AI003[✂️ ISSUE-AI003<br/>供给智能提炼服务]
         AI004[🟡 ISSUE-AI004<br/>Agent对话生成服务]
-        AI005[🟡 ISSUE-AI005<br/>图像分析与Vision API]
+        AI005[💻 ISSUE-AI005<br/>图像分析与Vision API]
         AI006[🟡 ISSUE-AI006<br/>AI服务降级与容错策略]
     end
 
@@ -105,11 +112,11 @@ flowchart TD
     end
 
     subgraph VS["📷 VisionShare场景"]
-        VS001[🟡 ISSUE-VS001<br/>VisionShare需求发布]
+        VS001[💻 ISSUE-VS001<br/>VisionShare需求发布]
         VS002[🟡 ISSUE-VS002<br/>附近任务查询与接单]
         VS003[🟡 ISSUE-VS003<br/>相机拍照与上传]
         VS004[🟡 ISSUE-VS004<br/>AI隐私脱敏处理]
-        VS005[🟡 ISSUE-VS005<br/>照片查看与积分支付]
+        VS005[💻 ISSUE-VS005<br/>照片查看与积分支付]
         VS006[🟡 ISSUE-VS006<br/>AI相册智能检索与历史查询]
         VS007[🟡 ISSUE-VS007<br/>本地相册AI智能检索]
     end
@@ -117,14 +124,14 @@ flowchart TD
     subgraph Date["💕 AgentDate场景"]
         DATE001[🟡 ISSUE-DATE001<br/>交友画像配置]
         DATE002[🟡 ISSUE-DATE002<br/>Agent主动匹配推荐]
-        DATE003[🟡 ISSUE-DATE003<br/>Agent间对话匹配]
-        DATE004[🟡 ISSUE-DATE004<br/>双向同意引荐机制]
+        DATE003[🟢 ISSUE-DATE003<br/>Agent间对话匹配]
+        DATE004[💻 ISSUE-DATE004<br/>双向同意引荐机制]
     end
 
     subgraph Job["💼 AgentJob场景"]
         JOB001[🟡 ISSUE-JOB001<br/>求职者画像与简历]
         JOB002[🟡 ISSUE-JOB002<br/>招聘方职位发布]
-        JOB003[🔵 ISSUE-JOB003<br/>简历智能匹配筛选]
+        JOB003[🟡 ISSUE-JOB003<br/>简历智能匹配筛选]
         JOB004[🟡 ISSUE-JOB004<br/>薪资协商与面试安排]
     end
 
@@ -137,7 +144,7 @@ flowchart TD
 
     subgraph UI["📱 前端UI层 - Frontend"]
         UI001[🟢 ISSUE-UI001<br/>设计系统与组件库]
-        UI002[🟡 ISSUE-UI002<br/>全局导航与布局]
+        UI002[💻 ISSUE-UI002<br/>全局导航与布局]
         UI003[🟡 ISSUE-UI003<br/>首页与状态展示]
         UI004a[✂️ ISSUE-UI004a<br/>聊天消息组件与输入框]
         UI004b[✂️ ISSUE-UI004b<br/>Agent/人类用户状态指示器]
@@ -164,23 +171,10 @@ flowchart TD
     F003 --> T002
     F004 --> T003
 
-    %% 基础设施层依赖
-    F003 --> INF001
-    A002 --> INF001
-    F001 --> INF002
-    F002 --> INF002
-    INF002 --> INF003
-    F002 --> INF004
-    F003 --> INF005
-    A001 --> INF005
-    F003 --> INF006
-
     %% 测试框架依赖
     F003 --> T001
     A001 --> T001
     C001 --> T001
-    F003 --> API001
-    A002 --> API001
     T001 --> T004
     T002 --> T004
     T003 --> T004
@@ -202,9 +196,7 @@ flowchart TD
     A001 --> A002
     A002 --> A003
     A003 --> A004
-    %% Auth子Issue依赖
-    A002 --> A003a
-    A003a --> A003    A003 --> C001
+    A003 --> C001
     A003 --> CR001
     A003 --> CR003
 
@@ -258,12 +250,6 @@ flowchart TD
     C002b --> AI002
     C002b --> AI003
     AI004 --> COM002c
-    %% AI服务子Issue依赖
-    AI001 --> AI002a
-    AI002a --> AI002b
-    AI001 --> AI003a
-    AI003a --> AI003b
-    AI003b --> AI003c
     AI005 --> VS004
     AI006 --> AI004
 
@@ -272,20 +258,8 @@ flowchart TD
     CR002 --> C005
     CR002 --> A003
     CR003 --> VS005
-    %% VisionShare子Issue依赖
-    VS004 --> VS005a
-    VS005a --> VS005b
-    VS005a --> VS005c
-    CR003 --> VS005b
-    VS005b --> VS005d    COM002c --> CR002
-    %% 信用系统子Issue依赖
-    CR001 --> CR002a
-    CR002a --> CR002b
-    CR002a --> CR002c
-    A003 --> CR003a
-    CR003a --> CR003b
-    CR003b --> CR003c
-    CR003c --> CR003d
+    COM002c --> CR002
+
     %% VisionShare场景依赖
     C006 --> VS001
     AI002 --> VS001
@@ -298,12 +272,7 @@ flowchart TD
     VS002 --> VS006
     AI005 --> VS006
     CR003 --> VS005
-    %% VisionShare子Issue依赖
-    VS004 --> VS005a
-    VS005a --> VS005b
-    VS005a --> VS005c
-    CR003 --> VS005b
-    VS005b --> VS005d    SEC004 --> VS003
+    SEC004 --> VS003
     VS006 --> VS007
     AI005 --> VS007
 
@@ -319,13 +288,7 @@ flowchart TD
     C006 --> JOB001
     AI002 --> JOB001
     C006 --> JOB002
-    %% AgentJob子Issue依赖
-    JOB001 --> JOB003a
-    JOB002 --> JOB003a
-    JOB003a --> JOB003b
-    JOB003a --> JOB003c
-    JOB003b --> JOB003d
-    M004 --> JOB003d    AI003 --> JOB002
+    AI003 --> JOB002
     M004 --> JOB003
     JOB001 --> JOB003
     JOB002 --> JOB003
@@ -390,13 +353,7 @@ flowchart TD
     F006 --> INT001
     INT001 --> INT002
     INT002 --> INT003
-    %% 集成测试子Issue依赖
-    INT001 --> INT001a
-    INT001 --> INT001b
-    INT001 --> INT001c
-    INT001 --> INT002a
-    INT002a --> INT002b
-    INT002b --> INT002c```
+```
 
 ---
 
@@ -413,17 +370,6 @@ flowchart TD
 | ISSUE-F005 | 日志系统与结构化日志       | M      | F003     |
 | ISSUE-F006 | 错误追踪与监控集成         | M      | F003     |
 
-### ⚙️ Infrastructure (基础设施层)
-
-| Issue        | 标题                       | 复杂度 | 关键依赖       |
-| ------------ | -------------------------- | ------ | -------------- |
-| ISSUE-INF001 | API Gateway 设计与实现     | **H**  | F003, A002     |
-| ISSUE-INF002 | Redis 缓存层设计与实现     | M      | F001, F002     |
-| ISSUE-INF003 | 任务队列系统设计与实现     | H      | F001, F002, INF002 |
-| ISSUE-INF004 | 数据库迁移系统             | M      | F002           |
-| ISSUE-INF005 | 推送通知服务               | H      | F003, A001     |
-| ISSUE-INF006 | 邮件服务系统               | M      | F003           |
-
 ### 🧪 Test (测试框架层)
 
 | Issue      | 标题                         | 复杂度 | 关键依赖                        |
@@ -431,7 +377,6 @@ flowchart TD
 | ISSUE-T001 | 单元测试框架搭建(Jest)       | M      | F003, A001                      |
 | ISSUE-T002 | API集成测试框架              | M      | F003                            |
 | ISSUE-T003 | 移动端测试框架               | M      | F004                            |
-| ISSUE-API001 | API文档与OpenAPI规范       | M      | F003, A002                      |
 | ISSUE-T004 | E2E端到端测试框架 [严格标准] | H      | T001, T002, T003, UI001, API001 |
 
 ### 🔒 Security (安全层)
@@ -446,13 +391,12 @@ flowchart TD
 
 ### 🔐 Auth (认证层)
 
-| Issue       | 标题                  | 复杂度 | 关键依赖   |
-| ----------- | --------------------- | ------ | ---------- |
-| ISSUE-A001  | 用户注册与登录系统    | M      | F002, F003 |
-| ISSUE-A002  | JWT认证与API安全      | M      | A001       |
-| ISSUE-A003  | 用户基础资料管理      | **L**  | A002       |
-| ISSUE-A003a | 用户资料管理后端API   | L      | A002       |
-| ISSUE-A004  | 输入验证与数据校验    | M      | A002       |
+| Issue      | 标题               | 复杂度 | 关键依赖   |
+| ---------- | ------------------ | ------ | ---------- |
+| ISSUE-A001 | 用户注册与登录系统 | M      | F002, F003 |
+| ISSUE-A002 | JWT认证与API安全   | M      | A001       |
+| ISSUE-A003 | 用户基础资料管理   | **L**  | A002       |
+| ISSUE-A004 | 输入验证与数据校验 | M      | A002       |
 
 ### 🤖 Core Agent (Agent核心层)
 
@@ -493,50 +437,34 @@ flowchart TD
 
 ### 🧠 AI Service (AI服务层)
 
-| Issue        | 标题                      | 复杂度 | 关键依赖            |
-| ------------ | ------------------------- | ------ | ------------------- |
-| ISSUE-AI001  | 多LLM适配器与熔断器       | H      | F003                |
-| ISSUE-AI002  | 需求智能提炼服务          | H      | AI001, C002a, C002b |
-| ISSUE-AI002a | 需求提炼 - 核心框架       | H      | AI001, C002a, C002b |
-| ISSUE-AI002b | 需求提炼 - 场景提取器     | M      | AI002a              |
-| ISSUE-AI003  | 供给智能提炼服务          | H      | AI001, C002a, C002b |
-| ISSUE-AI003a | 供给提炼 - 核心框架       | H      | AI001, C002a, C002b |
-| ISSUE-AI003b | 供给提炼 - 场景提取器     | M      | AI003a              |
-| ISSUE-AI003c | 供给提炼 - 优化与缓存     | M      | AI003b              |
-| ISSUE-AI004  | Agent对话生成服务         | H      | AI001               |
-| ISSUE-AI005  | 图像分析与Vision API      | M      | AI001               |
-| ISSUE-AI006  | AI服务降级与容错策略      | M      | AI001, AI004        |
+| Issue       | 标题                 | 复杂度 | 关键依赖            |
+| ----------- | -------------------- | ------ | ------------------- |
+| ISSUE-AI001 | 多LLM适配器与熔断器  | H      | F003                |
+| ISSUE-AI002 | 需求智能提炼服务     | H      | AI001, C002a, C002b |
+| ISSUE-AI003 | 供给智能提炼服务     | H      | AI001, C002a, C002b |
+| ISSUE-AI004 | Agent对话生成服务    | H      | AI001               |
+| ISSUE-AI005 | 图像分析与Vision API | M      | AI001               |
+| ISSUE-AI006 | AI服务降级与容错策略 | M      | AI001, AI004        |
 
 ### ⭐ Credit (信用与积分层)
 
-| Issue        | 标题                     | 复杂度 | 关键依赖             |
-| ------------ | ------------------------ | ------ | -------------------- |
-| ISSUE-CR001  | 信用分计算系统           | **H**  | A003                 |
-| ISSUE-CR002  | 评分与评价系统           | L      | CR001, COM002c, A003 |
-| ISSUE-CR002a | 评分评价 - 后端API       | M      | CR001, COM002c       |
-| ISSUE-CR002b | 评分评价 - 前端组件      | M      | CR002a               |
-| ISSUE-CR002c | 评分评价 - 审核与反作弊  | M      | CR002a               |
-| ISSUE-CR003  | 积分系统基础与交易记录   | M      | A003                 |
-| ISSUE-CR003a | 积分系统 - 核心交易      | M      | A003                 |
-| ISSUE-CR003b | 积分系统 - 支付集成      | M      | CR003a               |
-| ISSUE-CR003c | 积分系统 - 退款与申诉    | M      | CR003b               |
-| ISSUE-CR003d | 积分系统 - 统计与报表    | L      | CR003c               |
+| Issue       | 标题                   | 复杂度 | 关键依赖             |
+| ----------- | ---------------------- | ------ | -------------------- |
+| ISSUE-CR001 | 信用分计算系统         | **H**  | A003                 |
+| ISSUE-CR002 | 评分与评价系统         | L      | CR001, COM002c, A003 |
+| ISSUE-CR003 | 积分系统基础与交易记录 | M      | A003                 |
 
 ### 📷 VisionShare场景
 
-| Issue        | 标题                       | 复杂度 | 关键依赖            |
-| ------------ | -------------------------- | ------ | ------------------- |
-| ISSUE-VS001  | VisionShare需求发布        | M      | C006, AI002         |
-| ISSUE-VS002  | 附近任务查询与接单         | M      | C006, M004          |
-| ISSUE-VS003  | 相机拍照与上传             | M      | VS002, F004, SEC004 |
-| ISSUE-VS004  | AI隐私脱敏处理             | H      | VS003, AI005        |
-| ISSUE-VS005  | 照片查看与积分支付         | M      | VS004, CR003        |
-| ISSUE-VS005a | 照片查看 - 核心API         | M      | VS004                |
-| ISSUE-VS005b | 照片查看 - 支付流程        | M      | VS005a, CR003       |
-| ISSUE-VS005c | 照片查看 - 预览组件        | M      | VS005a               |
-| ISSUE-VS005d | 照片查看 - 历史记录        | L      | VS005b               |
-| ISSUE-VS006  | AI相册智能检索与历史查询   | **M**  | VS002, AI005        |
-| ISSUE-VS007  | 本地相册AI智能检索         | M      | VS006, AI005        |
+| Issue       | 标题                     | 复杂度 | 关键依赖            |
+| ----------- | ------------------------ | ------ | ------------------- |
+| ISSUE-VS001 | VisionShare需求发布      | M      | C006, AI002         |
+| ISSUE-VS002 | 附近任务查询与接单       | M      | C006, M004          |
+| ISSUE-VS003 | 相机拍照与上传           | M      | VS002, F004, SEC004 |
+| ISSUE-VS004 | AI隐私脱敏处理           | H      | VS003, AI005        |
+| ISSUE-VS005 | 照片查看与积分支付       | M      | VS004, CR003        |
+| ISSUE-VS006 | AI相册智能检索与历史查询 | **M**  | VS002, AI005        |
+| ISSUE-VS007 | 本地相册AI智能检索       | M      | VS006, AI005        |
 
 ### 💕 AgentDate场景
 
@@ -549,16 +477,13 @@ flowchart TD
 
 ### 💼 AgentJob场景
 
-| Issue         | 标题                 | 复杂度 | 关键依赖                    |
-| ------------- | -------------------- | ------ | --------------------------- |
-| ISSUE-JOB001  | 求职者画像与简历     | M      | C006, AI002                 |
-| ISSUE-JOB002  | 招聘方职位发布       | M      | C006, AI003                 |
-| ISSUE-JOB003  | 简历智能匹配筛选     | H      | JOB001, JOB002, M004, AI004 |
-| ISSUE-JOB003a | 简历匹配 - 算法核心  | H      | JOB001, JOB002              |
-| ISSUE-JOB003b | 简历匹配 - 排序优化  | H      | JOB003a                     |
-| ISSUE-JOB003c | 简历匹配 - 筛选界面  | M      | JOB003a, UI005              |
-| ISSUE-JOB003d | 简历匹配 - 结果通知  | M      | JOB003b, M004               |
-| ISSUE-JOB004  | 薪资协商与面试安排   | M      | COM002c                     |
+| Issue        | 标题               | 复杂度 | 关键依赖                    |
+| ------------ | ------------------ | ------ | --------------------------- |
+| ISSUE-JOB001 | 求职者画像与简历   | M      | C006, AI002                 |
+| ISSUE-JOB002 | 招聘方职位发布     | M      | C006, AI003                 |
+| ISSUE-JOB003 | 简历智能匹配筛选   | H      | JOB001, JOB002, M004, AI004 |
+| ISSUE-JOB004 | 薪资协商与面试安排 | M      | COM002c                     |
+
 ### 🛒 AgentAd场景
 
 | Issue       | 标题              | 复杂度 | 关键依赖                     |
@@ -580,19 +505,15 @@ flowchart TD
 | ISSUE-UI004c | 聊天记录滚动与分页加载   | M      | UI002, UI004b                  |
 | ISSUE-UI005  | Agent配置界面            | M      | UI002, C001, C006              |
 | ISSUE-UI006  | 消息中心                 | M      | UI002, COM002c                 |
+| ISSUE-UI007  | 个人中心与信用展示       | M      | UI002, CR001, A003             |
+
 ### 🚀 Integration (集成与部署)
 
-| Issue         | 标题                     | 复杂度 | 关键依赖                                 |
-| ------------- | ------------------------ | ------ | ---------------------------------------- |
-| ISSUE-INT001  | 端到端集成测试           | M      | 所有场景Issue, UI, T001-T004, F005, F006 |
-| ISSUE-INT001a | 集成测试 - VisionShare   | M      | VS001, VS002, UI004a                    |
-| ISSUE-INT001b | 集成测试 - AgentDate     | M      | DATE001, DATE003, UI004a                |
-| ISSUE-INT001c | 集成测试 - AgentJob/Ad   | M      | JOB001, JOB004, AD001, AD004            |
-| ISSUE-INT002  | 性能优化与压测           | H      | INT001                                   |
-| ISSUE-INT002a | 性能优化 - 数据库优化    | H      | INT001                                   |
-| ISSUE-INT002b | 性能优化 - 缓存策略      | H      | INT002a                                  |
-| ISSUE-INT002c | 性能优化 - 压测与调优    | H      | INT002b                                  |
-| ISSUE-INT003  | Demo演示准备             | M      | INT002                                   |
+| Issue        | 标题           | 复杂度 | 关键依赖                                 |
+| ------------ | -------------- | ------ | ---------------------------------------- |
+| ISSUE-INT001 | 端到端集成测试 | M      | 所有场景Issue, UI, T001-T004, F005, F006 |
+| ISSUE-INT002 | 性能优化与压测 | H      | INT001                                   |
+| ISSUE-INT003 | Demo演示准备   | M      | INT002                                   |
 
 ---
 
@@ -680,7 +601,7 @@ F003 → F004 → UI001 → UI002 → UI003/UI004a/UI004b/UI004c/UI005/UI006/UI0
 
 ---
 
-_IssueTree 版本: 2.2_
-_最后更新: 2026-04-12_
+_IssueTree 版本: 2.1_
+_最后更新: 2026-04-08_
 _基于Spec: BridgeAI Agent通信平台完整设计文档_
-_更新内容: 新增基础设施层(Infrastructure)模块，包含6个Issue: INF001-API Gateway, INF002-Redis缓存, INF003-任务队列, INF004-数据库迁移, INF005-推送通知, INF006-邮件服务_
+_更新内容: 新增SEC005/C007/VS007，扩展COM004描述_

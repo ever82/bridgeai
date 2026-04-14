@@ -14,6 +14,10 @@ export enum L2FieldType {
   DATE = 'date',           // 日期
   TIME = 'time',           // 时间
   DATETIME = 'datetime',   // 日期时间
+  LOCATION = 'location',   // 地理位置
+  TAGS = 'tags',           // 标签输入
+  IMAGE = 'image',         // 图片
+  FILE = 'file',           // 文件
 }
 
 /**
@@ -31,6 +35,8 @@ export interface L2SchemaField {
   step?: number;                 // 步长 (用于 range)
   minLength?: number;            // 最小长度 (用于 text)
   maxLength?: number;            // 最大长度 (用于 text)
+  maxItems?: number;             // 最大项目数 (用于 multi_select/tags)
+  unit?: string;                 // 单位 (用于 number/range)
   placeholder?: string;          // 占位文本
   defaultValue?: any;            // 默认值
   dependsOn?: string;            // 依赖字段ID
@@ -54,6 +60,7 @@ export interface L2FieldOption {
   description?: string;          // 选项描述
   icon?: string;                 // 图标
   color?: string;                // 颜色
+  parent?: string;               // 父级选项值（用于层级）
 }
 
 /**
@@ -63,6 +70,7 @@ export interface L2Schema {
   id: string;                    // Schema ID
   version: string;               // Schema 版本
   scene: string;                 // 所属场景
+  role?: string;                 // 角色类型 (如 CONSUMER/MERCHANT)
   title: string;                 // Schema 标题
   description?: string;          // Schema 描述
   fields: L2SchemaField[];       // 字段列表
