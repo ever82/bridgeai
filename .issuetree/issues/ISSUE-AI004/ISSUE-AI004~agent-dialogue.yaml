@@ -2,11 +2,7 @@ id: ISSUE-AI004
 issue_number: 504
 title: Agent对话生成服务
 slug: agent-dialogue
-<<<<<<< HEAD
-status: accepted
-=======
-status: pending
->>>>>>> issue/issue-job002
+status: checking
 description: |
   实现Agent对话生成服务，为AI Agent提供智能对话能力，
   支持Agent间的自主沟通、协商、匹配对话，以及Agent与用户
@@ -27,6 +23,7 @@ criteria:
       - 回复生成
       - 对话状态跟踪
       - 多轮对话支持
+    status: checking
     coverage:
       unit: required
       integration: required
@@ -47,6 +44,7 @@ criteria:
       - 行为特征模拟
       - 场景角色扮演
       - 人格一致性维护
+    status: checking
     coverage:
       unit: required
       integration: required
@@ -67,6 +65,7 @@ criteria:
       - 匹配意愿确认
       - 分歧处理策略
       - 共识达成检测
+    status: checking
     coverage:
       unit: required
       integration: required
@@ -87,6 +86,7 @@ criteria:
       - 关键信息提取
       - 记忆摘要生成
       - 记忆检索增强
+    status: checking
     coverage:
       unit: required
       integration: required
@@ -107,6 +107,7 @@ criteria:
       - 对话上下文移交
       - 接管状态同步
       - 恢复AI代理
+    status: checking
     coverage:
       unit: required
       integration: required
@@ -127,6 +128,7 @@ criteria:
       - WebSocket实时对话
       - 对话历史查询
       - 生成参数配置
+    status: checking
     coverage:
       unit: required
       integration: required
@@ -139,4 +141,4 @@ criteria:
         context_files:
           - apps/server/src/routes/ai/dialogue.ts
 
-current_task: null
+current_task: TASK-1775846486

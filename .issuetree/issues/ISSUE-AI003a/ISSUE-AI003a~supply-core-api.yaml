@@ -1,83 +1,62 @@
-completed_at: '2026-04-10T17:17:02.281Z'
-created_at: '2026-04-09'
-criteria:
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: '解析引擎:
-
-    - 服务描述理解
-
-    - 供给实体识别
-
-    - 服务类型分类
-
-    - 供给结构化输出
-
-    - 能力评估评分
-
-    '
-  id: ISSUE-AI003a~c1
-  name: 供给解析引擎
-  verification:
-    ai:
-      context_files:
-      - apps/server/src/services/ai/supplyExtractionService.ts
-      prompt: 检查供给解析引擎，验证有SupplyExtractionService类，包含extract方法返回结构化的Supply对象，含capabilities和pricing字段
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: 'API实现:
-
-    - 供给提取API端点
-
-    - 批量供给导入
-
-    - 提取结果存储
-
-    - 质量报告生成
-
-    - 供给更新同步
-
-    '
-  id: ISSUE-AI003a~c2
-  name: 供给API与集成
-  verification:
-    ai:
-      context_files:
-      - apps/server/src/routes/ai/supply.ts
-      prompt: 检查供给API，验证有/api/v1/ai/extract-supply端点，支持scene参数和bulk模式，返回supply数据和quality_report
-current_task: null
-description: '实现供给智能提炼服务的核心解析引擎和API端点，
-
-  包含供给解析引擎和供给API与集成，为场景提取器提供基础能力
-
-  '
 id: ISSUE-AI003a
 issue_number: 503
-logic: sufficient_necessary
 parent: ISSUE-AI003
-<<<<<<< HEAD
-=======
 title: 供给智能提炼服务 - 核心解析引擎与API
 slug: supply-core-api
-status: accepted
+status: checking
 description: |
   实现供给智能提炼服务的核心解析引擎和API端点，
   包含供给解析引擎和供给API与集成，为场景提取器提供基础能力
->>>>>>> issue/issue-job002
 prerequisites:
-- ISSUE-AI001
-- ISSUE-C002a
-- ISSUE-C002b
-slug: supply-core-api
+  - ISSUE-AI001
+  - ISSUE-C002a
+  - ISSUE-C002b
+created_at: '2026-04-09'
 started_at: '2026-04-10T16:47:33.136Z'
-status: accepted
-stuck_reason: start_failed
-title: 供给智能提炼服务 - 核心解析引擎与API
+completed_at: '2026-04-10T17:17:02.281Z'
+logic: sufficient_necessary
+criteria:
+  - id: ISSUE-AI003a~c1
+    name: 供给解析引擎
+    description: |
+      解析引擎:
+      - 服务描述理解
+      - 供给实体识别
+      - 服务类型分类
+      - 供给结构化输出
+      - 能力评估评分
+    status: checking
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: 检查供给解析引擎，验证有SupplyExtractionService类，包含extract方法返回结构化的Supply对象，含capabilities和pricing字段
+        context_files:
+          - apps/server/src/services/ai/supplyExtractionService.ts
+  - id: ISSUE-AI003a~c2
+    name: 供给API与集成
+    description: |
+      API实现:
+      - 供给提取API端点
+      - 批量供给导入
+      - 提取结果存储
+      - 质量报告生成
+      - 供给更新同步
+    status: checking
+    coverage:
+      unit: required
+      integration: required
+      e2e: required
+      ai: sufficient
+      manual: not_needed
+    verification:
+      ai:
+        prompt: 检查供给API，验证有/api/v1/ai/extract-supply端点，支持scene参数和bulk模式，返回supply数据和quality_report
+        context_files:
+          - apps/server/src/routes/ai/supply.ts
+
+current_task: TASK-1775846486
