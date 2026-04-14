@@ -79,8 +79,18 @@ export async function createJobPosting(
     type: validated.type,
     positions: validated.positions,
     description,
-    requirements: validated.requirements,
-    salary: validated.salary,
+    requirements: validated.requirements || {
+      skills: [],
+      experienceLevel: 'ENTRY' as const,
+      educationLevel: 'NO_REQUIREMENT' as const,
+    },
+    salary: validated.salary || {
+      min: 0,
+      max: 0,
+      period: 'MONTHLY' as const,
+      currency: 'CNY',
+      isNegotiable: true,
+    },
     benefits: validated.benefits || {
       healthInsurance: false,
       dentalInsurance: false,
