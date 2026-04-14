@@ -3,7 +3,7 @@ id: "ISSUE-COM002a"
 issue_number: 503
 title: "聊天房间基础架构"
 slug: "chat-room"
-status: "implemented"
+status: "passed"
 description: |
   实现聊天房间基础架构，支持多人群聊、私聊、
   房间类型管理和参与者管理。
@@ -116,3 +116,14 @@ criteria:
         prompt: "检查房间列表界面，验证有 ChatRoomList 组件展示房间和最后消息"
         context_files: ["apps/mobile/src/components/Chat/ChatRoomList.tsx"]
         
+
+check:
+  checked_at: "2026-04-14"
+  status: passed
+  functional_verification:
+    all_criteria_passed: true
+  test_execution:
+    all_tests_passed: true
+  code_review:
+    merged_to_main: true
+  notes: "Merged to master after resolving worktree conflicts"
