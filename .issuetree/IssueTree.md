@@ -63,19 +63,19 @@ flowchart TD
     subgraph Matching["🎯 匹配引擎层 - Matching"]
         M001a[✂️ ISSUE-M001a<br/>查询构建器与DSL设计]
         M001b[✂️ ISSUE-M001b<br/>实时查询执行引擎]
-        M002[🟡 ISSUE-M002<br/>Agent智能筛选排序]
-        M003[🟡 ISSUE-M003<br/>匹配度算法实现]
-        M004[🔍 ISSUE-M004<br/>匹配结果推送通知]
+        M002[🔧 ISSUE-M002<br/>Agent智能筛选排序]
+        M003[💻 ISSUE-M003<br/>匹配度算法实现]
+        M004[💻 ISSUE-M004<br/>匹配结果推送通知]
     end
 
     subgraph Comm["💬 通信层 - Communication"]
         COM001a[✂️ ISSUE-COM001a<br/>Socket.io基础设施搭建]
-        COM001b[✂️ ISSUE-COM001b<br/>连接管理与房间系统]
+        COM001b[❌ ISSUE-COM001b<br/>连接管理与房间系统]
         COM002a[✂️ ISSUE-COM002a<br/>聊天房间基础架构]
         COM002b[✂️ ISSUE-COM002b<br/>消息持久化与历史记录]
         COM002c[✂️ ISSUE-COM002c<br/>群聊状态同步与在线状态]
         COM003[🟡 ISSUE-COM003<br/>人机切换机制]
-        COM004[🟡 ISSUE-COM004<br/>Agent通信协议定义]
+        COM004[💻 ISSUE-COM004<br/>Agent通信协议定义]
         COM005[🟡 ISSUE-COM005<br/>私聊建议系统]
     end
 
@@ -84,7 +84,7 @@ flowchart TD
         AI002[✂️ ISSUE-AI002<br/>需求智能提炼服务]
         AI003[✂️ ISSUE-AI003<br/>供给智能提炼服务]
         AI004[🟡 ISSUE-AI004<br/>Agent对话生成服务]
-        AI005[🟡 ISSUE-AI005<br/>图像分析与Vision API]
+        AI005[💻 ISSUE-AI005<br/>图像分析与Vision API]
         AI006[🟡 ISSUE-AI006<br/>AI服务降级与容错策略]
     end
 
@@ -99,7 +99,7 @@ flowchart TD
         VS002[🟡 ISSUE-VS002<br/>附近任务查询与接单]
         VS003[🟡 ISSUE-VS003<br/>相机拍照与上传]
         VS004[🟡 ISSUE-VS004<br/>AI隐私脱敏处理]
-        VS005[🟡 ISSUE-VS005<br/>照片查看与积分支付]
+        VS005[🔍 ISSUE-VS005<br/>照片查看与积分支付]
         VS006[🟡 ISSUE-VS006<br/>AI相册智能检索与历史查询]
         VS007[🟡 ISSUE-VS007<br/>本地相册AI智能检索]
     end
@@ -107,27 +107,27 @@ flowchart TD
     subgraph Date["💕 AgentDate场景"]
         DATE001[🟡 ISSUE-DATE001<br/>交友画像配置]
         DATE002[🟡 ISSUE-DATE002<br/>Agent主动匹配推荐]
-        DATE003[🟡 ISSUE-DATE003<br/>Agent间对话匹配]
+        DATE003[🟢 ISSUE-DATE003<br/>Agent间对话匹配]
         DATE004[🟡 ISSUE-DATE004<br/>双向同意引荐机制]
     end
 
     subgraph Job["💼 AgentJob场景"]
         JOB001[🟡 ISSUE-JOB001<br/>求职者画像与简历]
         JOB002[🟡 ISSUE-JOB002<br/>招聘方职位发布]
-        JOB003[🔵 ISSUE-JOB003<br/>简历智能匹配筛选]
+        JOB003[🟡 ISSUE-JOB003<br/>简历智能匹配筛选]
         JOB004[🟡 ISSUE-JOB004<br/>薪资协商与面试安排]
     end
 
     subgraph Ad["🛒 AgentAd场景"]
         AD001[🟡 ISSUE-AD001<br/>消费需求画像配置]
-        AD002[🟡 ISSUE-AD002<br/>商家优惠配置]
+        AD002[🔵 ISSUE-AD002<br/>商家优惠配置]
         AD003[🟡 ISSUE-AD003<br/>Agent优惠协商谈判]
         AD004[🟡 ISSUE-AD004<br/>一键购买与优惠码]
     end
 
     subgraph UI["📱 前端UI层 - Frontend"]
         UI001[🟢 ISSUE-UI001<br/>设计系统与组件库]
-        UI002[🟡 ISSUE-UI002<br/>全局导航与布局]
+        UI002[💻 ISSUE-UI002<br/>全局导航与布局]
         UI003[🟡 ISSUE-UI003<br/>首页与状态展示]
         UI004a[✂️ ISSUE-UI004a<br/>聊天消息组件与输入框]
         UI004b[✂️ ISSUE-UI004b<br/>Agent/人类用户状态指示器]
