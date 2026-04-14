@@ -48,9 +48,9 @@ model User {
   blockedBy     BlockedUser[] @relation("BlockedByUser")
   roles         UserRole[]  // RBAC roles
   pointsAccount PointsAccount?
-  roomParticipants RoomParticipant[] // 聊天室参与者
-  savedFilters  SavedFilter[] // 保存的筛选器
-  sceneTemplates SceneTemplate[] // 场景模板
+  notifications Notification[]
+  notificationPrefs NotificationPreference?
+  pushTokens    PushToken[]
 
   @@map("users")
 }
@@ -358,10 +358,7 @@ model ChatRoom {
   type          ChatRoomType  @default(QUAD)
   status        ChatRoomStatus @default(ACTIVE)
   participantIds String[]     @map("participant_ids")  // 存储 userIds
-  metadata      Json?         // 房间元数据
-  settings      Json?         @map("settings") // 房间设置
-  unreadCount   Json?         @map("unread_count") // 用户未读数 {userId: count}
-  lastMessage   Json?         @map("last_message") // 最后消息预览
+  metadata      Json?
   lastMessageAt DateTime?     @map("last_message_at")
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
@@ -370,13 +367,11 @@ model ChatRoom {
   scene         Scene?        @relation(fields: [sceneId], references: [id])
   messages      ChatMessage[]
   connections   Connection[]
-  participants  RoomParticipant[]
 
   @@index([sceneId])
   @@index([matchId])
   @@index([lastMessageAt])
   @@index([status])
-  @@index([type])
   @@map("chat_rooms")
 }
 
@@ -390,39 +385,6 @@ enum ChatRoomStatus {
   ACTIVE     @map("active")
   INACTIVE   @map("inactive")
   CLOSED     @map("closed")
-}
-
-// 房间参与者模型
-model RoomParticipant {
-  id          String          @id @default(uuid())
-  roomId      String          @map("room_id")
-  userId      String          @map("user_id")
-  role        ParticipantRole @default(MEMBER)
-  permissions Json?           // 自定义权限
-  joinedAt    DateTime        @default(now()) @map("joined_at")
-  leftAt      DateTime?       @map("left_at")
-  isActive    Boolean         @default(true) @map("is_active")
-  lastReadAt  DateTime?       @map("last_read_at")
-  unreadCount Int             @default(0) @map("unread_count")
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
-
-  // Relations
-  room        ChatRoom        @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([roomId, userId])
-  @@index([roomId])
-  @@index([userId])
-  @@index([isActive])
-  @@map("room_participants")
-}
-
-enum ParticipantRole {
-  OWNER      @map("owner")      // 房主
-  ADMIN      @map("admin")      // 管理员
-  MEMBER     @map("member")     // 普通成员
-  GUEST      @map("guest")      // 访客
 }
 
 model ChatMessage {
@@ -834,115 +796,8 @@ model UserRole {
 }
 
 // ============================================
-// 商家优惠相关 (Merchant & Offer)
+// 保存的筛选器
 // ============================================
-
-model Merchant {
-  id          String    @id @default(uuid())
-  agentId     String    @unique @map("agent_id")
-  name        String    // 店名
-  address     String?   // 门店地址
-  phone       String?   // 联系电话
-  businessHours Json?   @map("business_hours") // 营业时间
-  description String?   // 商家描述
-  logoUrl     String?   @map("logo_url") // 商家logo
-  category    String?   // 经营类目
-  status      MerchantStatus @default(ACTIVE)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  agent       Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  offers      Offer[]
-
-  @@index([agentId])
-  @@index([status])
-  @@map("merchants")
-}
-
-enum MerchantStatus {
-  ACTIVE    @map("active")
-  INACTIVE  @map("inactive")
-  SUSPENDED @map("suspended")
-}
-
-model Offer {
-  id          String    @id @default(uuid())
-  merchantId  String    @map("merchant_id")
-  title       String    // 优惠标题
-  description String?   // 详细描述
-  type        OfferType // 优惠类型
-
-  // 优惠力度
-  discountValue     Decimal?  @map("discount_value") @db.Decimal(5, 2) // 折扣值或减免金额
-  minPurchaseAmount Decimal?  @map("min_purchase_amount") @db.Decimal(10, 2) // 最低消费金额
-  maxDiscountAmount Decimal?  @map("max_discount_amount") @db.Decimal(10, 2) // 最高减免金额
-
-  // 适用范围
-  applicableScope   Json?     @map("applicable_scope") // {products: [], excludedProducts: [], timeRanges: [], storeIds: [], userGroups: []}
-
-  // 有效期
-  validFrom   DateTime  @map("valid_from")
-  validUntil  DateTime  @map("valid_until")
-
-  // 库存管理
-  totalStock  Int       @map("total_stock") // 总库存数量
-  dailyLimit  Int?      @map("daily_limit") // 每日限额
-  remainingStock Int    @default(0) @map("remaining_stock") // 剩余库存
-  stockAlertThreshold Int @default(10) @map("stock_alert_threshold") // 库存预警阈值
-
-  // 状态管理
-  status      OfferStatus @default(DRAFT)
-  publishType OfferPublishType @default(MANUAL) @map("publish_type") // 发布类型
-  scheduledPublishAt DateTime? @map("scheduled_publish_at") // 定时发布时间
-
-  // AI提取相关
-  aiExtracted       Boolean   @default(false) @map("ai_extracted") // 是否AI提取
-  aiExtractionData  Json?     @map("ai_extraction_data") // AI提取的原始数据
-  aiConfidence      Float?    @map("ai_confidence") // AI提取置信度
-
-  // 统计
-  usageCount  Int       @default(0) @map("usage_count") // 使用次数
-  viewCount   Int       @default(0) @map("view_count") // 浏览次数
-
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  merchant    Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-
-  @@index([merchantId])
-  @@index([status])
-  @@index([type])
-  @@index([validFrom, validUntil])
-  @@index([aiExtracted])
-  @@map("offers")
-}
-
-enum OfferType {
-  DISCOUNT      @map("discount")      // 折扣 (如8折)
-  REDUCTION     @map("reduction")     // 满减 (如满100减20)
-  GIFT          @map("gift")          // 赠品
-  PACKAGE       @map("package")       // 套餐
-  PERCENTAGE    @map("percentage")    // 百分比折扣
-  FIXED_AMOUNT  @map("fixed_amount")  // 固定金额优惠
-}
-
-enum OfferStatus {
-  DRAFT       @map("draft")       // 草稿
-  PENDING     @map("pending")      // 待审核
-  ACTIVE      @map("active")       // 生效中
-  PAUSED      @map("paused")       // 暂停
-  EXPIRED     @map("expired")      // 已过期
-  SOLD_OUT    @map("sold_out")     // 已售罄
-  DISABLED    @map("disabled")     // 已下架
-}
-
-enum OfferPublishType {
-  MANUAL      @map("manual")       // 手动发布
-  SCHEDULED   @map("scheduled")    // 定时发布
-  IMMEDIATE   @map("immediate")    // 立即发布
-}
 
 model SavedFilter {
   id          String   @id @default(uuid())
@@ -991,4 +846,231 @@ model SceneTemplate {
   @@index([isPublic, usageCount])
   @@index([userId, sceneId, isDefault])
   @@map("scene_templates")
+}
+
+// ============================================
+// 通知系统相关 (Notification System)
+// ============================================
+
+// 通知记录
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String           @map("user_id")
+  type        NotificationType // 通知类型
+  title       String           // 通知标题
+  content     String           // 通知内容
+  data        Json?            // 额外数据（如matchId等）
+  imageUrl    String?          @map("image_url") // 通知图片
+  actionUrl   String?          @map("action_url") // 点击跳转URL
+  category    String?          // 通知分类
+  priority    PriorityLevel    @default(NORMAL) // 优先级
+  channel     NotificationChannel @default(IN_APP) // 推送渠道
+  status      NotificationStatus @default(UNREAD) // 状态
+  sentAt      DateTime?        @map("sent_at")   // 发送时间
+  readAt      DateTime?        @map("read_at")   // 已读时间
+  expiresAt   DateTime?        @map("expires_at") // 过期时间
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries  NotificationDelivery[]
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, type])
+  @@index([userId, createdAt])
+  @@index([type])
+  @@index([status])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  MATCH_NEW           @map("match_new")           // 新匹配
+  MATCH_ACCEPTED      @map("match_accepted")      // 匹配被接受
+  MATCH_REJECTED      @map("match_rejected")      // 匹配被拒绝
+  MATCH_COMPLETED     @map("match_completed")     // 匹配完成
+  MESSAGE_NEW         @map("message_new")         // 新消息
+  RATING_RECEIVED     @map("rating_received")     // 收到评分
+  SYSTEM_ANNOUNCEMENT @map("system_announcement") // 系统公告
+  PROMOTION           @map("promotion")           // 促销活动
+  REMINDER            @map("reminder")            // 提醒
+}
+
+enum NotificationChannel {
+  IN_APP  @map("in_app")   // 应用内
+  PUSH    @map("push")     // 推送
+  EMAIL   @map("email")    // 邮件
+  SMS     @map("sms")      // 短信
+}
+
+enum NotificationStatus {
+  UNREAD    @map("unread")
+  READ      @map("read")
+  ARCHIVED  @map("archived")
+  DELETED   @map("deleted")
+}
+
+enum PriorityLevel {
+  LOW       @map("low")
+  NORMAL    @map("normal")
+  HIGH      @map("high")
+  URGENT    @map("urgent")
+}
+
+// 通知投递记录
+model NotificationDelivery {
+  id              String    @id @default(uuid())
+  notificationId  String    @map("notification_id")
+  channel         NotificationChannel // 投递渠道
+  status          DeliveryStatus @default(PENDING) // 投递状态
+  sentAt          DateTime? @map("sent_at")
+  deliveredAt     DateTime? @map("delivered_at")
+  failedAt        DateTime? @map("failed_at")
+  errorMessage    String?   @map("error_message")
+  retryCount      Int       @default(0) @map("retry_count")
+  externalId      String?   @map("external_id") // 外部服务ID（如Expo push receipt）
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  notification    Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId])
+  @@index([channel, status])
+  @@index([status, retryCount])
+  @@map("notification_deliveries")
+}
+
+enum DeliveryStatus {
+  PENDING     @map("pending")
+  SENT        @map("sent")
+  DELIVERED   @map("delivered")
+  FAILED      @map("failed")
+  RETRYING    @map("retrying")
+}
+
+// 用户通知偏好设置
+model NotificationPreference {
+  id                String    @id @default(uuid())
+  userId            String    @unique @map("user_id")
+  // 推送开关
+  pushEnabled       Boolean   @default(true) @map("push_enabled")
+  emailEnabled      Boolean   @default(true) @map("email_enabled")
+  smsEnabled        Boolean   @default(false) @map("sms_enabled")
+  inAppEnabled      Boolean   @default(true) @map("in_app_enabled")
+  // 通知类型偏好
+  matchNotifications    Boolean @default(true) @map("match_notifications")
+  messageNotifications  Boolean @default(true) @map("message_notifications")
+  ratingNotifications   Boolean @default(true) @map("rating_notifications")
+  systemNotifications   Boolean @default(true) @map("system_notifications")
+  promotionNotifications Boolean @default(false) @map("promotion_notifications")
+  // 频率控制
+  dailyLimit        Int       @default(100) @map("daily_limit") // 每日通知上限
+  quietHoursStart   String?   @map("quiet_hours_start") // 免打扰开始时间 (HH:mm)
+  quietHoursEnd     String?   @map("quiet_hours_end")   // 免打扰结束时间 (HH:mm)
+  quietHoursEnabled Boolean   @default(false) @map("quiet_hours_enabled")
+  // 元数据
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notification_preferences")
+}
+
+// 推送令牌管理 (Expo Push Token)
+model PushToken {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  token       String    @unique // Expo Push Token
+  deviceId    String?   @map("device_id") // 设备ID
+  deviceType  String    @map("device_type") // ios, android
+  appVersion  String?   @map("app_version")
+  osVersion   String?   @map("os_version")
+  isActive    Boolean   @default(true) @map("is_active")
+  lastUsedAt  DateTime  @default(now()) @map("last_used_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([userId, isActive])
+  @@map("push_tokens")
+}
+
+// 邮件队列
+model EmailQueue {
+  id          String    @id @default(uuid())
+  toEmail     String    @map("to_email")
+  toName      String?   @map("to_name")
+  templateId  String    @map("template_id") // 模板ID
+  subject     String    // 邮件主题
+  content     String?   // 邮件内容（HTML）
+  variables   Json?     // 模板变量
+  status      EmailStatus @default(PENDING)
+  priority    Int       @default(0) // 优先级
+  sentAt      DateTime? @map("sent_at")
+  deliveredAt DateTime? @map("delivered_at")
+  openedAt    DateTime? @map("opened_at")
+  clickedAt   DateTime? @map("clicked_at")
+  errorMessage String?  @map("error_message")
+  retryCount  Int       @default(0) @map("retry_count")
+  messageId   String?   @map("message_id") // 邮件服务商返回的ID
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([status, priority])
+  @@index([toEmail])
+  @@index([createdAt])
+  @@map("email_queue")
+}
+
+enum EmailStatus {
+  PENDING   @map("pending")
+  SENDING   @map("sending")
+  SENT      @map("sent")
+  DELIVERED @map("delivered")
+  OPENED    @map("opened")
+  CLICKED   @map("clicked")
+  BOUNCED   @map("bounced")
+  FAILED    @map("failed")
+}
+
+// 短信队列
+model SMSQueue {
+  id          String    @id @default(uuid())
+  phoneNumber String    @map("phone_number")
+  templateId  String    @map("template_id")
+  content     String    // 短信内容
+  variables   Json?     // 模板变量
+  status      SMSStatus @default(PENDING)
+  priority    Int       @default(0)
+  sentAt      DateTime? @map("sent_at")
+  deliveredAt DateTime? @map("delivered_at")
+  errorMessage String?  @map("error_message")
+  retryCount  Int       @default(0) @map("retry_count")
+  messageId   String?   @map("message_id") // 短信服务商返回的ID
+  segments    Int       @default(1) // 短信分段数
+  cost        Decimal?  @db.Decimal(10, 4) // 短信成本
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([status, priority])
+  @@index([phoneNumber])
+  @@index([createdAt])
+  @@map("sms_queue")
+}
+
+enum SMSStatus {
+  PENDING   @map("pending")
+  SENDING   @map("sending")
+  SENT      @map("sent")
+  DELIVERED @map("delivered")
+  FAILED    @map("failed")
 }

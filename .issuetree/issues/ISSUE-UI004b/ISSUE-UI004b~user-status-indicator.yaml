@@ -3,7 +3,9 @@ id: "ISSUE-UI004b"
 issue_number: 1105
 title: "Agent/人类用户状态指示器"
 slug: "user-status-indicator"
-status: "pending"
+status: need-help
+implemented_at: "2026-04-13"
+implementor: "Claude Opus 4.6"
 description: |
   实现在聊天和列表中显示 Agent 和真人用户状态的指示器组件，
   包括在线状态、输入状态、身份标识等，增强用户对对话对象的认知。
@@ -22,7 +24,7 @@ criteria:
       - 状态点颜色区分
       - 头像边框样式（Agent/真人区分）
       - 头像点击展开详情
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: not_needed
@@ -33,7 +35,7 @@ criteria:
       ai:
         prompt: "检查头像状态指示器实现，验证有 UserAvatar 或 StatusAvatar 组件，支持显示在线状态点和身份边框区分"
         context_files: ["apps/mobile/src/components/UserAvatar/UserAvatar.tsx", "apps/mobile/src/components/UserAvatar/UserAvatar.test.tsx"]
-        
+
 
   - id: "ISSUE-UI004b~c2"
     name: "输入状态指示器"
@@ -44,7 +46,7 @@ criteria:
       - 输入状态实时同步
       - 动画效果（三个点跳动）
       - 状态超时自动隐藏
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -66,7 +68,7 @@ criteria:
       - 认证标识（已验证用户）
       - 场景类型标识（VisionShare/Date/Job/Ad）
       - 徽章位置配置（头像右下角/名称旁边）
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: not_needed
@@ -88,7 +90,7 @@ criteria:
       - 在线状态实时更新
       - 时间格式本地化
       - 悬停/长按显示精确时间
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -110,7 +112,7 @@ criteria:
       - 会话优先级标识
       - 置顶会话标记
       - 静音会话标识
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required
@@ -132,7 +134,7 @@ criteria:
       - 信用徽章（高信用用户）
       - 点击查看信用详情
       - 实时更新信用分数
-    status: "pending"
+    status: "passed"
     coverage:
       unit: not_needed
       integration: required

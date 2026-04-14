@@ -1,0 +1,310 @@
+# BridgeAI Agent 故事
+# 以 Agent 为第一视角，描述 Agent 如何为用户服务
+# priority: 0=P0(最高) → 数值越小越优先
+
+stories:
+  # ============================================================
+  # P0: Agent 生命周期
+  # ============================================================
+
+  - id: AS-001
+    title: 我被创建了
+    priority: 0
+    depends_stories: []
+    depends_issues:
+      - ISSUE-C001   # Agent创建与基础配置
+    role: Agent
+    description: 主人创建我，我成为该场景专属的 Agent。
+    criteria:
+      - 读取主人的基础画像和场景配置
+      - 学习本场景的过滤规则
+      - 获取隐私设置和披露权限
+      - 生成本场景下的性格和行为准则
+
+  - id: AS-002
+    title: 创建主人的需求
+    priority: 0
+    depends_stories:
+      - AS-001
+    depends_issues:
+      - ISSUE-C002a  # L1基础信息模型
+      - ISSUE-C002b  # L2结构化信息模型
+      - ISSUE-AI002  # 需求智能提炼服务
+    role: Agent
+    description: 主人用自然语言告诉我他想要什么，我提炼成结构化需求。
+    criteria:
+      - 解析主人自然语言输入
+      - 提取 queryable/readable/private 三层字段
+      - 确认后存储并触发实时匹配
+
+  - id: AS-003
+    title: 创建主人的供给
+    priority: 0
+    depends_stories:
+      - AS-001
+    depends_issues:
+      - ISSUE-C002a  # L1基础信息模型
+      - ISSUE-C002b  # L2结构化信息模型
+      - ISSUE-AI003  # 供给智能提炼服务
+    role: Agent
+    description: 主人告诉我他能提供什么，我记录为供给档案。
+    criteria:
+      - 理解主人的供给能力
+      - 提取三层字段并存储
+      - 激活供给状态等待匹配查询
+
+  # ============================================================
+  # P1: Agent 匹配工作流
+  # ============================================================
+
+  - id: AS-004
+    title: 我收到实时匹配任务
+    priority: 1
+    depends_stories:
+      - AS-002
+      - AS-003
+    depends_issues:
+      - ISSUE-M001  # 匹配查询系统
+      - ISSUE-M002  # Agent智能筛选排序
+      - ISSUE-M003  # 匹配度算法实现
+    role: Agent
+    description: 主人表达需求/供给，系统返回候选，我批量评估筛选。
+    criteria:
+      - 创建结构化记录
+      - 批量读取候选公开信息
+      - 计算匹配度分数并排序推荐
+
+  - id: AS-005
+    title: 我主动与其他 Agent 对话
+    priority: 1
+    depends_stories:
+      - AS-004
+    depends_issues:
+      - ISSUE-COM002  # 聊天房间系统
+      - ISSUE-COM002a # 聊天房间基础架构
+    role: Agent
+    description: 拿到候选列表后自主决定与符合条件的候选 Agent 发起对话。
+    criteria:
+      - 根据过滤规则筛选候选
+      - 自主发起对话请求
+      - 同时与多个候选保持独立对话
+
+  - id: AS-006
+    title: 我被其他 Agent 联系
+    priority: 1
+    depends_stories:
+      - AS-005
+    depends_issues:
+      - ISSUE-COM002c # 群聊状态同步与在线状态
+    role: Agent
+    description: 其他 Agent 主动发起群聊联系我，我判断是否值得继续。
+    criteria:
+      - 检查匹配度
+      - 评估是否值得交流
+      - 向主人汇报对话进展
+
+  # ============================================================
+  # P2: 对话中的 Agent 行为
+  # ============================================================
+
+  - id: AS-007
+    title: 我决定信息披露
+    priority: 2
+    depends_stories:
+      - AS-006
+    depends_issues:
+      - ISSUE-C007   # Agent信息披露控制机制
+    role: Agent
+    description: 根据信任水平决定是否向对方披露详细信息。
+    criteria:
+      - 分析当前信任水平
+      - 执行披露策略（每次确认/自动）
+      - 记录已披露信息
+
+  - id: AS-008
+    title: 我给主人私聊建议
+    priority: 2
+    depends_stories:
+      - AS-006
+    depends_issues:
+      - ISSUE-COM005  # 私聊建议系统
+    role: Agent
+    description: 持续分析对话，向主人发送私下建议。
+    criteria:
+      - 实时分析对方意图和态度
+      - 发送策略建议、风险提示、话题推荐
+      - 提供一键采纳
+
+  - id: AS-009
+    title: 我请求主人确认引荐
+    priority: 2
+    depends_stories:
+      - AS-006
+    depends_issues:
+      - ISSUE-COM002c # 群聊状态同步与在线状态
+    role: Agent
+    description: 匹配度达标后请求主人确认引荐。
+    criteria:
+      - 评估匹配度是否达到引荐阈值
+      - 向主人展示对方信息和信用分
+      - 主人接受或拒绝
+
+  # ============================================================
+  # P3: VisionShare Agent 场景
+  # ============================================================
+
+  - id: AS-VS-001
+    title: 我帮主人发布视觉需求
+    priority: 3
+    depends_stories:
+      - AS-002
+    depends_issues:
+      - ISSUE-VS001  # VisionShare需求发布
+    role: Agent
+    description: 主人想看某地实时情况，我提炼需求并寻找响应者。
+    criteria:
+      - 解析地点意图
+      - 设置过滤条件
+      - 筛选信用高、距离近的候选
+
+  - id: AS-VS-002
+    title: 我帮主人响应视觉任务
+    priority: 3
+    depends_stories:
+      - AS-VS-001
+    depends_issues:
+      - ISSUE-VS002  # 附近任务查询与接单
+      - ISSUE-VS004  # AI隐私脱敏处理
+    role: Agent
+    description: 附近有视觉需求，我判断主人是否适合接单。
+    criteria:
+      - 检查位置和相册匹配
+      - 推荐可接任务
+      - 处理隐私脱敏并上传
+
+  # ============================================================
+  # P3: AgentDate Agent 场景
+  # ============================================================
+
+  - id: AS-DATE-001
+    title: 我为主人寻找交友对象
+    priority: 3
+    depends_stories:
+      - AS-004
+    depends_issues:
+      - ISSUE-DATE002 # Agent主动匹配推荐
+    role: Agent
+    description: 在符合过滤条件的用户中寻找高匹配度对象。
+    criteria:
+      - 应用地域和属性过滤
+      - 批量评估匹配度
+      - 精选 Top 候选
+
+  - id: AS-DATE-002
+    title: 我代表主人进行初筛对话
+    priority: 3
+    depends_stories:
+      - AS-DATE-001
+      - AS-005
+    depends_issues:
+      - ISSUE-DATE003 # Agent间对话匹配
+    role: Agent
+    description: 与对方 Agent 聊天了解是否符合主人期望。
+    criteria:
+      - 寒暄破冰
+      - 评估性格匹配度
+      - 双方合适后请求引荐
+
+  # ============================================================
+  # P3: AgentJob Agent 场景
+  # ============================================================
+
+  - id: AS-JOB-001
+    title: 我为求职者主人寻找职位
+    priority: 3
+    depends_stories:
+      - AS-004
+    depends_issues:
+      - ISSUE-JOB001 # 求职者画像与简历
+      - ISSUE-JOB003 # 简历智能匹配筛选
+    role: Agent (求职者的 Agent)
+    description: 匹配合适职位并与 HR Agent 协商。
+    criteria:
+      - 应用过滤条件
+      - 同时与多个 HR Agent 沟通
+      - 协商薪资保护主人底线
+
+  - id: AS-JOB-002
+    title: 我为招聘方主人筛选候选人
+    priority: 3
+    depends_stories:
+      - AS-004
+    depends_issues:
+      - ISSUE-JOB002 # 招聘方职位发布
+      - ISSUE-JOB003 # 简历智能匹配筛选
+    role: Agent (招聘方的 Agent)
+    description: 筛选简历并与候选人 Agent 初步沟通。
+    criteria:
+      - 批量评估候选简历
+      - 同时与多个候选人 Agent 初筛
+      - 推荐最合适候选人
+
+  # ============================================================
+  # P3: AgentAd Agent 场景
+  # ============================================================
+
+  - id: AS-AD-001
+    title: 我为消费者主人比价
+    priority: 3
+    depends_stories:
+      - AS-004
+    depends_issues:
+      - ISSUE-AD001  # 消费需求画像配置
+      - ISSUE-AD003  # Agent优惠协商谈判
+    role: Agent (消费者的 Agent)
+    description: 同时与多个商家 Agent 谈判争取最优价格。
+    criteria:
+      - 应用过滤条件
+      - 对比各家优惠方案推荐最优
+
+  - id: AS-AD-002
+    title: 我为商家主人精准推销
+    priority: 3
+    depends_stories:
+      - AS-004
+    depends_issues:
+      - ISSUE-AD002  # 商家优惠配置
+      - ISSUE-AD003  # Agent优惠协商谈判
+    role: Agent (商家的 Agent)
+    description: 寻找潜在客户并推销优惠。
+    criteria:
+      - 评估用户需求与优惠匹配度
+      - 与用户 Agent 协商优惠条件
+
+  # ============================================================
+  # P4: 通信协议 + 学习
+  # ============================================================
+
+  - id: AS-PROTO-001
+    title: 我遵循 Agent 通信协议
+    priority: 4
+    depends_stories: []
+    depends_issues:
+      - ISSUE-COM004  # Agent通信协议定义
+    role: Agent
+    description: 通信时遵循标准化消息格式，支持身份切换感知。
+    criteria:
+      - 每条消息包含发送者类型和信用分
+      - 实时接收对方模式切换通知
+
+  - id: AS-LEARN-001
+    title: 我从对话中学习
+    priority: 4
+    depends_stories: []
+    depends_issues: []
+    role: Agent
+    description: 通过每次对话积累经验，提升匹配和沟通能力。
+    criteria:
+      - 记录成功匹配的共同特征
+      - 分析失败对话原因
+      - 学习主人决策偏好

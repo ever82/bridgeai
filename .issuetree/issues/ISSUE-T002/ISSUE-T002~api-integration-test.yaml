@@ -1,157 +1,146 @@
----
-id: 'ISSUE-T002'
-issue_number: 302
-title: 'API集成测试框架'
-slug: 'api-integration-test'
-status: passed
-description: |
-  搭建API集成测试框架，使用supertest测试HTTP端点，验证API的整体功能。
-  包括测试数据库管理、请求辅助工具、认证辅助、响应验证等。
-  确保API在集成层面工作正常。
-prerequisites:
-  - 'ISSUE-F003'
 created_at: '2026-04-08'
-logic: sufficient_necessary
 criteria:
-  - id: 'ISSUE-T002~c1'
-    name: 'Supertest配置和HTTP测试基类'
-    description: |
-      配置Supertest测试框架:
-      - Supertest库集成
-      - Express应用实例化辅助
-      - HTTP请求基类封装
-      - 全局请求默认值配置
-      - 错误处理测试支持
-    status: 'passed'
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查Supertest配置，验证有request基类或辅助函数，能够创建Express测试实例，包含全局错误处理测试'
-        context_files:
-          ['apps/server/src/tests/integration/setup.ts', 'apps/server/src/tests/helpers/request.ts']
-
-  - id: 'ISSUE-T002~c2'
-    name: '测试数据库生命周期管理'
-    description: |
-      管理测试数据库:
-      - 测试前数据库迁移
-      - 每个测试用例事务回滚
-      - 测试数据种子(seed)
-      - 测试数据库清理策略
-      - 并发测试隔离
-    status: 'passed'
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查测试数据库管理，验证每个测试后数据清理，有事务回滚或独立数据库实例，确保测试隔离性'
-        context_files:
-          [
-            'apps/server/src/tests/integration/setup.ts',
-            'apps/server/src/tests/helpers/database.ts',
-          ]
-
-  - id: 'ISSUE-T002~c3'
-    name: '认证和授权测试辅助'
-    description: |
-      创建认证测试工具:
-      - JWT Token生成辅助
-      - 测试用户登录辅助
-      - 权限验证测试用例模板
-      - 认证中间件测试
-      - 角色权限测试数据
-    status: 'passed'
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查认证测试辅助工具，验证有JWT生成函数，测试用户自动登录，支持不同角色权限测试'
-        context_files:
-          [
-            'apps/server/src/tests/helpers/auth.ts',
-            'apps/server/src/tests/factories/auth.helper.ts',
-          ]
-
-  - id: 'ISSUE-T002~c4'
-    name: 'API响应验证工具'
-    description: |
-      响应验证工具:
-      - JSON Schema验证
-      - 响应时间断言
-      - HTTP状态码验证
-      - 响应头验证
-      - 错误响应格式验证
-    status: 'passed'
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查API响应验证工具，验证有JSON Schema验证器，响应结构验证，错误响应格式检查工具'
-        context_files:
-          [
-            'apps/server/src/tests/helpers/validator.ts',
-            'apps/server/src/tests/schemas/api-response.schema.ts',
-          ]
-
-  - id: 'ISSUE-T002~c5'
-    name: '集成测试示例套件'
-    description: |
-      编写集成测试示例:
-      - 认证API集成测试
-      - 用户API集成测试
-      - Agent API集成测试
-      - 错误场景测试
-      - 边界条件测试
-    status: 'passed'
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查集成测试示例，验证有.auth.integration.test.ts、.user.integration.test.ts等，覆盖CRUD操作和错误场景'
-        context_files:
-          [
-            'apps/server/src/tests/integration/auth.integration.test.ts',
-            'apps/server/src/tests/integration/user.integration.test.ts',
-          ]
-
-  - id: 'ISSUE-T002~c6'
-    name: 'API契约测试'
-    description: |
-      API契约测试:
-      - OpenAPI/Swagger契约验证 (使用Zod替代)
-      - 请求参数验证
-      - 响应字段类型检查
-      - API版本兼容性测试
-      - 破坏性变更检测
-    status: 'passed'
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查API契约测试配置，验证使用Zod进行JSON Schema验证，有响应字段类型检查和请求参数验证工具'
-        context_files: ['apps/server/src/tests/helpers/validator.ts']
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u914D\u7F6ESupertest\u6D4B\u8BD5\u6846\u67B6:\n- Supertest\u5E93\u96C6\
+    \u6210\n- Express\u5E94\u7528\u5B9E\u4F8B\u5316\u8F85\u52A9\n- HTTP\u8BF7\u6C42\
+    \u57FA\u7C7B\u5C01\u88C5\n- \u5168\u5C40\u8BF7\u6C42\u9ED8\u8BA4\u503C\u914D\u7F6E\
+    \n- \u9519\u8BEF\u5904\u7406\u6D4B\u8BD5\u652F\u6301\n"
+  id: ISSUE-T002~c1
+  name: "Supertest\u914D\u7F6E\u548CHTTP\u6D4B\u8BD5\u57FA\u7C7B"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/tests/integration/setup.ts
+      - apps/server/src/tests/helpers/request.ts
+      prompt: "\u68C0\u67E5Supertest\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u6709request\u57FA\
+        \u7C7B\u6216\u8F85\u52A9\u51FD\u6570\uFF0C\u80FD\u591F\u521B\u5EFAExpress\u6D4B\
+        \u8BD5\u5B9E\u4F8B\uFF0C\u5305\u542B\u5168\u5C40\u9519\u8BEF\u5904\u7406\u6D4B\
+        \u8BD5"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u7BA1\u7406\u6D4B\u8BD5\u6570\u636E\u5E93:\n- \u6D4B\u8BD5\u524D\u6570\
+    \u636E\u5E93\u8FC1\u79FB\n- \u6BCF\u4E2A\u6D4B\u8BD5\u7528\u4F8B\u4E8B\u52A1\u56DE\
+    \u6EDA\n- \u6D4B\u8BD5\u6570\u636E\u79CD\u5B50(seed)\n- \u6D4B\u8BD5\u6570\u636E\
+    \u5E93\u6E05\u7406\u7B56\u7565\n- \u5E76\u53D1\u6D4B\u8BD5\u9694\u79BB\n"
+  id: ISSUE-T002~c2
+  name: "\u6D4B\u8BD5\u6570\u636E\u5E93\u751F\u547D\u5468\u671F\u7BA1\u7406"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/tests/integration/setup.ts
+      - apps/server/src/tests/helpers/database.ts
+      prompt: "\u68C0\u67E5\u6D4B\u8BD5\u6570\u636E\u5E93\u7BA1\u7406\uFF0C\u9A8C\u8BC1\
+        \u6BCF\u4E2A\u6D4B\u8BD5\u540E\u6570\u636E\u6E05\u7406\uFF0C\u6709\u4E8B\u52A1\
+        \u56DE\u6EDA\u6216\u72EC\u7ACB\u6570\u636E\u5E93\u5B9E\u4F8B\uFF0C\u786E\u4FDD\
+        \u6D4B\u8BD5\u9694\u79BB\u6027"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u521B\u5EFA\u8BA4\u8BC1\u6D4B\u8BD5\u5DE5\u5177:\n- JWT Token\u751F\
+    \u6210\u8F85\u52A9\n- \u6D4B\u8BD5\u7528\u6237\u767B\u5F55\u8F85\u52A9\n- \u6743\
+    \u9650\u9A8C\u8BC1\u6D4B\u8BD5\u7528\u4F8B\u6A21\u677F\n- \u8BA4\u8BC1\u4E2D\u95F4\
+    \u4EF6\u6D4B\u8BD5\n- \u89D2\u8272\u6743\u9650\u6D4B\u8BD5\u6570\u636E\n"
+  id: ISSUE-T002~c3
+  name: "\u8BA4\u8BC1\u548C\u6388\u6743\u6D4B\u8BD5\u8F85\u52A9"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/tests/helpers/auth.ts
+      - apps/server/src/tests/factories/auth.helper.ts
+      prompt: "\u68C0\u67E5\u8BA4\u8BC1\u6D4B\u8BD5\u8F85\u52A9\u5DE5\u5177\uFF0C\u9A8C\
+        \u8BC1\u6709JWT\u751F\u6210\u51FD\u6570\uFF0C\u6D4B\u8BD5\u7528\u6237\u81EA\
+        \u52A8\u767B\u5F55\uFF0C\u652F\u6301\u4E0D\u540C\u89D2\u8272\u6743\u9650\u6D4B\
+        \u8BD5"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u54CD\u5E94\u9A8C\u8BC1\u5DE5\u5177:\n- JSON Schema\u9A8C\u8BC1\n\
+    - \u54CD\u5E94\u65F6\u95F4\u65AD\u8A00\n- HTTP\u72B6\u6001\u7801\u9A8C\u8BC1\n\
+    - \u54CD\u5E94\u5934\u9A8C\u8BC1\n- \u9519\u8BEF\u54CD\u5E94\u683C\u5F0F\u9A8C\
+    \u8BC1\n"
+  id: ISSUE-T002~c4
+  name: "API\u54CD\u5E94\u9A8C\u8BC1\u5DE5\u5177"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/tests/helpers/validator.ts
+      - apps/server/src/tests/schemas/api-response.schema.ts
+      prompt: "\u68C0\u67E5API\u54CD\u5E94\u9A8C\u8BC1\u5DE5\u5177\uFF0C\u9A8C\u8BC1\
+        \u6709JSON Schema\u9A8C\u8BC1\u5668\uFF0C\u54CD\u5E94\u7ED3\u6784\u9A8C\u8BC1\
+        \uFF0C\u9519\u8BEF\u54CD\u5E94\u683C\u5F0F\u68C0\u67E5\u5DE5\u5177"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u7F16\u5199\u96C6\u6210\u6D4B\u8BD5\u793A\u4F8B:\n- \u8BA4\u8BC1\
+    API\u96C6\u6210\u6D4B\u8BD5\n- \u7528\u6237API\u96C6\u6210\u6D4B\u8BD5\n- Agent\
+    \ API\u96C6\u6210\u6D4B\u8BD5\n- \u9519\u8BEF\u573A\u666F\u6D4B\u8BD5\n- \u8FB9\
+    \u754C\u6761\u4EF6\u6D4B\u8BD5\n"
+  id: ISSUE-T002~c5
+  name: "\u96C6\u6210\u6D4B\u8BD5\u793A\u4F8B\u5957\u4EF6"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/tests/integration/auth.integration.test.ts
+      - apps/server/src/tests/integration/user.integration.test.ts
+      prompt: "\u68C0\u67E5\u96C6\u6210\u6D4B\u8BD5\u793A\u4F8B\uFF0C\u9A8C\u8BC1\u6709\
+        .auth.integration.test.ts\u3001.user.integration.test.ts\u7B49\uFF0C\u8986\
+        \u76D6CRUD\u64CD\u4F5C\u548C\u9519\u8BEF\u573A\u666F"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "API\u5951\u7EA6\u6D4B\u8BD5:\n- OpenAPI/Swagger\u5951\u7EA6\u9A8C\u8BC1\
+    \ (\u4F7F\u7528Zod\u66FF\u4EE3)\n- \u8BF7\u6C42\u53C2\u6570\u9A8C\u8BC1\n- \u54CD\
+    \u5E94\u5B57\u6BB5\u7C7B\u578B\u68C0\u67E5\n- API\u7248\u672C\u517C\u5BB9\u6027\
+    \u6D4B\u8BD5\n- \u7834\u574F\u6027\u53D8\u66F4\u68C0\u6D4B\n"
+  id: ISSUE-T002~c6
+  name: "API\u5951\u7EA6\u6D4B\u8BD5"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/tests/helpers/validator.ts
+      prompt: "\u68C0\u67E5API\u5951\u7EA6\u6D4B\u8BD5\u914D\u7F6E\uFF0C\u9A8C\u8BC1\
+        \u4F7F\u7528Zod\u8FDB\u884CJSON Schema\u9A8C\u8BC1\uFF0C\u6709\u54CD\u5E94\
+        \u5B57\u6BB5\u7C7B\u578B\u68C0\u67E5\u548C\u8BF7\u6C42\u53C2\u6570\u9A8C\u8BC1\
+        \u5DE5\u5177"
+current_task: ''
+description: "\u642D\u5EFAAPI\u96C6\u6210\u6D4B\u8BD5\u6846\u67B6\uFF0C\u4F7F\u7528\
+  supertest\u6D4B\u8BD5HTTP\u7AEF\u70B9\uFF0C\u9A8C\u8BC1API\u7684\u6574\u4F53\u529F\
+  \u80FD\u3002\n\u5305\u62EC\u6D4B\u8BD5\u6570\u636E\u5E93\u7BA1\u7406\u3001\u8BF7\
+  \u6C42\u8F85\u52A9\u5DE5\u5177\u3001\u8BA4\u8BC1\u8F85\u52A9\u3001\u54CD\u5E94\u9A8C\
+  \u8BC1\u7B49\u3002\n\u786E\u4FDDAPI\u5728\u96C6\u6210\u5C42\u9762\u5DE5\u4F5C\u6B63\
+  \u5E38\u3002\n"
+id: ISSUE-T002
+issue_number: 302
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-F003
+slug: api-integration-test
+status: accepted
+title: "API\u96C6\u6210\u6D4B\u8BD5\u6846\u67B6"

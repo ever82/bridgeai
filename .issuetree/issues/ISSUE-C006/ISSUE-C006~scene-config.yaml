@@ -2,7 +2,7 @@ id: ISSUE-C006
 issue_number: 308
 title: 场景配置管理
 slug: scene-config
-status: "passed"
+status: "accepted"
 description: |
   实现四大场景的配置管理系统，包括场景特定字段定义、
   场景模板、场景能力配置等。
@@ -165,7 +165,7 @@ implementation:
 
 check:
   checked_at: "2026-04-10"
-  status: "passed"
+  status: "accepted"
   functional_verification:
     all_criteria_passed: true
   test_execution:

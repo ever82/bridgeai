@@ -1,147 +1,135 @@
----
-id: "ISSUE-AI006"
-issue_number: 506
-title: "AI服务降级与容错策略"
-slug: "ai-resilience"
-status: "pending"
-description: |
-  实现AI服务降级与容错策略，在LLM服务不可用或响应过慢时
-  提供优雅的降级方案，包括缓存回退、简化模型、预设回复、
-  异步队列等机制，确保系统核心功能可用性。
-prerequisites:
-  - "ISSUE-AI001"
-  - "ISSUE-AI004"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-AI006~c1"
-    name: "多级降级策略"
-    description: |
-      降级层级:
-      - L1: 主模型降级到备用模型
-      - L2: 高质量降级到低成本模型
-      - L3: AI生成降级到模板回复
-      - L4: 实时降级到异步队列
-      - L5: 服务完全不可用提示
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查降级策略，验证有DegradationStrategy类或配置，支持5个降级级别，每个级别有对应的fallback实现和触发条件"
-        context_files: ["apps/server/src/services/ai/resilience/degradationStrategy.ts"]
-        
-
-  - id: "ISSUE-AI006~c2"
-    name: "智能降级决策器"
-    description: |
-      决策系统:
-      - 服务健康状态监控
-      - 降级级别自动判断
-      - 用户影响评估
-      - 渐进式降级/恢复
-      - 降级原因记录
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查降级决策器，验证有DegradationController类，监控error_rate、latency_percentile，自动选择degradation_level，记录decision_reason"
-        context_files: ["apps/server/src/services/ai/resilience/degradationController.ts"]
-        
-
-  - id: "ISSUE-AI006~c3"
-    name: "模板回复系统"
-    description: |
-      模板机制:
-      - 场景模板库
-      - 变量替换支持
-      - 模板匹配算法
-      - 个性化模板选择
-      - 模板动态更新
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查模板系统，验证有TemplateResponseService类，包含templates配置，支持变量插值{{variable}}，根据scene和intent匹配模板"
-        context_files: ["apps/server/src/services/ai/resilience/templateResponseService.ts"]
-        
-
-  - id: "ISSUE-AI006~c4"
-    name: "响应缓存回退"
-    description: |
-      缓存机制:
-      - 相似请求缓存
-      - 缓存命中策略
-      - 缓存过期管理
-      - 降级时优先使用
-      - 缓存预热
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查缓存回退，验证有AIResponseCacheService类，使用similarity_hash索引缓存，支持TTL过期，degradation时返回stale cache"
-        context_files: ["apps/server/src/services/ai/resilience/responseCacheService.ts"]
-        
-
-  - id: "ISSUE-AI006~c5"
-    name: "异步处理队列"
-    description: |
-      队列系统:
-      - 延迟任务队列
-      - 优先级管理
-      - 失败重试机制
-      - 队列状态查询
-      - 结果回调通知
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查异步队列，验证有AIAsyncQueueService类，使用Redis/Bull队列，支持priority、retry_count，提供job status查询API"
-        context_files: ["apps/server/src/services/ai/resilience/asyncQueueService.ts"]
-        
-
-  - id: "ISSUE-AI006~c6"
-    name: "降级监控与告警"
-    description: |
-      监控告警:
-      - 降级事件统计
-      - 降级持续时间
-      - 用户影响评估
-      - 自动告警触发
-      - 恢复通知
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查降级监控，验证有ResilienceMetricsService类，暴露降级metrics：ai_degradation_events_total、degradation_duration_seconds，集成告警"
-        context_files: ["apps/server/src/services/ai/resilience/metricsService.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u964D\u7EA7\u5C42\u7EA7:\n- L1: \u4E3B\u6A21\u578B\u964D\u7EA7\u5230\
+    \u5907\u7528\u6A21\u578B\n- L2: \u9AD8\u8D28\u91CF\u964D\u7EA7\u5230\u4F4E\u6210\
+    \u672C\u6A21\u578B\n- L3: AI\u751F\u6210\u964D\u7EA7\u5230\u6A21\u677F\u56DE\u590D\
+    \n- L4: \u5B9E\u65F6\u964D\u7EA7\u5230\u5F02\u6B65\u961F\u5217\n- L5: \u670D\u52A1\
+    \u5B8C\u5168\u4E0D\u53EF\u7528\u63D0\u793A\n"
+  id: ISSUE-AI006~c1
+  name: "\u591A\u7EA7\u964D\u7EA7\u7B56\u7565"
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/resilience/degradationStrategy.ts
+      prompt: "\u68C0\u67E5\u964D\u7EA7\u7B56\u7565\uFF0C\u9A8C\u8BC1\u6709DegradationStrategy\u7C7B\
+        \u6216\u914D\u7F6E\uFF0C\u652F\u63015\u4E2A\u964D\u7EA7\u7EA7\u522B\uFF0C\u6BCF\
+        \u4E2A\u7EA7\u522B\u6709\u5BF9\u5E94\u7684fallback\u5B9E\u73B0\u548C\u89E6\
+        \u53D1\u6761\u4EF6"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u51B3\u7B56\u7CFB\u7EDF:\n- \u670D\u52A1\u5065\u5EB7\u72B6\u6001\u76D1\
+    \u63A7\n- \u964D\u7EA7\u7EA7\u522B\u81EA\u52A8\u5224\u65AD\n- \u7528\u6237\u5F71\
+    \u54CD\u8BC4\u4F30\n- \u6E10\u8FDB\u5F0F\u964D\u7EA7/\u6062\u590D\n- \u964D\u7EA7\
+    \u539F\u56E0\u8BB0\u5F55\n"
+  id: ISSUE-AI006~c2
+  name: "\u667A\u80FD\u964D\u7EA7\u51B3\u7B56\u5668"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/resilience/degradationController.ts
+      prompt: "\u68C0\u67E5\u964D\u7EA7\u51B3\u7B56\u5668\uFF0C\u9A8C\u8BC1\u6709\
+        DegradationController\u7C7B\uFF0C\u76D1\u63A7error_rate\u3001latency_percentile\uFF0C\
+        \u81EA\u52A8\u9009\u62E9degradation_level\uFF0C\u8BB0\u5F55decision_reason"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u6A21\u677F\u673A\u5236:\n- \u573A\u666F\u6A21\u677F\u5E93\n- \u53D8\
+    \u91CF\u66FF\u6362\u652F\u6301\n- \u6A21\u677F\u5339\u914D\u7B97\u6CD5\n- \u4E2A\
+    \u6027\u5316\u6A21\u677F\u9009\u62E9\n- \u6A21\u677F\u52A8\u6001\u66F4\u65B0\n"
+  id: ISSUE-AI006~c3
+  name: "\u6A21\u677F\u56DE\u590D\u7CFB\u7EDF"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/resilience/templateResponseService.ts
+      prompt: "\u68C0\u67E5\u6A21\u677F\u7CFB\u7EDF\uFF0C\u9A8C\u8BC1\u6709TemplateResponseService\u7C7B\
+        \uFF0C\u5305\u542Btemplates\u914D\u7F6E\uFF0C\u652F\u6301\u53D8\u91CF\u63D2\
+        \u503C{{variable}}\uFF0C\u6839\u636Escene\u548Cintent\u5339\u914D\u6A21\u677F"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u7F13\u5B58\u673A\u5236:\n- \u76F8\u4F3C\u8BF7\u6C42\u7F13\u5B58\n\
+    - \u7F13\u5B58\u547D\u4E2D\u7B56\u7565\n- \u7F13\u5B58\u8FC7\u671F\u7BA1\u7406\
+    \n- \u964D\u7EA7\u65F6\u4F18\u5148\u4F7F\u7528\n- \u7F13\u5B58\u9884\u70ED\n"
+  id: ISSUE-AI006~c4
+  name: "\u54CD\u5E94\u7F13\u5B58\u56DE\u9000"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/resilience/responseCacheService.ts
+      prompt: "\u68C0\u67E5\u7F13\u5B58\u56DE\u9000\uFF0C\u9A8C\u8BC1\u6709AIResponseCacheService\u7C7B\
+        \uFF0C\u4F7F\u7528similarity_hash\u7D22\u5F15\u7F13\u5B58\uFF0C\u652F\u6301\
+        TTL\u8FC7\u671F\uFF0Cdegradation\u65F6\u8FD4\u56DEstale cache"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u961F\u5217\u7CFB\u7EDF:\n- \u5EF6\u8FDF\u4EFB\u52A1\u961F\u5217\n\
+    - \u4F18\u5148\u7EA7\u7BA1\u7406\n- \u5931\u8D25\u91CD\u8BD5\u673A\u5236\n- \u961F\
+    \u5217\u72B6\u6001\u67E5\u8BE2\n- \u7ED3\u679C\u56DE\u8C03\u901A\u77E5\n"
+  id: ISSUE-AI006~c5
+  name: "\u5F02\u6B65\u5904\u7406\u961F\u5217"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/resilience/asyncQueueService.ts
+      prompt: "\u68C0\u67E5\u5F02\u6B65\u961F\u5217\uFF0C\u9A8C\u8BC1\u6709AIAsyncQueueService\u7C7B\
+        \uFF0C\u4F7F\u7528Redis/Bull\u961F\u5217\uFF0C\u652F\u6301priority\u3001retry_count\uFF0C\
+        \u63D0\u4F9Bjob status\u67E5\u8BE2API"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u76D1\u63A7\u544A\u8B66:\n- \u964D\u7EA7\u4E8B\u4EF6\u7EDF\u8BA1\n\
+    - \u964D\u7EA7\u6301\u7EED\u65F6\u95F4\n- \u7528\u6237\u5F71\u54CD\u8BC4\u4F30\
+    \n- \u81EA\u52A8\u544A\u8B66\u89E6\u53D1\n- \u6062\u590D\u901A\u77E5\n"
+  id: ISSUE-AI006~c6
+  name: "\u964D\u7EA7\u76D1\u63A7\u4E0E\u544A\u8B66"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/ai/resilience/metricsService.ts
+      prompt: "\u68C0\u67E5\u964D\u7EA7\u76D1\u63A7\uFF0C\u9A8C\u8BC1\u6709ResilienceMetricsService\u7C7B\
+        \uFF0C\u66B4\u9732\u964D\u7EA7metrics\uFF1Aai_degradation_events_total\u3001\
+        degradation_duration_seconds\uFF0C\u96C6\u6210\u544A\u8B66"
+current_task: null
+description: "\u5B9E\u73B0AI\u670D\u52A1\u964D\u7EA7\u4E0E\u5BB9\u9519\u7B56\u7565\
+  \uFF0C\u5728LLM\u670D\u52A1\u4E0D\u53EF\u7528\u6216\u54CD\u5E94\u8FC7\u6162\u65F6\
+  \n\u63D0\u4F9B\u4F18\u96C5\u7684\u964D\u7EA7\u65B9\u6848\uFF0C\u5305\u62EC\u7F13\
+  \u5B58\u56DE\u9000\u3001\u7B80\u5316\u6A21\u578B\u3001\u9884\u8BBE\u56DE\u590D\u3001\
+  \n\u5F02\u6B65\u961F\u5217\u7B49\u673A\u5236\uFF0C\u786E\u4FDD\u7CFB\u7EDF\u6838\
+  \u5FC3\u529F\u80FD\u53EF\u7528\u6027\u3002\n"
+id: ISSUE-AI006
+issue_number: 506
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-AI001
+- ISSUE-AI004
+slug: ai-resilience
+status: pending
+title: "AI\u670D\u52A1\u964D\u7EA7\u4E0E\u5BB9\u9519\u7B56\u7565"

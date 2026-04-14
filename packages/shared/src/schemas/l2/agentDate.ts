@@ -1,4 +1,4 @@
-import { L2Schema, L2FieldType } from '../types';
+import { L2Schema, L2FieldType } from './types';
 
 /**
  * AgentDate Scene L2 Schema

@@ -1,151 +1,153 @@
----
-id: "ISSUE-JOB002"
-issue_number: 902
-title: "招聘方职位发布"
-slug: "employer-job-posting"
-status: "pending"
-description: |
-  实现招聘方Agent的职位发布与管理功能。招聘方通过自然语言
-  或结构化表单描述职位需求、公司信息、薪资福利等，AI提炼
-  核心要求并生成标准化职位描述。支持职位状态管理和刷新。
-prerequisites:
-  - "ISSUE-C006"
-  - "ISSUE-AI003"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-JOB002~c1"
-    name: "招聘方画像数据模型"
-    description: |
-      模型设计:
-      - 招聘方Agent类型定义(EmployerAgent)
-      - 公司信息字段(名称/规模/行业/地址)
-      - 招聘者身份信息
-      - 公司认证状态
-      - 在招职位列表关联
-      - 公司品牌展示设置
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查招聘方画像模型，验证有EmployerProfile类型定义，包含公司信息、认证状态、在招职位等字段"
-        context_files: ["packages/shared/src/types/employer.ts", "packages/shared/src/schemas/employerSchema.ts"]
-        
-
-  - id: "ISSUE-JOB002~c2"
-    name: "职位信息数据模型"
-    description: |
-      职位模型:
-      - 职位基础信息(标题/部门/人数)
-      - 职位描述与要求
-      - 技能要求标签
-      - 学历与经验要求
-      - 薪资范围与福利
-      - 工作地点与工作方式(远程/现场/混合)
-      - 职位有效期与状态
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查职位数据模型，验证有JobPosting类型定义，包含完整职位信息字段和要求，支持工作方式选择"
-        context_files: ["packages/shared/src/types/jobPosting.ts", "packages/shared/src/schemas/jobPostingSchema.ts"]
-        
-
-  - id: "ISSUE-JOB002~c3"
-    name: "AI职位需求提炼服务"
-    description: |
-      AI提炼:
-      - 自然语言职位描述解析
-      - 关键要求自动提取(技能/经验/学历)
-      - 技能标签智能匹配
-      - 薪资范围合理性评估
-      - 职位描述质量评分与优化建议
-      - 竞争力分析(与同类职位对比)
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查AI职位提炼服务，验证有JobExtractionService，能将自然语言职位描述转换为结构化数据，包含技能提取和竞争力分析"
-        context_files: ["apps/server/src/services/job/jobExtraction.ts", "apps/server/src/ai/prompts/jobExtraction.ts"]
-        
-
-  - id: "ISSUE-JOB002~c4"
-    name: "职位发布与管理API"
-    description: |
-      CRUD接口:
-      - 发布/更新职位API
-      - 职位状态管理(草稿/发布/暂停/关闭)
-      - 职位刷新与置顶功能
-      - 简历筛选与管理
-      - 职位数据统计(浏览/投递/感兴趣)
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查职位API，验证有完整的RESTful端点(/api/job/postings)，支持职位发布、状态管理和数据统计功能"
-        context_files: ["apps/server/src/routes/job/jobPostingRoutes.ts", "apps/server/src/controllers/job/jobPostingController.ts"]
-        
-
-  - id: "ISSUE-JOB002~c5"
-    name: "移动端职位管理界面"
-    description: |
-      UI实现:
-      - 职位发布表单(分步骤填写)
-      - 公司信息设置页面
-      - 职位列表与管理页面
-      - 收到的简历列表
-      - 简历筛选与标记功能
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查移动端职位管理界面，验证有JobPostingScreen和ReceivedResumesScreen组件，支持职位发布和简历管理"
-        context_files: ["apps/mobile/src/screens/Job/JobPostingScreen.tsx", "apps/mobile/src/screens/Job/ReceivedResumesScreen.tsx"]
-        
-
-  - id: "ISSUE-JOB002~c6"
-    name: "公司认证与信誉系统"
-    description: |
-      认证系统:
-      - 公司资质认证流程
-      - 企业邮箱验证
-      - 营业执照上传与审核
-      - 认证标识展示
-      - 公司信誉评分
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查公司认证系统，验证有CompanyVerification流程，包含企业邮箱验证和营业执照审核功能"
-        context_files: ["apps/server/src/services/job/companyVerification.ts", "apps/mobile/src/screens/Job/CompanyVerificationScreen.tsx"]
-        
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u6A21\u578B\u8BBE\u8BA1:\n- \u62DB\u8058\u65B9Agent\u7C7B\u578B\u5B9A\
+    \u4E49(EmployerAgent)\n- \u516C\u53F8\u4FE1\u606F\u5B57\u6BB5(\u540D\u79F0/\u89C4\
+    \u6A21/\u884C\u4E1A/\u5730\u5740)\n- \u62DB\u8058\u8005\u8EAB\u4EFD\u4FE1\u606F\
+    \n- \u516C\u53F8\u8BA4\u8BC1\u72B6\u6001\n- \u5728\u62DB\u804C\u4F4D\u5217\u8868\
+    \u5173\u8054\n- \u516C\u53F8\u54C1\u724C\u5C55\u793A\u8BBE\u7F6E\n"
+  id: ISSUE-JOB002~c1
+  name: "\u62DB\u8058\u65B9\u753B\u50CF\u6570\u636E\u6A21\u578B"
+  verification:
+    ai:
+      context_files:
+      - packages/shared/src/types/employer.ts
+      - packages/shared/src/schemas/employerSchema.ts
+      prompt: "\u68C0\u67E5\u62DB\u8058\u65B9\u753B\u50CF\u6A21\u578B\uFF0C\u9A8C\u8BC1\
+        \u6709EmployerProfile\u7C7B\u578B\u5B9A\u4E49\uFF0C\u5305\u542B\u516C\u53F8\
+        \u4FE1\u606F\u3001\u8BA4\u8BC1\u72B6\u6001\u3001\u5728\u62DB\u804C\u4F4D\u7B49\
+        \u5B57\u6BB5"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u804C\u4F4D\u6A21\u578B:\n- \u804C\u4F4D\u57FA\u7840\u4FE1\u606F\
+    (\u6807\u9898/\u90E8\u95E8/\u4EBA\u6570)\n- \u804C\u4F4D\u63CF\u8FF0\u4E0E\u8981\
+    \u6C42\n- \u6280\u80FD\u8981\u6C42\u6807\u7B7E\n- \u5B66\u5386\u4E0E\u7ECF\u9A8C\
+    \u8981\u6C42\n- \u85AA\u8D44\u8303\u56F4\u4E0E\u798F\u5229\n- \u5DE5\u4F5C\u5730\
+    \u70B9\u4E0E\u5DE5\u4F5C\u65B9\u5F0F(\u8FDC\u7A0B/\u73B0\u573A/\u6DF7\u5408)\n\
+    - \u804C\u4F4D\u6709\u6548\u671F\u4E0E\u72B6\u6001\n"
+  id: ISSUE-JOB002~c2
+  name: "\u804C\u4F4D\u4FE1\u606F\u6570\u636E\u6A21\u578B"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - packages/shared/src/types/jobPosting.ts
+      - packages/shared/src/schemas/jobPostingSchema.ts
+      prompt: "\u68C0\u67E5\u804C\u4F4D\u6570\u636E\u6A21\u578B\uFF0C\u9A8C\u8BC1\u6709\
+        JobPosting\u7C7B\u578B\u5B9A\u4E49\uFF0C\u5305\u542B\u5B8C\u6574\u804C\u4F4D\
+        \u4FE1\u606F\u5B57\u6BB5\u548C\u8981\u6C42\uFF0C\u652F\u6301\u5DE5\u4F5C\u65B9\
+        \u5F0F\u9009\u62E9"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "AI\u63D0\u70BC:\n- \u81EA\u7136\u8BED\u8A00\u804C\u4F4D\u63CF\u8FF0\
+    \u89E3\u6790\n- \u5173\u952E\u8981\u6C42\u81EA\u52A8\u63D0\u53D6(\u6280\u80FD\
+    /\u7ECF\u9A8C/\u5B66\u5386)\n- \u6280\u80FD\u6807\u7B7E\u667A\u80FD\u5339\u914D\
+    \n- \u85AA\u8D44\u8303\u56F4\u5408\u7406\u6027\u8BC4\u4F30\n- \u804C\u4F4D\u63CF\
+    \u8FF0\u8D28\u91CF\u8BC4\u5206\u4E0E\u4F18\u5316\u5EFA\u8BAE\n- \u7ADE\u4E89\u529B\
+    \u5206\u6790(\u4E0E\u540C\u7C7B\u804C\u4F4D\u5BF9\u6BD4)\n"
+  id: ISSUE-JOB002~c3
+  name: "AI\u804C\u4F4D\u9700\u6C42\u63D0\u70BC\u670D\u52A1"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/job/jobExtraction.ts
+      - apps/server/src/ai/prompts/jobExtraction.ts
+      prompt: "\u68C0\u67E5AI\u804C\u4F4D\u63D0\u70BC\u670D\u52A1\uFF0C\u9A8C\u8BC1\
+        \u6709JobExtractionService\uFF0C\u80FD\u5C06\u81EA\u7136\u8BED\u8A00\u804C\
+        \u4F4D\u63CF\u8FF0\u8F6C\u6362\u4E3A\u7ED3\u6784\u5316\u6570\u636E\uFF0C\u5305\
+        \u542B\u6280\u80FD\u63D0\u53D6\u548C\u7ADE\u4E89\u529B\u5206\u6790"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "CRUD\u63A5\u53E3:\n- \u53D1\u5E03/\u66F4\u65B0\u804C\u4F4DAPI\n- \u804C\
+    \u4F4D\u72B6\u6001\u7BA1\u7406(\u8349\u7A3F/\u53D1\u5E03/\u6682\u505C/\u5173\u95ED\
+    )\n- \u804C\u4F4D\u5237\u65B0\u4E0E\u7F6E\u9876\u529F\u80FD\n- \u7B80\u5386\u7B5B\
+    \u9009\u4E0E\u7BA1\u7406\n- \u804C\u4F4D\u6570\u636E\u7EDF\u8BA1(\u6D4F\u89C8\
+    /\u6295\u9012/\u611F\u5174\u8DA3)\n"
+  id: ISSUE-JOB002~c4
+  name: "\u804C\u4F4D\u53D1\u5E03\u4E0E\u7BA1\u7406API"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/job/jobPostingRoutes.ts
+      - apps/server/src/controllers/job/jobPostingController.ts
+      prompt: "\u68C0\u67E5\u804C\u4F4DAPI\uFF0C\u9A8C\u8BC1\u6709\u5B8C\u6574\u7684\
+        RESTful\u7AEF\u70B9(/api/job/postings)\uFF0C\u652F\u6301\u804C\u4F4D\u53D1\
+        \u5E03\u3001\u72B6\u6001\u7BA1\u7406\u548C\u6570\u636E\u7EDF\u8BA1\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "UI\u5B9E\u73B0:\n- \u804C\u4F4D\u53D1\u5E03\u8868\u5355(\u5206\u6B65\
+    \u9AA4\u586B\u5199)\n- \u516C\u53F8\u4FE1\u606F\u8BBE\u7F6E\u9875\u9762\n- \u804C\
+    \u4F4D\u5217\u8868\u4E0E\u7BA1\u7406\u9875\u9762\n- \u6536\u5230\u7684\u7B80\u5386\
+    \u5217\u8868\n- \u7B80\u5386\u7B5B\u9009\u4E0E\u6807\u8BB0\u529F\u80FD\n"
+  id: ISSUE-JOB002~c5
+  name: "\u79FB\u52A8\u7AEF\u804C\u4F4D\u7BA1\u7406\u754C\u9762"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Job/JobPostingScreen.tsx
+      - apps/mobile/src/screens/Job/ReceivedResumesScreen.tsx
+      prompt: "\u68C0\u67E5\u79FB\u52A8\u7AEF\u804C\u4F4D\u7BA1\u7406\u754C\u9762\uFF0C\
+        \u9A8C\u8BC1\u6709JobPostingScreen\u548CReceivedResumesScreen\u7EC4\u4EF6\uFF0C\
+        \u652F\u6301\u804C\u4F4D\u53D1\u5E03\u548C\u7B80\u5386\u7BA1\u7406"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u8BA4\u8BC1\u7CFB\u7EDF:\n- \u516C\u53F8\u8D44\u8D28\u8BA4\u8BC1\u6D41\
+    \u7A0B\n- \u4F01\u4E1A\u90AE\u7BB1\u9A8C\u8BC1\n- \u8425\u4E1A\u6267\u7167\u4E0A\
+    \u4F20\u4E0E\u5BA1\u6838\n- \u8BA4\u8BC1\u6807\u8BC6\u5C55\u793A\n- \u516C\u53F8\
+    \u4FE1\u8A89\u8BC4\u5206\n"
+  id: ISSUE-JOB002~c6
+  name: "\u516C\u53F8\u8BA4\u8BC1\u4E0E\u4FE1\u8A89\u7CFB\u7EDF"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/job/companyVerification.ts
+      - apps/mobile/src/screens/Job/CompanyVerificationScreen.tsx
+      prompt: "\u68C0\u67E5\u516C\u53F8\u8BA4\u8BC1\u7CFB\u7EDF\uFF0C\u9A8C\u8BC1\u6709\
+        CompanyVerification\u6D41\u7A0B\uFF0C\u5305\u542B\u4F01\u4E1A\u90AE\u7BB1\u9A8C\
+        \u8BC1\u548C\u8425\u4E1A\u6267\u7167\u5BA1\u6838\u529F\u80FD"
+current_task: null
+description: "\u5B9E\u73B0\u62DB\u8058\u65B9Agent\u7684\u804C\u4F4D\u53D1\u5E03\u4E0E\
+  \u7BA1\u7406\u529F\u80FD\u3002\u62DB\u8058\u65B9\u901A\u8FC7\u81EA\u7136\u8BED\u8A00\
+  \n\u6216\u7ED3\u6784\u5316\u8868\u5355\u63CF\u8FF0\u804C\u4F4D\u9700\u6C42\u3001\
+  \u516C\u53F8\u4FE1\u606F\u3001\u85AA\u8D44\u798F\u5229\u7B49\uFF0CAI\u63D0\u70BC\
+  \n\u6838\u5FC3\u8981\u6C42\u5E76\u751F\u6210\u6807\u51C6\u5316\u804C\u4F4D\u63CF\
+  \u8FF0\u3002\u652F\u6301\u804C\u4F4D\u72B6\u6001\u7BA1\u7406\u548C\u5237\u65B0\u3002\
+  \n"
+id: ISSUE-JOB002
+issue_number: 902
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-C006
+- ISSUE-AI003
+slug: employer-job-posting
+status: pending
+title: "\u62DB\u8058\u65B9\u804C\u4F4D\u53D1\u5E03"

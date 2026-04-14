@@ -1,141 +1,141 @@
----
-id: "ISSUE-COM001a"
-issue_number: 501
-title: "Socket.io基础设施搭建"
-slug: "socketio-infra"
-status: passed
-description: |
-  搭建 Socket.io 实时通信基础设施，支持 WebSocket 连接、
-  事件处理和广播功能。
-prerequisites:
-  - "ISSUE-C001"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-COM001a~c1"
-    name: "Socket.io 服务器"
-    description: |
-      服务端配置:
-      - Socket.io 集成到 Express
-      - CORS 配置
-      - 认证中间件
-      - 命名空间设置
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 Socket.io 服务器，验证正确集成到 Express 并有认证中间件"
-        context_files: ["apps/server/src/socket/index.ts", "apps/server/src/socket/middleware/auth.ts"]
-
-  - id: "ISSUE-COM001a~c2"
-    name: "Socket.io 客户端"
-    description: |
-      客户端配置:
-      - 移动端 Socket.io 客户端
-      - 连接配置和重连
-      - 事件监听管理
-      - 连接状态管理
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 Socket.io 客户端，验证有 socketClient 封装和自动重连"
-        context_files: ["apps/mobile/src/services/socketClient.ts"]
-
-  - id: "ISSUE-COM001a~c3"
-    name: "连接认证"
-    description: |
-      Socket 认证:
-      - JWT Token 认证
-      - 连接权限验证
-      - 用户关联
-      - 连接限制
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 Socket 认证，验证连接时传递 JWT Token 并验证用户身份"
-        context_files: ["apps/server/src/socket/middleware/auth.ts"]
-
-  - id: "ISSUE-COM001a~c4"
-    name: "心跳和连接管理"
-    description: |
-      连接管理:
-      - 心跳机制
-      - 断线检测
-      - 连接池管理
-      - 连接统计
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查连接管理，验证有 ping/pong 心跳和连接状态监控"
-        context_files: ["apps/server/src/socket/connectionManager.ts"]
-
-  - id: "ISSUE-COM001a~c5"
-    name: "适配器配置"
-    description: |
-      多服务器支持:
-      - Redis 适配器
-      - 多节点消息广播
-      - 水平扩展支持
-      - 负载均衡
-    status: "passed"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查适配器配置，验证有 Redis Adapter 配置支持多节点"
-        context_files: ["apps/server/src/socket/adapter.ts"]
-
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u670D\u52A1\u7AEF\u914D\u7F6E:\n- Socket.io \u96C6\u6210\u5230 Express\n\
+    - CORS \u914D\u7F6E\n- \u8BA4\u8BC1\u4E2D\u95F4\u4EF6\n- \u547D\u540D\u7A7A\u95F4\
+    \u8BBE\u7F6E\n"
+  id: ISSUE-COM001a~c1
+  name: "Socket.io \u670D\u52A1\u5668"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/socket/index.ts
+      - apps/server/src/socket/middleware/auth.ts
+      prompt: "\u68C0\u67E5 Socket.io \u670D\u52A1\u5668\uFF0C\u9A8C\u8BC1\u6B63\u786E\
+        \u96C6\u6210\u5230 Express \u5E76\u6709\u8BA4\u8BC1\u4E2D\u95F4\u4EF6"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5BA2\u6237\u7AEF\u914D\u7F6E:\n- \u79FB\u52A8\u7AEF Socket.io \u5BA2\
+    \u6237\u7AEF\n- \u8FDE\u63A5\u914D\u7F6E\u548C\u91CD\u8FDE\n- \u4E8B\u4EF6\u76D1\
+    \u542C\u7BA1\u7406\n- \u8FDE\u63A5\u72B6\u6001\u7BA1\u7406\n"
+  id: ISSUE-COM001a~c2
+  name: "Socket.io \u5BA2\u6237\u7AEF"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/services/socketClient.ts
+      prompt: "\u68C0\u67E5 Socket.io \u5BA2\u6237\u7AEF\uFF0C\u9A8C\u8BC1\u6709 socketClient\
+        \ \u5C01\u88C5\u548C\u81EA\u52A8\u91CD\u8FDE"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "Socket \u8BA4\u8BC1:\n- JWT Token \u8BA4\u8BC1\n- \u8FDE\u63A5\u6743\
+    \u9650\u9A8C\u8BC1\n- \u7528\u6237\u5173\u8054\n- \u8FDE\u63A5\u9650\u5236\n"
+  id: ISSUE-COM001a~c3
+  name: "\u8FDE\u63A5\u8BA4\u8BC1"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/socket/middleware/auth.ts
+      prompt: "\u68C0\u67E5 Socket \u8BA4\u8BC1\uFF0C\u9A8C\u8BC1\u8FDE\u63A5\u65F6\
+        \u4F20\u9012 JWT Token \u5E76\u9A8C\u8BC1\u7528\u6237\u8EAB\u4EFD"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u8FDE\u63A5\u7BA1\u7406:\n- \u5FC3\u8DF3\u673A\u5236\n- \u65AD\u7EBF\
+    \u68C0\u6D4B\n- \u8FDE\u63A5\u6C60\u7BA1\u7406\n- \u8FDE\u63A5\u7EDF\u8BA1\n"
+  id: ISSUE-COM001a~c4
+  name: "\u5FC3\u8DF3\u548C\u8FDE\u63A5\u7BA1\u7406"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/socket/connectionManager.ts
+      prompt: "\u68C0\u67E5\u8FDE\u63A5\u7BA1\u7406\uFF0C\u9A8C\u8BC1\u6709 ping/pong\
+        \ \u5FC3\u8DF3\u548C\u8FDE\u63A5\u72B6\u6001\u76D1\u63A7"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u591A\u670D\u52A1\u5668\u652F\u6301:\n- Redis \u9002\u914D\u5668\n\
+    - \u591A\u8282\u70B9\u6D88\u606F\u5E7F\u64AD\n- \u6C34\u5E73\u6269\u5C55\u652F\
+    \u6301\n- \u8D1F\u8F7D\u5747\u8861\n"
+  id: ISSUE-COM001a~c5
+  name: "\u9002\u914D\u5668\u914D\u7F6E"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/socket/adapter.ts
+      prompt: "\u68C0\u67E5\u9002\u914D\u5668\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u6709\
+        \ Redis Adapter \u914D\u7F6E\u652F\u6301\u591A\u8282\u70B9"
+current_task: ''
+description: "\u642D\u5EFA Socket.io \u5B9E\u65F6\u901A\u4FE1\u57FA\u7840\u8BBE\u65BD\
+  \uFF0C\u652F\u6301 WebSocket \u8FDE\u63A5\u3001\n\u4E8B\u4EF6\u5904\u7406\u548C\u5E7F\
+  \u64AD\u529F\u80FD\u3002\n"
+id: ISSUE-COM001a
 implementation:
-  completed_at: "2026-04-10"
-  result: "success"
-  notes: |
-    All 5 criteria implemented:
-    - C1: Socket.io server with Express integration, CORS, namespaces (main, chat, user, system)
+  completed_at: '2026-04-10'
+  notes: 'All 5 criteria implemented:
+
+    - C1: Socket.io server with Express integration, CORS, namespaces (main, chat,
+    user, system)
+
     - C2: Mobile Socket.io client with auto-reconnection, connection state management
+
     - C3: JWT authentication middleware with RBAC integration
+
     - C4: Connection manager with ping/pong heartbeat, stats collection, stale cleanup
+
     - C5: Redis adapter configuration for multi-node scaling with graceful fallback
 
+
     Files created:
+
     - apps/server/src/socket/index.ts (218 lines)
+
     - apps/server/src/socket/middleware/auth.ts (166 lines)
+
     - apps/server/src/socket/connectionManager.ts (289 lines)
+
     - apps/server/src/socket/adapter.ts (123 lines)
+
     - apps/server/src/socket/handlers/*.ts (user, chat, system)
+
     - apps/mobile/src/services/socketClient.ts (326 lines)
+
     - Tests: socket.test.ts (179 lines), connectionManager.test.ts (167 lines)
 
-test_passed: true
+    '
+  result: success
+implementation_completed_at: '2026-04-10T10:36:57.852Z'
+implementation_result: success
+issue_number: 501
+logic: sufficient_necessary
 merged_to_master: true
-
-
-implementation_completed_at: "2026-04-10T10:36:57.852Z"
-
-implementation_result: "success"
+prerequisites:
+- ISSUE-C001
+slug: socketio-infra
+status: accepted
+test_passed: true
+title: "Socket.io\u57FA\u7840\u8BBE\u65BD\u642D\u5EFA"

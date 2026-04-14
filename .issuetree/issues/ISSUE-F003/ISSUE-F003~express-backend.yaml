@@ -1,143 +1,148 @@
----
-id: 'ISSUE-F003'
-issue_number: 103
-title: 'Express后端基础框架'
-slug: 'express-backend'
-status: passed
-checked_at: '2026-04-09'
 check:
-  status: passed
   functional_verification:
     all_criteria_passed: true
+  notes: Express app with middleware, routes, error handling verified. 64 tests passed.
+  status: accepted
   test_execution:
     all_tests_passed: true
-  notes: 'Express app with middleware, routes, error handling verified. 64 tests passed.'
-description: |
-  搭建 Express 后端服务基础框架，包括路由结构、中间件配置、
-  错误处理、请求/响应标准化、API 版本控制等核心基础设施。
-prerequisites:
-  - 'ISSUE-F001'
+checked_at: '2026-04-09'
 created_at: '2026-04-08'
-logic: sufficient_necessary
 criteria:
-  - id: 'ISSUE-F003~c1'
-    name: 'Express 应用初始化'
-    description: |
-      配置 Express 应用:
-      - 安装 Express 和相关中间件
-      - 配置 body-parser, cors, helmet
-      - 设置应用入口文件 (app.ts, server.ts)
-      - 配置开发热重载
-    status: 'pending'
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查 apps/server/src/app.ts 和 server.ts 是否存在，验证 Express 应用配置包含 cors, helmet, body-parser 中间件'
-        context_files:
-          ['apps/server/src/app.ts', 'apps/server/src/server.ts', 'apps/server/package.json']
-
-  - id: 'ISSUE-F003~c2'
-    name: '路由结构设计和实现'
-    description: |
-      建立模块化路由结构:
-      - routes/ 目录结构
-      - API 版本控制 (v1, v2)
-      - 路由模块化组织 (auth, user, agent, chat, match等)
-      - 路由前缀和命名规范
-    status: 'pending'
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查 apps/server/src/routes/ 目录结构，验证有 v1 或版本控制目录，确认路由按功能模块组织'
-        context_files: ['apps/server/src/routes/index.ts', 'apps/server/src/routes/v1/']
-
-  - id: 'ISSUE-F003~c3'
-    name: '全局中间件配置'
-    description: |
-      配置全局中间件:
-      - 请求日志中间件
-      - 错误处理中间件
-      - 请求超时处理
-      - 请求 ID 注入
-      - 压缩和静态文件服务
-    status: 'pending'
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查中间件配置文件，验证有 errorHandler, requestLogger, timeout 等全局中间件实现'
-        context_files: ['apps/server/src/middleware/']
-
-  - id: 'ISSUE-F003~c4'
-    name: '统一响应格式和错误处理'
-    description: |
-      建立标准化响应:
-      - ApiResponse 统一响应类
-      - 错误类和错误码定义
-      - HTTP 状态码映射
-      - 异常捕获和转换
-    status: 'pending'
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查是否有统一的响应和错误处理类，验证 ApiResponse 包含 success, data, message, errorCode 字段'
-        context_files: ['apps/server/src/utils/response.ts', 'apps/server/src/errors/']
-
-  - id: 'ISSUE-F003~c5'
-    name: '环境配置和启动脚本'
-    description: |
-      配置运行环境:
-      - 不同环境的配置加载
-      - 开发服务器启动脚本
-      - 生产环境 PM2/Docker 配置
-      - 端口和主机配置
-    status: 'pending'
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查 package.json 脚本，验证有 dev, build, start, 和 docker 相关命令，确认端口配置正确'
-        context_files: ['apps/server/package.json', 'apps/server/Dockerfile']
-
-  - id: 'ISSUE-F003~c6'
-    name: '健康检查和监控端点'
-    description: |
-      实现系统健康检查:
-      - /health 健康检查端点
-      - /ready 就绪探针
-      - /metrics 指标端点(基础)
-      - 数据库连接状态检查
-    status: 'pending'
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查是否有 /health 和 /ready 端点实现，验证返回包含 status, timestamp, checks 等字段'
-        context_files: ['apps/server/src/routes/health.ts']
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u914D\u7F6E Express \u5E94\u7528:\n- \u5B89\u88C5 Express \u548C\u76F8\
+    \u5173\u4E2D\u95F4\u4EF6\n- \u914D\u7F6E body-parser, cors, helmet\n- \u8BBE\u7F6E\
+    \u5E94\u7528\u5165\u53E3\u6587\u4EF6 (app.ts, server.ts)\n- \u914D\u7F6E\u5F00\
+    \u53D1\u70ED\u91CD\u8F7D\n"
+  id: ISSUE-F003~c1
+  name: "Express \u5E94\u7528\u521D\u59CB\u5316"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/app.ts
+      - apps/server/src/server.ts
+      - apps/server/package.json
+      prompt: "\u68C0\u67E5 apps/server/src/app.ts \u548C server.ts \u662F\u5426\u5B58\
+        \u5728\uFF0C\u9A8C\u8BC1 Express \u5E94\u7528\u914D\u7F6E\u5305\u542B cors,\
+        \ helmet, body-parser \u4E2D\u95F4\u4EF6"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5EFA\u7ACB\u6A21\u5757\u5316\u8DEF\u7531\u7ED3\u6784:\n- routes/\
+    \ \u76EE\u5F55\u7ED3\u6784\n- API \u7248\u672C\u63A7\u5236 (v1, v2)\n- \u8DEF\u7531\
+    \u6A21\u5757\u5316\u7EC4\u7EC7 (auth, user, agent, chat, match\u7B49)\n- \u8DEF\
+    \u7531\u524D\u7F00\u548C\u547D\u540D\u89C4\u8303\n"
+  id: ISSUE-F003~c2
+  name: "\u8DEF\u7531\u7ED3\u6784\u8BBE\u8BA1\u548C\u5B9E\u73B0"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/index.ts
+      - apps/server/src/routes/v1/
+      prompt: "\u68C0\u67E5 apps/server/src/routes/ \u76EE\u5F55\u7ED3\u6784\uFF0C\
+        \u9A8C\u8BC1\u6709 v1 \u6216\u7248\u672C\u63A7\u5236\u76EE\u5F55\uFF0C\u786E\
+        \u8BA4\u8DEF\u7531\u6309\u529F\u80FD\u6A21\u5757\u7EC4\u7EC7"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u914D\u7F6E\u5168\u5C40\u4E2D\u95F4\u4EF6:\n- \u8BF7\u6C42\u65E5\u5FD7\
+    \u4E2D\u95F4\u4EF6\n- \u9519\u8BEF\u5904\u7406\u4E2D\u95F4\u4EF6\n- \u8BF7\u6C42\
+    \u8D85\u65F6\u5904\u7406\n- \u8BF7\u6C42 ID \u6CE8\u5165\n- \u538B\u7F29\u548C\
+    \u9759\u6001\u6587\u4EF6\u670D\u52A1\n"
+  id: ISSUE-F003~c3
+  name: "\u5168\u5C40\u4E2D\u95F4\u4EF6\u914D\u7F6E"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/middleware/
+      prompt: "\u68C0\u67E5\u4E2D\u95F4\u4EF6\u914D\u7F6E\u6587\u4EF6\uFF0C\u9A8C\u8BC1\
+        \u6709 errorHandler, requestLogger, timeout \u7B49\u5168\u5C40\u4E2D\u95F4\
+        \u4EF6\u5B9E\u73B0"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5EFA\u7ACB\u6807\u51C6\u5316\u54CD\u5E94:\n- ApiResponse \u7EDF\u4E00\
+    \u54CD\u5E94\u7C7B\n- \u9519\u8BEF\u7C7B\u548C\u9519\u8BEF\u7801\u5B9A\u4E49\n\
+    - HTTP \u72B6\u6001\u7801\u6620\u5C04\n- \u5F02\u5E38\u6355\u83B7\u548C\u8F6C\u6362\
+    \n"
+  id: ISSUE-F003~c4
+  name: "\u7EDF\u4E00\u54CD\u5E94\u683C\u5F0F\u548C\u9519\u8BEF\u5904\u7406"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/utils/response.ts
+      - apps/server/src/errors/
+      prompt: "\u68C0\u67E5\u662F\u5426\u6709\u7EDF\u4E00\u7684\u54CD\u5E94\u548C\u9519\
+        \u8BEF\u5904\u7406\u7C7B\uFF0C\u9A8C\u8BC1 ApiResponse \u5305\u542B success,\
+        \ data, message, errorCode \u5B57\u6BB5"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u914D\u7F6E\u8FD0\u884C\u73AF\u5883:\n- \u4E0D\u540C\u73AF\u5883\u7684\
+    \u914D\u7F6E\u52A0\u8F7D\n- \u5F00\u53D1\u670D\u52A1\u5668\u542F\u52A8\u811A\u672C\
+    \n- \u751F\u4EA7\u73AF\u5883 PM2/Docker \u914D\u7F6E\n- \u7AEF\u53E3\u548C\u4E3B\
+    \u673A\u914D\u7F6E\n"
+  id: ISSUE-F003~c5
+  name: "\u73AF\u5883\u914D\u7F6E\u548C\u542F\u52A8\u811A\u672C"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/package.json
+      - apps/server/Dockerfile
+      prompt: "\u68C0\u67E5 package.json \u811A\u672C\uFF0C\u9A8C\u8BC1\u6709 dev,\
+        \ build, start, \u548C docker \u76F8\u5173\u547D\u4EE4\uFF0C\u786E\u8BA4\u7AEF\
+        \u53E3\u914D\u7F6E\u6B63\u786E"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u7CFB\u7EDF\u5065\u5EB7\u68C0\u67E5:\n- /health \u5065\
+    \u5EB7\u68C0\u67E5\u7AEF\u70B9\n- /ready \u5C31\u7EEA\u63A2\u9488\n- /metrics\
+    \ \u6307\u6807\u7AEF\u70B9(\u57FA\u7840)\n- \u6570\u636E\u5E93\u8FDE\u63A5\u72B6\
+    \u6001\u68C0\u67E5\n"
+  id: ISSUE-F003~c6
+  name: "\u5065\u5EB7\u68C0\u67E5\u548C\u76D1\u63A7\u7AEF\u70B9"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/health.ts
+      prompt: "\u68C0\u67E5\u662F\u5426\u6709 /health \u548C /ready \u7AEF\u70B9\u5B9E\
+        \u73B0\uFF0C\u9A8C\u8BC1\u8FD4\u56DE\u5305\u542B status, timestamp, checks\
+        \ \u7B49\u5B57\u6BB5"
+current_task: ''
+description: "\u642D\u5EFA Express \u540E\u7AEF\u670D\u52A1\u57FA\u7840\u6846\u67B6\
+  \uFF0C\u5305\u62EC\u8DEF\u7531\u7ED3\u6784\u3001\u4E2D\u95F4\u4EF6\u914D\u7F6E\u3001\
+  \n\u9519\u8BEF\u5904\u7406\u3001\u8BF7\u6C42/\u54CD\u5E94\u6807\u51C6\u5316\u3001\
+  API \u7248\u672C\u63A7\u5236\u7B49\u6838\u5FC3\u57FA\u7840\u8BBE\u65BD\u3002\n"
+id: ISSUE-F003
+issue_number: 103
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-F001
+slug: express-backend
+status: accepted
+title: "Express\u540E\u7AEF\u57FA\u7840\u6846\u67B6"

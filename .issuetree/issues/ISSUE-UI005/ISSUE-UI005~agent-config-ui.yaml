@@ -1,147 +1,156 @@
----
-id: "ISSUE-UI005"
-issue_number: 1107
-title: "Agent配置界面"
-slug: "agent-config-ui"
-status: "pending"
-description: |
-  实现 Agent 的配置管理界面，包括创建向导、基础信息配置、
-  场景设置、模型选择、行为规则配置等，让用户可以灵活定制自己的 Agent。
-prerequisites:
-  - "ISSUE-UI002"
-  - "ISSUE-C001"
-  - "ISSUE-C006"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-UI005~c1"
-    name: "Agent 创建向导"
-    description: |
-      实现分步创建向导:
-      - 步骤导航条（选择场景、基础配置、详细信息、确认）
-      - 场景类型选择（VisionShare/AgentDate/AgentJob/AgentAd）
-      - 每步数据验证
-      - 上一步/下一步导航
-      - 可保存草稿
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 Agent 创建向导实现，验证有 CreateAgentWizard 组件，包含步骤条、场景选择、表单验证、草稿保存功能"
-        context_files: ["apps/mobile/src/screens/Agent/CreateAgentWizard.tsx", "apps/mobile/src/screens/Agent/components/StepIndicator.tsx"]
-        
-
-  - id: "ISSUE-UI005~c2"
-    name: "基础信息配置表单"
-    description: |
-      实现基础信息配置:
-      - Agent 名称输入
-      - 头像上传/选择
-      - 描述/简介文本域
-      - 可见性设置（公开/私有）
-      - 表单验证和错误提示
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查基础信息表单实现，验证有 AgentBasicInfoForm 组件，包含名称、头像上传、描述、可见性设置，有完整表单验证"
-        context_files: ["apps/mobile/src/screens/Agent/components/AgentBasicInfoForm.tsx", "apps/mobile/src/components/AvatarPicker/AvatarPicker.tsx"]
-        
-
-  - id: "ISSUE-UI005~c3"
-    name: "场景配置界面"
-    description: |
-      实现场景特定配置（依赖 C006）:
-      - VisionShare: 需求范围、价格设置
-      - AgentDate: 交友偏好、匹配条件
-      - AgentJob: 求职意向/招聘要求
-      - AgentAd: 消费偏好/优惠类型
-      - 动态表单根据场景变化
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查场景配置实现，验证有 SceneConfigForm 组件，根据选择的场景类型动态显示不同配置项，支持 VisionShare/AgentDate/AgentJob/AgentAd 的配置"
-        context_files: ["apps/mobile/src/screens/Agent/components/SceneConfigForm.tsx", "apps/mobile/src/screens/Agent/components/VisionShareConfig.tsx", "apps/mobile/src/screens/Agent/components/AgentDateConfig.tsx"]
-        
-
-  - id: "ISSUE-UI005~c4"
-    name: "AI 模型与行为配置"
-    description: |
-      实现 AI 行为设置:
-      - 选择 LLM 模型（GPT/Claude/本地模型）
-      - 温度/创造性参数调节滑块
-      - 回复风格选择（正式/友好/幽默）
-      - 自动回复开关
-      - 人机切换触发条件
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 AI 配置实现，验证有 AIConfigSection 组件，包含模型选择器、温度滑块、风格选择、自动回复开关"
-        context_files: ["apps/mobile/src/screens/Agent/components/AIConfigSection.tsx", "apps/mobile/src/components/ModelSelector/ModelSelector.tsx"]
-        
-
-  - id: "ISSUE-UI005~c5"
-    name: "Agent 列表与管理"
-    description: |
-      实现 Agent 管理界面:
-      - Agent 卡片列表（网格/列表视图）
-      - Agent 状态切换（激活/暂停）
-      - 编辑/删除操作
-      - Agent 排序和筛选
-      - 空状态提示
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 Agent 管理界面实现，验证有 AgentListScreen 组件，显示 Agent 卡片列表，支持状态切换、编辑、删除操作，有排序筛选功能"
-        context_files: ["apps/mobile/src/screens/Agent/AgentListScreen.tsx", "apps/mobile/src/screens/Agent/components/AgentCard.tsx"]
-        
-
-  - id: "ISSUE-UI005~c6"
-    name: "配置预览与测试"
-    description: |
-      实现配置预览功能:
-      - Agent 资料预览
-      - 对话风格测试窗口
-      - 模拟对话测试
-      - 配置变更历史
-      - 一键恢复默认设置
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查配置预览实现，验证有 AgentPreview 或 TestChat 组件，支持预览 Agent 资料、模拟对话测试、查看配置历史"
-        context_files: ["apps/mobile/src/screens/Agent/components/AgentPreview.tsx", "apps/mobile/src/screens/Agent/components/TestChat.tsx"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5B9E\u73B0\u5206\u6B65\u521B\u5EFA\u5411\u5BFC:\n- \u6B65\u9AA4\u5BFC\
+    \u822A\u6761\uFF08\u9009\u62E9\u573A\u666F\u3001\u57FA\u7840\u914D\u7F6E\u3001\
+    \u8BE6\u7EC6\u4FE1\u606F\u3001\u786E\u8BA4\uFF09\n- \u573A\u666F\u7C7B\u578B\u9009\
+    \u62E9\uFF08VisionShare/AgentDate/AgentJob/AgentAd\uFF09\n- \u6BCF\u6B65\u6570\
+    \u636E\u9A8C\u8BC1\n- \u4E0A\u4E00\u6B65/\u4E0B\u4E00\u6B65\u5BFC\u822A\n- \u53EF\
+    \u4FDD\u5B58\u8349\u7A3F\n"
+  id: ISSUE-UI005~c1
+  name: "Agent \u521B\u5EFA\u5411\u5BFC"
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Agent/CreateAgentWizard.tsx
+      - apps/mobile/src/screens/Agent/components/StepIndicator.tsx
+      prompt: "\u68C0\u67E5 Agent \u521B\u5EFA\u5411\u5BFC\u5B9E\u73B0\uFF0C\u9A8C\
+        \u8BC1\u6709 CreateAgentWizard \u7EC4\u4EF6\uFF0C\u5305\u542B\u6B65\u9AA4\u6761\
+        \u3001\u573A\u666F\u9009\u62E9\u3001\u8868\u5355\u9A8C\u8BC1\u3001\u8349\u7A3F\
+        \u4FDD\u5B58\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5B9E\u73B0\u57FA\u7840\u4FE1\u606F\u914D\u7F6E:\n- Agent \u540D\u79F0\
+    \u8F93\u5165\n- \u5934\u50CF\u4E0A\u4F20/\u9009\u62E9\n- \u63CF\u8FF0/\u7B80\u4ECB\
+    \u6587\u672C\u57DF\n- \u53EF\u89C1\u6027\u8BBE\u7F6E\uFF08\u516C\u5F00/\u79C1\u6709\
+    \uFF09\n- \u8868\u5355\u9A8C\u8BC1\u548C\u9519\u8BEF\u63D0\u793A\n"
+  id: ISSUE-UI005~c2
+  name: "\u57FA\u7840\u4FE1\u606F\u914D\u7F6E\u8868\u5355"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Agent/components/AgentBasicInfoForm.tsx
+      - apps/mobile/src/components/AvatarPicker/AvatarPicker.tsx
+      prompt: "\u68C0\u67E5\u57FA\u7840\u4FE1\u606F\u8868\u5355\u5B9E\u73B0\uFF0C\u9A8C\
+        \u8BC1\u6709 AgentBasicInfoForm \u7EC4\u4EF6\uFF0C\u5305\u542B\u540D\u79F0\
+        \u3001\u5934\u50CF\u4E0A\u4F20\u3001\u63CF\u8FF0\u3001\u53EF\u89C1\u6027\u8BBE\
+        \u7F6E\uFF0C\u6709\u5B8C\u6574\u8868\u5355\u9A8C\u8BC1"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5B9E\u73B0\u573A\u666F\u7279\u5B9A\u914D\u7F6E\uFF08\u4F9D\u8D56\
+    \ C006\uFF09:\n- VisionShare: \u9700\u6C42\u8303\u56F4\u3001\u4EF7\u683C\u8BBE\
+    \u7F6E\n- AgentDate: \u4EA4\u53CB\u504F\u597D\u3001\u5339\u914D\u6761\u4EF6\n\
+    - AgentJob: \u6C42\u804C\u610F\u5411/\u62DB\u8058\u8981\u6C42\n- AgentAd: \u6D88\
+    \u8D39\u504F\u597D/\u4F18\u60E0\u7C7B\u578B\n- \u52A8\u6001\u8868\u5355\u6839\u636E\
+    \u573A\u666F\u53D8\u5316\n"
+  id: ISSUE-UI005~c3
+  name: "\u573A\u666F\u914D\u7F6E\u754C\u9762"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Agent/components/SceneConfigForm.tsx
+      - apps/mobile/src/screens/Agent/components/VisionShareConfig.tsx
+      - apps/mobile/src/screens/Agent/components/AgentDateConfig.tsx
+      prompt: "\u68C0\u67E5\u573A\u666F\u914D\u7F6E\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \ SceneConfigForm \u7EC4\u4EF6\uFF0C\u6839\u636E\u9009\u62E9\u7684\u573A\u666F\
+        \u7C7B\u578B\u52A8\u6001\u663E\u793A\u4E0D\u540C\u914D\u7F6E\u9879\uFF0C\u652F\
+        \u6301 VisionShare/AgentDate/AgentJob/AgentAd \u7684\u914D\u7F6E"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5B9E\u73B0 AI \u884C\u4E3A\u8BBE\u7F6E:\n- \u9009\u62E9 LLM \u6A21\
+    \u578B\uFF08GPT/Claude/\u672C\u5730\u6A21\u578B\uFF09\n- \u6E29\u5EA6/\u521B\u9020\
+    \u6027\u53C2\u6570\u8C03\u8282\u6ED1\u5757\n- \u56DE\u590D\u98CE\u683C\u9009\u62E9\
+    \uFF08\u6B63\u5F0F/\u53CB\u597D/\u5E7D\u9ED8\uFF09\n- \u81EA\u52A8\u56DE\u590D\
+    \u5F00\u5173\n- \u4EBA\u673A\u5207\u6362\u89E6\u53D1\u6761\u4EF6\n"
+  id: ISSUE-UI005~c4
+  name: "AI \u6A21\u578B\u4E0E\u884C\u4E3A\u914D\u7F6E"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Agent/components/AIConfigSection.tsx
+      - apps/mobile/src/components/ModelSelector/ModelSelector.tsx
+      prompt: "\u68C0\u67E5 AI \u914D\u7F6E\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709 AIConfigSection\
+        \ \u7EC4\u4EF6\uFF0C\u5305\u542B\u6A21\u578B\u9009\u62E9\u5668\u3001\u6E29\
+        \u5EA6\u6ED1\u5757\u3001\u98CE\u683C\u9009\u62E9\u3001\u81EA\u52A8\u56DE\u590D\
+        \u5F00\u5173"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5B9E\u73B0 Agent \u7BA1\u7406\u754C\u9762:\n- Agent \u5361\u7247\
+    \u5217\u8868\uFF08\u7F51\u683C/\u5217\u8868\u89C6\u56FE\uFF09\n- Agent \u72B6\u6001\
+    \u5207\u6362\uFF08\u6FC0\u6D3B/\u6682\u505C\uFF09\n- \u7F16\u8F91/\u5220\u9664\
+    \u64CD\u4F5C\n- Agent \u6392\u5E8F\u548C\u7B5B\u9009\n- \u7A7A\u72B6\u6001\u63D0\
+    \u793A\n"
+  id: ISSUE-UI005~c5
+  name: "Agent \u5217\u8868\u4E0E\u7BA1\u7406"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Agent/AgentListScreen.tsx
+      - apps/mobile/src/screens/Agent/components/AgentCard.tsx
+      prompt: "\u68C0\u67E5 Agent \u7BA1\u7406\u754C\u9762\u5B9E\u73B0\uFF0C\u9A8C\
+        \u8BC1\u6709 AgentListScreen \u7EC4\u4EF6\uFF0C\u663E\u793A Agent \u5361\u7247\
+        \u5217\u8868\uFF0C\u652F\u6301\u72B6\u6001\u5207\u6362\u3001\u7F16\u8F91\u3001\
+        \u5220\u9664\u64CD\u4F5C\uFF0C\u6709\u6392\u5E8F\u7B5B\u9009\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5B9E\u73B0\u914D\u7F6E\u9884\u89C8\u529F\u80FD:\n- Agent \u8D44\u6599\
+    \u9884\u89C8\n- \u5BF9\u8BDD\u98CE\u683C\u6D4B\u8BD5\u7A97\u53E3\n- \u6A21\u62DF\
+    \u5BF9\u8BDD\u6D4B\u8BD5\n- \u914D\u7F6E\u53D8\u66F4\u5386\u53F2\n- \u4E00\u952E\
+    \u6062\u590D\u9ED8\u8BA4\u8BBE\u7F6E\n"
+  id: ISSUE-UI005~c6
+  name: "\u914D\u7F6E\u9884\u89C8\u4E0E\u6D4B\u8BD5"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Agent/components/AgentPreview.tsx
+      - apps/mobile/src/screens/Agent/components/TestChat.tsx
+      prompt: "\u68C0\u67E5\u914D\u7F6E\u9884\u89C8\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \ AgentPreview \u6216 TestChat \u7EC4\u4EF6\uFF0C\u652F\u6301\u9884\u89C8\
+        \ Agent \u8D44\u6599\u3001\u6A21\u62DF\u5BF9\u8BDD\u6D4B\u8BD5\u3001\u67E5\
+        \u770B\u914D\u7F6E\u5386\u53F2"
+current_task: null
+description: "\u5B9E\u73B0 Agent \u7684\u914D\u7F6E\u7BA1\u7406\u754C\u9762\uFF0C\u5305\
+  \u62EC\u521B\u5EFA\u5411\u5BFC\u3001\u57FA\u7840\u4FE1\u606F\u914D\u7F6E\u3001\n\
+  \u573A\u666F\u8BBE\u7F6E\u3001\u6A21\u578B\u9009\u62E9\u3001\u884C\u4E3A\u89C4\u5219\
+  \u914D\u7F6E\u7B49\uFF0C\u8BA9\u7528\u6237\u53EF\u4EE5\u7075\u6D3B\u5B9A\u5236\u81EA\
+  \u5DF1\u7684 Agent\u3002\n"
+id: ISSUE-UI005
+issue_number: 1107
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-UI002
+- ISSUE-C001
+- ISSUE-C006
+slug: agent-config-ui
+status: pending
+title: "Agent\u914D\u7F6E\u754C\u9762"

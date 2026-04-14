@@ -1,148 +1,154 @@
----
-id: "ISSUE-JOB001"
-issue_number: 901
-title: "求职者画像与简历"
-slug: "job-seeker-profile"
-status: "pending"
-description: |
-  实现求职者Agent的画像配置与简历管理功能。求职者通过自然语言
-  或结构化表单描述个人技能、工作经历、期望薪资等，AI提炼核心
-  信息并生成标准化简历。支持简历隐私控制和定向投递。
-prerequisites:
-  - "ISSUE-C006"
-  - "ISSUE-AI002"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-JOB001~c1"
-    name: "求职画像数据模型"
-    description: |
-      模型设计:
-      - 求职者Agent类型定义(JobSeekerAgent)
-      - 基本信息字段(姓名、联系方式、所在地)
-      - 专业技能标签体系
-      - 工作经历结构化存储
-      - 教育背景信息
-      - 期望薪资范围与职位类型
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查求职画像数据模型，验证有JobSeekerProfile类型定义，包含技能、工作经历、教育背景、期望薪资等字段，使用Zod进行验证"
-        context_files: ["packages/shared/src/types/jobSeeker.ts", "packages/shared/src/schemas/jobSeekerSchema.ts"]
-        
-
-  - id: "ISSUE-JOB001~c2"
-    name: "AI简历提炼服务"
-    description: |
-      AI提炼:
-      - 自然语言简历解析
-      - 关键信息自动提取(技能/经验/学历)
-      - 技能标签智能匹配与标准化
-      - 工作经历时间线生成
-      - 简历质量评分与优化建议
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查AI简历提炼服务，验证有ResumeExtractionService，能将自然语言转换为结构化简历数据，包含技能提取和工作经历解析"
-        context_files: ["apps/server/src/services/job/resumeExtraction.ts", "apps/server/src/ai/prompts/resumeExtraction.ts"]
-        
-
-  - id: "ISSUE-JOB001~c3"
-    name: "简历隐私控制"
-    description: |
-      隐私管理:
-      - 简历可见性设置(公开/仅投递/隐藏)
-      - 敏感信息脱敏处理(手机号/邮箱)
-      - 联系方式访问权限控制
-      - 投递记录追踪
-      - 简历撤回功能
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查简历隐私控制，验证有ResumePrivacySettings类型，支持可见性设置和敏感信息脱敏，能通过中介联系保护隐私"
-        context_files: ["packages/shared/src/types/resumePrivacy.ts", "apps/server/src/services/job/resumePrivacyService.ts"]
-        
-
-  - id: "ISSUE-JOB001~c4"
-    name: "简历创建与编辑API"
-    description: |
-      CRUD接口:
-      - 创建/更新简历API
-      - 简历版本管理
-      - 多简历支持(针对不同职位)
-      - 简历预览功能
-      - 简历导出(PDF/Markdown)
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查简历API，验证有完整的RESTful端点(/api/job/resumes)，支持CRUD操作、版本管理和多简历功能"
-        context_files: ["apps/server/src/routes/job/resumeRoutes.ts", "apps/server/src/controllers/job/resumeController.ts"]
-        
-
-  - id: "ISSUE-JOB001~c5"
-    name: "移动端简历编辑界面"
-    description: |
-      UI实现:
-      - 简历表单组件(分步骤填写)
-      - 技能标签选择器
-      - 工作经历时间线编辑
-      - 简历预览页面
-      - 隐私设置界面
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查移动端简历界面，验证有ResumeEditScreen和ResumePreviewScreen组件，支持分步骤填写和技能标签选择"
-        context_files: ["apps/mobile/src/screens/Job/ResumeEditScreen.tsx", "apps/mobile/src/screens/Job/ResumePreviewScreen.tsx"]
-        
-
-  - id: "ISSUE-JOB001~c6"
-    name: "简历投递与状态追踪"
-    description: |
-      投递系统:
-      - 向职位投递简历功能
-      - 投递状态追踪(已投递/已查看/感兴趣/不合适)
-      - 投递历史记录
-      - 投递反馈通知
-      - 批量投递限制管理
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查简历投递系统，验证有ResumeSubmission模型和投递状态管理，支持向职位投递和状态追踪功能"
-        context_files: ["apps/server/src/services/job/resumeSubmissionService.ts", "apps/mobile/src/screens/Job/SubmissionHistoryScreen.tsx"]
-        
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u6A21\u578B\u8BBE\u8BA1:\n- \u6C42\u804C\u8005Agent\u7C7B\u578B\u5B9A\
+    \u4E49(JobSeekerAgent)\n- \u57FA\u672C\u4FE1\u606F\u5B57\u6BB5(\u59D3\u540D\u3001\
+    \u8054\u7CFB\u65B9\u5F0F\u3001\u6240\u5728\u5730)\n- \u4E13\u4E1A\u6280\u80FD\u6807\
+    \u7B7E\u4F53\u7CFB\n- \u5DE5\u4F5C\u7ECF\u5386\u7ED3\u6784\u5316\u5B58\u50A8\n\
+    - \u6559\u80B2\u80CC\u666F\u4FE1\u606F\n- \u671F\u671B\u85AA\u8D44\u8303\u56F4\
+    \u4E0E\u804C\u4F4D\u7C7B\u578B\n"
+  id: ISSUE-JOB001~c1
+  name: "\u6C42\u804C\u753B\u50CF\u6570\u636E\u6A21\u578B"
+  verification:
+    ai:
+      context_files:
+      - packages/shared/src/types/jobSeeker.ts
+      - packages/shared/src/schemas/jobSeekerSchema.ts
+      prompt: "\u68C0\u67E5\u6C42\u804C\u753B\u50CF\u6570\u636E\u6A21\u578B\uFF0C\u9A8C\
+        \u8BC1\u6709JobSeekerProfile\u7C7B\u578B\u5B9A\u4E49\uFF0C\u5305\u542B\u6280\
+        \u80FD\u3001\u5DE5\u4F5C\u7ECF\u5386\u3001\u6559\u80B2\u80CC\u666F\u3001\u671F\
+        \u671B\u85AA\u8D44\u7B49\u5B57\u6BB5\uFF0C\u4F7F\u7528Zod\u8FDB\u884C\u9A8C\
+        \u8BC1"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "AI\u63D0\u70BC:\n- \u81EA\u7136\u8BED\u8A00\u7B80\u5386\u89E3\u6790\
+    \n- \u5173\u952E\u4FE1\u606F\u81EA\u52A8\u63D0\u53D6(\u6280\u80FD/\u7ECF\u9A8C\
+    /\u5B66\u5386)\n- \u6280\u80FD\u6807\u7B7E\u667A\u80FD\u5339\u914D\u4E0E\u6807\
+    \u51C6\u5316\n- \u5DE5\u4F5C\u7ECF\u5386\u65F6\u95F4\u7EBF\u751F\u6210\n- \u7B80\
+    \u5386\u8D28\u91CF\u8BC4\u5206\u4E0E\u4F18\u5316\u5EFA\u8BAE\n"
+  id: ISSUE-JOB001~c2
+  name: "AI\u7B80\u5386\u63D0\u70BC\u670D\u52A1"
+status: stuck
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/job/resumeExtraction.ts
+      - apps/server/src/ai/prompts/resumeExtraction.ts
+      prompt: "\u68C0\u67E5AI\u7B80\u5386\u63D0\u70BC\u670D\u52A1\uFF0C\u9A8C\u8BC1\
+        \u6709ResumeExtractionService\uFF0C\u80FD\u5C06\u81EA\u7136\u8BED\u8A00\u8F6C\
+        \u6362\u4E3A\u7ED3\u6784\u5316\u7B80\u5386\u6570\u636E\uFF0C\u5305\u542B\u6280\
+        \u80FD\u63D0\u53D6\u548C\u5DE5\u4F5C\u7ECF\u5386\u89E3\u6790"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u9690\u79C1\u7BA1\u7406:\n- \u7B80\u5386\u53EF\u89C1\u6027\u8BBE\u7F6E\
+    (\u516C\u5F00/\u4EC5\u6295\u9012/\u9690\u85CF)\n- \u654F\u611F\u4FE1\u606F\u8131\
+    \u654F\u5904\u7406(\u624B\u673A\u53F7/\u90AE\u7BB1)\n- \u8054\u7CFB\u65B9\u5F0F\
+    \u8BBF\u95EE\u6743\u9650\u63A7\u5236\n- \u6295\u9012\u8BB0\u5F55\u8FFD\u8E2A\n\
+    - \u7B80\u5386\u64A4\u56DE\u529F\u80FD\n"
+  id: ISSUE-JOB001~c3
+  name: "\u7B80\u5386\u9690\u79C1\u63A7\u5236"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - packages/shared/src/types/resumePrivacy.ts
+      - apps/server/src/services/job/resumePrivacyService.ts
+      prompt: "\u68C0\u67E5\u7B80\u5386\u9690\u79C1\u63A7\u5236\uFF0C\u9A8C\u8BC1\u6709\
+        ResumePrivacySettings\u7C7B\u578B\uFF0C\u652F\u6301\u53EF\u89C1\u6027\u8BBE\
+        \u7F6E\u548C\u654F\u611F\u4FE1\u606F\u8131\u654F\uFF0C\u80FD\u901A\u8FC7\u4E2D\
+        \u4ECB\u8054\u7CFB\u4FDD\u62A4\u9690\u79C1"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "CRUD\u63A5\u53E3:\n- \u521B\u5EFA/\u66F4\u65B0\u7B80\u5386API\n- \u7B80\
+    \u5386\u7248\u672C\u7BA1\u7406\n- \u591A\u7B80\u5386\u652F\u6301(\u9488\u5BF9\u4E0D\
+    \u540C\u804C\u4F4D)\n- \u7B80\u5386\u9884\u89C8\u529F\u80FD\n- \u7B80\u5386\u5BFC\
+    \u51FA(PDF/Markdown)\n"
+  id: ISSUE-JOB001~c4
+  name: "\u7B80\u5386\u521B\u5EFA\u4E0E\u7F16\u8F91API"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/job/resumeRoutes.ts
+      - apps/server/src/controllers/job/resumeController.ts
+      prompt: "\u68C0\u67E5\u7B80\u5386API\uFF0C\u9A8C\u8BC1\u6709\u5B8C\u6574\u7684\
+        RESTful\u7AEF\u70B9(/api/job/resumes)\uFF0C\u652F\u6301CRUD\u64CD\u4F5C\u3001\
+        \u7248\u672C\u7BA1\u7406\u548C\u591A\u7B80\u5386\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "UI\u5B9E\u73B0:\n- \u7B80\u5386\u8868\u5355\u7EC4\u4EF6(\u5206\u6B65\
+    \u9AA4\u586B\u5199)\n- \u6280\u80FD\u6807\u7B7E\u9009\u62E9\u5668\n- \u5DE5\u4F5C\
+    \u7ECF\u5386\u65F6\u95F4\u7EBF\u7F16\u8F91\n- \u7B80\u5386\u9884\u89C8\u9875\u9762\
+    \n- \u9690\u79C1\u8BBE\u7F6E\u754C\u9762\n"
+  id: ISSUE-JOB001~c5
+  name: "\u79FB\u52A8\u7AEF\u7B80\u5386\u7F16\u8F91\u754C\u9762"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Job/ResumeEditScreen.tsx
+      - apps/mobile/src/screens/Job/ResumePreviewScreen.tsx
+      prompt: "\u68C0\u67E5\u79FB\u52A8\u7AEF\u7B80\u5386\u754C\u9762\uFF0C\u9A8C\u8BC1\
+        \u6709ResumeEditScreen\u548CResumePreviewScreen\u7EC4\u4EF6\uFF0C\u652F\u6301\
+        \u5206\u6B65\u9AA4\u586B\u5199\u548C\u6280\u80FD\u6807\u7B7E\u9009\u62E9"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u6295\u9012\u7CFB\u7EDF:\n- \u5411\u804C\u4F4D\u6295\u9012\u7B80\u5386\
+    \u529F\u80FD\n- \u6295\u9012\u72B6\u6001\u8FFD\u8E2A(\u5DF2\u6295\u9012/\u5DF2\
+    \u67E5\u770B/\u611F\u5174\u8DA3/\u4E0D\u5408\u9002)\n- \u6295\u9012\u5386\u53F2\
+    \u8BB0\u5F55\n- \u6295\u9012\u53CD\u9988\u901A\u77E5\n- \u6279\u91CF\u6295\u9012\
+    \u9650\u5236\u7BA1\u7406\n"
+  id: ISSUE-JOB001~c6
+  name: "\u7B80\u5386\u6295\u9012\u4E0E\u72B6\u6001\u8FFD\u8E2A"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/job/resumeSubmissionService.ts
+      - apps/mobile/src/screens/Job/SubmissionHistoryScreen.tsx
+      prompt: "\u68C0\u67E5\u7B80\u5386\u6295\u9012\u7CFB\u7EDF\uFF0C\u9A8C\u8BC1\u6709\
+        ResumeSubmission\u6A21\u578B\u548C\u6295\u9012\u72B6\u6001\u7BA1\u7406\uFF0C\
+        \u652F\u6301\u5411\u804C\u4F4D\u6295\u9012\u548C\u72B6\u6001\u8FFD\u8E2A\u529F\
+        \u80FD"
+current_task: null
+description: "\u5B9E\u73B0\u6C42\u804C\u8005Agent\u7684\u753B\u50CF\u914D\u7F6E\u4E0E\
+  \u7B80\u5386\u7BA1\u7406\u529F\u80FD\u3002\u6C42\u804C\u8005\u901A\u8FC7\u81EA\u7136\
+  \u8BED\u8A00\n\u6216\u7ED3\u6784\u5316\u8868\u5355\u63CF\u8FF0\u4E2A\u4EBA\u6280\
+  \u80FD\u3001\u5DE5\u4F5C\u7ECF\u5386\u3001\u671F\u671B\u85AA\u8D44\u7B49\uFF0CAI\u63D0\
+  \u70BC\u6838\u5FC3\n\u4FE1\u606F\u5E76\u751F\u6210\u6807\u51C6\u5316\u7B80\u5386\
+  \u3002\u652F\u6301\u7B80\u5386\u9690\u79C1\u63A7\u5236\u548C\u5B9A\u5411\u6295\u9012\
+  \u3002\n"
+id: ISSUE-JOB001
+issue_number: 901
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-C006
+- ISSUE-AI002
+slug: job-seeker-profile
+status: pending
+title: "\u6C42\u804C\u8005\u753B\u50CF\u4E0E\u7B80\u5386"

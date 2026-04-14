@@ -1,121 +1,107 @@
----
-id: "ISSUE-M001a"
-issue_number: 401
-title: "查询构建器与DSL设计"
-slug: "query-builder"
-status: "pending"
-description: |
-  设计并实现查询构建器和领域特定语言(DSL)，
-  支持复杂的 Agent 筛选和匹配查询。
-prerequisites:
-  - "ISSUE-C002b"
-  - "ISSUE-C003"
-  - "ISSUE-C004"
-  - "ISSUE-C005"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-M001a~c1"
-    name: "DSL 语法设计"
-    description: |
-      查询 DSL:
-      - JSON 格式查询语法
-      - 支持的条件操作符
-      - 嵌套和组合表达式
-      - 类型安全验证
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 DSL 设计，验证有 QueryDSL 类型定义和 JSON Schema 验证"
-        context_files: ["packages/shared/src/types/queryDSL.ts"]
-        
-
-  - id: "ISSUE-M001a~c2"
-    name: "查询解析器"
-    description: |
-      解析实现:
-      - DSL 解析器
-      - 语法验证
-      - 错误报告
-      - 查询优化建议
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查解析器实现，验证有 QueryParser 类可解析和验证 DSL"
-        context_files: ["apps/server/src/utils/queryParser.ts"]
-        
-
-  - id: "ISSUE-M001a~c3"
-    name: "可视化查询构建器"
-    description: |
-      可视化构建:
-      - 拖拽式条件添加
-      - 条件组管理
-      - 实时预览 DSL
-      - 查询验证反馈
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查可视化构建器，验证有 QueryBuilder 组件支持拖拽和条件组合"
-        context_files: ["apps/mobile/src/components/QueryBuilder/"]
-        
-
-  - id: "ISSUE-M001a~c4"
-    name: "DSL 到 SQL 转换"
-    description: |
-      查询转换:
-      - DSL 到 Prisma 查询转换
-      - JSON 字段查询支持
-      - 复杂 JOIN 处理
-      - 子查询支持
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查查询转换，验证有 DSL 到 Prisma 查询的转换逻辑"
-        context_files: ["apps/server/src/utils/dslToPrisma.ts"]
-        
-
-  - id: "ISSUE-M001a~c5"
-    name: "查询保存和分享"
-    description: |
-      查询管理:
-      - 保存查询条件
-      - 命名和描述
-      - 查询分享
-      - 查询导入/导出
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查查询保存，验证有 SavedQuery 模型和分享功能"
-        context_files: ["apps/server/src/services/savedQueryService.ts"]
-        
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u67E5\u8BE2 DSL:\n- JSON \u683C\u5F0F\u67E5\u8BE2\u8BED\u6CD5\n-\
+    \ \u652F\u6301\u7684\u6761\u4EF6\u64CD\u4F5C\u7B26\n- \u5D4C\u5957\u548C\u7EC4\
+    \u5408\u8868\u8FBE\u5F0F\n- \u7C7B\u578B\u5B89\u5168\u9A8C\u8BC1\n"
+  id: ISSUE-M001a~c1
+  name: "DSL \u8BED\u6CD5\u8BBE\u8BA1"
+  verification:
+    ai:
+      context_files:
+      - packages/shared/src/types/queryDSL.ts
+      prompt: "\u68C0\u67E5 DSL \u8BBE\u8BA1\uFF0C\u9A8C\u8BC1\u6709 QueryDSL \u7C7B\
+        \u578B\u5B9A\u4E49\u548C JSON Schema \u9A8C\u8BC1"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u89E3\u6790\u5B9E\u73B0:\n- DSL \u89E3\u6790\u5668\n- \u8BED\u6CD5\
+    \u9A8C\u8BC1\n- \u9519\u8BEF\u62A5\u544A\n- \u67E5\u8BE2\u4F18\u5316\u5EFA\u8BAE\
+    \n"
+  id: ISSUE-M001a~c2
+  name: "\u67E5\u8BE2\u89E3\u6790\u5668"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/utils/queryParser.ts
+      prompt: "\u68C0\u67E5\u89E3\u6790\u5668\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \ QueryParser \u7C7B\u53EF\u89E3\u6790\u548C\u9A8C\u8BC1 DSL"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u53EF\u89C6\u5316\u6784\u5EFA:\n- \u62D6\u62FD\u5F0F\u6761\u4EF6\u6DFB\
+    \u52A0\n- \u6761\u4EF6\u7EC4\u7BA1\u7406\n- \u5B9E\u65F6\u9884\u89C8 DSL\n- \u67E5\
+    \u8BE2\u9A8C\u8BC1\u53CD\u9988\n"
+  id: ISSUE-M001a~c3
+  name: "\u53EF\u89C6\u5316\u67E5\u8BE2\u6784\u5EFA\u5668"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/QueryBuilder/
+      prompt: "\u68C0\u67E5\u53EF\u89C6\u5316\u6784\u5EFA\u5668\uFF0C\u9A8C\u8BC1\u6709\
+        \ QueryBuilder \u7EC4\u4EF6\u652F\u6301\u62D6\u62FD\u548C\u6761\u4EF6\u7EC4\
+        \u5408"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u67E5\u8BE2\u8F6C\u6362:\n- DSL \u5230 Prisma \u67E5\u8BE2\u8F6C\u6362\
+    \n- JSON \u5B57\u6BB5\u67E5\u8BE2\u652F\u6301\n- \u590D\u6742 JOIN \u5904\u7406\
+    \n- \u5B50\u67E5\u8BE2\u652F\u6301\n"
+  id: ISSUE-M001a~c4
+  name: "DSL \u5230 SQL \u8F6C\u6362"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/utils/dslToPrisma.ts
+      prompt: "\u68C0\u67E5\u67E5\u8BE2\u8F6C\u6362\uFF0C\u9A8C\u8BC1\u6709 DSL \u5230\
+        \ Prisma \u67E5\u8BE2\u7684\u8F6C\u6362\u903B\u8F91"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u67E5\u8BE2\u7BA1\u7406:\n- \u4FDD\u5B58\u67E5\u8BE2\u6761\u4EF6\n\
+    - \u547D\u540D\u548C\u63CF\u8FF0\n- \u67E5\u8BE2\u5206\u4EAB\n- \u67E5\u8BE2\u5BFC\
+    \u5165/\u5BFC\u51FA\n"
+  id: ISSUE-M001a~c5
+  name: "\u67E5\u8BE2\u4FDD\u5B58\u548C\u5206\u4EAB"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/savedQueryService.ts
+      prompt: "\u68C0\u67E5\u67E5\u8BE2\u4FDD\u5B58\uFF0C\u9A8C\u8BC1\u6709 SavedQuery\
+        \ \u6A21\u578B\u548C\u5206\u4EAB\u529F\u80FD"
+current_task: null
+description: "\u8BBE\u8BA1\u5E76\u5B9E\u73B0\u67E5\u8BE2\u6784\u5EFA\u5668\u548C\u9886\
+  \u57DF\u7279\u5B9A\u8BED\u8A00(DSL)\uFF0C\n\u652F\u6301\u590D\u6742\u7684 Agent\
+  \ \u7B5B\u9009\u548C\u5339\u914D\u67E5\u8BE2\u3002\n"
+id: ISSUE-M001a
+issue_number: 401
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-C002b
+- ISSUE-C003
+- ISSUE-C004
+- ISSUE-C005
+slug: query-builder
+status: pending
+title: "\u67E5\u8BE2\u6784\u5EFA\u5668\u4E0EDSL\u8BBE\u8BA1"

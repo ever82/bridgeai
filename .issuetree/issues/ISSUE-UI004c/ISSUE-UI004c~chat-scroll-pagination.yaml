@@ -1,146 +1,159 @@
----
-id: "ISSUE-UI004c"
-issue_number: 1106
-title: "聊天记录滚动与分页加载"
-slug: "chat-scroll-pagination"
-status: "pending"
-description: |
-  实现聊天界面的滚动体验和消息分页加载功能，包括反向滚动加载历史消息、
-  滚动位置保持、新消息提示等，确保流畅的聊天浏览体验。
-prerequisites:
-  - "ISSUE-UI002"
-  - "ISSUE-UI004b"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-UI004c~c1"
-    name: "反向无限滚动加载"
-    description: |
-      实现历史消息加载:
-      - 下拉/上拉加载更多历史消息（根据滚动方向）
-      - 加载状态指示器
-      - 分页请求管理
-      - 加载失败重试
-      - 到达最早消息提示
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查反向滚动加载实现，验证使用 FlatList 或 ScrollView 实现下拉加载历史消息，有 loading indicator 和重试机制"
-        context_files: ["apps/mobile/src/screens/Chat/ChatScreen.tsx", "apps/mobile/src/hooks/useChatMessages.ts", "apps/mobile/src/components/InvertedList/InvertedList.tsx"]
-        
-
-  - id: "ISSUE-UI004c~c2"
-    name: "滚动位置管理"
-    description: |
-      实现滚动位置保持:
-      - 加载历史消息后保持当前视图位置
-      - 跳转到指定消息
-      - 搜索高亮消息滚动定位
-      - 首次进入滚动到底部
-      - 滚动位置记忆（返回后恢复）
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查滚动位置管理实现，验证加载历史消息后位置保持逻辑，支持跳转到指定消息ID，首次进入自动滚动到底部"
-        context_files: ["apps/mobile/src/hooks/useScrollPosition.ts", "apps/mobile/src/screens/Chat/utils/scrollUtils.ts"]
-        
-
-  - id: "ISSUE-UI004c~c3"
-    name: "新消息提示"
-    description: |
-      实现新消息通知:
-      - 底部"新消息"悬浮按钮
-      - 未读消息数显示
-      - 点击滚动到最新消息
-      - 自动滚动控制（用户滚动浏览时暂停自动滚动）
-      - 消息发送成功提示
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查新消息提示实现，验证有 NewMessageBadge 或 ScrollToBottom 组件，显示未读数，点击滚动到底部，有智能自动滚动控制"
-        context_files: ["apps/mobile/src/components/ScrollToBottom/ScrollToBottom.tsx", "apps/mobile/src/screens/Chat/components/NewMessageBadge.tsx"]
-        
-
-  - id: "ISSUE-UI004c~c4"
-    name: "消息虚拟化与性能优化"
-    description: |
-      实现长列表性能优化:
-      - 使用 FlatList 虚拟化渲染
-      - 消息项高度预估
-      - 图片懒加载
-      - 内存管理（离开页面释放资源）
-      - 大数据量流畅滚动
-    status: "pending"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查虚拟化实现，验证使用 FlatList 的 getItemLayout 或 estimatedItemSize 优化，有图片懒加载处理，大数据量下滚动流畅"
-        context_files: ["apps/mobile/src/screens/Chat/components/MessageList.tsx", "apps/mobile/src/components/LazyImage/LazyImage.tsx"]
-        
-
-  - id: "ISSUE-UI004c~c5"
-    name: "日期分隔与时间戳"
-    description: |
-      实现消息时间显示:
-      - 日期分隔线（今天、昨天、星期X、具体日期）
-      - 消息时间戳（气泡内/外显示）
-      - 相对时间（几分钟前）
-      - 时间戳显示策略（连续消息只显示第一条时间）
-      - 点击展开/收起详细时间
-    status: "pending"
-    coverage:
-      unit: required
-      integration: not_needed
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查日期分隔实现，验证有 DateSeparator 组件，正确显示日期分隔线，消息时间戳显示策略合理，支持连续消息时间折叠"
-        context_files: ["apps/mobile/src/components/DateSeparator/DateSeparator.tsx", "apps/mobile/src/components/DateSeparator/DateSeparator.test.tsx"]
-        
-
-  - id: "ISSUE-UI004c~c6"
-    name: "消息搜索与高亮"
-    description: |
-      实现消息搜索功能:
-      - 聊天内搜索输入框
-      - 搜索结果高亮显示
-      - 搜索结果导航（上一条/下一条）
-      - 搜索结果数量显示
-      - 点击结果跳转到对应消息
-    status: "pending"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查消息搜索实现，验证有 ChatSearch 组件，支持搜索输入、结果高亮、导航跳转，有搜索结果计数"
-        context_files: ["apps/mobile/src/components/ChatSearch/ChatSearch.tsx", "apps/mobile/src/screens/Chat/components/SearchInChat.tsx"]
-        
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u5386\u53F2\u6D88\u606F\u52A0\u8F7D:\n- \u4E0B\u62C9\
+    /\u4E0A\u62C9\u52A0\u8F7D\u66F4\u591A\u5386\u53F2\u6D88\u606F\uFF08\u6839\u636E\
+    \u6EDA\u52A8\u65B9\u5411\uFF09\n- \u52A0\u8F7D\u72B6\u6001\u6307\u793A\u5668\n\
+    - \u5206\u9875\u8BF7\u6C42\u7BA1\u7406\n- \u52A0\u8F7D\u5931\u8D25\u91CD\u8BD5\
+    \n- \u5230\u8FBE\u6700\u65E9\u6D88\u606F\u63D0\u793A\n"
+  id: ISSUE-UI004c~c1
+  name: "\u53CD\u5411\u65E0\u9650\u6EDA\u52A8\u52A0\u8F7D"
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Chat/ChatScreen.tsx
+      - apps/mobile/src/hooks/useChatMessages.ts
+      - apps/mobile/src/components/InvertedList/InvertedList.tsx
+      prompt: "\u68C0\u67E5\u53CD\u5411\u6EDA\u52A8\u52A0\u8F7D\u5B9E\u73B0\uFF0C\u9A8C\
+        \u8BC1\u4F7F\u7528 FlatList \u6216 ScrollView \u5B9E\u73B0\u4E0B\u62C9\u52A0\
+        \u8F7D\u5386\u53F2\u6D88\u606F\uFF0C\u6709 loading indicator \u548C\u91CD\u8BD5\
+        \u673A\u5236"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u6EDA\u52A8\u4F4D\u7F6E\u4FDD\u6301:\n- \u52A0\u8F7D\u5386\
+    \u53F2\u6D88\u606F\u540E\u4FDD\u6301\u5F53\u524D\u89C6\u56FE\u4F4D\u7F6E\n- \u8DF3\
+    \u8F6C\u5230\u6307\u5B9A\u6D88\u606F\n- \u641C\u7D22\u9AD8\u4EAE\u6D88\u606F\u6EDA\
+    \u52A8\u5B9A\u4F4D\n- \u9996\u6B21\u8FDB\u5165\u6EDA\u52A8\u5230\u5E95\u90E8\n\
+    - \u6EDA\u52A8\u4F4D\u7F6E\u8BB0\u5FC6\uFF08\u8FD4\u56DE\u540E\u6062\u590D\uFF09\
+    \n"
+  id: ISSUE-UI004c~c2
+  name: "\u6EDA\u52A8\u4F4D\u7F6E\u7BA1\u7406"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/hooks/useScrollPosition.ts
+      - apps/mobile/src/screens/Chat/utils/scrollUtils.ts
+      prompt: "\u68C0\u67E5\u6EDA\u52A8\u4F4D\u7F6E\u7BA1\u7406\u5B9E\u73B0\uFF0C\u9A8C\
+        \u8BC1\u52A0\u8F7D\u5386\u53F2\u6D88\u606F\u540E\u4F4D\u7F6E\u4FDD\u6301\u903B\
+        \u8F91\uFF0C\u652F\u6301\u8DF3\u8F6C\u5230\u6307\u5B9A\u6D88\u606FID\uFF0C\
+        \u9996\u6B21\u8FDB\u5165\u81EA\u52A8\u6EDA\u52A8\u5230\u5E95\u90E8"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5B9E\u73B0\u65B0\u6D88\u606F\u901A\u77E5:\n- \u5E95\u90E8\"\u65B0\
+    \u6D88\u606F\"\u60AC\u6D6E\u6309\u94AE\n- \u672A\u8BFB\u6D88\u606F\u6570\u663E\
+    \u793A\n- \u70B9\u51FB\u6EDA\u52A8\u5230\u6700\u65B0\u6D88\u606F\n- \u81EA\u52A8\
+    \u6EDA\u52A8\u63A7\u5236\uFF08\u7528\u6237\u6EDA\u52A8\u6D4F\u89C8\u65F6\u6682\
+    \u505C\u81EA\u52A8\u6EDA\u52A8\uFF09\n- \u6D88\u606F\u53D1\u9001\u6210\u529F\u63D0\
+    \u793A\n"
+  id: ISSUE-UI004c~c3
+  name: "\u65B0\u6D88\u606F\u63D0\u793A"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/ScrollToBottom/ScrollToBottom.tsx
+      - apps/mobile/src/screens/Chat/components/NewMessageBadge.tsx
+      prompt: "\u68C0\u67E5\u65B0\u6D88\u606F\u63D0\u793A\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\
+        \u6709 NewMessageBadge \u6216 ScrollToBottom \u7EC4\u4EF6\uFF0C\u663E\u793A\
+        \u672A\u8BFB\u6570\uFF0C\u70B9\u51FB\u6EDA\u52A8\u5230\u5E95\u90E8\uFF0C\u6709\
+        \u667A\u80FD\u81EA\u52A8\u6EDA\u52A8\u63A7\u5236"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u957F\u5217\u8868\u6027\u80FD\u4F18\u5316:\n- \u4F7F\u7528\
+    \ FlatList \u865A\u62DF\u5316\u6E32\u67D3\n- \u6D88\u606F\u9879\u9AD8\u5EA6\u9884\
+    \u4F30\n- \u56FE\u7247\u61D2\u52A0\u8F7D\n- \u5185\u5B58\u7BA1\u7406\uFF08\u79BB\
+    \u5F00\u9875\u9762\u91CA\u653E\u8D44\u6E90\uFF09\n- \u5927\u6570\u636E\u91CF\u6D41\
+    \u7545\u6EDA\u52A8\n"
+  id: ISSUE-UI004c~c4
+  name: "\u6D88\u606F\u865A\u62DF\u5316\u4E0E\u6027\u80FD\u4F18\u5316"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Chat/components/MessageList.tsx
+      - apps/mobile/src/components/LazyImage/LazyImage.tsx
+      prompt: "\u68C0\u67E5\u865A\u62DF\u5316\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u4F7F\u7528\
+        \ FlatList \u7684 getItemLayout \u6216 estimatedItemSize \u4F18\u5316\uFF0C\
+        \u6709\u56FE\u7247\u61D2\u52A0\u8F7D\u5904\u7406\uFF0C\u5927\u6570\u636E\u91CF\
+        \u4E0B\u6EDA\u52A8\u6D41\u7545"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: not_needed
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u6D88\u606F\u65F6\u95F4\u663E\u793A:\n- \u65E5\u671F\u5206\
+    \u9694\u7EBF\uFF08\u4ECA\u5929\u3001\u6628\u5929\u3001\u661F\u671FX\u3001\u5177\
+    \u4F53\u65E5\u671F\uFF09\n- \u6D88\u606F\u65F6\u95F4\u6233\uFF08\u6C14\u6CE1\u5185\
+    /\u5916\u663E\u793A\uFF09\n- \u76F8\u5BF9\u65F6\u95F4\uFF08\u51E0\u5206\u949F\u524D\
+    \uFF09\n- \u65F6\u95F4\u6233\u663E\u793A\u7B56\u7565\uFF08\u8FDE\u7EED\u6D88\u606F\
+    \u53EA\u663E\u793A\u7B2C\u4E00\u6761\u65F6\u95F4\uFF09\n- \u70B9\u51FB\u5C55\u5F00\
+    /\u6536\u8D77\u8BE6\u7EC6\u65F6\u95F4\n"
+  id: ISSUE-UI004c~c5
+  name: "\u65E5\u671F\u5206\u9694\u4E0E\u65F6\u95F4\u6233"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/DateSeparator/DateSeparator.tsx
+      - apps/mobile/src/components/DateSeparator/DateSeparator.test.tsx
+      prompt: "\u68C0\u67E5\u65E5\u671F\u5206\u9694\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \ DateSeparator \u7EC4\u4EF6\uFF0C\u6B63\u786E\u663E\u793A\u65E5\u671F\u5206\
+        \u9694\u7EBF\uFF0C\u6D88\u606F\u65F6\u95F4\u6233\u663E\u793A\u7B56\u7565\u5408\
+        \u7406\uFF0C\u652F\u6301\u8FDE\u7EED\u6D88\u606F\u65F6\u95F4\u6298\u53E0"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u5B9E\u73B0\u6D88\u606F\u641C\u7D22\u529F\u80FD:\n- \u804A\u5929\u5185\
+    \u641C\u7D22\u8F93\u5165\u6846\n- \u641C\u7D22\u7ED3\u679C\u9AD8\u4EAE\u663E\u793A\
+    \n- \u641C\u7D22\u7ED3\u679C\u5BFC\u822A\uFF08\u4E0A\u4E00\u6761/\u4E0B\u4E00\u6761\
+    \uFF09\n- \u641C\u7D22\u7ED3\u679C\u6570\u91CF\u663E\u793A\n- \u70B9\u51FB\u7ED3\
+    \u679C\u8DF3\u8F6C\u5230\u5BF9\u5E94\u6D88\u606F\n"
+  id: ISSUE-UI004c~c6
+  name: "\u6D88\u606F\u641C\u7D22\u4E0E\u9AD8\u4EAE"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/ChatSearch/ChatSearch.tsx
+      - apps/mobile/src/screens/Chat/components/SearchInChat.tsx
+      prompt: "\u68C0\u67E5\u6D88\u606F\u641C\u7D22\u5B9E\u73B0\uFF0C\u9A8C\u8BC1\u6709\
+        \ ChatSearch \u7EC4\u4EF6\uFF0C\u652F\u6301\u641C\u7D22\u8F93\u5165\u3001\u7ED3\
+        \u679C\u9AD8\u4EAE\u3001\u5BFC\u822A\u8DF3\u8F6C\uFF0C\u6709\u641C\u7D22\u7ED3\
+        \u679C\u8BA1\u6570"
+current_task: null
+description: "\u5B9E\u73B0\u804A\u5929\u754C\u9762\u7684\u6EDA\u52A8\u4F53\u9A8C\u548C\
+  \u6D88\u606F\u5206\u9875\u52A0\u8F7D\u529F\u80FD\uFF0C\u5305\u62EC\u53CD\u5411\u6EDA\
+  \u52A8\u52A0\u8F7D\u5386\u53F2\u6D88\u606F\u3001\n\u6EDA\u52A8\u4F4D\u7F6E\u4FDD\
+  \u6301\u3001\u65B0\u6D88\u606F\u63D0\u793A\u7B49\uFF0C\u786E\u4FDD\u6D41\u7545\u7684\
+  \u804A\u5929\u6D4F\u89C8\u4F53\u9A8C\u3002\n"
+id: ISSUE-UI004c
+issue_number: 1106
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-UI002
+- ISSUE-UI004b
+slug: chat-scroll-pagination
+status: pending
+title: "\u804A\u5929\u8BB0\u5F55\u6EDA\u52A8\u4E0E\u5206\u9875\u52A0\u8F7D"

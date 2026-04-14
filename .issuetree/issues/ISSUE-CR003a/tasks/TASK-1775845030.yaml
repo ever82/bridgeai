@@ -6,4 +6,4 @@ task:
   started_at: '2026-04-10T18:17:10.788130+00:00'
   status: failed
   timeout_minutes: 30
-  type: check
+  type: accept

@@ -1,168 +1,160 @@
----
-id: "ISSUE-F006"
-issue_number: 106
-title: "错误追踪与监控集成"
-slug: "error-monitoring"
-status: passed
-description: |
-  集成错误追踪和监控服务(Sentry)，实现错误自动上报、
-  性能监控、用户反馈收集，以及告警机制。
-prerequisites:
-  - "ISSUE-F003"
-created_at: "2026-04-08"
-logic: sufficient_necessary
-implementation:
-  task_id: "TASK-1"
-  completed_at: "2026-04-10T11:15:00+08:00"
-  execution_time_minutes: 10
-  result: "success"
 check:
-  checked_at: "2026-04-10T11:20:00+08:00"
-  status: "passed"
+  checked_at: '2026-04-10T11:20:00+08:00'
+  code_review:
+    files_created:
+    - apps/server/src/utils/sentry.ts
+    - apps/server/src/middleware/performance.ts
+    - apps/mobile/src/utils/sentry.ts
+    - apps/mobile/src/components/ErrorBoundary/index.tsx
+    - apps/mobile/src/components/Feedback/FeedbackForm.tsx
+    - apps/mobile/src/components/Feedback/FeedbackButton.tsx
+    - apps/mobile/src/components/Feedback/index.tsx
+    - .sentry/alert-rules.json
+    - .sentry/environment-setup.md
+    - .sentry/notification-channels.md
+    files_modified:
+    - apps/server/src/app.ts
+    - apps/server/package.json
+    - apps/mobile/src/App.tsx
+    - apps/mobile/package.json
+    merged_to_main: true
   functional_verification:
     all_criteria_passed: true
     criteria_verified:
-      - id: "ISSUE-F006~c1"
-        name: "Sentry 后端集成"
-        status: "passed"
-        notes: "Sentry SDK properly integrated with initSentry(), error handlers, and environment configuration"
-      - id: "ISSUE-F006~c2"
-        name: "Sentry 移动端集成"
-        status: "passed"
-        notes: "React Native SDK integrated with crash reporting and error boundaries"
-      - id: "ISSUE-F006~c3"
-        name: "性能监控配置"
-        status: "passed"
-        notes: "Performance middleware with API tracking, database monitoring, and memory usage"
-      - id: "ISSUE-F006~c4"
-        name: "告警规则配置"
-        status: "passed"
-        notes: "4 alert rules configured: P0 Critical, P1 Spike, Error Rate, New Issues"
-      - id: "ISSUE-F006~c5"
-        name: "用户反馈收集"
-        status: "passed"
-        notes: "Feedback form with categories, screenshots, and Sentry integration"
-  code_review:
-    merged_to_main: true
-    files_created:
-      - "apps/server/src/utils/sentry.ts"
-      - "apps/server/src/middleware/performance.ts"
-      - "apps/mobile/src/utils/sentry.ts"
-      - "apps/mobile/src/components/ErrorBoundary/index.tsx"
-      - "apps/mobile/src/components/Feedback/FeedbackForm.tsx"
-      - "apps/mobile/src/components/Feedback/FeedbackButton.tsx"
-      - "apps/mobile/src/components/Feedback/index.tsx"
-      - ".sentry/alert-rules.json"
-      - ".sentry/environment-setup.md"
-      - ".sentry/notification-channels.md"
-    files_modified:
-      - "apps/server/src/app.ts"
-      - "apps/server/package.json"
-      - "apps/mobile/src/App.tsx"
-      - "apps/mobile/package.json"
-  notes: "All acceptance criteria verified. Implementation complete and merged to master."
+    - id: ISSUE-F006~c1
+      name: "Sentry \u540E\u7AEF\u96C6\u6210"
+      notes: Sentry SDK properly integrated with initSentry(), error handlers, and
+        environment configuration
+      status: accepted
+    - id: ISSUE-F006~c2
+      name: "Sentry \u79FB\u52A8\u7AEF\u96C6\u6210"
+      notes: React Native SDK integrated with crash reporting and error boundaries
+      status: accepted
+    - id: ISSUE-F006~c3
+      name: "\u6027\u80FD\u76D1\u63A7\u914D\u7F6E"
+      notes: Performance middleware with API tracking, database monitoring, and memory
+        usage
+      status: accepted
+    - id: ISSUE-F006~c4
+      name: "\u544A\u8B66\u89C4\u5219\u914D\u7F6E"
+      notes: '4 alert rules configured: P0 Critical, P1 Spike, Error Rate, New Issues'
+      status: accepted
+    - id: ISSUE-F006~c5
+      name: "\u7528\u6237\u53CD\u9988\u6536\u96C6"
+      notes: Feedback form with categories, screenshots, and Sentry integration
+      status: accepted
+  notes: All acceptance criteria verified. Implementation complete and merged to master.
+  status: accepted
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-F006~c1"
-    name: "Sentry 后端集成"
-    description: |
-      后端错误追踪:
-      - Sentry SDK 集成
-      - 错误自动捕获
-      - 用户信息关联
-      - 环境配置 (DSN)
-    status: "passed"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 Sentry 后端集成，验证 SDK 初始化配置正确，确认错误会被自动捕获"
-        context_files: ["apps/server/src/utils/sentry.ts", "apps/server/src/app.ts"]
-
-
-  - id: "ISSUE-F006~c2"
-    name: "Sentry 移动端集成"
-    description: |
-      移动端错误追踪:
-      - Sentry React Native SDK
-      - 崩溃报告捕获
-      - 面包屑导航
-      - 发布版本关联
-    status: "passed"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查移动端 Sentry 配置，验证有 Sentry.init 调用和错误边界设置"
-        context_files: ["apps/mobile/src/utils/sentry.ts", "apps/mobile/App.tsx"]
-
-
-  - id: "ISSUE-F006~c3"
-    name: "性能监控配置"
-    description: |
-      性能监控:
-      - API 响应时间追踪
-      - 数据库查询性能
-      - 内存使用情况
-      - 关键事务性能指标
-    status: "passed"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查性能监控配置，验证有 Performance 监控和关键事务追踪"
-        context_files: ["apps/server/src/middleware/performance.ts"]
-
-
-  - id: "ISSUE-F006~c4"
-    name: "告警规则配置"
-    description: |
-      错误告警:
-      - 错误率阈值告警
-      - P0/P1 错误即时通知
-      - 告警渠道配置(邮件/Slack)
-      - 告警去重和抑制
-    status: "passed"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 Sentry 告警配置，验证有 Alert Rules 设置和通知渠道配置"
-        context_files: [".sentry/"]
-
-
-  - id: "ISSUE-F006~c5"
-    name: "用户反馈收集"
-    description: |
-      用户反馈:
-      - 应用内反馈表单
-      - 截图和日志附件
-      - 反馈分类和标签
-      - 反馈处理工作流
-    status: "passed"
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查用户反馈组件，验证有反馈表单和截图功能"
-        context_files: ["apps/mobile/src/components/Feedback/"]
-        
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u540E\u7AEF\u9519\u8BEF\u8FFD\u8E2A:\n- Sentry SDK \u96C6\u6210\n\
+    - \u9519\u8BEF\u81EA\u52A8\u6355\u83B7\n- \u7528\u6237\u4FE1\u606F\u5173\u8054\
+    \n- \u73AF\u5883\u914D\u7F6E (DSN)\n"
+  id: ISSUE-F006~c1
+  name: "Sentry \u540E\u7AEF\u96C6\u6210"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/utils/sentry.ts
+      - apps/server/src/app.ts
+      prompt: "\u68C0\u67E5 Sentry \u540E\u7AEF\u96C6\u6210\uFF0C\u9A8C\u8BC1 SDK\
+        \ \u521D\u59CB\u5316\u914D\u7F6E\u6B63\u786E\uFF0C\u786E\u8BA4\u9519\u8BEF\
+        \u4F1A\u88AB\u81EA\u52A8\u6355\u83B7"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u79FB\u52A8\u7AEF\u9519\u8BEF\u8FFD\u8E2A:\n- Sentry React Native\
+    \ SDK\n- \u5D29\u6E83\u62A5\u544A\u6355\u83B7\n- \u9762\u5305\u5C51\u5BFC\u822A\
+    \n- \u53D1\u5E03\u7248\u672C\u5173\u8054\n"
+  id: ISSUE-F006~c2
+  name: "Sentry \u79FB\u52A8\u7AEF\u96C6\u6210"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/utils/sentry.ts
+      - apps/mobile/App.tsx
+      prompt: "\u68C0\u67E5\u79FB\u52A8\u7AEF Sentry \u914D\u7F6E\uFF0C\u9A8C\u8BC1\
+        \u6709 Sentry.init \u8C03\u7528\u548C\u9519\u8BEF\u8FB9\u754C\u8BBE\u7F6E"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u6027\u80FD\u76D1\u63A7:\n- API \u54CD\u5E94\u65F6\u95F4\u8FFD\u8E2A\
+    \n- \u6570\u636E\u5E93\u67E5\u8BE2\u6027\u80FD\n- \u5185\u5B58\u4F7F\u7528\u60C5\
+    \u51B5\n- \u5173\u952E\u4E8B\u52A1\u6027\u80FD\u6307\u6807\n"
+  id: ISSUE-F006~c3
+  name: "\u6027\u80FD\u76D1\u63A7\u914D\u7F6E"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/middleware/performance.ts
+      prompt: "\u68C0\u67E5\u6027\u80FD\u76D1\u63A7\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u6709\
+        \ Performance \u76D1\u63A7\u548C\u5173\u952E\u4E8B\u52A1\u8FFD\u8E2A"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u9519\u8BEF\u544A\u8B66:\n- \u9519\u8BEF\u7387\u9608\u503C\u544A\u8B66\
+    \n- P0/P1 \u9519\u8BEF\u5373\u65F6\u901A\u77E5\n- \u544A\u8B66\u6E20\u9053\u914D\
+    \u7F6E(\u90AE\u4EF6/Slack)\n- \u544A\u8B66\u53BB\u91CD\u548C\u6291\u5236\n"
+  id: ISSUE-F006~c4
+  name: "\u544A\u8B66\u89C4\u5219\u914D\u7F6E"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - .sentry/
+      prompt: "\u68C0\u67E5 Sentry \u544A\u8B66\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u6709\
+        \ Alert Rules \u8BBE\u7F6E\u548C\u901A\u77E5\u6E20\u9053\u914D\u7F6E"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u7528\u6237\u53CD\u9988:\n- \u5E94\u7528\u5185\u53CD\u9988\u8868\u5355\
+    \n- \u622A\u56FE\u548C\u65E5\u5FD7\u9644\u4EF6\n- \u53CD\u9988\u5206\u7C7B\u548C\
+    \u6807\u7B7E\n- \u53CD\u9988\u5904\u7406\u5DE5\u4F5C\u6D41\n"
+  id: ISSUE-F006~c5
+  name: "\u7528\u6237\u53CD\u9988\u6536\u96C6"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/Feedback/
+      prompt: "\u68C0\u67E5\u7528\u6237\u53CD\u9988\u7EC4\u4EF6\uFF0C\u9A8C\u8BC1\u6709\
+        \u53CD\u9988\u8868\u5355\u548C\u622A\u56FE\u529F\u80FD"
+current_task: ''
+description: "\u96C6\u6210\u9519\u8BEF\u8FFD\u8E2A\u548C\u76D1\u63A7\u670D\u52A1(Sentry)\uFF0C\
+  \u5B9E\u73B0\u9519\u8BEF\u81EA\u52A8\u4E0A\u62A5\u3001\n\u6027\u80FD\u76D1\u63A7\
+  \u3001\u7528\u6237\u53CD\u9988\u6536\u96C6\uFF0C\u4EE5\u53CA\u544A\u8B66\u673A\u5236\
+  \u3002\n"
+id: ISSUE-F006
+implementation:
+  completed_at: '2026-04-10T11:15:00+08:00'
+  execution_time_minutes: 10
+  result: success
+  task_id: TASK-1
+issue_number: 106
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-F003
+slug: error-monitoring
+status: accepted
+title: "\u9519\u8BEF\u8FFD\u8E2A\u4E0E\u76D1\u63A7\u96C6\u6210"

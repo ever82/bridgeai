@@ -1,124 +1,112 @@
----
-id: "ISSUE-C001"
-issue_number: 301
-title: "Agent创建与基础配置"
-slug: "agent-creation"
-status: passed
-description: |
-  实现 Agent 创建和基础配置功能，包括 Agent 类型定义、
-  基础属性设置、场景关联、初始状态配置等。
-prerequisites:
-  - "ISSUE-A003"
-created_at: "2026-04-08"
-logic: sufficient_necessary
+created_at: '2026-04-08'
 criteria:
-  - id: "ISSUE-C001~c1"
-    name: "Agent 创建 API"
-    description: |
-      Agent 创建接口:
-      - 创建 Agent 端点
-      - Agent 类型选择(VisionShare, AgentDate, AgentJob, AgentAd)
-      - 基础信息设置(名称、描述)
-      - 用户关联和权限
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 Agent 创建 API，验证有 /api/v1/agents POST 端点，包含 name, type, description 字段"
-        context_files: ["apps/server/src/routes/agents.ts", "apps/server/src/services/agentService.ts"]
-        
-
-  - id: "ISSUE-C001~c2"
-    name: "Agent 类型系统"
-    description: |
-      Agent 类型定义:
-      - 四种场景类型枚举
-      - 场景特定配置 Schema
-      - 类型验证和转换
-      - 场景能力声明
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 Agent 类型定义，验证有 AgentType 枚举包含 VISIONSHARE, AGENTDATE, AGENTJOB, AGENTAD"
-        context_files: ["packages/shared/src/types/agent.ts"]
-        
-
-  - id: "ISSUE-C001~c3"
-    name: "Agent 状态管理"
-    description: |
-      Agent 生命周期:
-      - 状态枚举: draft, active, paused, archived
-      - 状态转换规则
-      - 状态变更 API
-      - 状态历史记录
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 Agent 状态管理，验证有 AgentStatus 枚举和状态转换验证"
-        context_files: ["apps/server/src/services/agentService.ts"]
-        
-
-  - id: "ISSUE-C001~c4"
-    name: "Agent 列表和查询"
-    description: |
-      Agent 查询接口:
-      - 获取用户所有 Agent
-      - 按类型筛选
-      - 按状态筛选
-      - 分页和排序
-    status: "passed"
-    coverage:
-      unit: required
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查 Agent 查询 API，验证有 /api/v1/agents GET 端点支持筛选和分页"
-        context_files: ["apps/server/src/routes/agents.ts"]
-        
-
-  - id: "ISSUE-C001~c5"
-    name: "移动端 Agent 管理界面"
-    description: |
-      Agent 管理 UI:
-      - Agent 列表页面
-      - 创建 Agent 向导
-      - Agent 卡片组件
-      - 空状态设计
-    status: "passed"
-    coverage:
-      unit: sufficient
-      unit_description: "针对关键UI组件（如AgentCard、CreateAgentWizard）的单元测试"
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: "检查移动端 Agent 界面，验证有 AgentListScreen 和 CreateAgentScreen"
-        context_files: ["apps/mobile/src/screens/Agent/AgentListScreen.tsx", "apps/mobile/src/screens/Agent/CreateAgentScreen.tsx"]
-        
-
-
-implementation_completed_at: "2026-04-10T10:36:44.105Z"
-
-implementation_result: "success"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "Agent \u521B\u5EFA\u63A5\u53E3:\n- \u521B\u5EFA Agent \u7AEF\u70B9\
+    \n- Agent \u7C7B\u578B\u9009\u62E9(VisionShare, AgentDate, AgentJob, AgentAd)\n\
+    - \u57FA\u7840\u4FE1\u606F\u8BBE\u7F6E(\u540D\u79F0\u3001\u63CF\u8FF0)\n- \u7528\
+    \u6237\u5173\u8054\u548C\u6743\u9650\n"
+  id: ISSUE-C001~c1
+  name: "Agent \u521B\u5EFA API"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/agents.ts
+      - apps/server/src/services/agentService.ts
+      prompt: "\u68C0\u67E5 Agent \u521B\u5EFA API\uFF0C\u9A8C\u8BC1\u6709 /api/v1/agents\
+        \ POST \u7AEF\u70B9\uFF0C\u5305\u542B name, type, description \u5B57\u6BB5"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "Agent \u7C7B\u578B\u5B9A\u4E49:\n- \u56DB\u79CD\u573A\u666F\u7C7B\u578B\
+    \u679A\u4E3E\n- \u573A\u666F\u7279\u5B9A\u914D\u7F6E Schema\n- \u7C7B\u578B\u9A8C\
+    \u8BC1\u548C\u8F6C\u6362\n- \u573A\u666F\u80FD\u529B\u58F0\u660E\n"
+  id: ISSUE-C001~c2
+  name: "Agent \u7C7B\u578B\u7CFB\u7EDF"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - packages/shared/src/types/agent.ts
+      prompt: "\u68C0\u67E5 Agent \u7C7B\u578B\u5B9A\u4E49\uFF0C\u9A8C\u8BC1\u6709\
+        \ AgentType \u679A\u4E3E\u5305\u542B VISIONSHARE, AGENTDATE, AGENTJOB, AGENTAD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "Agent \u751F\u547D\u5468\u671F:\n- \u72B6\u6001\u679A\u4E3E: draft,\
+    \ active, paused, archived\n- \u72B6\u6001\u8F6C\u6362\u89C4\u5219\n- \u72B6\u6001\
+    \u53D8\u66F4 API\n- \u72B6\u6001\u5386\u53F2\u8BB0\u5F55\n"
+  id: ISSUE-C001~c3
+  name: "Agent \u72B6\u6001\u7BA1\u7406"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/agentService.ts
+      prompt: "\u68C0\u67E5 Agent \u72B6\u6001\u7BA1\u7406\uFF0C\u9A8C\u8BC1\u6709\
+        \ AgentStatus \u679A\u4E3E\u548C\u72B6\u6001\u8F6C\u6362\u9A8C\u8BC1"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "Agent \u67E5\u8BE2\u63A5\u53E3:\n- \u83B7\u53D6\u7528\u6237\u6240\u6709\
+    \ Agent\n- \u6309\u7C7B\u578B\u7B5B\u9009\n- \u6309\u72B6\u6001\u7B5B\u9009\n\
+    - \u5206\u9875\u548C\u6392\u5E8F\n"
+  id: ISSUE-C001~c4
+  name: "Agent \u5217\u8868\u548C\u67E5\u8BE2"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/routes/agents.ts
+      prompt: "\u68C0\u67E5 Agent \u67E5\u8BE2 API\uFF0C\u9A8C\u8BC1\u6709 /api/v1/agents\
+        \ GET \u7AEF\u70B9\u652F\u6301\u7B5B\u9009\u548C\u5206\u9875"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: sufficient
+    unit_description: "\u9488\u5BF9\u5173\u952EUI\u7EC4\u4EF6\uFF08\u5982AgentCard\u3001\
+      CreateAgentWizard\uFF09\u7684\u5355\u5143\u6D4B\u8BD5"
+  description: "Agent \u7BA1\u7406 UI:\n- Agent \u5217\u8868\u9875\u9762\n- \u521B\
+    \u5EFA Agent \u5411\u5BFC\n- Agent \u5361\u7247\u7EC4\u4EF6\n- \u7A7A\u72B6\u6001\
+    \u8BBE\u8BA1\n"
+  id: ISSUE-C001~c5
+  name: "\u79FB\u52A8\u7AEF Agent \u7BA1\u7406\u754C\u9762"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/Agent/AgentListScreen.tsx
+      - apps/mobile/src/screens/Agent/CreateAgentScreen.tsx
+      prompt: "\u68C0\u67E5\u79FB\u52A8\u7AEF Agent \u754C\u9762\uFF0C\u9A8C\u8BC1\
+        \u6709 AgentListScreen \u548C CreateAgentScreen"
+current_task: ''
+description: "\u5B9E\u73B0 Agent \u521B\u5EFA\u548C\u57FA\u7840\u914D\u7F6E\u529F\u80FD\
+  \uFF0C\u5305\u62EC Agent \u7C7B\u578B\u5B9A\u4E49\u3001\n\u57FA\u7840\u5C5E\u6027\
+  \u8BBE\u7F6E\u3001\u573A\u666F\u5173\u8054\u3001\u521D\u59CB\u72B6\u6001\u914D\u7F6E\
+  \u7B49\u3002\n"
+id: ISSUE-C001
+implementation_completed_at: '2026-04-10T10:36:44.105Z'
+implementation_result: success
+issue_number: 301
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-A003
+slug: agent-creation
+status: accepted
+title: "Agent\u521B\u5EFA\u4E0E\u57FA\u7840\u914D\u7F6E"

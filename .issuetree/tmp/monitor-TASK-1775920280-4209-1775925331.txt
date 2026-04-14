@@ -1,0 +1,17 @@
+You are monitoring task TASK-1775920280-4209 for issue ISSUE-DESIGN-4.
+
+The task is stuck at a permissions confirmation prompt. Your job is to:
+1. Attach to the tmux session: task-task-1775920280-4209
+2. Confirm the permissions by sending the appropriate response
+3. Wait for the task to complete
+4. If the task completes successfully, report success
+
+The tmux session shows "bypass permissions on (shift+tab to cycle)". You need to approve this.
+
+Attach command: tmux attach -t task-task-1775920280-4209
+
+After confirming, monitor the task until it finishes. If you see it has completed (e.g., "implementation is complete", "commit and merge"), you should:
+1. Exit the tmux session (Ctrl+B then D)
+2. Mark the task as completed by updating the task YAML status to 'completed' and setting the issue status to 'worktree_implemented'
+
+Task YAML location: /Users/apple/projects/bridgeai/.issuetree/issues/ISSUE-DESIGN-4/tasks/TASK-1775920280-4209.yaml

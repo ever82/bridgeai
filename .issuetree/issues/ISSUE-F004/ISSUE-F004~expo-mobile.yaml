@@ -1,141 +1,141 @@
----
-id: 'ISSUE-F004'
-issue_number: 104
-title: 'Expo移动端项目初始化'
-slug: 'expo-mobile'
-status: passed
-checked_at: '2026-04-09'
 check:
-  status: passed
   functional_verification:
     all_criteria_passed: true
+  notes: Expo project with navigation, stores, screens structure verified
+  status: accepted
   test_execution:
     all_tests_passed: true
-  notes: 'Expo project with navigation, stores, screens structure verified'
-description: |
-  初始化 Expo React Native 移动端项目，配置开发环境、
-  导航结构、状态管理、网络请求等基础设施，支持 iOS/Android 双平台。
-prerequisites:
-  - 'ISSUE-F001'
+checked_at: '2026-04-09'
 created_at: '2026-04-08'
-logic: sufficient_necessary
 criteria:
-  - id: 'ISSUE-F004~c1'
-    name: 'Expo 项目初始化'
-    description: |
-      配置 Expo 项目:
-      - 使用 create-expo-app 初始化项目
-      - 配置 Expo SDK 和依赖
-      - 设置 TypeScript 支持
-      - 配置 metro bundler
-    status: 'pending'
-    coverage:
-      unit: not_needed
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查 apps/mobile/ 目录是否有 Expo 项目结构，验证 app.json 和 package.json 配置正确'
-        context_files: ['apps/mobile/app.json', 'apps/mobile/package.json']
-
-  - id: 'ISSUE-F004~c2'
-    name: '导航结构配置'
-    description: |
-      设置导航系统:
-      - 配置 React Navigation
-      - 设置底部 Tab 导航
-      - 配置 Stack 导航器
-      - 实现深层链接配置
-    status: 'pending'
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查导航配置，验证使用 Expo Router 或 React Navigation，确认有 Tab 和 Stack 导航结构'
-        context_files: ['apps/mobile/src/navigation/', 'apps/mobile/app/']
-
-  - id: 'ISSUE-F004~c3'
-    name: '全局状态管理'
-    description: |
-      配置状态管理:
-      - 集成 Zustand/Redux Toolkit
-      - 设置用户状态存储
-      - 配置持久化存储(AsyncStorage)
-      - 状态类型定义
-    status: 'pending'
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查状态管理配置，验证有 store 定义、持久化配置和类型定义'
-        context_files: ['apps/mobile/src/store/']
-
-  - id: 'ISSUE-F004~c4'
-    name: '网络请求和 API 客户端'
-    description: |
-      配置 API 通信:
-      - 集成 Axios/Fetch
-      - 配置请求/响应拦截器
-      - 设置 API 基础 URL
-      - 请求错误处理和重试机制
-    status: 'pending'
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查 API 客户端配置，验证有 baseURL 配置、拦截器处理和错误处理'
-        context_files: ['apps/mobile/src/api/client.ts']
-
-  - id: 'ISSUE-F004~c5'
-    name: 'UI 组件库和主题'
-    description: |
-      设置 UI 基础设施:
-      - 配置 NativeWind/Tamagui/原生样式
-      - 设置主题和颜色系统
-      - 创建基础组件库(Button, Input, Card等)
-      - 响应式布局适配
-    status: 'pending'
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查 UI 组件和主题配置，验证有设计系统、主题定义和基础组件实现'
-        context_files: ['apps/mobile/src/components/', 'apps/mobile/src/theme/']
-
-  - id: 'ISSUE-F004~c6'
-    name: '权限和原生模块配置'
-    description: |
-      配置原生权限:
-      - 相机权限配置
-      - 位置权限配置
-      - 通知权限配置
-      - 存储权限配置
-    status: 'pending'
-    coverage:
-      unit: not_needed
-      integration: required
-      e2e: required
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查 app.json 中的权限配置，验证有 camera, location, notifications 等权限声明'
-        context_files: ['apps/mobile/app.json']
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: not_needed
+    unit: not_needed
+  description: "\u914D\u7F6E Expo \u9879\u76EE:\n- \u4F7F\u7528 create-expo-app \u521D\
+    \u59CB\u5316\u9879\u76EE\n- \u914D\u7F6E Expo SDK \u548C\u4F9D\u8D56\n- \u8BBE\
+    \u7F6E TypeScript \u652F\u6301\n- \u914D\u7F6E metro bundler\n"
+  id: ISSUE-F004~c1
+  name: "Expo \u9879\u76EE\u521D\u59CB\u5316"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/app.json
+      - apps/mobile/package.json
+      prompt: "\u68C0\u67E5 apps/mobile/ \u76EE\u5F55\u662F\u5426\u6709 Expo \u9879\
+        \u76EE\u7ED3\u6784\uFF0C\u9A8C\u8BC1 app.json \u548C package.json \u914D\u7F6E\
+        \u6B63\u786E"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u8BBE\u7F6E\u5BFC\u822A\u7CFB\u7EDF:\n- \u914D\u7F6E React Navigation\n\
+    - \u8BBE\u7F6E\u5E95\u90E8 Tab \u5BFC\u822A\n- \u914D\u7F6E Stack \u5BFC\u822A\
+    \u5668\n- \u5B9E\u73B0\u6DF1\u5C42\u94FE\u63A5\u914D\u7F6E\n"
+  id: ISSUE-F004~c2
+  name: "\u5BFC\u822A\u7ED3\u6784\u914D\u7F6E"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/navigation/
+      - apps/mobile/app/
+      prompt: "\u68C0\u67E5\u5BFC\u822A\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u4F7F\u7528\
+        \ Expo Router \u6216 React Navigation\uFF0C\u786E\u8BA4\u6709 Tab \u548C Stack\
+        \ \u5BFC\u822A\u7ED3\u6784"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u914D\u7F6E\u72B6\u6001\u7BA1\u7406:\n- \u96C6\u6210 Zustand/Redux\
+    \ Toolkit\n- \u8BBE\u7F6E\u7528\u6237\u72B6\u6001\u5B58\u50A8\n- \u914D\u7F6E\u6301\
+    \u4E45\u5316\u5B58\u50A8(AsyncStorage)\n- \u72B6\u6001\u7C7B\u578B\u5B9A\u4E49\
+    \n"
+  id: ISSUE-F004~c3
+  name: "\u5168\u5C40\u72B6\u6001\u7BA1\u7406"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/store/
+      prompt: "\u68C0\u67E5\u72B6\u6001\u7BA1\u7406\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u6709\
+        \ store \u5B9A\u4E49\u3001\u6301\u4E45\u5316\u914D\u7F6E\u548C\u7C7B\u578B\
+        \u5B9A\u4E49"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u914D\u7F6E API \u901A\u4FE1:\n- \u96C6\u6210 Axios/Fetch\n- \u914D\
+    \u7F6E\u8BF7\u6C42/\u54CD\u5E94\u62E6\u622A\u5668\n- \u8BBE\u7F6E API \u57FA\u7840\
+    \ URL\n- \u8BF7\u6C42\u9519\u8BEF\u5904\u7406\u548C\u91CD\u8BD5\u673A\u5236\n"
+  id: ISSUE-F004~c4
+  name: "\u7F51\u7EDC\u8BF7\u6C42\u548C API \u5BA2\u6237\u7AEF"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/api/client.ts
+      prompt: "\u68C0\u67E5 API \u5BA2\u6237\u7AEF\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u6709\
+        \ baseURL \u914D\u7F6E\u3001\u62E6\u622A\u5668\u5904\u7406\u548C\u9519\u8BEF\
+        \u5904\u7406"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u8BBE\u7F6E UI \u57FA\u7840\u8BBE\u65BD:\n- \u914D\u7F6E NativeWind/Tamagui/\u539F\
+    \u751F\u6837\u5F0F\n- \u8BBE\u7F6E\u4E3B\u9898\u548C\u989C\u8272\u7CFB\u7EDF\n\
+    - \u521B\u5EFA\u57FA\u7840\u7EC4\u4EF6\u5E93(Button, Input, Card\u7B49)\n- \u54CD\
+    \u5E94\u5F0F\u5E03\u5C40\u9002\u914D\n"
+  id: ISSUE-F004~c5
+  name: "UI \u7EC4\u4EF6\u5E93\u548C\u4E3B\u9898"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/
+      - apps/mobile/src/theme/
+      prompt: "\u68C0\u67E5 UI \u7EC4\u4EF6\u548C\u4E3B\u9898\u914D\u7F6E\uFF0C\u9A8C\
+        \u8BC1\u6709\u8BBE\u8BA1\u7CFB\u7EDF\u3001\u4E3B\u9898\u5B9A\u4E49\u548C\u57FA\
+        \u7840\u7EC4\u4EF6\u5B9E\u73B0"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: not_needed
+  description: "\u914D\u7F6E\u539F\u751F\u6743\u9650:\n- \u76F8\u673A\u6743\u9650\u914D\
+    \u7F6E\n- \u4F4D\u7F6E\u6743\u9650\u914D\u7F6E\n- \u901A\u77E5\u6743\u9650\u914D\
+    \u7F6E\n- \u5B58\u50A8\u6743\u9650\u914D\u7F6E\n"
+  id: ISSUE-F004~c6
+  name: "\u6743\u9650\u548C\u539F\u751F\u6A21\u5757\u914D\u7F6E"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/app.json
+      prompt: "\u68C0\u67E5 app.json \u4E2D\u7684\u6743\u9650\u914D\u7F6E\uFF0C\u9A8C\
+        \u8BC1\u6709 camera, location, notifications \u7B49\u6743\u9650\u58F0\u660E"
+current_task: ''
+description: "\u521D\u59CB\u5316 Expo React Native \u79FB\u52A8\u7AEF\u9879\u76EE\uFF0C\
+  \u914D\u7F6E\u5F00\u53D1\u73AF\u5883\u3001\n\u5BFC\u822A\u7ED3\u6784\u3001\u72B6\
+  \u6001\u7BA1\u7406\u3001\u7F51\u7EDC\u8BF7\u6C42\u7B49\u57FA\u7840\u8BBE\u65BD\uFF0C\
+  \u652F\u6301 iOS/Android \u53CC\u5E73\u53F0\u3002\n"
+id: ISSUE-F004
+issue_number: 104
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-F001
+slug: expo-mobile
+status: accepted
+title: "Expo\u79FB\u52A8\u7AEF\u9879\u76EE\u521D\u59CB\u5316"

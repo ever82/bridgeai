@@ -3,7 +3,7 @@ id: "ISSUE-C007"
 issue_number: 309
 title: "Agent信息披露控制机制"
 slug: "agent-disclosure"
-status: "pending"
+status: need-help
 description: |
   实现 Agent 信息披露控制机制，允许用户控制哪些信息
   在匹配过程中被披露，保护用户隐私。
@@ -21,7 +21,7 @@ criteria:
       - 匹配后可见信息
       - 私聊后可见信息
       - 引荐后可见信息
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required
@@ -32,7 +32,7 @@ criteria:
       ai:
         prompt: "检查披露级别，验证有 DisclosureLevel 枚举和字段级披露控制"
         context_files: ["packages/shared/src/types/disclosure.ts"]
-        
+
 
   - id: "ISSUE-C007~c2"
     name: "字段级披露设置"
@@ -42,7 +42,7 @@ criteria:
       - 默认披露策略
       - 批量设置
       - 预览效果
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: not_needed
       integration: required
@@ -53,7 +53,7 @@ criteria:
       ai:
         prompt: "检查字段披露设置，验证有 DisclosureSettings 组件可配置每个字段"
         context_files: ["apps/mobile/src/screens/Settings/DisclosureSettings.tsx"]
-        
+
 
   - id: "ISSUE-C007~c3"
     name: "披露权限检查"
@@ -63,7 +63,7 @@ criteria:
       - 访问权限验证
       - 自动披露升级
       - 披露历史记录
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required
@@ -74,7 +74,7 @@ criteria:
       ai:
         prompt: "检查披露权限，验证有 canViewField 函数检查用户访问权限"
         context_files: ["apps/server/src/services/disclosureService.ts"]
-        
+
 
   - id: "ISSUE-C007~c4"
     name: "信息披露预览"
@@ -84,7 +84,7 @@ criteria:
       - 信息脱敏展示
       - 披露状态可视化
       - 对方可见信息提示
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: not_needed
       integration: required
@@ -95,7 +95,7 @@ criteria:
       ai:
         prompt: "检查预览功能，验证有 DisclosurePreview 组件展示不同角色的可见信息"
         context_files: ["apps/mobile/src/components/Disclosure/DisclosurePreview.tsx"]
-        
+
 
   - id: "ISSUE-C007~c5"
     name: "披露变更通知"
@@ -105,7 +105,7 @@ criteria:
       - 已披露信息撤回
       - 对方变更通知
       - 披露审计日志
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required
@@ -116,4 +116,3 @@ criteria:
       ai:
         prompt: "检查变更通知，验证有披露变更记录和通知机制"
         context_files: ["apps/server/src/services/disclosureAuditService.ts"]
-        

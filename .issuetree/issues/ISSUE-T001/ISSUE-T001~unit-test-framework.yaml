@@ -1,161 +1,154 @@
----
-id: 'ISSUE-T001'
-issue_number: 301
-title: '单元测试框架搭建(Jest)'
-slug: 'unit-test-framework'
-status: passed
-description: |
-  搭建完整的单元测试框架，使用Jest作为测试运行器，覆盖后端服务和共享包的单元测试。
-  包括测试环境配置、Mock工具、测试数据工厂、覆盖率报告等基础设施。
-  确保测试可以在CI/CD流水线中自动运行。
-prerequisites:
-  - 'ISSUE-F003'
-  - 'ISSUE-A001'
 created_at: '2026-04-08'
-logic: sufficient_necessary
 criteria:
-  - id: 'ISSUE-T001~c1'
-    name: 'Jest基础配置'
-    description: |
-      配置Jest测试运行器:
-      - 根目录jest.config.js配置
-      - 各workspace的jest配置继承和扩展
-      - TypeScript支持(ts-jest配置)
-      - 测试文件匹配规则
-      - 测试超时和并发配置
-    status: 'passed'
-    coverage:
-      unit: required
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查jest.config.js或jest.config.ts是否存在且配置完整，验证包含ts-jest配置、测试匹配模式、覆盖率收集配置'
-        context_files:
-          [
-            'jest.config.js',
-            'jest.config.ts',
-            'apps/server/jest.config.js',
-            'packages/shared/jest.config.js',
-          ]
-
-  - id: 'ISSUE-T001~c2'
-    name: '测试环境隔离'
-    description: |
-      配置测试环境隔离:
-      - 独立的测试数据库配置
-      - 测试环境变量(.env.test)
-      - 测试数据库自动创建和销毁
-      - 测试数据清理机制
-      - 并行测试安全隔离
-    status: 'passed'
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查测试环境配置，验证有.env.test文件，测试数据库配置与生产隔离，确认有测试数据清理脚本'
-        context_files:
-          ['.env.test', 'apps/server/src/tests/setup.ts', 'apps/server/src/tests/teardown.ts']
-
-  - id: 'ISSUE-T001~c3'
-    name: 'Mock和Stub工具集'
-    description: |
-      建立Mock工具集:
-      - Jest Mock函数配置
-      - Prisma Client自动Mock
-      - 外部API Mock工具
-      - Redis/缓存Mock
-      - 文件系统Mock
-    status: 'passed'
-    coverage:
-      unit: required
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查Mock工具配置，验证有__mocks__目录，Prisma Client Mock实现，外部服务Mock工具集'
-        context_files:
-          [
-            '__mocks__/prisma.ts',
-            'apps/server/src/tests/mocks/index.ts',
-            'apps/server/src/tests/helpers/mock-factory.ts',
-          ]
-
-  - id: 'ISSUE-T001~c4'
-    name: '测试数据工厂'
-    description: |
-      实现测试数据工厂:
-      - 使用faker.js生成测试数据
-      - 用户数据工厂
-      - Agent数据工厂
-      - 消息/聊天数据工厂
-      - 数据工厂组合和关联
-    status: 'passed'
-    coverage:
-      unit: required
-      integration: required
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查测试数据工厂实现，验证有factories目录，包含user、agent、message等数据工厂，使用faker.js生成数据'
-        context_files:
-          [
-            'apps/server/src/tests/factories/user.factory.ts',
-            'apps/server/src/tests/factories/agent.factory.ts',
-            'apps/server/src/tests/factories/index.ts',
-          ]
-
-  - id: 'ISSUE-T001~c5'
-    name: '覆盖率报告配置'
-    description: |
-      配置代码覆盖率:
-      - Jest覆盖率收集配置
-      - 覆盖率阈值设置(行/分支/函数)
-      - 覆盖率报告格式(html/text/lcov)
-      - 排除文件配置
-      - CI集成
-    status: 'passed'
-    coverage:
-      unit: required
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查Jest覆盖率配置，验证覆盖率阈值设置(建议80%)，确认有多种报告格式配置，检查CI集成'
-        context_files: ['jest.config.js', '.github/workflows/test.yml']
-
-  - id: 'ISSUE-T001~c6'
-    name: '示例单元测试套件'
-    description: |
-      编写示例单元测试:
-      - 服务层单元测试示例
-      - 工具函数单元测试示例
-      - Middleware单元测试示例
-      - 测试最佳实践文档
-    status: 'passed'
-    coverage:
-      unit: required
-      integration: not_needed
-      e2e: not_needed
-      ai: sufficient
-      manual: not_needed
-    verification:
-      ai:
-        prompt: '检查示例测试文件，验证有.service.test.ts、.util.test.ts等测试文件，测试用例覆盖正常和异常场景'
-        context_files:
-          [
-            'apps/server/src/services/__tests__/auth.service.test.ts',
-            'apps/server/src/utils/__tests__/validation.test.ts',
-          ]
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: not_needed
+    unit: required
+  description: "\u914D\u7F6EJest\u6D4B\u8BD5\u8FD0\u884C\u5668:\n- \u6839\u76EE\u5F55\
+    jest.config.js\u914D\u7F6E\n- \u5404workspace\u7684jest\u914D\u7F6E\u7EE7\u627F\
+    \u548C\u6269\u5C55\n- TypeScript\u652F\u6301(ts-jest\u914D\u7F6E)\n- \u6D4B\u8BD5\
+    \u6587\u4EF6\u5339\u914D\u89C4\u5219\n- \u6D4B\u8BD5\u8D85\u65F6\u548C\u5E76\u53D1\
+    \u914D\u7F6E\n"
+  id: ISSUE-T001~c1
+  name: "Jest\u57FA\u7840\u914D\u7F6E"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - jest.config.js
+      - jest.config.ts
+      - apps/server/jest.config.js
+      - packages/shared/jest.config.js
+      prompt: "\u68C0\u67E5jest.config.js\u6216jest.config.ts\u662F\u5426\u5B58\u5728\
+        \u4E14\u914D\u7F6E\u5B8C\u6574\uFF0C\u9A8C\u8BC1\u5305\u542Bts-jest\u914D\u7F6E\
+        \u3001\u6D4B\u8BD5\u5339\u914D\u6A21\u5F0F\u3001\u8986\u76D6\u7387\u6536\u96C6\
+        \u914D\u7F6E"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u914D\u7F6E\u6D4B\u8BD5\u73AF\u5883\u9694\u79BB:\n- \u72EC\u7ACB\u7684\
+    \u6D4B\u8BD5\u6570\u636E\u5E93\u914D\u7F6E\n- \u6D4B\u8BD5\u73AF\u5883\u53D8\u91CF\
+    (.env.test)\n- \u6D4B\u8BD5\u6570\u636E\u5E93\u81EA\u52A8\u521B\u5EFA\u548C\u9500\
+    \u6BC1\n- \u6D4B\u8BD5\u6570\u636E\u6E05\u7406\u673A\u5236\n- \u5E76\u884C\u6D4B\
+    \u8BD5\u5B89\u5168\u9694\u79BB\n"
+  id: ISSUE-T001~c2
+  name: "\u6D4B\u8BD5\u73AF\u5883\u9694\u79BB"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - .env.test
+      - apps/server/src/tests/setup.ts
+      - apps/server/src/tests/teardown.ts
+      prompt: "\u68C0\u67E5\u6D4B\u8BD5\u73AF\u5883\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u6709\
+        .env.test\u6587\u4EF6\uFF0C\u6D4B\u8BD5\u6570\u636E\u5E93\u914D\u7F6E\u4E0E\
+        \u751F\u4EA7\u9694\u79BB\uFF0C\u786E\u8BA4\u6709\u6D4B\u8BD5\u6570\u636E\u6E05\
+        \u7406\u811A\u672C"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: not_needed
+    unit: required
+  description: "\u5EFA\u7ACBMock\u5DE5\u5177\u96C6:\n- Jest Mock\u51FD\u6570\u914D\
+    \u7F6E\n- Prisma Client\u81EA\u52A8Mock\n- \u5916\u90E8API Mock\u5DE5\u5177\n\
+    - Redis/\u7F13\u5B58Mock\n- \u6587\u4EF6\u7CFB\u7EDFMock\n"
+  id: ISSUE-T001~c3
+  name: "Mock\u548CStub\u5DE5\u5177\u96C6"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - __mocks__/prisma.ts
+      - apps/server/src/tests/mocks/index.ts
+      - apps/server/src/tests/helpers/mock-factory.ts
+      prompt: "\u68C0\u67E5Mock\u5DE5\u5177\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u6709__mocks__\u76EE\
+        \u5F55\uFF0CPrisma Client Mock\u5B9E\u73B0\uFF0C\u5916\u90E8\u670D\u52A1Mock\u5DE5\
+        \u5177\u96C6"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B9E\u73B0\u6D4B\u8BD5\u6570\u636E\u5DE5\u5382:\n- \u4F7F\u7528\
+    faker.js\u751F\u6210\u6D4B\u8BD5\u6570\u636E\n- \u7528\u6237\u6570\u636E\u5DE5\
+    \u5382\n- Agent\u6570\u636E\u5DE5\u5382\n- \u6D88\u606F/\u804A\u5929\u6570\u636E\
+    \u5DE5\u5382\n- \u6570\u636E\u5DE5\u5382\u7EC4\u5408\u548C\u5173\u8054\n"
+  id: ISSUE-T001~c4
+  name: "\u6D4B\u8BD5\u6570\u636E\u5DE5\u5382"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/tests/factories/user.factory.ts
+      - apps/server/src/tests/factories/agent.factory.ts
+      - apps/server/src/tests/factories/index.ts
+      prompt: "\u68C0\u67E5\u6D4B\u8BD5\u6570\u636E\u5DE5\u5382\u5B9E\u73B0\uFF0C\u9A8C\
+        \u8BC1\u6709factories\u76EE\u5F55\uFF0C\u5305\u542Buser\u3001agent\u3001message\u7B49\
+        \u6570\u636E\u5DE5\u5382\uFF0C\u4F7F\u7528faker.js\u751F\u6210\u6570\u636E"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: not_needed
+    unit: required
+  description: "\u914D\u7F6E\u4EE3\u7801\u8986\u76D6\u7387:\n- Jest\u8986\u76D6\u7387\
+    \u6536\u96C6\u914D\u7F6E\n- \u8986\u76D6\u7387\u9608\u503C\u8BBE\u7F6E(\u884C\
+    /\u5206\u652F/\u51FD\u6570)\n- \u8986\u76D6\u7387\u62A5\u544A\u683C\u5F0F(html/text/lcov)\n\
+    - \u6392\u9664\u6587\u4EF6\u914D\u7F6E\n- CI\u96C6\u6210\n"
+  id: ISSUE-T001~c5
+  name: "\u8986\u76D6\u7387\u62A5\u544A\u914D\u7F6E"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - jest.config.js
+      - .github/workflows/test.yml
+      prompt: "\u68C0\u67E5Jest\u8986\u76D6\u7387\u914D\u7F6E\uFF0C\u9A8C\u8BC1\u8986\
+        \u76D6\u7387\u9608\u503C\u8BBE\u7F6E(\u5EFA\u8BAE80%)\uFF0C\u786E\u8BA4\u6709\
+        \u591A\u79CD\u62A5\u544A\u683C\u5F0F\u914D\u7F6E\uFF0C\u68C0\u67E5CI\u96C6\
+        \u6210"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: not_needed
+    manual: not_needed
+    unit: required
+  description: "\u7F16\u5199\u793A\u4F8B\u5355\u5143\u6D4B\u8BD5:\n- \u670D\u52A1\u5C42\
+    \u5355\u5143\u6D4B\u8BD5\u793A\u4F8B\n- \u5DE5\u5177\u51FD\u6570\u5355\u5143\u6D4B\
+    \u8BD5\u793A\u4F8B\n- Middleware\u5355\u5143\u6D4B\u8BD5\u793A\u4F8B\n- \u6D4B\
+    \u8BD5\u6700\u4F73\u5B9E\u8DF5\u6587\u6863\n"
+  id: ISSUE-T001~c6
+  name: "\u793A\u4F8B\u5355\u5143\u6D4B\u8BD5\u5957\u4EF6"
+  status: accepted
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/__tests__/auth.service.test.ts
+      - apps/server/src/utils/__tests__/validation.test.ts
+      prompt: "\u68C0\u67E5\u793A\u4F8B\u6D4B\u8BD5\u6587\u4EF6\uFF0C\u9A8C\u8BC1\u6709\
+        .service.test.ts\u3001.util.test.ts\u7B49\u6D4B\u8BD5\u6587\u4EF6\uFF0C\u6D4B\
+        \u8BD5\u7528\u4F8B\u8986\u76D6\u6B63\u5E38\u548C\u5F02\u5E38\u573A\u666F"
+current_task: ''
+description: "\u642D\u5EFA\u5B8C\u6574\u7684\u5355\u5143\u6D4B\u8BD5\u6846\u67B6\uFF0C\
+  \u4F7F\u7528Jest\u4F5C\u4E3A\u6D4B\u8BD5\u8FD0\u884C\u5668\uFF0C\u8986\u76D6\u540E\
+  \u7AEF\u670D\u52A1\u548C\u5171\u4EAB\u5305\u7684\u5355\u5143\u6D4B\u8BD5\u3002\n\
+  \u5305\u62EC\u6D4B\u8BD5\u73AF\u5883\u914D\u7F6E\u3001Mock\u5DE5\u5177\u3001\u6D4B\
+  \u8BD5\u6570\u636E\u5DE5\u5382\u3001\u8986\u76D6\u7387\u62A5\u544A\u7B49\u57FA\u7840\
+  \u8BBE\u65BD\u3002\n\u786E\u4FDD\u6D4B\u8BD5\u53EF\u4EE5\u5728CI/CD\u6D41\u6C34\u7EBF\
+  \u4E2D\u81EA\u52A8\u8FD0\u884C\u3002\n"
+id: ISSUE-T001
+issue_number: 301
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-F003
+- ISSUE-A001
+slug: unit-test-framework
+status: accepted
+title: "\u5355\u5143\u6D4B\u8BD5\u6846\u67B6\u642D\u5EFA(Jest)"
