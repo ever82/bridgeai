@@ -3,7 +3,7 @@ id: "ISSUE-CR003d"
 issue_number: 603.4
 title: "积分钱包UI与VisionShare场景支付"
 slug: "points-wallet-ui-and-payment"
-status: "pending"
+status: "implemented"
 description: |
   积分钱包移动端UI实现，以及VisionShare场景下的积分支付功能。
   包括积分钱包界面、交易记录展示、照片购买积分支付等应用层功能。
@@ -21,7 +21,7 @@ criteria:
       - 交易详情页(含关联场景)
       - 积分获取任务列表
       - 积分充值入口(预留)
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: not_needed
       integration: required
@@ -43,7 +43,7 @@ criteria:
       - 积分支付给供给方(平台抽成)
       - 支付成功后的照片解锁
       - 支付失败和退款处理
-    status: "pending"
+    status: "implemented"
     coverage:
       unit: required
       integration: required
