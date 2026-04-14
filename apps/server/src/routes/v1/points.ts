@@ -6,6 +6,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { pointsService } from '../../services/pointsService';
+import { visionSharePaymentService } from '../../services/visionSharePaymentService';
+import { photoUnlockService } from '../../services/photoUnlockService';
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
 import { validateRequest } from '../../middleware/validation';
 import { Response } from 'express';
@@ -236,6 +238,131 @@ router.get(
           exportedAt: new Date().toISOString(),
           totalRecords: result.pagination.total,
           transactions: result.data,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ==================== VisionShare Payment Endpoints ====================
+
+/**
+ * GET /api/v1/points/vs/balance-check
+ * Check if user has sufficient balance for viewing a photo
+ */
+router.get(
+  '/vs/balance-check',
+  authenticate,
+  validateRequest({
+    query: z.object({
+      photoId: z.string().uuid(),
+    }),
+  }),
+  async (req: AuthenticatedRequest, res: Response, next) => {
+    try {
+      const userId = req.user!.id;
+      const { photoId } = req.query as any;
+
+      const result = await visionSharePaymentService.checkBalance(userId, photoId);
+
+      res.json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/v1/points/vs/pay-photo
+ * Pay for a photo using points
+ */
+router.post(
+  '/vs/pay-photo',
+  authenticate,
+  validateRequest({
+    body: z.object({
+      photoId: z.string().uuid(),
+      photographerUserId: z.string().uuid(),
+      points: z.number().int().positive().optional(),
+    }),
+  }),
+  async (req: AuthenticatedRequest, res: Response, next) => {
+    try {
+      const userId = req.user!.id;
+      const { photoId, photographerUserId } = req.body as any;
+
+      const result = await visionSharePaymentService.processPayment({
+        buyerUserId: userId,
+        photoId,
+        photographerUserId,
+      });
+
+      if (!result.success) {
+        res.status(400).json({
+          success: false,
+          error: result.error,
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: {
+          transactionId: result.transactionId,
+          pointsCharged: result.pointsCharged,
+          photographerPoints: result.photographerPoints,
+          platformCommission: result.platformCommission,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/v1/points/vs/unlock-photo
+ * Unlock a photo (handles payment + unlock)
+ */
+router.post(
+  '/vs/unlock-photo',
+  authenticate,
+  validateRequest({
+    body: z.object({
+      photoId: z.string().uuid(),
+      photographerUserId: z.string().uuid(),
+    }),
+  }),
+  async (req: AuthenticatedRequest, res: Response, next) => {
+    try {
+      const userId = req.user!.id;
+      const { photoId, photographerUserId } = req.body as any;
+
+      const result = await photoUnlockService.unlockPhoto({
+        userId,
+        photoId,
+        photographerUserId,
+      });
+
+      if (!result.success) {
+        res.status(400).json({
+          success: false,
+          error: result.error,
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: {
+          photoUrl: result.photoUrl,
+          unlockToken: result.unlockToken,
+          expiresAt: result.expiresAt,
         },
       });
     } catch (error) {
