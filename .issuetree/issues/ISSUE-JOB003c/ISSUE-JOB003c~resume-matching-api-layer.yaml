@@ -1,22 +1,22 @@
 ---
-id: "ISSUE-JOB003c"
+id: 'ISSUE-JOB003c'
 issue_number: 903.3
-title: "简历智能匹配 - 接口层"
-slug: "resume-matching-api-layer"
-status: "pending"
+title: '简历智能匹配 - 接口层'
+slug: 'resume-matching-api-layer'
+status: 'passed'
 description: |
   实现匹配查询API和匹配通知系统，支持多条件搜索、
   结果排序，以及匹配相关的推送通知。
   预估代码量: 250-350行
-parent: "ISSUE-JOB003"
+parent: 'ISSUE-JOB003'
 prerequisites:
-  - "ISSUE-JOB003b"
-  - "ISSUE-M004"
-created_at: "2026-04-09"
+  - 'ISSUE-JOB003b'
+  - 'ISSUE-M004'
+created_at: '2026-04-09'
 logic: sufficient_necessary
 criteria:
-  - id: "ISSUE-JOB003c~c1"
-    name: "匹配查询API"
+  - id: 'ISSUE-JOB003c~c1'
+    name: '匹配查询API'
     description: |
       查询接口:
       - 职位搜索API(多条件筛选)
@@ -24,7 +24,7 @@ criteria:
       - 匹配结果获取API
       - 搜索结果排序与过滤
       - 搜索历史记录
-    status: "pending"
+    status: 'passed'
     coverage:
       unit: required
       integration: required
@@ -33,12 +33,15 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查匹配查询API，验证有完整的搜索端点支持多条件筛选、排序和分页功能"
-        context_files: ["apps/server/src/routes/job/jobSearchRoutes.ts", "apps/server/src/controllers/job/jobSearchController.ts"]
-        
+        prompt: '检查匹配查询API，验证有完整的搜索端点支持多条件筛选、排序和分页功能'
+        context_files:
+          [
+            'apps/server/src/routes/job/jobSearchRoutes.ts',
+            'apps/server/src/controllers/job/jobSearchController.ts',
+          ]
 
-  - id: "ISSUE-JOB003c~c2"
-    name: "匹配通知与推送"
+  - id: 'ISSUE-JOB003c~c2'
+    name: '匹配通知与推送'
     description: |
       通知系统:
       - 新匹配结果通知
@@ -46,7 +49,7 @@ criteria:
       - 简历被查看通知
       - 匹配状态变更通知
       - 通知偏好设置
-    status: "pending"
+    status: 'passed'
     coverage:
       unit: required
       integration: required
@@ -55,6 +58,9 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查匹配通知系统，验证集成M004推送服务，支持新匹配、高匹配度推送等Job场景特定通知"
-        context_files: ["apps/server/src/services/job/jobMatchNotifications.ts", "apps/mobile/src/screens/Job/MatchNotificationsScreen.tsx"]
-        
+        prompt: '检查匹配通知系统，验证集成M004推送服务，支持新匹配、高匹配度推送等Job场景特定通知'
+        context_files:
+          [
+            'apps/server/src/services/job/jobMatchNotifications.ts',
+            'apps/mobile/src/screens/Job/MatchNotificationsScreen.tsx',
+          ]

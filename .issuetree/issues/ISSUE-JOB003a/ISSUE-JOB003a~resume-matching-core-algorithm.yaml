@@ -1,23 +1,23 @@
 ---
-id: "ISSUE-JOB003a"
+id: 'ISSUE-JOB003a'
 issue_number: 903.1
-title: "简历智能匹配 - 核心算法层"
-slug: "resume-matching-core-algorithm"
-status: "pending"
+title: '简历智能匹配 - 核心算法层'
+slug: 'resume-matching-core-algorithm'
+status: 'passed'
 description: |
   实现职位匹配度核心算法，包括技能匹配、经验评估、
   薪资匹配等多维度计算，输出0-100的综合匹配度评分。
   预估代码量: 200-300行
-parent: "ISSUE-JOB003"
+parent: 'ISSUE-JOB003'
 prerequisites:
-  - "ISSUE-JOB001"
-  - "ISSUE-JOB002"
-  - "ISSUE-AI004"
-created_at: "2026-04-09"
+  - 'ISSUE-JOB001'
+  - 'ISSUE-JOB002'
+  - 'ISSUE-AI004'
+created_at: '2026-04-09'
 logic: sufficient_necessary
 criteria:
-  - id: "ISSUE-JOB003a~c1"
-    name: "职位匹配度算法"
+  - id: 'ISSUE-JOB003a~c1'
+    name: '职位匹配度算法'
     description: |
       匹配算法:
       - 技能匹配度计算(关键词匹配+语义相似度)
@@ -26,7 +26,7 @@ criteria:
       - 地域与工作方式兼容性评估
       - 综合匹配度评分(0-100分)
       - 匹配度权重可配置
-    status: "pending"
+    status: 'passed'
     coverage:
       unit: required
       integration: required
@@ -35,6 +35,9 @@ criteria:
       manual: not_needed
     verification:
       ai:
-        prompt: "检查职位匹配度算法，验证有JobMatchingAlgorithm实现，包含技能匹配、经验评估、薪资匹配等多维度计算"
-        context_files: ["apps/server/src/services/job/jobMatchingAlgorithm.ts", "apps/server/src/services/job/matchScoring.ts"]
-        
+        prompt: '检查职位匹配度算法，验证有JobMatchingAlgorithm实现，包含技能匹配、经验评估、薪资匹配等多维度计算'
+        context_files:
+          [
+            'apps/server/src/services/job/jobMatchingAlgorithm.ts',
+            'apps/server/src/services/job/matchScoring.ts',
+          ]
