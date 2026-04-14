@@ -14,5 +14,7 @@ task:
     tmux_session: task-task-1776094259-1255
     worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INF003
   status: failed
+  stuck_reason: start_failed
+  failure_count: 1
   timeout_minutes: 30
   type: accept
