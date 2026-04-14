@@ -1,4 +1,4 @@
 // Shared types and utilities
-export * from './types';
-export * from './utils';
-export * from './env';
+export * from './types.js';
+export * from './utils.js';
+export * from './env.js';

@@ -1,5 +1,10 @@
 import { prisma } from '../../db/client';
 
+// Extract TransactionClient type from PrismaClient.$transaction method
+type TransactionClient = Parameters<typeof prisma.$transaction>[0] extends (
+  (client: infer T) => Promise<unknown>
+) ? T : never;
+
 /**
  * Test database lifecycle management helper
  * Handles transactions, cleanup, and isolation for integration tests
@@ -84,7 +89,7 @@ export async function teardownTestDatabase(): Promise<void> {
 export async function withTransaction<T>(
   fn: () => Promise<T>
 ): Promise<T> {
-  return await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx: TransactionClient) => {
     try {
       // Temporarily replace global prisma with transaction client
       const result = await fn();
