@@ -34,30 +34,14 @@ flowchart TD
     end
 
     subgraph Security["🔒 安全层 - Security"]
-<<<<<<< HEAD
         SEC001[🟢 ISSUE-SEC001<br/>RBAC权限控制系统]
         SEC002[🟢 ISSUE-SEC002<br/>敏感数据加密与保护]
         SEC003[🟢 ISSUE-SEC003<br/>API限流与安全防护]
-=======
-<<<<<<< HEAD
-        SEC001[🟢 ISSUE-SEC001<br/>RBAC权限控制系统]
-        SEC002[🟢 ISSUE-SEC002<br/>敏感数据加密与保护]
-        SEC003[🟢 ISSUE-SEC003<br/>API限流与安全防护]
-=======
-        SEC001[💻 ISSUE-SEC001<br/>RBAC权限控制系统]
-        SEC002[🟡 ISSUE-SEC002<br/>敏感数据加密与保护]
-        SEC003[🟡 ISSUE-SEC003<br/>API限流与安全防护]
->>>>>>> issue/issue-com001b
->>>>>>> issue/issue-job002
-        SEC004[🟡 ISSUE-SEC004<br/>图片上传安全检查]
+        SEC004[🔵 ISSUE-SEC004<br/>图片上传安全检查]
         SEC005[🟡 ISSUE-SEC005<br/>举报与内容审核系统]
     end
 
     subgraph Auth["🔐 认证与用户层 - Auth"]
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> issue/issue-job002
         A001[🟢 ISSUE-A001<br/>用户注册与登录系统]
         A002[🟢 ISSUE-A002<br/>JWT认证与API安全]
         A003[🟢 ISSUE-A003<br/>用户基础资料管理]
@@ -66,19 +50,6 @@ flowchart TD
 
     subgraph Core["🤖 Agent核心层 - Core Agent"]
         C001[🟢 ISSUE-C001<br/>Agent创建与基础配置]
-<<<<<<< HEAD
-=======
-=======
-        A001[💻 ISSUE-A001<br/>用户注册与登录系统]
-        A002[🟢 ISSUE-A002<br/>JWT认证与API安全]
-        A003[💻 ISSUE-A003<br/>用户基础资料管理]
-        A004[💻 ISSUE-A004<br/>输入验证与数据校验]
-    end
-
-    subgraph Core["🤖 Agent核心层 - Core Agent"]
-        C001[💻 ISSUE-C001<br/>Agent创建与基础配置]
->>>>>>> issue/issue-com001b
->>>>>>> issue/issue-job002
         C002a[✂️ ISSUE-C002a<br/>L1基础信息模型]
         C002b[✂️ ISSUE-C002b<br/>L2结构化信息模型]
         C002c[✂️ ISSUE-C002c<br/>L3自然语言信息模型]
@@ -92,15 +63,9 @@ flowchart TD
     subgraph Matching["🎯 匹配引擎层 - Matching"]
         M001a[✂️ ISSUE-M001a<br/>查询构建器与DSL设计]
         M001b[✂️ ISSUE-M001b<br/>实时查询执行引擎]
-<<<<<<< HEAD
         M002[❌ ISSUE-M002<br/>Agent智能筛选排序]
         M003[💻 ISSUE-M003<br/>匹配度算法实现]
         M004[✅ ISSUE-M004<br/>匹配结果推送通知]
-=======
-        M002[🟡 ISSUE-M002<br/>Agent智能筛选排序]
-        M003[🟡 ISSUE-M003<br/>匹配度算法实现]
-        M004[💻 ISSUE-M004<br/>匹配结果推送通知]
->>>>>>> issue/issue-job002
     end
 
     subgraph Comm["💬 通信层 - Communication"]
@@ -130,42 +95,26 @@ flowchart TD
     end
 
     subgraph VS["📷 VisionShare场景"]
-<<<<<<< HEAD
         VS001[❌ ISSUE-VS001<br/>VisionShare需求发布]
         VS002[🟡 ISSUE-VS002<br/>附近任务查询与接单]
         VS003[❌ ISSUE-VS003<br/>相机拍照与上传]
-        VS004[❌ ISSUE-VS004<br/>AI隐私脱敏处理]
+        VS004[💻 ISSUE-VS004<br/>AI隐私脱敏处理]
         VS005[🔍 ISSUE-VS005<br/>照片查看与积分支付]
-=======
-        VS001[💻 ISSUE-VS001<br/>VisionShare需求发布]
-        VS002[🟡 ISSUE-VS002<br/>附近任务查询与接单]
-        VS003[🟡 ISSUE-VS003<br/>相机拍照与上传]
-        VS004[❌ ISSUE-VS004<br/>AI隐私脱敏处理]
-        VS005[💻 ISSUE-VS005<br/>照片查看与积分支付]
->>>>>>> issue/issue-job002
         VS006[🟡 ISSUE-VS006<br/>AI相册智能检索与历史查询]
         VS007[🟡 ISSUE-VS007<br/>本地相册AI智能检索]
     end
 
     subgraph Date["💕 AgentDate场景"]
         DATE001[🟡 ISSUE-DATE001<br/>交友画像配置]
-        DATE002[💻 ISSUE-DATE002<br/>Agent主动匹配推荐]
+        DATE002[🔧 ISSUE-DATE002<br/>Agent主动匹配推荐]
         DATE003[🟢 ISSUE-DATE003<br/>Agent间对话匹配]
-<<<<<<< HEAD
         DATE004[🔵 ISSUE-DATE004<br/>双向同意引荐机制]
-=======
-        DATE004[💻 ISSUE-DATE004<br/>双向同意引荐机制]
->>>>>>> issue/issue-job002
     end
 
     subgraph Job["💼 AgentJob场景"]
         JOB001[🟡 ISSUE-JOB001<br/>求职者画像与简历]
-<<<<<<< HEAD
         JOB002[🔵 ISSUE-JOB002<br/>招聘方职位发布]
-=======
-        JOB002[🟡 ISSUE-JOB002<br/>招聘方职位发布]
->>>>>>> issue/issue-job002
-        JOB003[🟡 ISSUE-JOB003<br/>简历智能匹配筛选]
+        JOB003[🟢 ISSUE-JOB003<br/>简历智能匹配筛选]
         JOB004[🟡 ISSUE-JOB004<br/>薪资协商与面试安排]
     end
 
