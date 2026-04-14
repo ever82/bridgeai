@@ -1,5 +1,6 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
   "ISSUE-VS001": {
     "issue_id": "ISSUE-VS001",
     "status": "stuck",
@@ -146,152 +147,145 @@
 =======
   "ISSUE-CR003a": {
     "issue_id": "ISSUE-CR003a",
+=======
+  "ISSUE-VS001": {
+    "issue_id": "ISSUE-VS001",
+>>>>>>> issue/issue-job002
     "status": "stuck",
-    "title": "\u79ef\u5206\u8d26\u6237\u6570\u636e\u6a21\u578b",
+    "title": "VisionShare\u9700\u6c42\u53d1\u5e03",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-A003"],
-    "last_update": "2026-04-13T20:55:31.662381",
-    "stuck_previous_status": "fixing",
+    "prerequisites": [
+      "ISSUE-C006",
+      "ISSUE-AI002"
+    ],
+    "last_update": "2026-04-14T11:34:07.484145",
+    "stuck_previous_status": "accepting",
     "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:55:02.596451+00:00",
-    "failure_count": 4
+    "stuck_at": "2026-04-14T03:33:56.917366+00:00"
   },
-  "ISSUE-COM001b": {
-    "issue_id": "ISSUE-COM001b",
-    "status": "fixing",
-    "title": "\u8fde\u63a5\u7ba1\u7406\u4e0e\u623f\u95f4\u7cfb\u7edf",
-    "user_story": "",
-    "current_task": "TASK-1776085102-4392",
-    "prerequisites": ["ISSUE-COM001a"],
-    "last_update": "2026-04-13T20:58:26.546830",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:46:17.692775+00:00",
-    "failure_count": 4
-  },
-  "ISSUE-INT001": {
-    "issue_id": "ISSUE-INT001",
+  "ISSUE-M004": {
+    "issue_id": "ISSUE-M004",
     "status": "stuck",
-    "title": "\u7aef\u5230\u7aef\u96c6\u6210\u6d4b\u8bd5\uff08\u7236Issue\uff09",
+    "title": "\u5339\u914d\u7ed3\u679c\u63a8\u9001\u901a\u77e5",
     "user_story": "",
     "current_task": null,
-    "prerequisites": [],
-    "last_update": "2026-04-13T20:46:18.956203",
-    "stuck_previous_status": "fixing",
+    "prerequisites": [
+      "ISSUE-M003",
+      "ISSUE-COM001b"
+    ],
+    "last_update": "2026-04-14T11:34:07.569560",
+    "stuck_previous_status": "accepting",
     "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:46:18.950652+00:00",
-    "failure_count": 4
+    "stuck_at": "2026-04-14T03:33:56.933439+00:00"
   },
-  "ISSUE-C003": {
-    "issue_id": "ISSUE-C003",
-    "status": "stuck",
-    "title": "\u5730\u57df\u8fc7\u6ee4\u7cfb\u7edf",
+  "ISSUE-SEC004": {
+    "issue_id": "ISSUE-SEC004",
+    "status": "pending",
+    "title": "\u56fe\u7247\u4e0a\u4f20\u5b89\u5168\u68c0\u67e5",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-C002b"],
-    "last_update": "2026-04-13T20:46:20.238642",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:46:20.231661+00:00",
-    "failure_count": 4
+    "prerequisites": [
+      "ISSUE-VS003"
+    ],
+    "last_update": "2026-04-14T11:33:54.987514"
   },
-  "ISSUE-VS005": {
-    "issue_id": "ISSUE-VS005",
-    "status": "passed",
-    "title": "\u7167\u7247\u67e5\u770b\u4e0e\u79ef\u5206\u652f\u4ed8",
+  "ISSUE-C002a": {
+    "issue_id": "ISSUE-C002a",
+    "status": "accepted",
+    "title": "L1\u57fa\u7840\u4fe1\u606f\u6a21\u578b",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-C001"
+    ],
+    "last_update": "2026-04-14T11:33:55.001442"
+  },
+  "ISSUE-JOB003b": {
+    "issue_id": "ISSUE-JOB003b",
+    "status": "pending",
+    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - \u670d\u52a1\u5c42",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-VS004", "ISSUE-CR003"],
-    "last_update": "2026-04-13T21:05:00.000000",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null,
-    "failure_count": 0
-  },
-  "ISSUE-JOB003": {
-    "issue_id": "ISSUE-JOB003",
-    "status": "fixing",
-    "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d\u7b5b\u9009",
-    "user_story": "",
-    "current_task": "TASK-1776084897-7817",
-    "prerequisites": ["ISSUE-JOB001", "ISSUE-JOB002", "ISSUE-M004", "ISSUE-AI004"],
-    "last_update": "2026-04-13T20:55:01.367742",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:49:05.931458+00:00",
-    "failure_count": 4
+    "prerequisites": [
+      "ISSUE-JOB003a"
+    ],
+    "last_update": "2026-04-14T11:33:55.009809"
   },
   "ISSUE-INT002a": {
     "issue_id": "ISSUE-INT002a",
-    "status": "stuck",
+    "status": "accepted",
     "title": "\u57fa\u7840\u8bbe\u65bd\u6027\u80fd\u4f18\u5316",
     "user_story": "",
-    "current_task": null,
+    "current_task": "",
     "prerequisites": [],
-    "last_update": "2026-04-13T20:46:21.336310",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:46:21.326494+00:00",
-    "failure_count": 4
+    "last_update": "2026-04-14T11:33:55.016140"
+  },
+  "ISSUE-SEC003": {
+    "issue_id": "ISSUE-SEC003",
+    "status": "accepted",
+    "title": "API\u9650\u6d41\u4e0e\u5b89\u5168\u9632\u62a4",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F003"
+    ],
+    "last_update": "2026-04-14T11:33:55.034176"
   },
   "ISSUE-INF002": {
     "issue_id": "ISSUE-INF002",
-    "status": "need-help",
+    "status": "draft",
     "title": "Redis \u7f13\u5b58\u5c42\u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
     "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-F001", "ISSUE-F002"],
-    "last_update": "2026-04-13T20:53:59.597928",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:49:06.260569+00:00",
-    "failure_count": 4
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F001",
+      "ISSUE-F002"
+    ],
+    "last_update": "2026-04-14T11:33:55.040890"
   },
   "ISSUE-INF005": {
     "issue_id": "ISSUE-INF005",
-    "status": "need-help",
+    "status": "draft",
     "title": "\u63a8\u9001\u901a\u77e5\u670d\u52a1",
     "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-F003", "ISSUE-A001"],
-    "last_update": "2026-04-13T20:55:02.186102",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:49:06.630568+00:00",
-    "failure_count": 4
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F003",
+      "ISSUE-A001"
+    ],
+    "last_update": "2026-04-14T11:33:55.048773"
   },
   "ISSUE-AI003a": {
     "issue_id": "ISSUE-AI003a",
-    "status": "stuck",
+    "status": "accepted",
     "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u6838\u5fc3\u89e3\u6790\u5f15\u64ce\u4e0eAPI",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-AI001", "ISSUE-C002a", "ISSUE-C002b"],
-    "last_update": "2026-04-13T20:49:07.042203",
-    "stuck_previous_status": "fixing",
-    "stuck_reason": "start_failed",
-    "stuck_at": "2026-04-13T12:49:07.041366+00:00",
-    "failure_count": 4
+    "prerequisites": [
+      "ISSUE-AI001",
+      "ISSUE-C002a",
+      "ISSUE-C002b"
+    ],
+    "last_update": "2026-04-14T11:33:55.059973"
   },
   "ISSUE-INF004": {
     "issue_id": "ISSUE-INF004",
-    "status": "stuck",
+    "status": "draft",
     "title": "\u6570\u636e\u5e93\u8fc1\u79fb\u7cfb\u7edf",
     "user_story": "",
-    "current_task": null,
-    "prerequisites": ["ISSUE-F002"],
-    "last_update": "2026-04-13T20:48:13.522070",
-    "stuck_previous_status": null,
-    "stuck_reason": null,
-    "stuck_at": null,
-    "failure_count": 4
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F002"
+    ],
+    "last_update": "2026-04-14T11:33:55.066846"
   },
   "ISSUE-INF003": {
     "issue_id": "ISSUE-INF003",
-    "status": "fixing",
+    "status": "draft",
     "title": "\u4efb\u52a1\u961f\u5217\u7cfb\u7edf\u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
     "user_story": "",
+<<<<<<< HEAD
     "current_task": "TASK-1776084493-7127",
     "prerequisites": ["ISSUE-F001", "ISSUE-F002", "ISSUE-INF002"],
     "last_update": "2026-04-13T20:48:17.847754",
@@ -404,10 +398,19 @@
     "stuck_at": "2026-04-13T12:42:41.549149+00:00",
     "failure_count": 3
 >>>>>>> issue/issue-job002
+=======
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F001",
+      "ISSUE-F002",
+      "ISSUE-INF002"
+    ],
+    "last_update": "2026-04-14T11:33:55.075958"
+>>>>>>> issue/issue-job002
   },
   "ISSUE-INT001a": {
     "issue_id": "ISSUE-INT001a",
-    "status": "need-help",
+    "status": "pending",
     "title": "VisionShare + AgentDate E2E\u6d4b\u8bd5",
     "user_story": "",
     "current_task": null,
@@ -434,6 +437,9 @@
       "ISSUE-UI007"
     ],
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "last_update": "2026-04-14T11:33:55.086509"
   },
   "ISSUE-SEC002": {
@@ -447,6 +453,7 @@
       "ISSUE-C002a"
     ],
     "last_update": "2026-04-14T11:33:55.113107"
+<<<<<<< HEAD
 =======
     "last_update": "2026-04-13T20:58:50.736248",
     "stuck_previous_status": "fixing",
@@ -454,18 +461,24 @@
     "stuck_at": "2026-04-13T12:49:07.512568+00:00",
     "failure_count": 4
 >>>>>>> issue/issue-job002
+=======
+>>>>>>> issue/issue-job002
   },
   "ISSUE-JOB003d": {
     "issue_id": "ISSUE-JOB003d",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - UI\u5c42",
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-JOB003c"
     ],
     "last_update": "2026-04-14T11:33:55.119758"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-JOB003c"],
     "last_update": "2026-04-13T20:38:52.845945",
@@ -474,19 +487,25 @@
     "stuck_at": "2026-04-13T12:38:52.845426+00:00",
     "failure_count": 3
 >>>>>>> issue/issue-job002
+=======
+>>>>>>> issue/issue-job002
   },
   "ISSUE-JOB003c": {
     "issue_id": "ISSUE-JOB003c",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - \u63a5\u53e3\u5c42",
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-JOB003b",
       "ISSUE-M004"
     ],
     "last_update": "2026-04-14T11:33:55.127814"
+<<<<<<< HEAD
   },
   "ISSUE-SEC005": {
     "issue_id": "ISSUE-SEC005",
@@ -519,13 +538,16 @@
     "stuck_reason": "start_failed",
     "stuck_at": "2026-04-13T12:38:53.436065+00:00",
     "failure_count": 3
+=======
+>>>>>>> issue/issue-job002
   },
-  "ISSUE-VS005b": {
-    "issue_id": "ISSUE-VS005b",
-    "status": "stuck",
-    "title": "\u79ef\u5206\u652f\u4ed8\u4e0e\u9ad8\u6e05\u89e3\u9501",
+  "ISSUE-SEC005": {
+    "issue_id": "ISSUE-SEC005",
+    "status": "pending",
+    "title": "\u4e3e\u62a5\u4e0e\u5185\u5bb9\u5ba1\u6838\u7cfb\u7edf",
     "user_story": "",
     "current_task": null,
+<<<<<<< HEAD
     "prerequisites": ["ISSUE-VS005a", "ISSUE-CR003"],
     "last_update": "2026-04-13T20:38:53.722199",
     "stuck_previous_status": "fixing",
@@ -560,6 +582,13 @@
     "prerequisites": ["ISSUE-A002", "ISSUE-C002a"],
     "last_update": "2026-04-13T20:19:35.382613"
 >>>>>>> issue/issue-job002
+=======
+    "prerequisites": [
+      "ISSUE-COM002c",
+      "ISSUE-CR002"
+    ],
+    "last_update": "2026-04-14T11:33:55.147001"
+>>>>>>> issue/issue-job002
   },
   "ISSUE-T001": {
     "issue_id": "ISSUE-T001",
@@ -568,14 +597,20 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-F003",
       "ISSUE-A001"
     ],
     "last_update": "2026-04-14T11:33:55.171482"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-F003", "ISSUE-A001"],
     "last_update": "2026-04-13T20:19:35.421740"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-COM001a": {
@@ -585,6 +620,9 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-C001"
     ],
@@ -600,9 +638,12 @@
       "ISSUE-AI001"
     ],
     "last_update": "2026-04-14T11:33:55.214182"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-C001"],
     "last_update": "2026-04-13T20:19:35.447418"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-AI002": {
@@ -612,6 +653,9 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-AI001",
       "ISSUE-C002a",
@@ -631,9 +675,12 @@
       "ISSUE-M004"
     ],
     "last_update": "2026-04-14T11:33:55.252820"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-AI001", "ISSUE-C002a", "ISSUE-C002b"],
     "last_update": "2026-04-13T20:19:35.468475"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-A002": {
@@ -643,13 +690,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-A001"
     ],
     "last_update": "2026-04-14T11:33:55.273039"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-A001"],
     "last_update": "2026-04-13T20:19:35.491613"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-UI004": {
@@ -659,13 +712,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-UI002"
     ],
     "last_update": "2026-04-14T11:33:55.283396"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-UI002"],
     "last_update": "2026-04-13T20:19:35.505396"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-M001": {
@@ -675,6 +734,9 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-C002b",
       "ISSUE-C003",
@@ -705,24 +767,31 @@
       "ISSUE-A003"
     ],
     "last_update": "2026-04-14T11:33:55.321010"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-C002b", "ISSUE-C003", "ISSUE-C004", "ISSUE-C005"],
     "last_update": "2026-04-13T20:19:35.530029"
 >>>>>>> issue/issue-job002
+=======
+>>>>>>> issue/issue-job002
   },
   "ISSUE-UI005": {
     "issue_id": "ISSUE-UI005",
-    "status": "stuck",
+    "status": "pending",
     "title": "Agent\u914d\u7f6e\u754c\u9762",
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-UI002",
       "ISSUE-C001",
       "ISSUE-C006"
     ],
     "last_update": "2026-04-14T11:33:55.353571"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-UI002", "ISSUE-C001", "ISSUE-C006"],
     "last_update": "2026-04-13T20:46:08.594581",
@@ -730,6 +799,8 @@
     "stuck_reason": "start_failed",
     "stuck_at": "2026-04-13T12:46:08.594030+00:00",
     "failure_count": 2
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-A003": {
@@ -739,13 +810,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-A002"
     ],
     "last_update": "2026-04-14T11:33:55.372961"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-A002"],
     "last_update": "2026-04-13T20:19:35.577131"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-A004": {
@@ -772,8 +849,26 @@
     "last_update": "2026-04-14T11:33:55.409944"
 =======
     "current_task": "",
+<<<<<<< HEAD
     "prerequisites": ["ISSUE-A002"],
     "last_update": "2026-04-13T20:19:35.604202"
+>>>>>>> issue/issue-job002
+=======
+    "prerequisites": [
+      "ISSUE-A002"
+    ],
+    "last_update": "2026-04-14T11:33:55.393179"
+  },
+  "ISSUE-UI002": {
+    "issue_id": "ISSUE-UI002",
+    "status": "implemented",
+    "title": "\u5168\u5c40\u5bfc\u822a\u4e0e\u5e03\u5c40",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-UI001"
+    ],
+    "last_update": "2026-04-14T11:33:55.409944"
 >>>>>>> issue/issue-job002
   },
   "ISSUE-AI003": {
@@ -783,6 +878,9 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-AI001",
       "ISSUE-C002a",
@@ -800,22 +898,29 @@
       "ISSUE-AI001"
     ],
     "last_update": "2026-04-14T11:33:55.442809"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-AI001", "ISSUE-C002a", "ISSUE-C002b"],
     "last_update": "2026-04-13T20:19:35.628027"
 >>>>>>> issue/issue-job002
+=======
+>>>>>>> issue/issue-job002
   },
   "ISSUE-VS005d": {
     "issue_id": "ISSUE-VS005d",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u652f\u4ed8\u5b89\u5168\u4e0e\u98ce\u63a7",
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-VS005b"
     ],
     "last_update": "2026-04-14T11:33:55.449836"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-VS005b"],
     "last_update": "2026-04-13T20:24:09.127871",
@@ -823,6 +928,8 @@
     "stuck_reason": "start_failed",
     "stuck_at": "2026-04-13T12:24:09.127217+00:00",
     "failure_count": 1
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-DESIGN-1": {
@@ -833,22 +940,30 @@
     "current_task": "",
     "prerequisites": [],
 <<<<<<< HEAD
+<<<<<<< HEAD
     "last_update": "2026-04-14T11:33:55.461968"
 =======
     "last_update": "2026-04-13T20:19:35.651065"
 >>>>>>> issue/issue-job002
+=======
+    "last_update": "2026-04-14T11:33:55.461968"
+>>>>>>> issue/issue-job002
   },
   "ISSUE-VS005c": {
     "issue_id": "ISSUE-VS005c",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u4ea4\u6613\u8bb0\u5f55\u4e0e\u9000\u6b3e\u7533\u8bc9",
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-VS005b"
     ],
     "last_update": "2026-04-14T11:33:55.470092"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-VS005b"],
     "last_update": "2026-04-13T20:24:09.405302",
@@ -856,6 +971,8 @@
     "stuck_reason": "start_failed",
     "stuck_at": "2026-04-13T12:24:09.404581+00:00",
     "failure_count": 1
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-COM002": {
@@ -865,26 +982,36 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-COM001b"
     ],
     "last_update": "2026-04-14T11:33:55.486585"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-COM001b"],
     "last_update": "2026-04-13T20:19:35.676986"
 >>>>>>> issue/issue-job002
+=======
+>>>>>>> issue/issue-job002
   },
   "ISSUE-CR002b": {
     "issue_id": "ISSUE-CR002b",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u8bc4\u5206\u4e0e\u8bc4\u4ef7\u7cfb\u7edf - \u524d\u7aefUI",
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-CR002a"
     ],
     "last_update": "2026-04-14T11:33:55.494491"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-CR002a"],
     "last_update": "2026-04-13T20:24:09.677357",
@@ -892,6 +1019,8 @@
     "stuck_reason": "start_failed",
     "stuck_at": "2026-04-13T12:24:09.676868+00:00",
     "failure_count": 1
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-INT002": {
@@ -901,22 +1030,31 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-INT001"
     ],
     "last_update": "2026-04-14T11:33:55.498404"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-INT001"],
     "last_update": "2026-04-13T20:19:35.686921"
 >>>>>>> issue/issue-job002
+=======
+>>>>>>> issue/issue-job002
   },
   "ISSUE-UI004a": {
     "issue_id": "ISSUE-UI004a",
-    "status": "stuck",
+    "status": "pending",
     "title": "\u804a\u5929\u6d88\u606f\u7ec4\u4ef6\u4e0e\u8f93\u5165\u6846",
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-UI002",
       "ISSUE-COM002c",
@@ -924,6 +1062,7 @@
       "ISSUE-COM005"
     ],
     "last_update": "2026-04-14T11:33:55.523843"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-UI002", "ISSUE-COM002c", "ISSUE-COM003", "ISSUE-COM005"],
     "last_update": "2026-04-13T20:24:09.950782",
@@ -931,6 +1070,8 @@
     "stuck_reason": "start_failed",
     "stuck_at": "2026-04-13T12:24:09.950177+00:00",
     "failure_count": 1
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-CR001": {
@@ -940,13 +1081,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-A003"
     ],
     "last_update": "2026-04-14T11:33:55.549961"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-A003"],
     "last_update": "2026-04-13T20:19:35.746083"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-INT003": {
@@ -956,13 +1103,19 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-INT002"
     ],
     "last_update": "2026-04-14T11:33:55.573308"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-INT002"],
     "last_update": "2026-04-13T20:19:35.771312"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-F006": {
@@ -972,13 +1125,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-F003"
     ],
     "last_update": "2026-04-14T11:33:55.596289"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-F003"],
     "last_update": "2026-04-13T20:19:35.797785"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-CR002c": {
@@ -988,13 +1147,19 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-CR002a"
     ],
     "last_update": "2026-04-14T11:33:55.604704"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-CR002a"],
     "last_update": "2026-04-13T20:19:35.814598"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-F001": {
@@ -1005,9 +1170,13 @@
     "current_task": "",
     "prerequisites": [],
 <<<<<<< HEAD
+<<<<<<< HEAD
     "last_update": "2026-04-14T11:33:55.629671"
 =======
     "last_update": "2026-04-13T20:19:35.845583"
+>>>>>>> issue/issue-job002
+=======
+    "last_update": "2026-04-14T11:33:55.629671"
 >>>>>>> issue/issue-job002
   },
   "ISSUE-VS007": {
@@ -1017,9 +1186,17 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-VS006", "ISSUE-AI005"],
     "last_update": "2026-04-13T20:19:35.867737"
+=======
+    "prerequisites": [
+      "ISSUE-VS006",
+      "ISSUE-AI005"
+    ],
+    "last_update": "2026-04-14T11:33:55.648063"
+>>>>>>> issue/issue-job002
   },
   "ISSUE-C007": {
     "issue_id": "ISSUE-C007",
@@ -1027,8 +1204,11 @@
     "title": "Agent\u4fe1\u606f\u62ab\u9732\u63a7\u5236\u673a\u5236",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-C002c", "ISSUE-COM002c"],
-    "last_update": "2026-04-13T20:19:35.887913"
+    "prerequisites": [
+      "ISSUE-C002c",
+      "ISSUE-COM002c"
+    ],
+    "last_update": "2026-04-14T11:33:55.669881"
   },
   "ISSUE-AI002b": {
     "issue_id": "ISSUE-AI002b",
@@ -1036,8 +1216,10 @@
     "title": "\u9700\u6c42\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u573a\u666f\u63d0\u53d6\u5668\u5b9e\u73b0",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-AI002a"],
-    "last_update": "2026-04-13T20:19:35.897421"
+    "prerequisites": [
+      "ISSUE-AI002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.678351"
   },
   "ISSUE-M001b": {
     "issue_id": "ISSUE-M001b",
@@ -1045,8 +1227,10 @@
     "title": "\u5b9e\u65f6\u67e5\u8be2\u6267\u884c\u5f15\u64ce",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-M001a"],
-    "last_update": "2026-04-13T20:19:35.927022"
+    "prerequisites": [
+      "ISSUE-M001a"
+    ],
+    "last_update": "2026-04-14T11:33:55.703344"
   },
   "ISSUE-DATE001-2": {
     "issue_id": "ISSUE-DATE001-2",
@@ -1054,11 +1238,13 @@
     "title": "\u4ea4\u53cb\u753b\u50cf\u914d\u7f6e - AI\u667a\u80fd\u63d0\u70bc\u670d\u52a1",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-AI002"],
-    "last_update": "2026-04-13T21:02:15.328554",
+    "prerequisites": [
+      "ISSUE-AI002"
+    ],
+    "last_update": "2026-04-14T11:39:16.982557",
     "stuck_previous_status": "implementing",
     "stuck_reason": "implement_failed",
-    "stuck_at": "2026-04-13T13:02:15.327002+00:00",
+    "stuck_at": "2026-04-14T03:39:16.982066+00:00",
     "failure_count": 1
   },
   "ISSUE-C001": {
@@ -1067,8 +1253,10 @@
     "title": "Agent\u521b\u5efa\u4e0e\u57fa\u7840\u914d\u7f6e",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-A003"],
-    "last_update": "2026-04-13T20:19:35.952729"
+    "prerequisites": [
+      "ISSUE-A003"
+    ],
+    "last_update": "2026-04-14T11:33:55.727027"
   },
   "ISSUE-C006": {
     "issue_id": "ISSUE-C006",
@@ -1076,8 +1264,11 @@
     "title": "\u573a\u666f\u914d\u7f6e\u7ba1\u7406",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-C001", "ISSUE-C002a"],
-    "last_update": "2026-04-13T20:19:35.971516"
+    "prerequisites": [
+      "ISSUE-C001",
+      "ISSUE-C002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.744344"
   },
   "ISSUE-COM002b": {
     "issue_id": "ISSUE-COM002b",
@@ -1085,8 +1276,10 @@
     "title": "\u6d88\u606f\u6301\u4e45\u5316\u4e0e\u5386\u53f2\u8bb0\u5f55",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-COM002a"],
-    "last_update": "2026-04-13T20:19:35.993752"
+    "prerequisites": [
+      "ISSUE-COM002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.767872"
   },
   "ISSUE-AI003b": {
     "issue_id": "ISSUE-AI003b",
@@ -1094,8 +1287,10 @@
     "title": "\u4f9b\u7ed9\u667a\u80fd\u63d0\u70bc\u670d\u52a1 - \u573a\u666f\u63d0\u53d6\u5668",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-AI003a"],
-    "last_update": "2026-04-13T20:19:36.013546"
+    "prerequisites": [
+      "ISSUE-AI003a"
+    ],
+    "last_update": "2026-04-14T11:33:55.787514"
   },
   "ISSUE-T004": {
     "issue_id": "ISSUE-T004",
@@ -1103,8 +1298,12 @@
     "title": "E2E\u7aef\u5230\u7aef\u6d4b\u8bd5\u6846\u67b6",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-T001", "ISSUE-T002", "ISSUE-T003"],
-    "last_update": "2026-04-13T20:19:36.056448"
+    "prerequisites": [
+      "ISSUE-T001",
+      "ISSUE-T002",
+      "ISSUE-T003"
+    ],
+    "last_update": "2026-04-14T11:33:55.842473"
   },
   "ISSUE-C002b": {
     "issue_id": "ISSUE-C002b",
@@ -1112,8 +1311,10 @@
     "title": "L2\u7ed3\u6784\u5316\u4fe1\u606f\u6a21\u578b",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-C002a"],
-    "last_update": "2026-04-13T20:19:36.070111"
+    "prerequisites": [
+      "ISSUE-C002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.867182"
   },
   "ISSUE-INT002b": {
     "issue_id": "ISSUE-INT002b",
@@ -1121,8 +1322,10 @@
     "title": "\u5b9e\u65f6\u670d\u52a1\u6027\u80fd\u4f18\u5316",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-INT002a"],
-    "last_update": "2026-04-13T20:19:36.081010"
+    "prerequisites": [
+      "ISSUE-INT002a"
+    ],
+    "last_update": "2026-04-14T11:33:55.882504"
   },
   "ISSUE-JOB003a": {
     "issue_id": "ISSUE-JOB003a",
@@ -1130,8 +1333,12 @@
     "title": "\u7b80\u5386\u667a\u80fd\u5339\u914d - \u6838\u5fc3\u7b97\u6cd5\u5c42",
     "user_story": "",
     "current_task": null,
-    "prerequisites": ["ISSUE-JOB001", "ISSUE-JOB002", "ISSUE-AI004"],
-    "last_update": "2026-04-13T20:19:36.088150"
+    "prerequisites": [
+      "ISSUE-JOB001",
+      "ISSUE-JOB002",
+      "ISSUE-AI004"
+    ],
+    "last_update": "2026-04-14T11:33:55.890674"
   },
   "ISSUE-T003": {
     "issue_id": "ISSUE-T003",
@@ -1139,8 +1346,21 @@
     "title": "\u79fb\u52a8\u7aef\u6d4b\u8bd5\u6846\u67b6",
     "user_story": "",
     "current_task": "",
-    "prerequisites": ["ISSUE-F004"],
-    "last_update": "2026-04-13T20:19:36.123720"
+    "prerequisites": [
+      "ISSUE-F004"
+    ],
+    "last_update": "2026-04-14T11:33:55.923120"
+  },
+  "ISSUE-INF006": {
+    "issue_id": "ISSUE-INF006",
+    "status": "draft",
+    "title": "\u90ae\u4ef6\u670d\u52a1\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F003"
+    ],
+    "last_update": "2026-04-14T11:33:55.935979"
   },
   "ISSUE-INT001c": {
     "issue_id": "ISSUE-INT001c",
@@ -1177,19 +1397,55 @@
       "ISSUE-F006"
     ],
 <<<<<<< HEAD
+<<<<<<< HEAD
     "last_update": "2026-04-14T11:33:55.648063"
+=======
+    "last_update": "2026-04-14T11:33:55.951654"
+  },
+  "ISSUE-INF001": {
+    "issue_id": "ISSUE-INF001",
+    "status": "draft",
+    "title": "API Gateway \u8bbe\u8ba1\u4e0e\u5b9e\u73b0",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-F003",
+      "ISSUE-A002"
+    ],
+    "last_update": "2026-04-14T11:33:55.961047"
+  },
+  "ISSUE-COM001b": {
+    "issue_id": "ISSUE-COM001b",
+    "status": "accepted",
+    "title": "\u8fde\u63a5\u7ba1\u7406\u4e0e\u623f\u95f4\u7cfb\u7edf",
+    "user_story": "",
+    "current_task": "",
+    "prerequisites": [
+      "ISSUE-COM001a"
+    ],
+    "last_update": "2026-04-14T11:33:55.976972"
+>>>>>>> issue/issue-job002
   },
   "ISSUE-C007": {
     "issue_id": "ISSUE-C007",
     "status": "need-help",
     "title": "Agent\u4fe1\u606f\u62ab\u9732\u63a7\u5236\u673a\u5236",
     "user_story": "",
+<<<<<<< HEAD
     "current_task": "",
     "prerequisites": [
       "ISSUE-C002c",
       "ISSUE-COM002c"
     ],
     "last_update": "2026-04-14T11:33:55.669881"
+=======
+    "current_task": null,
+    "prerequisites": [
+      "ISSUE-AI003a",
+      "ISSUE-AI003b"
+    ],
+    "last_update": "2026-04-14T11:33:55.992056"
+>>>>>>> issue/issue-job002
   },
   "ISSUE-AI002b": {
     "issue_id": "ISSUE-AI002b",
@@ -1200,7 +1456,11 @@
     "prerequisites": [
       "ISSUE-AI002a"
     ],
+<<<<<<< HEAD
     "last_update": "2026-04-14T11:33:55.678351"
+=======
+    "last_update": "2026-04-14T11:33:56.013100"
+>>>>>>> issue/issue-job002
   },
   "ISSUE-M001b": {
     "issue_id": "ISSUE-M001b",
@@ -1209,6 +1469,7 @@
     "user_story": "",
     "current_task": null,
     "prerequisites": [
+<<<<<<< HEAD
       "ISSUE-M001a"
     ],
     "last_update": "2026-04-14T11:33:55.703344"
@@ -1467,6 +1728,11 @@
     "prerequisites": ["ISSUE-INT002b"],
     "last_update": "2026-04-13T20:19:36.193931"
 >>>>>>> issue/issue-job002
+=======
+      "ISSUE-INT002b"
+    ],
+    "last_update": "2026-04-14T11:33:56.027500"
+>>>>>>> issue/issue-job002
   },
   "ISSUE-C002c": {
     "issue_id": "ISSUE-C002c",
@@ -1475,13 +1741,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-C002b"
     ],
     "last_update": "2026-04-14T11:33:56.042735"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-C002b"],
     "last_update": "2026-04-13T20:19:36.209300"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-T002": {
@@ -1491,13 +1763,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-F003"
     ],
     "last_update": "2026-04-14T11:33:56.071035"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-F003"],
     "last_update": "2026-04-13T20:19:36.242730"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-SEC001": {
@@ -1507,6 +1785,9 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-A002"
     ],
@@ -1525,9 +1806,12 @@
       "ISSUE-AI004"
     ],
     "last_update": "2026-04-14T11:33:56.116476"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-A002"],
     "last_update": "2026-04-13T20:19:36.269291"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-DESIGN-3": {
@@ -1537,6 +1821,9 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-DESIGN-2"
     ],
@@ -1552,9 +1839,12 @@
       "ISSUE-DESIGN-3"
     ],
     "last_update": "2026-04-14T11:33:56.143606"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-DESIGN-2"],
     "last_update": "2026-04-13T20:19:36.297257"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-VS005a": {
@@ -1564,13 +1854,19 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-VS004"
     ],
     "last_update": "2026-04-14T11:33:56.149958"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-VS004"],
     "last_update": "2026-04-13T20:19:36.311209"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-API001": {
@@ -1580,14 +1876,20 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-F003",
       "ISSUE-A002"
     ],
     "last_update": "2026-04-14T11:33:56.172141"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-F003", "ISSUE-A002"],
     "last_update": "2026-04-13T20:19:36.333646"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-AI001": {
@@ -1597,13 +1899,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-F003"
     ],
     "last_update": "2026-04-14T11:33:56.208050"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-F003"],
     "last_update": "2026-04-13T20:19:36.369147"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-AI006": {
@@ -1613,14 +1921,20 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-AI001",
       "ISSUE-AI004"
     ],
     "last_update": "2026-04-14T11:33:56.229023"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-AI001", "ISSUE-AI004"],
     "last_update": "2026-04-13T20:19:36.392323"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-CR003c": {
@@ -1630,13 +1944,19 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-CR003b"
     ],
     "last_update": "2026-04-14T11:33:56.235529"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-CR003b"],
     "last_update": "2026-04-13T20:19:36.398992"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-UI007": {
@@ -1646,15 +1966,21 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-UI002",
       "ISSUE-CR001",
       "ISSUE-A003"
     ],
     "last_update": "2026-04-14T11:33:56.261362"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-UI002", "ISSUE-CR001", "ISSUE-A003"],
     "last_update": "2026-04-13T20:19:36.423812"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-A001": {
@@ -1664,14 +1990,20 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-F002",
       "ISSUE-F003"
     ],
     "last_update": "2026-04-14T11:33:56.284221"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-F002", "ISSUE-F003"],
     "last_update": "2026-04-13T20:19:36.450028"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-CR003d": {
@@ -1681,13 +2013,19 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-CR003c"
     ],
     "last_update": "2026-04-14T11:33:56.295693"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-CR003c"],
     "last_update": "2026-04-13T20:19:36.462240"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-DESIGN-2": {
@@ -1697,13 +2035,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-DESIGN-1"
     ],
     "last_update": "2026-04-14T11:33:56.300516"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-DESIGN-1"],
     "last_update": "2026-04-13T20:19:36.466829"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-COM001": {
@@ -1713,13 +2057,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-C001"
     ],
     "last_update": "2026-04-14T11:33:56.315308"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-C001"],
     "last_update": "2026-04-13T20:19:36.479139"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-UI001": {
@@ -1729,13 +2079,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-F004"
     ],
     "last_update": "2026-04-14T11:33:56.375768"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-F004"],
     "last_update": "2026-04-13T20:19:36.518940"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-CR003b": {
@@ -1745,13 +2101,19 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-CR003a"
     ],
     "last_update": "2026-04-14T11:33:56.387928"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-CR003a"],
     "last_update": "2026-04-13T20:19:36.531701"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-UI006": {
@@ -1761,14 +2123,20 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-UI002",
       "ISSUE-COM002c"
     ],
     "last_update": "2026-04-14T11:33:56.414511"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-UI002", "ISSUE-COM002c"],
     "last_update": "2026-04-13T20:19:36.559420"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-F004": {
@@ -1778,13 +2146,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-F001"
     ],
     "last_update": "2026-04-14T11:33:56.435861"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-F001"],
     "last_update": "2026-04-13T20:19:36.582113"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-CR002a": {
@@ -1794,15 +2168,21 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-CR001",
       "ISSUE-COM002c",
       "ISSUE-A003"
     ],
     "last_update": "2026-04-14T11:33:56.449183"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-CR001", "ISSUE-COM002c", "ISSUE-A003"],
     "last_update": "2026-04-13T20:19:36.596728"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-F003": {
@@ -1812,13 +2192,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-F001"
     ],
     "last_update": "2026-04-14T11:33:56.471310"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-F001"],
     "last_update": "2026-04-13T20:19:36.619901"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-UI004c": {
@@ -1828,14 +2214,20 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-UI002",
       "ISSUE-UI004b"
     ],
     "last_update": "2026-04-14T11:33:56.492980"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-UI002", "ISSUE-UI004b"],
     "last_update": "2026-04-13T20:19:36.651860"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-CR003": {
@@ -1845,6 +2237,9 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-A003"
     ],
@@ -1858,9 +2253,12 @@
     "current_task": "",
     "prerequisites": [],
     "last_update": "2026-04-14T11:33:56.504173"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-A003"],
     "last_update": "2026-04-13T20:19:36.656750"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-CR002": {
@@ -1870,13 +2268,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-CR002c"
     ],
     "last_update": "2026-04-14T11:33:56.506350"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-CR002c"],
     "last_update": "2026-04-13T20:19:36.659121"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-UI004b": {
@@ -1886,14 +2290,20 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-UI002",
       "ISSUE-UI004a"
     ],
     "last_update": "2026-04-14T11:33:56.523787"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-UI002", "ISSUE-UI004a"],
     "last_update": "2026-04-13T20:19:36.677614"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-F002": {
@@ -1903,13 +2313,19 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-F001"
     ],
     "last_update": "2026-04-14T11:33:56.547504"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-F001"],
     "last_update": "2026-04-13T20:19:36.704544"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-F005": {
@@ -1919,6 +2335,9 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-F003"
     ],
@@ -1956,9 +2375,12 @@
       "ISSUE-DATE003"
     ],
     "last_update": "2026-04-14T11:34:50.119255"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-F003"],
     "last_update": "2026-04-13T20:19:36.729168"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-DATE003": {
@@ -1968,6 +2390,9 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-COM002c"
     ],
@@ -2015,9 +2440,12 @@
       "ISSUE-AI005"
     ],
     "last_update": "2026-04-14T11:38:16.492325"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-COM002c"],
     "last_update": "2026-04-13T20:19:36.768631"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-A003a": {
@@ -2027,6 +2455,9 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-A002"
     ],
@@ -2044,9 +2475,12 @@
       "ISSUE-DATE001"
     ],
     "last_update": "2026-04-14T11:33:56.750494"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-A002"],
     "last_update": "2026-04-13T20:19:36.803885"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-C005": {
@@ -2056,14 +2490,20 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-C002b",
       "ISSUE-CR001"
     ],
     "last_update": "2026-04-14T11:33:56.763022"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-C002b", "ISSUE-CR001"],
     "last_update": "2026-04-13T20:19:36.825755"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-C002": {
@@ -2073,6 +2513,9 @@
     "user_story": "",
     "current_task": "",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-C001"
     ],
@@ -2100,9 +2543,12 @@
       "ISSUE-COM002c"
     ],
     "last_update": "2026-04-14T11:33:56.793011"
+<<<<<<< HEAD
 =======
     "prerequisites": ["ISSUE-C001"],
     "last_update": "2026-04-13T20:19:36.838182"
+>>>>>>> issue/issue-job002
+=======
 >>>>>>> issue/issue-job002
   },
   "ISSUE-M001a": {
@@ -2112,6 +2558,9 @@
     "user_story": "",
     "current_task": null,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> issue/issue-job002
     "prerequisites": [
       "ISSUE-C002b",
       "ISSUE-C003",
@@ -2158,11 +2607,16 @@
       "ISSUE-AI004"
     ],
     "last_update": "2026-04-14T11:33:56.839135"
+<<<<<<< HEAD
   }
 }
 =======
     "prerequisites": ["ISSUE-C002b", "ISSUE-C003", "ISSUE-C004", "ISSUE-C005"],
     "last_update": "2026-04-13T20:19:36.865690"
+  }
+}
+>>>>>>> issue/issue-job002
+=======
   }
 }
 >>>>>>> issue/issue-job002
