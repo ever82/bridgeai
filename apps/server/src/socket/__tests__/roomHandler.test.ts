@@ -13,10 +13,10 @@ jest.mock('../../services/connectionService');
 jest.mock('../../services/presenceService');
 
 describe('registerRoomHandlers', () => {
-  let mockSocket;
-  let mockNamespace;
-  let mockTo;
-  let mockEmit;
+  let mockSocket: any;
+  let mockNamespace: any;
+  let mockTo: any;
+  let mockEmit: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
