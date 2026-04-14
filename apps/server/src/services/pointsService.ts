@@ -193,7 +193,7 @@ export class PointsService {
     });
 
     const headers = ['ID', '类型', '金额', '交易后余额', '描述', '场景', '关联ID', '时间'];
-    const rows = transactions.map(t => [
+    const rows = transactions.map((t: any) => [
       t.id,
       t.type,
       t.amount.toString(),
@@ -206,7 +206,7 @@ export class PointsService {
 
     const csvLines = [headers.join(',')];
     for (const row of rows) {
-      csvLines.push(row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
+      csvLines.push(row.map((cell: string) => `"${String(cell).replace(/"/g, '""')}"`).join(','));
     }
 
     return csvLines.join('\n');
