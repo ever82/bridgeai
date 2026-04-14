@@ -33,7 +33,6 @@ model User {
   creditRecords CreditRecord[]
   transactions  Transaction[]
   connections   Connection[]
-<<<<<<< HEAD
   devices       UserDevice[]
   blockedUsers  BlockedUser[] @relation("BlockingUser")
   blockedBy     BlockedUser[] @relation("BlockedByUser")
@@ -44,8 +43,11 @@ model User {
   pushTokens    PushToken[]
   savedFilters  SavedFilter[]
   sceneTemplates SceneTemplate[]
-=======
->>>>>>> issue/issue-job002
+  // Review relations
+  reviewsGiven  Review[]    @relation("ReviewReviewer")
+  reviewsReceived Review[]  @relation("ReviewReviewee")
+  reviewReplies  ReviewReply[] @relation("ReviewReplyAuthor")
+  reviewStats    ReviewStats[] @relation("ReviewStatsUser")
 
   @@map("users")
 }
@@ -257,6 +259,154 @@ model Rating {
   @@index([matchId])
   @@index([rateeId])
   @@map("ratings")
+}
+
+// ============================================
+// 评价系统 (Review & Rating)
+// ============================================
+
+enum ReviewSceneType {
+  VISION_SHARE  @map("vision_share")
+  AGENT_DATE    @map("agent_date")
+  AGENT_JOB     @map("agent_job")
+  AGENT_AD      @map("agent_ad")
+}
+
+enum ReviewStatus {
+  PENDING   @map("pending")
+  APPROVED  @map("approved")
+  REJECTED  @map("rejected")
+  HIDDEN    @map("hidden")
+  DELETED   @map("deleted")
+}
+
+enum ModerationStatus {
+  PENDING @map("pending")
+  PASSED  @map("passed")
+  FLAGGED @map("flagged")
+  BLOCKED @map("blocked")
+}
+
+model Review {
+  id               String           @id @default(uuid())
+  matchId          String           @map("match_id")
+  reviewerId       String           @map("reviewer_id")
+  revieweeId       String           @map("reviewee_id")
+  sceneType        ReviewSceneType? @map("scene_type")
+  rating           Int              // 1-5
+  title            String?
+  content          String
+  tags             String[]         @default([])
+  status           ReviewStatus     @default(PENDING)
+  moderationStatus ModerationStatus @default(PENDING)
+  isVerified       Boolean          @default(false) @map("is_verified")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  reviewer         User             @relation("ReviewReviewer", fields: [reviewerId], references: [id])
+  reviewee         User             @relation("ReviewReviewee", fields: [revieweeId], references: [id])
+  replies          ReviewReply[]
+  reports          ReviewReport[]
+  moderationLogs   ReviewModerationLog[]
+
+  @@index([matchId])
+  @@index([reviewerId])
+  @@index([revieweeId])
+  @@index([sceneType])
+  @@index([status])
+  @@index([moderationStatus])
+  @@map("reviews")
+}
+
+model ReviewReply {
+  id         String   @id @default(uuid())
+  reviewId   String   @map("review_id")
+  authorId   String   @map("author_id")
+  content    String
+  isOfficial Boolean  @default(false) @map("is_official")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  review     Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  author     User     @relation("ReviewReplyAuthor", fields: [authorId], references: [id])
+
+  @@index([reviewId])
+  @@index([authorId])
+  @@map("review_replies")
+}
+
+enum ReportReason {
+  SPAM          @map("spam")
+  INAPPROPRIATE @map("inappropriate")
+  FALSE         @map("false")
+  HARASSMENT    @map("harassment")
+  OTHER         @map("other")
+}
+
+enum ReportStatus {
+  PENDING   @map("pending")
+  RESOLVED  @map("resolved")
+  DISMISSED @map("dismissed")
+}
+
+model ReviewReport {
+  id          String       @id @default(uuid())
+  reviewId    String       @map("review_id")
+  reporterId  String       @map("reporter_id")
+  reason      ReportReason
+  description String?
+  status      ReportStatus @default(PENDING)
+  handledBy   String?      @map("handled_by")
+  handledAt   DateTime?    @map("handled_at")
+  resolution  String?
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  // Relations
+  review      Review       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@index([reporterId])
+  @@index([status])
+  @@map("review_reports")
+}
+
+model ReviewStats {
+  id             String   @id @default(uuid())
+  userId         String   @unique @map("user_id")
+  totalReviews   Int      @default(0) @map("total_reviews")
+  avgRating      Float    @default(0) @map("avg_rating")
+  fiveStarCount  Int      @default(0) @map("five_star_count")
+  fourStarCount  Int      @default(0) @map("four_star_count")
+  threeStarCount Int      @default(0) @map("three_star_count")
+  twoStarCount   Int      @default(0) @map("two_star_count")
+  oneStarCount   Int      @default(0) @map("one_star_count")
+  responseRate   Float    @default(0) @map("response_rate")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user           User     @relation("ReviewStatsUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("review_stats")
+}
+
+model ReviewModerationLog {
+  id          String   @id @default(uuid())
+  reviewId    String   @map("review_id")
+  action      String   // APPROVED, BLOCKED, FLAGGED, HIDDEN
+  reason      String?
+  triggeredBy String   @map("triggered_by") // system or moderator userId
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("review_moderation_logs")
 }
 
 // ============================================
@@ -499,6 +649,7 @@ model PointsAccount {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions  PointsTransaction[]
   freezes       PointsFreeze[]
 
@@ -561,7 +712,6 @@ enum PointsTransactionType {
 }
 
 enum FreezeStatus {
-<<<<<<< HEAD
   FROZEN      @map("frozen")      // 冻结中
   USED        @map("used")         // 已使用（完成交易）
   RELEASED    @map("released")     // 已释放（取消交易）
@@ -1076,9 +1226,4 @@ enum SMSStatus {
   SENT      @map("sent")
   DELIVERED @map("delivered")
   FAILED    @map("failed")
-=======
-  FROZEN      @map("frozen")
-  RELEASED    @map("released")
-  USED        @map("used")
->>>>>>> issue/issue-job002
 }

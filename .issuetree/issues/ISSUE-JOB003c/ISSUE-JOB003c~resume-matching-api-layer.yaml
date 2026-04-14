@@ -1,59 +1,85 @@
 created_at: '2026-04-09'
 criteria:
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: "\u67E5\u8BE2\u63A5\u53E3:\n- \u804C\u4F4D\u641C\u7D22API(\u591A\u6761\
-    \u4EF6\u7B5B\u9009)\n- \u5019\u9009\u4EBA\u641C\u7D22API(\u62DB\u8058\u65B9\u89C6\
-    \u89D2)\n- \u5339\u914D\u7ED3\u679C\u83B7\u53D6API\n- \u641C\u7D22\u7ED3\u679C\
-    \u6392\u5E8F\u4E0E\u8FC7\u6EE4\n- \u641C\u7D22\u5386\u53F2\u8BB0\u5F55\n"
-  id: ISSUE-JOB003c~c1
-  name: "\u5339\u914D\u67E5\u8BE2API"
-  verification:
-    ai:
-      context_files:
-      - apps/server/src/routes/job/jobSearchRoutes.ts
-      - apps/server/src/controllers/job/jobSearchController.ts
-      prompt: "\u68C0\u67E5\u5339\u914D\u67E5\u8BE2API\uFF0C\u9A8C\u8BC1\u6709\u5B8C\
-        \u6574\u7684\u641C\u7D22\u7AEF\u70B9\u652F\u6301\u591A\u6761\u4EF6\u7B5B\u9009\
-        \u3001\u6392\u5E8F\u548C\u5206\u9875\u529F\u80FD"
-- coverage:
-    ai: sufficient
-    e2e: required
-    integration: required
-    manual: not_needed
-    unit: required
-  description: "\u901A\u77E5\u7CFB\u7EDF:\n- \u65B0\u5339\u914D\u7ED3\u679C\u901A\u77E5\
-    \n- \u9AD8\u5339\u914D\u5EA6\u804C\u4F4D\u63A8\u9001\n- \u7B80\u5386\u88AB\u67E5\
-    \u770B\u901A\u77E5\n- \u5339\u914D\u72B6\u6001\u53D8\u66F4\u901A\u77E5\n- \u901A\
-    \u77E5\u504F\u597D\u8BBE\u7F6E\n"
-  id: ISSUE-JOB003c~c2
-  name: "\u5339\u914D\u901A\u77E5\u4E0E\u63A8\u9001"
-  status: pending
-  verification:
-    ai:
-      context_files:
-      - apps/server/src/services/job/jobMatchNotifications.ts
-      - apps/mobile/src/screens/Job/MatchNotificationsScreen.tsx
-      prompt: "\u68C0\u67E5\u5339\u914D\u901A\u77E5\u7CFB\u7EDF\uFF0C\u9A8C\u8BC1\u96C6\
-        \u6210M004\u63A8\u9001\u670D\u52A1\uFF0C\u652F\u6301\u65B0\u5339\u914D\u3001\
-        \u9AD8\u5339\u914D\u5EA6\u63A8\u9001\u7B49Job\u573A\u666F\u7279\u5B9A\u901A\
-        \u77E5"
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: '查询接口:
+
+      - 职位搜索API(多条件筛选)
+
+      - 候选人搜索API(招聘方视角)
+
+      - 匹配结果获取API
+
+      - 搜索结果排序与过滤
+
+      - 搜索历史记录
+
+      '
+    id: ISSUE-JOB003c~c1
+    name: 匹配查询API
+    verification:
+      ai:
+        context_files:
+          - apps/server/src/routes/job/jobSearchRoutes.ts
+          - apps/server/src/services/job/jobSearchService.ts
+        prompt: 检查匹配查询API，验证有完整的搜索端点支持多条件筛选、排序和分页功能
+    status: completed
+  - coverage:
+      ai: sufficient
+      e2e: required
+      integration: required
+      manual: not_needed
+      unit: required
+    description: '通知系统:
+
+      - 新匹配结果通知
+
+      - 高匹配度职位推送
+
+      - 简历被查看通知
+
+      - 匹配状态变更通知
+
+      - 通知偏好设置
+
+      '
+    id: ISSUE-JOB003c~c2
+    name: 匹配通知与推送
+    status: completed
+    verification:
+      ai:
+        context_files:
+          - apps/server/src/services/job/jobMatchNotifications.ts
+          - apps/server/src/routes/job/jobMatchNotificationsRoutes.ts
+        prompt: 检查匹配通知系统，验证集成M004推送服务，支持新匹配、高匹配度推送等Job场景特定通知
 current_task: null
-description: "\u5B9E\u73B0\u5339\u914D\u67E5\u8BE2API\u548C\u5339\u914D\u901A\u77E5\
-  \u7CFB\u7EDF\uFF0C\u652F\u6301\u591A\u6761\u4EF6\u641C\u7D22\u3001\n\u7ED3\u679C\
-  \u6392\u5E8F\uFF0C\u4EE5\u53CA\u5339\u914D\u76F8\u5173\u7684\u63A8\u9001\u901A\u77E5\
-  \u3002\n\u9884\u4F30\u4EE3\u7801\u91CF: 250-350\u884C\n"
+description: '实现匹配查询API和匹配通知系统，支持多条件搜索、
+
+  结果排序，以及匹配相关的推送通知。
+
+  预估代码量: 250-350行
+
+  '
 id: ISSUE-JOB003c
 issue_number: 903.3
 logic: sufficient_necessary
 parent: ISSUE-JOB003
 prerequisites:
-- ISSUE-JOB003b
-- ISSUE-M004
+  - ISSUE-JOB003b
+  - ISSUE-M004
 slug: resume-matching-api-layer
 status: implemented
-title: "\u7B80\u5386\u667A\u80FD\u5339\u914D - \u63A5\u53E3\u5C42"
+title: 简历智能匹配 - 接口层
+implementation:
+  completed_at: '2026-04-14'
+  execution_time_minutes: 45
+  notes: Implemented job search API (searchJobs, searchCandidates, getMatchResults,
+    search history) and match notification service (notifications CRUD, preferences,
+    quiet hours). Added Notification and UserNotificationPreference models to Prisma
+    schema.
+  result: success
+  task_id: TASK-JOB003c-fix-2
