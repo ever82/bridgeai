@@ -10,9 +10,13 @@ export { Card } from './Card/Card';
 export { Modal } from './Modal/Modal';
 export { Icon } from './Icon/Icon';
 
+// Chat Components
+export { SuggestionBar } from './Chat/SuggestionBar';
+
 // Types
 export type { ButtonProps, ButtonVariant, ButtonSize } from './Button/Button';
 export type { InputProps, InputType, InputState } from './Input/Input';
 export type { CardProps } from './Card/Card';
 export type { ModalProps } from './Modal/Modal';
 export type { IconProps, IconName } from './Icon/Icon';
+export type { SuggestionBarProps, Suggestion } from './Chat/SuggestionBar';

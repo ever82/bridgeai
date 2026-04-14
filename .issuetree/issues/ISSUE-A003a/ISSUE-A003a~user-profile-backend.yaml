@@ -3,7 +3,7 @@ id: "ISSUE-A003a"
 issue_number: 2031
 title: "用户基础资料管理 - 后端API"
 slug: "user-profile-backend"
-status: "passed"
+status: passed
 description: |
   实现用户资料管理后端API，包括：
   - 用户信息CRUD接口 (/api/v1/users/me)

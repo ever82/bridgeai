@@ -3,7 +3,7 @@ id: "ISSUE-C005"
 issue_number: 307
 title: "信用过滤系统"
 slug: "credit-filter"
-status: "implemented"
+status: pending
 description: |
   实现基于信用分的过滤系统，支持按信用分范围筛选 Agent，
   信用分门槛设置，以及信用等级过滤。

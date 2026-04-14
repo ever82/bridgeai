@@ -3,7 +3,7 @@ id: "ISSUE-SEC005"
 issue_number: 405
 title: "举报与内容审核系统"
 slug: "report-content-moderation"
-status: "pending"
+status: pending
 description: |
   实现用户举报系统和内容审核机制，包括举报提交、审核工作流、
   违规内容处理、用户处罚管理、申诉流程等，维护平台内容安全和秩序。

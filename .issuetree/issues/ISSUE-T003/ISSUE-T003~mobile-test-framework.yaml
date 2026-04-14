@@ -3,7 +3,7 @@ id: 'ISSUE-T003'
 issue_number: 303
 title: '移动端测试框架'
 slug: 'mobile-test-framework'
-status: 'passed'
+status: passed
 description: |
   搭建React Native移动端测试框架，支持组件测试、Hook测试和快照测试。
   使用Jest + React Native Testing Library进行测试，配置 Expo 测试环境。

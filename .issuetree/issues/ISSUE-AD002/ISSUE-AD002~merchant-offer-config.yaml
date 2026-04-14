@@ -2,7 +2,7 @@ id: ISSUE-AD002
 issue_number: 1002
 title: 商家优惠配置
 slug: merchant-offer-config
-status: pending
+status: passed
 description: |
   AgentAd场景的商家优惠配置模块。商家创建Agent并配置可提供的优惠方案，
   包括优惠类型(折扣、满减、赠品等)、适用范围、有效期、库存数量等。
@@ -19,7 +19,7 @@ criteria:
     description: |
       商家能够创建专属于AgentAd场景的Agent实例，选择"商家"角色类型，
       配置商家基础信息如店名、门店地址、营业时间、联系方式等。
-    status: pending
+    status: completed
     coverage: 95
     verification:
       ai_prompt: |
@@ -32,7 +32,7 @@ criteria:
     description: |
       商家可以配置优惠方案的基础信息，包括优惠标题、详细描述、
       优惠类型(折扣/满减/赠品/套餐等)、优惠力度(如8折、满100减20)。
-    status: pending
+    status: completed
     coverage: 92
     verification:
       ai_prompt: |
@@ -45,7 +45,7 @@ criteria:
     description: |
       商家能够设置优惠的适用范围，包括适用商品/服务、排除商品、
       适用时段、适用门店(多门店情况)、适用人群限制(如新客专享)。
-    status: pending
+    status: completed
     coverage: 88
     verification:
       ai_prompt: |
@@ -58,7 +58,7 @@ criteria:
     description: |
       商家可以设置优惠的有效期(开始时间-结束时间)、每日限量、总库存数量。
       系统支持库存预警，当库存低于阈值时通知商家补充。
-    status: pending
+    status: completed
     coverage: 90
     verification:
       ai_prompt: |
@@ -71,7 +71,7 @@ criteria:
     description: |
       集成AI003供给智能提炼服务，商家可以通过自然语言描述优惠方案，
       AI自动提取关键信息(优惠类型、力度、适用范围等)并生成结构化配置。
-    status: pending
+    status: completed
     coverage: 88
     verification:
       ai_prompt: |
@@ -84,10 +84,37 @@ criteria:
     description: |
       商家可以灵活控制优惠的上下架状态，支持手动上架/下架、暂停发放、
       定时上架等功能。已发布的优惠修改后需重新审核或即时生效。
-    status: pending
+    status: completed
     coverage: 85
     verification:
       ai_prompt: |
         检查优惠状态管理API支持上架、下架、暂停等操作，
         验证状态变更后是否影响匹配引擎的推荐结果，
         确认定时上架功能在指定时间自动将优惠状态变更为"ACTIVE"。
+implementation:
+  task_id: TASK-AD002-001
+  completed_at: '2026-04-14T02:34:00.000Z'
+  result: success
+  notes: |
+    Merged to master successfully. Implementation includes:
+    - Merchant and Offer Prisma models with relations
+    - CRUD APIs for merchants and offers
+    - Offer status management (DRAFT, PENDING, ACTIVE, PAUSED, EXPIRED, SOLD_OUT, DISABLED)
+    - Inventory management with stock alerts
+    - AI extraction service for natural language offers
+    - Scheduled jobs for expiration and activation
+merged_to_master: true
+worktree_path: null
+files_created:
+  - apps/server/prisma/schema.prisma (Merchant and Offer models)
+  - apps/server/src/types/merchant.types.ts
+  - apps/server/src/types/offer.types.ts
+  - apps/server/src/services/merchantService.ts
+  - apps/server/src/services/offerService.ts
+  - apps/server/src/services/ai/offerExtractionService.ts
+  - apps/server/src/routes/merchants.ts
+  - apps/server/src/routes/offers.ts
+  - apps/server/src/routes/ai/offerExtraction.ts
+  - apps/server/src/jobs/offerJobs.ts
+  - apps/server/src/routes/v1/index.ts (updated)
+  - apps/server/src/routes/ai/extraction.ts (updated)

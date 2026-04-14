@@ -3,7 +3,13 @@ id: "ISSUE-COM003"
 issue_number: 506
 title: "人机切换机制"
 slug: "human-handoff"
-status: "pending"
+status: "implemented"
+implementation:
+  task_id: "TASK-COM003"
+  completed_at: "2026-04-14T10:30:00+08:00"
+  execution_time_minutes: 45
+  result: "success"
+  notes: "All acceptance criteria implemented and tested"
 description: |
   实现人机切换机制，允许用户从 Agent 接管对话，
   或将对话交还给 Agent。

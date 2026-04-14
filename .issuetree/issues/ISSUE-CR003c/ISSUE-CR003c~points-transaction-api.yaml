@@ -3,7 +3,7 @@ id: "ISSUE-CR003c"
 issue_number: 603.3
 title: "积分交易记录API"
 slug: "points-transaction-api"
-status: "pending"
+status: pending
 description: |
   积分交易记录查询API实现，包括余额查询、交易记录列表、交易详情、积分统计等功能。
   作为积分系统的API层，为客户端提供积分数据访问接口。

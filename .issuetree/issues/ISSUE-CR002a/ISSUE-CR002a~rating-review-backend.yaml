@@ -3,7 +3,7 @@ id: "ISSUE-CR002a"
 issue_number: 602.1
 title: "评分与评价系统 - 后端API"
 slug: "rating-review-backend"
-status: "pending"
+status: pending
 description: |
   实现评分与评价系统的后端API部分，包括数据模型设计和核心API接口。
   提供评价的提交、查询、回复、删除等基础功能，以及评价审核与反作弊机制。

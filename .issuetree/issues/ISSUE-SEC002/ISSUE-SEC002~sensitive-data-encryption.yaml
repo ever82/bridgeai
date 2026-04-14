@@ -3,7 +3,7 @@ id: "ISSUE-SEC002"
 issue_number: 402
 title: "敏感数据加密与保护"
 slug: "sensitive-data-encryption"
-status: "passed"
+status: passed
 
 # 验收检查记录 (2026-04-10)
 check:

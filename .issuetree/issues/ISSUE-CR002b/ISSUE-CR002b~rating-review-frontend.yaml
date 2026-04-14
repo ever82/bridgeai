@@ -3,7 +3,7 @@ id: "ISSUE-CR002b"
 issue_number: 602.2
 title: "评分与评价系统 - 前端UI"
 slug: "rating-review-frontend"
-status: "pending"
+status: pending
 description: |
   实现评分与评价系统的移动端前端UI组件，包括评价列表、评分输入、
   评价详情展示等功能。本Issue是ISSUE-CR002的拆分部分，专注于前端界面实现。

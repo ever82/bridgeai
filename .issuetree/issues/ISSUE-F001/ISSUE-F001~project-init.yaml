@@ -3,7 +3,7 @@ id: 'ISSUE-F001'
 issue_number: 101
 title: '项目初始化与开发环境搭建'
 slug: 'project-init'
-status: 'passed'
+status: passed
 description: |
   初始化 BridgeAI Agent通信平台项目，搭建完整的开发环境。
   包括 monorepo 结构设置、TypeScript 配置、代码规范工具配置、

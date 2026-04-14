@@ -3,7 +3,7 @@ id: 'ISSUE-SEC001'
 issue_number: 401
 title: 'RBAC权限控制系统'
 slug: 'rbac-permission-control'
-status: "passed"
+status: passed
 description: |
   实现基于角色的访问控制(RBAC)系统，定义和管理用户角色(普通用户、管理员等)、
   权限粒度控制、资源访问策略、角色继承关系等，确保系统资源的安全访问。

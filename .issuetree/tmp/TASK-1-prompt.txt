@@ -1,0 +1,36 @@
+# Implementation Task: 群聊状态同步与在线状态实现
+
+**Issue:** ISSUE-COM002c
+**Task:** TASK-1
+
+## Description
+
+实现群聊状态同步、在线状态显示、正在输入状态和已读状态展示。
+包含：
+1. 群聊状态同步 - 群成员列表同步、群设置同步、消息实时同步、状态变更广播
+2. 在线状态显示 - 用户在线状态、最后在线时间、多端在线显示、在线状态订阅
+3. 正在输入状态 - 输入检测、输入状态广播、停止输入检测、输入状态超时
+4. 已读状态展示 - 消息已读状态、已读人数显示、已读成员列表、已读时间展示
+5. 状态聚合优化 - 状态批量更新、状态压缩传输、状态缓存、心跳优化
+
+
+## Files to Modify
+
+- (To be determined based on implementation)
+
+## Instructions
+
+1. Implement the features described above
+2. Make focused, incremental changes
+3. Test your changes as you go
+4. Commit your work when complete
+
+## Completion
+
+When you have completed the implementation:
+1. Run: `echo '{"status": "completed"}' > .issuetree/tmp/TASK-1-result.json`
+2. Exit the session
+
+---
+
+Start implementing now.

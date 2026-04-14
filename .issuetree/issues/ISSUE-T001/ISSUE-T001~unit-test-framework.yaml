@@ -3,7 +3,7 @@ id: 'ISSUE-T001'
 issue_number: 301
 title: '单元测试框架搭建(Jest)'
 slug: 'unit-test-framework'
-status: 'passed'
+status: passed
 description: |
   搭建完整的单元测试框架，使用Jest作为测试运行器，覆盖后端服务和共享包的单元测试。
   包括测试环境配置、Mock工具、测试数据工厂、覆盖率报告等基础设施。
