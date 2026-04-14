@@ -3,7 +3,7 @@ id: "ISSUE-JOB004"
 issue_number: 904
 title: "薪资协商与面试安排"
 slug: "salary-negotiation-interview"
-status: "pending"
+status: "implemented"
 description: |
   实现Agent驱动的薪资协商与面试安排功能。当求职者与招聘方
   达成初步匹配意向后，双方Agent介入进行沟通，协商薪资细节、
