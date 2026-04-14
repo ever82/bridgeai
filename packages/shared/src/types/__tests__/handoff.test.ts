@@ -16,7 +16,7 @@ import {
   canRequestTakeover,
   canRequestHandoff,
   createInitialHandoffState,
-} from '../../src/types/handoff';
+} from '../handoff';
 
 describe('Handoff Types', () => {
   describe('Enums', () => {
