@@ -1,14 +1,18 @@
 {
   "ISSUE-CR002b": {
     "issue_id": "ISSUE-CR002b",
-    "status": "implemented",
+    "status": "stuck",
     "title": "\u8bc4\u5206\u4e0e\u8bc4\u4ef7\u7cfb\u7edf - \u524d\u7aefUI",
     "user_story": "",
     "current_task": null,
     "prerequisites": [
       "ISSUE-CR002a"
     ],
-    "last_update": "2026-04-14T11:51:33.228870"
+    "last_update": "2026-04-14T11:53:26.284501",
+    "stuck_previous_status": "implemented",
+    "stuck_reason": "accept_failed",
+    "stuck_at": "2026-04-14T03:53:26.283576+00:00",
+    "failure_count": 1
   },
   "ISSUE-CR002c": {
     "issue_id": "ISSUE-CR002c",
@@ -23,16 +27,16 @@
   },
   "ISSUE-DATE002": {
     "issue_id": "ISSUE-DATE002",
-    "status": "implemented",
+    "status": "accepting",
     "title": "Agent\u4e3b\u52a8\u5339\u914d\u63a8\u8350",
     "user_story": "",
-    "current_task": null,
+    "current_task": "TASK-1776138863-7243",
     "prerequisites": [
       "ISSUE-C006",
       "ISSUE-M004",
       "ISSUE-DATE001"
     ],
-    "last_update": "2026-04-14T11:51:46.888567"
+    "last_update": "2026-04-14T11:54:23.798805"
   },
   "ISSUE-SEC004": {
     "issue_id": "ISSUE-SEC004",
@@ -557,7 +561,7 @@
     "prerequisites": [
       "ISSUE-AI002"
     ],
-    "last_update": "2026-04-14T11:53:09.896446"
+    "last_update": "2026-04-14T11:54:18.868219"
   },
   "ISSUE-C001": {
     "issue_id": "ISSUE-C001",

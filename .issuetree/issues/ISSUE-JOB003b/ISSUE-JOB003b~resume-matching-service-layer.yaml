@@ -55,5 +55,5 @@ parent: ISSUE-JOB003
 prerequisites:
 - ISSUE-JOB003a
 slug: resume-matching-service-layer
-status: pending
+status: implemented
 title: "\u7B80\u5386\u667A\u80FD\u5339\u914D - \u670D\u52A1\u5C42"

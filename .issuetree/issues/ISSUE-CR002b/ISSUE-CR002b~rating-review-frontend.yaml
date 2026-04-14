@@ -38,7 +38,7 @@ part_number: 2
 prerequisites:
 - ISSUE-CR002a
 slug: rating-review-frontend
-status: implemented
+status: stuck
 current_task: TASK-1776099047-2431
 implementation:
   task_id: TASK-1776099047-2431

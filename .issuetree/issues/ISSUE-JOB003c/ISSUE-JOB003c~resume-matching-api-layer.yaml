@@ -55,5 +55,5 @@ prerequisites:
 - ISSUE-JOB003b
 - ISSUE-M004
 slug: resume-matching-api-layer
-status: pending
+status: implemented
 title: "\u7B80\u5386\u667A\u80FD\u5339\u914D - \u63A5\u53E3\u5C42"

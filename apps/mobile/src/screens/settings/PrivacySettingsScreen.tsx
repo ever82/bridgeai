@@ -20,6 +20,11 @@ interface PrivacySettings {
   emailVisible: boolean;
   allowSearchByPhone: boolean;
   allowSearchByEmail: boolean;
+  // Desensitization settings
+  autoDesensitize: boolean;
+  desensitizationTemplate: 'strict' | 'standard' | 'relaxed' | 'custom';
+  defaultDesensitizationMethod: 'blur' | 'mosaic' | 'pixelate';
+  saveOriginalImage: boolean;
 }
 
 export const PrivacySettingsScreen = () => {
@@ -34,6 +39,11 @@ export const PrivacySettingsScreen = () => {
     emailVisible: false,
     allowSearchByPhone: true,
     allowSearchByEmail: true,
+    // Desensitization settings
+    autoDesensitize: true,
+    desensitizationTemplate: 'standard',
+    defaultDesensitizationMethod: 'blur',
+    saveOriginalImage: true,
   });
 
   const updateSetting = useCallback(<K extends keyof PrivacySettings>(
@@ -171,6 +181,103 @@ export const PrivacySettingsScreen = () => {
     </View>
   );
 
+  const desensitizationTemplates = [
+    {
+      value: 'strict',
+      label: '严格模式',
+      description: '最高级别的隐私保护，自动脱敏所有敏感内容',
+    },
+    {
+      value: 'standard',
+      label: '标准模式',
+      label: '标准模式',
+      description: '平衡的隐私保护和图像质量',
+    },
+    {
+      value: 'relaxed',
+      label: '宽松模式',
+      description: '最小限度的脱敏，适用于非敏感场合',
+    },
+    {
+      value: 'custom',
+      label: '自定义',
+      description: '根据您的偏好自定义脱敏规则',
+    },
+  ] as const;
+
+  const renderDesensitizationTemplateSection = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>脱敏策略模板</Text>
+      <View style={styles.optionsContainer}>
+        {desensitizationTemplates.map((option) => (
+          <TouchableOpacity
+            key={option.value}
+            style={[
+              styles.optionItem,
+              settings.desensitizationTemplate === option.value && styles.optionItemActive,
+            ]}
+            onPress={() => updateSetting('desensitizationTemplate', option.value)}
+          >
+            <View style={styles.optionContent}>
+              <Text
+                style={[
+                  styles.optionLabel,
+                  settings.desensitizationTemplate === option.value && styles.optionLabelActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+              <Text style={styles.optionDescription}>{option.description}</Text>
+            </View>
+            {settings.desensitizationTemplate === option.value && (
+              <View style={styles.checkmark}>
+                <Text style={styles.checkmarkText}>✓</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
+  const renderAutoDesensitizationSection = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>自动脱敏</Text>
+      {renderSwitchItem(
+        '自动脱敏上传的图片',
+        '上传时自动检测并脱敏敏感内容',
+        'autoDesensitize',
+        settings.autoDesensitize
+      )}
+      {renderSwitchItem(
+        '保存原始图片',
+        '同时保存脱敏前后的版本',
+        'saveOriginalImage',
+        settings.saveOriginalImage
+      )}
+    </View>
+  );
+
+  const renderDesensitizationSettingsSection = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>脱敏设置</Text>
+      <TouchableOpacity
+        style={styles.blockedButton}
+        onPress={() => Alert.alert('提示', '自定义规则功能即将推出')}
+      >
+        <Text style={styles.blockedButtonText}>自定义脱敏规则</Text>
+        <Text style={styles.blockedArrow}>›</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.blockedButton}
+        onPress={() => Alert.alert('提示', '白名单管理功能即将推出')}
+      >
+        <Text style={styles.blockedButtonText}>管理白名单</Text>
+        <Text style={styles.blockedArrow}>›</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -188,6 +295,9 @@ export const PrivacySettingsScreen = () => {
         {renderOnlineStatusSection()}
         {renderContactInfoSection()}
         {renderSearchSection()}
+        {renderDesensitizationTemplateSection()}
+        {renderAutoDesensitizationSection()}
+        {renderDesensitizationSettingsSection()}
         {renderBlockedSection()}
       </ScrollView>
     </View>

@@ -1,0 +1,152 @@
+complexity:
+  level: M
+  lines: 1000
+  split: true
+  split_strategy: "\u5EFA\u8BAE\u62C6\u5206\u4E3A:\n- ISSUE-VS003a: \u76F8\u673A\u4E0E\
+    \u76F8\u518C\u5BFC\u5165 (c1, c6) - \u524D\u7AEF/native\n- ISSUE-VS003b: \u7167\
+    \u7247\u7F16\u8F91 (c2) - UI\u7EC4\u4EF6\n- ISSUE-VS003c: \u4E0A\u4F20\u4E0E\u5B58\
+    \u50A8 (c4, c5) - \u540E\u7AEF\u670D\u52A1\n- ISSUE-VS003d: \u56FE\u50CF\u5B89\
+    \u5168 (c3) - \u96C6\u6210\n"
+  test_time: 9
+created_at: '2026-04-08'
+criteria:
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u76F8\u673A\u754C\u9762:\n- \u539F\u751F\u76F8\u673A\u8C03\u7528\
+    (Expo Camera)\n- \u62CD\u7167\u6309\u94AE\u548C\u8FDE\u62CD\u529F\u80FD\n- \u95EA\
+    \u5149\u706F\u548C\u7126\u8DDD\u63A7\u5236\n- \u7167\u7247\u9884\u89C8\u548C\u91CD\
+    \u62CD\n- \u76F8\u673A\u6743\u9650\u5904\u7406\n"
+  id: ISSUE-VS003~c1
+  name: "\u76F8\u673A\u529F\u80FD\u96C6\u6210"
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/VisionShare/CameraScreen.tsx
+      - apps/mobile/src/components/Camera/VisionShareCamera.tsx
+      prompt: "\u68C0\u67E5\u76F8\u673A\u529F\u80FD\uFF0C\u9A8C\u8BC1\u6709Expo Camera\u96C6\
+        \u6210\u3001\u62CD\u7167\u63A7\u5236\u3001\u9884\u89C8\u548C\u6743\u9650\u5904\
+        \u7406"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u7F16\u8F91\u529F\u80FD:\n- \u7167\u7247\u9884\u89C8\u754C\u9762\n\
+    - \u88C1\u526A\u548C\u65CB\u8F6C\n- \u6EE4\u955C\u548C\u4EAE\u5EA6\u8C03\u6574\
+    \n- \u6807\u8BB0\u548C\u6CE8\u91CA\n- \u7167\u7247\u9009\u62E9/\u53D6\u6D88\n"
+  id: ISSUE-VS003~c2
+  name: "\u7167\u7247\u9884\u89C8\u4E0E\u7F16\u8F91"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/screens/VisionShare/PhotoEdit.tsx
+      - apps/mobile/src/components/PhotoEditor/
+      prompt: "\u68C0\u67E5\u7167\u7247\u7F16\u8F91\u529F\u80FD\uFF0C\u9A8C\u8BC1\u6709\
+        \u9884\u89C8\u754C\u9762\u3001\u88C1\u526A\u65CB\u8F6C\u3001\u6EE4\u955C\u8C03\
+        \u6574\u548C\u6807\u8BB0\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B89\u5168\u68C0\u6D4B:\n- \u654F\u611F\u5185\u5BB9\u8BC6\u522B\n\
+    - \u8FDD\u89C4\u56FE\u7247\u62E6\u622A\n- \u4EBA\u8138\u8BC6\u522B\u548C\u9690\
+    \u79C1\u68C0\u6D4B\n- \u56FE\u7247\u8D28\u91CF\u68C0\u67E5\n- \u68C0\u67E5\u7ED3\
+    \u679C\u53CD\u9988\n"
+  id: ISSUE-VS003~c3
+  name: "\u56FE\u7247\u5B89\u5168\u68C0\u67E5"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/security/imageSecurity.ts
+      - apps/server/src/middleware/imageUploadCheck.ts
+      prompt: "\u68C0\u67E5\u56FE\u7247\u5B89\u5168\u68C0\u67E5\uFF0C\u9A8C\u8BC1\u6709\
+        \u654F\u611F\u5185\u5BB9\u8BC6\u522B\u3001\u8FDD\u89C4\u62E6\u622A\u3001\u9690\
+        \u79C1\u68C0\u6D4B\u548C\u8D28\u91CF\u68C0\u67E5"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u4E0A\u4F20\u529F\u80FD:\n- \u591A\u56FE\u6279\u91CF\u4E0A\u4F20\n\
+    - \u4E0A\u4F20\u8FDB\u5EA6\u663E\u793A\n- \u65AD\u70B9\u7EED\u4F20\n- \u56FE\u7247\
+    \u538B\u7F29\u548C\u4F18\u5316\n- \u4E0A\u4F20\u961F\u5217\u7BA1\u7406\n"
+  id: ISSUE-VS003~c4
+  name: "\u7167\u7247\u4E0A\u4F20\u670D\u52A1"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/visionShare/photoUpload.ts
+      - apps/mobile/src/services/upload/photoUploader.ts
+      prompt: "\u68C0\u67E5\u7167\u7247\u4E0A\u4F20\u670D\u52A1\uFF0C\u9A8C\u8BC1\u6709\
+        \u6279\u91CF\u4E0A\u4F20\u3001\u8FDB\u5EA6\u663E\u793A\u3001\u65AD\u70B9\u7EED\
+        \u4F20\u548C\u538B\u7F29\u4F18\u5316\u529F\u80FD"
+- coverage:
+    ai: sufficient
+    e2e: not_needed
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5B58\u50A8\u7BA1\u7406:\n- \u7167\u7247\u5143\u6570\u636E\u8BB0\u5F55\
+    \n- \u4E91\u5B58\u50A8\u96C6\u6210(S3/OSS)\n- \u7F29\u7565\u56FE\u751F\u6210\n\
+    - \u7167\u7247\u5173\u8054\u4EFB\u52A1\n- \u5B58\u50A8\u751F\u547D\u5468\u671F\
+    \u7BA1\u7406\n"
+  id: ISSUE-VS003~c5
+  name: "\u7167\u7247\u5B58\u50A8\u4E0E\u7BA1\u7406"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/server/src/services/storage/photoStorage.ts
+      - packages/database/src/schema/photo.prisma
+      prompt: "\u68C0\u67E5\u7167\u7247\u5B58\u50A8\u7BA1\u7406\uFF0C\u9A8C\u8BC1\u6709\
+        \u5143\u6570\u636E\u8BB0\u5F55\u3001\u4E91\u5B58\u50A8\u96C6\u6210\u3001\u7F29\
+        \u7565\u56FE\u751F\u6210\u548C\u751F\u547D\u5468\u671F\u7BA1\u7406"
+- coverage:
+    ai: sufficient
+    e2e: required
+    integration: required
+    manual: not_needed
+    unit: required
+  description: "\u5BFC\u5165\u529F\u80FD:\n- \u672C\u5730\u76F8\u518C\u8BBF\u95EE\n\
+    - \u591A\u9009\u7167\u7247\u5BFC\u5165\n- \u5BFC\u5165\u7167\u7247\u9884\u89C8\
+    \n- \u5BFC\u5165\u5B89\u5168\u68C0\u67E5\n- \u7167\u7247\u6765\u6E90\u6807\u8BB0\
+    \n"
+  id: ISSUE-VS003~c6
+  name: "\u76F8\u518C\u9009\u62E9\u548C\u5BFC\u5165"
+  status: pending
+  verification:
+    ai:
+      context_files:
+      - apps/mobile/src/components/PhotoPicker/
+      - apps/mobile/src/screens/VisionShare/ImportPhotos.tsx
+      prompt: "\u68C0\u67E5\u76F8\u518C\u5BFC\u5165\u529F\u80FD\uFF0C\u9A8C\u8BC1\u6709\
+        \u672C\u5730\u76F8\u518C\u8BBF\u95EE\u3001\u591A\u9009\u5BFC\u5165\u3001\u9884\
+        \u89C8\u548C\u5B89\u5168\u68C0\u67E5"
+current_task: null
+description: "\u5B9E\u73B0VisionShare\u573A\u666F\u7684\u76F8\u673A\u62CD\u7167\u548C\
+  \u7167\u7247\u4E0A\u4F20\u529F\u80FD\u3002\u63A5\u5355\u7528\u6237\u901A\u8FC7\u76F8\
+  \u673A\u62CD\u6444\u5B9E\u65F6\u7167\u7247\uFF0C\n\u652F\u6301\u62CD\u7167\u9884\
+  \u89C8\u3001\u7167\u7247\u7F16\u8F91\u3001\u6279\u91CF\u4E0A\u4F20\u7B49\u529F\u80FD\
+  \u3002\u96C6\u6210\u56FE\u7247\u5B89\u5168\u68C0\u67E5\uFF0C\n\u786E\u4FDD\u4E0A\
+  \u4F20\u5185\u5BB9\u7B26\u5408\u89C4\u8303\u3002\n"
+id: ISSUE-VS003
+issue_number: 703
+logic: sufficient_necessary
+prerequisites:
+- ISSUE-VS002
+- ISSUE-F004
+- ISSUE-SEC004
+slug: camera-photo-upload
+status: stuck
+title: "\u76F8\u673A\u62CD\u7167\u4E0E\u4E0A\u4F20"

@@ -32,5 +32,5 @@ parent: ISSUE-JOB003
 prerequisites:
 - ISSUE-JOB003c
 slug: resume-matching-ui-layer
-status: pending
+status: implemented
 title: "\u7B80\u5386\u667A\u80FD\u5339\u914D - UI\u5C42"
