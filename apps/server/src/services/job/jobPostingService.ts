@@ -7,24 +7,21 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import {
-  JobPosting,
+  type JobPosting,
   JobStatus,
-  CreateJobPostingRequest,
-  UpdateJobPostingRequest,
-  UpdateJobStatusRequest,
-  RefreshJobRequest,
-  JobListResponse,
-  JobFilterOptions,
-  JobStats,
+  type CreateJobPostingRequest,
+  type UpdateJobPostingRequest,
+  type UpdateJobStatusRequest,
+  type RefreshJobRequest,
+  type JobListResponse,
+  type JobFilterOptions,
+  type JobStats,
   ApplicationStatus,
-  JobApplication,
-  JobApplicationFilter,
-} from '@bridgeai/shared/types';
-import {
-  jobPostingResponseSchema,
+  type JobApplication,
+  type JobApplicationFilter,
   createJobPostingSchema,
   updateJobPostingSchema,
-} from '@bridgeai/shared/schemas';
+} from '@visionshare/shared';
 import { extractJobFromDescription, evaluateJobQuality } from './jobExtraction';
 import { AppError } from '../../errors';
 
@@ -49,7 +46,7 @@ export async function createJobPosting(
   const { employerId, employerProfileId, agentId, data, autoExtract = false } = options;
 
   // Validate input
-  const validated = createJobPostingSchema.parse(data);
+  const validated = createJobPostingSchema.parse(data) as CreateJobPostingRequest;
 
   const now = new Date().toISOString();
   const id = uuidv4();
@@ -141,7 +138,7 @@ export async function getJobPosting(
   const job = jobPostings.get(jobId);
 
   if (!job) {
-    throw new AppError('Job not found', 404, 'JOB_NOT_FOUND');
+    throw new AppError('Job not found', 'JOB_NOT_FOUND', 404);
   }
 
   // Increment view count if requested
@@ -166,15 +163,15 @@ export async function updateJobPosting(
   const job = jobPostings.get(jobId);
 
   if (!job) {
-    throw new AppError('Job not found', 404, 'JOB_NOT_FOUND');
+    throw new AppError('Job not found', 'JOB_NOT_FOUND', 404);
   }
 
   if (job.employerId !== employerId) {
-    throw new AppError('Unauthorized', 403, 'UNAUTHORIZED');
+    throw new AppError('Unauthorized', 'UNAUTHORIZED', 403);
   }
 
   // Validate input
-  const validated = updateJobPostingSchema.parse(data);
+  const validated = updateJobPostingSchema.parse(data) as UpdateJobPostingRequest;
 
   const now = new Date().toISOString();
 
@@ -214,11 +211,11 @@ export async function updateJobStatus(
   const job = jobPostings.get(jobId);
 
   if (!job) {
-    throw new AppError('Job not found', 404, 'JOB_NOT_FOUND');
+    throw new AppError('Job not found', 'JOB_NOT_FOUND', 404);
   }
 
   if (job.employerId !== employerId) {
-    throw new AppError('Unauthorized', 403, 'UNAUTHORIZED');
+    throw new AppError('Unauthorized', 'UNAUTHORIZED', 403);
   }
 
   const validTransitions: Record<JobStatus, JobStatus[]> = {
@@ -232,8 +229,8 @@ export async function updateJobStatus(
   if (!validTransitions[job.status].includes(data.status)) {
     throw new AppError(
       `Invalid status transition from ${job.status} to ${data.status}`,
-      400,
-      'INVALID_STATUS_TRANSITION'
+      'INVALID_STATUS_TRANSITION',
+      400
     );
   }
 
@@ -263,15 +260,15 @@ export async function refreshJobPosting(
   const job = jobPostings.get(jobId);
 
   if (!job) {
-    throw new AppError('Job not found', 404, 'JOB_NOT_FOUND');
+    throw new AppError('Job not found', 'JOB_NOT_FOUND', 404);
   }
 
   if (job.employerId !== employerId) {
-    throw new AppError('Unauthorized', 403, 'UNAUTHORIZED');
+    throw new AppError('Unauthorized', 'UNAUTHORIZED', 403);
   }
 
   if (job.status !== JobStatus.PUBLISHED) {
-    throw new AppError('Only published jobs can be refreshed', 400, 'INVALID_STATUS');
+    throw new AppError('Only published jobs can be refreshed', 'INVALID_STATUS', 400);
   }
 
   const now = new Date().toISOString();
@@ -456,7 +453,7 @@ export async function getJobStats(jobId: string, employerId: string): Promise<Jo
   const job = await getJobPosting(jobId);
 
   if (job.employerId !== employerId) {
-    throw new AppError('Unauthorized', 403, 'UNAUTHORIZED');
+    throw new AppError('Unauthorized', 'UNAUTHORIZED', 403);
   }
 
   return job.stats;
@@ -476,7 +473,7 @@ export async function createJobApplication(
   const job = await getJobPosting(jobId);
 
   if (job.status !== JobStatus.PUBLISHED) {
-    throw new AppError('Job is not accepting applications', 400, 'JOB_NOT_ACCEPTING');
+    throw new AppError('Job is not accepting applications', 'JOB_NOT_ACCEPTING', 400);
   }
 
   const now = new Date().toISOString();
@@ -517,7 +514,7 @@ export async function getJobApplications(
   const job = await getJobPosting(jobId);
 
   if (job.employerId !== employerId) {
-    throw new AppError('Unauthorized', 403, 'UNAUTHORIZED');
+    throw new AppError('Unauthorized', 'UNAUTHORIZED', 403);
   }
 
   let applications = Array.from(jobApplications.values()).filter(a => a.jobId === jobId);
@@ -555,13 +552,13 @@ export async function updateApplicationStatus(
   const application = jobApplications.get(applicationId);
 
   if (!application) {
-    throw new AppError('Application not found', 404, 'APPLICATION_NOT_FOUND');
+    throw new AppError('Application not found', 'APPLICATION_NOT_FOUND', 404);
   }
 
   const job = await getJobPosting(application.jobId);
 
   if (job.employerId !== employerId) {
-    throw new AppError('Unauthorized', 403, 'UNAUTHORIZED');
+    throw new AppError('Unauthorized', 'UNAUTHORIZED', 403);
   }
 
   const now = new Date().toISOString();
@@ -617,7 +614,7 @@ export async function evaluateJob(jobId: string, employerId: string) {
   const job = await getJobPosting(jobId);
 
   if (job.employerId !== employerId) {
-    throw new AppError('Unauthorized', 403, 'UNAUTHORIZED');
+    throw new AppError('Unauthorized', 'UNAUTHORIZED', 403);
   }
 
   return evaluateJobQuality(job);

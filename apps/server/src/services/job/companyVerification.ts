@@ -6,15 +6,13 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import {
-  EmployerProfile,
+  type EmployerProfile,
   VerificationStatus,
-  CompanyVerification,
-  EmployerVerificationResponse,
-} from '@bridgeai/shared/types';
-import {
+  type EmployerVerification,
+  type EmployerVerificationResponse,
   companyVerificationRequestSchema,
   verifyEmailSchema,
-} from '@bridgeai/shared/schemas';
+} from '@visionshare/shared';
 import { AppError } from '../../errors';
 
 // TODO: Replace with actual database implementation
@@ -58,18 +56,18 @@ export async function verifyEmail(
   const verification = verificationTokens.get(token);
 
   if (!verification) {
-    throw new AppError('Invalid or expired verification token', 400, 'INVALID_TOKEN');
+    throw new AppError('Invalid or expired verification token', 'INVALID_TOKEN', 400);
   }
 
   if (verification.expiresAt < new Date()) {
     verificationTokens.delete(token);
-    throw new AppError('Verification token has expired', 400, 'TOKEN_EXPIRED');
+    throw new AppError('Verification token has expired', 'TOKEN_EXPIRED', 400);
   }
 
   const profile = employerProfiles.get(verification.employerId);
 
   if (!profile) {
-    throw new AppError('Employer profile not found', 404, 'PROFILE_NOT_FOUND');
+    throw new AppError('Employer profile not found', 'PROFILE_NOT_FOUND', 404);
   }
 
   const now = new Date().toISOString();
@@ -116,11 +114,11 @@ export async function submitBusinessVerification(
   const profile = employerProfiles.get(employerProfileId);
 
   if (!profile) {
-    throw new AppError('Employer profile not found', 404, 'PROFILE_NOT_FOUND');
+    throw new AppError('Employer profile not found', 'PROFILE_NOT_FOUND', 404);
   }
 
   if (profile.userId !== userId) {
-    throw new AppError('Unauthorized', 403, 'UNAUTHORIZED');
+    throw new AppError('Unauthorized', 'UNAUTHORIZED', 403);
   }
 
   const now = new Date().toISOString();
@@ -157,11 +155,11 @@ export async function approveBusinessVerification(
   const profile = employerProfiles.get(employerProfileId);
 
   if (!profile) {
-    throw new AppError('Employer profile not found', 404, 'PROFILE_NOT_FOUND');
+    throw new AppError('Employer profile not found', 'PROFILE_NOT_FOUND', 404);
   }
 
   if (profile.verification.status !== VerificationStatus.PENDING) {
-    throw new AppError('No pending verification request found', 400, 'NO_PENDING_VERIFICATION');
+    throw new AppError('No pending verification request found', 'NO_PENDING_VERIFICATION', 400);
   }
 
   const now = new Date().toISOString();
@@ -195,11 +193,11 @@ export async function rejectBusinessVerification(
   const profile = employerProfiles.get(employerProfileId);
 
   if (!profile) {
-    throw new AppError('Employer profile not found', 404, 'PROFILE_NOT_FOUND');
+    throw new AppError('Employer profile not found', 'PROFILE_NOT_FOUND', 404);
   }
 
   if (profile.verification.status !== VerificationStatus.PENDING) {
-    throw new AppError('No pending verification request found', 400, 'NO_PENDING_VERIFICATION');
+    throw new AppError('No pending verification request found', 'NO_PENDING_VERIFICATION', 400);
   }
 
   const now = new Date().toISOString();
@@ -229,15 +227,15 @@ export async function rejectBusinessVerification(
 export async function getVerificationStatus(
   employerProfileId: string,
   userId: string
-): Promise<CompanyVerification> {
+): Promise<EmployerVerification> {
   const profile = employerProfiles.get(employerProfileId);
 
   if (!profile) {
-    throw new AppError('Employer profile not found', 404, 'PROFILE_NOT_FOUND');
+    throw new AppError('Employer profile not found', 'PROFILE_NOT_FOUND', 404);
   }
 
   if (profile.userId !== userId) {
-    throw new AppError('Unauthorized', 403, 'UNAUTHORIZED');
+    throw new AppError('Unauthorized', 'UNAUTHORIZED', 403);
   }
 
   return profile.verification;
@@ -246,7 +244,7 @@ export async function getVerificationStatus(
 /**
  * Calculate verification score for employer profile
  */
-export function calculateVerificationScore(verification: CompanyVerification): number {
+export function calculateVerificationScore(verification: EmployerVerification): number {
   let score = 0;
 
   if (verification.status === VerificationStatus.EMAIL_VERIFIED) {
@@ -267,14 +265,14 @@ export function calculateVerificationScore(verification: CompanyVerification): n
 /**
  * Check if employer is fully verified
  */
-export function isFullyVerified(verification: CompanyVerification): boolean {
+export function isFullyVerified(verification: EmployerVerification): boolean {
   return verification.status === VerificationStatus.BUSINESS_VERIFIED;
 }
 
 /**
  * Check if employer can post jobs
  */
-export function canPostJobs(verification: CompanyVerification): boolean {
+export function canPostJobs(verification: EmployerVerification): boolean {
   return [
     VerificationStatus.EMAIL_VERIFIED,
     VerificationStatus.BUSINESS_VERIFIED,
@@ -284,7 +282,7 @@ export function canPostJobs(verification: CompanyVerification): boolean {
 /**
  * Get verification badge info
  */
-export function getVerificationBadge(verification: CompanyVerification): {
+export function getVerificationBadge(verification: EmployerVerification): {
   type: 'none' | 'email' | 'business';
   label: string;
   color: string;

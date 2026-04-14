@@ -41,7 +41,7 @@ export async function createJob(
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
     const employerId = req.user.id;
@@ -98,7 +98,7 @@ export async function updateJob(
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
     const { id } = req.params;
@@ -125,7 +125,7 @@ export async function updateStatus(
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
     const { id } = req.params;
@@ -152,7 +152,7 @@ export async function refreshJob(
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
     const { id } = req.params;
@@ -179,7 +179,7 @@ export async function deleteJob(
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
     const { id } = req.params;
@@ -252,7 +252,7 @@ export async function getMyJobs(
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
     const employerId = req.user.id;
@@ -284,7 +284,7 @@ export async function getJobStatistics(
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
     const { id } = req.params;
@@ -311,7 +311,7 @@ export async function getMyStatistics(
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
     const employerId = req.user.id;
@@ -337,7 +337,7 @@ export async function getApplications(
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
     const { id } = req.params;
@@ -371,7 +371,7 @@ export async function updateApplication(
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
     const { id, applicationId } = req.params;
@@ -404,7 +404,7 @@ export async function evaluateJobQuality(
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
     const { id } = req.params;
@@ -433,7 +433,7 @@ export async function extractJob(
     const { description } = req.body;
 
     if (!description) {
-      throw new AppError('Description is required', 400, 'MISSING_DESCRIPTION');
+      throw new AppError('Description is required', 'MISSING_DESCRIPTION', 400);
     }
 
     // Import extraction function

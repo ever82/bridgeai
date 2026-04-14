@@ -3,6 +3,7 @@
  */
 
 import { WorkMode, CompanySize, CompanyIndustry } from './employer';
+import { EducationLevel } from './agentProfile';
 
 export enum JobStatus {
   DRAFT = 'DRAFT',
@@ -26,15 +27,6 @@ export enum ExperienceLevel {
   MID = 'MID',               // 3-5年
   SENIOR = 'SENIOR',         // 5-10年
   EXPERT = 'EXPERT',         // 10年以上
-}
-
-export enum EducationLevel {
-  HIGH_SCHOOL = 'HIGH_SCHOOL',
-  ASSOCIATE = 'ASSOCIATE',
-  BACHELOR = 'BACHELOR',
-  MASTER = 'MASTER',
-  DOCTORATE = 'DOCTORATE',
-  NO_REQUIREMENT = 'NO_REQUIREMENT',
 }
 
 export enum SalaryPeriod {
@@ -294,6 +286,7 @@ export const EDUCATION_LEVEL_LABELS: Record<EducationLevel, string> = {
   [EducationLevel.BACHELOR]: '本科',
   [EducationLevel.MASTER]: '硕士',
   [EducationLevel.DOCTORATE]: '博士',
+  [EducationLevel.OTHER]: '其他',
   [EducationLevel.NO_REQUIREMENT]: '不限',
 };
 

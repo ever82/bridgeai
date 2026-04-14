@@ -35,6 +35,7 @@ export enum EducationLevel {
   MASTER = 'MASTER',
   DOCTORATE = 'DOCTORATE',
   OTHER = 'OTHER',
+  NO_REQUIREMENT = 'NO_REQUIREMENT',
 }
 
 export interface Location {
@@ -102,6 +103,7 @@ export const EDUCATION_LABELS: Record<EducationLevel, string> = {
   [EducationLevel.MASTER]: '硕士',
   [EducationLevel.DOCTORATE]: '博士',
   [EducationLevel.OTHER]: '其他',
+  [EducationLevel.NO_REQUIREMENT]: '不限',
 };
 
 // ============================================

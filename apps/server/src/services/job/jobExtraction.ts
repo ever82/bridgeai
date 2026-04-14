@@ -7,15 +7,9 @@
  */
 
 import {
-  JobDescription,
-  JobRequirement,
-  SalaryRange,
-  JobBenefits,
-  JobLocation,
-  CreateJobPostingRequest,
-  JobPosting,
-} from '@bridgeai/shared/types';
-import { jobExtractionResultSchema } from '@bridgeai/shared/schemas';
+  type JobDescription,
+  type JobPosting,
+} from '@visionshare/shared';
 
 export interface ExtractionResult {
   structuredData: JobDescription;
