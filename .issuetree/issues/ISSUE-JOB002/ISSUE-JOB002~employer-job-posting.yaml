@@ -3,7 +3,7 @@ id: "ISSUE-JOB002"
 issue_number: 902
 title: "招聘方职位发布"
 slug: "employer-job-posting"
-status: "pending"
+status: "implemented"
 description: |
   实现招聘方Agent的职位发布与管理功能。招聘方通过自然语言
   或结构化表单描述职位需求、公司信息、薪资福利等，AI提炼
@@ -24,7 +24,7 @@ criteria:
       - 公司认证状态
       - 在招职位列表关联
       - 公司品牌展示设置
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -48,7 +48,7 @@ criteria:
       - 薪资范围与福利
       - 工作地点与工作方式(远程/现场/混合)
       - 职位有效期与状态
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -71,7 +71,7 @@ criteria:
       - 薪资范围合理性评估
       - 职位描述质量评分与优化建议
       - 竞争力分析(与同类职位对比)
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -93,7 +93,7 @@ criteria:
       - 职位刷新与置顶功能
       - 简历筛选与管理
       - 职位数据统计(浏览/投递/感兴趣)
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -115,7 +115,7 @@ criteria:
       - 职位列表与管理页面
       - 收到的简历列表
       - 简历筛选与标记功能
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
@@ -137,7 +137,7 @@ criteria:
       - 营业执照上传与审核
       - 认证标识展示
       - 公司信誉评分
-    status: "pending"
+    status: "passed"
     coverage:
       unit: required
       integration: required
