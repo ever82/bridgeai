@@ -142,7 +142,7 @@ logic: sufficient_necessary
 prerequisites:
 - ISSUE-COM002c
 slug: salary-negotiation-interview
-status: stuck
+status: implemented
 implementation:
   task_id: TASK-1776138296-1698
   completed_at: '2026-04-14T11:50:00+08:00'
@@ -151,6 +151,6 @@ implementation:
   notes: All acceptance criteria met - negotiation room, AI negotiation service, interview scheduling, result handling, APIs, and mobile UI implemented
 test_passed: true
 test_duration_seconds: 4
-merged_to_master: false
+merged_to_master: true
 worktree_path: /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-JOB004
 title: "\u85AA\u8D44\u534F\u5546\u4E0E\u9762\u8BD5\u5B89\u6392"
