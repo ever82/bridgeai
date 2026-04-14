@@ -42,12 +42,12 @@ model User {
   creditRecords CreditRecord[]
   creditScore   CreditScore?
   transactions  Transaction[]
+  pointsAccount PointsAccount?
   connections   Connection[]
   devices       UserDevice[]
   blockedUsers  BlockedUser[] @relation("BlockingUser")
   blockedBy     BlockedUser[] @relation("BlockedByUser")
   roles         UserRole[]  // RBAC roles
-  pointsAccount PointsAccount?
 
   @@map("users")
 }
@@ -311,20 +311,20 @@ model AgentProfile {
   agentId   String   @map("agent_id")
   sceneId   String   @map("scene_id")
 
-  // L1 - 基础信息（系统可查询）
+  // L1 - 基本?（系统可查询）
   l1Data    Json     @map("l1_data")  // location, timeRange, category, budget
 
-  // L2 - 结构化信息（Agent可读的自然语言）
+  // L2 - 结构化?Agent可读的自然语言?
   l2Data    Json     @map("l2_data")  // description, requirements, capabilities
 
-  // L3 - 自然语言描述（完整描述）
+  // L3 - 自然语言描述（完整描述?
   l3Text            String?   @map("l3_text") @db.Text  // 原始文本
   l3Description     String?   @map("l3_description")    // AI提炼后的描述
   l3ExtractionData  Json?     @map("l3_extraction_data") // 从L3提取的L2数据
   l3ExtractionConfidence Float? @map("l3_extraction_confidence") // 提炼置信度
 
   // 提炼历史
-  extractionHistory Json?     @map("extraction_history") // 提炼历史记录
+  extractionHistory Json?     @map("extraction_history")
 
   // 场景专属配置
   sceneConfig   Json?    @map("scene_config")
@@ -373,7 +373,7 @@ model ChatRoom {
 }
 
 enum ChatRoomType {
-  QUAD       @map("quad")       // 四人群聊（默认）
+  QUAD       @map("quad")       // 四人群聊（默认?
   PRIVATE    @map("private")    // 私聊
   GROUP      @map("group")      // 多人群聊
 }
@@ -410,7 +410,7 @@ enum SenderType {
 }
 
 // ============================================
-// 连接管理（Socket/WebSocket）
+// 连接管理（Socket/WebSocket?
 // ============================================
 
 model Connection {
@@ -498,7 +498,7 @@ model CreditHistory {
   reason      String   // 变化原因
   sourceType  String   @map("source_type") // PROFILE_UPDATE, TRANSACTION, RATING, SCHEDULED 等
   sourceId    String?  @map("source_id")   // 关联记录ID
-  metadata    Json?    // 额外信息
+  metadata    Json?    // 额外信?
   createdAt   DateTime @default(now()) @map("created_at")
 
   // Relations
@@ -601,21 +601,21 @@ model PointsAccount {
 
 // 积分交易记录
 model PointsTransaction {
-  id          String              @id @default(uuid())
-  accountId   String              @map("account_id")
-  userId      String              @map("user_id")
-  type        PointsTransactionType // 交易类型
-  amount      Int                 // 交易金额（正数为收入，负数为支出）
-  balanceAfter Int                @map("balance_after") // 交易后余额
-  description String?             // 交易描述
-  scene       SceneCode?          // 关联场景
-  referenceId String?             @map("reference_id") // 关联记录ID（如订单ID）
-  metadata    Json?               // 额外元数据
-  createdAt   DateTime            @default(now()) @map("created_at")
+  id            String              @id @default(uuid())
+  accountId     String              @map("account_id")
+  userId        String              @map("user_id")
+  type          PointsTransactionType // 交易类型
+  amount        Int                 // 交易金额（正数为收入，负数为支出）
+  balanceAfter  Int                 @map("balance_after") // 交易后余额
+  description   String?             // 交易描述
+  scene         SceneCode?          // 关联场?
+  referenceId   String?             @map("reference_id") // 关联记录ID（如订单ID?
+  metadata      Json?               // 额外元数据
+  createdAt     DateTime            @default(now()) @map("created_at")
 
   // Relations
-  account     PointsAccount       @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  freezeRecord PointsFreeze?      // 可选关联的冻结记录
+  account       PointsAccount       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  freezeRecord  PointsFreeze?       // 可选关联的冻结记录
 
   @@index([accountId])
   @@index([userId])
@@ -632,10 +632,10 @@ model PointsFreeze {
   transactionId String?         @unique @map("transaction_id") // 关联的交易记录
   amount        Int             // 冻结金额
   reason        String          // 冻结原因/用途
-  scene         SceneCode?      // 关联场景
+  scene         SceneCode?      // 关联场?
   referenceId   String?         @map("reference_id") // 关联业务记录ID
-  status        FreezeStatus    @default(FROZEN) // 冻结状态
-  expiresAt     DateTime?       @map("expires_at") // 过期时间（自动解冻）
+  status        FreezeStatus    @default(FROZEN) // 冻结状?
+  expiresAt     DateTime?       @map("expires_at") // 过期时间（自动解冻?
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
 
@@ -651,13 +651,13 @@ model PointsFreeze {
 }
 
 enum PointsTransactionType {
-  EARN        @map("earn")        // 获取积分（任务奖励、注册奖励等）
+  EARN        @map("earn")        // 获取积分（任务奖励、注册奖励等?
   SPEND       @map("spend")       // 消耗积分（查看照片等）
   RECHARGE    @map("recharge")    // 充值
   REFUND      @map("refund")      // 退款
   FROZEN      @map("frozen")      // 冻结
   UNFROZEN    @map("unfrozen")    // 解冻
-  DEDUCT      @map("deduct")      // 扣除（惩罚）
+  DEDUCT      @map("deduct")      // 扣除（惩罚?
   TRANSFER_IN @map("transfer_in")  // 转入
   TRANSFER_OUT @map("transfer_out") // 转出
 }
@@ -666,7 +666,7 @@ enum FreezeStatus {
   FROZEN      @map("frozen")      // 冻结中
   USED        @map("used")         // 已使用（完成交易）
   RELEASED    @map("released")     // 已释放（取消交易）
-  EXPIRED     @map("expired")      // 已过期
+  EXPIRED     @map("expired")      // 已过?
 }
 
 // ============================================
@@ -793,7 +793,7 @@ model UserRole {
 }
 
 // ============================================
-// 保存的筛选器
+// 保存的筛选?
 // ============================================
 
 model SavedFilter {
@@ -843,4 +843,3 @@ model SceneTemplate {
   @@index([isPublic, usageCount])
   @@index([userId, sceneId, isDefault])
   @@map("scene_templates")
-}

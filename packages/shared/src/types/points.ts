@@ -1,38 +1,12 @@
 /**
- * 积分系统共享类型
- * 供前后端共享使用
+ * 积分系统类型定义
+ * Points System Type Definitions
  */
 
-// 积分交易类型
-export enum PointsTransactionType {
-  EARN = 'earn',           // 获取积分（任务奖励、注册奖励等）
-  SPEND = 'spend',         // 消耗积分（查看照片等）
-  RECHARGE = 'recharge',   // 充值
-  REFUND = 'refund',       // 退款
-  FROZEN = 'frozen',       // 冻结
-  UNFROZEN = 'unfrozen',   // 解冻
-  DEDUCT = 'deduct',       // 扣除（惩罚）
-  TRANSFER_IN = 'transfer_in',   // 转入
-  TRANSFER_OUT = 'transfer_out', // 转出
-}
+// ============================================
+// 积分账户类型
+// ============================================
 
-// 冻结状态
-export enum FreezeStatus {
-  FROZEN = 'frozen',       // 冻结中
-  USED = 'used',           // 已使用（完成交易）
-  RELEASED = 'released',   // 已释放（取消交易）
-  EXPIRED = 'expired',     // 已过期
-}
-
-// 场景代码
-export enum SceneCode {
-  VISION_SHARE = 'vision_share',
-  AGENT_DATE = 'agent_date',
-  AGENT_JOB = 'agent_job',
-  AGENT_AD = 'agent_ad',
-}
-
-// 积分账户
 export interface PointsAccount {
   id: string;
   userId: string;
@@ -45,7 +19,47 @@ export interface PointsAccount {
   updatedAt: string;
 }
 
-// 积分交易记录
+export interface PointsAccountWithRelations extends PointsAccount {
+  transactions?: PointsTransaction[];
+  freezes?: PointsFreeze[];
+}
+
+// ============================================
+// 积分交易类型
+// ============================================
+
+export enum PointsTransactionType {
+  EARN = 'earn',
+  SPEND = 'spend',
+  RECHARGE = 'recharge',
+  REFUND = 'refund',
+  FROZEN = 'frozen',
+  UNFROZEN = 'unfrozen',
+  DEDUCT = 'deduct',
+  TRANSFER_IN = 'transfer_in',
+  TRANSFER_OUT = 'transfer_out',
+}
+
+export enum PointsScene {
+  VISION_SHARE = 'vision_share',
+  AGENT_DATE = 'agent_date',
+  AGENT_JOB = 'agent_job',
+  AGENT_AD = 'agent_ad',
+  SYSTEM = 'system',
+}
+
+// 场景代码 (与 schema.prisma 保持一致)
+export enum SceneCode {
+  VISION_SHARE = 'vision_share',
+  AGENT_DATE = 'agent_date',
+  AGENT_JOB = 'agent_job',
+  AGENT_AD = 'agent_ad',
+}
+
+// ============================================
+// 积分交易类型
+// ============================================
+
 export interface PointsTransaction {
   id: string;
   accountId: string;
@@ -60,7 +74,17 @@ export interface PointsTransaction {
   createdAt: string;
 }
 
-// 积分冻结记录
+// ============================================
+// 积分冻结类型
+// ============================================
+
+export enum FreezeStatus {
+  FROZEN = 'frozen',
+  USED = 'used',
+  RELEASED = 'released',
+  EXPIRED = 'expired',
+}
+
 export interface PointsFreeze {
   id: string;
   accountId: string;
@@ -75,7 +99,10 @@ export interface PointsFreeze {
   updatedAt: string;
 }
 
-// 积分账户响应
+// ============================================
+// API 请求/响应类型
+// ============================================
+
 export interface PointsAccountResponse {
   id: string;
   balance: number;
@@ -85,7 +112,12 @@ export interface PointsAccountResponse {
   availableBalance: number;
 }
 
-// 交易记录列表响应
+export interface PointsBalanceResponse {
+  balance: number;
+  frozenAmount: number;
+  available: number;
+}
+
 export interface PointsTransactionListResponse {
   transactions: PointsTransaction[];
   pagination: {
@@ -94,9 +126,20 @@ export interface PointsTransactionListResponse {
     total: number;
     totalPages: number;
   };
+  total: number;
+  hasMore: boolean;
 }
 
-// 冻结记录列表响应
+export interface PointsTransactionQuery {
+  userId?: string;
+  type?: PointsTransactionType;
+  scene?: PointsScene;
+  startDate?: string;
+  endDate?: string;
+  limit?: number;
+  offset?: number;
+}
+
 export interface PointsFreezeListResponse {
   freezes: PointsFreeze[];
   pagination: {
@@ -107,7 +150,10 @@ export interface PointsFreezeListResponse {
   };
 }
 
-// 积分交易请求（用于创建交易）
+// ============================================
+// 业务操作类型
+// ============================================
+
 export interface CreatePointsTransactionRequest {
   type: PointsTransactionType;
   amount: number;
@@ -117,7 +163,33 @@ export interface CreatePointsTransactionRequest {
   metadata?: Record<string, unknown>;
 }
 
-// 积分冻结请求
+export interface EarnPointsInput {
+  userId: string;
+  amount: number;
+  description?: string;
+  scene?: PointsScene;
+  referenceId?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface SpendPointsInput {
+  userId: string;
+  amount: number;
+  description?: string;
+  scene?: PointsScene;
+  referenceId?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface FreezePointsInput {
+  userId: string;
+  amount: number;
+  reason: string;
+  scene?: PointsScene;
+  referenceId?: string;
+  expiresAt?: string;
+}
+
 export interface CreatePointsFreezeRequest {
   amount: number;
   reason: string;
@@ -126,7 +198,45 @@ export interface CreatePointsFreezeRequest {
   expiresAt?: string;
 }
 
+export interface UnfreezePointsInput {
+  freezeId: string;
+  reason?: string;
+}
+
+export interface TransferPointsInput {
+  fromUserId: string;
+  toUserId: string;
+  amount: number;
+  description?: string;
+  scene?: PointsScene;
+  referenceId?: string;
+}
+
+// ============================================
+// 积分统计类型
+// ============================================
+
+export interface PointsStatistics {
+  totalEarned: number;
+  totalSpent: number;
+  currentBalance: number;
+  frozenAmount: number;
+  transactionCount: number;
+  periodStart?: string;
+  periodEnd?: string;
+}
+
+export interface PointsStatisticsQuery {
+  userId: string;
+  periodStart?: string;
+  periodEnd?: string;
+  scene?: PointsScene;
+}
+
+// ============================================
 // 积分操作结果
+// ============================================
+
 export interface PointsOperationResult {
   success: boolean;
   account?: PointsAccount;
@@ -135,99 +245,42 @@ export interface PointsOperationResult {
   error?: string;
 }
 
-// 积分交易类型显示信息
-export interface PointsTransactionTypeInfo {
-  type: PointsTransactionType;
-  label: string;
-  description: string;
-  isIncome: boolean;
+// ============================================
+// 积分规则配置
+// ============================================
+
+export interface PointsRuleConfig {
+  scene: PointsScene;
+  action: string;
+  points: number;
+  dailyLimit?: number;
+  weeklyLimit?: number;
+  cooldownMs?: number;
+  description?: string;
 }
 
-// 积分交易类型配置
-export const POINTS_TRANSACTION_TYPE_CONFIG: Record<PointsTransactionType, PointsTransactionTypeInfo> = {
-  [PointsTransactionType.EARN]: {
-    type: PointsTransactionType.EARN,
-    label: '获得积分',
-    description: '通过完成任务或活动获得积分',
-    isIncome: true,
-  },
-  [PointsTransactionType.SPEND]: {
-    type: PointsTransactionType.SPEND,
-    label: '消耗积分',
-    description: '使用积分购买服务或查看内容',
-    isIncome: false,
-  },
-  [PointsTransactionType.RECHARGE]: {
-    type: PointsTransactionType.RECHARGE,
-    label: '充值',
-    description: '通过充值获得积分',
-    isIncome: true,
-  },
-  [PointsTransactionType.REFUND]: {
-    type: PointsTransactionType.REFUND,
-    label: '退款',
-    description: '交易退款返还积分',
-    isIncome: true,
-  },
-  [PointsTransactionType.FROZEN]: {
-    type: PointsTransactionType.FROZEN,
-    label: '冻结',
-    description: '积分被冻结用于交易担保',
-    isIncome: false,
-  },
-  [PointsTransactionType.UNFROZEN]: {
-    type: PointsTransactionType.UNFROZEN,
-    label: '解冻',
-    description: '冻结积分解冻返还',
-    isIncome: true,
-  },
-  [PointsTransactionType.DEDUCT]: {
-    type: PointsTransactionType.DEDUCT,
-    label: '扣除',
-    description: '因违规或惩罚扣除积分',
-    isIncome: false,
-  },
-  [PointsTransactionType.TRANSFER_IN]: {
-    type: PointsTransactionType.TRANSFER_IN,
-    label: '转入',
-    description: '从其他账户转入积分',
-    isIncome: true,
-  },
-  [PointsTransactionType.TRANSFER_OUT]: {
-    type: PointsTransactionType.TRANSFER_OUT,
-    label: '转出',
-    description: '向其他账户转出积分',
-    isIncome: false,
-  },
-};
+// ============================================
+// 验证辅助函数类型
+// ============================================
 
-// 冻结状态显示信息
-export interface FreezeStatusInfo {
-  status: FreezeStatus;
-  label: string;
-  description: string;
+export interface ValidationContext {
+  balance: number;
+  amount: number;
+  rule?: PointsRuleConfig;
 }
 
-// 冻结状态配置
-export const FREEZE_STATUS_CONFIG: Record<FreezeStatus, FreezeStatusInfo> = {
-  [FreezeStatus.FROZEN]: {
-    status: FreezeStatus.FROZEN,
-    label: '冻结中',
-    description: '积分当前处于冻结状态',
-  },
-  [FreezeStatus.USED]: {
-    status: FreezeStatus.USED,
-    label: '已使用',
-    description: '冻结积分已被使用完成交易',
-  },
-  [FreezeStatus.RELEASED]: {
-    status: FreezeStatus.RELEASED,
-    label: '已释放',
-    description: '冻结积分已释放返还账户',
-  },
-  [FreezeStatus.EXPIRED]: {
-    status: FreezeStatus.EXPIRED,
-    label: '已过期',
-    description: '冻结积分因过期自动释放',
-  },
-};
+export function validateBalance(balance: number, amount: number): boolean {
+  return balance >= amount;
+}
+
+export function validatePointsAccount(account: PointsAccount): boolean {
+  return account.balance >= 0 && account.totalEarned >= 0 && account.totalSpent >= 0;
+}
+
+export function validateTransactionAmount(amount: number): boolean {
+  return Number.isInteger(amount) && amount > 0;
+}
+
+export function validateBalanceAfter(balance: number, amount: number, expected: number): boolean {
+  return balance === expected;
+}
