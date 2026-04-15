@@ -22,10 +22,7 @@ const getAllowedOrigins = (): string[] => {
   }
 
   if (process.env.NODE_ENV === 'staging') {
-    return [
-      'https://staging.visionshare.app',
-      'https://admin-staging.visionshare.app',
-    ];
+    return ['https://staging.visionshare.app', 'https://admin-staging.visionshare.app'];
   }
 
   // Development
@@ -118,14 +115,14 @@ export const securityHeaders = {
 
   // Cross-Origin policies
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-  crossOriginOpenerPolicy: { policy: 'same-origin' },
+  crossOriginResourcePolicy: { policy: 'cross-origin' as const },
+  crossOriginOpenerPolicy: { policy: 'same-origin' as const },
 
   // DNS prefetch control
   dnsPrefetchControl: { allow: false },
 
   // Frame options
-  frameguard: { action: 'deny' },
+  frameguard: { action: 'deny' as const },
 
   // Hide Powered-By
   hidePoweredBy: true,
@@ -147,10 +144,10 @@ export const securityHeaders = {
   originAgentCluster: true,
 
   // Permitted Cross-Domain Policies
-  permittedCrossDomainPolicies: { permittedPolicies: 'none' },
+  permittedCrossDomainPolicies: { permittedPolicies: 'none' as const },
 
   // Referrer Policy
-  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' as const },
 
   // XSS Filter
   xssFilter: true,
@@ -183,15 +180,15 @@ export const additionalSecurityHeaders = {
 
   // Cache control for sensitive endpoints
   'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-  'Pragma': 'no-cache',
-  'Expires': '0',
+  Pragma: 'no-cache',
+  Expires: '0',
 
   // Expect-CT (Certificate Transparency)
   'Expect-CT': 'max-age=86400, enforce',
 
   // Remove potentially dangerous headers
   'X-Powered-By': undefined as string | undefined,
-  'Server': undefined as string | undefined,
+  Server: undefined as string | undefined,
 };
 
 // Request validation config

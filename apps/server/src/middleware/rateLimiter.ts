@@ -307,3 +307,10 @@ export { apiLimiter, authLimiter } from './rateLimit';
 
 // Re-export config for tests and external use
 export { getRateLimitConfig, rateLimitConfigs } from '../config/rateLimit';
+
+/**
+ * Reset user request store (for testing)
+ */
+export function resetUserRequestStore(): void {
+  userRequestStore.clear();
+}

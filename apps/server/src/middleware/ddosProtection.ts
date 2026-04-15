@@ -41,7 +41,7 @@ const DDOS_CONFIG = {
   // Maximum concurrent slow requests before blocking
   maxSlowRequests: 10,
   // Whitelist IPs (never block)
-  whitelist: process.env.DDOS_WHITELIST?.split(',') || ['127.0.0.1', '::1'],
+  whitelist: process.env.DDOS_WHITELIST?.split(',') || ['127.0.0.1', '::1', '::ffff:127.0.0.1'],
   // Auto-block enabled
   autoBlock: process.env.DDOS_AUTO_BLOCK !== 'false',
 };
@@ -325,6 +325,15 @@ export function trafficMonitor(req: Request, res: Response, next: NextFunction):
   }
 
   next();
+}
+
+/**
+ * Reset all DDoS protection state (for testing)
+ */
+export function resetState(): void {
+  trafficStore.clear();
+  blockedIPs.clear();
+  requestStartTimes.clear();
 }
 
 /**
