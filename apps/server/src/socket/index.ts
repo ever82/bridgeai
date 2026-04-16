@@ -16,12 +16,9 @@ import { registerUserHandlers } from './handlers/user';
 import { registerChatHandlers } from './handlers/chat';
 import { registerSystemHandlers } from './handlers/system';
 import { registerGroupHandlers } from './handlers/groupHandler';
-<<<<<<< HEAD
 import { registerHandoffHandlers } from './handlers/handoffHandler';
-=======
 import { registerRoomHandlers } from './handlers/roomHandler';
 import { registerAgentNegotiationHandlers } from './handlers/agentNegotiation';
->>>>>>> issue/issue-job002
 
 /**
  * Socket.io server instance
@@ -118,8 +115,6 @@ function setupNamespaces(io: SocketServer): void {
   groupNsp.on('connection', (socket) => {
     handleConnection(socket, 'group');
     registerGroupHandlers(socket, groupNsp);
-<<<<<<< HEAD
-=======
   });
 
   // Room namespace for room management
@@ -134,7 +129,6 @@ function setupNamespaces(io: SocketServer): void {
   negotiationNsp.on('connection', (socket) => {
     handleConnection(socket, 'negotiation');
     registerAgentNegotiationHandlers(socket, negotiationNsp);
->>>>>>> issue/issue-job002
   });
 }
 

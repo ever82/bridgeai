@@ -84,4 +84,3 @@ export {
   processNaturalLanguageDemand,
   ExtractedDemandData,
 } from './consumerDemandAI';
->>>>>>> issue/issue-ad001

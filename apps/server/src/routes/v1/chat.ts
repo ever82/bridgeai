@@ -1,11 +1,10 @@
 /**
-<<<<<<< HEAD
  * Chat Routes
  *
- * REST API endpoints for chat history, message search, and sync.
+ * REST API endpoints for chat history, message search, sync, and room management.
  */
 import { Router } from 'express';
-import { authenticate } from '../../middleware/auth';
+import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
 import { validate } from '../../middleware/validation';
 import { z } from 'zod';
 import {
@@ -14,10 +13,28 @@ import {
   syncMessages,
   getMessageById,
 } from '../../services/messageService';
+import {
+  createRoom,
+  getRoomById,
+  updateRoom,
+  closeRoom,
+  getUserRooms,
+  searchRooms,
+  isUserInRoom,
+  resetUnreadCount,
+} from '../../services/chat/roomService';
+import {
+  addParticipant,
+  removeParticipant,
+  updateParticipant,
+  getRoomParticipants,
+  transferOwnership,
+} from '../../services/chat/participantService';
+import { ChatRoomType, ParticipantRole } from '@prisma/client';
 
 const router = Router();
 
-// Validation schemas
+// Validation schemas - Messages
 const getHistorySchema = z.object({
   query: z.object({
     limit: z.string().optional().transform((val) => (val ? parseInt(val, 10) : 50)),
@@ -55,6 +72,33 @@ const getMessageSchema = z.object({
     messageId: z.string().uuid(),
   }),
 });
+
+// Validation schemas - Rooms
+const createRoomSchema = z.object({
+  type: z.enum([ChatRoomType.PRIVATE, ChatRoomType.GROUP, ChatRoomType.QUAD]),
+  participantIds: z.array(z.string().uuid()).min(1),
+  sceneId: z.string().uuid().optional(),
+  metadata: z.record(z.any()).optional(),
+  settings: z.record(z.any()).optional(),
+});
+
+const updateRoomSchema = z.object({
+  status: z.enum(['ACTIVE', 'INACTIVE', 'CLOSED']).optional(),
+  metadata: z.record(z.any()).optional(),
+  settings: z.record(z.any()).optional(),
+});
+
+const addParticipantSchema = z.object({
+  userId: z.string().uuid(),
+  role: z.enum([ParticipantRole.MEMBER, ParticipantRole.ADMIN, ParticipantRole.GUEST]).optional(),
+});
+
+const updateParticipantSchema = z.object({
+  role: z.enum([ParticipantRole.MEMBER, ParticipantRole.ADMIN, ParticipantRole.GUEST]).optional(),
+  permissions: z.record(z.any()).optional(),
+});
+
+// ==================== Message Routes ====================
 
 /**
  * GET /api/v1/chat/rooms/:roomId/messages
@@ -110,80 +154,6 @@ router.get(
               : null,
           },
         },
-=======
- * Chat Room Routes
- * 聊天房间API路由
- */
-import { Router } from 'express';
-import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
-import { validate } from '../../middleware/validation';
-import { z } from 'zod';
-import {
-  createRoom,
-  getRoomById,
-  updateRoom,
-  closeRoom,
-  getUserRooms,
-  searchRooms,
-  isUserInRoom,
-  resetUnreadCount,
-} from '../../services/chat/roomService';
-import {
-  addParticipant,
-  removeParticipant,
-  updateParticipant,
-  getRoomParticipants,
-  transferOwnership,
-} from '../../services/chat/participantService';
-import { ChatRoomType, ParticipantRole } from '@prisma/client';
-
-const router = Router();
-
-// 验证模式
-const createRoomSchema = z.object({
-  type: z.enum([ChatRoomType.PRIVATE, ChatRoomType.GROUP, ChatRoomType.QUAD]),
-  participantIds: z.array(z.string().uuid()).min(1),
-  sceneId: z.string().uuid().optional(),
-  metadata: z.record(z.any()).optional(),
-  settings: z.record(z.any()).optional(),
-});
-
-const updateRoomSchema = z.object({
-  status: z.enum(['ACTIVE', 'INACTIVE', 'CLOSED']).optional(),
-  metadata: z.record(z.any()).optional(),
-  settings: z.record(z.any()).optional(),
-});
-
-const addParticipantSchema = z.object({
-  userId: z.string().uuid(),
-  role: z.enum([ParticipantRole.MEMBER, ParticipantRole.ADMIN, ParticipantRole.GUEST]).optional(),
-});
-
-const updateParticipantSchema = z.object({
-  role: z.enum([ParticipantRole.MEMBER, ParticipantRole.ADMIN, ParticipantRole.GUEST]).optional(),
-  permissions: z.record(z.any()).optional(),
-});
-
-/**
- * POST /api/v1/chat/rooms
- * 创建聊天房间
- */
-router.post(
-  '/rooms',
-  authenticate,
-  validate({ body: createRoomSchema }),
-  async (req: AuthenticatedRequest, res, next) => {
-    try {
-      const userId = req.user!.id;
-      const room = await createRoom({
-        ...req.body,
-        createdBy: userId,
-      });
-
-      res.status(201).json({
-        success: true,
-        data: room,
->>>>>>> issue/issue-job002
       });
     } catch (error) {
       next(error);
@@ -192,7 +162,6 @@ router.post(
 );
 
 /**
-<<<<<<< HEAD
  * GET /api/v1/chat/rooms/:roomId/sync
  * Sync messages (incremental sync)
  */
@@ -240,7 +209,143 @@ router.get(
             hasMore: result.hasMore,
           },
         },
-=======
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/v1/chat/rooms/:roomId/search
+ * Search messages in a room
+ */
+router.get(
+  '/rooms/:roomId/search',
+  authenticate,
+  validate({
+    query: searchMessagesSchema.query,
+    params: searchMessagesSchema.params,
+  }),
+  async (req, res, next) => {
+    try {
+      const { roomId } = req.params;
+      const { q, limit } = req.query as {
+        q: string;
+        limit?: string;
+      };
+
+      const messages = await searchMessages(
+        roomId,
+        q,
+        limit ? parseInt(limit, 10) : 20
+      );
+
+      res.json({
+        success: true,
+        data: {
+          messages: messages.map((msg) => ({
+            id: msg.id,
+            roomId: msg.conversationId,
+            senderId: msg.senderId,
+            sender: msg.sender,
+            content: msg.content,
+            type: msg.type.toLowerCase(),
+            attachments: msg.attachments,
+            metadata: msg.metadata,
+            status: msg.status,
+            sequenceId: msg.sequenceId.toString(),
+            editedAt: msg.editedAt?.toISOString(),
+            createdAt: msg.createdAt.toISOString(),
+          })),
+          query: q,
+          total: messages.length,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/v1/chat/messages/:messageId
+ * Get a specific message
+ */
+router.get(
+  '/messages/:messageId',
+  authenticate,
+  validate({
+    params: getMessageSchema.params,
+  }),
+  async (req, res, next) => {
+    try {
+      const { messageId } = req.params;
+
+      const message = await getMessageById(messageId);
+
+      if (!message) {
+        return res.status(404).json({
+          success: false,
+          error: 'Message not found',
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          message: {
+            id: message.id,
+            roomId: message.conversationId,
+            senderId: message.senderId,
+            sender: message.sender,
+            content: message.content,
+            type: message.type.toLowerCase(),
+            attachments: message.attachments,
+            metadata: message.metadata,
+            status: message.status,
+            sequenceId: message.sequenceId.toString(),
+            readReceipts: message.readReceipts,
+            editedAt: message.editedAt?.toISOString(),
+            createdAt: message.createdAt.toISOString(),
+          },
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ==================== Room Routes ====================
+
+/**
+ * POST /api/v1/chat/rooms
+ * 创建聊天房间
+ */
+router.post(
+  '/rooms',
+  authenticate,
+  validate({ body: createRoomSchema }),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const userId = req.user!.id;
+      const room = await createRoom({
+        ...req.body,
+        createdBy: userId,
+      });
+
+      res.status(201).json({
+        success: true,
+        data: room,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
  * GET /api/v1/chat/rooms
  * 获取用户房间列表
  */
@@ -374,7 +479,6 @@ router.patch(
       res.json({
         success: true,
         data: room,
->>>>>>> issue/issue-job002
       });
     } catch (error) {
       next(error);
@@ -383,52 +487,6 @@ router.patch(
 );
 
 /**
-<<<<<<< HEAD
- * GET /api/v1/chat/rooms/:roomId/search
- * Search messages in a room
- */
-router.get(
-  '/rooms/:roomId/search',
-  authenticate,
-  validate({
-    query: searchMessagesSchema.query,
-    params: searchMessagesSchema.params,
-  }),
-  async (req, res, next) => {
-    try {
-      const { roomId } = req.params;
-      const { q, limit } = req.query as {
-        q: string;
-        limit?: string;
-      };
-
-      const messages = await searchMessages(
-        roomId,
-        q,
-        limit ? parseInt(limit, 10) : 20
-      );
-
-      res.json({
-        success: true,
-        data: {
-          messages: messages.map((msg) => ({
-            id: msg.id,
-            roomId: msg.conversationId,
-            senderId: msg.senderId,
-            sender: msg.sender,
-            content: msg.content,
-            type: msg.type.toLowerCase(),
-            attachments: msg.attachments,
-            metadata: msg.metadata,
-            status: msg.status,
-            sequenceId: msg.sequenceId.toString(),
-            editedAt: msg.editedAt?.toISOString(),
-            createdAt: msg.createdAt.toISOString(),
-          })),
-          query: q,
-          total: messages.length,
-        },
-=======
  * DELETE /api/v1/chat/rooms/:id
  * 关闭房间
  */
@@ -521,7 +579,6 @@ router.post(
       res.status(201).json({
         success: true,
         data: participant,
->>>>>>> issue/issue-job002
       });
     } catch (error) {
       next(error);
@@ -530,49 +587,6 @@ router.post(
 );
 
 /**
-<<<<<<< HEAD
- * GET /api/v1/chat/messages/:messageId
- * Get a specific message
- */
-router.get(
-  '/messages/:messageId',
-  authenticate,
-  validate({
-    params: getMessageSchema.params,
-  }),
-  async (req, res, next) => {
-    try {
-      const { messageId } = req.params;
-
-      const message = await getMessageById(messageId);
-
-      if (!message) {
-        return res.status(404).json({
-          success: false,
-          error: 'Message not found',
-        });
-      }
-
-      res.json({
-        success: true,
-        data: {
-          message: {
-            id: message.id,
-            roomId: message.conversationId,
-            senderId: message.senderId,
-            sender: message.sender,
-            content: message.content,
-            type: message.type.toLowerCase(),
-            attachments: message.attachments,
-            metadata: message.metadata,
-            status: message.status,
-            sequenceId: message.sequenceId.toString(),
-            readReceipts: message.readReceipts,
-            editedAt: message.editedAt?.toISOString(),
-            createdAt: message.createdAt.toISOString(),
-          },
-        },
-=======
  * PATCH /api/v1/chat/rooms/:id/participants/:userId
  * 更新参与者
  */
@@ -590,7 +604,6 @@ router.patch(
       res.json({
         success: true,
         data: participant,
->>>>>>> issue/issue-job002
       });
     } catch (error) {
       next(error);
@@ -598,8 +611,6 @@ router.patch(
   }
 );
 
-<<<<<<< HEAD
-=======
 /**
  * DELETE /api/v1/chat/rooms/:id/participants/:userId
  * 移除参与者
@@ -648,5 +659,4 @@ router.post('/rooms/:id/transfer-ownership', authenticate, async (req: Authentic
   }
 });
 
->>>>>>> issue/issue-job002
 export default router;
