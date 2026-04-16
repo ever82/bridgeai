@@ -15,11 +15,13 @@ import consumerDemandRoutes from '../consumerDemand';
 import reviewRoutes from '../reviews';
 
 import healthRoutes from './health';
+import authRoutes from '../auth';
 
 const router: Router = Router();
 
 // Mount routes
 router.use('/health', healthRoutes);
+router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/credit', creditRoutes);
@@ -35,7 +37,6 @@ router.use('/consumer', consumerDemandRoutes);
 router.use('/reviews', reviewRoutes);
 
 // Placeholder for future routes
-// router.use('/auth', authRoutes);
 // router.use('/chats', chatRoutes);
 // router.use('/matches', matchRoutes);
 

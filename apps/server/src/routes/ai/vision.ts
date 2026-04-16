@@ -5,7 +5,7 @@
 
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
-import { authenticateToken } from '../../middleware/auth';
+import { authenticate as authenticateToken } from '../../middleware/auth';
 import logger from '../../utils/logger';
 
 // Vision Services

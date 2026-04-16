@@ -1,0 +1,159 @@
+你是 IssueTree 自动开发系统的任务监控 agent。
+
+## 你的任务
+检查一个正在运行的任务，判断其状态并采取适当行动。
+
+## 任务信息
+- Task: TASK-2624
+- Issue: ISSUE-INT001b
+- Task Type: fix
+- 目标 tmux session: task-2624
+- 超时时间: 60 分钟
+- 已运行时间: 11.0 分钟
+- 触发原因: periodic
+
+## 当前 tmux 输出（最后 80 行）
+```
+      fix(…)
+  ⎿  [issue/issue-int001b 7d9e46a] fix(ISSUE-INT001b): resolve stuck issue
+     - mark E2E tests as implemented
+      2 files changed, 132 insertions(+), 132 deletions(-)
+
+⏺ Now let me also update the IssueTree.md if it references this issue.
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+⏺ There's a title mismatch in IssueTree.md. Let me fix it.
+
+⏺ Update(.issuetree/IssueTree.md)
+  ⎿  Added 1 line, removed 1 line
+      586  | ------------- | ------------------------ | ------ | --------
+           -------------------------------- |
+      587  | ISSUE-INT001  | 端到端集成测试           | M      | 所有场景
+           Issue, UI, T001-T004, F005, F006 |
+      588  | ISSUE-INT001a | 集成测试 - VisionShare   | M      | VS001, V
+           S002, UI004a                    |
+      589 -| ISSUE-INT001b | 集成测试 - AgentDate     | M      | DATE001,
+          - DATE003, UI004a                |
+      589 +| ISSUE-INT001b | AgentJob + AgentAd E2E测试 | M      | JOB001
+          +, JOB002, JOB003, JOB004, AD001, AD002, AD003, AD004, UI001-UI
+          +007 |
+      590  | ISSUE-INT001c | 集成测试 - AgentJob/Ad   | M      | JOB001,
+           JOB004, AD001, AD004            |
+      591  | ISSUE-INT002  | 性能优化与压测           | H      | INT001
+                                            |
+      592  | ISSUE-INT002a | 性能优化 - 数据库优化    | H      | INT001
+                                            |
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+⏺ Bash(git add .issuetree/IssueTree.md && git commit -m "$(cat <<'EOF'
+      fix(ISSUE-INT001b): correct INT001b title and dependencies in
+      IssueTree.md…)
+  ⎿  [issue/issue-int001b 3eb85ae] fix(ISSUE-INT001b): correct INT001b titl
+     e and dependencies in IssueTree.md
+      1 file changed, 1 insertion(+), 1 deletion(-)
+
+⏺ Now let me verify the final state and try to report via V3 SkillAPI.
+
+⏺ Bash(git log --oneline -3)
+  ⎿  3eb85ae fix(ISSUE-INT001b): correct INT001b title and dependencies in
+     IssueTree.md
+     7d9e46a fix(ISSUE-INT001b): resolve stuck issue - mark E2E tests as im
+     … +3 lines (ctrl+o to expand)
+
+⏺ Now let me try to report via V3 SkillAPI (note: DB is empty, so this may
+  fail).
+
+⏺ Bash(IT_SCRIPTS="/Users/apple/projects/issue-tree/scripts"
+      DB=".issuetree/issuetree.db"…)
+  ⎿  Issue not in DB or no current_task. Issue found: False
+
+⏺ The V3 DB is empty so SkillAPI can't report. The fix is complete in the
+  worktree. Let me verify the final state.
+
+⏺ Bash(git log --oneline -5 && echo "---" && git status)
+  ⎿  3eb85ae fix(ISSUE-INT001b): correct INT001b title and dependencies in
+     IssueTree.md
+     7d9e46a fix(ISSUE-INT001b): resolve stuck issue - mark E2E tests as im
+     … +13 lines (ctrl+o to expand)
+
+⏺ Fix Complete for ISSUE-INT001b
+
+  Analysis:
+  - ISSUE-INT001b (AgentJob + AgentAd E2E测试) worktree existed at commit
+  3549100 with no local changes
+  - The E2E test files were already fully implemented in the codebase at
+  apps/e2e/tests/scenarios/:
+    - agentjob.test.ts - 5 test suites covering
+  求职画像配置、职位发布、智能匹配、薪资协商面试、人机切换
+    - agentad.test.ts - 5 test suites covering
+  消费画像、商家优惠、协商谈判、一键购买、多商家比价
+  - V3 SQLite DB was empty (0 issues) - the issue existed only in the V2
+  orchestrator state file
+
+  Fix Applied:
+  1. Updated issue YAML (.issuetree/issues/ISSUE-INT001b/): status pending →
+  implemented, both criteria pending → passed
+  2. Updated orchestrator state: pending → implemented
+  3. Fixed IssueTree.md: corrected INT001b row title ("AgentDate" → "AgentJob +
+  AgentAd E2E测试") and dependencies
+  4. Committed 2 fix commits to issue/issue-int001b
+
+  Verification:
+  - E2E type-check passes cleanly (npx tsc --noEmit -p apps/e2e/tsconfig.json -
+  no errors)
+  - Test infrastructure complete: fixtures, global-setup/teardown, Playwright
+  config all present
+
+  Note: V3 SkillAPI could not report because the V3 SQLite DB has no issues
+  (empty). The V3 state machine hasn't been initialized with issue data from the
+   orchestrator. The worktree is ready for merge to master.
+
+✻ Cogitated for 9m 54s
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  ISSUE-INT001b (issue/issue-int001b)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+
+```
+
+## 操作步骤
+1. 先分析上面给出的 tmux 输出，判断任务当前状态
+2. 如果信息不够，用 Bash 工具执行 `tmux capture-pane -t task-2624 -p -S -200` 获取更多历史
+3. 如需更多信息：
+   - 检查 worktree 的 git status: `cd /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INT001b && git status && git log --oneline -5`
+   - 检查 worktree 是否有新代码变更
+
+## 职责分层
+**你可以直接做的简单操作（用 Bash 工具）：**
+- 发送 Enter 键: `tmux send-keys -t task-2624 Enter`
+- 发送特定文本: `tmux send-keys -t task-2624 "y" Enter`
+- 这些是安全的，直接执行即可
+
+**必须返回 JSON 由系统处理（不要自己做）：**
+- kill tmux session
+- 更新数据库中的 task/issue 状态
+- 标记任务完成或失败
+
+## 判断标准
+- **healthy**: 任务正在正常执行，有进度输出
+- **completed**: 任务已完成（看到 SkillAPI.complete_task 调用、成功完成信息、skill 执行完毕等）
+- **stuck_permissions**: 卡在权限确认提示
+- **stuck_input**: 等待用户输入（y/n、press enter 等）
+- **stuck_error**: 遇到错误无法继续（编译错误、依赖缺失等）
+- **timeout**: 运行时间过长且无明显进度
+- **unknown**: 无法判断
+
+## 可选动作
+- **no_action**: 任务正常，不需要干预
+- **send_keys**: 你已经直接发送了按键（Enter/文本），告知系统即可
+- **complete_task**: 请求系统标记任务完成（agent 观察到 task 已成功完成）
+- **fail_task**: 请求系统标记任务失败（系统会自动安排 fix 或等待人工处理）
+
+## 输出格式
+只返回一个 JSON 对象，不要包含其他文字：
+{"status": "...", "action": "...", "reasoning": "..."}

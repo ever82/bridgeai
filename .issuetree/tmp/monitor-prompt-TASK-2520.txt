@@ -1,0 +1,159 @@
+你是 IssueTree 自动开发系统的任务监控 agent。
+
+## 你的任务
+检查一个正在运行的任务，判断其状态并采取适当行动。
+
+## 任务信息
+- Task: TASK-2520
+- Issue: ISSUE-COM001b
+- Task Type: fix
+- 目标 tmux session: task-2520
+- 超时时间: 60 分钟
+- 已运行时间: 4.3 分钟
+- 触发原因: periodic
+
+## 当前 tmux 输出（最后 80 行）
+```
+⏺ Let me check the worktree state and understand what code changes are present.
+
+⏺ Bash(git status)
+  ⎿  On branch issue/issue-com001b
+     Changes not staged for commit:
+       (use "git add <file>..." to update what will be committed)
+     … +19 lines (ctrl+o to expand)
+
+⏺ Let me first run the migration to populate the database, then check what
+  failed.
+
+⏺ Bash(python3 /Users/apple/projects/issue-tree/scripts/v3/migrate.py
+      /Users/apple/projects/bridgeai --execute 2>&1)
+  ⎿  Error: Exit code 1
+     Error: PyYAML is required. Install with: pip install pyyaml
+
+⏺ Bash(pip install pyyaml 2>&1 | tail -5)
+  ⎿  (eval):1: command not found: pip
+
+⏺ Bash(pip3 install pyyaml 2>&1 | tail -5)
+  ⎿  ERROR: Could not find a version that satisfies the requirement pyyaml
+     (from versions: none)
+     … +3 lines (ctrl+o to expand)
+
+⏺ Let me manually insert the issue into the database.
+
+⏺ Bash(python3 -c "
+      import sqlite3…)
+  ⎿  Issues count: 0
+     Tasks count: 0
+     AC count: 0
+
+⏺ Bash(python3 -c "
+      import sqlite3…)
+  ⎿  Error: Exit code 1
+     Traceback (most recent call last):
+       File "<string>", line 37, in <module>
+     sqlite3.IntegrityError: NOT NULL constraint failed:
+     issue_prerequisites.created_at
+     Created ISSUE-COM001a: id=1
+     Created ISSUE-COM001b: id=2
+
+⏺ Bash(python3 -c "
+      import sqlite3…)
+  ⎿  Error: Exit code 1
+     Traceback (most recent call last):
+       File "<string>", line 18, in <module>
+     sqlite3.OperationalError: table issue_prerequisites has no column named
+     updated_at
+
+⏺ Bash(sqlite3 .issuetree/issuetree.db ".schema issue_prerequisites" && echo
+      "---" && sqlite3 .issuetree/issuetree.db ".schema tasks" && echo "---" &&
+      sqlite3 .issuetr…)
+  ⎿  CREATE TABLE issue_prerequisites (
+        issue_id INTEGER NOT NULL,
+        prereq_id INTEGER NOT NULL,
+     … +26 lines (ctrl+o to expand)
+
+⏺ Bash(python3 -c "
+      import sqlite3…)
+  ⎿  Created prerequisite
+     ISSUE-COM001b setup complete: id=2, task_id=1
+     Verify: slug=ISSUE-COM001b, status=fixing, stuck_reason=accept_failed,
+      task_id=1
+
+⏺ Good. Now let me analyze why acceptance failed. Let me check the code and test
+   files.
+
+⏺ Bash(git log --oneline -5)
+  ⎿  1f6bce1 fix(ISSUE-COM001b): update issue status and code improvements
+     0bbe3f3 feat(ISSUE-COM001b): implement connection management and room
+     system
+     … +3 lines (ctrl+o to expand)
+
+⏺ Bash(git diff 1f6bce1 -- apps/server/src/socket/ apps/server/src/services/)
+  ⎿  diff --git a/apps/server/src/socket/__tests__/connectionManager.test.t
+     s b/apps/server/src/socket/__tests__/connectionManager.test.ts
+     index a4a5963..ceb5f73 100644
+     … +218 lines (ctrl+o to expand)
+
+⏺ Let me read the source files to understand the full implementation.
+
+  Read 2 files (ctrl+o to expand)
+
+⏺ Let me check the services that are referenced.
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+⏺ Now let me run the tests to see if they pass or fail.
+
+  Bash(cd /Users/apple/projects/bridgeai && npx jest
+      --testPathPattern="roomHandler.test|connectionManager.test" --verbose 2>&1
+       | tail -80)
+  ⎿  Running… (22s · timeout 1m)
+     (ctrl+b ctrl+b (twice) to run in background)
+
+✽ Newspapering… (4m 15s · ↓ 5.1k tokens)
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  ISSUE-COM001b (issue/issue-com001b)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+
+```
+
+## 操作步骤
+1. 先分析上面给出的 tmux 输出，判断任务当前状态
+2. 如果信息不够，用 Bash 工具执行 `tmux capture-pane -t task-2520 -p -S -200` 获取更多历史
+3. 如需更多信息：
+   - 检查 worktree 的 git status: `cd /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-COM001b && git status && git log --oneline -5`
+   - 检查 worktree 是否有新代码变更
+
+## 职责分层
+**你可以直接做的简单操作（用 Bash 工具）：**
+- 发送 Enter 键: `tmux send-keys -t task-2520 Enter`
+- 发送特定文本: `tmux send-keys -t task-2520 "y" Enter`
+- 这些是安全的，直接执行即可
+
+**必须返回 JSON 由系统处理（不要自己做）：**
+- kill tmux session
+- 更新数据库中的 task/issue 状态
+- 标记任务完成或失败
+
+## 判断标准
+- **healthy**: 任务正在正常执行，有进度输出
+- **completed**: 任务已完成（看到 SkillAPI.complete_task 调用、成功完成信息、skill 执行完毕等）
+- **stuck_permissions**: 卡在权限确认提示
+- **stuck_input**: 等待用户输入（y/n、press enter 等）
+- **stuck_error**: 遇到错误无法继续（编译错误、依赖缺失等）
+- **timeout**: 运行时间过长且无明显进度
+- **unknown**: 无法判断
+
+## 可选动作
+- **no_action**: 任务正常，不需要干预
+- **send_keys**: 你已经直接发送了按键（Enter/文本），告知系统即可
+- **complete_task**: 请求系统标记任务完成（agent 观察到 task 已成功完成）
+- **fail_task**: 请求系统标记任务失败（系统会自动安排 fix 或等待人工处理）
+
+## 输出格式
+只返回一个 JSON 对象，不要包含其他文字：
+{"status": "...", "action": "...", "reasoning": "..."}

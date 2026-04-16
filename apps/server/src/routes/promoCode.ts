@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { authenticate, requireRoles } from '../../middleware/auth';
-import { validateRequest } from '../../middleware/validation';
+import { validate as validateRequest } from '../../middleware/validation';
 import { z } from 'zod';
 import {
   createCoupon,

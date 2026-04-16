@@ -5,7 +5,7 @@
 
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth';
-import { validateRequest } from '../middleware/validation';
+import { validate } from '../middleware/validation';
 import { z } from 'zod';
 import {
   getProvinces,
@@ -178,7 +178,7 @@ router.get('/name/:code', async (req, res, next) => {
  * GET /api/location/agents
  * Search agents by location
  */
-router.get('/agents', authenticate, validateRequest(locationFilterSchema, 'query'), async (req, res, next) => {
+router.get('/agents', authenticate, validate(locationFilterSchema, 'query'), async (req, res, next) => {
   try {
     const { province, city, district, lat, lng, radius, page, limit } = req.query;
 
@@ -219,7 +219,7 @@ router.get('/agents', authenticate, validateRequest(locationFilterSchema, 'query
 router.get(
   '/agents/nearby',
   authenticate,
-  validateRequest(radiusSearchSchema, 'query'),
+  validate(radiusSearchSchema, 'query'),
   async (req, res, next) => {
     try {
       const { lat, lng, radius, agentType, excludeAgentId } = req.query;
@@ -253,7 +253,7 @@ router.get(
 router.get(
   '/distance',
   authenticate,
-  validateRequest(distanceSchema, 'query'),
+  validate(distanceSchema, 'query'),
   async (req, res, next) => {
     try {
       const { agentId1, agentId2 } = req.query;

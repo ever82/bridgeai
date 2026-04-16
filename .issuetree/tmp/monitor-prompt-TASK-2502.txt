@@ -1,0 +1,159 @@
+你是 IssueTree 自动开发系统的任务监控 agent。
+
+## 你的任务
+检查一个正在运行的任务，判断其状态并采取适当行动。
+
+## 任务信息
+- Task: TASK-2502
+- Issue: ISSUE-AI003b
+- Task Type: fix
+- 目标 tmux session: task-2502
+- 超时时间: 60 分钟
+- 已运行时间: 7.4 分钟
+- 触发原因: periodic
+
+## 当前 tmux 输出（最后 80 行）
+```
+     … +35 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+⏺ 所有 65
+  个测试都成功通过了。实现是正确的。问题在于之前的尝试在错误的目录（monorepo
+  根目录）中运行了测试。我还会验证 TypeScript 编译。
+
+⏺ Bash(cd apps/server && npx tsc --noEmit 2>&1 | tail -20)
+  ⎿  Error: Exit code 1
+     (eval):cd:1: no such file or directory: apps/server
+
+⏺ Bash(npx tsc --noEmit 2>&1 | tail -30)
+  ⎿      Imported via '../../types/scene' from file '/Users/apple/projects/
+     bridgeai/.issuetree/worktrees/ISSUE-AI003b/packages/shared/src/config/
+     scenes/agentDate.ts'
+     … +88 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+⏺ TypeScript 错误是预先存在的共享包配置问题（并非与供给提取器相关）。让我通过只
+  检查供给提取器源文件中的错误来验证。
+
+⏺ Bash(npx tsc --noEmit 2>&1 | grep -i "supply" || echo "No supply-related TS
+      errors")
+  ⎿  src/__tests__/factories/demand-supply.factory.ts(2,15): error TS2305:
+     Module '"@prisma/client"' has no exported member 'Demand'.
+     src/__tests__/factories/demand-supply.factory.ts(2,23): error TS2305:
+     … +5 lines (ctrl+o to expand)
+
+⏺ 错误位于 Prisma 客户端工厂中（数据库 schema 尚未同步）—— 这是一个预先存在的问
+  题，并非供给提取器代码本身的问题。我来验证一下这些是否也存在于 master 分支上。
+
+⏺ Bash(cd /Users/apple/projects/bridgeai && git stash -p 2>/dev/null; cd
+      apps/server 2>/dev/null && npx tsc --noEmit 2>&1 | grep -i "supply" ||
+      echo "No supply-related…)
+  ⎿  Error: Exit code 1
+     diff --git a/.issuetree/IssueTree.md b/.issuetree/IssueTree.md
+     index 2194f2c..37ac30a 100644
+     --- a/.issuetree/IssueTree.md
+     +++ b/.issuetree/IssueTree.md
+     @@ -106,7 +106,7 @@ flowchart TD
+
+          subgraph Date["💕 AgentDate场景"]
+              DATE001[🟡 ISSUE-DATE001<br/>交友画像配置]
+     -        DATE002[❌ ISSUE-DATE002<br/>Agent主动匹配推荐]
+     … +341 lines (ctrl+o to see all)
+
+⏺ Bash(cd /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-AI003b &&
+      git status)
+  ⎿  On branch issue/issue-ai003b
+     nothing to commit, working tree clean
+
+⏺ 工作树是干净的。实现是正确的——所有 65 个测试都通过了。让我通过 SkillAPI
+  报告修复成功。
+
+⏺ Bash(IT_SCRIPTS=/Users/apple/projects/issue-tree/scripts
+      python3 -c "…)
+  ⎿  Issue not found
+
+⏺ Bash(pwd && ls .issuetree/issuetree.db 2>/dev/null && python3 -c "
+      import sys; sys.path.insert(0,
+      '/Users/apple/projects/issue-tree/scripts')…)
+  ⎿  /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-AI003b
+     .issuetree/issuetree.db
+     Looking for db at: /Users/apple/projects/bridgeai/.issuetree/worktrees
+     … +3 lines (ctrl+o to expand)
+
+⏺ Bash(python3 -c "
+      import sys; sys.path.insert(0,
+      '/Users/apple/projects/issue-tree/scripts')…)
+  ⎿  Error: Exit code 1
+     Traceback (most recent call last):
+       File "<string>", line 12, in <module>
+     AttributeError: 'StateManager' object has no attribute 'get_issue_by_id'.
+     Did you mean: 'get_issue_by_slug'?
+
+⏺ Bash(python3 -c "
+      import sys; sys.path.insert(0,
+      '/Users/apple/projects/issue-tree/scripts')…)
+  ⎿  Error: Exit code 1
+     Traceback (most recent call last):
+       File "<string>", line 21, in <module>
+     AttributeError: 'Engine' object has no attribute 'execute'
+     Slug AI003b: False
+     Slug supply-scene-extractors: False
+     Slug supply_scene_extractors: False
+
+⏺ Bash(python3 -c "
+      import sqlite3…)
+  ⎿  Matching issues:
+
+     Recent AI tasks:
+
+⏺ Bash(python3 -c "
+      import sqlite3…)
+  ⎿  Matching issues:
+
+✳ Elucidating… (7m 21s · ↑ 5.9k tokens)
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  ISSUE-AI003b (issue/issue-ai003b)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+
+```
+
+## 操作步骤
+1. 先分析上面给出的 tmux 输出，判断任务当前状态
+2. 如果信息不够，用 Bash 工具执行 `tmux capture-pane -t task-2502 -p -S -200` 获取更多历史
+3. 如需更多信息：
+   - 检查 worktree 的 git status: `cd /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-AI003b && git status && git log --oneline -5`
+   - 检查 worktree 是否有新代码变更
+
+## 职责分层
+**你可以直接做的简单操作（用 Bash 工具）：**
+- 发送 Enter 键: `tmux send-keys -t task-2502 Enter`
+- 发送特定文本: `tmux send-keys -t task-2502 "y" Enter`
+- 这些是安全的，直接执行即可
+
+**必须返回 JSON 由系统处理（不要自己做）：**
+- kill tmux session
+- 更新数据库中的 task/issue 状态
+- 标记任务完成或失败
+
+## 判断标准
+- **healthy**: 任务正在正常执行，有进度输出
+- **completed**: 任务已完成（看到 SkillAPI.complete_task 调用、成功完成信息、skill 执行完毕等）
+- **stuck_permissions**: 卡在权限确认提示
+- **stuck_input**: 等待用户输入（y/n、press enter 等）
+- **stuck_error**: 遇到错误无法继续（编译错误、依赖缺失等）
+- **timeout**: 运行时间过长且无明显进度
+- **unknown**: 无法判断
+
+## 可选动作
+- **no_action**: 任务正常，不需要干预
+- **send_keys**: 你已经直接发送了按键（Enter/文本），告知系统即可
+- **complete_task**: 请求系统标记任务完成（agent 观察到 task 已成功完成）
+- **fail_task**: 请求系统标记任务失败（系统会自动安排 fix 或等待人工处理）
+
+## 输出格式
+只返回一个 JSON 对象，不要包含其他文字：
+{"status": "...", "action": "...", "reasoning": "..."}

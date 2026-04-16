@@ -1,0 +1,134 @@
+你是 IssueTree 自动开发系统的任务监控 agent。
+
+## 你的任务
+检查一个正在运行的任务，判断其状态并采取适当行动。
+
+## 任务信息
+- Task: TASK-2660
+- Issue: ISSUE-INF001
+- Task Type: accept
+- 目标 tmux session: task-2660
+- 超时时间: 60 分钟
+- 已运行时间: 3.3 分钟
+- 触发原因: periodic
+
+## 当前 tmux 输出（最后 80 行）
+```
+ ▐▛███▜▌   Claude Code v2.1.101
+▝▜█████▛▘  qwen3.6-plus · API Usage Billing
+  ▘▘ ▝▝    ~/projects/bridgeai/.issuetree/worktrees/ISSUE-INF001
+
+❯ /accept-issue ISSUE-INF001
+
+⏺ 我将开始对 ISSUE-INF001 进行验收流程。首先，我将读取 issue 信息并同时检查
+  worktree 状态。
+
+⏺ Bash(cd /Users/apple/projects/bridgeai && IT_SCRIPTS="" && for p in "$(dirname
+       "$(pwd)")/issue-tree/scripts" "$HOME/projects/issue-tree/scripts"; do [
+      -d "$p/v3" ] &…)
+  ⎿  IT_SCRIPTS=/Users/apple/projects/issue-tree/scripts
+     Title: API Gateway 设计与实现
+     Status: accepting
+     … +18 lines (ctrl+o to expand)
+  ⎿  Shell cwd was reset to
+     /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INF001
+
+⏺ Bash(git log --oneline -10)
+  ⎿  8f9a4db fix(ISSUE-INF001): resolve stuck implementation - fix resource
+      leaks and code quality
+     e817c6b fix(ISSUE-INF001): add missing registerBackendNodes export and
+     … +13 lines (ctrl+o to expand)
+
+⏺ Bash(cd /Users/apple/projects/bridgeai && git diff master --stat)
+  ⎿   .claude/worktrees/agent-ab1b0f35     | 0
+      .issuetree/worktrees/ISSUE-A001      | 0
+      .issuetree/worktrees/ISSUE-A002      | 0
+     … +35 lines (ctrl+o to expand)
+  ⎿  Shell cwd was reset to
+     /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INF001
+
+⏺ 让我查看具体的代码变更和实现细节。
+
+⏺ Bash(git diff master --name-only -- 'apps/' '*.ts' '*.js' '*.json' | head -50)
+  ⎿  .claude/scheduled_tasks.json
+     .eslintrc.js
+     .issuetree/auto-dev/orchestrator.state.json
+     … +34 lines (ctrl+o to expand)
+
+⏺ Bash(git log --oneline master..HEAD -- .)
+  ⎿  8f9a4db fix(ISSUE-INF001): resolve stuck implementation - fix resource
+      leaks and code quality
+     e817c6b fix(ISSUE-INF001): add missing registerBackendNodes export and
+     … +6 lines (ctrl+o to expand)
+
+⏺ 让我聚焦查看 API Gateway 相关的具体实现代码。
+
+⏺ Explore(Explore API Gateway implementation)
+  ⎿  Done (32 tool uses · 48.5k tokens · 2m 0s)
+  (ctrl+o to expand)
+
+⏺ 不错的分析。让我深入研究一下关于 CRIT-INF001-3（JWT
+  Auth）的“部分完成”发现，并并行运行测试。
+
+  Read 2 files (ctrl+o to expand)
+
+⏺ Bash(npx jest --config apps/server/jest.config.js --testPathPattern="gateway"
+      --no-coverage 2>&1 | tail -60)
+  ⎿        ✓ should use different keys for different IPs (1 ms)
+           ✓ should use different keys for different paths (2 ms)
+     … +32 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+⏺ 所有 6 个测试套件中的 69 个测试均已通过。让我再核实一下 CRIT-INF001-3
+  关于白名单和令牌刷新的详细信息。
+
+⏺ Reading 2 files… (ctrl+o to expand)
+  ⎿  apps/server/src/services/auth/refreshToken.ts
+
+✳ Infusing… (3m 19s · ↑ 6.1k tokens · thought for 13s)
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  ISSUE-INF001 (issue/issue-inf001)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+
+```
+
+## 操作步骤
+1. 先分析上面给出的 tmux 输出，判断任务当前状态
+2. 如果信息不够，用 Bash 工具执行 `tmux capture-pane -t task-2660 -p -S -200` 获取更多历史
+3. 如需更多信息：
+   - 检查 worktree 的 git status: `cd /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INF001 && git status && git log --oneline -5`
+   - 检查 worktree 是否有新代码变更
+
+## 职责分层
+**你可以直接做的简单操作（用 Bash 工具）：**
+- 发送 Enter 键: `tmux send-keys -t task-2660 Enter`
+- 发送特定文本: `tmux send-keys -t task-2660 "y" Enter`
+- 这些是安全的，直接执行即可
+
+**必须返回 JSON 由系统处理（不要自己做）：**
+- kill tmux session
+- 更新数据库中的 task/issue 状态
+- 标记任务完成或失败
+
+## 判断标准
+- **healthy**: 任务正在正常执行，有进度输出
+- **completed**: 任务已完成（看到 SkillAPI.complete_task 调用、成功完成信息、skill 执行完毕等）
+- **stuck_permissions**: 卡在权限确认提示
+- **stuck_input**: 等待用户输入（y/n、press enter 等）
+- **stuck_error**: 遇到错误无法继续（编译错误、依赖缺失等）
+- **timeout**: 运行时间过长且无明显进度
+- **unknown**: 无法判断
+
+## 可选动作
+- **no_action**: 任务正常，不需要干预
+- **send_keys**: 你已经直接发送了按键（Enter/文本），告知系统即可
+- **complete_task**: 请求系统标记任务完成（agent 观察到 task 已成功完成）
+- **fail_task**: 请求系统标记任务失败（系统会自动安排 fix 或等待人工处理）
+
+## 输出格式
+只返回一个 JSON 对象，不要包含其他文字：
+{"status": "...", "action": "...", "reasoning": "..."}

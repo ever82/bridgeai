@@ -1,0 +1,147 @@
+你是 IssueTree 自动开发系统的任务监控 agent。
+
+## 你的任务
+检查一个正在运行的任务，判断其状态并采取适当行动。
+
+## 任务信息
+- Task: TASK-2612
+- Issue: ISSUE-INF001
+- Task Type: fix
+- 目标 tmux session: task-2612
+- 超时时间: 60 分钟
+- 已运行时间: 4.8 分钟
+- 触发原因: periodic
+
+## 当前 tmux 输出（最后 80 行）
+```
+ ▐▛███▜▌   Claude Code v2.1.101
+▝▜█████▛▘  qwen3.6-plus · API Usage Billing
+  ▘▘ ▝▝    ~/projects/bridgeai/.issuetree/worktrees/ISSUE-INF001
+
+❯ /fix-issue ISSUE-INF001
+
+⏺ 我将首先分析失败的 ISSUE-INF001。让我收集问题和 worktree 的状态信息。
+
+  Bash(IT_SCRIPTS=""
+      for p in "$(dirname "$(pwd)")/issue-tree/scripts"
+      "$HOME/projects/issue-tree/scripts"; do…)
+  ⎿  Task TASK-INF001-1: type=implement status=failed passed=False
+         Error: Task failed during implementation
+       Task TASK-2: type=fix status=completed passed=True
+     +9 lines (5s)
+     (ctrl+b ctrl+b (twice) to run in background)
+
+✻ Improvising… (28s · ↓ 373 tokens)
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  ISSUE-INF001 (issue/issue-inf001)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+ ▐▛███▜▌   Claude Code v2.1.101
+▝▜█████▛▘  qwen3.6-plus · API Usage Billing
+  ▘▘ ▝▝    ~/projects/bridgeai/.issuetree/worktrees/ISSUE-INF001
+
+❯ /fix-issue ISSUE-INF001
+
+⏺ 我将首先分析失败的 ISSUE-INF001。让我收集问题和 worktree 的状态信息。
+
+⏺ Bash(IT_SCRIPTS=""
+      for p in "$(dirname "$(pwd)")/issue-tree/scripts"
+      "$HOME/projects/issue-tree/scripts"; do…)
+  ⎿  IT_SCRIPTS=/Users/apple/projects/issue-tree/scripts
+     Title: API Gateway 设计与实现
+     Status: implemented
+     … +10 lines (ctrl+o to expand)
+
+⏺ 问题状态为 implemented（并非停滞）。让我更仔细地检查当前工作区状态和最新提交，
+  以了解需要修复什么。
+
+⏺ Bash(git status && echo "---" && git log --oneline -10 && echo "---" && git
+      diff --stat HEAD~1)
+  ⎿  On branch issue/issue-inf001
+     Untracked files:
+       (use "git add <file>..." to include in what will be committed)
+     … +19 lines (ctrl+o to expand)
+
+⏺ Issue 状态为 implemented，不是 stuck 状态。让我确认 Task 失败的原因以及 issue
+  是否需要 accept 验证。
+
+⏺ Bash(python3 -c "
+      import sys; sys.path.insert(0,
+      '/Users/apple/projects/issue-tree/scripts')…)
+  ⎿  Current task ID: None
+       Task: slug=TASK-INF001-1 type=implement status=failed passed=False e
+     rror=Task failed during implementation
+     … +11 lines (ctrl+o to expand)
+
+⏺ 分析结果：
+
+  - Issue 状态: implemented ✓
+  - TASK-INF001-1 (implement): failed — 这是原始实现任务
+  - TASK-2 (fix): completed ✓ — 已通过，所有 69 个 gateway 测试通过
+  - 最近提交 8f9a4db 确认已修复资源泄漏和代码质量问题
+
+  ISSUE-INF001 实际上并非处于 stuck 状态。Issue 已经处于 implemented
+  状态，测试全部通过，修复任务 TASK-2 已成功完成。当前没有任何待处理的 fix
+  操作。
+
+⏺ Bash(python3 -c "
+      import sys; sys.path.insert(0,
+      '/Users/apple/projects/issue-tree/scripts')…)
+  ⎿  Accept tasks: 0
+     Current task ID: None
+
+⏺ 确认：Issue 已实现，没有验收任务，没有当前活动任务。
+
+  总结：ISSUE-INF001 (API Gateway) 已处于正常完成状态。原始实现任务
+  (TASK-INF001-1) 虽然失败，但后续修复任务 (TASK-2) 成功完成，69
+  个测试全部通过。无需任何修复操作。
+
+✻ Worked for 1m 28s
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  ISSUE-INF001 (issue/issue-inf001)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+
+```
+
+## 操作步骤
+1. 先分析上面给出的 tmux 输出，判断任务当前状态
+2. 如果信息不够，用 Bash 工具执行 `tmux capture-pane -t task-2612 -p -S -200` 获取更多历史
+3. 如需更多信息：
+   - 检查 worktree 的 git status: `cd /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INF001 && git status && git log --oneline -5`
+   - 检查 worktree 是否有新代码变更
+
+## 职责分层
+**你可以直接做的简单操作（用 Bash 工具）：**
+- 发送 Enter 键: `tmux send-keys -t task-2612 Enter`
+- 发送特定文本: `tmux send-keys -t task-2612 "y" Enter`
+- 这些是安全的，直接执行即可
+
+**必须返回 JSON 由系统处理（不要自己做）：**
+- kill tmux session
+- 更新数据库中的 task/issue 状态
+- 标记任务完成或失败
+
+## 判断标准
+- **healthy**: 任务正在正常执行，有进度输出
+- **completed**: 任务已完成（看到 SkillAPI.complete_task 调用、成功完成信息、skill 执行完毕等）
+- **stuck_permissions**: 卡在权限确认提示
+- **stuck_input**: 等待用户输入（y/n、press enter 等）
+- **stuck_error**: 遇到错误无法继续（编译错误、依赖缺失等）
+- **timeout**: 运行时间过长且无明显进度
+- **unknown**: 无法判断
+
+## 可选动作
+- **no_action**: 任务正常，不需要干预
+- **send_keys**: 你已经直接发送了按键（Enter/文本），告知系统即可
+- **complete_task**: 请求系统标记任务完成（agent 观察到 task 已成功完成）
+- **fail_task**: 请求系统标记任务失败（系统会自动安排 fix 或等待人工处理）
+
+## 输出格式
+只返回一个 JSON 对象，不要包含其他文字：
+{"status": "...", "action": "...", "reasoning": "..."}

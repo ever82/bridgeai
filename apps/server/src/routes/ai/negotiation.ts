@@ -8,8 +8,8 @@
 import { Router } from 'express';
 import { agentNegotiationService } from '../../services/ai/agentNegotiationService';
 import { authenticate, requireAuth } from '../../middleware/auth';
-import { validateRequest } from '../../middleware/validation';
-import { body, param } from '../../middleware/validation';
+import { validate as validateRequest } from '../../middleware/validation';
+import { validateBody as body, validateParams as param } from '../../middleware/validation';
 import { logger } from '../../utils/logger';
 import { AppError } from '../../errors';
 

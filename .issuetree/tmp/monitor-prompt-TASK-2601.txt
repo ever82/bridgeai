@@ -1,0 +1,159 @@
+你是 IssueTree 自动开发系统的任务监控 agent。
+
+## 你的任务
+检查一个正在运行的任务，判断其状态并采取适当行动。
+
+## 任务信息
+- Task: TASK-2601
+- Issue: ISSUE-INF003
+- Task Type: fix
+- 目标 tmux session: task-2601
+- 超时时间: 60 分钟
+- 已运行时间: 16.8 分钟
+- 触发原因: periodic
+
+## 当前 tmux 输出（最后 80 行）
+```
+  is fully implemented and committed to master, tests pass, and TypeScript
+  compiles.
+  ⎿  Invalid tool parameters
+
+⏺ User answered Claude's questions:
+  ⎿  · ISSUE-INF003 code is already implemented and committed to master. The V3
+     database is empty, so there's no actual 'stuck' state. The YAML shows
+     'draft' status. How should I proceed? → Mark as implemented (Recommended)
+
+⏺ I'll update the YAML status to implemented.
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ Update(~/projects/bridgeai/.issuetree/issues/ISSUE-INF003/ISSUE-INF003~job-que
+        ue.yaml)
+  ⎿  Error editing file
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ Bash(od -c .issuetree/issues/ISSUE-INF003/ISSUE-INF003~job-queue.yaml | grep
+      -i "status" | head -5)
+  ⎿  (No output)
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+⏺ Update(.issuetree/issues/ISSUE-INF003/ISSUE-INF003~job-queue.yaml)
+  ⎿  (No output)
+
+⏺ Update(.issuetree/issues/ISSUE-INF003/ISSUE-INF003~job-queue.yaml)
+  ⎿  (No output)
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ Now let me commit the changes.
+
+⏺ Bash(git add .issuetree/issues/ISSUE-INF003/ISSUE-INF003~job-queue.yaml && git
+       commit -m "$(cat <<'EOF'
+      fix(ISSUE-INF003): mark job queue system as implemented…)
+  ⎿  [issue/issue-inf003 23833cc] fix(ISSUE-INF003): mark job queue system
+     as implemented
+      1 file changed, 3 insertions(+), 3 deletions(-)
+
+⏺ Bash(cd apps/server && npx jest --testPathPattern=queue --silent 2>&1 | tail
+      -10)
+  ⎿  Running in the background (↓ to manage)
+  ⎿  (timeout 1m)
+
+⏺ Task Output bkaod5bdg
+  ⎿      ✓ should have default queue config (20 ms)
+         ✓ should have queue-specific configurations (1 ms)
+         ✓ should allow credit update queue to override worker concurrency
+     … +13 lines (ctrl+o to expand)
+
+⏺ Background command "Verify queue tests still pass" completed (exit code 0)
+
+⏺ All 12 tests pass. Let me update the task and complete the fix.
+
+⏺ Fix Complete
+
+  ISSUE-INF003 (任务队列系统设计与实现) has been resolved.
+
+  Analysis Results
+
+  - Problem: The V3 database was empty (never populated), so there was no actual
+   "stuck" state tracked in the system. The issue YAML showed status: draft.
+  - Reality: The job queue system code was already fully implemented and
+  committed to master (commits b680566 and 976282e). All code was in place:
+    - config.ts - Queue configuration with multi-queue support
+    - queues.ts - Queue manager with graceful shutdown
+    - producer.ts - Task producer API with delay/cron support
+    - worker.ts - Worker process management with concurrency control
+    - retry.ts - Exponential backoff + dead letter queue
+    - monitoring.ts - Queue monitoring panel
+    - queue.test.ts - 12 passing tests
+
+  Fix Applied
+
+  Updated the issue YAML:
+  - status: draft → status: implemented
+  - updated_at: '2026-04-15'
+  - passed_at: '2026-04-15'
+
+  Verification
+
+  - All 12 queue tests pass
+  - TypeScript compiles without errors
+  - Changes committed: 23833cc fix(ISSUE-INF003): mark job queue system as
+  implemented
+
+  The issue is now marked as implemented. Since the V3 database was empty (never
+   populated for this issue), I couldn't use the SkillAPI for state machine
+  transitions, but the YAML file correctly reflects the implemented state.
+
+✻ Worked for 16m 2s
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  ISSUE-INF003 (issue/issue-inf003)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+
+
+
+
+```
+
+## 操作步骤
+1. 先分析上面给出的 tmux 输出，判断任务当前状态
+2. 如果信息不够，用 Bash 工具执行 `tmux capture-pane -t task-2601 -p -S -200` 获取更多历史
+3. 如需更多信息：
+   - 检查 worktree 的 git status: `cd /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INF003 && git status && git log --oneline -5`
+   - 检查 worktree 是否有新代码变更
+
+## 职责分层
+**你可以直接做的简单操作（用 Bash 工具）：**
+- 发送 Enter 键: `tmux send-keys -t task-2601 Enter`
+- 发送特定文本: `tmux send-keys -t task-2601 "y" Enter`
+- 这些是安全的，直接执行即可
+
+**必须返回 JSON 由系统处理（不要自己做）：**
+- kill tmux session
+- 更新数据库中的 task/issue 状态
+- 标记任务完成或失败
+
+## 判断标准
+- **healthy**: 任务正在正常执行，有进度输出
+- **completed**: 任务已完成（看到 SkillAPI.complete_task 调用、成功完成信息、skill 执行完毕等）
+- **stuck_permissions**: 卡在权限确认提示
+- **stuck_input**: 等待用户输入（y/n、press enter 等）
+- **stuck_error**: 遇到错误无法继续（编译错误、依赖缺失等）
+- **timeout**: 运行时间过长且无明显进度
+- **unknown**: 无法判断
+
+## 可选动作
+- **no_action**: 任务正常，不需要干预
+- **send_keys**: 你已经直接发送了按键（Enter/文本），告知系统即可
+- **complete_task**: 请求系统标记任务完成（agent 观察到 task 已成功完成）
+- **fail_task**: 请求系统标记任务失败（系统会自动安排 fix 或等待人工处理）
+
+## 输出格式
+只返回一个 JSON 对象，不要包含其他文字：
+{"status": "...", "action": "...", "reasoning": "..."}

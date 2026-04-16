@@ -6,7 +6,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
 import { authenticate } from '../middleware/auth';
-import { validateRequest } from '../middleware/validation';
+import { validate } from '../middleware/validation';
 import { AppError } from '../errors/AppError';
 import bcrypt from 'bcryptjs';
 import {
@@ -89,7 +89,7 @@ router.get('/me/privacy', authenticate, async (req, res, next) => {
 router.put(
   '/me/privacy',
   authenticate,
-  validateRequest({ body: privacySettingsSchema }),
+  validate({ body: privacySettingsSchema }),
   async (req, res, next) => {
     try {
       const userId = req.user!.id;
@@ -199,7 +199,7 @@ router.get('/me/security', authenticate, async (req, res, next) => {
 router.post(
   '/me/password',
   authenticate,
-  validateRequest({ body: changePasswordSchema }),
+  validate({ body: changePasswordSchema }),
   async (req, res, next) => {
     try {
       const userId = req.user!.id;
@@ -253,7 +253,7 @@ router.post(
 router.post(
   '/me/phone/send-code',
   authenticate,
-  validateRequest({ body: sendCodeSchema }),
+  validate({ body: sendCodeSchema }),
   async (req, res, next) => {
     try {
       const { target } = req.body;
@@ -282,7 +282,7 @@ router.post(
 router.post(
   '/me/phone/bind',
   authenticate,
-  validateRequest({ body: bindPhoneSchema }),
+  validate({ body: bindPhoneSchema }),
   async (req, res, next) => {
     try {
       const userId = req.user!.id;
@@ -328,7 +328,7 @@ router.post(
 router.post(
   '/me/email/send-code',
   authenticate,
-  validateRequest({ body: sendCodeSchema }),
+  validate({ body: sendCodeSchema }),
   async (req, res, next) => {
     try {
       const { target } = req.body;
@@ -357,7 +357,7 @@ router.post(
 router.post(
   '/me/email/bind',
   authenticate,
-  validateRequest({ body: bindEmailSchema }),
+  validate({ body: bindEmailSchema }),
   async (req, res, next) => {
     try {
       const userId = req.user!.id;

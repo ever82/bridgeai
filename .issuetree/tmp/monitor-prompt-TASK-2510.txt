@@ -1,0 +1,159 @@
+你是 IssueTree 自动开发系统的任务监控 agent。
+
+## 你的任务
+检查一个正在运行的任务，判断其状态并采取适当行动。
+
+## 任务信息
+- Task: TASK-2510
+- Issue: ISSUE-AI003a
+- Task Type: accept
+- 目标 tmux session: task-2510
+- 超时时间: 60 分钟
+- 已运行时间: 8.5 分钟
+- 触发原因: periodic
+
+## 当前 tmux 输出（最后 80 行）
+```
+
+  Tests: 21/21 PASSED
+
+  TypeScript: 0 errors in supply-related files
+
+  Code Quality: Clean - no TODOs, no obvious issues
+
+  Now let me register the acceptance result. Since the database has no issues
+  registered, I'll update the YAML file status and then try the SkillAPI.
+
+⏺ Bash(python3 -c "
+      import sys; sys.path.insert(0,
+      '/Users/apple/projects/issue-tree/scripts')…)
+  ⎿  Issue found: False
+
+⏺ The issue isn't registered in the SQLite database (it was likely created
+  before V3 migration or the issues weren't synced). I'll update the YAML file
+  to mark the acceptance as passed.
+
+⏺ Update(~/projects/bridgeai/.issuetree/issues/ISSUE-AI003a/ISSUE-AI003a~supply-
+        core-api.yaml)
+  ⎿  Added 3 lines, removed 2 lines
+      3  parent: ISSUE-AI003
+      4  title: 供给智能提炼服务 - 核心解析引擎与API
+      5  slug: supply-core-api
+      6 -status: checking
+      6 +status: accepted
+      7  description: |
+      8    实现供给智能提炼服务的核心解析引擎和API端点，
+      9    包含供给解析引擎和供给API与集成，为场景提取器提供基础能力
+     ...
+      14  created_at: '2026-04-09'
+      15  started_at: '2026-04-10T16:47:33.136Z'
+      16  completed_at: '2026-04-10T17:17:02.281Z'
+      17 +accepted_at: '2026-04-14'
+      18  logic: sufficient_necessary
+      19  criteria:
+      20    - id: ISSUE-AI003a~c1
+     ...
+      26        - 服务类型分类
+      27        - 供给结构化输出
+      28        - 能力评估评分
+      28 -    status: checking
+      29 +    status: accepted
+      30      coverage:
+      31        unit: required
+      32        integration: required
+
+⏺ Update(~/projects/bridgeai/.issuetree/issues/ISSUE-AI003a/ISSUE-AI003a~supply-
+        core-api.yaml)
+  ⎿  Added 1 line, removed 1 line
+      47        - 提取结果存储
+      48        - 质量报告生成
+      49        - 供给更新同步
+      50 -    status: checking
+      50 +    status: accepted
+      51      coverage:
+      52        unit: required
+      53        integration: required
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ 验收完成 - ISSUE-AI003a: 供给智能提炼服务
+
+  验收结果: 通过 (PASSED)
+
+  验收标准验证
+
+  ┌────────────────┬────────┬───────────────────────────────────────────────┐
+  │      标准      │  状态  │                     详情                      │
+  ├────────────────┼────────┼───────────────────────────────────────────────┤
+  │ c1:            │        │ SupplyExtractionService 类包含 extract        │
+  │ 供给解析引擎   │ PASSED │ 方法，返回结构化 Supply 对象，含 capabilities │
+  │                │        │  和 pricing 字段                              │
+  ├────────────────┼────────┼───────────────────────────────────────────────┤
+  │ c2:            │        │ /api/v1/ai/extract-supply 端点存在，支持      │
+  │ 供给API与集成  │ PASSED │ scene 参数和 bulk 模式，返回 supply 数据和    │
+  │                │        │ quality_report                                │
+  └────────────────┴────────┴───────────────────────────────────────────────┘
+
+  测试情况
+
+  - 21/21 单元测试通过 - 覆盖 extract, extractBulk, 置信度级别, 质量等级,
+  数据结构验证
+  - TypeScript 编译 - supply 相关文件 0 错误
+  - 代码质量 - 无 TODO/FIXME，无明显 bug 或安全问题
+
+  实现文件
+
+  - supplyExtractionService.ts - 核心解析引擎 (731 行)
+  - routes/ai/supply.ts - API 端点 (437 行)
+  - routes/v1/index.ts - 路由注册正确
+  - supplyExtractionService.test.ts - 21 个测试用例
+
+  YAML 状态已更新为 accepted。
+
+✻ Churned for 4m 3s
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  server (issue/issue-ai003a)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+
+```
+
+## 操作步骤
+1. 先分析上面给出的 tmux 输出，判断任务当前状态
+2. 如果信息不够，用 Bash 工具执行 `tmux capture-pane -t task-2510 -p -S -200` 获取更多历史
+3. 如需更多信息：
+   - 检查 worktree 的 git status: `cd /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-AI003a && git status && git log --oneline -5`
+   - 检查 worktree 是否有新代码变更
+
+## 职责分层
+**你可以直接做的简单操作（用 Bash 工具）：**
+- 发送 Enter 键: `tmux send-keys -t task-2510 Enter`
+- 发送特定文本: `tmux send-keys -t task-2510 "y" Enter`
+- 这些是安全的，直接执行即可
+
+**必须返回 JSON 由系统处理（不要自己做）：**
+- kill tmux session
+- 更新数据库中的 task/issue 状态
+- 标记任务完成或失败
+
+## 判断标准
+- **healthy**: 任务正在正常执行，有进度输出
+- **completed**: 任务已完成（看到 SkillAPI.complete_task 调用、成功完成信息、skill 执行完毕等）
+- **stuck_permissions**: 卡在权限确认提示
+- **stuck_input**: 等待用户输入（y/n、press enter 等）
+- **stuck_error**: 遇到错误无法继续（编译错误、依赖缺失等）
+- **timeout**: 运行时间过长且无明显进度
+- **unknown**: 无法判断
+
+## 可选动作
+- **no_action**: 任务正常，不需要干预
+- **send_keys**: 你已经直接发送了按键（Enter/文本），告知系统即可
+- **complete_task**: 请求系统标记任务完成（agent 观察到 task 已成功完成）
+- **fail_task**: 请求系统标记任务失败（系统会自动安排 fix 或等待人工处理）
+
+## 输出格式
+只返回一个 JSON 对象，不要包含其他文字：
+{"status": "...", "action": "...", "reasoning": "..."}

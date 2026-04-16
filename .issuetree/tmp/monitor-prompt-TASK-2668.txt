@@ -1,0 +1,159 @@
+你是 IssueTree 自动开发系统的任务监控 agent。
+
+## 你的任务
+检查一个正在运行的任务，判断其状态并采取适当行动。
+
+## 任务信息
+- Task: TASK-2668
+- Issue: ISSUE-INT001c
+- Task Type: fix
+- 目标 tmux session: task-2668
+- 超时时间: 60 分钟
+- 已运行时间: 4.9 分钟
+- 触发原因: periodic
+
+## 当前 tmux 输出（最后 80 行）
+```
+
+⏺ Bash(git diff master --stat 2>/dev/null || echo "No diff available")
+  ⎿   .claude/scheduled_tasks.json                       |   19 -
+      .claude/scheduled_tasks.lock                       |    6 +-
+      .claude/worktrees/ISSUE-DESIGN-4                   |    1 -
+     … +426 lines (ctrl+o to expand)
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+⏺ 现在让我了解当前的代码状态。我将阅读关键修改文件并运行测试，看看具体是什么失败
+  了。
+
+⏺ 我来读取关键修改文件，并并行运行测试。
+
+  Read 4 files (ctrl+o to expand)
+
+⏺ Bash(npx jest --no-coverage 2>&1 | tail -100)
+  ⎿        at parse (node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@
+     babel/parser/src/index.ts:86:38)
+           at parser (node_modules/.pnpm/@babel+core@7.29.0/node_modules/@b
+     … +80 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+⏺ 所有 103 个测试套件都失败了——出现了基础性的测试配置问题。让我调查一下 Jest
+  配置和错误模式。
+
+⏺ Bash(npx jest --no-coverage 2>&1 | head -200)
+  ⎿  FAIL apps/server/src/services/ai/extractors/__tests__/agentJobExtracto
+     r.test.ts
+       ● Test suite failed to run
+     … +311 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+⏺ 核心问题是 TypeScript 未被 Babel 正确转译。让我检查一下 Jest 和 Babel 配置。
+
+  Searched for 1 pattern, read 2 files (ctrl+o to expand)
+
+⏺ Jest 从根目录运行，但服务器 jest.config 位于 apps/server。我来检查根目录的
+  Jest 配置，并从服务器目录运行测试。
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+⏺ Bash(cd apps/server && npx jest --no-coverage 2>&1 | tail -80)
+  ⎿      src/config/security.ts:11:4 - error TS1240: Unable to resolve sign
+     ature of property decorator when called as an expression.
+           Argument of type 'undefined' is not assignable to parameter of t
+     … +56 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+⏺ 从服务器目录来看，进度明显更好：21 个通过，37 个失败。让我获取完整的失败详情。
+
+⏺ Bash(cd apps/server && npx jest --no-coverage 2>&1 | grep -E "(FAIL|PASS)" |
+      head -80)
+  ⎿  Error: Exit code 1
+     (eval):cd:1: no such file or directory: apps/server
+
+⏺ Bash(pwd)
+  ⎿  /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INT001c/apps
+     /server
+
+⏺ Bash(npx jest --no-coverage 2>&1 | grep -E "^(FAIL|PASS)" | head -80)
+  ⎿  FAIL src/services/ai/extractors/__tests__/sceneDetector.test.ts
+     FAIL src/services/__tests__/sceneCapabilityService.test.ts
+     FAIL src/services/ai/extractors/__tests__/agentDateExtractor.test.ts
+     … +57 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+⏺ Bash(npx jest --no-coverage 2>&1 | grep -E "^  (✓|✕|●)" | head -60)
+  ⎿    ● SceneDetector › detectScene › should detect AgentDate scene
+       ● SceneDetector › detectScene › should detect AgentJob scene
+       ● SceneDetector › detectScene › should detect AgentAd scene
+     … +56 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+⏺ 让我从每个类别中获取具体的错误详情，以了解失败模式。
+
+⏺ Bash(npx jest --no-coverage --testPathPattern="socket.test" 2>&1 | tail -50)
+  ⎿  ts-jest[config] (WARN) message TS151002: Using hybrid module kind (Nod
+     e16/18/Next) is only supported in "isolatedModules: true". Please set
+     "isolatedModules: true" in your tsconfig.json. To disable this message
+     … +14 lines (ctrl+o to expand)
+  ⎿  (timeout 1m)
+
+  Bash(npx jest --no-coverage --testPathPattern="health.test" 2>&1 | tail -50)
+  ⎿  Running…
+
+⏺ Bash(npx jest --no-coverage --testPathPattern="sceneDetector.test" 2>&1 | tail
+       -60)
+  ⎿  Waiting…
+
+· Analyzing failures… (4m 46s · ↓ 3.1k tokens)
+  ⎿  ◼ Analyze failing tests and code changes
+     ◻ Fix the identified issues
+     ◻ Run tests and verify fixes
+     ◻ Commit and report results
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  server (issue/issue-int001c)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+
+```
+
+## 操作步骤
+1. 先分析上面给出的 tmux 输出，判断任务当前状态
+2. 如果信息不够，用 Bash 工具执行 `tmux capture-pane -t task-2668 -p -S -200` 获取更多历史
+3. 如需更多信息：
+   - 检查 worktree 的 git status: `cd /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INT001c && git status && git log --oneline -5`
+   - 检查 worktree 是否有新代码变更
+
+## 职责分层
+**你可以直接做的简单操作（用 Bash 工具）：**
+- 发送 Enter 键: `tmux send-keys -t task-2668 Enter`
+- 发送特定文本: `tmux send-keys -t task-2668 "y" Enter`
+- 这些是安全的，直接执行即可
+
+**必须返回 JSON 由系统处理（不要自己做）：**
+- kill tmux session
+- 更新数据库中的 task/issue 状态
+- 标记任务完成或失败
+
+## 判断标准
+- **healthy**: 任务正在正常执行，有进度输出
+- **completed**: 任务已完成（看到 SkillAPI.complete_task 调用、成功完成信息、skill 执行完毕等）
+- **stuck_permissions**: 卡在权限确认提示
+- **stuck_input**: 等待用户输入（y/n、press enter 等）
+- **stuck_error**: 遇到错误无法继续（编译错误、依赖缺失等）
+- **timeout**: 运行时间过长且无明显进度
+- **unknown**: 无法判断
+
+## 可选动作
+- **no_action**: 任务正常，不需要干预
+- **send_keys**: 你已经直接发送了按键（Enter/文本），告知系统即可
+- **complete_task**: 请求系统标记任务完成（agent 观察到 task 已成功完成）
+- **fail_task**: 请求系统标记任务失败（系统会自动安排 fix 或等待人工处理）
+
+## 输出格式
+只返回一个 JSON 对象，不要包含其他文字：
+{"status": "...", "action": "...", "reasoning": "..."}

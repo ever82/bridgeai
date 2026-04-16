@@ -5,7 +5,7 @@
 
 import { Router, Request, Response } from 'express';
 import { authenticate } from '../../middleware/auth';
-import { validateRequest } from '../../middleware/validation';
+import { validate as validateRequest } from '../../middleware/validation';
 import { visionShareTaskService } from '../../services/visionShare/taskService';
 import { publishValidationService } from '../../services/visionShare/publishValidation';
 import { visionShareDemandRefinementService } from '../../services/ai/visionShareDemandRefinement';

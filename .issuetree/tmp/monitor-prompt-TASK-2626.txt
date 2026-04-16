@@ -1,0 +1,159 @@
+你是 IssueTree 自动开发系统的任务监控 agent。
+
+## 你的任务
+检查一个正在运行的任务，判断其状态并采取适当行动。
+
+## 任务信息
+- Task: TASK-2626
+- Issue: ISSUE-INT001c
+- Task Type: fix
+- 目标 tmux session: task-2626
+- 超时时间: 60 分钟
+- 已运行时间: 13.6 分钟
+- 触发原因: periodic
+
+## 当前 tmux 输出（最后 80 行）
+```
+     Type: implement
+     Status: failed
+     … +24 lines (ctrl+o to expand)
+
+⏺ 问题状态是 pending 而非 stuck。我来检查工作树，并理解需要实现的内容。
+
+⏺ Bash(git status && echo "---" && git log --oneline -10)
+  ⎿  On branch issue/issue-int001c
+     Untracked files:
+       (use "git add <file>..." to include in what will be committed)
+     … +18 lines (ctrl+o to expand)
+
+⏺ 2 Explore agents finished (ctrl+o to expand)
+   ├─ Find issue YAML for INT001c · 8 tool uses · 0 tokens
+   │  ⎿  Done
+   └─ Explore project structure · 31 tool uses · 56.1k tokens
+      ⎿  Done
+
+⏺ 现在我了解了项目结构和需求。让我查看现有的测试文件内容，了解当前实现状态。
+
+  Searched for 2 patterns, read 5 files (ctrl+o to expand)
+
+⏺ 现在让我查看现有服务器端单元测试，以及理解为什么测试之前失败了。
+
+  Searched for 1 pattern, read 4 files (ctrl+o to expand)
+
+⏺ 让我运行测试来了解具体的失败情况。
+
+⏺ Bash(pnpm --filter server test 2>&1 | tail -60)
+  ⎿    ● AgentAdExtractor › extract › should extract product name
+
+         expect(received).toBe(expected) // Object.is equality
+     … +36 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+⏺ Bash(pnpm --filter server test 2>&1 | grep -E "FAIL|PASS" | head -70)
+  ⎿  FAIL src/services/__tests__/sceneCapabilityService.test.ts (6.047 s)
+     FAIL src/services/ai/__tests__/sceneExtractors.test.ts
+     FAIL src/utils/__tests__/profileCompletion.test.ts
+     … +50 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+⏺ Bash(pnpm --filter server test -- --testPathPattern="health.test" 2>&1 | tail
+      -40)
+  ⎿  > @visionshare/server@0.1.0 test /Users/apple/projects/bridgeai/.issue
+     tree/worktrees/ISSUE-INT001c/apps/server
+     > jest "--testPathPattern=health.test"
+     … +16 lines (ctrl+o to expand)
+  ⎿  (timeout 1m)
+
+⏺ Bash(cd /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INT001c/apps
+      /server && npx jest src/__tests__/health.test.ts 2>&1 | tail -50)
+  ⎿  ts-jest[config] (WARN) message TS151002: Using hybrid module kind (Nod
+     e16/18/Next) is only supported in "isolatedModules: true". Please set
+     "isolatedModules: true" in your tsconfig.json. To disable this message
+     … +70 lines (ctrl+o to expand)
+  ⎿  (timeout 1m)
+
+⏺ 现在我发现了根本问题 - TypeScript 编译错误。让我检查具体文件。
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ Bash(npx tsc --noEmit 2>&1 | head -60)
+  ⎿  src/__tests__/encryption.test.ts(1,61): error TS2307: Cannot find modu
+     le '@jest/globals' or its corresponding type declarations.
+     src/__tests__/factories/agent.factory.ts(2,15): error TS2305: Module '
+     … +117 lines (ctrl+o to expand)
+  ⎿  (timeout 1m)
+
+⏺ Bash(npx tsc --noEmit 2>&1 | wc -l)
+  ⎿  724
+  ⎿  (timeout 1m)
+
+⏺ Explore(Investigate TS errors causing test failures)
+  ⎿  Done (10 tool uses · 30.9k tokens · 1m 5s)
+  (ctrl+o to expand)
+
+⏺ 好的，我已经全面分析了所有 TypeScript 错误。让我开始系统性修复。
+
+  Running 2 agents… (ctrl+o to expand)
+⏺  ├─ Fix TypeScript errors in parallel · 30 tool uses · 47.7k tokens
+   │  ⎿  Done
+   └─ Run prisma generate and fix package deps · 28 tool uses · 12.7k tokens
+      ⎿  Read: package.json                      41             0 to ens
+     (ctrSearching for 2 patterns…
+
+· Analyzing test assertion failures… (12m 10s · ↓ 17.4k tokens)
+✻ Analyzing test assertion failures…mpi3at18s · ↓ 18.1k tokens)
+     ◼ Analyze test assertion failures
+     ◼ Run prisma generate to fix @prisma/client errors
+     ✔ Run prisma generate to fix @prisma/client errors
+     ◼ Check and add @jest/globals to devDependencies
+     ◼ Check if socket.io is in dependenciespackage
+     ◼ Check CreditLevel export from shared package
+     ◻ Check tsconfig.json moduleResolution setting
+     ◼ Check tsconfig.json moduleResolution setting
+     ◼ Check jest tsconfig and isolatedModules
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  server (issue/issue-int001c)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+
+
+```
+
+## 操作步骤
+1. 先分析上面给出的 tmux 输出，判断任务当前状态
+2. 如果信息不够，用 Bash 工具执行 `tmux capture-pane -t task-2626 -p -S -200` 获取更多历史
+3. 如需更多信息：
+   - 检查 worktree 的 git status: `cd /Users/apple/projects/bridgeai/.issuetree/worktrees/ISSUE-INT001c && git status && git log --oneline -5`
+   - 检查 worktree 是否有新代码变更
+
+## 职责分层
+**你可以直接做的简单操作（用 Bash 工具）：**
+- 发送 Enter 键: `tmux send-keys -t task-2626 Enter`
+- 发送特定文本: `tmux send-keys -t task-2626 "y" Enter`
+- 这些是安全的，直接执行即可
+
+**必须返回 JSON 由系统处理（不要自己做）：**
+- kill tmux session
+- 更新数据库中的 task/issue 状态
+- 标记任务完成或失败
+
+## 判断标准
+- **healthy**: 任务正在正常执行，有进度输出
+- **completed**: 任务已完成（看到 SkillAPI.complete_task 调用、成功完成信息、skill 执行完毕等）
+- **stuck_permissions**: 卡在权限确认提示
+- **stuck_input**: 等待用户输入（y/n、press enter 等）
+- **stuck_error**: 遇到错误无法继续（编译错误、依赖缺失等）
+- **timeout**: 运行时间过长且无明显进度
+- **unknown**: 无法判断
+
+## 可选动作
+- **no_action**: 任务正常，不需要干预
+- **send_keys**: 你已经直接发送了按键（Enter/文本），告知系统即可
+- **complete_task**: 请求系统标记任务完成（agent 观察到 task 已成功完成）
+- **fail_task**: 请求系统标记任务失败（系统会自动安排 fix 或等待人工处理）
+
+## 输出格式
+只返回一个 JSON 对象，不要包含其他文字：
+{"status": "...", "action": "...", "reasoning": "..."}

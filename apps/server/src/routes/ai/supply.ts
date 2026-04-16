@@ -12,8 +12,8 @@
 
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { authenticateToken } from '../../middleware/auth';
-import { validateRequest } from '../../middleware/validation';
+import { authenticate as authenticateToken } from '../../middleware/auth';
+import { validate as validateRequest } from '../../middleware/validation';
 import { SupplyExtractionService } from '../../services/ai/supplyExtractionService';
 import { PrismaClient } from '@prisma/client';
 import logger from '../../utils/logger';

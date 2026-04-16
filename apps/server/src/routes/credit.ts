@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { creditScoreService } from '../services/creditScoreService';
 import { getCreditLevelConfigByScore } from '../config/creditLevels';
 import { authenticate, requireAdmin } from '../middleware/auth';
-import { validateRequest } from '../middleware/validation';
+import { validate } from '../middleware/validation';
 
 const router = Router();
 
@@ -55,7 +55,7 @@ router.get('/score', authenticate, async (req, res, next) => {
 router.get(
   '/history',
   authenticate,
-  validateRequest({ query: querySchema }),
+  validate({ query: querySchema }),
   async (req, res, next) => {
     try {
       const userId = req.user!.id;
@@ -165,7 +165,7 @@ router.post(
   '/recalculate',
   authenticate,
   requireAdmin,
-  validateRequest({ body: recalculateSchema }),
+  validate({ body: recalculateSchema }),
   async (req, res, next) => {
     try {
       const { userIds } = req.body;

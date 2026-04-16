@@ -8,8 +8,8 @@
  * - IP whitelist/blacklist management
  */
 import { Router, Request, Response } from 'express';
-import { authenticate, requireRole } from '../middleware/auth';
-import { validateRequest } from '../middleware/validation';
+import { authenticate, requireRole } from '../../middleware/auth';
+import { validate } from '../../middleware/validation';
 import { z } from 'zod';
 import {
   getBlockedIPs,
@@ -20,7 +20,7 @@ import {
   resolveSecurityEvent,
   bulkBlockIPs,
   bulkUnblockIPs,
-} from '../services/firewall';
+} from '../../services/firewall';
 import {
   getWhitelistedIPs,
   addToWhitelist,
@@ -29,9 +29,9 @@ import {
   removeWhitelistRange,
   getConfig as getIPFilterConfig,
   updateConfig as updateIPFilterConfig,
-} from '../middleware/ipFilter';
-import { getDDoSStats } from '../middleware/ddosProtection';
-import { getRealTimeStats, exportSecurityData } from '../services/securityMonitor';
+} from '../../middleware/ipFilter';
+import { getDDoSStats } from '../../middleware/ddosProtection';
+import { getRealTimeStats, exportSecurityData } from '../../services/securityMonitor';
 
 const router: Router = Router();
 
@@ -109,7 +109,7 @@ router.get('/security/blocked-ips', (_req: Request, res: Response) => {
 // Block an IP
 router.post(
   '/security/blocked-ips',
-  validateRequest({ body: blockIPSchema }),
+  validate({ body: blockIPSchema }),
   (req: Request, res: Response) => {
     const { ip, reason, durationMinutes } = req.body;
     const adminId = req.user?.id;
@@ -133,7 +133,7 @@ router.post(
 // Bulk block IPs
 router.post(
   '/security/blocked-ips/bulk',
-  validateRequest({ body: bulkBlockSchema }),
+  validate({ body: bulkBlockSchema }),
   (req: Request, res: Response) => {
     const { ips, reason, durationMinutes } = req.body;
     const adminId = req.user?.id;
@@ -170,7 +170,7 @@ router.delete('/security/blocked-ips/:ip', (req: Request, res: Response) => {
 // Bulk unblock IPs
 router.post(
   '/security/blocked-ips/bulk-unblock',
-  validateRequest({ body: z.object({ ips: z.array(z.string().ip()).min(1).max(100) }) }),
+  validate({ body: z.object({ ips: z.array(z.string().ip()).min(1).max(100) }) }),
   (req: Request, res: Response) => {
     const { ips } = req.body;
     const adminId = req.user?.id;
@@ -187,7 +187,7 @@ router.post(
 // Get security events
 router.get(
   '/security/events',
-  validateRequest({ query: dateRangeSchema }),
+  validate({ query: dateRangeSchema }),
   (req: Request, res: Response) => {
     const { since, until, limit, type, severity } = req.query;
 
@@ -238,7 +238,7 @@ router.get('/security/whitelist', (_req: Request, res: Response) => {
 // Add IP to whitelist
 router.post(
   '/security/whitelist',
-  validateRequest({ body: whitelistSchema }),
+  validate({ body: whitelistSchema }),
   (req: Request, res: Response) => {
     const { ip, description } = req.body;
 
@@ -283,7 +283,7 @@ router.delete('/security/whitelist/:ip', (req: Request, res: Response) => {
 // Add CIDR range to whitelist
 router.post(
   '/security/whitelist/ranges',
-  validateRequest({ body: cidrSchema }),
+  validate({ body: cidrSchema }),
   (req: Request, res: Response) => {
     const { range, description } = req.body;
 
@@ -354,7 +354,7 @@ router.get('/security/config', (_req: Request, res: Response) => {
 // Update IP filter mode
 router.patch(
   '/security/config/mode',
-  validateRequest({
+  validate({
     body: z.object({
       mode: z.enum(['whitelist', 'blacklist', 'disabled']),
     }),
