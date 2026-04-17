@@ -54,6 +54,13 @@ coverage/
 *.sqlite
 *.sqlite3
 
+# SQLite WAL/SHM (runtime files, not needed in repo)
+*.db-shm
+*.db-wal
+
+# PostGIS build artifacts
+postgis-*/
+
 # Misc
 .cache/
 .temp/
