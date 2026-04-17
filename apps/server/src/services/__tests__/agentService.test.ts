@@ -4,11 +4,10 @@
  */
 
 import * as agentService from '../agentService';
-import { PrismaClient } from '@prisma/client';
 import { AppError } from '../../errors/AppError';
 
-// Mock Prisma
-jest.mock('@prisma/client', () => {
+// Mock db/client to avoid Prisma $extends compatibility issues
+jest.mock('../../db/client', () => {
   const mockAgent = {
     findUnique: jest.fn(),
     findMany: jest.fn(),
@@ -17,13 +16,15 @@ jest.mock('@prisma/client', () => {
     delete: jest.fn(),
     count: jest.fn(),
   };
-
   return {
-    PrismaClient: jest.fn(() => ({
+    prisma: {
       agent: mockAgent,
-    })),
+    },
+    __mockAgent: mockAgent,
   };
 });
+
+const { __mockAgent: mockAgent } = jest.requireMock('../../db/client');
 
 // Mock logger
 jest.mock('../../utils/logger', () => ({
@@ -39,7 +40,7 @@ describe('AgentService', () => {
   const mockAgentId = 'agent-123';
   const mockDate = new Date('2026-04-10');
 
-  const mockAgent = {
+  const mockAgentData = {
     id: mockAgentId,
     userId: mockUserId,
     type: 'VISIONSHARE',
@@ -66,10 +67,8 @@ describe('AgentService', () => {
     };
 
     it('should create agent successfully', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.create.mockResolvedValue({
-        ...mockAgent,
+      mockAgent.create.mockResolvedValue({
+        ...mockAgentData,
         ...createInput,
       });
 
@@ -78,7 +77,7 @@ describe('AgentService', () => {
       expect(result).toBeDefined();
       expect(result.name).toBe(createInput.name);
       expect(result.type).toBe(createInput.type);
-      expect(prisma.agent.create).toHaveBeenCalledWith({
+      expect(mockAgent.create).toHaveBeenCalledWith({
         data: {
           userId: mockUserId,
           type: createInput.type,
@@ -99,9 +98,7 @@ describe('AgentService', () => {
         type: 'INVALID_TYPE' as agentService.AgentType,
       };
 
-      await expect(
-        agentService.createAgent(mockUserId, invalidInput)
-      ).rejects.toThrow(AppError);
+      await expect(agentService.createAgent(mockUserId, invalidInput)).rejects.toThrow(AppError);
     });
 
     it('should throw error for empty name', async () => {
@@ -110,9 +107,9 @@ describe('AgentService', () => {
         name: '',
       };
 
-      await expect(
-        agentService.createAgent(mockUserId, invalidInput)
-      ).rejects.toMatchObject({ code: 'AGENT_NAME_REQUIRED' });
+      await expect(agentService.createAgent(mockUserId, invalidInput)).rejects.toMatchObject({
+        code: 'AGENT_NAME_REQUIRED',
+      });
     });
 
     it('should throw error for name too long', async () => {
@@ -121,31 +118,27 @@ describe('AgentService', () => {
         name: 'a'.repeat(101),
       };
 
-      await expect(
-        agentService.createAgent(mockUserId, invalidInput)
-      ).rejects.toMatchObject({ code: 'AGENT_NAME_TOO_LONG' });
+      await expect(agentService.createAgent(mockUserId, invalidInput)).rejects.toMatchObject({
+        code: 'AGENT_NAME_TOO_LONG',
+      });
     });
   });
 
   describe('getAgentById', () => {
     it('should return agent by id', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.findUnique.mockResolvedValue(mockAgent);
+      mockAgent.findUnique.mockResolvedValue(mockAgentData);
 
       const result = await agentService.getAgentById(mockAgentId);
 
       expect(result).toBeDefined();
       expect(result?.id).toBe(mockAgentId);
-      expect(prisma.agent.findUnique).toHaveBeenCalledWith({
+      expect(mockAgent.findUnique).toHaveBeenCalledWith({
         where: { id: mockAgentId },
       });
     });
 
     it('should return null when agent not found', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.findUnique.mockResolvedValue(null);
+      mockAgent.findUnique.mockResolvedValue(null);
 
       const result = await agentService.getAgentById('non-existent-id');
 
@@ -153,25 +146,21 @@ describe('AgentService', () => {
     });
 
     it('should verify ownership when userId provided', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.findUnique.mockResolvedValue({
-        ...mockAgent,
+      mockAgent.findUnique.mockResolvedValue({
+        ...mockAgentData,
         userId: 'different-user',
       });
 
-      await expect(
-        agentService.getAgentById(mockAgentId, mockUserId)
-      ).rejects.toMatchObject({ code: 'AGENT_NOT_FOUND' });
+      await expect(agentService.getAgentById(mockAgentId, mockUserId)).rejects.toMatchObject({
+        code: 'AGENT_NOT_FOUND',
+      });
     });
   });
 
   describe('getAgentsByUserId', () => {
     it('should return agents list with pagination', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.count.mockResolvedValue(2);
-      prisma.agent.findMany.mockResolvedValue([mockAgent, { ...mockAgent, id: 'agent-2' }]);
+      mockAgent.count.mockResolvedValue(2);
+      mockAgent.findMany.mockResolvedValue([mockAgentData, { ...mockAgentData, id: 'agent-2' }]);
 
       const result = await agentService.getAgentsByUserId(mockUserId, {
         page: 1,
@@ -181,7 +170,7 @@ describe('AgentService', () => {
       expect(result.agents).toHaveLength(2);
       expect(result.pagination.total).toBe(2);
       expect(result.pagination.page).toBe(1);
-      expect(prisma.agent.findMany).toHaveBeenCalledWith({
+      expect(mockAgent.findMany).toHaveBeenCalledWith({
         where: { userId: mockUserId },
         skip: 0,
         take: 10,
@@ -190,16 +179,14 @@ describe('AgentService', () => {
     });
 
     it('should filter by type', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.count.mockResolvedValue(1);
-      prisma.agent.findMany.mockResolvedValue([mockAgent]);
+      mockAgent.count.mockResolvedValue(1);
+      mockAgent.findMany.mockResolvedValue([mockAgentData]);
 
       await agentService.getAgentsByUserId(mockUserId, {
         type: agentService.AgentType.VISIONSHARE,
       });
 
-      expect(prisma.agent.count).toHaveBeenCalledWith({
+      expect(mockAgent.count).toHaveBeenCalledWith({
         where: {
           userId: mockUserId,
           type: agentService.AgentType.VISIONSHARE,
@@ -208,16 +195,14 @@ describe('AgentService', () => {
     });
 
     it('should filter by status', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.count.mockResolvedValue(1);
-      prisma.agent.findMany.mockResolvedValue([mockAgent]);
+      mockAgent.count.mockResolvedValue(1);
+      mockAgent.findMany.mockResolvedValue([mockAgentData]);
 
       await agentService.getAgentsByUserId(mockUserId, {
         status: agentService.AgentStatus.DRAFT,
       });
 
-      expect(prisma.agent.count).toHaveBeenCalledWith({
+      expect(mockAgent.count).toHaveBeenCalledWith({
         where: {
           userId: mockUserId,
           status: agentService.AgentStatus.DRAFT,
@@ -233,11 +218,9 @@ describe('AgentService', () => {
     };
 
     it('should update agent successfully', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.findUnique.mockResolvedValue(mockAgent);
-      prisma.agent.update.mockResolvedValue({
-        ...mockAgent,
+      mockAgent.findUnique.mockResolvedValue(mockAgentData);
+      mockAgent.update.mockResolvedValue({
+        ...mockAgentData,
         ...updateInput,
       });
 
@@ -248,9 +231,7 @@ describe('AgentService', () => {
     });
 
     it('should throw error when agent not found', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.findUnique.mockResolvedValue(null);
+      mockAgent.findUnique.mockResolvedValue(null);
 
       await expect(
         agentService.updateAgent(mockAgentId, mockUserId, updateInput)
@@ -258,10 +239,8 @@ describe('AgentService', () => {
     });
 
     it('should throw error when user is not owner', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.findUnique.mockResolvedValue({
-        ...mockAgent,
+      mockAgent.findUnique.mockResolvedValue({
+        ...mockAgentData,
         userId: 'different-user',
       });
 
@@ -273,11 +252,9 @@ describe('AgentService', () => {
 
   describe('updateAgentStatus', () => {
     it('should update status successfully for valid transition', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.findUnique.mockResolvedValue(mockAgent);
-      prisma.agent.update.mockResolvedValue({
-        ...mockAgent,
+      mockAgent.findUnique.mockResolvedValue(mockAgentData);
+      mockAgent.update.mockResolvedValue({
+        ...mockAgentData,
         status: agentService.AgentStatus.ACTIVE,
       });
 
@@ -291,45 +268,35 @@ describe('AgentService', () => {
     });
 
     it('should throw error for invalid status transition', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.findUnique.mockResolvedValue({
-        ...mockAgent,
+      mockAgent.findUnique.mockResolvedValue({
+        ...mockAgentData,
         status: agentService.AgentStatus.ARCHIVED,
       });
 
       await expect(
-        agentService.updateAgentStatus(
-          mockAgentId,
-          mockUserId,
-          agentService.AgentStatus.ACTIVE
-        )
+        agentService.updateAgentStatus(mockAgentId, mockUserId, agentService.AgentStatus.ACTIVE)
       ).rejects.toMatchObject({ code: 'INVALID_STATUS_TRANSITION' });
     });
   });
 
   describe('deleteAgent', () => {
     it('should delete agent successfully', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.findUnique.mockResolvedValue(mockAgent);
-      prisma.agent.delete.mockResolvedValue(mockAgent);
+      mockAgent.findUnique.mockResolvedValue(mockAgentData);
+      mockAgent.delete.mockResolvedValue(mockAgentData);
 
       await agentService.deleteAgent(mockAgentId, mockUserId);
 
-      expect(prisma.agent.delete).toHaveBeenCalledWith({
+      expect(mockAgent.delete).toHaveBeenCalledWith({
         where: { id: mockAgentId },
       });
     });
 
     it('should throw error when agent not found', async () => {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      prisma.agent.findUnique.mockResolvedValue(null);
+      mockAgent.findUnique.mockResolvedValue(null);
 
-      await expect(
-        agentService.deleteAgent(mockAgentId, mockUserId)
-      ).rejects.toMatchObject({ code: 'AGENT_NOT_FOUND' });
+      await expect(agentService.deleteAgent(mockAgentId, mockUserId)).rejects.toMatchObject({
+        code: 'AGENT_NOT_FOUND',
+      });
     });
   });
 });
