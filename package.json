@@ -21,7 +21,12 @@
     "prepare": "husky",
     "clean": "turbo run clean && rm -rf node_modules",
     "db:migrate": "pnpm --filter server db:migrate",
-    "db:seed": "pnpm --filter server db:seed"
+    "db:migrate:deploy": "pnpm --filter server db:migrate:deploy",
+    "db:migrate:reset": "pnpm --filter server db:migrate:reset",
+    "db:migrate:rollback": "pnpm --filter server db:migrate:rollback",
+    "db:seed": "pnpm --filter server db:seed",
+    "db:studio": "pnpm --filter server db:studio",
+    "db:generate": "pnpm --filter server db:generate"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",

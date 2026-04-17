@@ -1,4 +1,14 @@
-import { PrismaClient, SceneCode, UserStatus, AgentType, ChatRoomType, ChatRoomStatus, ConnectionStatus, TransactionType, TransactionStatus } from '@prisma/client';
+import {
+  PrismaClient,
+  SceneCode,
+  UserStatus,
+  AgentType,
+  ChatRoomType,
+  ChatRoomStatus,
+  TransactionType,
+  TransactionStatus,
+  MessageStatus,
+} from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -112,6 +122,7 @@ async function main() {
         latitude: 39.9042 + (Math.random() - 0.5) * 0.1,
         longitude: 116.4074 + (Math.random() - 0.5) * 0.1,
         isActive: true,
+        creditScore: 75,
       },
     });
 
@@ -128,6 +139,7 @@ async function main() {
         latitude: 39.9042 + (Math.random() - 0.5) * 0.1,
         longitude: 116.4074 + (Math.random() - 0.5) * 0.1,
         isActive: true,
+        creditScore: 80,
       },
     });
 
@@ -173,8 +185,8 @@ async function main() {
         title: '想看看三里屯现在堵不堵',
         description: '需要实时的交通路况照片，最好是最近10分钟内拍摄的',
         tags: ['traffic', 'sanlitun', 'realtime'],
-        budgetMin: 5.00,
-        budgetMax: 20.00,
+        budgetMin: 5.0,
+        budgetMax: 20.0,
         latitude: 39.935,
         longitude: 116.455,
         status: 'OPEN',
@@ -197,8 +209,8 @@ async function main() {
         title: '招聘前端工程师',
         description: '3年以上React经验，熟悉TypeScript',
         tags: ['job', 'frontend', 'react'],
-        budgetMin: 20000.00,
-        budgetMax: 35000.00,
+        budgetMin: 20000.0,
+        budgetMax: 35000.0,
         latitude: 39.9042,
         longitude: 116.4074,
         status: 'OPEN',
@@ -215,7 +227,7 @@ async function main() {
         title: '我在三里屯附近，可以拍照',
         description: '专业设备，可拍摄高质量照片',
         skills: ['photography', 'sanlitun'],
-        hourlyRate: 50.00,
+        hourlyRate: 50.0,
         latitude: 39.935,
         longitude: 116.455,
         availability: { weekdays: true, weekends: true },
@@ -240,7 +252,7 @@ async function main() {
         title: '5年React开发经验',
         description: '精通React、TypeScript、Node.js',
         skills: ['react', 'typescript', 'nodejs'],
-        hourlyRate: 300.00,
+        hourlyRate: 300.0,
         latitude: 39.9042,
         longitude: 116.4074,
         availability: { weekdays: true, remote: true },
@@ -256,7 +268,7 @@ async function main() {
       data: {
         demandId: demands[0].id,
         supplyId: supplies[0].id,
-        score: 85.50,
+        score: 85.5,
         status: 'PENDING',
         metadata: {
           matchReason: '地理位置匹配',
@@ -268,7 +280,7 @@ async function main() {
       data: {
         demandId: demands[1].id,
         supplyId: supplies[1].id,
-        score: 72.00,
+        score: 72.0,
         status: 'PENDING',
         metadata: {
           matchReason: '兴趣标签匹配',
@@ -316,6 +328,7 @@ async function main() {
         senderType: 'USER',
         content: '你好，我想看看三里屯现在的路况',
         type: 'TEXT',
+        status: MessageStatus.READ,
       },
     }),
     prisma.chatMessage.create({
@@ -325,6 +338,7 @@ async function main() {
         senderType: 'AGENT',
         content: '主人想了解三里屯的交通情况，请问您能提供实时照片吗？',
         type: 'TEXT',
+        status: MessageStatus.READ,
         metadata: { isAgentMessage: true },
       },
     }),
@@ -335,6 +349,7 @@ async function main() {
         senderType: 'USER',
         content: '嗨，我也喜欢电影和音乐！',
         type: 'TEXT',
+        status: MessageStatus.READ,
       },
     }),
   ]);
@@ -357,7 +372,7 @@ async function main() {
     await prisma.transaction.create({
       data: {
         userId: user.id,
-        amount: 100.00,
+        amount: 100.0,
         type: TransactionType.RECHARGE,
         status: TransactionStatus.SUCCESS,
         description: '首次充值',
@@ -374,7 +389,7 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
+  .catch(e => {
     console.error(e);
     process.exit(1);
   })

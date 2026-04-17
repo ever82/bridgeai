@@ -71,6 +71,7 @@ model Agent {
   latitude    Float?
   longitude   Float?
   isActive    Boolean    @default(true) @map("is_active")
+  creditScore Int        @default(75) @map("credit_score")
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
@@ -220,6 +221,7 @@ model Message {
   senderId        String        @map("sender_id")
   content         String
   type            MessageType   @default(TEXT)
+  status          MessageStatus @default(SENT)
   attachments     Json?
   createdAt       DateTime      @default(now()) @map("created_at")
 
@@ -236,6 +238,12 @@ enum MessageType {
   TEXT
   IMAGE
   FILE
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
 }
 
 // ============================================
@@ -521,6 +529,7 @@ model ChatMessage {
   senderType   SenderType   @map("sender_type")  // USER 或 AGENT
   content      String
   type         MessageType  @default(TEXT)
+  status       MessageStatus @default(SENT)
   attachments  Json?
   metadata     Json?        // 包含私聊建议标记等
   createdAt    DateTime     @default(now()) @map("created_at")
