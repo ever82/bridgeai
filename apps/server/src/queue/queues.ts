@@ -8,8 +8,14 @@
  */
 
 import { Queue, QueueEvents, Worker, ConnectionOptions } from 'bullmq';
-import { redis } from '../services/redis';
-import { QueueNames, QueueConfig, defaultQueueConfig, queueConfigurations, QueueName } from './config';
+
+import {
+  QueueNames,
+  QueueConfig,
+  defaultQueueConfig,
+  queueConfigurations,
+  QueueName,
+} from './config';
 
 // Singleton queue manager
 class QueueManager {
@@ -81,7 +87,7 @@ class QueueManager {
   /**
    * Setup queue events listener
    */
-  private setupQueueEvents(name: string, queue: Queue): void {
+  private setupQueueEvents(name: string, _queue: Queue): void {
     const events = new QueueEvents(name, {
       connection: this.getRedisConnection(),
     });
@@ -120,12 +126,10 @@ class QueueManager {
   /**
    * Merge default config with queue-specific config
    */
-  private mergeConfig(
-    queueConfig: {
-      worker?: Partial<QueueConfig['worker']>;
-      defaultJobOptions?: Partial<QueueConfig['defaultJobOptions']>;
-    }
-  ): QueueConfig {
+  private mergeConfig(queueConfig: {
+    worker?: Partial<QueueConfig['worker']>;
+    defaultJobOptions?: Partial<QueueConfig['defaultJobOptions']>;
+  }): QueueConfig {
     return {
       connection: this.config.connection,
       defaultJobOptions: {

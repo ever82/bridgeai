@@ -1,4 +1,5 @@
 import request from 'supertest';
+
 import app from '../app';
 import { prisma } from '../db/client';
 
@@ -15,9 +16,10 @@ describe('Health Check Endpoints', () => {
       const res = await request(app).get('/health');
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('status', 'healthy');
-      expect(res.body).toHaveProperty('timestamp');
-      expect(res.body).toHaveProperty('service', 'bridgeai-server');
+      expect(res.body).toHaveProperty('success', true);
+      expect(res.body.data).toHaveProperty('status', 'healthy');
+      expect(res.body.data).toHaveProperty('timestamp');
+      expect(res.body.data).toHaveProperty('service', 'bridgeai-server');
     });
   });
 
@@ -26,9 +28,10 @@ describe('Health Check Endpoints', () => {
       const res = await request(app).get('/ready');
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('status', 'ready');
-      expect(res.body).toHaveProperty('timestamp');
-      expect(res.body).toHaveProperty('checks');
+      expect(res.body).toHaveProperty('success', true);
+      expect(res.body.data).toHaveProperty('status', 'ready');
+      expect(res.body.data).toHaveProperty('timestamp');
+      expect(res.body.data).toHaveProperty('checks');
     });
   });
 
