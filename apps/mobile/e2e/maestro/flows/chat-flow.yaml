@@ -1,0 +1,53 @@
+# Chat Flow - Maestro E2E Test
+# 对应 Detox: e2e/tests/chat-flow.test.ts
+
+appId: com.bridgeai.app
+
+env:
+  TEST_MESSAGE: 'Hello from Maestro E2E! ${TIMESTAMP}'
+
+---
+# 前提：已登录且有聊天会话
+- runFlow: auth-flow.yaml
+- waitForAnimationToEnd
+
+# 导航到聊天列表
+- tapOn: 'chat-tab'
+- waitForAnimationToEnd
+
+# 验证聊天列表
+- assertVisible: 'chat-list'
+- assertVisible: 'chat-item'
+
+# 点击进入第一个聊天
+- tapOn: 'chat-item'
+- waitForAnimationToEnd
+
+# 验证聊天页面元素
+- assertVisible: 'chat-input'
+- assertVisible: 'send-button'
+
+# 发送消息
+- tapOn: 'chat-input'
+- inputText: '${TEST_MESSAGE}'
+- tapOn: 'send-button'
+
+# 验证消息发送成功
+- waitForAnimationToEnd
+- assertVisible: 'message-sent'
+- assertVisible: 'message-bubble'
+
+# 验证消息内容显示
+- extendedWaitUntil:
+    visible: 'message-text'
+    timeout: 5000
+
+# 验证未读角标更新（返回列表）
+- tapOn: 'back-button'
+- waitForAnimationToEnd
+- assertVisible: 'chat-list'
+
+# 验证未读数变化
+- extendedWaitUntil:
+    notVisible: 'unread-badge'
+    timeout: 3000

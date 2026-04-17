@@ -1,0 +1,44 @@
+# Matching Flow - Maestro E2E Test
+# 对应 Detox: e2e/tests/matching.test.ts
+
+appId: com.bridgeai.app
+
+env:
+  MATCH_SCORE: '95'
+
+---
+# 前提：已登录
+- runFlow: auth-flow.yaml
+- waitForAnimationToEnd
+
+# 导航到首页
+- tapOn: 'home-tab'
+- waitForAnimationToEnd
+
+# 验证推荐列表
+- assertVisible: 'recommendation-list'
+- assertVisible: 'agent-card'
+
+# 滚动查看更多推荐
+- scrollUntilVisible:
+    element: 'agent-card'
+    direction: DOWN
+    scrollView: 'recommendation-list'
+
+# 点击匹配按钮
+- tapOn: 'match-button'
+- waitForAnimationToEnd
+
+# 验证匹配成功
+- waitForAnimationToEnd
+- assertVisible: 'match-success'
+- assertVisible: 'match-score'
+
+# 验证跳转到聊天
+- extendedWaitUntil:
+    visible: 'chat-input'
+    timeout: 10000
+- assertVisible: 'chat-input'
+
+# 验证匹配会话创建
+- assertVisible: 'session-active'

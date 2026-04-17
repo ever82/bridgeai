@@ -1,9 +1,0 @@
-results: {}
-steps: []
-task:
-  id: TASK-1775845064
-  issue: ISSUE-CR003a
-  started_at: '2026-04-10T18:17:44.151244+00:00'
-  status: failed
-  timeout_minutes: 30
-  type: accept

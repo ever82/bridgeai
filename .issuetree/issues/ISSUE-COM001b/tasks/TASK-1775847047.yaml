@@ -1,9 +1,0 @@
-results: {}
-steps: []
-task:
-  id: TASK-1775847047
-  issue: ISSUE-COM001b
-  started_at: '2026-04-10T18:50:47.439812+00:00'
-  status: in_progress
-  timeout_minutes: 30
-  type: accept

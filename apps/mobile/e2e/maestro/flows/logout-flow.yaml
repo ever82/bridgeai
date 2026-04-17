@@ -1,0 +1,21 @@
+# Logout Flow - Maestro E2E Test
+
+appId: com.bridgeai.app
+
+---
+# Navigate to profile
+- tapOn: 'profile-tab'
+- waitForAnimationToEnd
+
+# Tap logout
+- tapOn: 'logout-button'
+
+# Confirm if dialog appears
+- extendedWaitUntil:
+    visible: 'confirm-logout-button'
+    timeout: 3000
+- tapOn: 'confirm-logout-button'
+
+# Verify redirected to login
+- waitForAnimationToEnd
+- assertVisible: 'login-email-input'

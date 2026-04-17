@@ -1,0 +1,59 @@
+# Auth Flow - Maestro E2E Test
+# 对应 Detox: e2e/tests/auth-flow.test.ts
+
+appId: com.bridgeai.app
+
+env:
+  TEST_EMAIL: 'test-${RANDOM}.${TIMESTAMP}@bridgeai.test'
+  TEST_PASSWORD: 'TestPass123!'
+
+---
+# Flow: Login Success
+- launchApp
+- waitForAnimationToEnd
+
+# 验证登录页面元素
+- assertVisible: 'login-email-input'
+- assertVisible: 'login-password-input'
+- assertVisible: 'login-button'
+
+# 输入凭证
+- tapOn: 'login-email-input'
+- inputText: '${TEST_EMAIL}'
+
+- tapOn: 'login-password-input'
+- inputText: '${TEST_PASSWORD}'
+
+# 点击登录
+- tapOn: 'login-button'
+
+# 验证登录成功 - 跳转首页
+- waitForAnimationToEnd
+- assertVisible: 'home-tab'
+- assertVisible: 'user-avatar'
+- assertVisible: 'agent-list'
+
+# 验证 agent 列表加载
+- assertVisible: 'agent-card'
+
+# Flow: Invalid Credentials
+- runFlow: logout-flow.yaml
+
+- launchApp
+- waitForAnimationToEnd
+
+# 输入无效凭证
+- tapOn: 'login-email-input'
+- inputText: 'invalid@test.com'
+
+- tapOn: 'login-password-input'
+- inputText: 'wrongpassword'
+
+- tapOn: 'login-button'
+
+# 验证错误提示
+- waitFor: 'error-message'
+- assertVisible: 'error-message'
+
+# 验证仍在登录页
+- assertVisible: 'login-button'

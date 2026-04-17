@@ -24,6 +24,12 @@
     "e2e:test:ios:release": "detox test --configuration ios.sim.release",
     "e2e:test:android:release": "detox test --configuration android.emu.release",
     "e2e:clean": "detox clean-framework-cache && detox clean-build-cache",
+    "maestro:install": "ts-node e2e/maestro/run-tests.ts install",
+    "maestro:test": "ts-node e2e/maestro/run-tests.ts test",
+    "maestro:test:auth": "ts-node e2e/maestro/run-tests.ts test:auth",
+    "maestro:test:chat": "ts-node e2e/maestro/run-tests.ts test:chat",
+    "maestro:test:agent": "ts-node e2e/maestro/run-tests.ts test:agent",
+    "maestro:test:matching": "ts-node e2e/maestro/run-tests.ts test:matching",
     "clean": "rm -rf node_modules/.cache"
   },
   "dependencies": {

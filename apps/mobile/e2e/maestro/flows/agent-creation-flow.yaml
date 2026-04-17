@@ -1,0 +1,58 @@
+# Agent Creation Flow - Maestro E2E Test
+# 对应 Detox: e2e/tests/agent-creation.test.ts
+
+appId: com.bridgeai.app
+
+env:
+  AGENT_NAME: 'Test Agent ${TIMESTAMP}'
+  AGENT_DESCRIPTION: 'E2E Test Agent Description'
+  AGENT_BUDGET: '100'
+
+---
+# 前提：已登录
+- runFlow: auth-flow.yaml
+- waitForAnimationToEnd
+
+# 导航到创建 Agent 页面
+- tapOn: 'create-agent-button'
+- waitForAnimationToEnd
+
+# 验证表单元素
+- assertVisible: 'agent-name-input'
+- assertVisible: 'agent-description-input'
+- assertVisible: 'agent-budget-input'
+- assertVisible: 'agent-create-submit'
+
+# 填写表单
+- tapOn: 'agent-name-input'
+- inputText: '${AGENT_NAME}'
+
+- tapOn: 'agent-description-input'
+- inputText: '${AGENT_DESCRIPTION}'
+
+- tapOn: 'agent-budget-input'
+- inputText: '${AGENT_BUDGET}'
+
+# 提交
+- tapOn: 'agent-create-submit'
+
+# 验证创建成功 - 跳转详情页
+- waitForAnimationToEnd
+- assertVisible: 'agent-detail-page'
+- assertVisible: 'agent-name-display'
+
+# 验证 Agent 信息显示正确
+- assertVisible: 'agent-status-active'
+
+# Flow: Form Validation Error
+- launchApp
+- waitForAnimationToEnd
+
+# 直接点击提交（不填写表单）
+- tapOn: 'create-agent-button'
+- waitForAnimationToEnd
+- tapOn: 'agent-create-submit'
+
+# 验证错误提示
+- waitFor: 'error-message'
+- assertVisible: 'error-message'

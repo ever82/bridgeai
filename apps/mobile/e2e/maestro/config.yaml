@@ -1,0 +1,9 @@
+# Maestro E2E Configuration for BridgeAI
+# AI Agent 友好层 - 用于快速验证和探索性测试
+
+appId: com.bridgeai.app
+platform: ios
+---
+# 默认等待配置
+timeout: 10000 # 元素等待超时 10s
+retryCount: 2 # 重试次数
