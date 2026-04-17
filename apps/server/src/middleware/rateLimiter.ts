@@ -7,6 +7,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { rateLimit, RateLimitRequestHandler } from 'express-rate-limit';
 
+import { ApiResponse } from '../utils/response';
 import {
   rateLimitConfigs,
   userTierLimits,
@@ -126,14 +127,16 @@ export function userRateLimiter(req: RateLimitRequest, res: Response, next: Next
 
   // Check if limit exceeded
   if (record.count > maxRequests) {
-    res.status(429).json({
-      success: false,
-      error: {
-        code: 'USER_RATE_LIMIT_EXCEEDED',
-        message: `Rate limit exceeded for ${tier} users. Please try again later.`,
-        retryAfter: Math.ceil((record.resetTime - now) / 1000),
-      },
-    });
+    res
+      .status(429)
+      .json(
+        ApiResponse.error(
+          `Rate limit exceeded for ${tier} users. Please try again later.`,
+          'USER_RATE_LIMIT_EXCEEDED',
+          429,
+          { retryAfter: Math.ceil((record.resetTime - now) / 1000) }
+        )
+      );
     return;
   }
 
@@ -159,13 +162,15 @@ export function endpointRateLimiter(): RateLimitRequestHandler {
     },
     handler: (req: RateLimitRequest, res: Response) => {
       const config = getRateLimitConfig(req.path);
-      res.status(429).json({
-        success: false,
-        error: {
-          code: 'RATE_LIMIT_EXCEEDED',
-          message: config.message || 'Too many requests, please try again later.',
-        },
-      });
+      res
+        .status(429)
+        .json(
+          ApiResponse.error(
+            config.message || 'Too many requests, please try again later.',
+            'RATE_LIMIT_EXCEEDED',
+            429
+          )
+        );
     },
     skip: (req: RateLimitRequest) => {
       // Skip rate limiting for health checks
@@ -191,13 +196,15 @@ export const enhancedIpLimiter = rateLimit({
     return req.ip || req.socket.remoteAddress || 'unknown';
   },
   handler: (req: Request, res: Response) => {
-    res.status(429).json({
-      success: false,
-      error: {
-        code: 'IP_RATE_LIMIT_EXCEEDED',
-        message: 'Too many requests from this IP, please try again later.',
-      },
-    });
+    res
+      .status(429)
+      .json(
+        ApiResponse.error(
+          'Too many requests from this IP, please try again later.',
+          'IP_RATE_LIMIT_EXCEEDED',
+          429
+        )
+      );
   },
   skip: (req: Request) => {
     // Skip health checks
@@ -221,14 +228,13 @@ export const strictAuthLimiter = rateLimit({
     return username ? `${ip}:${username}` : ip;
   },
   handler: (req: Request, res: Response) => {
-    res.status(429).json({
-      success: false,
-      error: {
-        code: 'AUTH_RATE_LIMIT_EXCEEDED',
-        message: rateLimitConfigs.auth.message!,
-        retryAfter: Math.ceil(rateLimitConfigs.auth.windowMs / 1000),
-      },
-    });
+    res
+      .status(429)
+      .json(
+        ApiResponse.error(rateLimitConfigs.auth.message!, 'AUTH_RATE_LIMIT_EXCEEDED', 429, {
+          retryAfter: Math.ceil(rateLimitConfigs.auth.windowMs / 1000),
+        })
+      );
   },
 });
 
@@ -241,13 +247,9 @@ export const uploadLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req: Request, res: Response) => {
-    res.status(429).json({
-      success: false,
-      error: {
-        code: 'UPLOAD_RATE_LIMIT_EXCEEDED',
-        message: rateLimitConfigs.upload.message!,
-      },
-    });
+    res
+      .status(429)
+      .json(ApiResponse.error(rateLimitConfigs.upload.message!, 'UPLOAD_RATE_LIMIT_EXCEEDED', 429));
   },
 });
 
@@ -260,13 +262,9 @@ export const searchLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req: Request, res: Response) => {
-    res.status(429).json({
-      success: false,
-      error: {
-        code: 'SEARCH_RATE_LIMIT_EXCEEDED',
-        message: rateLimitConfigs.search.message!,
-      },
-    });
+    res
+      .status(429)
+      .json(ApiResponse.error(rateLimitConfigs.search.message!, 'SEARCH_RATE_LIMIT_EXCEEDED', 429));
   },
 });
 
@@ -286,14 +284,16 @@ export function combinedRateLimiter(): RateLimitRequestHandler {
       return userId ? `user:${userId}` : `ip:${ip}`;
     },
     handler: (req: RateLimitRequest, res: Response) => {
-      res.status(429).json({
-        success: false,
-        error: {
-          code: 'RATE_LIMIT_EXCEEDED',
-          message: 'Too many requests, please try again later.',
-          retryAfter: 900, // 15 minutes in seconds
-        },
-      });
+      res
+        .status(429)
+        .json(
+          ApiResponse.error(
+            'Too many requests, please try again later.',
+            'RATE_LIMIT_EXCEEDED',
+            429,
+            { retryAfter: 900 }
+          )
+        );
     },
     skip: (req: RateLimitRequest) => {
       // Skip health checks and internal endpoints
@@ -301,12 +301,6 @@ export function combinedRateLimiter(): RateLimitRequestHandler {
     },
   });
 }
-
-// Export the original limiters for backward compatibility
-export { apiLimiter, authLimiter } from './rateLimit';
-
-// Re-export config for tests and external use
-export { getRateLimitConfig, rateLimitConfigs } from '../config/rateLimit';
 
 /**
  * Reset user request store (for testing)

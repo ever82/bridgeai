@@ -4,14 +4,16 @@
  * Provides permission checking, rate limiting, and audit logging for handoff operations.
  */
 import type { Request, Response, NextFunction } from 'express';
-import { rbacService } from '../services/rbacService';
-import { getRequestContext } from './requestContext';
 import {
   DEFAULT_HANDOFF_CONFIG,
   HandoffErrorCode,
   type HandoffConfig,
   type HandoffAuditLog,
 } from '@bridgeai/shared';
+
+import { rbacService } from '../services/rbacService';
+
+import { getRequestContext } from './requestContext';
 
 /**
  * Extended Request type with handoff info
@@ -40,7 +42,7 @@ export async function handoffPermissionMiddleware(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const context = getRequestContext(req);
+  const context = getRequestContext();
 
   if (!req.user?.id) {
     res.status(401).json({
@@ -59,12 +61,12 @@ export async function handoffPermissionMiddleware(
       rbacService.getUserPermissions(userId),
     ]);
 
-    const roleNames = userRoles.map((ur) => ur.role.name);
-    const permissionNames = userPermissions.map((p) => p.name);
+    const roleNames = userRoles.map(ur => ur.role.name);
+    const permissionNames = userPermissions.map(p => p.name);
     const primaryRole = roleNames[0] || 'user';
 
     // Check if user has allowed role
-    const hasAllowedRole = DEFAULT_HANDOFF_CONFIG.allowedRoles.some((role) =>
+    const hasAllowedRole = DEFAULT_HANDOFF_CONFIG.allowedRoles.some(role =>
       roleNames.includes(role)
     );
 
@@ -128,7 +130,7 @@ export function requireTakeoverPermission(
   }
 
   if (!req.handoff.canTakeover) {
-    const context = getRequestContext(req);
+    const context = getRequestContext();
     context?.logWarning('Takeover permission denied', {
       userId: req.handoff.userId,
       role: req.handoff.role,
@@ -138,7 +140,9 @@ export function requireTakeoverPermission(
     res.status(403).json({
       success: false,
       error: {
-        code: req.handoff.isRateLimited ? HandoffErrorCode.RATE_LIMITED : HandoffErrorCode.UNAUTHORIZED,
+        code: req.handoff.isRateLimited
+          ? HandoffErrorCode.RATE_LIMITED
+          : HandoffErrorCode.UNAUTHORIZED,
         message: req.handoff.isRateLimited
           ? 'Too many handoff requests. Please try again later.'
           : 'Not authorized to request takeover',
@@ -167,7 +171,7 @@ export function requireHandoffPermission(
   }
 
   if (!req.handoff.canHandoff) {
-    const context = getRequestContext(req);
+    const context = getRequestContext();
     context?.logWarning('Handoff permission denied', {
       userId: req.handoff.userId,
       role: req.handoff.role,
@@ -177,7 +181,9 @@ export function requireHandoffPermission(
     res.status(403).json({
       success: false,
       error: {
-        code: req.handoff.isRateLimited ? HandoffErrorCode.RATE_LIMITED : HandoffErrorCode.UNAUTHORIZED,
+        code: req.handoff.isRateLimited
+          ? HandoffErrorCode.RATE_LIMITED
+          : HandoffErrorCode.UNAUTHORIZED,
         message: req.handoff.isRateLimited
           ? 'Too many handoff requests. Please try again later.'
           : 'Not authorized to request handoff',
@@ -196,7 +202,8 @@ export function requireHandoffPermission(
 export function checkFrequentSwitching(
   config: Partial<HandoffConfig> = {}
 ): (req: HandoffRequest, res: Response, next: NextFunction) => void {
-  const minIntervalMs = (config.minHandoffIntervalSeconds || DEFAULT_HANDOFF_CONFIG.minHandoffIntervalSeconds) * 1000;
+  const minIntervalMs =
+    (config.minHandoffIntervalSeconds || DEFAULT_HANDOFF_CONFIG.minHandoffIntervalSeconds) * 1000;
 
   return (req: HandoffRequest, res: Response, next: NextFunction): void => {
     if (!req.user?.id) {
@@ -215,7 +222,7 @@ export function checkFrequentSwitching(
       const timeSinceLastHandoff = Date.now() - lastTimestamp;
 
       if (timeSinceLastHandoff < minIntervalMs) {
-        const context = getRequestContext(req);
+        const context = getRequestContext();
         context?.logWarning('Frequent handoff detected', {
           userId,
           timeSinceLastHandoff,
@@ -266,12 +273,10 @@ export function validateForcedTakeover(
   }
 
   // Check if user has admin role
-  const hasAdminRole = req.user?.roles?.some((role) =>
-    ['admin', 'super_admin'].includes(role)
-  );
+  const hasAdminRole = req.user?.roles?.some(role => ['admin', 'super_admin'].includes(role));
 
   if (!hasAdminRole) {
-    const context = getRequestContext(req);
+    const context = getRequestContext();
     context?.logWarning('Forced takeover attempted by non-admin', {
       userId: req.user?.id,
       roles: req.user?.roles,
@@ -351,7 +356,7 @@ function checkHandoffRateLimit(userId: string): boolean {
   let timestamps = handoffRateLimitStore.get(userId) || [];
 
   // Filter to last hour
-  timestamps = timestamps.filter((ts) => ts > oneHourAgo);
+  timestamps = timestamps.filter(ts => ts > oneHourAgo);
 
   // Check if exceeds max per hour
   if (timestamps.length >= DEFAULT_HANDOFF_CONFIG.maxHandoffsPerHour) {
@@ -392,7 +397,7 @@ function sanitizeBody(body: any): any {
 
   // Remove sensitive fields
   const sensitiveFields = ['password', 'token', 'secret', 'creditCard'];
-  sensitiveFields.forEach((field) => {
+  sensitiveFields.forEach(field => {
     if (field in sanitized) {
       sanitized[field] = '[REDACTED]';
     }
@@ -412,7 +417,7 @@ function generateAuditId(): string {
  * Get handoff audit logs for a conversation
  */
 export function getHandoffAuditLogs(conversationId: string): HandoffAuditLog[] {
-  return handoffAuditLogs.filter((log) => log.conversationId === conversationId);
+  return handoffAuditLogs.filter(log => log.conversationId === conversationId);
 }
 
 /**
@@ -441,12 +446,11 @@ export function getHandoffRateLimitStatus(userId: string): {
   const oneHourAgo = now - 60 * 60 * 1000;
 
   const timestamps = handoffRateLimitStore.get(userId) || [];
-  const recentTimestamps = timestamps.filter((ts) => ts > oneHourAgo);
+  const recentTimestamps = timestamps.filter(ts => ts > oneHourAgo);
 
   // Calculate reset time (1 hour after oldest timestamp)
-  const resetAt = recentTimestamps.length > 0
-    ? Math.min(...recentTimestamps) + 60 * 60 * 1000
-    : now;
+  const resetAt =
+    recentTimestamps.length > 0 ? Math.min(...recentTimestamps) + 60 * 60 * 1000 : now;
 
   return {
     current: recentTimestamps.length,

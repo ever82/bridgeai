@@ -3,9 +3,7 @@
  * 支持邮件模板、队列管理和发送状态追踪
  */
 
-import { PrismaClient, EmailStatus } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../db/client';
 
 // 邮件配置
 interface EmailConfig {
@@ -239,10 +237,6 @@ export class EmailService {
       // 渲染模板
       const subject = this.renderTemplate(request.subject || template.subject, request.variables);
       const htmlContent = this.renderTemplate(template.htmlContent, request.variables);
-      const textContent = template.textContent
-        ? this.renderTemplate(template.textContent, request.variables)
-        : undefined;
-
       // 创建队列记录
       const queue = await prisma.emailQueue.create({
         data: {
@@ -311,10 +305,7 @@ export class EmailService {
         where: {
           status: 'PENDING',
         },
-        orderBy: [
-          { priority: 'desc' },
-          { createdAt: 'asc' },
-        ],
+        orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
         take: batchSize,
       });
 
@@ -439,15 +430,7 @@ export class EmailService {
   }> {
     const where = userEmail ? { toEmail: userEmail } : {};
 
-    const [
-      total,
-      pending,
-      sent,
-      delivered,
-      opened,
-      clicked,
-      failed,
-    ] = await Promise.all([
+    const [total, pending, sent, delivered, opened, clicked, failed] = await Promise.all([
       prisma.emailQueue.count({ where }),
       prisma.emailQueue.count({ where: { ...where, status: 'PENDING' } }),
       prisma.emailQueue.count({ where: { ...where, status: 'SENT' } }),

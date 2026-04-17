@@ -7,10 +7,10 @@
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { PrismaClient, User } from '@prisma/client';
-import { logger } from '../utils/logger';
+import { User } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import { logger } from '../utils/logger';
+import { prisma } from '../db/client';
 
 // JWT 配置
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -175,10 +175,7 @@ export async function checkUserExists(email?: string, phone?: string): Promise<b
 
   const user = await prisma.user.findFirst({
     where: {
-      OR: [
-        ...(email ? [{ email }] : []),
-        ...(phone ? [{ phone }] : []),
-      ],
+      OR: [...(email ? [{ email }] : []), ...(phone ? [{ phone }] : [])],
     },
   });
 
@@ -246,7 +243,7 @@ export async function registerUser(data: IRegisterData): Promise<IAuthResponse> 
   const refreshToken = generateRefreshToken(user.id);
 
   // 移除敏感字段
-  const { passwordHash: _, ...userWithoutPassword } = user;
+  const { passwordHash: _ph, ...userWithoutPassword } = user;
 
   return {
     user: userWithoutPassword,
@@ -271,10 +268,7 @@ export async function loginUser(data: ILoginData): Promise<IAuthResponse> {
   // 查找用户
   const user = await prisma.user.findFirst({
     where: {
-      OR: [
-        ...(email ? [{ email }] : []),
-        ...(phone ? [{ phone }] : []),
-      ],
+      OR: [...(email ? [{ email }] : []), ...(phone ? [{ phone }] : [])],
     },
   });
 
@@ -284,9 +278,7 @@ export async function loginUser(data: ILoginData): Promise<IAuthResponse> {
 
   // 检查账户是否被锁定
   if (user.lockedUntil && user.lockedUntil > new Date()) {
-    const remainingMinutes = Math.ceil(
-      (user.lockedUntil.getTime() - Date.now()) / 60000
-    );
+    const remainingMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
     throw new Error(`账户已被锁定，请${remainingMinutes}分钟后重试`);
   }
 
@@ -369,7 +361,7 @@ export async function loginUser(data: ILoginData): Promise<IAuthResponse> {
   const refreshToken = generateRefreshToken(user.id);
 
   // 移除敏感字段
-  const { passwordHash: _, ...userWithoutPassword } = user;
+  const { passwordHash: _ph, ...userWithoutPassword } = user;
 
   return {
     user: userWithoutPassword,
@@ -412,7 +404,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<IAuthRes
     });
     const newRefreshToken = generateRefreshToken(user.id);
 
-    const { passwordHash: _, ...userWithoutPassword } = user;
+    const { passwordHash: _ph, ...userWithoutPassword } = user;
 
     return {
       user: userWithoutPassword,
@@ -438,10 +430,7 @@ export async function requestPasswordReset(email?: string, phone?: string): Prom
 
   const user = await prisma.user.findFirst({
     where: {
-      OR: [
-        ...(email ? [{ email }] : []),
-        ...(phone ? [{ phone }] : []),
-      ],
+      OR: [...(email ? [{ email }] : []), ...(phone ? [{ phone }] : [])],
     },
   });
 
@@ -450,11 +439,9 @@ export async function requestPasswordReset(email?: string, phone?: string): Prom
   }
 
   // 生成重置令牌（15分钟有效）
-  const resetToken = jwt.sign(
-    { userId: user.id, type: 'password-reset' },
-    JWT_SECRET,
-    { expiresIn: '15m' }
-  );
+  const resetToken = jwt.sign({ userId: user.id, type: 'password-reset' }, JWT_SECRET, {
+    expiresIn: '15m',
+  });
 
   logger.info('Password reset requested', { userId: user.id });
 
@@ -548,6 +535,6 @@ export async function getCurrentUser(userId: string): Promise<Omit<User, 'passwo
     throw new Error('用户不存在');
   }
 
-  const { passwordHash, ...userWithoutPassword } = user;
+  const { passwordHash: _ph, ...userWithoutPassword } = user;
   return userWithoutPassword;
 }

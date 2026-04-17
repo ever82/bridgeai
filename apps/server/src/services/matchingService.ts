@@ -3,10 +3,8 @@
  * 支持信用分筛选和排序权重
  */
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db/client';
 import { CreditFilterOptions } from '../types/credit';
-
-const prisma = new PrismaClient();
 
 export interface MatchQueryOptions {
   demandId?: string;
@@ -124,7 +122,8 @@ export class MatchingService {
       // 综合得分 = 原匹配分 * (1 - 信用权重) + 信用分归一化 * 信用权重
       const normalizedCredit = avgCredit / 1000;
       const baseMatchScore = parseFloat(match.score.toString());
-      const weightedScore = baseMatchScore * (1 - creditWeight) + normalizedCredit * 100 * creditWeight;
+      const weightedScore =
+        baseMatchScore * (1 - creditWeight) + normalizedCredit * 100 * creditWeight;
 
       return {
         matchId: match.id,
@@ -153,17 +152,7 @@ export class MatchingService {
   /**
    * 获取推荐匹配（高信用用户优先）
    */
-  async getRecommendedMatches(
-    userId: string,
-    limit: number = 10
-  ): Promise<MatchResult[]> {
-    // 获取用户信用分
-    const userCredit = await prisma.creditScore.findUnique({
-      where: { userId },
-    });
-
-    const userScore = userCredit?.score ?? 0;
-
+  async getRecommendedMatches(userId: string, limit: number = 10): Promise<MatchResult[]> {
     // 获取用户agents
     const agents = await prisma.agent.findMany({
       where: { userId },
@@ -182,9 +171,7 @@ export class MatchingService {
     });
 
     // 过滤出与用户相关的匹配
-    return matches.filter(
-      m => agentIds.includes(m.demandId) || agentIds.includes(m.supplyId)
-    );
+    return matches.filter(m => agentIds.includes(m.demandId) || agentIds.includes(m.supplyId));
   }
 
   /**

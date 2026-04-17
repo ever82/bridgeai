@@ -3,7 +3,9 @@
  * 实现多维度信用评分算法
  */
 
-import { PrismaClient } from '@prisma/client';
+import { EventEmitter } from 'events';
+
+import { prisma } from '../db/client';
 import {
   CreditFactorType,
   CreditSourceType,
@@ -12,14 +14,8 @@ import {
   CreditFactorDetail,
   SubFactorDetail,
 } from '../types/credit';
-import {
-  CREDIT_SCORE_CONFIG,
-  FACTOR_WEIGHTS,
-  getSubFactorWeight,
-} from '../config/creditWeights';
-import { getCreditLevel, getCreditLevelConfig } from '../config/creditLevels';
-
-const prisma = new PrismaClient();
+import { CREDIT_SCORE_CONFIG, FACTOR_WEIGHTS } from '../config/creditWeights';
+import { getCreditLevel } from '../config/creditLevels';
 
 export class CreditScoreService {
   /**
@@ -27,12 +23,7 @@ export class CreditScoreService {
    */
   async calculateScore(userId: string): Promise<CreditScoreResult> {
     // 并行计算各维度分数
-    const [
-      profileScore,
-      behaviorScore,
-      transactionScore,
-      socialScore,
-    ] = await Promise.all([
+    const [profileScore, behaviorScore, transactionScore, socialScore] = await Promise.all([
       this.calculateProfileScore(userId),
       this.calculateBehaviorScore(userId),
       this.calculateTransactionScore(userId),
@@ -48,9 +39,7 @@ export class CreditScoreService {
     ];
 
     // 计算总分
-    const totalScore = Math.round(
-      factors.reduce((sum, f) => sum + f.weightedScore, 0)
-    );
+    const totalScore = Math.round(factors.reduce((sum, f) => sum + f.weightedScore, 0));
 
     // 确保分数在有效范围内
     const clampedScore = Math.max(
@@ -148,10 +137,7 @@ export class CreditScoreService {
     // 获取匹配记录
     const matches = await prisma.match.findMany({
       where: {
-        OR: [
-          { demand: { agent: { userId } } },
-          { supply: { agent: { userId } } },
-        ],
+        OR: [{ demand: { agent: { userId } } }, { supply: { agent: { userId } } }],
       },
     });
 
@@ -186,9 +172,8 @@ export class CreditScoreService {
     });
 
     // 评价分数
-    const avgRating = ratings.length > 0
-      ? ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length
-      : 0;
+    const avgRating =
+      ratings.length > 0 ? ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length : 0;
     const ratingScore = avgRating * 20; // 5分制转百分制
     subFactors.push({ name: 'rating_score', score: ratingScore });
 
@@ -220,30 +205,30 @@ export class CreditScoreService {
     const factor = FACTOR_WEIGHTS.find(f => f.type === type);
     if (!factor) return [];
 
-    return subFactors.map(({ name, score }) => {
-      const subFactor = factor.subFactors.find(sf => sf.name === name);
-      if (!subFactor) return null;
+    return subFactors
+      .map(({ name, score }) => {
+        const subFactor = factor.subFactors.find(sf => sf.name === name);
+        if (!subFactor) return null;
 
-      const normalizedScore = Math.min(score / subFactor.maxScore, 1);
-      const weightedScore = normalizedScore * subFactor.weight * factor.weight * CREDIT_SCORE_CONFIG.maxScore;
+        const normalizedScore = Math.min(score / subFactor.maxScore, 1);
+        const weightedScore =
+          normalizedScore * subFactor.weight * factor.weight * CREDIT_SCORE_CONFIG.maxScore;
 
-      return {
-        type,
-        subFactor: name,
-        score,
-        weight: subFactor.weight * factor.weight,
-        weightedScore,
-      };
-    }).filter(Boolean) as FactorScore[];
+        return {
+          type,
+          subFactor: name,
+          score,
+          weight: subFactor.weight * factor.weight,
+          weightedScore,
+        };
+      })
+      .filter(Boolean) as FactorScore[];
   }
 
   // ==================== 辅助计算方法 ====================
 
   private calculateCompleteness(user: any): number {
-    const fields = [
-      'name', 'displayName', 'avatarUrl', 'bio',
-      'website', 'location', 'phone'
-    ];
+    const fields = ['name', 'displayName', 'avatarUrl', 'bio', 'website', 'location', 'phone'];
     const filledFields = fields.filter(field => !!user[field]).length;
     return Math.round((filledFields / fields.length) * 100);
   }
@@ -283,7 +268,7 @@ export class CreditScoreService {
     return Math.round((completed / matches.length) * 100);
   }
 
-  private calculateDisputeRate(userId: string): number {
+  private calculateDisputeRate(_userId: string): number {
     // 简化为默认高分
     return 90;
   }
@@ -323,11 +308,7 @@ export class CreditScoreService {
   /**
    * 更新用户信用分
    */
-  async updateCreditScore(
-    userId: string,
-    sourceType: CreditSourceType,
-    sourceId?: string
-  ) {
+  async updateCreditScore(userId: string, sourceType: CreditSourceType, sourceId?: string) {
     // 检查更新频率限制
     const existing = await prisma.creditScore.findUnique({
       where: { userId },
@@ -445,9 +426,8 @@ export class CreditScoreService {
           description: this.getFactorDescription(f.factorType, f.subFactor),
         }));
 
-        const avgScore = factors.length > 0
-          ? factors.reduce((sum, f) => sum + f.score, 0) / factors.length
-          : 0;
+        const avgScore =
+          factors.length > 0 ? factors.reduce((sum, f) => sum + f.score, 0) / factors.length : 0;
 
         factorDetails.push({
           type: factorType,
@@ -464,7 +444,9 @@ export class CreditScoreService {
   /**
    * 获取用户信用分排名
    */
-  async getCreditRank(userId: string): Promise<{ rank: number; total: number; percentile: number }> {
+  async getCreditRank(
+    userId: string
+  ): Promise<{ rank: number; total: number; percentile: number }> {
     const userScore = await prisma.creditScore.findUnique({
       where: { userId },
     });
@@ -482,9 +464,7 @@ export class CreditScoreService {
     return {
       rank: higherScores + 1,
       total: totalUsers,
-      percentile: totalUsers > 0
-        ? Math.round((1 - higherScores / totalUsers) * 100)
-        : 0,
+      percentile: totalUsers > 0 ? Math.round((1 - higherScores / totalUsers) * 100) : 0,
     };
   }
 
@@ -510,9 +490,7 @@ export class CreditScoreService {
 
   private calculateNextUpdateTime(): Date {
     const nextUpdate = new Date();
-    nextUpdate.setMinutes(
-      nextUpdate.getMinutes() + CREDIT_SCORE_CONFIG.updateIntervalMinutes
-    );
+    nextUpdate.setMinutes(nextUpdate.getMinutes() + CREDIT_SCORE_CONFIG.updateIntervalMinutes);
     return nextUpdate;
   }
 
@@ -554,8 +532,6 @@ export const creditScoreService = new CreditScoreService();
 // ============================================
 // ISSUE-CR002c: Rating & Review Credit Score Functions
 // ============================================
-
-import { EventEmitter } from 'events';
 
 // Credit Score Events
 export const creditScoreEvents = new EventEmitter();
@@ -615,10 +591,7 @@ export function calculateReviewCountBonus(reviewCount: number): number {
  * @param repliedReviews - Number of reviews with replies
  * @returns Credit score bonus
  */
-export function calculateReplyRateBonus(
-  totalReviews: number,
-  repliedReviews: number
-): number {
+export function calculateReplyRateBonus(totalReviews: number, repliedReviews: number): number {
   if (totalReviews === 0) return 0;
 
   const replyRate = repliedReviews / totalReviews;
@@ -714,10 +687,7 @@ export async function recalculateCreditScore(userId: string): Promise<number> {
   // Calculate final score
   const finalScore = Math.max(
     REVIEW_CREDIT_CONFIG.MIN_SCORE,
-    Math.min(
-      REVIEW_CREDIT_CONFIG.MAX_SCORE,
-      baseScore + reviewCountBonus + replyRateBonus
-    )
+    Math.min(REVIEW_CREDIT_CONFIG.MAX_SCORE, baseScore + reviewCountBonus + replyRateBonus)
   );
 
   // Create credit record for recalculation
@@ -808,12 +778,10 @@ export async function getCreditScoreStats(userId: string): Promise<{
     where: { rateeId: userId },
   });
 
-  const goodReviews = ratings.filter((r) => r.score >= 4).length;
-  const badReviews = ratings.filter((r) => r.score <= 2).length;
+  const goodReviews = ratings.filter(r => r.score >= 4).length;
+  const badReviews = ratings.filter(r => r.score <= 2).length;
   const averageRating =
-    ratings.length > 0
-      ? ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length
-      : 0;
+    ratings.length > 0 ? ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length : 0;
 
   return {
     currentScore,

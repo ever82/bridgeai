@@ -4,7 +4,9 @@
  * Provides role and permission-based access control for API endpoints.
  */
 import type { Request, Response, NextFunction } from 'express';
+
 import { rbacService } from '../services/rbacService';
+
 import { getRequestContext } from './requestContext';
 
 /**
@@ -24,7 +26,7 @@ export interface AuthenticatedRequest extends Request {
  */
 export function requireRole(...allowedRoles: string[]) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-    const context = getRequestContext(req);
+    const context = getRequestContext();
 
     if (!req.user?.id) {
       res.status(401).json({
@@ -36,10 +38,10 @@ export function requireRole(...allowedRoles: string[]) {
 
     try {
       const userRoles = await rbacService.getUserRoles(req.user.id);
-      const roleNames = userRoles.map((ur) => ur.role.name);
+      const roleNames = userRoles.map(ur => ur.role.name);
 
       // Check if user has any of the allowed roles
-      const hasRole = allowedRoles.some((role) => roleNames.includes(role));
+      const hasRole = allowedRoles.some(role => roleNames.includes(role));
 
       if (!hasRole) {
         context?.logWarning('Role access denied', {
@@ -76,7 +78,7 @@ export function requireRole(...allowedRoles: string[]) {
  */
 export function requirePermission(...requiredPermissions: string[]) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-    const context = getRequestContext(req);
+    const context = getRequestContext();
 
     if (!req.user?.id) {
       res.status(401).json({
@@ -88,11 +90,11 @@ export function requirePermission(...requiredPermissions: string[]) {
 
     try {
       const userPermissions = await rbacService.getUserPermissions(req.user.id);
-      const permissionNames = userPermissions.map((p) => p.name);
+      const permissionNames = userPermissions.map(p => p.name);
 
       // Check if user has all required permissions
       const missingPermissions = requiredPermissions.filter(
-        (perm) => !permissionNames.includes(perm)
+        perm => !permissionNames.includes(perm)
       );
 
       if (missingPermissions.length > 0) {
@@ -131,7 +133,7 @@ export function requirePermission(...requiredPermissions: string[]) {
  */
 export function requireRoleLevel(minLevel: number) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-    const context = getRequestContext(req);
+    const context = getRequestContext();
 
     if (!req.user?.id) {
       res.status(401).json({
@@ -143,7 +145,7 @@ export function requireRoleLevel(minLevel: number) {
 
     try {
       const userRoles = await rbacService.getUserRoles(req.user.id);
-      const highestLevel = Math.max(...userRoles.map((ur) => ur.role.level));
+      const highestLevel = Math.max(...userRoles.map(ur => ur.role.level));
 
       if (highestLevel < minLevel) {
         context?.logWarning('Role level access denied', {
@@ -193,8 +195,8 @@ export async function loadUserPermissions(
       rbacService.getUserPermissions(req.user.id),
     ]);
 
-    req.user.roles = roles.map((ur) => ur.role.name);
-    req.user.permissions = permissions.map((p) => p.name);
+    req.user.roles = roles.map(ur => ur.role.name);
+    req.user.permissions = permissions.map(p => p.name);
   } catch (error) {
     // Non-blocking error - continue without permissions
     console.error('Failed to load user permissions:', error);
@@ -207,9 +209,11 @@ export async function loadUserPermissions(
  * Check resource ownership middleware
  * Verifies that the authenticated user owns the requested resource
  */
-export function requireOwnership(getResourceOwnerId: (req: AuthenticatedRequest) => Promise<string | null>) {
+export function requireOwnership(
+  getResourceOwnerId: (req: AuthenticatedRequest) => Promise<string | null>
+) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-    const context = getRequestContext(req);
+    const context = getRequestContext();
 
     if (!req.user?.id) {
       res.status(401).json({
@@ -233,7 +237,7 @@ export function requireOwnership(getResourceOwnerId: (req: AuthenticatedRequest)
       // Check if user is the owner or has admin permission
       const isOwner = ownerId === req.user.id;
       const userPermissions = await rbacService.getUserPermissions(req.user.id);
-      const isAdmin = userPermissions.some((p) => p.resource === '*' || p.name === '*:admin');
+      const isAdmin = userPermissions.some(p => p.resource === '*' || p.name === '*:admin');
 
       if (!isOwner && !isAdmin) {
         context?.logWarning('Resource ownership check failed', {

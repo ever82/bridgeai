@@ -7,9 +7,11 @@
  * - Image content validation
  * - Malicious file detection
  */
+import path from 'path';
+
 import type { Request, Response, NextFunction } from 'express';
 import multer, { type FileFilterCallback } from 'multer';
-import path from 'path';
+
 import { getRequestContext } from './requestContext';
 
 // ============================================================================
@@ -169,22 +171,6 @@ function isDangerousMimeType(mimeType: string): boolean {
   return DANGEROUS_MIME_TYPES.includes(mimeType.toLowerCase());
 }
 
-/**
- * Check if MIME type is allowed for a specific category
- */
-function isAllowedMimeType(mimeType: string, category?: string): boolean {
-  if (isDangerousMimeType(mimeType)) {
-    return false;
-  }
-
-  if (category && category in ALLOWED_MIME_TYPES) {
-    return ALLOWED_MIME_TYPES[category].includes(mimeType);
-  }
-
-  // Check all categories if no specific category provided
-  return Object.values(ALLOWED_MIME_TYPES).some((types) => types.includes(mimeType));
-}
-
 // ============================================================================
 // File Filter
 // ============================================================================
@@ -197,7 +183,7 @@ function createFileFilter(
   allowedMimeTypes?: string[]
 ): (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => void {
   return (req: Request, file: Express.Multer.File, cb: FileFilterCallback): void => {
-    const context = getRequestContext(req);
+    const context = getRequestContext();
 
     // Check for dangerous extensions
     if (isDangerousExtension(file.originalname)) {
@@ -293,13 +279,7 @@ export interface UploadOptions {
  * Create single file upload middleware
  */
 export function uploadSingle(options: UploadOptions = {}) {
-  const {
-    categories,
-    mimeTypes,
-    maxSize,
-    storage = 'memory',
-    fieldName = 'file',
-  } = options;
+  const { categories, mimeTypes, maxSize, storage = 'memory', fieldName = 'file' } = options;
 
   const limits: multer.Options['limits'] = {
     fileSize: maxSize || MAX_FILE_SIZES.default,
@@ -423,7 +403,12 @@ export function uploadAudio(fieldName = 'audio', maxSize?: number) {
 /**
  * Handle multer errors
  */
-export function handleUploadError(err: Error, _req: Request, res: Response, next: NextFunction): void {
+export function handleUploadError(
+  err: Error,
+  _req: Request,
+  res: Response,
+  next: NextFunction
+): void {
   if (err instanceof multer.MulterError) {
     let message = 'File upload error';
     let code = 'UPLOAD_ERROR';
@@ -455,7 +440,10 @@ export function handleUploadError(err: Error, _req: Request, res: Response, next
   }
 
   // Handle custom file filter errors
-  if (err.message.includes('File type not allowed') || err.message.includes('File category not allowed')) {
+  if (
+    err.message.includes('File type not allowed') ||
+    err.message.includes('File category not allowed')
+  ) {
     res.status(400).json({
       success: false,
       error: { code: 'INVALID_FILE_TYPE', message: err.message },
@@ -497,7 +485,13 @@ export function validateImageBuffer(buffer: Buffer): { valid: boolean; format?: 
 
   // WebP: 52 49 46 46 ... 57 45 42 50
   if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) {
-    if (buffer.length >= 12 && buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50) {
+    if (
+      buffer.length >= 12 &&
+      buffer[8] === 0x57 &&
+      buffer[9] === 0x45 &&
+      buffer[10] === 0x42 &&
+      buffer[11] === 0x50
+    ) {
       return { valid: true, format: 'webp' };
     }
   }

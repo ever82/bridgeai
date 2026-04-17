@@ -4,20 +4,15 @@
 
 import { Router } from 'express';
 import { z } from 'zod';
-import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+
+import { prisma } from '../db/client';
 import { authenticate } from '../middleware/auth';
 import { validate } from '../middleware/validation';
 import { AppError } from '../errors/AppError';
-import bcrypt from 'bcryptjs';
-import {
-  ProfileVisibility,
-  OnlineStatusVisibility,
-  ContactVisibility,
-  DEFAULT_PRIVACY_SETTINGS,
-} from '../types/privacy';
+import { DEFAULT_PRIVACY_SETTINGS } from '../types/privacy';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // 验证模式
 const privacySettingsSchema = z.object({
@@ -70,7 +65,7 @@ router.get('/me/privacy', authenticate, async (req, res, next) => {
     // 合并默认设置和用户设置
     const settings = {
       ...DEFAULT_PRIVACY_SETTINGS,
-      ...(user.privacySettings as Record<string, any> || {}),
+      ...((user.privacySettings as Record<string, any>) || {}),
     };
 
     res.json({
@@ -103,7 +98,7 @@ router.put(
 
       const currentSettings = {
         ...DEFAULT_PRIVACY_SETTINGS,
-        ...(user?.privacySettings as Record<string, any> || {}),
+        ...((user?.privacySettings as Record<string, any>) || {}),
       };
 
       // 合并新设置

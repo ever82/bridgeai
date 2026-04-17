@@ -5,11 +5,12 @@
  * 支持微信、Google OAuth 登录
  */
 
-import { PrismaClient, User } from '@prisma/client';
-import { logger } from '../utils/logger';
-import { generateAccessToken, generateRefreshToken, IAuthResponse } from './authService';
+import { User } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import { logger } from '../utils/logger';
+import { prisma } from '../db/client';
+
+import { generateAccessToken, generateRefreshToken, IAuthResponse } from './authService';
 
 // OAuth 提供商类型
 export type OAuthProvider = 'wechat' | 'google';
@@ -42,7 +43,8 @@ const oauthConfigs: Record<OAuthProvider, IOAuthConfig> = {
   wechat: {
     clientId: process.env.WECHAT_APP_ID || '',
     clientSecret: process.env.WECHAT_APP_SECRET || '',
-    redirectUri: process.env.WECHAT_REDIRECT_URI || 'http://localhost:3000/api/v1/auth/oauth/wechat/callback',
+    redirectUri:
+      process.env.WECHAT_REDIRECT_URI || 'http://localhost:3000/api/v1/auth/oauth/wechat/callback',
     authorizeUrl: 'https://open.weixin.qq.com/connect/oauth2/authorize',
     tokenUrl: 'https://api.weixin.qq.com/sns/oauth2/access_token',
     userInfoUrl: 'https://api.weixin.qq.com/sns/userinfo',
@@ -50,7 +52,8 @@ const oauthConfigs: Record<OAuthProvider, IOAuthConfig> = {
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || '',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    redirectUri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/v1/auth/oauth/google/callback',
+    redirectUri:
+      process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/v1/auth/oauth/google/callback',
     authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
     tokenUrl: 'https://oauth2.googleapis.com/token',
     userInfoUrl: 'https://www.googleapis.com/oauth2/v2/userinfo',
@@ -247,7 +250,7 @@ export async function handleOAuthCallback(
   const refreshToken = generateRefreshToken(user.id);
 
   // 5. 返回认证响应
-  const { passwordHash: _, ...userWithoutPassword } = user;
+  const { passwordHash: _ph, ...userWithoutPassword } = user;
 
   return {
     user: userWithoutPassword,
@@ -420,7 +423,7 @@ export async function getUserOAuthConnections(
     },
   });
 
-  return connections.map((c) => ({
+  return connections.map(c => ({
     provider: c.provider as OAuthProvider,
     connectedAt: c.createdAt,
   }));

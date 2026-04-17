@@ -3,11 +3,9 @@
  * 全量计算和更新用户信用分
  */
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db/client';
 import { creditScoreService } from '../services/creditScoreService';
 import { CreditSourceType } from '../types/credit';
-
-const prisma = new PrismaClient();
 
 interface CreditUpdateJobConfig {
   batchSize: number;
@@ -25,9 +23,7 @@ const DEFAULT_CONFIG: CreditUpdateJobConfig = {
  * 全量信用分更新任务
  * 建议运行频率：每日凌晨
  */
-export async function runCreditUpdateJob(
-  config: Partial<CreditUpdateJobConfig> = {}
-): Promise<{
+export async function runCreditUpdateJob(config: Partial<CreditUpdateJobConfig> = {}): Promise<{
   success: boolean;
   processed: number;
   failed: number;
@@ -56,11 +52,13 @@ export async function runCreditUpdateJob(
       const batchNumber = Math.floor(i / finalConfig.batchSize) + 1;
       const totalBatches = Math.ceil(users.length / finalConfig.batchSize);
 
-      console.log(`[CreditUpdateJob] Processing batch ${batchNumber}/${totalBatches} (${batch.length} users)`);
+      console.log(
+        `[CreditUpdateJob] Processing batch ${batchNumber}/${totalBatches} (${batch.length} users)`
+      );
 
       // 并行处理批次内的用户
       const batchResults = await Promise.allSettled(
-        batch.map(async (user) => {
+        batch.map(async user => {
           try {
             const result = await creditScoreService.updateCreditScore(
               user.id,
@@ -128,14 +126,14 @@ export async function runCreditUpdateJob(
  * 检测异常波动
  * 找出信用分异常变化的用户
  */
-export async function detectCreditFluctuations(
-  threshold: number = 50
-): Promise<Array<{
-  userId: string;
-  oldScore: number;
-  newScore: number;
-  delta: number;
-}>> {
+export async function detectCreditFluctuations(threshold: number = 50): Promise<
+  Array<{
+    userId: string;
+    oldScore: number;
+    newScore: number;
+    delta: number;
+  }>
+> {
   const fluctuations: Array<{
     userId: string;
     oldScore: number;
@@ -205,9 +203,8 @@ export async function generateCreditReport(): Promise<{
   });
 
   const totalUsers = scores.length;
-  const averageScore = totalUsers > 0
-    ? scores.reduce((sum, s) => sum + s.score, 0) / totalUsers
-    : 0;
+  const averageScore =
+    totalUsers > 0 ? scores.reduce((sum, s) => sum + s.score, 0) / totalUsers : 0;
 
   const levelDistribution: Record<string, number> = {};
   for (const score of scores) {

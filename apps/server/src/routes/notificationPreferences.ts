@@ -6,12 +6,12 @@
  */
 
 import { Router, Request, Response } from 'express';
+
 import { authenticate } from '../middleware/auth';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 /**
  * GET /api/v1/notification-preferences
@@ -145,12 +145,7 @@ router.patch('/channels', authenticate, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const {
-      pushEnabled,
-      emailEnabled,
-      smsEnabled,
-      inAppEnabled,
-    } = req.body;
+    const { pushEnabled, emailEnabled, smsEnabled, inAppEnabled } = req.body;
 
     const preferences = await prisma.notificationPreference.upsert({
       where: { userId },
@@ -385,13 +380,7 @@ router.post('/push-tokens', authenticate, async (req: Request, res: Response) =>
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const {
-      token,
-      deviceId,
-      deviceType,
-      appVersion,
-      osVersion,
-    } = req.body;
+    const { token, deviceId, deviceType, appVersion, osVersion } = req.body;
 
     // 验证必需字段
     if (!token) {

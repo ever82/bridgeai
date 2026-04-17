@@ -3,10 +3,10 @@
  * 支持多种推送渠道：应用内、邮件、短信、推送
  */
 
-import { PrismaClient, Notification, NotificationType, NotificationChannel, PriorityLevel } from '@prisma/client';
+import { Notification, NotificationType, NotificationChannel, PriorityLevel } from '@prisma/client';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
-const prisma = new PrismaClient();
+import { prisma } from '../db/client';
 
 // 推送配置
 interface PushConfig {
@@ -351,10 +351,7 @@ export class PushNotificationService {
   /**
    * 处理 Expo 推送票据
    */
-  private async handlePushTickets(
-    tokens: any[],
-    tickets: ExpoPushTicket[]
-  ): Promise<void> {
+  private async handlePushTickets(tokens: any[], tickets: ExpoPushTicket[]): Promise<void> {
     for (let i = 0; i < tickets.length; i++) {
       const ticket = tickets[i];
       const token = tokens[i];
@@ -474,10 +471,7 @@ export class PushNotificationService {
   /**
    * 确定推送渠道
    */
-  private determineChannels(
-    prefs: any,
-    message: PushMessage
-  ): NotificationChannel[] {
+  private determineChannels(prefs: any, message: PushMessage): NotificationChannel[] {
     const channels: NotificationChannel[] = [NotificationChannel.IN_APP];
 
     if (prefs.pushEnabled) {

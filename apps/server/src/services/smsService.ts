@@ -3,9 +3,7 @@
  * 支持短信模板、队列管理和发送状态追踪
  */
 
-import { PrismaClient, SMSStatus } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../db/client';
 
 // 短信配置
 interface SMSConfig {
@@ -217,10 +215,7 @@ export class SMSService {
         where: {
           status: 'PENDING',
         },
-        orderBy: [
-          { priority: 'desc' },
-          { createdAt: 'asc' },
-        ],
+        orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
         take: batchSize,
       });
 
@@ -371,10 +366,7 @@ export class SMSService {
   /**
    * 更新短信状态（用于外部服务回调）
    */
-  async updateStatus(
-    messageId: string,
-    status: 'DELIVERED' | 'FAILED'
-  ): Promise<void> {
+  async updateStatus(messageId: string, status: 'DELIVERED' | 'FAILED'): Promise<void> {
     const updateData: any = { status };
 
     if (status === 'DELIVERED') {
@@ -400,13 +392,7 @@ export class SMSService {
   }> {
     const where = phoneNumber ? { phoneNumber } : {};
 
-    const [
-      total,
-      pending,
-      sent,
-      delivered,
-      failed,
-    ] = await Promise.all([
+    const [total, pending, sent, delivered, failed] = await Promise.all([
       prisma.sMSQueue.count({ where }),
       prisma.sMSQueue.count({ where: { ...where, status: 'PENDING' } }),
       prisma.sMSQueue.count({ where: { ...where, status: 'SENT' } }),
@@ -452,7 +438,8 @@ export class SMSService {
    * 英文：160字符/段
    */
   private calculateSegments(content: string): number {
-    const hasUnicode = /[^\x00-\x7F]/.test(content);
+    // eslint-disable-next-line no-control-regex
+    const hasUnicode = /[^\x01-\x7F]/.test(content);
     const maxLength = hasUnicode ? 70 : 160;
     return Math.ceil(content.length / maxLength);
   }

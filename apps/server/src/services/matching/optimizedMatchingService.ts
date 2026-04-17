@@ -3,16 +3,16 @@
  * Includes performance improvements for complex queries
  */
 
-import { PrismaClient, Prisma } from '@prisma/client';
-import { getOrSet, CacheNamespaces } from '../cache';
+import { Prisma } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import { getOrSet, CacheNamespaces } from '../cache';
+import { prisma } from '../db/client';
 
 // Cache TTLs (in seconds)
 const CACHE_TTL = {
-  MATCH_LIST: 60,      // 1 minute for match lists
-  RECOMMENDED: 300,    // 5 minutes for recommendations
-  CREDIT_SCORE: 300,   // 5 minutes for credit scores
+  MATCH_LIST: 60, // 1 minute for match lists
+  RECOMMENDED: 300, // 5 minutes for recommendations
+  CREDIT_SCORE: 300, // 5 minutes for credit scores
 };
 
 export interface MatchQueryOptions {
@@ -191,7 +191,8 @@ export class OptimizedMatchingService {
       const avgCredit = (demandCredit + supplyCredit) / 2;
       const normalizedCredit = avgCredit / 1000;
       const baseMatchScore = parseFloat(match.score.toString());
-      const weightedScore = baseMatchScore * (1 - creditWeight) + normalizedCredit * 100 * creditWeight;
+      const weightedScore =
+        baseMatchScore * (1 - creditWeight) + normalizedCredit * 100 * creditWeight;
 
       return {
         matchId: match.id,
@@ -217,10 +218,7 @@ export class OptimizedMatchingService {
   /**
    * Get recommended matches with caching
    */
-  async getRecommendedMatches(
-    userId: string,
-    limit: number = 10
-  ): Promise<MatchResult[]> {
+  async getRecommendedMatches(userId: string, limit: number = 10): Promise<MatchResult[]> {
     const cacheKey = `recommended:${userId}:${limit}`;
 
     return getOrSet(
@@ -234,10 +232,7 @@ export class OptimizedMatchingService {
   /**
    * Fetch recommended matches from database
    */
-  private async fetchRecommendedFromDb(
-    userId: string,
-    limit: number
-  ): Promise<MatchResult[]> {
+  private async fetchRecommendedFromDb(userId: string, limit: number): Promise<MatchResult[]> {
     // Get user agents
     const agents = await prisma.agent.findMany({
       where: { userId },
@@ -253,10 +248,7 @@ export class OptimizedMatchingService {
     // Use OR condition for demand or supply
     const matches = await prisma.match.findMany({
       where: {
-        OR: [
-          { demandId: { in: agentIds } },
-          { supplyId: { in: agentIds } },
-        ],
+        OR: [{ demandId: { in: agentIds } }, { supplyId: { in: agentIds } }],
       },
       select: {
         id: true,

@@ -3,9 +3,17 @@
  * 管理用户通知列表、分类、已读/未读状态
  */
 
-import { PrismaClient, Notification, NotificationType, NotificationStatus, NotificationChannel, PriorityLevel } from '@prisma/client';
+import { EventEmitter } from 'events';
 
-const prisma = new PrismaClient();
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+  PriorityLevel,
+} from '@prisma/client';
+
+import { prisma } from '../db/client';
 
 // 查询选项
 interface NotificationQueryOptions {
@@ -139,7 +147,10 @@ export class NotificationService {
   /**
    * 获取通知详情
    */
-  async getNotificationDetail(notificationId: string, userId: string): Promise<Notification | null> {
+  async getNotificationDetail(
+    notificationId: string,
+    userId: string
+  ): Promise<Notification | null> {
     const notification = await prisma.notification.findFirst({
       where: {
         id: notificationId,
@@ -370,14 +381,7 @@ export class NotificationService {
    * 获取通知统计
    */
   async getStats(userId: string): Promise<NotificationStats> {
-    const [
-      total,
-      unread,
-      read,
-      archived,
-      byType,
-      byCategory,
-    ] = await Promise.all([
+    const [total, unread, read, archived, byType, byCategory] = await Promise.all([
       prisma.notification.count({ where: { userId } }),
       prisma.notification.count({ where: { userId, status: 'UNREAD' } }),
       prisma.notification.count({ where: { userId, status: 'READ' } }),
@@ -406,10 +410,13 @@ export class NotificationService {
       _count: { type: true },
     });
 
-    return result.reduce((acc: Record<string, number>, item: any) => {
-      acc[item.type] = item._count.type;
-      return acc;
-    }, {} as Record<string, number>);
+    return result.reduce(
+      (acc: Record<string, number>, item: any) => {
+        acc[item.type] = item._count.type;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
   }
 
   /**
@@ -422,10 +429,13 @@ export class NotificationService {
       _count: { category: true },
     });
 
-    return result.reduce((acc: Record<string, number>, item: any) => {
-      acc[item.category || 'other'] = item._count.category;
-      return acc;
-    }, {} as Record<string, number>);
+    return result.reduce(
+      (acc: Record<string, number>, item: any) => {
+        acc[item.category || 'other'] = item._count.category;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
   }
 
   /**
@@ -542,7 +552,7 @@ export class NotificationService {
   /**
    * 订阅通知更新（用于WebSocket）
    */
-  subscribeToUpdates(userId: string, callback: (notification: Notification) => void): void {
+  subscribeToUpdates(userId: string, _callback: (notification: Notification) => void): void {
     // 这里应该与WebSocket服务集成
     // 用于实时推送新通知
     console.log(`Subscribed user ${userId} to notification updates`);
@@ -562,8 +572,6 @@ export const notificationService = new NotificationService();
 // ============================================
 // ISSUE-CR002c: Rating & Review Notification Functions
 // ============================================
-
-import { EventEmitter } from 'events';
 
 // Review Notification Types
 export enum ReviewNotificationType {
@@ -601,9 +609,7 @@ const DEFAULT_REVIEW_PREFERENCES: ReviewNotificationPreferences = {
  * @param userId - User ID
  * @returns Notification preferences
  */
-export function getReviewNotificationPreferences(
-  userId: string
-): ReviewNotificationPreferences {
+export function getReviewNotificationPreferences(userId: string): ReviewNotificationPreferences {
   return userReviewPreferences.get(userId) ?? DEFAULT_REVIEW_PREFERENCES;
 }
 
@@ -801,7 +807,7 @@ export async function sendCreditScoreChangeNotification(
  */
 export async function scheduleReviewReminders(
   matchId: string,
-  completionTime: Date
+  _completionTime: Date
 ): Promise<void> {
   const REMINDER_DELAY_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -847,11 +853,7 @@ export async function scheduleReviewReminders(
     });
 
     if (!demandUserRated) {
-      await sendPendingReviewReminder(
-        demandUser.id,
-        matchId,
-        supplyUser.name || '对方'
-      );
+      await sendPendingReviewReminder(demandUser.id, matchId, supplyUser.name || '对方');
     }
 
     // Check if supply user has already rated
@@ -863,11 +865,7 @@ export async function scheduleReviewReminders(
     });
 
     if (!supplyUserRated) {
-      await sendPendingReviewReminder(
-        supplyUser.id,
-        matchId,
-        demandUser.name || '对方'
-      );
+      await sendPendingReviewReminder(supplyUser.id, matchId, demandUser.name || '对方');
     }
   }, REMINDER_DELAY_MS);
 }

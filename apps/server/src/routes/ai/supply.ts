@@ -12,14 +12,14 @@
 
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+
 import { authenticate as authenticateToken } from '../../middleware/auth';
 import { validate as validateRequest } from '../../middleware/validation';
 import { SupplyExtractionService } from '../../services/ai/supplyExtractionService';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../db/client';
 import logger from '../../utils/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // 初始化供给提取服务
 const supplyExtractionService = new SupplyExtractionService();
@@ -44,32 +44,41 @@ const extractSupplySchema = z.object({
   scene: z.string().min(1).max(50),
   agent_id: z.string().uuid().optional(),
   language: z.string().optional(),
-  options: z.object({
-    include_capabilities: z.boolean().optional(),
-    include_pricing: z.boolean().optional(),
-    include_availability: z.boolean().optional(),
-    include_location: z.boolean().optional(),
-    include_experience: z.boolean().optional(),
-    min_confidence: z.number().min(0).max(100).optional(),
-  }).optional(),
+  options: z
+    .object({
+      include_capabilities: z.boolean().optional(),
+      include_pricing: z.boolean().optional(),
+      include_availability: z.boolean().optional(),
+      include_location: z.boolean().optional(),
+      include_experience: z.boolean().optional(),
+      min_confidence: z.number().min(0).max(100).optional(),
+    })
+    .optional(),
 });
 
 // 验证规则 - 批量供给提取请求
 const bulkExtractSupplySchema = z.object({
-  items: z.array(z.object({
-    text: z.string().min(10).max(5000),
-    scene: z.string().min(1).max(50),
-    agent_id: z.string().uuid().optional(),
-    language: z.string().optional(),
-  })).min(1).max(50),
-  options: z.object({
-    include_capabilities: z.boolean().optional(),
-    include_pricing: z.boolean().optional(),
-    include_availability: z.boolean().optional(),
-    include_location: z.boolean().optional(),
-    include_experience: z.boolean().optional(),
-    min_confidence: z.number().min(0).max(100).optional(),
-  }).optional(),
+  items: z
+    .array(
+      z.object({
+        text: z.string().min(10).max(5000),
+        scene: z.string().min(1).max(50),
+        agent_id: z.string().uuid().optional(),
+        language: z.string().optional(),
+      })
+    )
+    .min(1)
+    .max(50),
+  options: z
+    .object({
+      include_capabilities: z.boolean().optional(),
+      include_pricing: z.boolean().optional(),
+      include_availability: z.boolean().optional(),
+      include_location: z.boolean().optional(),
+      include_experience: z.boolean().optional(),
+      min_confidence: z.number().min(0).max(100).optional(),
+    })
+    .optional(),
 });
 
 // 验证规则 - 供给更新请求
@@ -159,8 +168,8 @@ router.post(
     } catch (error) {
       logger.error('Supply extraction failed:', error);
 
-      const statusCode = error instanceof Error &&
-        error.message.includes('Circuit breaker') ? 503 : 500;
+      const statusCode =
+        error instanceof Error && error.message.includes('Circuit breaker') ? 503 : 500;
 
       res.status(statusCode).json({
         success: false,
@@ -231,7 +240,7 @@ router.post(
       res.json({
         success: result.success,
         data: {
-          results: result.results.map((r) => ({
+          results: result.results.map(r => ({
             success: r.success,
             supply: {
               title: r.supply.title,
@@ -262,8 +271,8 @@ router.post(
     } catch (error) {
       logger.error('Bulk supply extraction failed:', error);
 
-      const statusCode = error instanceof Error &&
-        error.message.includes('Circuit breaker') ? 503 : 500;
+      const statusCode =
+        error instanceof Error && error.message.includes('Circuit breaker') ? 503 : 500;
 
       res.status(statusCode).json({
         success: false,
@@ -304,7 +313,7 @@ router.get(
       }
 
       // 构建质量报告
-      const qualityReports = profiles.map((profile) => ({
+      const qualityReports = profiles.map(profile => ({
         scene: profile.sceneId,
         confidence: profile.l3ExtractionConfidence || 0,
         extraction_data: profile.l3ExtractionData,
@@ -312,7 +321,8 @@ router.get(
       }));
 
       // 计算平均质量指标
-      const avgConfidence = qualityReports.reduce((sum, r) => sum + r.confidence, 0) / qualityReports.length;
+      const avgConfidence =
+        qualityReports.reduce((sum, r) => sum + r.confidence, 0) / qualityReports.length;
 
       res.json({
         success: true,
@@ -371,11 +381,7 @@ router.post(
 /**
  * 存储提取结果到 AgentProfile
  */
-async function storeExtractionResult(
-  agentId: string,
-  scene: string,
-  result: any
-): Promise<void> {
+async function storeExtractionResult(agentId: string, scene: string, result: any): Promise<void> {
   // 查找或创建 AgentProfile
   const sceneRecord = await prisma.scene.findUnique({
     where: { code: scene.toUpperCase().replace(/-/g, '_') as any },
