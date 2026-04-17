@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 // React Native Mock for Jest testing
 import React from 'react';
 
@@ -23,7 +24,11 @@ export const FlatList = jest.fn((props: any) => {
   if (data && renderItem) {
     const items = data.map((item: any, index: number) => {
       const key = keyExtractor ? keyExtractor(item, index) : index;
-      return React.createElement(View, { key, testID: `flat-list-item-${key}` }, renderItem({ item, index }));
+      return React.createElement(
+        View,
+        { key, testID: `flat-list-item-${key}` },
+        renderItem({ item, index })
+      );
     });
     return React.createElement(View, { testID }, items);
   }
@@ -32,7 +37,11 @@ export const FlatList = jest.fn((props: any) => {
 export const SectionList = mockComponent('SectionList');
 export const TouchableOpacity = jest.fn((props: any) => {
   const { children, onPress, disabled, testID, style } = props;
-  return React.createElement(View, { testID, accessibilityState: { disabled: !!disabled }, onPress, style }, children);
+  return React.createElement(
+    View,
+    { testID, accessibilityState: { disabled: !!disabled }, onPress, style },
+    children
+  );
 });
 export const TouchableHighlight = mockComponent('TouchableHighlight');
 export const TouchableWithoutFeedback = mockComponent('TouchableWithoutFeedback');
@@ -158,12 +167,24 @@ export const Animated = {
   })),
   createAnimatedComponent: jest.fn((component: any) => component),
   event: jest.fn(),
-  add: jest.fn((a: any, b: any) => ({ __getValue: () => (a.__getValue?.() || a) + (b.__getValue?.() || b) })),
-  subtract: jest.fn((a: any, b: any) => ({ __getValue: () => (a.__getValue?.() || a) - (b.__getValue?.() || b) })),
-  multiply: jest.fn((a: any, b: any) => ({ __getValue: () => (a.__getValue?.() || a) * (b.__getValue?.() || b) })),
-  divide: jest.fn((a: any, b: any) => ({ __getValue: () => (a.__getValue?.() || a) / (b.__getValue?.() || b) })),
-  modulo: jest.fn((a: any, b: any) => ({ __getValue: () => (a.__getValue?.() || a) % (b.__getValue?.() || b) })),
-  diffClamp: jest.fn((a: any, min: number, max: number) => ({ __getValue: () => Math.max(min, Math.min(max, a.__getValue?.() || a)) })),
+  add: jest.fn((a: any, b: any) => ({
+    __getValue: () => (a.__getValue?.() || a) + (b.__getValue?.() || b),
+  })),
+  subtract: jest.fn((a: any, b: any) => ({
+    __getValue: () => (a.__getValue?.() || a) - (b.__getValue?.() || b),
+  })),
+  multiply: jest.fn((a: any, b: any) => ({
+    __getValue: () => (a.__getValue?.() || a) * (b.__getValue?.() || b),
+  })),
+  divide: jest.fn((a: any, b: any) => ({
+    __getValue: () => (a.__getValue?.() || a) / (b.__getValue?.() || b),
+  })),
+  modulo: jest.fn((a: any, b: any) => ({
+    __getValue: () => (a.__getValue?.() || a) % (b.__getValue?.() || b),
+  })),
+  diffClamp: jest.fn((a: any, min: number, max: number) => ({
+    __getValue: () => Math.max(min, Math.min(max, a.__getValue?.() || a)),
+  })),
 };
 
 export const AccessibilityInfo = {
@@ -231,7 +252,7 @@ export const Easing = {
   quad: jest.fn((t: number) => t * t),
   cubic: jest.fn((t: number) => t * t * t),
   poly: jest.fn((n: number) => (t: number) => Math.pow(t, n)),
-  sin: jest.fn((t: number) => Math.sin(t * Math.PI / 2)),
+  sin: jest.fn((t: number) => Math.sin((t * Math.PI) / 2)),
   circle: jest.fn((t: number) => 1 - Math.sqrt(1 - t * t)),
   exp: jest.fn((t: number) => Math.pow(2, 10 * (t - 1))),
   elastic: jest.fn((bounciness?: number) => (t: number) => t),
@@ -328,15 +349,36 @@ export const Share = {
 };
 
 export const UIManager = {
-  measure: jest.fn((ref: any, callback: (x: number, y: number, width: number, height: number, pageX: number, pageY: number) => void) => {
-    callback(0, 0, 100, 100, 0, 0);
-  }),
-  measureInWindow: jest.fn((ref: any, callback: (x: number, y: number, width: number, height: number) => void) => {
-    callback(0, 0, 100, 100);
-  }),
-  measureLayout: jest.fn((ref: any, relativeTo: any, onFail: () => void, onSuccess: (x: number, y: number, width: number, height: number) => void) => {
-    onSuccess(0, 0, 100, 100);
-  }),
+  measure: jest.fn(
+    (
+      ref: any,
+      callback: (
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        pageX: number,
+        pageY: number
+      ) => void
+    ) => {
+      callback(0, 0, 100, 100, 0, 0);
+    }
+  ),
+  measureInWindow: jest.fn(
+    (ref: any, callback: (x: number, y: number, width: number, height: number) => void) => {
+      callback(0, 0, 100, 100);
+    }
+  ),
+  measureLayout: jest.fn(
+    (
+      ref: any,
+      relativeTo: any,
+      onFail: () => void,
+      onSuccess: (x: number, y: number, width: number, height: number) => void
+    ) => {
+      onSuccess(0, 0, 100, 100);
+    }
+  ),
   setLayoutAnimationEnabledExperimental: jest.fn(),
   configureNextLayoutAnimation: jest.fn(),
 };

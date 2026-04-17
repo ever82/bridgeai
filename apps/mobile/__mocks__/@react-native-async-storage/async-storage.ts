@@ -8,7 +8,7 @@ export default {
   multiRemove: jest.fn(async () => {}),
   mergeItem: jest.fn(async () => {}),
   clear: jest.fn(async () => {}),
-  useAsyncStorage: jest.fn((key: string) => ({
+  useAsyncStorage: jest.fn((_key: string) => ({
     getItem: jest.fn(async () => null),
     setItem: jest.fn(async () => {}),
     removeItem: jest.fn(async () => {}),

@@ -3,6 +3,7 @@
  */
 import { renderHook, act } from '@testing-library/react-native';
 import { z } from 'zod';
+
 import { useForm } from '../useForm';
 
 // Simple test schema
@@ -10,8 +11,6 @@ const testSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email'),
 });
-
-type TestForm = z.infer<typeof testSchema>;
 
 describe('useForm', () => {
   const formConfig = {
@@ -97,9 +96,7 @@ describe('useForm', () => {
 
   describe('with schema validation', () => {
     it('should validate form with schema', () => {
-      const { result } = renderHook(() =>
-        useForm(formConfig, { schema: testSchema })
-      );
+      const { result } = renderHook(() => useForm(formConfig, { schema: testSchema }));
 
       act(() => {
         result.current.setValue('name', 'John');
@@ -115,9 +112,7 @@ describe('useForm', () => {
     });
 
     it('should pass validation with valid data', () => {
-      const { result } = renderHook(() =>
-        useForm(formConfig, { schema: testSchema })
-      );
+      const { result } = renderHook(() => useForm(formConfig, { schema: testSchema }));
 
       act(() => {
         result.current.setValue('name', 'John');
@@ -136,9 +131,7 @@ describe('useForm', () => {
   describe('handleSubmit', () => {
     it('should call onSubmit with valid data', async () => {
       const onSubmit = jest.fn();
-      const { result } = renderHook(() =>
-        useForm(formConfig, { schema: testSchema, onSubmit })
-      );
+      const { result } = renderHook(() => useForm(formConfig, { schema: testSchema, onSubmit }));
 
       act(() => {
         result.current.setValue('name', 'John');
@@ -173,9 +166,7 @@ describe('useForm', () => {
 
     it('should set isSubmitting during submission', async () => {
       const onSubmit = jest.fn().mockResolvedValue(undefined);
-      const { result } = renderHook(() =>
-        useForm(formConfig, { schema: testSchema, onSubmit })
-      );
+      const { result } = renderHook(() => useForm(formConfig, { schema: testSchema, onSubmit }));
 
       act(() => {
         result.current.setValue('name', 'John');

@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { render, fireEvent } from '../utils/test-utils';
 import { useNavigation, useRoute } from '@react-navigation/native';
+
+import { render, fireEvent } from '../utils/test-utils';
 import { DetailScreen } from '../../screens/DetailScreen';
 
 // Mock the navigation hooks

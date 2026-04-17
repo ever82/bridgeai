@@ -2,7 +2,8 @@
  * TypingIndicator Component Tests
  */
 import React from 'react';
-import { render, waitFor, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
+
 import { TypingIndicator, useTypingDetector } from '../../components/TypingIndicator';
 import { socketClient } from '../../services/socketClient';
 
@@ -26,15 +27,13 @@ describe('TypingIndicator', () => {
   });
 
   it('renders null when no one is typing', () => {
-    const { container } = render(
-      <TypingIndicator roomId="room123" currentUserId="user123" />
-    );
+    const { container } = render(<TypingIndicator roomId="room123" currentUserId="user123" />);
     expect(container.children).toHaveLength(0);
   });
 
   it('shows typing indicator when other user is typing', () => {
     const mockOn = socketClient.on as jest.Mock;
-    let typingHandler: Function | null = null;
+    let typingHandler: (() => void) | null = null;
 
     mockOn.mockImplementation((event, handler) => {
       if (event === 'user:typing') {
@@ -42,9 +41,7 @@ describe('TypingIndicator', () => {
       }
     });
 
-    const { getByText } = render(
-      <TypingIndicator roomId="room123" currentUserId="user123" />
-    );
+    const { getByText } = render(<TypingIndicator roomId="room123" currentUserId="user123" />);
 
     // Simulate another user typing
     if (typingHandler) {
@@ -61,7 +58,7 @@ describe('TypingIndicator', () => {
 
   it('does not show current user typing', () => {
     const mockOn = socketClient.on as jest.Mock;
-    let typingHandler: Function | null = null;
+    let typingHandler: (() => void) | null = null;
 
     mockOn.mockImplementation((event, handler) => {
       if (event === 'user:typing') {
@@ -69,9 +66,7 @@ describe('TypingIndicator', () => {
       }
     });
 
-    const { container } = render(
-      <TypingIndicator roomId="room123" currentUserId="user123" />
-    );
+    const { container } = render(<TypingIndicator roomId="room123" currentUserId="user123" />);
 
     // Simulate current user typing
     if (typingHandler) {
@@ -88,7 +83,7 @@ describe('TypingIndicator', () => {
 
   it('shows multiple users typing', () => {
     const mockOn = socketClient.on as jest.Mock;
-    let typingHandler: Function | null = null;
+    let typingHandler: (() => void) | null = null;
 
     mockOn.mockImplementation((event, handler) => {
       if (event === 'user:typing') {
@@ -96,9 +91,7 @@ describe('TypingIndicator', () => {
       }
     });
 
-    const { getByText } = render(
-      <TypingIndicator roomId="room123" currentUserId="user123" />
-    );
+    const { getByText } = render(<TypingIndicator roomId="room123" currentUserId="user123" />);
 
     // Simulate two users typing
     if (typingHandler) {
@@ -121,7 +114,7 @@ describe('TypingIndicator', () => {
 
   it('removes typing indicator after timeout', () => {
     const mockOn = socketClient.on as jest.Mock;
-    let typingHandler: Function | null = null;
+    let typingHandler: (() => void) | null = null;
 
     mockOn.mockImplementation((event, handler) => {
       if (event === 'user:typing') {
@@ -184,9 +177,7 @@ describe('useTypingDetector', () => {
       return (
         <>
           <>{isTyping ? 'Typing' : 'Not Typing'}</>
-          <button onClick={() => handleTextChange('Hello')}>
-            Type
-          </button>
+          <button onClick={() => handleTextChange('Hello')}>Type</button>
         </>
       );
     };
@@ -205,11 +196,7 @@ describe('useTypingDetector', () => {
         currentUserId: 'user123',
         onTypingStart,
       });
-      return (
-        <button onClick={() => handleTextChange('Hello')}>
-          Type
-        </button>
-      );
+      return <button onClick={() => handleTextChange('Hello')}>Type</button>;
     };
 
     const { getByText } = render(<TestComponent />);

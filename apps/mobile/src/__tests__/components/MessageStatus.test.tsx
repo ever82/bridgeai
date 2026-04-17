@@ -3,7 +3,12 @@
  */
 import React from 'react';
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
-import { MessageStatus, GroupReadStatus, ReadReceiptBadge } from '../../components/Chat/MessageStatus';
+
+import {
+  MessageStatus,
+  GroupReadStatus,
+  ReadReceiptBadge,
+} from '../../components/Chat/MessageStatus';
 import { socketClient } from '../../services/socketClient';
 
 // Mock socket client
@@ -22,12 +27,7 @@ describe('MessageStatus', () => {
 
   it('renders correctly with default props', () => {
     const { getByText } = render(
-      <MessageStatus
-        messageId="msg123"
-        roomId="room123"
-        currentUserId="user123"
-        status="sent"
-      />
+      <MessageStatus messageId="msg123" roomId="room123" currentUserId="user123" status="sent" />
     );
     expect(getByText('✓')).toBeTruthy();
   });
@@ -94,7 +94,7 @@ describe('MessageStatus', () => {
 
   it('handles read receipt updates', async () => {
     const mockOn = socketClient.on as jest.Mock;
-    let receiptHandler: Function | null = null;
+    let receiptHandler: (() => void) | null = null;
 
     mockOn.mockImplementation((event, handler) => {
       if (event === 'chat:read_receipt') {
@@ -136,9 +136,7 @@ describe('MessageStatus', () => {
         roomId="room123"
         currentUserId="user123"
         status="read"
-        readBy={[
-          { userId: 'user456', messageId: 'msg123', readAt: new Date().toISOString() },
-        ]}
+        readBy={[{ userId: 'user456', messageId: 'msg123', readAt: new Date().toISOString() }]}
       />
     );
 
@@ -148,12 +146,7 @@ describe('MessageStatus', () => {
 
   it('does not open modal when no one has read', () => {
     const { getByText, queryByText } = render(
-      <MessageStatus
-        messageId="msg123"
-        roomId="room123"
-        currentUserId="user123"
-        status="sent"
-      />
+      <MessageStatus messageId="msg123" roomId="room123" currentUserId="user123" status="sent" />
     );
 
     fireEvent.press(getByText('✓'));
@@ -180,7 +173,7 @@ describe('GroupReadStatus', () => {
 
   it('calculates read rate correctly', async () => {
     const mockOn = socketClient.on as jest.Mock;
-    let receiptHandler: Function | null = null;
+    let receiptHandler: (() => void) | null = null;
 
     mockOn.mockImplementation((event, handler) => {
       if (event === 'chat:read_receipt') {

@@ -1,6 +1,6 @@
 // NativeWind mock
 export const useTailwind = jest.fn(() => ({
-  className: (className: string) => ({
+  className: (_className: string) => ({
     style: {},
   }),
 }));
