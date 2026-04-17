@@ -18,8 +18,8 @@ import {
   isAnyCapabilityEnabled,
   getMissingDependencies,
 } from '../sceneCapabilityService';
-import { getSceneConfig } from '@visionshare/shared';
-import type { SceneCapability } from '@visionshare/shared';
+import { getSceneConfig } from '@bridgeai/shared';
+import type { SceneCapability } from '@bridgeai/shared';
 
 describe('SceneCapabilityService', () => {
   describe('isCapabilityEnabled', () => {

@@ -4,7 +4,7 @@ import { HandoffButton } from './HandoffButton';
 import {
   HandoffStatus,
   SenderType,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 describe('HandoffButton', () => {
   const mockOnTakeover = jest.fn();

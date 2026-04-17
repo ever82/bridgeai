@@ -2,7 +2,7 @@
 
 ## 概览
 
-VisionShare 使用 PostgreSQL + PostGIS 作为主数据库。
+BridgeAI 使用 PostgreSQL + PostGIS 作为主数据库。
 
 ## 核心表结构
 

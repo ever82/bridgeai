@@ -3,11 +3,11 @@ version: '3.8'
 services:
   postgres:
     image: postgis/postgis:15-3.4
-    container_name: visionshare_postgres
+    container_name: bridgeai_postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: visionshare_dev
+      POSTGRES_DB: bridgeai_dev
     ports:
       - "5432:5432"
     volumes:
@@ -20,7 +20,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: visionshare_redis
+    container_name: bridgeai_redis
     ports:
       - "6379:6379"
     volumes:
@@ -33,7 +33,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: visionshare_minio
+    container_name: bridgeai_minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin

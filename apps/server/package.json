@@ -1,8 +1,8 @@
 {
-  "name": "@visionshare/server",
+  "name": "@bridgeai/server",
   "version": "0.1.0",
   "private": true,
-  "description": "VisionShare 后端服务 - Express + TypeScript",
+  "description": "BridgeAI 后端服务 - Express + TypeScript",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -21,7 +21,7 @@
     "@prisma/client": "^5.10.0",
     "@sentry/node": "^7.100.0",
     "@sentry/profiling-node": "^7.100.0",
-    "@visionshare/shared": "workspace:*",
+    "@bridgeai/shared": "workspace:*",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.3",
     "compression": "^1.7.4",

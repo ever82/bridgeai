@@ -6,7 +6,7 @@
  */
 
 import { prisma } from '../db/client';
-import { FilterDSL, FilterCondition, FilterOperator } from '@visionshare/shared';
+import { FilterDSL, FilterCondition, FilterOperator } from '@bridgeai/shared';
 import { logger } from '../utils/logger';
 import {
   CreditLevel,

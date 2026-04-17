@@ -17,7 +17,7 @@ import {
   GENDER_LABELS,
   EDUCATION_LABELS,
   L1_FIELD_LABELS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 interface L1ProfileFormProps {
   initialData?: L1Profile;

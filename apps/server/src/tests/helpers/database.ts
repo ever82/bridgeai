@@ -16,7 +16,7 @@ export function configureTestDatabase(): void {
   // Use test database URL if available, otherwise append _test to database name
   const testDbUrl = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL?.replace(
     /\/([^/]+)$/,
-    '/visionshare_test'
+    '/bridgeai_test'
   );
 
   if (testDbUrl) {

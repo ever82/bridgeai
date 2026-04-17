@@ -13,7 +13,7 @@ import {
   NearbyTaskResult,
   calculateDistance,
   DEFAULT_TASK_FILTER,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { logger } from '../../utils/logger';
 
 // Mock task database - in production, this would be from Prisma

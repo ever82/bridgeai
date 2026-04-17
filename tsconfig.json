@@ -15,7 +15,7 @@
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@visionshare/*": ["./packages/*/src"]
+      "@bridgeai/*": ["./packages/*/src"]
     }
   },
   "exclude": ["node_modules", "dist", "build"]

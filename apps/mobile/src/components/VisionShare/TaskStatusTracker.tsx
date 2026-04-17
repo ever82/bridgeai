@@ -9,7 +9,7 @@ import {
   TaskStatus,
   TASK_STATUS_LABELS,
   TASK_STATUS_COLORS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 interface TaskStatusTrackerProps {
   task: Task;

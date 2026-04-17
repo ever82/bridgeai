@@ -17,7 +17,7 @@ describe('Health Check Endpoints', () => {
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('status', 'healthy');
       expect(res.body).toHaveProperty('timestamp');
-      expect(res.body).toHaveProperty('service', 'visionshare-server');
+      expect(res.body).toHaveProperty('service', 'bridgeai-server');
     });
   });
 
@@ -78,7 +78,7 @@ describe('Root Endpoint', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.data).toHaveProperty('name', 'VisionShare API');
+    expect(res.body.data).toHaveProperty('name', 'BridgeAI API');
     expect(res.body.data).toHaveProperty('version', 'v1');
   });
 });

@@ -4,7 +4,7 @@
 set -e
 
 echo "============================================"
-echo "VisionShare PostgreSQL + PostGIS 安装脚本"
+echo "BridgeAI PostgreSQL + PostGIS 安装脚本"
 echo "============================================"
 
 # 检查 PostgreSQL 是否安装
@@ -18,7 +18,7 @@ fi
 # 检查参数
 if [ -z "$1" ]; then
     echo "用法: ./install-postgis.sh <数据库名称>"
-    echo "示例: ./install-postgis.sh visionshare_dev"
+    echo "示例: ./install-postgis.sh bridgeai_dev"
     exit 1
 fi
 
@@ -40,17 +40,17 @@ echo "[3/5] 验证 PostGIS 安装 ..."
 psql -U $PGUSER -d $DB_NAME -c "SELECT PostGIS_Version();"
 
 echo "[4/5] 创建应用用户 ..."
-psql -U $PGUSER -d postgres -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_user WHERE usename = 'visionshare') THEN CREATE USER visionshare WITH PASSWORD 'visionshare123'; END IF; END \$\$;"
-psql -U $PGUSER -d $DB_NAME -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO visionshare;"
+psql -U $PGUSER -d postgres -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_user WHERE usename = 'bridgeai') THEN CREATE USER bridgeai WITH PASSWORD 'bridgeai123'; END IF; END \$\$;"
+psql -U $PGUSER -d $DB_NAME -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO bridgeai;"
 
 echo "[5/5] 配置完成"
 echo ""
 echo "============================================"
 echo "数据库配置信息:"
 echo "  数据库: ${DB_NAME}"
-echo "  用户名: visionshare"
-echo "  密码: visionshare123"
-echo "  连接字符串: postgresql://visionshare:visionshare123@localhost:5432/${DB_NAME}"
+echo "  用户名: bridgeai"
+echo "  密码: bridgeai123"
+echo "  连接字符串: postgresql://bridgeai:bridgeai123@localhost:5432/${DB_NAME}"
 echo "============================================"
 echo ""
 echo "提示: 请更新 .env.dev 中的数据库配置"

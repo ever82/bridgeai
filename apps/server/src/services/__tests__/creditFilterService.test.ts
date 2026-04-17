@@ -6,7 +6,7 @@
 import {
   CreditLevel,
   CREDIT_LEVEL_THRESHOLDS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import {
   CreditFilterOptions,
   getCreditLevel,

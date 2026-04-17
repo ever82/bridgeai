@@ -10,8 +10,8 @@ import {
   FieldMapping,
   FieldTransformation,
   SceneConfig,
-} from '@visionshare/shared';
-import { getSceneConfig, SCENE_IDS } from '@visionshare/shared';
+} from '@bridgeai/shared';
+import { getSceneConfig, SCENE_IDS } from '@bridgeai/shared';
 import { logger } from '../utils/logger';
 
 // Predefined migration rules between scenes

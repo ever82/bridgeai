@@ -6,7 +6,7 @@
 
 import { Router, Request, Response } from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
-import { getL2Schema, L2Schema } from '@visionshare/shared';
+import { getL2Schema, L2Schema } from '@bridgeai/shared';
 import { demandExtractionService, DemandExtractionRequest } from '../../services/ai/demandExtractionService';
 import { demandToL2Mapper, MappingResult } from '../../services/ai/mappers/demandToL2Mapper';
 import { extractionValidator, ValidationReport } from '../../services/ai/validators/extractionValidator';

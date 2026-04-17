@@ -18,7 +18,7 @@ import {
   AGENT_STATUS_LABELS,
   AGENT_TYPE_COLORS,
   AGENT_STATUS_COLORS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { ProfileStackParamList } from '../../types/navigation';
 
 interface AgentCardProps {

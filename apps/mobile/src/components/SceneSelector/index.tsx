@@ -15,7 +15,7 @@ import {
   SceneSection,
   SCENE_DISPLAY_NAMES,
   SCENE_DESCRIPTIONS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 interface SceneSelectorProps {
   selectedScene?: SceneId;

@@ -14,7 +14,7 @@ import {
   L2FieldType,
   getL2Schema,
   L1_FIELD_LABELS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { useNavigation } from '@react-navigation/native';
 
 interface ExtractionResult {

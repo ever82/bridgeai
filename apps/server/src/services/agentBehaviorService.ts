@@ -3,7 +3,7 @@ import {
   AgentProtocolError,
   AgentProtocolErrorCode,
   AgentMessageType,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 /**
  * Rate limit configuration

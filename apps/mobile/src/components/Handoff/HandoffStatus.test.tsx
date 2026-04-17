@@ -5,7 +5,7 @@ import {
   HandoffStatus as HandoffStatusEnum,
   SenderType,
   HANDOFF_STATUS_LABELS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 // Mock Animated.Value
 jest.mock('react-native', () => ({

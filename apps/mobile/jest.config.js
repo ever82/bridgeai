@@ -12,7 +12,7 @@ module.exports = {
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@visionshare/shared$': '<rootDir>/../../packages/shared/src',
+    '^@bridgeai/shared$': '<rootDir>/../../packages/shared/src',
     '^react-native$': '<rootDir>/__mocks__/react-native.ts',
     '^expo-(.*)$': '<rootDir>/__mocks__/expo-$1.ts',
     '^@react-native-async-storage/async-storage$': '<rootDir>/__mocks__/@react-native-async-storage/async-storage.ts',

@@ -13,8 +13,8 @@ import {
   SceneCapability,
   SceneId,
   SCENE_IDS,
-} from '@visionshare/shared';
-import { getSceneConfig } from '@visionshare/shared';
+} from '@bridgeai/shared';
+import { getSceneConfig } from '@bridgeai/shared';
 import { logger } from '../utils/logger';
 
 // Capability version cache

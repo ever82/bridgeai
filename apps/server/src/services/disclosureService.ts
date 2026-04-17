@@ -16,7 +16,7 @@ import {
   createDefaultDisclosureSettings,
   DEFAULT_FIELD_DISCLOSURES,
   DISCLOSABLE_FIELDS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { auditService } from './auditService';
 import { disclosureAuditService } from './disclosureAuditService';
 

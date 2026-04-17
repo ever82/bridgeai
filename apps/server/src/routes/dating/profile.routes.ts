@@ -8,7 +8,7 @@ import * as qualityService from '../../services/dating/profileQualityService';
 import type {
   CreateDatingProfileRequest,
   UpdateDatingProfileRequest,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 const router: Router = Router();
 

@@ -67,8 +67,8 @@ export class EmailService {
       smtpPort: parseInt(process.env.SMTP_PORT || '587'),
       smtpUser: process.env.SMTP_USER || '',
       smtpPass: process.env.SMTP_PASS || '',
-      fromEmail: process.env.FROM_EMAIL || 'noreply@visionshare.com',
-      fromName: process.env.FROM_NAME || 'VisionShare',
+      fromEmail: process.env.FROM_EMAIL || 'noreply@bridgeai.com',
+      fromName: process.env.FROM_NAME || 'BridgeAI',
       maxRetries: 3,
       retryDelayMs: 5000,
       ...config,
@@ -85,7 +85,7 @@ export class EmailService {
     this.templates.set('match-new', {
       id: 'match-new',
       name: '新匹配通知',
-      subject: 'VisionShare - 发现新的匹配',
+      subject: 'BridgeAI - 发现新的匹配',
       htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">发现新的匹配</h2>
@@ -97,18 +97,18 @@ export class EmailService {
           </div>
           <a href="{{actionUrl}}" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">查看详情</a>
           <p style="color: #666; font-size: 12px; margin-top: 30px;">
-            此邮件由 VisionShare 系统自动发送，请勿回复。
+            此邮件由 BridgeAI 系统自动发送，请勿回复。
           </p>
         </div>
       `,
-      textContent: '发现新的匹配：{{matchTitle}}。请登录 VisionShare 查看详情。',
+      textContent: '发现新的匹配：{{matchTitle}}。请登录 BridgeAI 查看详情。',
     });
 
     // 匹配状态变更模板
     this.templates.set('match-accepted', {
       id: 'match-accepted',
       name: '匹配已接受',
-      subject: 'VisionShare - 您的匹配已被接受',
+      subject: 'BridgeAI - 您的匹配已被接受',
       htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #28a745;">匹配已被接受</h2>
@@ -123,7 +123,7 @@ export class EmailService {
     this.templates.set('match-rejected', {
       id: 'match-rejected',
       name: '匹配被拒绝',
-      subject: 'VisionShare - 您的匹配已被拒绝',
+      subject: 'BridgeAI - 您的匹配已被拒绝',
       htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #dc3545;">匹配已被拒绝</h2>
@@ -138,7 +138,7 @@ export class EmailService {
     this.templates.set('match-completed', {
       id: 'match-completed',
       name: '匹配完成',
-      subject: 'VisionShare - 恭喜！匹配已完成',
+      subject: 'BridgeAI - 恭喜！匹配已完成',
       htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #28a745;">恭喜！匹配已完成</h2>
@@ -154,7 +154,7 @@ export class EmailService {
     this.templates.set('message-new', {
       id: 'message-new',
       name: '新消息通知',
-      subject: 'VisionShare - 您有一条新消息',
+      subject: 'BridgeAI - 您有一条新消息',
       htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">新消息</h2>
@@ -172,7 +172,7 @@ export class EmailService {
     this.templates.set('rating-received', {
       id: 'rating-received',
       name: '收到评分',
-      subject: 'VisionShare - 您收到新的评分',
+      subject: 'BridgeAI - 您收到新的评分',
       htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">收到新的评分</h2>
@@ -187,7 +187,7 @@ export class EmailService {
     this.templates.set('system-announcement', {
       id: 'system-announcement',
       name: '系统公告',
-      subject: 'VisionShare - {{announcementTitle}}',
+      subject: 'BridgeAI - {{announcementTitle}}',
       htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">{{announcementTitle}}</h2>
@@ -202,7 +202,7 @@ export class EmailService {
     this.templates.set('promotion', {
       id: 'promotion',
       name: '促销活动',
-      subject: 'VisionShare - {{promotionTitle}}',
+      subject: 'BridgeAI - {{promotionTitle}}',
       htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #ff6b6b;">{{promotionTitle}}</h2>
@@ -218,7 +218,7 @@ export class EmailService {
     this.templates.set('default', {
       id: 'default',
       name: '默认模板',
-      subject: 'VisionShare - {{title}}',
+      subject: 'BridgeAI - {{title}}',
       htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">{{title}}</h2>

@@ -11,7 +11,7 @@ import {
   HandoffErrorCode,
   type HandoffConfig,
   type HandoffAuditLog,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 /**
  * Extended Request type with handoff info

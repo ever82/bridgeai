@@ -9,9 +9,9 @@ import {
   SceneTemplateConfig,
   SceneId,
   SCENE_IDS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { logger } from '../utils/logger';
-import { getSceneConfig } from '@visionshare/shared';
+import { getSceneConfig } from '@bridgeai/shared';
 
 /**
  * Create a new template

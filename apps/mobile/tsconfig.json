@@ -5,7 +5,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@visionshare/shared": ["../../packages/shared/src"]
+      "@bridgeai/shared": ["../../packages/shared/src"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],

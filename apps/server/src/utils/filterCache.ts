@@ -3,7 +3,7 @@
  * 过滤结果缓存
  */
 
-import { FilterDSL, FilterResult } from '@visionshare/shared';
+import { FilterDSL, FilterResult } from '@bridgeai/shared';
 import { logger } from './logger';
 
 interface CacheEntry<T> {

@@ -29,7 +29,7 @@ import {
   CreateConsumerAgentRequest,
   UpdateConsumerConfigRequest,
   ExtractedDemandData,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 // Re-export types from shared
 export {
@@ -42,7 +42,7 @@ export {
   DemandTimeline,
   DemandProfilePreview,
   ConsumerDemandProfile,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 /**
  * Create a consumer Agent for AgentAd scenario

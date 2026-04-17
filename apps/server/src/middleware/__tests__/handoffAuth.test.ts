@@ -14,7 +14,7 @@ import {
   type HandoffRequest,
 } from '../../src/middleware/handoffAuth';
 import { rbacService } from '../../src/services/rbacService';
-import { HandoffErrorCode } from '@visionshare/shared';
+import { HandoffErrorCode } from '@bridgeai/shared';
 
 // Mock RBAC service
 jest.mock('../../src/services/rbacService', () => ({

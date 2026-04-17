@@ -2,7 +2,7 @@
  * Profile Completion Tests
  */
 import { calculateL1Completion, getCompletionMessage } from '../profileCompletion';
-import { L1Profile, AgeRange, Gender, EducationLevel } from '@visionshare/shared';
+import { L1Profile, AgeRange, Gender, EducationLevel } from '@bridgeai/shared';
 
 describe('calculateL1Completion', () => {
   it('should return 0% when no data', () => {

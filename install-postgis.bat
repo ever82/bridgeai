@@ -47,6 +47,6 @@ echo PostGIS 安装完成!
 echo ============================================
 echo.
 echo 现在可以启用 PostGIS 扩展了:
-echo   psql -U postgres -d visionshare_dev -c "CREATE EXTENSION postgis;"
+echo   psql -U postgres -d bridgeai_dev -c "CREATE EXTENSION postgis;"
 echo.
 pause

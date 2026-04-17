@@ -11,7 +11,7 @@ import {
   TASK_TYPE_LABELS,
   TASK_PRIORITY_LABELS,
   calculateDistance,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 interface TaskInfoCardProps {
   task: Task;

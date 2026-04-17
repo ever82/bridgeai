@@ -18,7 +18,7 @@ import {
   isAndFilter,
   isOrFilter,
   isNotFilter,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 /**
  * Prisma query object

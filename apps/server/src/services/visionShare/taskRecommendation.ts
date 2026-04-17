@@ -11,7 +11,7 @@ import {
   TaskType,
   GeoCoordinates,
   calculateDistance,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { logger } from '../../utils/logger';
 import { getNearbyTasks, getTaskById } from './taskFilter';
 

@@ -11,7 +11,7 @@ import {
   GeoCoordinates,
   TASK_TYPE_LABELS,
   calculateDistance,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 interface RecommendationCardProps {
   recommendation: TaskRecommendation;

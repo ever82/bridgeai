@@ -86,7 +86,7 @@ export class PhotoStorageService {
     return {
       provider,
       region: process.env.STORAGE_REGION || 'us-east-1',
-      bucket: process.env.STORAGE_BUCKET || 'visionshare-photos',
+      bucket: process.env.STORAGE_BUCKET || 'bridgeai-photos',
       accessKeyId: process.env.STORAGE_ACCESS_KEY_ID || '',
       accessKeySecret: process.env.STORAGE_ACCESS_KEY_SECRET || '',
       endpoint: process.env.STORAGE_ENDPOINT,

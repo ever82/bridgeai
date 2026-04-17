@@ -3,7 +3,7 @@ import type {
   PrivacySettings,
   VisibilityLevel,
   FieldVisibility,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 /**
  * Field definitions with sensitivity levels

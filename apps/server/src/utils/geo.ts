@@ -19,7 +19,7 @@ export {
   interpolateCoordinates,
   toRadians,
   toDegrees,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 export type {
   GeoCoordinates,
@@ -27,4 +27,4 @@ export type {
   BoundingBox,
   GeoJSONPoint,
   GeoJSONPolygon,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';

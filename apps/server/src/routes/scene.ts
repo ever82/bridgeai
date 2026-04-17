@@ -13,7 +13,7 @@ import {
   getAllSceneInfos,
   hasScene,
   SCENE_IDS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import {
   getEnabledCapabilities,
   getCapabilityStatus,

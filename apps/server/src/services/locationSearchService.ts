@@ -12,12 +12,12 @@ import {
   LocationSearchResult,
   DistanceFilter,
   BoundingBox,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import {
   calculateDistance,
   isWithinBoundingBox,
   createBoundingBox,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { logger } from '../utils/logger';
 
 // Mock data for provinces, cities, districts

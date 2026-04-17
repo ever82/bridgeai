@@ -18,7 +18,7 @@ import {
   TASK_PRIORITY_LABELS,
   TASK_STATUS_LABELS,
   calculateDistance,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 // Mock reviews data
 const mockReviews: TaskReview[] = [

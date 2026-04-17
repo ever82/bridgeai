@@ -9,7 +9,7 @@
 import {
   type JobDescription,
   type JobPosting,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 export interface ExtractionResult {
   structuredData: JobDescription;

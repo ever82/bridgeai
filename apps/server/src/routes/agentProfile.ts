@@ -5,7 +5,7 @@ import { ApiResponse } from '../utils/response';
 import { AppError } from '../errors/AppError';
 import * as agentProfileService from '../services/agentProfileService';
 import { calculateL1Completion } from '../services/agentProfileService';
-import type { UpdateL1ProfileRequest } from '@visionshare/shared';
+import type { UpdateL1ProfileRequest } from '@bridgeai/shared';
 
 const router: Router = Router();
 

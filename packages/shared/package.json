@@ -1,8 +1,8 @@
 {
-  "name": "@visionshare/shared",
+  "name": "@bridgeai/shared",
   "version": "0.1.0",
   "private": true,
-  "description": "VisionShare 共享类型定义和工具函数",
+  "description": "BridgeAI 共享类型定义和工具函数",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

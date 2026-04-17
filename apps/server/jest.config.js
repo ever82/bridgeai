@@ -17,7 +17,7 @@ module.exports = {
   // Module path aliases
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@visionshare/shared$': '<rootDir>/src/__mocks__/@visionshare/shared.ts',
+    '^@bridgeai/shared$': '<rootDir>/src/__mocks__/@bridgeai/shared.ts',
   },
 
   // Setup files

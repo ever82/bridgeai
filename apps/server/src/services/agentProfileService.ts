@@ -8,8 +8,8 @@ import type {
   UpdateL1ProfileRequest,
   UpdateL2ProfileRequest,
   UpdateL3ProfileRequest,
-} from '@visionshare/shared';
-import { L1_FIELD_WEIGHTS } from '@visionshare/shared';
+} from '@bridgeai/shared';
+import { L1_FIELD_WEIGHTS } from '@bridgeai/shared';
 
 // Agent Profile with L1, L2, L3 data
 export interface AgentProfile {

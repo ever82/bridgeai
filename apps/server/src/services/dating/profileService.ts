@@ -11,7 +11,7 @@ import type {
   RelationshipExpectations,
   PrivacySettings,
   ProfileQualityResult,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 // Default privacy settings
 const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {

@@ -31,7 +31,7 @@ SENTRY_DSN=https://<key>@sentry.io/<project-id>
 SENTRY_ENVIRONMENT=development
 
 # Release version (format: name@version)
-SENTRY_RELEASE=com.visionshare.app@0.1.0
+SENTRY_RELEASE=com.bridgeai.app@0.1.0
 
 # Traces sample rate
 SENTRY_TRACES_SAMPLE_RATE=0.1
@@ -48,10 +48,10 @@ SENTRY_TRACES_SAMPLE_RATE=0.1
 
 ### Create Organization
 1. Sign up at https://sentry.io
-2. Create organization: "VisionShare"
+2. Create organization: "BridgeAI"
 3. Create projects:
-   - `visionshare-server` (Node.js)
-   - `visionshare-mobile` (React Native)
+   - `bridgeai-server` (Node.js)
+   - `bridgeai-mobile` (React Native)
 
 ### Team Members
 Add team members with appropriate roles:

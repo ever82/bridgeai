@@ -7,7 +7,7 @@ import {
   DisclosureLevel,
   RelationshipStage,
   createDefaultDisclosureSettings,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { prisma } from '../../db/client';
 
 // Mock dependencies

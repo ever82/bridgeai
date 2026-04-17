@@ -10,7 +10,7 @@ import aiExtractionRoutes from '../extraction';
 jest.mock('../../../services/ai/demandExtractionService');
 jest.mock('../../../services/ai/mappers/demandToL2Mapper');
 jest.mock('../../../services/ai/validators/extractionValidator');
-jest.mock('@visionshare/shared', () => ({
+jest.mock('@bridgeai/shared', () => ({
   getL2Schema: jest.fn(),
   L2FieldType: {
     TEXT: 'text',
@@ -22,7 +22,7 @@ jest.mock('@visionshare/shared', () => ({
 import { demandExtractionService } from '../../../services/ai/demandExtractionService';
 import { demandToL2Mapper } from '../../../services/ai/mappers/demandToL2Mapper';
 import { extractionValidator } from '../../../services/ai/validators/extractionValidator';
-import { getL2Schema } from '@visionshare/shared';
+import { getL2Schema } from '@bridgeai/shared';
 
 const mockedDemandExtractionService = demandExtractionService as jest.Mocked<typeof demandExtractionService>;
 const mockedDemandToL2Mapper = demandToL2Mapper as jest.Mocked<typeof demandToL2Mapper>;

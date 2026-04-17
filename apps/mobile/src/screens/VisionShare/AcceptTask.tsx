@@ -17,7 +17,7 @@ import {
   calculateDistance,
   TASK_TYPE_LABELS,
   TASK_STATUS_LABELS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 export const AcceptTaskScreen: React.FC = () => {
   const navigation = useNavigation();

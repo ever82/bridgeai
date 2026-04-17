@@ -9,7 +9,7 @@ async function main() {
   const testUsers = await Promise.all([
     prisma.user.create({
       data: {
-        email: 'user1@visionshare.com',
+        email: 'user1@bridgeai.com',
         passwordHash: '$2b$10$YourHashedPasswordHere',
         name: '测试用户1',
         phone: '13800138001',
@@ -18,7 +18,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: 'user2@visionshare.com',
+        email: 'user2@bridgeai.com',
         passwordHash: '$2b$10$YourHashedPasswordHere',
         name: '测试用户2',
         phone: '13800138002',
@@ -27,7 +27,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: 'user3@visionshare.com',
+        email: 'user3@bridgeai.com',
         passwordHash: '$2b$10$YourHashedPasswordHere',
         name: '测试用户3',
         phone: '13800138003',

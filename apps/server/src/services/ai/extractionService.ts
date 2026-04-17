@@ -6,7 +6,7 @@
 import { llmService } from './llmService';
 import { metricsService } from './metricsService';
 import { LLMProvider } from './types';
-import { L2Schema, L2Data, L2FieldType, getL2Schema } from '@visionshare/shared';
+import { L2Schema, L2Data, L2FieldType, getL2Schema } from '@bridgeai/shared';
 import { logger } from '../../utils/logger';
 
 // Extraction result

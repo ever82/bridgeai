@@ -15,7 +15,7 @@ import {
   AndFilter,
   OPERATOR_METADATA,
   FilterValue,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 interface FilterPanelProps {
   fields: Array<{

@@ -18,7 +18,7 @@ const devFormat = printf(({ level, message, timestamp, stack, ...metadata }) => 
 export const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   defaultMeta: {
-    service: 'visionshare-server',
+    service: 'bridgeai-server',
   },
   transports: [
     // Console transport

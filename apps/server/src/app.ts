@@ -83,7 +83,7 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    service: 'visionshare-server',
+    service: 'bridgeai-server',
     version: process.env.npm_package_version || '0.1.0',
   });
 });
@@ -108,7 +108,7 @@ app.use('/admin', strictAuthLimiter, adminRoutes);
 // Root endpoint
 app.get('/', (req: Request, res: Response) => {
   res.json(ApiResponse.success({
-    name: 'VisionShare API',
+    name: 'BridgeAI API',
     version: 'v1',
     documentation: '/api/docs',
   }));

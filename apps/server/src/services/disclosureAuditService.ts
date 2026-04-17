@@ -9,7 +9,7 @@ import {
   DisclosureLevel,
   DisclosureAuditEntry,
   DisclosureChangeRecord,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { auditService } from './auditService';
 
 /**

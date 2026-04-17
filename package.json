@@ -1,8 +1,8 @@
 {
-  "name": "visionshare",
+  "name": "bridgeai",
   "version": "0.1.0",
   "private": true,
-  "description": "VisionShare - AI驱动的供需匹配平台",
+  "description": "BridgeAI - AI驱动的供需匹配平台",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",

@@ -12,7 +12,7 @@ import {
   type EmployerVerificationResponse,
   companyVerificationRequestSchema,
   verifyEmailSchema,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { AppError } from '../../errors';
 
 // TODO: Replace with actual database implementation

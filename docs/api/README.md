@@ -1,10 +1,10 @@
 # API 文档
 
-VisionShare API 文档
+BridgeAI API 文档
 
 ## 基础信息
 
-- **Base URL**: `http://localhost:3000/api/v1` (开发) / `https://api.visionshare.com/api/v1` (生产)
+- **Base URL**: `http://localhost:3000/api/v1` (开发) / `https://api.bridgeai.com/api/v1` (生产)
 - **认证方式**: Bearer Token (JWT)
 
 ## 认证

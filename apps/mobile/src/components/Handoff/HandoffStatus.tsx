@@ -14,7 +14,7 @@ import {
   SENDER_TYPE_COLORS,
   SENDER_TYPE_LABELS,
   isHandoffPending,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 export interface HandoffStatusProps {
   /** Current handoff status */

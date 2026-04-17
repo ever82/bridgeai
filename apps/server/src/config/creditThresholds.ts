@@ -3,7 +3,7 @@
  * 信用门槛配置
  */
 
-import { CreditLevel } from '@visionshare/shared';
+import { CreditLevel } from '@bridgeai/shared';
 
 export interface SceneCreditThreshold {
   sceneId: string;

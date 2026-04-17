@@ -12,7 +12,7 @@ import {
   SENDER_TYPE_LABELS,
   SENDER_TYPE_COLORS,
   HandoffStatus,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 export interface SenderIndicatorProps {
   /** Type of sender */

@@ -5,7 +5,7 @@ import {
   L2Data,
   L2ValidationResult,
   L2ValidationError,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 /**
  * Validate L2 data against schema

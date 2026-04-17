@@ -13,7 +13,7 @@ import {
   isNotFilter,
   CreditLevel,
   CREDIT_LEVEL_THRESHOLDS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { logger } from '../utils/logger';
 
 export interface CreditRange {

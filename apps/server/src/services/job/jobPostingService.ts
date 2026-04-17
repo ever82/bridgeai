@@ -21,7 +21,7 @@ import {
   type JobApplicationFilter,
   createJobPostingSchema,
   updateJobPostingSchema,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { extractJobFromDescription, evaluateJobQuality } from './jobExtraction';
 import { AppError } from '../../errors';
 

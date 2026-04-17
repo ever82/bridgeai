@@ -18,10 +18,10 @@ import {
   ExtractedDemandData,
   AgentAdRole,
   DemandUrgency,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 // Re-export types
-export { ExtractedDemandData } from '@visionshare/shared';
+export { ExtractedDemandData } from '@bridgeai/shared';
 
 /**
  * Extract consumer demand from natural language text

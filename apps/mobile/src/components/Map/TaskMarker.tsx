@@ -10,7 +10,7 @@ import {
   TaskStatus,
   TASK_STATUS_COLORS,
   TASK_TYPE_LABELS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 interface TaskMarkerProps {
   task: Task;

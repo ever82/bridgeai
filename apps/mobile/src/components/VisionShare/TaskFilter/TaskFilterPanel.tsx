@@ -14,7 +14,7 @@ import {
   PUBLISH_TIME_OPTIONS,
   TASK_TYPE_LABELS,
   TaskType,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 interface TaskFilterPanelProps {
   filter: TaskFilter;

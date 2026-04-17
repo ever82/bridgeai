@@ -15,7 +15,7 @@
 - ✅ 创建 `.env.test` - 独立的测试环境配置
 - ✅ 更新 `src/__tests__/setup.ts` - 测试启动配置
 - ✅ 创建 `src/__tests__/teardown.ts` - 测试清理配置
-- ✅ 测试数据库使用独立的数据库: `visionshare_test`
+- ✅ 测试数据库使用独立的数据库: `bridgeai_test`
 
 ### 3. Mock工具集 (ISSUE-T001~c3)
 - ✅ 创建 `src/__tests__/mocks/prisma.mock.ts` - Prisma Client模拟

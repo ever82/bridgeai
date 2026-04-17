@@ -3,7 +3,7 @@
  */
 
 import { ExtractionValidator, ValidationRule, ValidationOptions } from '../extractionValidator';
-import { L2Schema, L2Data, L2FieldType } from '@visionshare/shared';
+import { L2Schema, L2Data, L2FieldType } from '@bridgeai/shared';
 import { Demand } from '../../demandExtractionService';
 
 jest.mock('../../../utils/logger', () => ({

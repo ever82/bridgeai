@@ -1,6 +1,6 @@
 export default {
-  name: 'VisionShare',
-  slug: 'visionshare-mobile',
+  name: 'BridgeAI',
+  slug: 'bridgeai-mobile',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
@@ -13,14 +13,14 @@ export default {
   assetBundlePatterns: ['**/*'],
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.visionshare.mobile',
+    bundleIdentifier: 'com.bridgeai.mobile',
   },
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#ffffff',
     },
-    package: 'com.visionshare.mobile',
+    package: 'com.bridgeai.mobile',
   },
   web: {
     favicon: './assets/favicon.png',
@@ -34,14 +34,14 @@ export default {
       'expo-camera',
       {
         cameraPermission:
-          'Allow VisionShare to access your camera to capture and share moments.',
+          'Allow BridgeAI to access your camera to capture and share moments.',
       },
     ],
     [
       'expo-location',
       {
         locationAlwaysAndWhenInUsePermission:
-          'Allow VisionShare to access your location to tag your moments.',
+          'Allow BridgeAI to access your location to tag your moments.',
       },
     ],
     [
@@ -54,7 +54,7 @@ export default {
       'expo-image-picker',
       {
         photosPermission:
-          'Allow VisionShare to access your photos to share moments.',
+          'Allow BridgeAI to access your photos to share moments.',
       },
     ],
   ],

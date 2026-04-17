@@ -3,7 +3,7 @@ import type {
   ProfileQualityResult,
   ProfileQualityMetrics,
   InterestPreferences,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 /**
  * Calculate profile quality metrics

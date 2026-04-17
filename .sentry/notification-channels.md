@@ -20,15 +20,15 @@ SENTRY_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 ## Email Notifications
 
 ### Recipients
-- Primary: devops@visionshare.com
-- Secondary: backend-team@visionshare.com
-- Mobile: mobile-team@visionshare.com
+- Primary: devops@bridgeai.com
+- Secondary: backend-team@bridgeai.com
+- Mobile: mobile-team@bridgeai.com
 
 ### Email Configuration
 ```
 SENTRY_EMAIL_HOST=smtp.gmail.com
 SENTRY_EMAIL_PORT=587
-SENTRY_EMAIL_USER=alerts@visionshare.com
+SENTRY_EMAIL_USER=alerts@bridgeai.com
 SENTRY_EMAIL_PASSWORD=your-password
 SENTRY_EMAIL_USE_TLS=true
 ```

@@ -4,7 +4,7 @@
  */
 
 import * as qualityService from '../dating/profileQualityService';
-import type { DatingProfile } from '@visionshare/shared';
+import type { DatingProfile } from '@bridgeai/shared';
 
 describe('ProfileQualityService', () => {
   const mockDate = new Date('2026-04-10');

@@ -386,4 +386,4 @@ export const PUBLISH_TIME_OPTIONS = [
 ];
 
 // Note: calculateDistance function is exported from utils/geoUtils.ts
-// Import it from there: import { calculateDistance } from '@visionshare/shared';
+// Import it from there: import { calculateDistance } from '@bridgeai/shared';

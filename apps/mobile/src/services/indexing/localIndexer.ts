@@ -314,7 +314,7 @@ export class LocalSearchIndex {
 
     const backupPath = `${Platform.OS === 'ios'
       ? SQLite.databasePath
-      : '/data/data/com.visionshare/databases/'}backup_${Date.now()}.db`;
+      : '/data/data/com.bridgeai/databases/'}backup_${Date.now()}.db`;
 
     await this.db.executeSql(`VACUUM INTO '${backupPath}'`);
     return backupPath;

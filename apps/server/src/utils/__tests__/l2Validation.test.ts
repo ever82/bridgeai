@@ -10,7 +10,7 @@ import {
   L2Schema,
   L2FieldType,
   L2Data,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 const mockSchema: L2Schema = {
   id: 'test-schema',

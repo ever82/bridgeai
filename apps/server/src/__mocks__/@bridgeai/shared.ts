@@ -1,5 +1,5 @@
 /**
- * Mock for @visionshare/shared
+ * Mock for @bridgeai/shared
  */
 
 // Disclosure Level Types

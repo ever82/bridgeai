@@ -16,9 +16,9 @@ export {
   createRectangularGeoFence,
   getGeoFencesWithinDistance,
   validateGeoFencePolygon,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 export type {
   GeoFence,
   GeoFenceCheckResult,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';

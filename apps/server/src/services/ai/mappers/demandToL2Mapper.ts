@@ -4,7 +4,7 @@
  * 将提取的需求字段映射到 AgentL2Model 属性
  */
 
-import { L2Schema, L2Data, L2FieldType } from '@visionshare/shared';
+import { L2Schema, L2Data, L2FieldType } from '@bridgeai/shared';
 import { Demand, ExtractedEntity } from '../demandExtractionService';
 import { logger } from '../../../utils/logger';
 

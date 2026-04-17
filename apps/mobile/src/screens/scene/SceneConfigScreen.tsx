@@ -22,7 +22,7 @@ import {
   getSceneConfig,
   SCENE_DISPLAY_NAMES,
   SCENE_DESCRIPTIONS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { SceneSelector, SceneConfigPreview } from '../../components/SceneSelector';
 import { sceneApi } from '../../services/api/sceneApi';
 

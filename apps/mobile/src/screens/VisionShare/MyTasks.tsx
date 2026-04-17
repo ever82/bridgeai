@@ -16,7 +16,7 @@ import {
   TASK_TYPE_LABELS,
   calculateDistance,
   GeoCoordinates,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 interface TaskSection {
   title: string;

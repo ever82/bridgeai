@@ -12,7 +12,7 @@ import {
   TaskStatusUpdate,
   UserTaskSummary,
   calculateDistance,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { logger } from '../../utils/logger';
 import { getTaskById } from './taskFilter';
 

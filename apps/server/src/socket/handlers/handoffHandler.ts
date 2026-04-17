@@ -16,7 +16,7 @@ import {
   type HandoffState,
   type HandoffAuditLog,
   DEFAULT_HANDOFF_CONFIG,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 // In-memory store for handoff states (in production, use Redis)
 const handoffStates = new Map<string, HandoffState>();

@@ -3,7 +3,7 @@
  * 地址编码服务 - 地址与坐标相互转换
  */
 
-import { GeoCoordinates, Location } from '@visionshare/shared';
+import { GeoCoordinates, Location } from '@bridgeai/shared';
 import { logger } from '../utils/logger';
 
 // Mock address database - in production, use real map API (高德/百度)

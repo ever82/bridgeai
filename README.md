@@ -36,8 +36,8 @@ VisionShare 是一个基于 AI 的供需匹配平台，通过智能 Agent 技术
 1. 克隆仓库
 
 ```bash
-git clone https://github.com/yourorg/visionshare.git
-cd visionshare
+git clone https://github.com/yourorg/bridgeai.git
+cd bridgeai
 ```
 
 2. 安装依赖
@@ -66,7 +66,7 @@ pnpm dev:mobile
 ## 项目结构
 
 ```
-visionshare/
+bridgeai/
 ├── apps/
 │   ├── server/          # Express 后端服务
 │   └── mobile/          # Expo React Native 移动端

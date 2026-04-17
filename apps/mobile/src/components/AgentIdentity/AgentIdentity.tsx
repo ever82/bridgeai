@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { AgentIdentity as AgentIdentityType, AgentType } from '@visionshare/shared';
+import { AgentIdentity as AgentIdentityType, AgentType } from '@bridgeai/shared';
 
 interface AgentIdentityProps {
   identity: AgentIdentityType;

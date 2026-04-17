@@ -23,7 +23,7 @@ brew install postgis
 brew services start postgresql@15
 
 # 运行安装脚本
-./scripts/install-postgis.sh visionshare_dev
+./scripts/install-postgis.sh bridgeai_dev
 ```
 
 ### Ubuntu/Debian
@@ -37,21 +37,21 @@ sudo apt-get install postgresql-15 postgresql-contrib-15 postgis
 sudo systemctl start postgresql
 
 # 运行安装脚本
-sudo -u postgres ./scripts/install-postgis.sh visionshare_dev
+sudo -u postgres ./scripts/install-postgis.sh bridgeai_dev
 ```
 
 ### Windows
 
 ```powershell
 # 运行安装脚本
-.\scripts\install-postgis.bat visionshare_dev
+.\scripts\install-postgis.bat bridgeai_dev
 ```
 
 ## 验证安装
 
 ```bash
 # 连接数据库
-psql -U visionshare -d visionshare_dev
+psql -U bridgeai -d bridgeai_dev
 
 # 检查 PostGIS
 SELECT PostGIS_Version();

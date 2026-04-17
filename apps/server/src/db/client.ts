@@ -42,39 +42,45 @@ function createPrismaClient(): PrismaClient {
     // The actual configuration depends on the database driver
   });
 
-  // Add query performance middleware
-  client.$use(async (params, next) => {
-    const start = Date.now();
-    const operation = `${params.model}.${params.action}`;
+  // Add query performance extension (Prisma 5 compatible)
+  return client.$extends({
+    query: {
+      $allModels: {
+        $allOperations({ model, operation, args, query }) {
+          const start = Date.now();
+          const opName = `${model}.${operation}`;
 
-    try {
-      const result = await next(params);
-      const duration = Date.now() - start;
+          return query(args).then(
+            (result) => {
+              const duration = Date.now() - start;
 
-      // Log slow queries
-      if (duration > SLOW_QUERY_THRESHOLD) {
-        console.warn(`[SLOW QUERY] ${operation} took ${duration}ms`, {
-          model: params.model,
-          action: params.action,
-          duration,
-          args: sanitizeArgs(params.args),
-        });
-      }
+              // Log slow queries
+              if (duration > SLOW_QUERY_THRESHOLD) {
+                console.warn(`[SLOW QUERY] ${opName} took ${duration}ms`, {
+                  model,
+                  operation,
+                  duration,
+                  args: sanitizeArgs(args),
+                });
+              }
 
-      // Log query metrics in development
-      if (process.env.NODE_ENV === 'development' && duration > 100) {
-        console.log(`[QUERY] ${operation}: ${duration}ms`);
-      }
+              // Log query metrics in development
+              if (process.env.NODE_ENV === 'development' && duration > 100) {
+                console.log(`[QUERY] ${opName}: ${duration}ms`);
+              }
 
-      return result;
-    } catch (error) {
-      const duration = Date.now() - start;
-      console.error(`[QUERY ERROR] ${operation} failed after ${duration}ms:`, error);
-      throw error;
-    }
-  });
-
-  return client;
+              return result;
+            },
+            (error) => {
+              const duration = Date.now() - start;
+              console.error(`[QUERY ERROR] ${opName} failed after ${duration}ms:`, error);
+              throw error;
+            }
+          );
+        },
+      },
+    },
+  }) as unknown as PrismaClient;
 }
 
 /**

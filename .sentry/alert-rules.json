@@ -35,7 +35,7 @@
         {
           "name": "Send a notification to the {account} Slack workspace to {channel} and show tags {tags} in notification",
           "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
-          "account": "visionshare",
+          "account": "bridgeai",
           "channel": "#alerts-critical",
           "tags": "environment,release,user"
         },
@@ -79,7 +79,7 @@
         {
           "name": "Send a notification to the {account} Slack workspace to {channel} and show tags {tags} in notification",
           "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
-          "account": "visionshare",
+          "account": "bridgeai",
           "channel": "#alerts-high",
           "tags": "environment,release,user,count"
         }
@@ -117,7 +117,7 @@
         {
           "name": "Send a notification to the {account} Slack workspace to {channel} and show tags {tags} in notification",
           "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
-          "account": "visionshare",
+          "account": "bridgeai",
           "channel": "#alerts-medium",
           "tags": "environment,release,count"
         }
@@ -153,7 +153,7 @@
         {
           "name": "Send a notification to the {account} Slack workspace to {channel} and show tags {tags} in notification",
           "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
-          "account": "visionshare",
+          "account": "bridgeai",
           "channel": "#alerts-info",
           "tags": "environment,release"
         }

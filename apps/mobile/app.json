@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "VisionShare",
-    "slug": "visionshare-mobile",
+    "name": "BridgeAI",
+    "slug": "bridgeai-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.visionshare.mobile",
+      "bundleIdentifier": "com.bridgeai.mobile",
       "permissions": [
         "CAMERA",
         "LOCATION_WHEN_IN_USE",
@@ -30,7 +30,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.visionshare.mobile",
+      "package": "com.bridgeai.mobile",
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",
@@ -47,13 +47,13 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow VisionShare to access your camera to capture and share moments."
+          "cameraPermission": "Allow BridgeAI to access your camera to capture and share moments."
         }
       ],
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow VisionShare to access your location to tag your moments."
+          "locationAlwaysAndWhenInUsePermission": "Allow BridgeAI to access your location to tag your moments."
         }
       ],
       [
@@ -65,7 +65,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow VisionShare to access your photos to share moments."
+          "photosPermission": "Allow BridgeAI to access your photos to share moments."
         }
       ]
     ]

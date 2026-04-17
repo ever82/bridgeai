@@ -1,8 +1,8 @@
 {
-  "name": "@visionshare/config",
+  "name": "@bridgeai/config",
   "version": "0.1.0",
   "private": true,
-  "description": "VisionShare 共享配置文件 (ESLint, TypeScript等)",
+  "description": "BridgeAI 共享配置文件 (ESLint, TypeScript等)",
   "main": "./eslint/index.js",
   "exports": {
     "./eslint": "./eslint/index.js",

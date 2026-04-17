@@ -4,7 +4,7 @@
  */
 
 import { prisma } from '../db/client';
-import { FilterDSL, SavedFilter, SavedFilterInput } from '@visionshare/shared';
+import { FilterDSL, SavedFilter, SavedFilterInput } from '@bridgeai/shared';
 import { logger } from '../utils/logger';
 
 /**

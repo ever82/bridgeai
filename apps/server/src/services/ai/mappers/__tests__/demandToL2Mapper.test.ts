@@ -4,7 +4,7 @@
 
 import { DemandToL2Mapper, SceneMappingConfig } from '../demandToL2Mapper';
 import { Demand, EntityType } from '../../demandExtractionService';
-import { L2Schema, L2FieldType } from '@visionshare/shared';
+import { L2Schema, L2FieldType } from '@bridgeai/shared';
 
 jest.mock('../../../utils/logger', () => ({
   logger: {

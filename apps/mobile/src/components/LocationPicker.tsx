@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   TextInput,
 } from 'react-native';
-import { Location } from '@visionshare/shared';
+import { Location } from '@bridgeai/shared';
 
 interface LocationOption {
   code: string;

@@ -197,10 +197,10 @@ Each test should be isolated:
 # Required
 NODE_ENV=test
 JWT_SECRET=your-test-secret
-DATABASE_URL=postgresql://test:test@localhost:5432/visionshare_test
+DATABASE_URL=postgresql://test:test@localhost:5432/bridgeai_test
 
 # Optional
-TEST_DATABASE_URL=postgresql://test:test@localhost:5432/visionshare_test
+TEST_DATABASE_URL=postgresql://test:test@localhost:5432/bridgeai_test
 ```
 
 ## Troubleshooting
@@ -210,7 +210,7 @@ TEST_DATABASE_URL=postgresql://test:test@localhost:5432/visionshare_test
 Ensure PostgreSQL is running and the test database exists:
 ```bash
 # Create test database
-createdb visionshare_test
+createdb bridgeai_test
 ```
 
 ### Port Conflicts

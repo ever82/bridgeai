@@ -10,7 +10,7 @@ import {
   SenderType,
   HandoffSocketEvents,
   HandoffErrorCode,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 // Mock socket
 const createMockSocket = (userId: string = 'user-1', roles: string[] = ['user']) => {

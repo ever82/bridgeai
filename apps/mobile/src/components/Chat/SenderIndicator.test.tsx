@@ -5,7 +5,7 @@ import {
   SenderType,
   HandoffStatus,
   SENDER_TYPE_LABELS,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 // Mock Animated
 jest.mock('react-native', () => ({

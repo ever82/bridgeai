@@ -16,7 +16,7 @@ import {
   PointsOperationResult,
   PointsTransactionType,
   SceneCode,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
 import { PointsRuleEngine, pointsRuleEngine } from './pointsRuleEngine';

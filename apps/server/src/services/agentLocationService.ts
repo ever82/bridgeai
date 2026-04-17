@@ -5,19 +5,19 @@
 
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
-import { calculateDistance, isWithinBoundingBox, createBoundingBox } from '@visionshare/shared';
+import { calculateDistance, isWithinBoundingBox, createBoundingBox } from '@bridgeai/shared';
 import type {
   Location,
   GeoCoordinates,
   LocationFilter,
   GeoFence,
   DistanceFilter,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 import {
   checkGeoFence,
   findContainingGeoFences,
   getGeoFencesWithinDistance,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 export interface AgentLocationData {
   agentId: string;

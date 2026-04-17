@@ -17,7 +17,7 @@ if %ERRORLEVEL% NEQ 0 (
 REM 检查参数
 if "%~1"=="" (
     echo 用法: install-postgis.bat ^<数据库名称^>
-    echo 示例: install-postgis.bat visionshare_dev
+    echo 示例: install-postgis.bat bridgeai_dev
     exit /b 1
 )
 

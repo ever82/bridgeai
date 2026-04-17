@@ -4,7 +4,7 @@
  */
 
 import { api } from './client';
-import { SceneId, SceneConfig, SceneCapability, SceneTemplate } from '@visionshare/shared';
+import { SceneId, SceneConfig, SceneCapability, SceneTemplate } from '@bridgeai/shared';
 
 export interface SceneInfo {
   id: SceneId;

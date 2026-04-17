@@ -7,7 +7,7 @@ import {
   Slider,
   ScrollView,
 } from 'react-native';
-import { CreditLevel, CREDIT_LEVEL_THRESHOLDS } from '@visionshare/shared';
+import { CreditLevel, CREDIT_LEVEL_THRESHOLDS } from '@bridgeai/shared';
 
 interface CreditFilterProps {
   minScore?: number;

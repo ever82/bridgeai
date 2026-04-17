@@ -12,7 +12,7 @@ import {
   HandoffStatus,
   HANDOFF_STATUS_LABELS,
   type SenderType,
-} from '@visionshare/shared';
+} from '@bridgeai/shared';
 
 export interface HandoffButtonProps {
   /** Current handoff status */
