@@ -9,6 +9,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+
 import { theme } from '../../theme';
 
 export type InputType = 'text' | 'password' | 'number' | 'email' | 'phone';

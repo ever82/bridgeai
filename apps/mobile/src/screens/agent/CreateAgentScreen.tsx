@@ -17,6 +17,7 @@ import {
   AGENT_TYPE_COLORS,
   CreateAgentRequest,
 } from '@bridgeai/shared';
+
 import { ProfileStackParamList } from '../../types/navigation';
 
 const AGENT_TYPES = Object.values(AgentType);

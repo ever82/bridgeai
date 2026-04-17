@@ -6,7 +6,6 @@ import {
   Animated,
   ViewStyle,
 } from 'react-native';
-import { theme } from '../../theme';
 import {
   HandoffStatus,
   SenderType,
@@ -15,6 +14,8 @@ import {
   SENDER_TYPE_LABELS,
   isHandoffPending,
 } from '@bridgeai/shared';
+
+import { theme } from '../../theme';
 
 export interface HandoffStatusProps {
   /** Current handoff status */

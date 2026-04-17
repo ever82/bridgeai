@@ -1,10 +1,11 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {
   SearchOptimizer,
   ThumbnailCacheConfig,
   SearchPerformanceMetrics,
   BackgroundTaskManager,
 } from '../searchOptimization';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({

@@ -1,10 +1,11 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { HandoffButton } from './HandoffButton';
 import {
   HandoffStatus,
   SenderType,
 } from '@bridgeai/shared';
+
+import { HandoffButton } from './HandoffButton';
 
 describe('HandoffButton', () => {
   const mockOnTakeover = jest.fn();

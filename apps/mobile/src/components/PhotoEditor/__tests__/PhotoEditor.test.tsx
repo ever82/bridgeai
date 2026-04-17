@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+
 import { PhotoEditor, EditablePhoto, FILTERS } from '../PhotoEditor';
 
 describe('PhotoEditor', () => {

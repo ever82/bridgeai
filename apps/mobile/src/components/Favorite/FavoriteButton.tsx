@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
+
 import { theme } from '../../theme';
 
 interface FavoriteButtonProps {

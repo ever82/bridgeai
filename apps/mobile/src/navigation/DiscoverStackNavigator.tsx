@@ -1,5 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import { DiscoverScreen } from '../screens/discover/DiscoverScreen';
 import { SearchScreen } from '../screens/discover/SearchScreen';
 import { CategoryMomentsScreen } from '../screens/discover/CategoryMomentsScreen';

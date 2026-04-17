@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+
 import { captureException, addBreadcrumb } from '../../utils/sentry';
 
 interface Props {

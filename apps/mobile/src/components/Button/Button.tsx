@@ -8,6 +8,7 @@ import {
   TextStyle,
   View,
 } from 'react-native';
+
 import { theme } from '../../theme';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'text';

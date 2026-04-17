@@ -1,7 +1,9 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react-native';
-import { CreditScore, TrustBadge } from './CreditScore';
+
 import { theme } from '../../theme';
+
+import { CreditScore, TrustBadge } from './CreditScore';
 
 describe('CreditScore', () => {
   const mockOnPress = jest.fn();

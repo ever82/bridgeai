@@ -10,6 +10,7 @@ import {
   GestureResponderEvent,
   PanResponderGestureState,
 } from 'react-native';
+
 import { theme } from '../../theme';
 
 export interface ModalProps {

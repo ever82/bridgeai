@@ -1,10 +1,11 @@
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import { PermissionsAndroid, Platform } from 'react-native';
+
 import {
   PhotoLibraryPermissionManager,
   PhotoPermissionState,
   PhotoPermissionStatus,
 } from '../photoLibrary';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import { PermissionsAndroid, Platform } from 'react-native';
 
 // Mock react-native-permissions
 jest.mock('react-native-permissions', () => ({

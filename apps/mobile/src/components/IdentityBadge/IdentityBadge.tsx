@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native';
+
 import { theme } from '../../theme';
 
 export type BadgeType = 'agent' | 'verified' | 'scene-vision' | 'scene-date' | 'scene-job' | 'scene-ad';

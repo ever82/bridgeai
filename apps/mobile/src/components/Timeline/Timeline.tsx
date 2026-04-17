@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
+
 import { theme } from '../../theme';
 
 interface TimelineEvent {

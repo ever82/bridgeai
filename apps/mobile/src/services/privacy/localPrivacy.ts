@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import * as Crypto from 'expo-crypto';
+
 import { localSearchIndex, IndexedImage } from '../indexing/localIndexer';
 
 export interface PrivacySettings {

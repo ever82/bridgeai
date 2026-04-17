@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { theme } from '../../theme';
 import { useAuthStore } from '../../stores/authStore';
 

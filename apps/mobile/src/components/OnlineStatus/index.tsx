@@ -6,6 +6,7 @@
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+
 import { socketClient } from '../../services/socketClient';
 
 export type OnlineStatusType = 'online' | 'offline' | 'away' | 'busy';

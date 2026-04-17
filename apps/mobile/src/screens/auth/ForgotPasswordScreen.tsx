@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+
 import { authApi } from '../../services/api/auth';
 import { theme } from '../../theme';
 

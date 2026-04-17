@@ -24,6 +24,7 @@ import {
   APPLICATION_STATUS_LABELS,
   APPLICATION_STATUS_COLORS,
 } from '@bridgeai/shared';
+
 import { JobStackParamList } from '../../types/navigation';
 
 type ReceivedResumesScreenNavigationProp = NativeStackNavigationProp<JobStackParamList, 'ReceivedResumes'>;

@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+
 import { captureMessage, addBreadcrumb, Sentry } from '../../utils/sentry';
 
 export type FeedbackCategory = 'bug' | 'feature' | 'improvement' | 'other';

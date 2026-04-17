@@ -4,8 +4,9 @@
  * API functions for job matching and candidate recommendations
  */
 
-import { api } from './client';
 import { JobPosting, JobApplication, ApplicationStatus } from '@bridgeai/shared';
+
+import { api } from './client';
 
 // Match score factors interface
 export interface MatchFactors {

@@ -1,8 +1,9 @@
 import React from 'react';
-import { ScreenContainer } from '../../components/ScreenContainer';
-import { Header } from '../../components/Header';
 import { Text } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+import { ScreenContainer } from '../../components/ScreenContainer';
+import { Header } from '../../components/Header';
 import { MessagesStackParamList } from '../../types/navigation';
 
 type Props = NativeStackScreenProps<MessagesStackParamList, 'Chat'>;

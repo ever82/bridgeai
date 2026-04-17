@@ -1,7 +1,9 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react-native';
-import { UserAvatar } from './UserAvatar';
+
 import { theme } from '../../theme';
+
+import { UserAvatar } from './UserAvatar';
 
 describe('UserAvatar', () => {
   const mockOnPress = jest.fn();

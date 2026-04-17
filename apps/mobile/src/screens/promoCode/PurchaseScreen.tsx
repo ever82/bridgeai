@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import PromoCodeDisplay from '../../components/PromoCode/PromoCodeDisplay';
 import { promoCodeApi } from '../../services/api/promoCodeApi';
 import { Coupon } from '../../types/promoCode';

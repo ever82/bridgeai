@@ -23,6 +23,7 @@ import {
   SCENE_DISPLAY_NAMES,
   SCENE_DESCRIPTIONS,
 } from '@bridgeai/shared';
+
 import { SceneSelector, SceneConfigPreview } from '../../components/SceneSelector';
 import { sceneApi } from '../../services/api/sceneApi';
 

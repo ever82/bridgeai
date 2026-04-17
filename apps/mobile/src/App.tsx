@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
+
 import { RootNavigator } from './navigation/RootNavigator';
 import { initSentry, withErrorBoundary } from './utils/sentry';
 import { ErrorBoundary } from './components/ErrorBoundary';

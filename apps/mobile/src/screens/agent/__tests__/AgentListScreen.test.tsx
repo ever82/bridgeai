@@ -3,8 +3,9 @@
  */
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
-import { AgentListScreen } from '../AgentListScreen';
 import { NavigationContainer } from '@react-navigation/native';
+
+import { AgentListScreen } from '../AgentListScreen';
 
 // Mock navigation
 const mockNavigate = jest.fn();

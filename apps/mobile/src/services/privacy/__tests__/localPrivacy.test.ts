@@ -1,5 +1,6 @@
-import { LocalPrivacyManager, PrivacySettings } from '../localPrivacy';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { LocalPrivacyManager, PrivacySettings } from '../localPrivacy';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({

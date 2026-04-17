@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-native';
+
 import { Card } from '../Card/Card';
 import { Button } from '../Button/Button';
 import { Modal } from '../Modal/Modal';

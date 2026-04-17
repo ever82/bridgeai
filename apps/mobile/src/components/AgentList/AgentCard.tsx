@@ -6,6 +6,7 @@ import {
   Image,
   StyleSheet,
 } from 'react-native';
+
 import { Agent } from './AgentList';
 
 interface AgentCardProps {

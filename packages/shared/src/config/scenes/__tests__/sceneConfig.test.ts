@@ -3,6 +3,8 @@
  * 场景配置测试
  */
 
+import { SCENE_IDS, SceneConfig, SceneId } from '../../types/scene';
+
 import {
   visionShareConfig,
   agentDateConfig,
@@ -15,7 +17,6 @@ import {
   getAllSceneInfos,
   hasScene,
 } from './index';
-import { SCENE_IDS, SceneConfig, SceneId } from '../../types/scene';
 
 describe('Scene Configurations', () => {
   describe('Scene Config Exports', () => {

@@ -6,6 +6,7 @@
  */
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, Animated, ViewStyle } from 'react-native';
+
 import { socketClient } from '../../services/socketClient';
 
 export interface TypingIndicatorProps {

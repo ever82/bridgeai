@@ -8,6 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { useMomentsStore } from '../../stores/momentsStore';
 import { theme } from '../../theme';
 

@@ -6,13 +6,14 @@ import {
   Animated,
   ViewStyle,
 } from 'react-native';
-import { theme } from '../../theme';
 import {
   SenderType,
   SENDER_TYPE_LABELS,
   SENDER_TYPE_COLORS,
   HandoffStatus,
 } from '@bridgeai/shared';
+
+import { theme } from '../../theme';
 
 export interface SenderIndicatorProps {
   /** Type of sender */

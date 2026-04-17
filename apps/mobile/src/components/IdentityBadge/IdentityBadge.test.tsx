@@ -1,7 +1,9 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
-import { IdentityBadge } from './IdentityBadge';
+
 import { theme } from '../../theme';
+
+import { IdentityBadge } from './IdentityBadge';
 
 describe('IdentityBadge', () => {
   it('renders agent badge', () => {

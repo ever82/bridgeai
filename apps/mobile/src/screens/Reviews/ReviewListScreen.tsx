@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+
 import { theme } from '../../theme';
 import { Review, ReviewTab, ReviewStats as ReviewStatsType } from '../../types/review';
 import { ReviewCard, ReviewStats } from '../../components/Reviews';

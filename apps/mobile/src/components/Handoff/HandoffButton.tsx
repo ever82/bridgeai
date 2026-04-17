@@ -7,12 +7,13 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { theme } from '../../theme';
 import {
   HandoffStatus,
   HANDOFF_STATUS_LABELS,
   type SenderType,
 } from '@bridgeai/shared';
+
+import { theme } from '../../theme';
 
 export interface HandoffButtonProps {
   /** Current handoff status */

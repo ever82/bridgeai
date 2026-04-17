@@ -9,6 +9,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+
 import { ChatRoom, ChatRoomListProps, ChatRoomListItemProps } from '../../types/chat';
 import { formatDistanceToNow } from '../../utils/date';
 

@@ -19,6 +19,7 @@ import {
   AGENT_TYPE_COLORS,
   AGENT_STATUS_COLORS,
 } from '@bridgeai/shared';
+
 import { ProfileStackParamList } from '../../types/navigation';
 
 interface AgentCardProps {

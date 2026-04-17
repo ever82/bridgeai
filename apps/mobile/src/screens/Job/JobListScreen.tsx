@@ -23,6 +23,7 @@ import {
   JOB_STATUS_COLORS,
   JOB_TYPE_LABELS,
 } from '@bridgeai/shared';
+
 import { JobStackParamList } from '../../types/navigation';
 
 type JobListScreenNavigationProp = NativeStackNavigationProp<JobStackParamList, 'JobList'>;

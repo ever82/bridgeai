@@ -3,8 +3,9 @@
  * 场景 API 服务
  */
 
-import { api } from './client';
 import { SceneId, SceneConfig, SceneCapability, SceneTemplate } from '@bridgeai/shared';
+
+import { api } from './client';
 
 export interface SceneInfo {
   id: SceneId;

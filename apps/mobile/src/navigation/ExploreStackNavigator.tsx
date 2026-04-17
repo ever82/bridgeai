@@ -1,5 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import { ExploreScreen } from '../screens/explore/ExploreScreen';
 import { SearchScreen } from '../screens/explore/SearchScreen';
 import { CategoryMomentsScreen } from '../screens/explore/CategoryMomentsScreen';

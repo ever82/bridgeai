@@ -1,4 +1,3 @@
-import { api } from './client';
 import {
   User,
   AuthTokens,
@@ -6,6 +5,8 @@ import {
   RegisterData,
   ApiResponse,
 } from '../../types';
+
+import { api } from './client';
 
 interface AuthResponse {
   user: User;

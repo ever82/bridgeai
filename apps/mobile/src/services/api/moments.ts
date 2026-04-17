@@ -1,4 +1,3 @@
-import { api } from './client';
 import {
   Moment,
   User,
@@ -6,6 +5,8 @@ import {
   PaginatedResponse,
   ApiResponse,
 } from '../../types';
+
+import { api } from './client';
 
 interface GetMomentsParams {
   page?: number;

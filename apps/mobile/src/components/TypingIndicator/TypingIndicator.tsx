@@ -6,6 +6,7 @@ import {
   Animated,
   ViewStyle,
 } from 'react-native';
+
 import { theme } from '../../theme';
 
 export type TypingType = 'typing' | 'thinking';

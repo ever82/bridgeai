@@ -5,8 +5,10 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native';
+
 import { theme } from '../../theme';
 import { ReviewStats as ReviewStatsType } from '../../types/review';
+
 import { StarRating } from './StarRating';
 
 interface ReviewStatsProps {

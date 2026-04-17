@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+
 import { AgentCard } from './AgentCard';
 import { SortDropdown } from './SortDropdown';
 import { FilterBar } from './FilterBar';

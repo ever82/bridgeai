@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { promoCodeApi } from '../../services/api/promoCodeApi';
 import { RootStackParamList } from '../../types/navigation';
 import Icon from '../../components/Icon/Icon';

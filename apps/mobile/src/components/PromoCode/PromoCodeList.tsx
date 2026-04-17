@@ -7,6 +7,7 @@ import {
   FlatList,
 } from 'react-native';
 import { format } from 'date-fns';
+
 import { Coupon, CouponStatus } from '../../types/promoCode';
 import Icon from '../Icon/Icon';
 

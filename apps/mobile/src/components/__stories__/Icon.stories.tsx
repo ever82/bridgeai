@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, ScrollView, Text, StyleSheet } from 'react-native';
+
 import { Icon } from '../Icon/Icon';
 import { theme } from '../../theme';
 

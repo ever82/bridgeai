@@ -4,6 +4,7 @@
  * Zod schemas for job posting validation
  */
 import { z } from 'zod';
+
 import { workModeSchema, companySizeSchema, companyIndustrySchema } from './employerSchema';
 
 // ============================================================================

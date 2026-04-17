@@ -30,6 +30,7 @@ import {
   EDUCATION_LEVEL_LABELS,
   SALARY_PERIOD_LABELS,
 } from '@bridgeai/shared';
+
 import { JobStackParamList } from '../../types/navigation';
 
 type JobPostingScreenNavigationProp = NativeStackNavigationProp<JobStackParamList, 'JobPosting'>;

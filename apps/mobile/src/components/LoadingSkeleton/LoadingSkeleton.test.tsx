@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
+
 import { LoadingSkeleton, Skeleton } from './LoadingSkeleton';
 
 describe('Skeleton', () => {

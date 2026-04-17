@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
+
 import { OnlineStatus, OnlineStatusBadge } from '../../components/OnlineStatus';
 import { socketClient } from '../../services/socketClient';
 

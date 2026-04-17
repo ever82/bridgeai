@@ -1,11 +1,12 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { SenderIndicator, SenderChangeIndicator } from './SenderIndicator';
 import {
   SenderType,
   HandoffStatus,
   SENDER_TYPE_LABELS,
 } from '@bridgeai/shared';
+
+import { SenderIndicator, SenderChangeIndicator } from './SenderIndicator';
 
 // Mock Animated
 jest.mock('react-native', () => ({

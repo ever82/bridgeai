@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+
 import { useThemeStore } from '../../stores/themeStore';
 import { theme as themeColors } from '../../theme';
 

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ViewStyle,
 } from 'react-native';
+
 import { theme } from '../../theme';
 
 interface ErrorStateProps {

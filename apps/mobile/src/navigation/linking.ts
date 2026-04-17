@@ -1,4 +1,5 @@
 import { LinkingOptions } from '@react-navigation/native';
+
 import { RootStackParamList } from '../types/navigation';
 
 /**

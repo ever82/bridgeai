@@ -1,4 +1,3 @@
-import { api } from './client';
 import {
   Coupon,
   CouponStatus,
@@ -8,6 +7,8 @@ import {
   CouponStatistics,
   CouponTransaction,
 } from '../../types/promoCode';
+
+import { api } from './client';
 
 export interface ApiResponse<T> {
   success: boolean;

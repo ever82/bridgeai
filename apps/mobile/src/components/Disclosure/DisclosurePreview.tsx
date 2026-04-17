@@ -8,8 +8,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { useThemeStore } from '../../stores/themeStore';
-import { theme as themeColors } from '../../theme';
 import {
   DisclosureLevel,
   DISCLOSURE_LEVEL_INFO,
@@ -17,6 +15,9 @@ import {
   DisclosurePreview as DisclosurePreviewType,
   DISCLOSABLE_FIELDS,
 } from '@bridgeai/shared/types/disclosure';
+
+import { useThemeStore } from '../../stores/themeStore';
+import { theme as themeColors } from '../../theme';
 
 interface DisclosurePreviewProps {
   agentId?: string;

@@ -1,8 +1,9 @@
 import React from 'react';
-import { ScreenContainer } from '../../components/ScreenContainer';
-import { Header } from '../../components/Header';
 import { Text } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+import { ScreenContainer } from '../../components/ScreenContainer';
+import { Header } from '../../components/Header';
 import { DiscoverStackParamList } from '../../types/navigation';
 
 type Props = NativeStackScreenProps<DiscoverStackParamList, 'CategoryMoments'>;

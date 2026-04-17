@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native';
+
 import { theme } from '../../theme';
 import { UserAvatar } from '../UserAvatar/UserAvatar';
 import { formatRelativeTime } from '../LastSeen/LastSeen';

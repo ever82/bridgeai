@@ -1,8 +1,9 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { useNavigation } from '@react-navigation/native';
+
 import { EditProfileScreen } from '../EditProfileScreen';
 import { useAuthStore } from '../../../stores/authStore';
-import { useNavigation } from '@react-navigation/native';
 import { api } from '../../../services';
 
 // Mock dependencies

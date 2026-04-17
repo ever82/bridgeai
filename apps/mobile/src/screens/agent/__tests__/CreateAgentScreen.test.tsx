@@ -3,9 +3,10 @@
  */
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
-import { CreateAgentScreen } from '../CreateAgentScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { Alert } from 'react-native';
+
+import { CreateAgentScreen } from '../CreateAgentScreen';
 
 // Mock navigation
 const mockGoBack = jest.fn();

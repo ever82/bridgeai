@@ -1,5 +1,6 @@
 import SQLite, { SQLiteDatabase, Transaction } from 'react-native-sqlite-storage';
 import { Platform } from 'react-native';
+
 import { ImageAnalysisResult } from './localImageAnalysis';
 
 SQLite.enablePromise(true);

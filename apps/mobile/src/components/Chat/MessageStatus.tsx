@@ -6,6 +6,7 @@
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet, ViewStyle } from 'react-native';
+
 import { socketClient } from '../../services/socketClient';
 
 export type MessageStatusType = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';

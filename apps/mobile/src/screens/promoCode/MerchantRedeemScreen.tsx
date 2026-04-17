@@ -10,6 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, CameraType, BarCodeScanningResult } from 'expo-camera';
+
 import { promoCodeApi } from '../../services/api/promoCodeApi';
 import { Coupon } from '../../types/promoCode';
 import Icon from '../../components/Icon/Icon';

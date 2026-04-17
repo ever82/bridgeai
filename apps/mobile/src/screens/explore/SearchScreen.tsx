@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+
 import { theme } from '../../theme';
 
 const RECENT_SEARCHES = ['旅行', '美食', '摄影'];

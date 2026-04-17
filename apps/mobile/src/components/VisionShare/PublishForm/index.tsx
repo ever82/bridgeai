@@ -15,6 +15,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import type { VisionSharePublishFormData } from '@packages/shared/types/visionShare';
+
 import { LocationPicker } from '../../LocationPicker';
 import { visionShareApi } from '../../../services/api/visionShare';
 

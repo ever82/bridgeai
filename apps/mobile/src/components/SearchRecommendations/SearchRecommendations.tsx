@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+
 import { theme } from '../../theme';
 
 interface SearchRecommendation {

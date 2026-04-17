@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
+
 import { ErrorState } from './ErrorState';
 
 describe('ErrorState', () => {

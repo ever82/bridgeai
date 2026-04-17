@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react-native';
+
 import { LastSeen, formatRelativeTime, formatExactTime } from './LastSeen';
 
 describe('LastSeen', () => {

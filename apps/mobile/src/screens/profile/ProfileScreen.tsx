@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+
 import { useAuthStore } from '../../stores/authStore';
 import { theme } from '../../theme';
 

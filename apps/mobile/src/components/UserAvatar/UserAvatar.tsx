@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ViewStyle,
 } from 'react-native';
+
 import { theme } from '../../theme';
 
 export type UserStatus = 'online' | 'offline' | 'busy' | 'away';

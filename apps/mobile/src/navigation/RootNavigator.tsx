@@ -2,11 +2,14 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
+
 import { useAuthStore } from '../stores/authStore';
+import { RootStackParamList } from '../types/navigation';
+import { theme } from '../theme';
+
 import { AuthNavigator } from './AuthNavigator';
 import { DrawerNavigator } from './DrawerNavigator';
 import { linking } from './linking';
-import { RootStackParamList } from '../types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -37,7 +40,6 @@ export const RootNavigator = () => {
 };
 
 // Import theme after file creation to avoid circular dependency
-import { theme } from '../theme';
 
 const styles = StyleSheet.create({
   loadingContainer: {

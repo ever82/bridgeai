@@ -1,12 +1,14 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { DrawerNavigator } from './DrawerNavigator';
+
 import { MomentDetailScreen } from '../screens/moment/MomentDetailScreen';
 import { UserProfileScreen } from '../screens/user/UserProfileScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { EditProfileScreen } from '../screens/settings/EditProfileScreen';
 import { ChatScreen } from '../screens/messages/ChatScreen';
 import { RootStackParamList } from '../types/navigation';
+
+import { DrawerNavigator } from './DrawerNavigator';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

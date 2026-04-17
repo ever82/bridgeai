@@ -1,8 +1,10 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { MainTabNavigator } from './MainTabNavigator';
+
 import { DrawerMenu } from '../components/DrawerMenu/DrawerMenu';
 import { theme } from '../theme';
+
+import { MainTabNavigator } from './MainTabNavigator';
 
 const Drawer = createDrawerNavigator();
 

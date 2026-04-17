@@ -1,11 +1,12 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { HandoffStatus } from './HandoffStatus';
 import {
   HandoffStatus as HandoffStatusEnum,
   SenderType,
   HANDOFF_STATUS_LABELS,
 } from '@bridgeai/shared';
+
+import { HandoffStatus } from './HandoffStatus';
 
 // Mock Animated.Value
 jest.mock('react-native', () => ({

@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react-native';
+
 import { useDebounce } from '../../hooks/useDebounce';
 
 describe('useDebounce', () => {

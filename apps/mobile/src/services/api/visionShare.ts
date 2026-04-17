@@ -3,7 +3,6 @@
  * VisionShare API 服务
  */
 
-import { api } from './client';
 import type {
   VisionShareTask,
   CreateTaskRequest,
@@ -12,6 +11,8 @@ import type {
   PublishValidationResult,
   VisionShareTaskStatus,
 } from '@packages/shared/types/visionShare';
+
+import { api } from './client';
 
 export interface CreateTaskResponse {
   success: boolean;

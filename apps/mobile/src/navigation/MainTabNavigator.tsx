@@ -2,13 +2,15 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { MainTabParamList } from '../types/navigation';
+import { theme } from '../theme';
+import { useMessageStore } from '../stores/messageStore';
+
 import { HomeStackNavigator } from './HomeStackNavigator';
 import { MessagesStackNavigator } from './MessagesStackNavigator';
 import { DiscoverStackNavigator } from './DiscoverStackNavigator';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
-import { MainTabParamList } from '../types/navigation';
-import { theme } from '../theme';
-import { useMessageStore } from '../stores/messageStore';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 

@@ -2,8 +2,9 @@
  * Chat API Service
  * 聊天房间API服务
  */
-import { api } from './client';
 import { ChatRoom, ChatRoomType, ParticipantRole, RoomParticipant } from '../../types/chat';
+
+import { api } from './client';
 
 export interface CreateRoomRequest {
   type: ChatRoomType;

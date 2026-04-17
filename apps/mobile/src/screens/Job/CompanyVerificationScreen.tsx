@@ -22,6 +22,7 @@ import {
   VERIFICATION_STATUS_LABELS,
   VERIFICATION_STATUS_COLORS,
 } from '@bridgeai/shared';
+
 import { JobStackParamList } from '../../types/navigation';
 
 type CompanyVerificationScreenNavigationProp = NativeStackNavigationProp<JobStackParamList, 'CompanyVerification'>;

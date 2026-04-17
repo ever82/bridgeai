@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native';
+
 import { theme } from '../../theme';
 
 export type CreditLevel = 'excellent' | 'good' | 'fair' | 'poor';

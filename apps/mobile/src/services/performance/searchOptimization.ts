@@ -1,5 +1,6 @@
 import { NativeModules, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { localSearchIndex, IndexedImage } from '../indexing/localIndexer';
 import { localImageAnalysis, AnalysisProgress } from '../ai/localImageAnalysis';
 

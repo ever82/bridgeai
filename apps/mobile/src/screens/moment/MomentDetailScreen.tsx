@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
+
 import { useMomentsStore } from '../../stores/momentsStore';
 import { theme } from '../../theme';
 

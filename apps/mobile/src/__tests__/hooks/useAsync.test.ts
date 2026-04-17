@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react-native';
+
 import { useAsync } from '../../hooks/useAsync';
 
 describe('useAsync', () => {

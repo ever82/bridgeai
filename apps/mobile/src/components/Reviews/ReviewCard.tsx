@@ -7,8 +7,10 @@ import {
   TouchableOpacity,
   ViewStyle,
 } from 'react-native';
+
 import { theme } from '../../theme';
 import { Review } from '../../types/review';
+
 import { StarRating } from './StarRating';
 
 interface ReviewCardProps {
