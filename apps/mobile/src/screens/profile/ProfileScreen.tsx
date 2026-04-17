@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
@@ -23,6 +17,7 @@ export const ProfileScreen = () => {
 
   const menuItems = [
     { icon: '📝', title: '我的动态', onPress: () => navigation.navigate('MyMoments') },
+    { icon: '⭐', title: '我的评价', onPress: () => navigation.navigate('ReviewList') },
     { icon: '❤️', title: '赞过的', onPress: () => navigation.navigate('LikedMoments') },
     { icon: '⚙️', title: '设置', onPress: () => navigation.navigate('Settings') },
   ];
@@ -36,17 +31,11 @@ export const ProfileScreen = () => {
       <ScrollView style={styles.content}>
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {user?.displayName?.[0]?.toUpperCase() || '?'}
-            </Text>
+            <Text style={styles.avatarText}>{user?.displayName?.[0]?.toUpperCase() || '?'}</Text>
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>
-              {user?.displayName || '未登录用户'}
-            </Text>
-            <Text style={styles.userHandle}>
-              @{user?.username || 'unknown'}
-            </Text>
+            <Text style={styles.userName}>{user?.displayName || '未登录用户'}</Text>
+            <Text style={styles.userHandle}>@{user?.username || 'unknown'}</Text>
           </View>
           <TouchableOpacity
             style={styles.editButton}
@@ -75,10 +64,7 @@ export const ProfileScreen = () => {
           {menuItems.map((item, index) => (
             <TouchableOpacity
               key={index}
-              style={[
-                styles.menuItem,
-                index === menuItems.length - 1 && styles.menuItemLast,
-              ]}
+              style={[styles.menuItem, index === menuItems.length - 1 && styles.menuItemLast]}
               onPress={item.onPress}
             >
               <Text style={styles.menuIcon}>{item.icon}</Text>
@@ -88,10 +74,7 @@ export const ProfileScreen = () => {
           ))}
         </View>
 
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-        >
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>退出登录</Text>
         </TouchableOpacity>
 

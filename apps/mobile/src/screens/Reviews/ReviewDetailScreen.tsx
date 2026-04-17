@@ -37,6 +37,8 @@ export const ReviewDetailScreen: React.FC = () => {
   const { reviewId } = route.params as { reviewId: string };
 
   const [review] = useState<Review>(mockReview);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _reviewId = reviewId; // Will be used for real API fetch
   const [reply, setReply] = useState('');
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,7 +62,7 @@ export const ReviewDetailScreen: React.FC = () => {
 
     setIsSubmitting(true);
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     setIsSubmitting(false);
     setShowReplyInput(false);
     setReply('');
@@ -68,20 +70,16 @@ export const ReviewDetailScreen: React.FC = () => {
   };
 
   const handleReport = () => {
-    Alert.alert(
-      '举报评价',
-      '您确定要举报这条评价吗？',
-      [
-        { text: '取消', style: 'cancel' },
-        {
-          text: '确认举报',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert('已提交', '感谢您的反馈，我们会尽快处理');
-          },
+    Alert.alert('举报评价', '您确定要举报这条评价吗？', [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '确认举报',
+        style: 'destructive',
+        onPress: () => {
+          Alert.alert('已提交', '感谢您的反馈，我们会尽快处理');
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const user = review.rater;
@@ -91,10 +89,7 @@ export const ReviewDetailScreen: React.FC = () => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>‹</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>评价详情</Text>
@@ -109,15 +104,11 @@ export const ReviewDetailScreen: React.FC = () => {
           {/* User Info */}
           <View style={styles.userSection}>
             <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarText}>
-                {user?.name?.charAt(0).toUpperCase() || '?'}
-              </Text>
+              <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase() || '?'}</Text>
             </View>
             <View style={styles.userInfo}>
               <Text style={styles.userName}>{user?.name || '未知用户'}</Text>
-              <Text style={styles.reviewDate}>
-                {formatDate(review.createdAt)}
-              </Text>
+              <Text style={styles.reviewDate}>{formatDate(review.createdAt)}</Text>
             </View>
           </View>
 
@@ -153,10 +144,7 @@ export const ReviewDetailScreen: React.FC = () => {
           <View style={styles.replySection}>
             <Text style={styles.replySectionTitle}>您的回复</Text>
             {!showReplyInput ? (
-              <TouchableOpacity
-                style={styles.replyButton}
-                onPress={() => setShowReplyInput(true)}
-              >
+              <TouchableOpacity style={styles.replyButton} onPress={() => setShowReplyInput(true)}>
                 <Text style={styles.replyButtonText}>+ 添加回复</Text>
               </TouchableOpacity>
             ) : (
@@ -182,12 +170,7 @@ export const ReviewDetailScreen: React.FC = () => {
                       setReply('');
                     }}
                   />
-                  <Button
-                    title="提交回复"
-                    size="sm"
-                    onPress={handleReply}
-                    loading={isSubmitting}
-                  />
+                  <Button title="提交回复" size="sm" onPress={handleReply} loading={isSubmitting} />
                 </View>
               </View>
             )}

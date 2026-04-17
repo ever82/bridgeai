@@ -1,12 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
@@ -68,12 +61,12 @@ export const ReviewListScreen: React.FC = () => {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState<ReviewTab>('received');
   const [refreshing, setRefreshing] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [reviews] = useState<Review[]>(mockReviews);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     setRefreshing(false);
   }, []);
 
@@ -81,7 +74,7 @@ export const ReviewListScreen: React.FC = () => {
     navigation.navigate('ReviewDetail', { reviewId: review.id });
   };
 
-  const filteredReviews = reviews.filter((review) =>
+  const filteredReviews = reviews.filter(review =>
     activeTab === 'received'
       ? review.rateeId === 'user-2' // Current user ID (mock)
       : review.raterId === 'user-2'
@@ -94,9 +87,7 @@ export const ReviewListScreen: React.FC = () => {
         {activeTab === 'received' ? '暂无收到的评价' : '暂无发出的评价'}
       </Text>
       <Text style={styles.emptySubtitle}>
-        {activeTab === 'received'
-          ? '完成订单后，对方可以为您评价'
-          : '完成订单后，您可以为对方评价'}
+        {activeTab === 'received' ? '完成订单后，对方可以为您评价' : '完成订单后，您可以为对方评价'}
       </Text>
     </View>
   );
@@ -113,12 +104,7 @@ export const ReviewListScreen: React.FC = () => {
           onPress={() => setActiveTab('received')}
           testID="tab-received"
         >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'received' && styles.tabTextActive,
-            ]}
-          >
+          <Text style={[styles.tabText, activeTab === 'received' && styles.tabTextActive]}>
             收到的评价
           </Text>
         </TouchableOpacity>
@@ -127,12 +113,7 @@ export const ReviewListScreen: React.FC = () => {
           onPress={() => setActiveTab('given')}
           testID="tab-given"
         >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'given' && styles.tabTextActive,
-            ]}
-          >
+          <Text style={[styles.tabText, activeTab === 'given' && styles.tabTextActive]}>
             发出的评价
           </Text>
         </TouchableOpacity>
@@ -148,7 +129,7 @@ export const ReviewListScreen: React.FC = () => {
 
       <FlatList
         data={filteredReviews}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <ReviewCard
             review={item}

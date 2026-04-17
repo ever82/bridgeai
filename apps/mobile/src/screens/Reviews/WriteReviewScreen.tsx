@@ -27,6 +27,10 @@ export const WriteReviewScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { matchId, rateeId, rateeName, matchTitle } = route.params as RouteParams;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _matchId = matchId; // Will be used for real API submission
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _rateeId = rateeId; // Will be used for real API submission
 
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -54,18 +58,14 @@ export const WriteReviewScreen: React.FC = () => {
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      Alert.alert(
-        '提交成功',
-        '感谢您的评价！',
-        [
-          {
-            text: '确定',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
+      Alert.alert('提交成功', '感谢您的评价！', [
+        {
+          text: '确定',
+          onPress: () => navigation.goBack(),
+        },
+      ]);
     } catch (error) {
       Alert.alert('提交失败', '请稍后重试');
     } finally {
@@ -88,10 +88,7 @@ export const WriteReviewScreen: React.FC = () => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>‹</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>写评价</Text>
@@ -120,13 +117,9 @@ export const WriteReviewScreen: React.FC = () => {
               size="lg"
               testID="rating-input"
             />
-            {rating > 0 && (
-              <Text style={styles.ratingText}>{getRatingText(rating)}</Text>
-            )}
+            {rating > 0 && <Text style={styles.ratingText}>{getRatingText(rating)}</Text>}
           </View>
-          {ratingError && (
-            <Text style={styles.errorText}>请选择评分</Text>
-          )}
+          {ratingError && <Text style={styles.errorText}>请选择评分</Text>}
         </View>
 
         {/* Comment Section */}
