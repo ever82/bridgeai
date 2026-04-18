@@ -1,12 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useMomentsStore } from '../../stores/momentsStore';
@@ -14,18 +7,11 @@ import { theme } from '../../theme';
 
 export const HomeScreen = () => {
   const insets = useSafeAreaInsets();
-  const {
-    moments,
-    isLoading,
-    isLoadingMore,
-    hasMore,
-    fetchMoments,
-    loadMore,
-  } = useMomentsStore();
+  const { moments, isLoading, isLoadingMore, fetchMoments, loadMore } = useMomentsStore();
 
   useEffect(() => {
     fetchMoments(true);
-  }, []);
+  }, [fetchMoments]);
 
   const handleRefresh = useCallback(() => {
     fetchMoments(true);
@@ -35,7 +21,13 @@ export const HomeScreen = () => {
     loadMore();
   }, [loadMore]);
 
-  const renderItem = ({ item }: { item: any }) => (
+  interface MomentItem {
+    id: string;
+    title?: string;
+    description?: string;
+  }
+
+  const renderItem = ({ item }: { item: MomentItem }) => (
     <View style={styles.momentCard}>
       <Text style={styles.momentTitle}>{item.title || '无标题'}</Text>
       <Text style={styles.momentDescription}>{item.description || '暂无描述'}</Text>
@@ -62,16 +54,14 @@ export const HomeScreen = () => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>VisionShare</Text>
+        <Text style={styles.headerTitle}>BridgeAI</Text>
       </View>
 
       <FlatList
         data={moments}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
-        }
+        keyExtractor={item => item.id}
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}

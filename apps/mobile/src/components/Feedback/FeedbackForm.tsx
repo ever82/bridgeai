@@ -56,12 +56,7 @@ export function FeedbackForm({
 
   const handleSelectCategory = useCallback((cat: FeedbackCategory) => {
     setCategory(cat);
-    addBreadcrumb(
-      `Feedback category selected: ${cat}`,
-      'user.feedback',
-      'info',
-      { category: cat }
-    );
+    addBreadcrumb(`Feedback category selected: ${cat}`, 'user.feedback', 'info', { category: cat });
   }, []);
 
   const handlePickImage = useCallback(async () => {
@@ -75,11 +70,7 @@ export function FeedbackForm({
 
       if (!result.canceled && result.assets[0]) {
         setScreenshot(result.assets[0].uri);
-        addBreadcrumb(
-          'Screenshot attached to feedback',
-          'user.feedback',
-          'info'
-        );
+        addBreadcrumb('Screenshot attached to feedback', 'user.feedback', 'info');
       }
     } catch (error) {
       console.error('Failed to pick image:', error);
@@ -97,11 +88,7 @@ export function FeedbackForm({
 
       if (!result.canceled && result.assets[0]) {
         setScreenshot(result.assets[0].uri);
-        addBreadcrumb(
-          'Screenshot captured for feedback',
-          'user.feedback',
-          'info'
-        );
+        addBreadcrumb('Screenshot captured for feedback', 'user.feedback', 'info');
       }
     } catch (error) {
       console.error('Failed to take photo:', error);
@@ -135,16 +122,11 @@ export function FeedbackForm({
       };
 
       // Add breadcrumb for feedback submission
-      addBreadcrumb(
-        'User feedback submitted',
-        'user.feedback',
-        'info',
-        {
-          category,
-          hasScreenshot: !!screenshot,
-          hasEmail: !!email,
-        }
-      );
+      addBreadcrumb('User feedback submitted', 'user.feedback', 'info', {
+        category,
+        hasScreenshot: !!screenshot,
+        hasEmail: !!email,
+      });
 
       // Capture as Sentry message with feedback
       const eventId = captureMessage(
@@ -156,7 +138,7 @@ export function FeedbackForm({
       if (screenshot && eventId) {
         // Note: Sentry React Native handles screenshot attachments automatically
         // when attachScreenshot is enabled in init config
-        Sentry.withScope((scope) => {
+        Sentry.withScope(scope => {
           scope.setExtra('feedback_category', category);
           scope.setExtra('feedback_message', message);
           scope.setExtra('feedback_email', email);
@@ -171,11 +153,9 @@ export function FeedbackForm({
         await onSubmit(feedbackData);
       }
 
-      Alert.alert(
-        'Thank You!',
-        'Your feedback has been submitted successfully.',
-        [{ text: 'OK', onPress: onCancel }]
-      );
+      Alert.alert('Thank You!', 'Your feedback has been submitted successfully.', [
+        { text: 'OK', onPress: onCancel },
+      ]);
     } catch (error) {
       console.error('Failed to submit feedback:', error);
       Alert.alert('Error', 'Failed to submit feedback. Please try again.');
@@ -187,28 +167,20 @@ export function FeedbackForm({
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Send Feedback</Text>
-      <Text style={styles.subtitle}>
-        Help us improve VisionShare by sharing your thoughts
-      </Text>
+      <Text style={styles.subtitle}>Help us improve BridgeAI by sharing your thoughts</Text>
 
       {/* Category Selection */}
       <Text style={styles.label}>Category</Text>
       <View style={styles.categories}>
-        {CATEGORIES.map((cat) => (
+        {CATEGORIES.map(cat => (
           <TouchableOpacity
             key={cat.value}
-            style={[
-              styles.categoryButton,
-              category === cat.value && styles.categoryButtonActive,
-            ]}
+            style={[styles.categoryButton, category === cat.value && styles.categoryButtonActive]}
             onPress={() => handleSelectCategory(cat.value)}
           >
             <Text style={styles.categoryIcon}>{cat.icon}</Text>
             <Text
-              style={[
-                styles.categoryText,
-                category === cat.value && styles.categoryTextActive,
-              ]}
+              style={[styles.categoryText, category === cat.value && styles.categoryTextActive]}
             >
               {cat.label}
             </Text>
@@ -246,25 +218,16 @@ export function FeedbackForm({
           {screenshot ? (
             <View style={styles.screenshotContainer}>
               <Image source={{ uri: screenshot }} style={styles.screenshot} />
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={handleRemoveScreenshot}
-              >
+              <TouchableOpacity style={styles.removeButton} onPress={handleRemoveScreenshot}>
                 <Text style={styles.removeButtonText}>Remove</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.screenshotButtons}>
-              <TouchableOpacity
-                style={styles.screenshotButton}
-                onPress={handlePickImage}
-              >
+              <TouchableOpacity style={styles.screenshotButton} onPress={handlePickImage}>
                 <Text style={styles.screenshotButtonText}>Choose Photo</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.screenshotButton}
-                onPress={handleTakeScreenshot}
-              >
+              <TouchableOpacity style={styles.screenshotButton} onPress={handleTakeScreenshot}>
                 <Text style={styles.screenshotButtonText}>Take Photo</Text>
               </TouchableOpacity>
             </View>

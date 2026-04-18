@@ -41,8 +41,8 @@ export const LoginScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>VisionShare</Text>
-        <Text style={styles.subtitle}>分享你的精彩时刻</Text>
+        <Text style={styles.title}>BridgeAI</Text>
+        <Text style={styles.subtitle}>AI驱动的供需匹配平台</Text>
       </View>
 
       <View style={styles.form}>
@@ -112,10 +112,7 @@ export const LoginScreen = () => {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>还没有账号？</Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Register')}
-          disabled={isLoading}
-        >
+        <TouchableOpacity onPress={() => navigation.navigate('Register')} disabled={isLoading}>
           <Text style={styles.linkText}>立即注册</Text>
         </TouchableOpacity>
       </View>

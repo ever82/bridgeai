@@ -78,7 +78,7 @@ export const ProfileScreen = () => {
           <Text style={styles.logoutButtonText}>退出登录</Text>
         </TouchableOpacity>
 
-        <Text style={styles.version}>VisionShare v1.0.0</Text>
+        <Text style={styles.version}>BridgeAI v1.0.0</Text>
       </ScrollView>
     </View>
   );

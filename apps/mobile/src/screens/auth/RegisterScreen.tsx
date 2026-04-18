@@ -26,7 +26,7 @@ export const RegisterScreen = () => {
   });
 
   const updateField = (field: string, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleRegister = async () => {
@@ -62,7 +62,7 @@ export const RegisterScreen = () => {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>创建账号</Text>
-        <Text style={styles.subtitle}>开始你的 VisionShare 之旅</Text>
+        <Text style={styles.subtitle}>开始你的 BridgeAI 之旅</Text>
       </View>
 
       <View style={styles.form}>
@@ -70,7 +70,7 @@ export const RegisterScreen = () => {
           style={styles.input}
           placeholder="邮箱"
           value={form.email}
-          onChangeText={(text) => updateField('email', text)}
+          onChangeText={text => updateField('email', text)}
           keyboardType="email-address"
           autoCapitalize="none"
           editable={!isLoading}
@@ -79,7 +79,7 @@ export const RegisterScreen = () => {
           style={styles.input}
           placeholder="用户名"
           value={form.username}
-          onChangeText={(text) => updateField('username', text)}
+          onChangeText={text => updateField('username', text)}
           autoCapitalize="none"
           editable={!isLoading}
         />
@@ -87,14 +87,14 @@ export const RegisterScreen = () => {
           style={styles.input}
           placeholder="显示名称"
           value={form.displayName}
-          onChangeText={(text) => updateField('displayName', text)}
+          onChangeText={text => updateField('displayName', text)}
           editable={!isLoading}
         />
         <TextInput
           style={styles.input}
           placeholder="密码"
           value={form.password}
-          onChangeText={(text) => updateField('password', text)}
+          onChangeText={text => updateField('password', text)}
           secureTextEntry
           editable={!isLoading}
         />
@@ -102,7 +102,7 @@ export const RegisterScreen = () => {
           style={styles.input}
           placeholder="确认密码"
           value={form.confirmPassword}
-          onChangeText={(text) => updateField('confirmPassword', text)}
+          onChangeText={text => updateField('confirmPassword', text)}
           secureTextEntry
           editable={!isLoading}
         />
@@ -122,10 +122,7 @@ export const RegisterScreen = () => {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>已有账号？</Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Login')}
-          disabled={isLoading}
-        >
+        <TouchableOpacity onPress={() => navigation.navigate('Login')} disabled={isLoading}>
           <Text style={styles.linkText}>立即登录</Text>
         </TouchableOpacity>
       </View>
