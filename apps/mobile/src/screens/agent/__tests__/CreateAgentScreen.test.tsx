@@ -2,7 +2,7 @@
  * CreateAgentScreen Tests
  */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, screen, fireEvent } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { Alert } from 'react-native';
 
@@ -140,7 +140,7 @@ describe('CreateAgentScreen', () => {
     expect(mockGoBack).toHaveBeenCalled();
   });
 
-  it('proceeds to review step after selecting type', () => {
+  it('proceeds to scene config step after selecting type', () => {
     render(
       <NavigationContainer>
         <CreateAgentScreen />
@@ -155,9 +155,30 @@ describe('CreateAgentScreen', () => {
     fireEvent.press(screen.getByText('Vision Share'));
     fireEvent.press(screen.getByText('Next'));
 
-    // Step 3: Review
-    expect(screen.getByText('Step 3: Review')).toBeTruthy();
-    expect(screen.getByText('My Test Agent')).toBeTruthy();
-    expect(screen.getByText('Vision Share')).toBeTruthy();
+    // Step 3: Scene Config
+    expect(screen.getByText('Step 3: Scene Configuration')).toBeTruthy();
+  });
+
+  it('proceeds to AI config step', () => {
+    render(
+      <NavigationContainer>
+        <CreateAgentScreen />
+      </NavigationContainer>
+    );
+
+    // Step 1: Enter name
+    fireEvent.changeText(screen.getByPlaceholderText('Enter agent name'), 'My Test Agent');
+    fireEvent.press(screen.getByText('Next'));
+
+    // Step 2: Select type
+    fireEvent.press(screen.getByText('Vision Share'));
+    fireEvent.press(screen.getByText('Next'));
+
+    // Step 3: Scene Config - select a range option first
+    fireEvent.press(screen.getByText('同城'));
+    fireEvent.press(screen.getByText('Next'));
+
+    // Step 4: AI Config
+    expect(screen.getByText('Step 4: AI Behavior Settings')).toBeTruthy();
   });
 });

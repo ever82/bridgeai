@@ -17,8 +17,13 @@ import {
   AGENT_TYPE_COLORS,
   CreateAgentRequest,
 } from '@bridgeai/shared';
+import { Agent } from '@bridgeai/shared';
 
 import { ProfileStackParamList } from '../../types/navigation';
+
+import { SceneConfigForm } from './components/SceneConfigForm';
+import { AIConfigSection } from './components/AIConfigSection';
+import { AgentPreview } from './components/AgentPreview';
 
 const AGENT_TYPES = Object.values(AgentType);
 
@@ -33,6 +38,8 @@ export const CreateAgentScreen: React.FC = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedType, setSelectedType] = useState<AgentType | null>(null);
+  const [sceneConfig, setSceneConfig] = useState<Record<string, string | number | boolean>>({});
+  const [aiConfig, setAiConfig] = useState<Record<string, string | number | boolean>>({});
 
   const validateStep1 = useCallback(() => {
     if (!name.trim()) {
@@ -54,13 +61,26 @@ export const CreateAgentScreen: React.FC = () => {
     return true;
   }, [selectedType]);
 
+  const validateStep3 = useCallback(() => {
+    // Validate scene-specific config
+    if (selectedType === AgentType.VISIONSHARE && !sceneConfig.range) {
+      Alert.alert('Error', 'Please select a range');
+      return false;
+    }
+    return true;
+  }, [selectedType, sceneConfig]);
+
   const handleNext = useCallback(() => {
     if (step === 1 && validateStep1()) {
       setStep(2);
     } else if (step === 2 && validateStep2()) {
       setStep(3);
+    } else if (step === 3 && validateStep3()) {
+      setStep(4);
+    } else if (step === 4) {
+      setStep(5);
     }
-  }, [step, validateStep1, validateStep2]);
+  }, [step, validateStep1, validateStep2, validateStep3]);
 
   const handleBack = useCallback(() => {
     if (step > 1) {
@@ -80,6 +100,10 @@ export const CreateAgentScreen: React.FC = () => {
         type: selectedType,
         name: name.trim(),
         description: description.trim() || undefined,
+        config: {
+          scene: sceneConfig,
+          ai: aiConfig,
+        },
       };
 
       // TODO: Replace with actual API call
@@ -88,27 +112,22 @@ export const CreateAgentScreen: React.FC = () => {
       console.log('Creating agent:', agentData);
 
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       Alert.alert('Success', 'Agent created successfully!', [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (err) {
-      Alert.alert(
-        'Error',
-        err instanceof Error ? err.message : 'Failed to create agent'
-      );
+      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to create agent');
     } finally {
       setLoading(false);
     }
-  }, [selectedType, name, description, navigation]);
+  }, [selectedType, name, description, sceneConfig, aiConfig, navigation]);
 
   const renderStep1 = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.stepTitle}>Step 1: Basic Information</Text>
-      <Text style={styles.stepDescription}>
-        Give your agent a name and description
-      </Text>
+      <Text style={styles.stepDescription}>Give your agent a name and description</Text>
 
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Agent Name *</Text>
@@ -143,30 +162,18 @@ export const CreateAgentScreen: React.FC = () => {
   const renderStep2 = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.stepTitle}>Step 2: Select Agent Type</Text>
-      <Text style={styles.stepDescription}>
-        Choose the type of agent you want to create
-      </Text>
+      <Text style={styles.stepDescription}>Choose the type of agent you want to create</Text>
 
-      {AGENT_TYPES.map((type) => (
+      {AGENT_TYPES.map(type => (
         <TouchableOpacity
           key={type}
-          style={[
-            styles.typeCard,
-            selectedType === type && styles.typeCardSelected,
-          ]}
+          style={[styles.typeCard, selectedType === type && styles.typeCardSelected]}
           onPress={() => setSelectedType(type)}
         >
-          <View
-            style={[
-              styles.typeIndicator,
-              { backgroundColor: AGENT_TYPE_COLORS[type] },
-            ]}
-          />
+          <View style={[styles.typeIndicator, { backgroundColor: AGENT_TYPE_COLORS[type] }]} />
           <View style={styles.typeContent}>
             <Text style={styles.typeName}>{AGENT_TYPE_LABELS[type]}</Text>
-            <Text style={styles.typeDescription}>
-              {getTypeDescription(type)}
-            </Text>
+            <Text style={styles.typeDescription}>{getTypeDescription(type)}</Text>
           </View>
           {selectedType === type && (
             <View style={styles.checkmark}>
@@ -180,46 +187,64 @@ export const CreateAgentScreen: React.FC = () => {
 
   const renderStep3 = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Step 3: Review</Text>
-      <Text style={styles.stepDescription}>
-        Review your agent configuration
-      </Text>
+      <Text style={styles.stepTitle}>Step 3: Scene Configuration</Text>
+      <Text style={styles.stepDescription}>Configure scene-specific settings for your agent</Text>
 
-      <View style={styles.reviewCard}>
-        <View style={styles.reviewRow}>
-          <Text style={styles.reviewLabel}>Name</Text>
-          <Text style={styles.reviewValue}>{name}</Text>
-        </View>
-
-        {description && (
-          <View style={styles.reviewRow}>
-            <Text style={styles.reviewLabel}>Description</Text>
-            <Text style={styles.reviewValue}>{description}</Text>
-          </View>
-        )}
-
-        <View style={styles.reviewRow}>
-          <Text style={styles.reviewLabel}>Type</Text>
-          <View style={styles.reviewTypeBadge}>
-            <View
-              style={[
-                styles.reviewTypeIndicator,
-                { backgroundColor: AGENT_TYPE_COLORS[selectedType!] },
-              ]}
-            />
-            <Text style={styles.reviewValue}>
-              {AGENT_TYPE_LABELS[selectedType!]}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.reviewRow}>
-          <Text style={styles.reviewLabel}>Status</Text>
-          <Text style={styles.reviewValue}>Draft (you can activate later)</Text>
-        </View>
-      </View>
+      {selectedType && (
+        <SceneConfigForm
+          agentType={selectedType}
+          config={sceneConfig}
+          onConfigChange={(key, value) => setSceneConfig(prev => ({ ...prev, [key]: value }))}
+        />
+      )}
     </View>
   );
+
+  const renderStep4 = () => (
+    <View style={styles.stepContainer}>
+      <Text style={styles.stepTitle}>Step 4: AI Behavior Settings</Text>
+      <Text style={styles.stepDescription}>Configure how the AI responds and interacts</Text>
+
+      <AIConfigSection
+        config={aiConfig}
+        onConfigChange={(key, value) => setAiConfig(prev => ({ ...prev, [key]: value }))}
+      />
+    </View>
+  );
+
+  const renderStep5 = () => {
+    const mockAgent: Agent = {
+      id: 'preview',
+      userId: 'current',
+      type: selectedType!,
+      name: name,
+      description: description || null,
+      status: 'DRAFT',
+      config: { scene: sceneConfig, ai: aiConfig },
+      latitude: null,
+      longitude: null,
+      isActive: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    return (
+      <View style={styles.stepContainer}>
+        <Text style={styles.stepTitle}>Step 5: Preview & Test</Text>
+        <Text style={styles.stepDescription}>
+          Review your agent configuration and test the conversation
+        </Text>
+
+        <AgentPreview
+          agent={mockAgent}
+          onResetDefaults={() => {
+            setAiConfig({});
+            setSceneConfig({});
+          }}
+        />
+      </View>
+    );
+  };
 
   const getTypeDescription = (type: AgentType): string => {
     switch (type) {
@@ -237,7 +262,7 @@ export const CreateAgentScreen: React.FC = () => {
   };
 
   const getProgressWidth = () => {
-    return `${(step / 3) * 100}%`;
+    return `${(step / 5) * 100}%`;
   };
 
   return (
@@ -261,24 +286,18 @@ export const CreateAgentScreen: React.FC = () => {
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}
+        {step === 4 && renderStep4()}
+        {step === 5 && renderStep5()}
       </ScrollView>
 
       {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.button, styles.secondaryButton]}
-          onPress={handleBack}
-        >
-          <Text style={styles.secondaryButtonText}>
-            {step === 1 ? 'Cancel' : 'Back'}
-          </Text>
+        <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={handleBack}>
+          <Text style={styles.secondaryButtonText}>{step === 1 ? 'Cancel' : 'Back'}</Text>
         </TouchableOpacity>
 
-        {step < 3 ? (
-          <TouchableOpacity
-            style={[styles.button, styles.primaryButton]}
-            onPress={handleNext}
-          >
+        {step < 5 ? (
+          <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={handleNext}>
             <Text style={styles.primaryButtonText}>Next</Text>
           </TouchableOpacity>
         ) : (
