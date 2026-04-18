@@ -2,11 +2,27 @@
  * Demand to L2 Mapper Tests
  */
 
-import { DemandToL2Mapper, SceneMappingConfig } from '../demandToL2Mapper';
-import { Demand, EntityType } from '../../demandExtractionService';
 import { L2Schema, L2FieldType } from '@bridgeai/shared';
 
-jest.mock('../../../utils/logger', () => ({
+import { DemandToL2Mapper, SceneMappingConfig } from '../demandToL2Mapper';
+import { Demand, EntityType } from '../../demandExtractionService';
+
+jest.mock('@bridgeai/shared', () => ({
+  L2FieldType: {
+    TEXT: 'text',
+    NUMBER: 'number',
+    ENUM: 'enum',
+    MULTI_SELECT: 'multi_select',
+    RANGE: 'range',
+    BOOLEAN: 'boolean',
+    DATE: 'date',
+    DATETIME: 'datetime',
+    TIME: 'time',
+    LONG_TEXT: 'long_text',
+  },
+}));
+
+jest.mock('../../../../utils/logger', () => ({
   logger: {
     info: jest.fn(),
     error: jest.fn(),
@@ -368,7 +384,14 @@ describe('DemandToL2Mapper', () => {
         rawText: '预算1000元',
         intent: { intent: 'create_demand', confidence: 0.9, alternatives: [] },
         entities: [
-          { type: 'budget', value: '1000元', normalizedValue: '1000元', confidence: 0.9, startIndex: 0, endIndex: 5 },
+          {
+            type: 'budget',
+            value: '1000元',
+            normalizedValue: '1000元',
+            confidence: 0.9,
+            startIndex: 0,
+            endIndex: 5,
+          },
         ],
         structured: {
           budget: {

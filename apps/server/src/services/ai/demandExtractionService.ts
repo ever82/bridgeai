@@ -4,10 +4,11 @@
  * 提供自然语言理解、实体识别、意图分类和结构化输出
  */
 
+import { logger } from '../../utils/logger';
+
 import { llmService } from './llmService';
 import { metricsService } from './metricsService';
 import { LLMProvider } from './types';
-import { logger } from '../../utils/logger';
 
 /**
  * Extracted Entity Types
@@ -159,9 +160,7 @@ export class DemandExtractionService {
         : this.getDefaultIntent();
 
       // Step 2: Extract entities if enabled
-      const entities = opts.extractEntities
-        ? await this.extractEntities(text)
-        : [];
+      const entities = opts.extractEntities ? await this.extractEntities(text) : [];
 
       // Step 3: Build structured demand
       const structured = this.buildStructuredDemand(entities, text);
@@ -252,7 +251,7 @@ export class DemandExtractionService {
       return result;
     } catch (error) {
       logger.error('Intent classification failed', { error });
-      return this.getDefaultIntent();
+      throw error;
     }
   }
 
@@ -263,9 +262,7 @@ export class DemandExtractionService {
     text: string,
     context?: DemandExtractionRequest['context']
   ): string {
-    const history = context?.conversationHistory
-      ?.map(h => `${h.role}: ${h.content}`)
-      .join('\n');
+    const history = context?.conversationHistory?.map(h => `${h.role}: ${h.content}`).join('\n');
 
     return `You are an intent classification system. Analyze the user's message and classify their intent.
 
@@ -348,7 +345,7 @@ Respond with ONLY the JSON object.`;
       return entities;
     } catch (error) {
       logger.error('Entity extraction failed', { error });
-      return [];
+      throw error;
     }
   }
 
@@ -473,8 +470,10 @@ Respond with ONLY the JSON object.`;
   ): void {
     const value = entity.normalizedValue?.toString() || entity.value;
 
-    // Simple heuristic: longer text with numbers is likely an address
-    if (/\d+/.test(value) && value.length > 10) {
+    // Simple heuristic: longer text with numbers or specific address keywords is likely an address
+    const addressKeywords = ['路', '街', '号', '屯', '大厦', '楼', '室', '号院', '号楼', '单元'];
+    const hasAddressKeyword = addressKeywords.some(kw => value.includes(kw));
+    if ((/\d+/.test(value) && value.length > 10) || hasAddressKeyword) {
       location.address = value;
     } else if (value.includes('区') || value.includes('县')) {
       location.district = value;
@@ -486,10 +485,7 @@ Respond with ONLY the JSON object.`;
   /**
    * Process time entity
    */
-  private processTimeEntity(
-    entity: ExtractedEntity,
-    time: Demand['structured']['time']
-  ): void {
+  private processTimeEntity(entity: ExtractedEntity, time: Demand['structured']['time']): void {
     const value = entity.normalizedValue?.toString() || entity.value;
 
     // Try to parse as datetime
@@ -518,10 +514,15 @@ Respond with ONLY the JSON object.`;
   ): void {
     const value = entity.normalizedValue?.toString() || entity.value;
 
-    // Try to extract count
-    const countMatch = value.match(/(\d+)\s*[个人]/);
-    if (countMatch) {
-      people.count = parseInt(countMatch[1], 10);
+    // Use normalizedValue directly if it's a number
+    if (typeof entity.normalizedValue === 'number') {
+      people.count = entity.normalizedValue;
+    } else {
+      // Try to extract count from text
+      const countMatch = value.match(/(\d+)\s*[个人]/);
+      if (countMatch) {
+        people.count = parseInt(countMatch[1], 10);
+      }
     }
 
     // Extract roles
@@ -571,6 +572,32 @@ Respond with ONLY the JSON object.`;
     } else if (/\$|USD|美元/.test(entity.value)) {
       budget.currency = 'USD';
     }
+  }
+
+  /**
+   * Generate title from demand content
+   */
+  private generateTitle(demand: Demand): string | undefined {
+    // Extract keywords from entities
+    const keywords: string[] = [];
+
+    for (const entity of demand.entities) {
+      if (['location', 'time', 'requirement'].includes(entity.type)) {
+        keywords.push(entity.value);
+      }
+    }
+
+    if (keywords.length > 0) {
+      return keywords.slice(0, 3).join(' ');
+    }
+
+    if (!demand.rawText || !demand.rawText.trim()) {
+      return undefined;
+    }
+
+    // Fallback: use first part of raw text
+    const words = demand.rawText.split(/[，。？！,.?!]/);
+    return words[0].substring(0, 20) || undefined;
   }
 
   /**
@@ -625,8 +652,7 @@ Respond with ONLY the JSON object.`;
 
     // Entity confidence (average)
     if (entities.length > 0) {
-      const entityAvg =
-        entities.reduce((sum, e) => sum + e.confidence, 0) / entities.length;
+      const entityAvg = entities.reduce((sum, e) => sum + e.confidence, 0) / entities.length;
       scores.push(entityAvg);
     }
 

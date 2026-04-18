@@ -2,11 +2,26 @@
  * Extraction Validator Tests
  */
 
-import { ExtractionValidator, ValidationRule, ValidationOptions } from '../extractionValidator';
 import { L2Schema, L2Data, L2FieldType } from '@bridgeai/shared';
-import { Demand } from '../../demandExtractionService';
 
-jest.mock('../../../utils/logger', () => ({
+import { ExtractionValidator, ValidationRule } from '../extractionValidator';
+
+jest.mock('@bridgeai/shared', () => ({
+  L2FieldType: {
+    TEXT: 'text',
+    NUMBER: 'number',
+    ENUM: 'enum',
+    MULTI_SELECT: 'multi_select',
+    RANGE: 'range',
+    BOOLEAN: 'boolean',
+    DATE: 'date',
+    DATETIME: 'datetime',
+    TIME: 'time',
+    LONG_TEXT: 'long_text',
+  },
+}));
+
+jest.mock('../../../../utils/logger', () => ({
   logger: {
     info: jest.fn(),
     error: jest.fn(),
@@ -370,7 +385,7 @@ describe('ExtractionValidator', () => {
         id: 'custom_rule',
         name: 'Custom Rule',
         description: 'Test custom rule',
-        condition: (data) => data.title === 'allowed',
+        condition: data => data.title === 'allowed',
         message: 'Title must be "allowed"',
         severity: 'error',
         category: 'business',
@@ -393,7 +408,7 @@ describe('ExtractionValidator', () => {
         id: 'scene_rule',
         name: 'Scene Rule',
         description: 'Scene-specific rule',
-        condition: (data) => true,
+        condition: _data => false,
         message: 'Scene rule triggered',
         severity: 'warning',
         category: 'business',

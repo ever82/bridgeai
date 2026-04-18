@@ -5,6 +5,7 @@
  */
 
 import { L2Schema, L2Data, L2FieldType } from '@bridgeai/shared';
+
 import { Demand, ExtractedEntity } from '../demandExtractionService';
 import { logger } from '../../../utils/logger';
 
@@ -154,7 +155,7 @@ export class DemandToL2Mapper {
     field: L2Schema['fields'][0],
     demand: Demand,
     sceneConfig?: SceneMappingConfig,
-    result?: MappingResult
+    _result?: MappingResult
   ): {
     mapped: boolean;
     value?: any;
@@ -260,6 +261,12 @@ export class DemandToL2Mapper {
       budgetMin: d => d.structured.budget?.min,
       budgetMax: d => d.structured.budget?.max,
       budgetCurrency: d => d.structured.budget?.currency || 'CNY',
+      priceRange: d => {
+        if (d.structured.budget?.min !== undefined && d.structured.budget?.max !== undefined) {
+          return { min: d.structured.budget.min, max: d.structured.budget.max };
+        }
+        return undefined;
+      },
       requirements: d => d.structured.requirements,
       preferences: d => d.structured.preferences,
       constraints: d => d.structured.constraints,
@@ -310,7 +317,11 @@ export class DemandToL2Mapper {
   /**
    * Transform value based on field type
    */
-  private transformValue(value: any, field: L2Schema['fields'][0], sceneConfig?: SceneMappingConfig): any {
+  private transformValue(
+    value: any,
+    field: L2Schema['fields'][0],
+    sceneConfig?: SceneMappingConfig
+  ): any {
     if (value === undefined || value === null) {
       return field.defaultValue;
     }
@@ -400,9 +411,8 @@ export class DemandToL2Mapper {
     }
 
     // Fuzzy match by label
-    const option = field.options.find(o =>
-      o.label.toLowerCase().includes(valueStr) ||
-      valueStr.includes(o.label.toLowerCase())
+    const option = field.options.find(
+      o => o.label.toLowerCase().includes(valueStr) || valueStr.includes(o.label.toLowerCase())
     );
 
     return option?.value;
@@ -441,9 +451,8 @@ export class DemandToL2Mapper {
       }
 
       // Fuzzy match by label
-      const option = field.options.find(o =>
-        o.label.toLowerCase().includes(vStr) ||
-        vStr.includes(o.label.toLowerCase())
+      const option = field.options.find(
+        o => o.label.toLowerCase().includes(vStr) || vStr.includes(o.label.toLowerCase())
       );
 
       if (option) {
@@ -546,18 +555,21 @@ export class DemandToL2Mapper {
    * Infer field value from demand context
    */
   private inferFieldValue(field: L2Schema['fields'][0], demand: Demand): any {
+    const isUrgentField =
+      field.id === 'urgency' || field.id === 'priority' || field.id === 'urgent';
+
     // Infer based on intent
-    if (field.id === 'urgency' || field.id === 'priority') {
+    if (isUrgentField) {
       if (demand.intent.intent === 'create_demand' && demand.confidence > 0.8) {
-        return 'high';
+        return field.type === L2FieldType.BOOLEAN ? true : 'high';
       }
     }
 
     // Infer based on text patterns
-    if (field.id === 'urgency') {
+    if (isUrgentField) {
       const urgentPatterns = ['急', ' ASAP', '尽快', '马上', '立即'];
       if (urgentPatterns.some(p => demand.rawText.includes(p))) {
-        return 'high';
+        return field.type === L2FieldType.BOOLEAN ? true : 'high';
       }
     }
 
@@ -576,7 +588,7 @@ export class DemandToL2Mapper {
   /**
    * Generate title from demand content
    */
-  private generateTitle(demand: Demand): string {
+  private generateTitle(demand: Demand): string | undefined {
     // Extract keywords from entities
     const keywords: string[] = [];
 
@@ -590,15 +602,19 @@ export class DemandToL2Mapper {
       return keywords.slice(0, 3).join(' ');
     }
 
+    if (!demand.rawText || !demand.rawText.trim()) {
+      return undefined;
+    }
+
     // Fallback: use first part of raw text
-    const words = demand.rawText.split(/[，。？！,\.?!]/);
-    return words[0].substring(0, 20) || '未命名需求';
+    const words = demand.rawText.split(/[，。？！,.?!]/);
+    return words[0].substring(0, 20) || undefined;
   }
 
   /**
    * Resolve conflicts in mapped data
    */
-  private resolveConflicts(result: MappingResult, schema: L2Schema): void {
+  private resolveConflicts(result: MappingResult, _schema: L2Schema): void {
     for (const conflict of result.conflicts) {
       // For now, use highest confidence/value
       if (conflict.values.length > 0) {

@@ -2,10 +2,18 @@
  * AI Extraction Routes Tests
  */
 
+/* eslint-disable import/order */
 import request from 'supertest';
 import express, { Express, Request, Response, NextFunction } from 'express';
+jest.mock('../../../services/ai/clarificationService');
+jest.mock('../../../services/ai/index', () => ({
+  clarificationService: {},
+  demandExtractionService: {},
+  demandToL2Mapper: {},
+  extractionValidator: {},
+}));
+import { getL2Schema } from '@bridgeai/shared';
 import aiExtractionRoutes from '../extraction';
-
 // Mock dependencies
 jest.mock('../../../services/ai/demandExtractionService');
 jest.mock('../../../services/ai/mappers/demandToL2Mapper');
@@ -22,9 +30,10 @@ jest.mock('@bridgeai/shared', () => ({
 import { demandExtractionService } from '../../../services/ai/demandExtractionService';
 import { demandToL2Mapper } from '../../../services/ai/mappers/demandToL2Mapper';
 import { extractionValidator } from '../../../services/ai/validators/extractionValidator';
-import { getL2Schema } from '@bridgeai/shared';
 
-const mockedDemandExtractionService = demandExtractionService as jest.Mocked<typeof demandExtractionService>;
+const mockedDemandExtractionService = demandExtractionService as jest.Mocked<
+  typeof demandExtractionService
+>;
 const mockedDemandToL2Mapper = demandToL2Mapper as jest.Mocked<typeof demandToL2Mapper>;
 const mockedExtractionValidator = extractionValidator as jest.Mocked<typeof extractionValidator>;
 const mockedGetL2Schema = getL2Schema as jest.MockedFunction<typeof getL2Schema>;
@@ -67,9 +76,7 @@ describe('AI Extraction Routes', () => {
         confidence: 0.95,
         alternatives: [],
       },
-      entities: [
-        { type: 'location', value: '北京', confidence: 0.9, startIndex: 3, endIndex: 5 },
-      ],
+      entities: [{ type: 'location', value: '北京', confidence: 0.9, startIndex: 3, endIndex: 5 }],
       confidence: 0.9,
       clarificationNeeded: false,
       clarificationQuestions: [],
@@ -407,9 +414,7 @@ describe('AI Extraction Routes', () => {
 
       mockedGetL2Schema.mockReturnValue(mockSchema as any);
 
-      const response = await request(app)
-        .get('/api/v1/ai/scenes/visionShare/config')
-        .expect(200);
+      const response = await request(app).get('/api/v1/ai/scenes/visionShare/config').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.scene).toBe('visionShare');
@@ -420,9 +425,7 @@ describe('AI Extraction Routes', () => {
     it('should return 404 for unknown scene', async () => {
       mockedGetL2Schema.mockReturnValue(null);
 
-      const response = await request(app)
-        .get('/api/v1/ai/scenes/unknown/config')
-        .expect(404);
+      const response = await request(app).get('/api/v1/ai/scenes/unknown/config').expect(404);
 
       expect(response.body.success).toBe(false);
       expect(response.body.error.code).toBe('SCENE_NOT_FOUND');
