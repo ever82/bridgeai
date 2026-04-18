@@ -6,8 +6,9 @@
  */
 
 import type { Namespace } from 'socket.io';
+
 import type { AuthenticatedSocket } from '../middleware/auth';
-import { roomService, CreateRoomOptions, JoinRoomOptions } from '../../services/roomService';
+import { roomService, CreateRoomOptions } from '../../services/roomService';
 import { connectionService } from '../../services/connectionService';
 import { presenceService } from '../../services/presenceService';
 
@@ -139,7 +140,7 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
         data: {
           roomId,
           memberCount: members.length,
-          members: members.map((m) => ({
+          members: members.map(m => ({
             userId: m.userId,
             role: m.role,
             joinedAt: m.joinedAt,
@@ -300,7 +301,7 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
         success: true,
         data: {
           room,
-          members: members.map((m) => ({
+          members: members.map(m => ({
             userId: m.userId,
             role: m.role,
             joinedAt: m.joinedAt,
@@ -327,7 +328,7 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
       }
 
       const members = roomService.getRoomMembers(roomId);
-      const presenceData = members.map((m) => ({
+      const presenceData = members.map(m => ({
         ...m,
         presence: presenceService.getPresence(m.userId),
       }));
@@ -348,7 +349,7 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
   });
 
   // Get my rooms
-  socket.on('room:my_rooms', (callback) => {
+  socket.on('room:my_rooms', callback => {
     try {
       if (!userId) {
         callback?.({ success: false, error: 'Authentication required' });
@@ -465,42 +466,45 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
   });
 
   // Set user role (admin/owner only)
-  socket.on('room:set_role', (data: { roomId: string; targetUserId: string; role: 'admin' | 'member' }, callback) => {
-    try {
-      if (!userId) {
-        callback?.({ success: false, error: 'Authentication required' });
-        return;
+  socket.on(
+    'room:set_role',
+    (data: { roomId: string; targetUserId: string; role: 'admin' | 'member' }, callback) => {
+      try {
+        if (!userId) {
+          callback?.({ success: false, error: 'Authentication required' });
+          return;
+        }
+
+        const { roomId, targetUserId, role } = data;
+
+        roomService.setUserRole(roomId, targetUserId, role, userId);
+
+        // Notify user
+        nsp.to(`user:${targetUserId}`).emit('room:role_changed', {
+          roomId,
+          role,
+          setBy: userId,
+          timestamp: new Date().toISOString(),
+        });
+
+        // Notify room
+        nsp.to(roomId).emit('room:user_role_changed', {
+          roomId,
+          userId: targetUserId,
+          role,
+          setBy: userId,
+          timestamp: new Date().toISOString(),
+        });
+
+        callback?.({ success: true });
+      } catch (error) {
+        callback?.({
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to set role',
+        });
       }
-
-      const { roomId, targetUserId, role } = data;
-
-      roomService.setUserRole(roomId, targetUserId, role, userId);
-
-      // Notify user
-      nsp.to(`user:${targetUserId}`).emit('room:role_changed', {
-        roomId,
-        role,
-        setBy: userId,
-        timestamp: new Date().toISOString(),
-      });
-
-      // Notify room
-      nsp.to(roomId).emit('room:user_role_changed', {
-        roomId,
-        userId: targetUserId,
-        role,
-        setBy: userId,
-        timestamp: new Date().toISOString(),
-      });
-
-      callback?.({ success: true });
-    } catch (error) {
-      callback?.({
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to set role',
-      });
     }
-  });
+  );
 
   // Handle disconnection - cleanup rooms
   socket.on('disconnect', () => {

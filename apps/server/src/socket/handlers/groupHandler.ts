@@ -5,6 +5,7 @@
  * group state synchronization, member management, and settings.
  */
 import type { Namespace } from 'socket.io';
+
 import type { AuthenticatedSocket } from '../middleware/auth';
 import { connectionManager } from '../connectionManager';
 
@@ -47,12 +48,14 @@ function createGroupState(groupId: string, name: string, creatorId: string): Gro
   const state: GroupState = {
     groupId,
     name,
-    members: [{
-      userId: creatorId,
-      role: 'owner',
-      joinedAt: new Date(),
-      online: true,
-    }],
+    members: [
+      {
+        userId: creatorId,
+        role: 'owner',
+        joinedAt: new Date(),
+        online: true,
+      },
+    ],
     settings: {
       allowInvite: true,
       muteNotifications: false,
@@ -248,91 +251,98 @@ export function registerGroupHandlers(socket: AuthenticatedSocket, nsp: Namespac
   });
 
   // Update group settings
-  socket.on('group:update_settings', (data: { groupId: string; settings: Partial<GroupSettings> }, callback) => {
-    if (!socket.user?.id) {
-      callback?.({ success: false, error: 'Authentication required' });
-      return;
+  socket.on(
+    'group:update_settings',
+    (data: { groupId: string; settings: Partial<GroupSettings> }, callback) => {
+      if (!socket.user?.id) {
+        callback?.({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      const state = getGroupState(data.groupId);
+
+      if (!state) {
+        callback?.({ success: false, error: 'Group not found' });
+        return;
+      }
+
+      // Check if user is admin or owner
+      const member = state.members.find(m => m.userId === socket.user?.id);
+      if (!member || (member.role !== 'owner' && member.role !== 'admin')) {
+        callback?.({ success: false, error: 'Permission denied' });
+        return;
+      }
+
+      // Update settings
+      state.settings = { ...state.settings, ...data.settings };
+      state.lastSyncAt = new Date();
+
+      // Broadcast updated settings to all members
+      nsp.to(`group:${data.groupId}`).emit('group:settings_updated', {
+        groupId: data.groupId,
+        settings: state.settings,
+        updatedBy: socket.user.id,
+        timestamp: new Date().toISOString(),
+      });
+
+      callback?.({ success: true, data: { settings: state.settings } });
     }
-
-    const state = getGroupState(data.groupId);
-
-    if (!state) {
-      callback?.({ success: false, error: 'Group not found' });
-      return;
-    }
-
-    // Check if user is admin or owner
-    const member = state.members.find(m => m.userId === socket.user?.id);
-    if (!member || (member.role !== 'owner' && member.role !== 'admin')) {
-      callback?.({ success: false, error: 'Permission denied' });
-      return;
-    }
-
-    // Update settings
-    state.settings = { ...state.settings, ...data.settings };
-    state.lastSyncAt = new Date();
-
-    // Broadcast updated settings to all members
-    nsp.to(`group:${data.groupId}`).emit('group:settings_updated', {
-      groupId: data.groupId,
-      settings: state.settings,
-      updatedBy: socket.user.id,
-      timestamp: new Date().toISOString(),
-    });
-
-    callback?.({ success: true, data: { settings: state.settings } });
-  });
+  );
 
   // Add member to group
-  socket.on('group:add_member', (data: { groupId: string; userId: string; role?: 'admin' | 'member' }, callback) => {
-    if (!socket.user?.id) {
-      callback?.({ success: false, error: 'Authentication required' });
-      return;
+  socket.on(
+    'group:add_member',
+    (data: { groupId: string; userId: string; role?: 'admin' | 'member' }, callback) => {
+      if (!socket.user?.id) {
+        callback?.({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      const state = getGroupState(data.groupId);
+
+      if (!state) {
+        callback?.({ success: false, error: 'Group not found' });
+        return;
+      }
+
+      // Check if user has permission to add members
+      const requester = state.members.find(m => m.userId === socket.user?.id);
+      const canInvite =
+        requester?.role === 'owner' || requester?.role === 'admin' || state.settings.allowInvite;
+
+      if (!canInvite) {
+        callback?.({ success: false, error: 'Permission denied' });
+        return;
+      }
+
+      // Check if user is already a member
+      if (state.members.some(m => m.userId === data.userId)) {
+        callback?.({ success: false, error: 'User is already a member' });
+        return;
+      }
+
+      // Add member
+      state.members.push({
+        userId: data.userId,
+        role: data.role || 'member',
+        joinedAt: new Date(),
+        online: connectionManager.isUserOnline(data.userId),
+      });
+
+      // Notify all members
+      nsp.to(`group:${data.groupId}`).emit('group:member_added', {
+        groupId: data.groupId,
+        userId: data.userId,
+        role: data.role || 'member',
+        addedBy: socket.user.id,
+        timestamp: new Date().toISOString(),
+      });
+
+      broadcastGroupState(nsp, data.groupId);
+
+      callback?.({ success: true });
     }
-
-    const state = getGroupState(data.groupId);
-
-    if (!state) {
-      callback?.({ success: false, error: 'Group not found' });
-      return;
-    }
-
-    // Check if user has permission to add members
-    const requester = state.members.find(m => m.userId === socket.user?.id);
-    const canInvite = requester?.role === 'owner' || requester?.role === 'admin' || state.settings.allowInvite;
-
-    if (!canInvite) {
-      callback?.({ success: false, error: 'Permission denied' });
-      return;
-    }
-
-    // Check if user is already a member
-    if (state.members.some(m => m.userId === data.userId)) {
-      callback?.({ success: false, error: 'User is already a member' });
-      return;
-    }
-
-    // Add member
-    state.members.push({
-      userId: data.userId,
-      role: data.role || 'member',
-      joinedAt: new Date(),
-      online: connectionManager.isUserOnline(data.userId),
-    });
-
-    // Notify all members
-    nsp.to(`group:${data.groupId}`).emit('group:member_added', {
-      groupId: data.groupId,
-      userId: data.userId,
-      role: data.role || 'member',
-      addedBy: socket.user.id,
-      timestamp: new Date().toISOString(),
-    });
-
-    broadcastGroupState(nsp, data.groupId);
-
-    callback?.({ success: true });
-  });
+  );
 
   // Remove member from group
   socket.on('group:remove_member', (data: { groupId: string; userId: string }, callback) => {
@@ -358,9 +368,10 @@ export function registerGroupHandlers(socket: AuthenticatedSocket, nsp: Namespac
     }
 
     // Owner can remove anyone, admin can remove members only
-    const canRemove = requester.role === 'owner' ||
+    const canRemove =
+      requester.role === 'owner' ||
       (requester.role === 'admin' && target.role === 'member') ||
-      (requester.userId === target.userId); // Self removal
+      requester.userId === target.userId; // Self removal
 
     if (!canRemove) {
       callback?.({ success: false, error: 'Permission denied' });

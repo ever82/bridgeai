@@ -8,9 +8,9 @@
  * - Room blacklist support
  */
 
-import type { Socket } from 'socket.io';
-import type { AuthenticatedSocket } from './auth';
 import { roomService } from '../../services/roomService';
+
+import type { AuthenticatedSocket } from './auth';
 
 /**
  * Room access level

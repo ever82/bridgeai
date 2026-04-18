@@ -4,13 +4,14 @@
  * Main Socket.io server configuration and initialization.
  */
 import { Server as HttpServer } from 'http';
+
 import { Server as SocketServer } from 'socket.io';
 import type { Express } from 'express';
 import { createAdapter } from '@socket.io/redis-adapter';
+
 import { socketAuthMiddleware } from './middleware/auth';
 import { connectionManager } from './connectionManager';
 import { pubClient, subClient } from './adapter';
-
 // Event handlers
 import { registerUserHandlers } from './handlers/user';
 import { registerChatHandlers } from './handlers/chat';
@@ -30,7 +31,7 @@ let io: SocketServer | null = null;
  */
 export async function initializeSocketServer(
   httpServer: HttpServer,
-  app: Express
+  _app: Express
 ): Promise<SocketServer> {
   // Create Socket.io server with CORS configuration
   io = new SocketServer(httpServer, {
@@ -77,27 +78,27 @@ export async function initializeSocketServer(
 function setupNamespaces(io: SocketServer): void {
   // Main namespace
   const mainNsp = io.of('/');
-  mainNsp.on('connection', (socket) => {
+  mainNsp.on('connection', socket => {
     handleConnection(socket, 'main');
   });
 
   // Chat namespace for chat-specific events
   const chatNsp = io.of('/chat');
-  chatNsp.on('connection', (socket) => {
+  chatNsp.on('connection', socket => {
     handleConnection(socket, 'chat');
     registerChatHandlers(socket, chatNsp);
   });
 
   // User namespace for user-specific events
   const userNsp = io.of('/user');
-  userNsp.on('connection', (socket) => {
+  userNsp.on('connection', socket => {
     handleConnection(socket, 'user');
     registerUserHandlers(socket, userNsp);
   });
 
   // Handoff namespace for human-agent switching
   const handoffNsp = io.of('/handoff');
-  handoffNsp.on('connection', (socket) => {
+  handoffNsp.on('connection', socket => {
     handleConnection(socket, 'handoff');
     registerHandoffHandlers(socket, handoffNsp);
   });
@@ -105,28 +106,28 @@ function setupNamespaces(io: SocketServer): void {
   // System namespace for admin/monitoring
   const systemNsp = io.of('/system');
   systemNsp.use(requireAdminAuth);
-  systemNsp.on('connection', (socket) => {
+  systemNsp.on('connection', socket => {
     handleConnection(socket, 'system');
     registerSystemHandlers(socket, systemNsp);
   });
 
   // Group namespace for group chat events
   const groupNsp = io.of('/group');
-  groupNsp.on('connection', (socket) => {
+  groupNsp.on('connection', socket => {
     handleConnection(socket, 'group');
     registerGroupHandlers(socket, groupNsp);
   });
 
   // Room namespace for room management
   const roomNsp = io.of('/room');
-  roomNsp.on('connection', (socket) => {
+  roomNsp.on('connection', socket => {
     handleConnection(socket, 'room');
     registerRoomHandlers(socket, roomNsp);
   });
 
   // Negotiation namespace for Agent negotiation (AD003)
   const negotiationNsp = io.of('/negotiation');
-  negotiationNsp.on('connection', (socket) => {
+  negotiationNsp.on('connection', socket => {
     handleConnection(socket, 'negotiation');
     registerAgentNegotiationHandlers(socket, negotiationNsp);
   });

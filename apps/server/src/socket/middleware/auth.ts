@@ -4,6 +4,7 @@
  * Validates JWT tokens for Socket.io connections.
  */
 import type { Socket } from 'socket.io';
+
 import { jwtService } from '../services/jwtService';
 import { rbacService } from '../services/rbacService';
 
@@ -53,8 +54,8 @@ export async function socketAuthMiddleware(
     socket.user = {
       id: decoded.userId,
       email: decoded.email,
-      roles: roles.map((r) => r.role.name),
-      permissions: permissions.map((p) => p.name),
+      roles: roles.map(r => r.role.name),
+      permissions: permissions.map(p => p.name),
     };
 
     // Join user-specific room for targeted messaging
@@ -121,8 +122,8 @@ export async function optionalSocketAuthMiddleware(
       socket.user = {
         id: decoded.userId,
         email: decoded.email,
-        roles: roles.map((r) => r.role.name),
-        permissions: permissions.map((p) => p.name),
+        roles: roles.map(r => r.role.name),
+        permissions: permissions.map(p => p.name),
       };
 
       socket.join(`user:${decoded.userId}`);

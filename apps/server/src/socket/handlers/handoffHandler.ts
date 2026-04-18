@@ -4,7 +4,6 @@
  * Handles human-agent conversation switching via socket events.
  */
 import type { Namespace } from 'socket.io';
-import type { AuthenticatedSocket } from '../middleware/auth';
 import {
   HandoffStatus,
   HandoffRequestStatus,
@@ -12,11 +11,12 @@ import {
   HandoffSocketEvents,
   HandoffErrorCode,
   type HandoffRequest,
-  type HandoffResponse,
   type HandoffState,
   type HandoffAuditLog,
   DEFAULT_HANDOFF_CONFIG,
 } from '@bridgeai/shared';
+
+import type { AuthenticatedSocket } from '../middleware/auth';
 
 // In-memory store for handoff states (in production, use Redis)
 const handoffStates = new Map<string, HandoffState>();
@@ -39,10 +39,7 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
   // Request takeover (human takes over from agent)
   socket.on(
     HandoffSocketEvents.REQUEST_TAKEOVER,
-    async (
-      data: { conversationId: string; reason?: string; force?: boolean },
-      callback
-    ) => {
+    async (data: { conversationId: string; reason?: string; force?: boolean }, callback) => {
       try {
         const { conversationId, reason, force = false } = data;
 
@@ -50,7 +47,10 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
         if (!DEFAULT_HANDOFF_CONFIG.allowedRoles.includes(userRole)) {
           callback?.({
             success: false,
-            error: { code: HandoffErrorCode.UNAUTHORIZED, message: 'Not authorized to request takeover' },
+            error: {
+              code: HandoffErrorCode.UNAUTHORIZED,
+              message: 'Not authorized to request takeover',
+            },
           });
           return;
         }
@@ -75,7 +75,10 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
         if (state.currentStatus === HandoffStatus.PENDING_TAKEOVER) {
           callback?.({
             success: false,
-            error: { code: HandoffErrorCode.ALREADY_PENDING, message: 'Takeover request already pending' },
+            error: {
+              code: HandoffErrorCode.ALREADY_PENDING,
+              message: 'Takeover request already pending',
+            },
           });
           return;
         }
@@ -107,7 +110,9 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
           requestedBy: userId,
           requestedAt: new Date().toISOString(),
           status: HandoffRequestStatus.PENDING,
-          timeoutAt: new Date(Date.now() + DEFAULT_HANDOFF_CONFIG.requestTimeoutSeconds * 1000).toISOString(),
+          timeoutAt: new Date(
+            Date.now() + DEFAULT_HANDOFF_CONFIG.requestTimeoutSeconds * 1000
+          ).toISOString(),
           reason,
         };
 
@@ -140,7 +145,10 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
         if (force && !DEFAULT_HANDOFF_CONFIG.allowForcedTakeover) {
           callback?.({
             success: false,
-            error: { code: HandoffErrorCode.FORCE_TAKEOVER_DISABLED, message: 'Forced takeover is disabled' },
+            error: {
+              code: HandoffErrorCode.FORCE_TAKEOVER_DISABLED,
+              message: 'Forced takeover is disabled',
+            },
           });
           return;
         }
@@ -162,7 +170,11 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
 
         callback?.({
           success: true,
-          data: { requestId, status: HandoffStatus.PENDING_TAKEOVER, timeoutSeconds: DEFAULT_HANDOFF_CONFIG.requestTimeoutSeconds },
+          data: {
+            requestId,
+            status: HandoffStatus.PENDING_TAKEOVER,
+            timeoutSeconds: DEFAULT_HANDOFF_CONFIG.requestTimeoutSeconds,
+          },
         });
       } catch (error) {
         console.error('[Handoff] Request takeover error:', error);
@@ -185,7 +197,10 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
         if (!DEFAULT_HANDOFF_CONFIG.allowedRoles.includes(userRole)) {
           callback?.({
             success: false,
-            error: { code: HandoffErrorCode.UNAUTHORIZED, message: 'Not authorized to request handoff' },
+            error: {
+              code: HandoffErrorCode.UNAUTHORIZED,
+              message: 'Not authorized to request handoff',
+            },
           });
           return;
         }
@@ -204,7 +219,10 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
         if (state.currentStatus === HandoffStatus.PENDING_HANDOFF) {
           callback?.({
             success: false,
-            error: { code: HandoffErrorCode.ALREADY_PENDING, message: 'Handoff request already pending' },
+            error: {
+              code: HandoffErrorCode.ALREADY_PENDING,
+              message: 'Handoff request already pending',
+            },
           });
           return;
         }
@@ -227,7 +245,9 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
           requestedBy: userId,
           requestedAt: new Date().toISOString(),
           status: HandoffRequestStatus.PENDING,
-          timeoutAt: new Date(Date.now() + DEFAULT_HANDOFF_CONFIG.requestTimeoutSeconds * 1000).toISOString(),
+          timeoutAt: new Date(
+            Date.now() + DEFAULT_HANDOFF_CONFIG.requestTimeoutSeconds * 1000
+          ).toISOString(),
           reason,
         };
 
@@ -263,7 +283,11 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
 
         callback?.({
           success: true,
-          data: { requestId, status: HandoffStatus.PENDING_HANDOFF, timeoutSeconds: DEFAULT_HANDOFF_CONFIG.requestTimeoutSeconds },
+          data: {
+            requestId,
+            status: HandoffStatus.PENDING_HANDOFF,
+            timeoutSeconds: DEFAULT_HANDOFF_CONFIG.requestTimeoutSeconds,
+          },
         });
       } catch (error) {
         console.error('[Handoff] Request handoff error:', error);
@@ -276,62 +300,59 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
   );
 
   // Confirm handoff request
-  socket.on(
-    HandoffSocketEvents.CONFIRM_HANDOFF,
-    async (data: { requestId: string }, callback) => {
-      try {
-        const { requestId } = data;
-        const request = handoffRequests.get(requestId);
+  socket.on(HandoffSocketEvents.CONFIRM_HANDOFF, async (data: { requestId: string }, callback) => {
+    try {
+      const { requestId } = data;
+      const request = handoffRequests.get(requestId);
 
-        if (!request) {
-          callback?.({
-            success: false,
-            error: { code: HandoffErrorCode.REQUEST_NOT_FOUND, message: 'Request not found' },
-          });
-          return;
-        }
-
-        const state = handoffStates.get(request.conversationId);
-        if (!state) {
-          callback?.({
-            success: false,
-            error: { code: HandoffErrorCode.INVALID_STATUS, message: 'Conversation not found' },
-          });
-          return;
-        }
-
-        // Check if request is still pending
-        if (request.status !== HandoffRequestStatus.PENDING) {
-          callback?.({
-            success: false,
-            error: { code: HandoffErrorCode.INVALID_STATUS, message: 'Request is not pending' },
-          });
-          return;
-        }
-
-        // Update request status
-        request.status = HandoffRequestStatus.ACCEPTED;
-
-        // Complete the handoff
-        if (request.requestType === 'takeover') {
-          await completeTakeover(request.conversationId, requestId, userId, nsp);
-        } else {
-          await completeHandoff(request.conversationId, requestId, nsp);
-        }
-
-        callback?.({
-          success: true,
-          data: { requestId, status: state.currentStatus },
-        });
-      } catch (error) {
-        console.error('[Handoff] Confirm handoff error:', error);
+      if (!request) {
         callback?.({
           success: false,
-          error: { code: HandoffErrorCode.UNAUTHORIZED, message: 'Failed to confirm handoff' },
+          error: { code: HandoffErrorCode.REQUEST_NOT_FOUND, message: 'Request not found' },
         });
+        return;
       }
+
+      const state = handoffStates.get(request.conversationId);
+      if (!state) {
+        callback?.({
+          success: false,
+          error: { code: HandoffErrorCode.INVALID_STATUS, message: 'Conversation not found' },
+        });
+        return;
+      }
+
+      // Check if request is still pending
+      if (request.status !== HandoffRequestStatus.PENDING) {
+        callback?.({
+          success: false,
+          error: { code: HandoffErrorCode.INVALID_STATUS, message: 'Request is not pending' },
+        });
+        return;
+      }
+
+      // Update request status
+      request.status = HandoffRequestStatus.ACCEPTED;
+
+      // Complete the handoff
+      if (request.requestType === 'takeover') {
+        await completeTakeover(request.conversationId, requestId, userId, nsp);
+      } else {
+        await completeHandoff(request.conversationId, requestId, nsp);
+      }
+
+      callback?.({
+        success: true,
+        data: { requestId, status: state.currentStatus },
+      });
+    } catch (error) {
+      console.error('[Handoff] Confirm handoff error:', error);
+      callback?.({
+        success: false,
+        error: { code: HandoffErrorCode.UNAUTHORIZED, message: 'Failed to confirm handoff' },
+      });
     }
-  );
+  });
 
   // Reject handoff request
   socket.on(
@@ -407,85 +428,82 @@ export function registerHandoffHandlers(socket: AuthenticatedSocket, nsp: Namesp
   );
 
   // Cancel handoff request
-  socket.on(
-    HandoffSocketEvents.CANCEL_HANDOFF,
-    async (data: { requestId: string }, callback) => {
-      try {
-        const { requestId } = data;
-        const request = handoffRequests.get(requestId);
+  socket.on(HandoffSocketEvents.CANCEL_HANDOFF, async (data: { requestId: string }, callback) => {
+    try {
+      const { requestId } = data;
+      const request = handoffRequests.get(requestId);
 
-        if (!request) {
-          callback?.({
-            success: false,
-            error: { code: HandoffErrorCode.REQUEST_NOT_FOUND, message: 'Request not found' },
-          });
-          return;
-        }
-
-        // Only requester can cancel
-        if (request.requestedBy !== userId) {
-          callback?.({
-            success: false,
-            error: { code: HandoffErrorCode.UNAUTHORIZED, message: 'Only requester can cancel' },
-          });
-          return;
-        }
-
-        const state = handoffStates.get(request.conversationId);
-        if (!state) {
-          callback?.({
-            success: false,
-            error: { code: HandoffErrorCode.INVALID_STATUS, message: 'Conversation not found' },
-          });
-          return;
-        }
-
-        // Check if request is still pending
-        if (request.status !== HandoffRequestStatus.PENDING) {
-          callback?.({
-            success: false,
-            error: { code: HandoffErrorCode.INVALID_STATUS, message: 'Request is not pending' },
-          });
-          return;
-        }
-
-        // Update request status
-        request.status = HandoffRequestStatus.CANCELLED;
-
-        // Revert to previous status
-        state.currentStatus = state.previousStatus;
-        state.activeRequest = null;
-
-        // Log audit
-        logAudit({
-          id: generateAuditId(),
-          conversationId: request.conversationId,
-          action: 'CANCEL',
-          performedBy: userId,
-          performedAt: new Date().toISOString(),
-          metadata: { requestId },
-        });
-
-        // Broadcast cancellation
-        nsp.to(request.conversationId).emit(HandoffSocketEvents.HANDOFF_CANCELLED, {
-          requestId,
-          cancelledBy: userId,
-          cancelledAt: new Date().toISOString(),
-        });
-
-        callback?.({
-          success: true,
-          data: { requestId, status: state.currentStatus },
-        });
-      } catch (error) {
-        console.error('[Handoff] Cancel handoff error:', error);
+      if (!request) {
         callback?.({
           success: false,
-          error: { code: HandoffErrorCode.UNAUTHORIZED, message: 'Failed to cancel handoff' },
+          error: { code: HandoffErrorCode.REQUEST_NOT_FOUND, message: 'Request not found' },
         });
+        return;
       }
+
+      // Only requester can cancel
+      if (request.requestedBy !== userId) {
+        callback?.({
+          success: false,
+          error: { code: HandoffErrorCode.UNAUTHORIZED, message: 'Only requester can cancel' },
+        });
+        return;
+      }
+
+      const state = handoffStates.get(request.conversationId);
+      if (!state) {
+        callback?.({
+          success: false,
+          error: { code: HandoffErrorCode.INVALID_STATUS, message: 'Conversation not found' },
+        });
+        return;
+      }
+
+      // Check if request is still pending
+      if (request.status !== HandoffRequestStatus.PENDING) {
+        callback?.({
+          success: false,
+          error: { code: HandoffErrorCode.INVALID_STATUS, message: 'Request is not pending' },
+        });
+        return;
+      }
+
+      // Update request status
+      request.status = HandoffRequestStatus.CANCELLED;
+
+      // Revert to previous status
+      state.currentStatus = state.previousStatus;
+      state.activeRequest = null;
+
+      // Log audit
+      logAudit({
+        id: generateAuditId(),
+        conversationId: request.conversationId,
+        action: 'CANCEL',
+        performedBy: userId,
+        performedAt: new Date().toISOString(),
+        metadata: { requestId },
+      });
+
+      // Broadcast cancellation
+      nsp.to(request.conversationId).emit(HandoffSocketEvents.HANDOFF_CANCELLED, {
+        requestId,
+        cancelledBy: userId,
+        cancelledAt: new Date().toISOString(),
+      });
+
+      callback?.({
+        success: true,
+        data: { requestId, status: state.currentStatus },
+      });
+    } catch (error) {
+      console.error('[Handoff] Cancel handoff error:', error);
+      callback?.({
+        success: false,
+        error: { code: HandoffErrorCode.UNAUTHORIZED, message: 'Failed to cancel handoff' },
+      });
     }
-  );
+  });
 
   // Get handoff status
   socket.on('handoff:get_status', (data: { conversationId: string }, callback) => {
@@ -685,7 +703,7 @@ function checkRateLimit(userId: string): boolean {
   let timestamps = userHandoffTimestamps.get(userId) || [];
 
   // Filter to last hour
-  timestamps = timestamps.filter((ts) => ts > oneHourAgo);
+  timestamps = timestamps.filter(ts => ts > oneHourAgo);
 
   // Check if exceeds max per hour
   if (timestamps.length >= DEFAULT_HANDOFF_CONFIG.maxHandoffsPerHour) {
@@ -749,7 +767,7 @@ export function getHandoffRequest(requestId: string): HandoffRequest | undefined
  * Get audit logs for a conversation
  */
 export function getHandoffAuditLogs(conversationId: string): HandoffAuditLog[] {
-  return handoffAuditLogs.filter((log) => log.conversationId === conversationId);
+  return handoffAuditLogs.filter(log => log.conversationId === conversationId);
 }
 
 export default { registerHandoffHandlers, getHandoffState, getHandoffRequest, getHandoffAuditLogs };

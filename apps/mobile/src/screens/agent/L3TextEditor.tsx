@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
   Alert,
 } from 'react-native';
@@ -62,13 +61,16 @@ export const L3TextEditor: React.FC<L3TextEditorProps> = ({
     }
   }, [text, onAutoSave]);
 
-  const handleChange = useCallback((newText: string) => {
-    if (newText.length <= maxLength) {
-      setText(newText);
-      setCharCount(newText.length);
-      onChangeText?.(newText);
-    }
-  }, [maxLength, onChangeText]);
+  const handleChange = useCallback(
+    (newText: string) => {
+      if (newText.length <= maxLength) {
+        setText(newText);
+        setCharCount(newText.length);
+        onChangeText?.(newText);
+      }
+    },
+    [maxLength, onChangeText]
+  );
 
   const getProgressColor = () => {
     const ratio = charCount / minLength;
@@ -96,22 +98,18 @@ export const L3TextEditor: React.FC<L3TextEditorProps> = ({
   };
 
   const handleClear = () => {
-    Alert.alert(
-      '确认清除',
-      '确定要清除所有内容吗？',
-      [
-        { text: '取消', style: 'cancel' },
-        {
-          text: '清除',
-          style: 'destructive',
-          onPress: () => {
-            setText('');
-            setCharCount(0);
-            onChangeText?.('');
-          },
+    Alert.alert('确认清除', '确定要清除所有内容吗？', [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '清除',
+        style: 'destructive',
+        onPress: () => {
+          setText('');
+          setCharCount(0);
+          onChangeText?.('');
         },
-      ]
-    );
+      },
+    ]);
   };
 
   return (
@@ -133,27 +131,20 @@ export const L3TextEditor: React.FC<L3TextEditorProps> = ({
           <Text style={styles.progressText}>
             {charCount} / {minLength} 字符
           </Text>
-          {charCount >= minLength && (
-            <Text style={styles.checkmark}>✓</Text>
-          )}
+          {charCount >= minLength && <Text style={styles.checkmark}>✓</Text>}
         </View>
       </View>
 
       {/* Tips */}
       {showTips && (
         <View style={styles.tipsContainer}>
-          <TouchableOpacity
-            style={styles.tipsClose}
-            onPress={() => setShowTips(false)}
-          >
+          <TouchableOpacity style={styles.tipsClose} onPress={() => setShowTips(false)}>
             <Text style={styles.tipsCloseText}>✕</Text>
           </TouchableOpacity>
           <Text style={styles.tipsTitle}>💡 写作提示</Text>
           <Text style={styles.tipsText}>
-            • 描述您的具体需求或供给{'\n'}
-            • 说明您期望的结果{'\n'}
-            • 提及您的偏好和限制{'\n'}
-            • 可以举例说明
+            • 描述您的具体需求或供给{'\n'}• 说明您期望的结果{'\n'}• 提及您的偏好和限制{'\n'}•
+            可以举例说明
           </Text>
         </View>
       )}
@@ -174,19 +165,14 @@ export const L3TextEditor: React.FC<L3TextEditorProps> = ({
 
         {/* Character Count */}
         <View style={styles.charCountContainer}>
-          <Text style={[
-            styles.charCount,
-            charCount > maxLength * 0.9 && styles.charCountWarning,
-          ]}>
+          <Text style={[styles.charCount, charCount > maxLength * 0.9 && styles.charCountWarning]}>
             {charCount} / {maxLength}
           </Text>
         </View>
       </View>
 
       {/* Suggestion */}
-      <Text style={[styles.suggestion, { color: getProgressColor() }]}>
-        {getSuggestion()}
-      </Text>
+      <Text style={[styles.suggestion, { color: getProgressColor() }]}>{getSuggestion()}</Text>
 
       {/* Toolbar */}
       <View style={styles.toolbar}>
@@ -195,10 +181,9 @@ export const L3TextEditor: React.FC<L3TextEditorProps> = ({
           onPress={handleClear}
           disabled={text.length === 0 || loading}
         >
-          <Text style={[
-            styles.toolbarButtonText,
-            text.length === 0 && styles.toolbarButtonDisabled,
-          ]}>
+          <Text
+            style={[styles.toolbarButtonText, text.length === 0 && styles.toolbarButtonDisabled]}
+          >
             清除
           </Text>
         </TouchableOpacity>
@@ -210,9 +195,7 @@ export const L3TextEditor: React.FC<L3TextEditorProps> = ({
               <Text style={styles.saveStatusText}>保存中...</Text>
             </>
           ) : lastSaved ? (
-            <Text style={styles.saveStatusText}>
-              已保存 {lastSaved.toLocaleTimeString()}
-            </Text>
+            <Text style={styles.saveStatusText}>已保存 {lastSaved.toLocaleTimeString()}</Text>
           ) : null}
         </View>
 
@@ -225,9 +208,7 @@ export const L3TextEditor: React.FC<L3TextEditorProps> = ({
           onPress={handleAutoSave}
           disabled={charCount < minLength || loading}
         >
-          <Text style={styles.primaryButtonText}>
-            {loading ? 'AI提炼中...' : '保存并提炼'}
-          </Text>
+          <Text style={styles.primaryButtonText}>{loading ? 'AI提炼中...' : '保存并提炼'}</Text>
         </TouchableOpacity>
       </View>
     </View>

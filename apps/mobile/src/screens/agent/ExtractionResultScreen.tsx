@@ -8,13 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import {
-  L2Schema,
-  L2Data,
-  L2FieldType,
-  getL2Schema,
-  L1_FIELD_LABELS,
-} from '@bridgeai/shared';
+import { L2Schema, L2Data, L2FieldType, getL2Schema } from '@bridgeai/shared';
 import { useNavigation } from '@react-navigation/native';
 
 interface ExtractionResult {
@@ -70,7 +64,7 @@ const ConfidenceBadge: React.FC<ConfidenceBadgeProps> = ({ confidence }) => {
 // Field value display component
 interface FieldValueProps {
   fieldId: string;
-  value: any;
+  value: unknown;
   schema: L2Schema;
 }
 
@@ -84,9 +78,10 @@ const FieldValue: React.FC<FieldValueProps> = ({ fieldId, value, schema }) => {
     }
 
     switch (field.type) {
-      case L2FieldType.ENUM:
+      case L2FieldType.ENUM: {
         const option = field.options?.find(o => o.value === value);
         return <Text style={styles.fieldValue}>{option?.label || value}</Text>;
+      }
 
       case L2FieldType.MULTI_SELECT:
         if (Array.isArray(value) && value.length > 0) {
@@ -116,11 +111,7 @@ const FieldValue: React.FC<FieldValueProps> = ({ fieldId, value, schema }) => {
         return <Text style={styles.fieldValue}>{value}</Text>;
 
       case L2FieldType.BOOLEAN:
-        return (
-          <Text style={styles.fieldValue}>
-            {value ? '是' : '否'}
-          </Text>
-        );
+        return <Text style={styles.fieldValue}>{value ? '是' : '否'}</Text>;
 
       default:
         return <Text style={styles.fieldValue}>{String(value)}</Text>;
@@ -135,13 +126,11 @@ const FieldValue: React.FC<FieldValueProps> = ({ fieldId, value, schema }) => {
   );
 };
 
-export const ExtractionResultScreen: React.FC<ExtractionResultScreenProps> = ({
-  route,
-}) => {
+export const ExtractionResultScreen: React.FC<ExtractionResultScreenProps> = ({ route }) => {
   const { extraction, scene, originalText, onConfirm, onReject, onEdit } = route.params;
   const navigation = useNavigation();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [editedData, setEditedData] = useState<L2Data>(extraction.data);
+  const [editedData] = useState<L2Data>(extraction.data);
 
   const schema = getL2Schema(scene);
 
@@ -158,21 +147,17 @@ export const ExtractionResultScreen: React.FC<ExtractionResultScreenProps> = ({
   }, [editedData, onConfirm, navigation]);
 
   const handleReject = useCallback(() => {
-    Alert.alert(
-      '重新提炼',
-      '确定要放弃当前提炼结果并重新提炼吗？',
-      [
-        { text: '取消', style: 'cancel' },
-        {
-          text: '重新提炼',
-          style: 'destructive',
-          onPress: () => {
-            onReject?.();
-            navigation.goBack();
-          },
+    Alert.alert('重新提炼', '确定要放弃当前提炼结果并重新提炼吗？', [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '重新提炼',
+        style: 'destructive',
+        onPress: () => {
+          onReject?.();
+          navigation.goBack();
         },
-      ]
-    );
+      },
+    ]);
   }, [onReject, navigation]);
 
   const handleEdit = useCallback(() => {
@@ -207,16 +192,12 @@ export const ExtractionResultScreen: React.FC<ExtractionResultScreenProps> = ({
           <Text style={styles.summaryTitle}>提炼概况</Text>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryNumber}>
-                {extraction.fieldsExtracted.length}
-              </Text>
+              <Text style={styles.summaryNumber}>{extraction.fieldsExtracted.length}</Text>
               <Text style={styles.summaryLabel}>成功字段</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryNumber}>
-                {extraction.fieldsFailed.length}
-              </Text>
+              <Text style={styles.summaryNumber}>{extraction.fieldsFailed.length}</Text>
               <Text style={styles.summaryLabel}>待补充</Text>
             </View>
             <View style={styles.summaryDivider} />
@@ -248,12 +229,8 @@ export const ExtractionResultScreen: React.FC<ExtractionResultScreenProps> = ({
               const field = schema.fields.find(f => f.id === fieldId);
               return (
                 <View key={fieldId} style={styles.failedField}>
-                  <Text style={styles.failedFieldLabel}>
-                    {field?.label || fieldId}
-                  </Text>
-                  <Text style={styles.failedFieldHint}>
-                    AI 未能从文本中提取此信息
-                  </Text>
+                  <Text style={styles.failedFieldLabel}>{field?.label || fieldId}</Text>
+                  <Text style={styles.failedFieldHint}>AI 未能从文本中提取此信息</Text>
                 </View>
               );
             })}
@@ -288,11 +265,7 @@ export const ExtractionResultScreen: React.FC<ExtractionResultScreenProps> = ({
         </TouchableOpacity>
 
         {onEdit && (
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={handleEdit}
-            disabled={isProcessing}
-          >
+          <TouchableOpacity style={styles.editButton} onPress={handleEdit} disabled={isProcessing}>
             <Text style={styles.editButtonText}>编辑</Text>
           </TouchableOpacity>
         )}

@@ -3,14 +3,15 @@
  *
  * Handles user-related socket events.
  */
-import type { Socket, Namespace } from 'socket.io';
+import type { Namespace } from 'socket.io';
+
 import type { AuthenticatedSocket } from '../middleware/auth';
 import { connectionManager } from '../connectionManager';
 
 /**
  * Register user event handlers
  */
-export function registerUserHandlers(socket: AuthenticatedSocket, nsp: Namespace): void {
+export function registerUserHandlers(socket: AuthenticatedSocket, _nsp: Namespace): void {
   // Update user status
   socket.on('user:status', async (data: { status: string }) => {
     if (!socket.user?.id) return;
@@ -25,7 +26,7 @@ export function registerUserHandlers(socket: AuthenticatedSocket, nsp: Namespace
 
   // Get user presence
   socket.on('user:presence', (data: { userIds: string[] }, callback) => {
-    const presence = data.userIds.map((userId) => ({
+    const presence = data.userIds.map(userId => ({
       userId,
       online: connectionManager.isUserOnline(userId),
     }));

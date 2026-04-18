@@ -4,6 +4,7 @@
  * Handles admin system monitoring events.
  */
 import type { Namespace } from 'socket.io';
+
 import type { AuthenticatedSocket } from '../middleware/auth';
 import { connectionManager } from '../connectionManager';
 
@@ -12,7 +13,7 @@ import { connectionManager } from '../connectionManager';
  */
 export function registerSystemHandlers(socket: AuthenticatedSocket, nsp: Namespace): void {
   // Get system stats
-  socket.on('system:stats', (callback) => {
+  socket.on('system:stats', callback => {
     const stats = connectionManager.getStats();
 
     callback({
@@ -27,8 +28,8 @@ export function registerSystemHandlers(socket: AuthenticatedSocket, nsp: Namespa
   });
 
   // Get all connections (admin only)
-  socket.on('system:connections', (callback) => {
-    const connections = connectionManager.getAllConnections().map((conn) => ({
+  socket.on('system:connections', callback => {
+    const connections = connectionManager.getAllConnections().map(conn => ({
       socketId: conn.socketId,
       userId: conn.userId,
       namespace: conn.namespace,
@@ -68,13 +69,13 @@ export function registerSystemHandlers(socket: AuthenticatedSocket, nsp: Namespa
   });
 
   // Cleanup stale connections (admin only)
-  socket.on('system:cleanup', (callback) => {
+  socket.on('system:cleanup', callback => {
     connectionManager.cleanupStaleConnections();
     callback?.({ success: true });
   });
 
   // Health check
-  socket.on('system:health', (callback) => {
+  socket.on('system:health', callback => {
     callback({
       success: true,
       data: {

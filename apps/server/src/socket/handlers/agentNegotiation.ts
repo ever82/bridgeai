@@ -5,7 +5,8 @@
  * 处理协商谈判的实时WebSocket通信
  */
 
-import type { Namespace, Socket } from 'socket.io';
+import type { Namespace } from 'socket.io';
+
 import type { AuthenticatedSocket } from '../middleware/auth';
 import { agentNegotiationService } from '../../services/ai/agentNegotiationService';
 import { logger } from '../../utils/logger';
@@ -107,50 +108,47 @@ export function registerAgentNegotiationHandlers(
    * 生成消费者Agent开场白
    * Event: negotiation:generate_introduction
    */
-  socket.on(
-    'negotiation:generate_introduction',
-    async (data: { roomId: string }, callback) => {
-      try {
-        if (!socket.user?.id) {
-          callback?.({ success: false, error: 'Authentication required' });
-          return;
-        }
-
-        const { roomId } = data;
-
-        logger.info('Socket: Generating consumer introduction', { roomId });
-
-        const message = await agentNegotiationService.generateConsumerIntroduction(roomId);
-
-        // Broadcast to room
-        nsp.to(roomId).emit('negotiation:message', {
-          roomId,
-          message: {
-            id: message.id,
-            senderId: message.senderId,
-            senderType: message.senderType,
-            content: message.content,
-            messageType: message.messageType,
-            timestamp: message.timestamp,
-          },
-        });
-
-        callback?.({
-          success: true,
-          data: {
-            messageId: message.id,
-            content: message.content,
-          },
-        });
-      } catch (error) {
-        logger.error('Socket: Failed to generate introduction', { error });
-        callback?.({
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to generate introduction',
-        });
+  socket.on('negotiation:generate_introduction', async (data: { roomId: string }, callback) => {
+    try {
+      if (!socket.user?.id) {
+        callback?.({ success: false, error: 'Authentication required' });
+        return;
       }
+
+      const { roomId } = data;
+
+      logger.info('Socket: Generating consumer introduction', { roomId });
+
+      const message = await agentNegotiationService.generateConsumerIntroduction(roomId);
+
+      // Broadcast to room
+      nsp.to(roomId).emit('negotiation:message', {
+        roomId,
+        message: {
+          id: message.id,
+          senderId: message.senderId,
+          senderType: message.senderType,
+          content: message.content,
+          messageType: message.messageType,
+          timestamp: message.timestamp,
+        },
+      });
+
+      callback?.({
+        success: true,
+        data: {
+          messageId: message.id,
+          content: message.content,
+        },
+      });
+    } catch (error) {
+      logger.error('Socket: Failed to generate introduction', { error });
+      callback?.({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to generate introduction',
+      });
     }
-  );
+  });
 
   /**
    * 提交商家优惠方案

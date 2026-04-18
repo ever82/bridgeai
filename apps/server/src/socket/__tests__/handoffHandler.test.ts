@@ -2,8 +2,6 @@
  * Handoff Socket Handler Tests
  */
 import { Namespace } from 'socket.io';
-import { registerHandoffHandlers, getHandoffState, getHandoffRequest } from '../../src/socket/handlers/handoffHandler';
-import { AuthenticatedSocket } from '../../src/socket/middleware/auth';
 import {
   HandoffStatus,
   HandoffRequestStatus,
@@ -12,9 +10,16 @@ import {
   HandoffErrorCode,
 } from '@bridgeai/shared';
 
+import {
+  registerHandoffHandlers,
+  getHandoffState,
+  getHandoffRequest,
+} from '../../src/socket/handlers/handoffHandler';
+import { AuthenticatedSocket } from '../../src/socket/middleware/auth';
+
 // Mock socket
 const createMockSocket = (userId: string = 'user-1', roles: string[] = ['user']) => {
-  const eventHandlers: Record<string, Function[]> = {};
+  const eventHandlers: Record<string, (...args: unknown[]) => void> = {};
 
   return {
     id: `socket-${userId}`,
@@ -28,13 +33,13 @@ const createMockSocket = (userId: string = 'user-1', roles: string[] = ['user'])
       emit: jest.fn(),
     })),
     emit: jest.fn(),
-    on: jest.fn((event: string, handler: Function) => {
+    on: jest.fn((event: string, handler: (...args: unknown[]) => void) => {
       eventHandlers[event] = eventHandlers[event] || [];
       eventHandlers[event].push(handler);
     }),
-    _trigger: (event: string, ...args: any[]) => {
+    _trigger: (event: string, ...args: unknown[]) => {
       const handlers = eventHandlers[event] || [];
-      handlers.forEach((h) => h(...args));
+      handlers.forEach(h => h(...args));
     },
     _handlers: eventHandlers,
   } as unknown as AuthenticatedSocket;
@@ -42,11 +47,11 @@ const createMockSocket = (userId: string = 'user-1', roles: string[] = ['user'])
 
 // Mock namespace
 const createMockNamespace = () => {
-  const rooms: Record<string, any> = {};
+  const rooms: Record<string, unknown> = {};
 
   return {
     to: jest.fn((room: string) => ({
-      emit: jest.fn((event: string, data: any) => {
+      emit: jest.fn((event: string, data: unknown) => {
         rooms[room] = rooms[room] || [];
         rooms[room].push({ event, data });
       }),
@@ -147,7 +152,11 @@ describe('Handoff Socket Handler', () => {
     it('should reject takeover if already in human mode', async () => {
       // First takeover
       const callback1 = jest.fn();
-      mockSocket._trigger(HandoffSocketEvents.REQUEST_TAKEOVER, { conversationId: 'conv-2' }, callback1);
+      mockSocket._trigger(
+        HandoffSocketEvents.REQUEST_TAKEOVER,
+        { conversationId: 'conv-2' },
+        callback1
+      );
       await Promise.resolve();
 
       // Confirm takeover
@@ -158,7 +167,11 @@ describe('Handoff Socket Handler', () => {
 
       // Try another takeover
       const callback2 = jest.fn();
-      mockSocket._trigger(HandoffSocketEvents.REQUEST_TAKEOVER, { conversationId: 'conv-2' }, callback2);
+      mockSocket._trigger(
+        HandoffSocketEvents.REQUEST_TAKEOVER,
+        { conversationId: 'conv-2' },
+        callback2
+      );
       await Promise.resolve();
 
       expect(callback2).toHaveBeenCalledWith(
@@ -219,7 +232,11 @@ describe('Handoff Socket Handler', () => {
     it('should create handoff request after takeover', async () => {
       // Takeover first
       const takeoverCallback = jest.fn();
-      mockSocket._trigger(HandoffSocketEvents.REQUEST_TAKEOVER, { conversationId: 'conv-4' }, takeoverCallback);
+      mockSocket._trigger(
+        HandoffSocketEvents.REQUEST_TAKEOVER,
+        { conversationId: 'conv-4' },
+        takeoverCallback
+      );
       await Promise.resolve();
 
       const requestId = takeoverCallback.mock.calls[0][0].data.requestId;
@@ -231,7 +248,11 @@ describe('Handoff Socket Handler', () => {
 
       // Now request handoff
       const handoffCallback = jest.fn();
-      mockSocket._trigger(HandoffSocketEvents.REQUEST_HANDOFF, { conversationId: 'conv-4' }, handoffCallback);
+      mockSocket._trigger(
+        HandoffSocketEvents.REQUEST_HANDOFF,
+        { conversationId: 'conv-4' },
+        handoffCallback
+      );
       await Promise.resolve();
 
       expect(handoffCallback).toHaveBeenCalledWith(
@@ -253,7 +274,11 @@ describe('Handoff Socket Handler', () => {
     it('should confirm pending takeover', async () => {
       // Create takeover request
       const takeoverCallback = jest.fn();
-      mockSocket._trigger(HandoffSocketEvents.REQUEST_TAKEOVER, { conversationId: 'conv-5' }, takeoverCallback);
+      mockSocket._trigger(
+        HandoffSocketEvents.REQUEST_TAKEOVER,
+        { conversationId: 'conv-5' },
+        takeoverCallback
+      );
       await Promise.resolve();
 
       const requestId = takeoverCallback.mock.calls[0][0].data.requestId;
@@ -280,7 +305,11 @@ describe('Handoff Socket Handler', () => {
 
     it('should reject confirmation for non-existent request', async () => {
       const callback = jest.fn();
-      mockSocket._trigger(HandoffSocketEvents.CONFIRM_HANDOFF, { requestId: 'non-existent' }, callback);
+      mockSocket._trigger(
+        HandoffSocketEvents.CONFIRM_HANDOFF,
+        { requestId: 'non-existent' },
+        callback
+      );
       await Promise.resolve();
 
       expect(callback).toHaveBeenCalledWith(
@@ -302,14 +331,22 @@ describe('Handoff Socket Handler', () => {
     it('should reject pending request', async () => {
       // Create request
       const requestCallback = jest.fn();
-      mockSocket._trigger(HandoffSocketEvents.REQUEST_TAKEOVER, { conversationId: 'conv-6' }, requestCallback);
+      mockSocket._trigger(
+        HandoffSocketEvents.REQUEST_TAKEOVER,
+        { conversationId: 'conv-6' },
+        requestCallback
+      );
       await Promise.resolve();
 
       const requestId = requestCallback.mock.calls[0][0].data.requestId;
 
       // Reject it
       const rejectCallback = jest.fn();
-      mockSocket._trigger(HandoffSocketEvents.REJECT_HANDOFF, { requestId, reason: 'Not now' }, rejectCallback);
+      mockSocket._trigger(
+        HandoffSocketEvents.REJECT_HANDOFF,
+        { requestId, reason: 'Not now' },
+        rejectCallback
+      );
       await Promise.resolve();
 
       expect(rejectCallback).toHaveBeenCalledWith(
@@ -332,7 +369,11 @@ describe('Handoff Socket Handler', () => {
     it('should cancel own pending request', async () => {
       // Create request
       const requestCallback = jest.fn();
-      mockSocket._trigger(HandoffSocketEvents.REQUEST_TAKEOVER, { conversationId: 'conv-7' }, requestCallback);
+      mockSocket._trigger(
+        HandoffSocketEvents.REQUEST_TAKEOVER,
+        { conversationId: 'conv-7' },
+        requestCallback
+      );
       await Promise.resolve();
 
       const requestId = requestCallback.mock.calls[0][0].data.requestId;
@@ -352,7 +393,11 @@ describe('Handoff Socket Handler', () => {
     it('should reject cancellation by non-requester', async () => {
       // Create request
       const requestCallback = jest.fn();
-      mockSocket._trigger(HandoffSocketEvents.REQUEST_TAKEOVER, { conversationId: 'conv-8' }, requestCallback);
+      mockSocket._trigger(
+        HandoffSocketEvents.REQUEST_TAKEOVER,
+        { conversationId: 'conv-8' },
+        requestCallback
+      );
       await Promise.resolve();
 
       const requestId = requestCallback.mock.calls[0][0].data.requestId;
@@ -384,7 +429,11 @@ describe('Handoff Socket Handler', () => {
     it('should timeout pending request after configured time', async () => {
       // Create request
       const callback = jest.fn();
-      mockSocket._trigger(HandoffSocketEvents.REQUEST_TAKEOVER, { conversationId: 'conv-9' }, callback);
+      mockSocket._trigger(
+        HandoffSocketEvents.REQUEST_TAKEOVER,
+        { conversationId: 'conv-9' },
+        callback
+      );
       await Promise.resolve();
 
       const requestId = callback.mock.calls[0][0].data.requestId;
