@@ -42,7 +42,8 @@ export const LoginScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>BridgeAI</Text>
-        <Text style={styles.subtitle}>用AI建立陌生人之间的桥梁</Text>
+        <Text style={styles.subtitle}>AI搭桥，真诚连接</Text>
+        <Text style={styles.subtitleEn}>AI Bridges, Genuine Connections</Text>
       </View>
 
       <View style={styles.form}>
@@ -140,6 +141,11 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: theme.fonts.sizes.md,
     color: theme.colors.textSecondary,
+  },
+  subtitleEn: {
+    fontSize: theme.fonts.sizes.sm,
+    color: theme.colors.textTertiary || theme.colors.textSecondary,
+    marginTop: 4,
   },
   form: {
     gap: theme.spacing.base,
