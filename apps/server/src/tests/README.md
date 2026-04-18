@@ -1,6 +1,6 @@
 # API Integration Test Framework
 
-This directory contains the API integration testing framework for VisionShare server.
+This directory contains the API integration testing framework for BridgeAI server.
 
 ## Structure
 
@@ -67,12 +67,7 @@ beforeEach(async () => {
 ### Authentication Helper
 
 ```typescript
-import {
-  createTestUser,
-  getUserAuthHeader,
-  generateTokens,
-  TestUserRole,
-} from '../helpers/auth';
+import { createTestUser, getUserAuthHeader, generateTokens, TestUserRole } from '../helpers/auth';
 
 // Create test user
 const user = await createTestUser({
@@ -178,6 +173,7 @@ Tests use a separate test database (configured via `TEST_DATABASE_URL`). The dat
 ### Test Isolation
 
 Each test should be isolated:
+
 - Create test data in `beforeEach` or at test start
 - Clean up in `afterEach` or `afterAll`
 - Use unique identifiers (timestamps) to avoid conflicts
@@ -208,6 +204,7 @@ TEST_DATABASE_URL=postgresql://test:test@localhost:5432/bridgeai_test
 ### Database Connection Issues
 
 Ensure PostgreSQL is running and the test database exists:
+
 ```bash
 # Create test database
 createdb bridgeai_test
@@ -220,6 +217,7 @@ Tests don't start a server on a port - they use Supertest directly with the Expr
 ### Timeout Issues
 
 Increase timeout in jest.config.js or per-test:
+
 ```typescript
 jest.setTimeout(60000);
 ```

@@ -1,6 +1,6 @@
-# VisionShare Server
+# BridgeAI Server
 
-Express.js backend service for the VisionShare platform.
+Express.js backend service for the BridgeAI platform.
 
 ## Features
 
@@ -140,4 +140,4 @@ Error responses:
 
 ## License
 
-Private - VisionShare Project
+Private - BridgeAI Project

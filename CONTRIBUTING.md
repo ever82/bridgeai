@@ -1,6 +1,6 @@
 # 贡献指南
 
-感谢您对 VisionShare 项目的关注！本文档将指导您如何为项目做出贡献。
+感谢您对 BridgeAI 项目的关注！本文档将指导您如何为项目做出贡献。
 
 ## 开发流程
 
@@ -18,6 +18,7 @@ git checkout -b feature/ISSUE-XXX-short-description
 ```
 
 分支命名规范:
+
 - 功能分支: `feature/ISSUE-XXX-description`
 - 修复分支: `fix/ISSUE-XXX-description`
 - 文档分支: `docs/ISSUE-XXX-description`
@@ -43,6 +44,7 @@ git checkout -b feature/ISSUE-XXX-short-description
 ```
 
 **类型 (type):**
+
 - `feat`: 新功能
 - `fix`: 修复
 - `docs`: 文档
@@ -53,6 +55,7 @@ git checkout -b feature/ISSUE-XXX-short-description
 - `chore`: 构建/工具
 
 **作用域 (scope):**
+
 - `server`: 后端
 - `mobile`: 移动端
 - `shared`: 共享包
@@ -60,6 +63,7 @@ git checkout -b feature/ISSUE-XXX-short-description
 - `db`: 数据库
 
 **示例:**
+
 ```
 feat(server): add user authentication
 
@@ -73,6 +77,7 @@ Closes #123
 ### 4. 代码审查
 
 提交 PR 前请确保:
+
 - [ ] 代码通过所有测试
 - [ ] 代码通过 lint 检查
 - [ ] 更新了相关文档
@@ -81,6 +86,7 @@ Closes #123
 ### 5. 提交 PR
 
 1. 推送分支到远程
+
 ```bash
 git push origin feature/ISSUE-XXX-description
 ```
