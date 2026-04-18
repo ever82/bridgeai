@@ -42,7 +42,7 @@ export const LoginScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>BridgeAI</Text>
-        <Text style={styles.subtitle}>AI驱动的供需匹配平台</Text>
+        <Text style={styles.subtitle}>用AI建立陌生人之间的桥梁</Text>
       </View>
 
       <View style={styles.form}>
