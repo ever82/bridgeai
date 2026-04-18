@@ -66,3 +66,6 @@ postgis-*/
 .temp/
 .tmp/
 *.pem
+
+# Expo
+apps/mobile/.expo/
