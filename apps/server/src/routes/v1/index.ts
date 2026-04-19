@@ -15,6 +15,8 @@ import consumerDemandRoutes from '../consumerDemand';
 import reviewRoutes from '../reviews';
 import authRoutes from '../auth';
 import disclosureRoutes from '../disclosure';
+import visionSharePublishRoutes from '../visionShare/publish';
+import visionSharePaymentRoutes from '../visionShare/payment';
 
 import healthRoutes from './health';
 import sceneRoutes from './scene';
@@ -39,6 +41,8 @@ router.use('/offers', offerRoutes);
 router.use('/jobs', jobPostingRoutes);
 router.use('/consumer', consumerDemandRoutes);
 router.use('/reviews', reviewRoutes);
+router.use('/visionshare', visionSharePublishRoutes);
+router.use('/visionshare/payment', visionSharePaymentRoutes);
 
 // Placeholder for future routes
 // router.use('/chats', chatRoutes);
