@@ -3,19 +3,8 @@
  * 地理围栏服务
  */
 
-import {
-  GeoFence,
-  GeoFenceCheckResult,
-  GeoCoordinates,
-  GeoJSONPolygon,
-  DistanceFilter,
-} from '../types/location';
-import {
-  calculateDistance,
-  isPointInPolygon,
-  calculatePolygonCentroid,
-  toGeoJSONPoint,
-} from '../utils/geoUtils';
+import { GeoFence, GeoFenceCheckResult, GeoCoordinates, GeoJSONPolygon } from '../types/location';
+import { calculateDistance, isPointInPolygon, calculatePolygonCentroid } from '../utils/geoUtils';
 
 // In-memory store for geo-fences (in production, use database)
 const geoFences: Map<string, GeoFence> = new Map();
@@ -85,10 +74,7 @@ export function deleteGeoFence(id: string): boolean {
 /**
  * Check if a point is inside a geo-fence
  */
-export function checkGeoFence(
-  point: GeoCoordinates,
-  fenceId: string
-): GeoFenceCheckResult {
+export function checkGeoFence(point: GeoCoordinates, fenceId: string): GeoFenceCheckResult {
   const fence = geoFences.get(fenceId);
   if (!fence) {
     return { inside: false };
@@ -118,10 +104,7 @@ export function checkGeoFence(
  * Check point against multiple geo-fences
  * Returns array of fence IDs the point is inside
  */
-export function checkMultipleGeoFences(
-  point: GeoCoordinates,
-  fenceIds: string[]
-): string[] {
+export function checkMultipleGeoFences(point: GeoCoordinates, fenceIds: string[]): string[] {
   return fenceIds.filter(id => {
     const result = checkGeoFence(point, id);
     return result.inside;
@@ -132,9 +115,7 @@ export function checkMultipleGeoFences(
  * Find all geo-fences containing a point
  */
 export function findContainingGeoFences(point: GeoCoordinates): GeoFence[] {
-  return Array.from(geoFences.values()).filter(fence =>
-    isPointInPolygon(point, fence.geometry)
-  );
+  return Array.from(geoFences.values()).filter(fence => isPointInPolygon(point, fence.geometry));
 }
 
 /**
@@ -152,17 +133,12 @@ export function createCircularGeoFence(
   for (let i = 0; i <= segments; i++) {
     const angle = (i / segments) * 2 * Math.PI;
     // Approximate: 1 degree latitude ≈ 111km
-    const latOffset =
-      (Math.cos(angle) * radiusMeters) / 111000;
+    const latOffset = (Math.cos(angle) * radiusMeters) / 111000;
     // Approximate: 1 degree longitude varies by latitude
     const lngOffset =
-      (Math.sin(angle) * radiusMeters) /
-      (111000 * Math.cos((center.latitude * Math.PI) / 180));
+      (Math.sin(angle) * radiusMeters) / (111000 * Math.cos((center.latitude * Math.PI) / 180));
 
-    coordinates.push([
-      center.longitude + lngOffset,
-      center.latitude + latOffset,
-    ]);
+    coordinates.push([center.longitude + lngOffset, center.latitude + latOffset]);
   }
 
   // Close the polygon
@@ -229,9 +205,10 @@ export function getGeoFencesWithinDistance(
 /**
  * Validate geo-fence polygon
  */
-export function validateGeoFencePolygon(
-  polygon: GeoJSONPolygon
-): { valid: boolean; errors: string[] } {
+export function validateGeoFencePolygon(polygon: GeoJSONPolygon): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   if (!polygon.coordinates || polygon.coordinates.length === 0) {

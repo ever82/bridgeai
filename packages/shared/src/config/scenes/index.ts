@@ -3,20 +3,16 @@
  * 场景配置导出
  */
 
+import { SceneConfig, SceneId } from '../../types/scene';
+
 import { visionShareConfig } from './visionShare';
 import { agentDateConfig } from './agentDate';
 import { agentJobConfig } from './agentJob';
 import { agentAdConfig } from './agentAd';
 
-export {
-  visionShareConfig,
-  agentDateConfig,
-  agentJobConfig,
-  agentAdConfig,
-};
+export { visionShareConfig, agentDateConfig, agentJobConfig, agentAdConfig };
 
 // Scene registry
-import { SceneConfig, SceneId } from '../../types/scene';
 
 export const sceneRegistry: Map<SceneId, SceneConfig> = new Map([
   ['visionshare', visionShareConfig],

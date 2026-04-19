@@ -2,7 +2,6 @@ import {
   AgentMessageType,
   AgentType,
   MessagePriority,
-  AgentProtocolErrorCode,
   PROTOCOL_VERSION,
   createAgentMessage,
   validateAgentMessage,
