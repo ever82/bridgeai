@@ -13,6 +13,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+
 import type { PaymentTransaction } from '../../../shared/types/payment.types';
 import { PaymentStatus } from '../../../shared/types/payment.types';
 import { visionShareApi } from '../../services/api/visionShare';
@@ -86,10 +87,7 @@ export const TransactionHistoryScreen: React.FC<TransactionHistoryScreenProps> =
   }, [hasMore, isLoading, page, loadTransactions]);
 
   const renderTransaction = ({ item }: { item: PaymentTransaction }) => (
-    <TouchableOpacity
-      style={styles.transactionItem}
-      onPress={() => onTransactionPress?.(item)}
-    >
+    <TouchableOpacity style={styles.transactionItem} onPress={() => onTransactionPress?.(item)}>
       <View style={styles.transactionInfo}>
         <Text style={styles.transactionType}>
           {item.type === 'purchase' ? '照片解锁' : item.type}
@@ -99,9 +97,7 @@ export const TransactionHistoryScreen: React.FC<TransactionHistoryScreenProps> =
         </Text>
       </View>
       <View style={styles.transactionRight}>
-        <Text style={styles.transactionAmount}>
-          -{item.amount} 积分
-        </Text>
+        <Text style={styles.transactionAmount}>-{item.amount} 积分</Text>
         <Text style={[styles.transactionStatus, { color: STATUS_COLORS[item.status] || '#999' }]}>
           {STATUS_LABELS[item.status] || item.status}
         </Text>
@@ -139,12 +135,7 @@ export const TransactionHistoryScreen: React.FC<TransactionHistoryScreenProps> =
         keyExtractor={item => item.id}
         renderItem={renderTransaction}
         ListEmptyComponent={renderEmpty}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-          />
-        }
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         contentContainerStyle={transactions.length === 0 ? styles.listEmpty : undefined}

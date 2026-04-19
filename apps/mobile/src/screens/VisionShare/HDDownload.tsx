@@ -3,15 +3,9 @@
  * Download HD photo after unlock
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+
 import type { UnlockedPhotoInfo } from '../../../shared/types/payment.types';
 import { visionShareApi } from '../../services/api/visionShare';
 
@@ -31,8 +25,6 @@ export const HDDownloadScreen: React.FC<HDDownloadScreenProps> = ({
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [downloadComplete, setDownloadComplete] = useState(false);
-
-  const downloadsLeft = unlockInfo.downloadLimit - unlockInfo.downloadsRemaining;
 
   const handleDownload = useCallback(async () => {
     if (isDownloading) return;
@@ -89,9 +81,7 @@ export const HDDownloadScreen: React.FC<HDDownloadScreenProps> = ({
       <View style={styles.photoPreview}>
         <Text style={styles.photoIcon}>🖼️</Text>
         <Text style={styles.photoId}>照片 {photoId}</Text>
-        <Text style={styles.photoStatus}>
-          {downloadComplete ? '✅ 已下载' : '已解锁'}
-        </Text>
+        <Text style={styles.photoStatus}>{downloadComplete ? '✅ 已下载' : '已解锁'}</Text>
       </View>
 
       {/* Download info */}
@@ -106,7 +96,9 @@ export const HDDownloadScreen: React.FC<HDDownloadScreenProps> = ({
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>剩余下载次数</Text>
-          <Text style={[styles.infoValue, unlockInfo.downloadsRemaining === 0 && styles.warningText]}>
+          <Text
+            style={[styles.infoValue, unlockInfo.downloadsRemaining === 0 && styles.warningText]}
+          >
             {unlockInfo.downloadsRemaining} 次
           </Text>
         </View>

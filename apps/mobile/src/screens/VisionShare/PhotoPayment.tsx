@@ -15,6 +15,7 @@ import {
   ActivityIndicator,
   FlatList,
 } from 'react-native';
+
 import type { Photo } from '../../../shared/types/photo.types';
 import type { CreditBalance, UnlockedPhotoInfo } from '../../../shared/types/payment.types';
 import { visionShareApi } from '../../services/api/visionShare';
@@ -85,7 +86,9 @@ export const PhotoPaymentScreen: React.FC<PhotoPaymentScreenProps> = ({
         <Text style={styles.photoThumbnailText}>📷</Text>
       </View>
       <View style={styles.photoInfo}>
-        <Text style={styles.photoId} numberOfLines={1}>{item.id}</Text>
+        <Text style={styles.photoId} numberOfLines={1}>
+          {item.id}
+        </Text>
         <Text style={styles.photoPrice}>{PHOTO_PRICE} 积分</Text>
       </View>
     </View>
@@ -112,9 +115,7 @@ export const PhotoPaymentScreen: React.FC<PhotoPaymentScreenProps> = ({
 
       {/* Photo list */}
       <View style={styles.photoListSection}>
-        <Text style={styles.sectionTitle}>
-          待解锁照片 ({photos.length} 张)
-        </Text>
+        <Text style={styles.sectionTitle}>待解锁照片 ({photos.length} 张)</Text>
         <FlatList
           data={photos}
           keyExtractor={item => item.id}
@@ -145,45 +146,30 @@ export const PhotoPaymentScreen: React.FC<PhotoPaymentScreenProps> = ({
           onPress={() => setShowPassword(!showPassword)}
           style={styles.togglePassword}
         >
-          <Text style={styles.togglePasswordText}>
-            {showPassword ? '隐藏' : '显示'}
-          </Text>
+          <Text style={styles.togglePasswordText}>{showPassword ? '隐藏' : '显示'}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Action buttons */}
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={onCancel}
-          disabled={isProcessing}
-        >
+        <TouchableOpacity style={styles.cancelButton} onPress={onCancel} disabled={isProcessing}>
           <Text style={styles.cancelButtonText}>取消</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.confirmButton,
-            (!canAfford || isProcessing) && styles.disabledButton,
-          ]}
+          style={[styles.confirmButton, (!canAfford || isProcessing) && styles.disabledButton]}
           onPress={handleConfirmPayment}
           disabled={!canAfford || isProcessing}
         >
           {isProcessing ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.confirmButtonText}>
-              确认支付 {totalAmount} 积分
-            </Text>
+            <Text style={styles.confirmButtonText}>确认支付 {totalAmount} 积分</Text>
           )}
         </TouchableOpacity>
       </View>
 
-      {!canAfford && (
-        <Text style={styles.insufficientHint}>
-          余额不足，请先充值
-        </Text>
-      )}
+      {!canAfford && <Text style={styles.insufficientHint}>余额不足，请先充值</Text>}
     </View>
   );
 };

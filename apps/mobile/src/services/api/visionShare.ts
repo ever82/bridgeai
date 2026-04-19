@@ -17,7 +17,6 @@ import type {
   PaymentTransaction,
   CreditBalance,
   PaymentConfirmation,
-  UnlockedPhotoInfo,
 } from '../../../shared/types/payment.types';
 
 import { api } from './client';
@@ -190,7 +189,11 @@ export const visionShareApi = {
     totalAmount: number;
     password: string;
     metadata?: { source: 'gallery' | 'preview' | 'cart'; couponCode?: string };
-  }): Promise<{ success: boolean; data?: PaymentResponse; error?: { code: string; message: string } }> => {
+  }): Promise<{
+    success: boolean;
+    data?: PaymentResponse;
+    error?: { code: string; message: string };
+  }> => {
     const response = await api.post('/visionshare/payment/pay', data);
     return response.data;
   },
@@ -206,7 +209,9 @@ export const visionShareApi = {
   /**
    * Verify payment password
    */
-  verifyPaymentPassword: async (password: string): Promise<{ success: boolean; data: { valid: boolean } }> => {
+  verifyPaymentPassword: async (
+    password: string
+  ): Promise<{ success: boolean; data: { valid: boolean } }> => {
     const response = await api.post('/visionshare/payment/verify-password', { password });
     return response.data;
   },
@@ -214,7 +219,9 @@ export const visionShareApi = {
   /**
    * Get payment transaction details
    */
-  getTransaction: async (transactionId: string): Promise<{ success: boolean; data: PaymentTransaction }> => {
+  getTransaction: async (
+    transactionId: string
+  ): Promise<{ success: boolean; data: PaymentTransaction }> => {
     const response = await api.get(`/visionshare/payment/transaction/${transactionId}`);
     return response.data;
   },
@@ -222,7 +229,10 @@ export const visionShareApi = {
   /**
    * Get user's payment transactions
    */
-  getTransactions: async (page?: number, limit?: number): Promise<{
+  getTransactions: async (
+    page?: number,
+    limit?: number
+  ): Promise<{
     success: boolean;
     data: { transactions: PaymentTransaction[]; total: number; hasMore: boolean };
   }> => {
@@ -236,7 +246,9 @@ export const visionShareApi = {
   /**
    * Get payment confirmation
    */
-  getPaymentConfirmation: async (transactionId: string): Promise<{ success: boolean; data: PaymentConfirmation }> => {
+  getPaymentConfirmation: async (
+    transactionId: string
+  ): Promise<{ success: boolean; data: PaymentConfirmation }> => {
     const response = await api.get(`/visionshare/payment/confirmation/${transactionId}`);
     return response.data;
   },
@@ -244,7 +256,9 @@ export const visionShareApi = {
   /**
    * Check photo unlock status
    */
-  getPhotoUnlockStatus: async (photoId: string): Promise<{ success: boolean; data: { photoId: string; unlocked: boolean } }> => {
+  getPhotoUnlockStatus: async (
+    photoId: string
+  ): Promise<{ success: boolean; data: { photoId: string; unlocked: boolean } }> => {
     const response = await api.get(`/visionshare/payment/photos/${photoId}/unlock-status`);
     return response.data;
   },
@@ -252,7 +266,9 @@ export const visionShareApi = {
   /**
    * Generate download token for HD photo
    */
-  generateDownloadToken: async (photoId: string): Promise<{ success: boolean; data: { token: string; photoId: string } }> => {
+  generateDownloadToken: async (
+    photoId: string
+  ): Promise<{ success: boolean; data: { token: string; photoId: string } }> => {
     const response = await api.post(`/visionshare/payment/photos/${photoId}/download-token`);
     return response.data;
   },
@@ -260,7 +276,9 @@ export const visionShareApi = {
   /**
    * Validate download token and download HD photo
    */
-  downloadHDPhoto: async (token: string): Promise<{ success: boolean; data?: { photoId: string }; error?: string }> => {
+  downloadHDPhoto: async (
+    token: string
+  ): Promise<{ success: boolean; data?: { photoId: string }; error?: string }> => {
     const response = await api.post(`/visionshare/payment/photos/download/${token}`);
     return response.data;
   },
