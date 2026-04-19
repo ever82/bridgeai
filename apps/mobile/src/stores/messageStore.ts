@@ -7,6 +7,20 @@ import { getUserRooms, markRoomAsRead, searchRooms, type ChatRoom } from '../ser
 
 export type ConversationStatus = 'human_chatting' | 'agent_negotiating' | 'waiting_reply' | 'ended';
 
+export interface NotificationSettings {
+  enabled: boolean;
+  sound: boolean;
+  vibration: boolean;
+  dndMode: boolean;
+  previewEnabled: boolean;
+  perTypeSettings: {
+    system: boolean;
+    activity: boolean;
+    match: boolean;
+    security: boolean;
+  };
+}
+
 export interface Conversation {
   id: string;
   name: string;
@@ -18,6 +32,8 @@ export interface Conversation {
   unreadCount: number;
   isPinned: boolean;
   isOnline: boolean;
+  isArchived: boolean;
+  isMuted: boolean;
 }
 
 export interface MessageSearchResult {
@@ -58,6 +74,9 @@ interface MessageState {
   selectedIds: string[];
   isSelectionMode: boolean;
 
+  // Notification settings state
+  notificationSettings: NotificationSettings;
+
   // Actions
   setUnreadCount: (count: number) => void;
   incrementUnreadCount: () => void;
@@ -70,12 +89,23 @@ interface MessageState {
   loadMoreConversations: () => Promise<void>;
 
   fetchNotifications: () => Promise<void>;
+  markAllNotificationsRead: () => void;
 
   markConversationRead: (id: string) => Promise<void>;
   markMultipleRead: (ids: string[]) => void;
   deleteConversation: (id: string) => void;
   deleteMultiple: (ids: string[]) => void;
   pinConversation: (id: string, pinned: boolean) => void;
+  archiveConversation: (id: string) => void;
+  unarchiveConversation: (id: string) => void;
+  muteConversation: (id: string, muted: boolean) => void;
+  clearChatHistory: (id: string) => void;
+
+  updateNotificationSettings: (settings: Partial<NotificationSettings>) => void;
+  updatePerTypeNotificationSetting: (
+    type: keyof NotificationSettings['perTypeSettings'],
+    enabled: boolean
+  ) => void;
 
   setSearchQuery: (query: string) => void;
   performSearch: (query: string) => Promise<void>;
@@ -108,6 +138,8 @@ const mapChatRoomToConversation = (room: ChatRoom): Conversation => {
     unreadCount: room.unreadCount || 0,
     isPinned: !!room.settings?.isFixed,
     isOnline: false,
+    isArchived: !!room.settings?.isArchived,
+    isMuted: !!room.settings?.isMuted,
   };
 };
 
@@ -131,6 +163,20 @@ export const useMessageStore = create<MessageState>()(
 
       selectedIds: [],
       isSelectionMode: false,
+
+      notificationSettings: {
+        enabled: true,
+        sound: true,
+        vibration: true,
+        dndMode: false,
+        previewEnabled: true,
+        perTypeSettings: {
+          system: true,
+          activity: true,
+          match: true,
+          security: true,
+        },
+      },
 
       // Actions
       setUnreadCount: count => set({ unreadCount: count }),
@@ -279,6 +325,57 @@ export const useMessageStore = create<MessageState>()(
         }));
       },
 
+      archiveConversation: id => {
+        set(state => ({
+          conversations: state.conversations.map(c =>
+            c.id === id ? { ...c, isArchived: true } : c
+          ),
+        }));
+      },
+
+      unarchiveConversation: id => {
+        set(state => ({
+          conversations: state.conversations.map(c =>
+            c.id === id ? { ...c, isArchived: false } : c
+          ),
+        }));
+      },
+
+      muteConversation: (id, muted) => {
+        set(state => ({
+          conversations: state.conversations.map(c => (c.id === id ? { ...c, isMuted: muted } : c)),
+        }));
+      },
+
+      clearChatHistory: id => {
+        set(state => ({
+          conversations: state.conversations.map(c =>
+            c.id === id ? { ...c, lastMessage: '', lastMessageTime: new Date().toISOString() } : c
+          ),
+        }));
+      },
+
+      markAllNotificationsRead: () => {
+        set(state => ({
+          notifications: state.notifications.map(n => ({ ...n, status: 'READ' as const })),
+        }));
+      },
+
+      updateNotificationSettings: settings => {
+        set(state => ({
+          notificationSettings: { ...state.notificationSettings, ...settings },
+        }));
+      },
+
+      updatePerTypeNotificationSetting: (type, enabled) => {
+        set(state => ({
+          notificationSettings: {
+            ...state.notificationSettings,
+            perTypeSettings: { ...state.notificationSettings.perTypeSettings, [type]: enabled },
+          },
+        }));
+      },
+
       setSearchQuery: query => set({ searchQuery: query }),
 
       performSearch: async query => {
@@ -355,6 +452,7 @@ export const useMessageStore = create<MessageState>()(
       partialize: state => ({
         unreadCount: state.unreadCount,
         recentSearches: state.recentSearches,
+        notificationSettings: state.notificationSettings,
       }),
     }
   )

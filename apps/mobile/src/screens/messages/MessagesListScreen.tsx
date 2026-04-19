@@ -77,6 +77,11 @@ const StatusBadge: React.FC<{ status: ConversationStatus }> = ({ status }) => {
   );
 };
 
+type ListItemData =
+  | { type: 'section'; title: string }
+  | { type: 'notification'; data: import('../../services/notificationApi').Notification }
+  | { type: 'conversation'; data: Conversation };
+
 interface ConversationListItemProps {
   conversation: Conversation;
   isSelected: boolean;
@@ -86,6 +91,9 @@ interface ConversationListItemProps {
   onMarkRead: (id: string) => void;
   onPin: (id: string, pinned: boolean) => void;
   onDelete: (conversation: Conversation) => void;
+  onArchive: (id: string) => void;
+  onMute: (id: string, muted: boolean) => void;
+  onClearHistory: (id: string) => void;
 }
 
 const ConversationListItem: React.FC<ConversationListItemProps> = ({
@@ -97,6 +105,9 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
   onMarkRead,
   onPin,
   onDelete,
+  onArchive,
+  onMute,
+  onClearHistory,
 }) => {
   const panX = useRef(new Animated.Value(0)).current;
   const [isSwiped, setIsSwiped] = useState(false);
@@ -148,6 +159,14 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
     onLongPress(conversation);
   };
 
+  const closeSwipe = () => {
+    Animated.spring(panX, {
+      toValue: 0,
+      useNativeDriver: true,
+      friction: 8,
+    }).start(() => setIsSwiped(false));
+  };
+
   const hasUnread = conversation.unreadCount > 0;
 
   return (
@@ -158,11 +177,7 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
           style={[styles.swipeAction, styles.markReadAction]}
           onPress={() => {
             onMarkRead(conversation.id);
-            Animated.spring(panX, {
-              toValue: 0,
-              useNativeDriver: true,
-              friction: 8,
-            }).start(() => setIsSwiped(false));
+            closeSwipe();
           }}
         >
           <Text style={styles.swipeActionText}>标为已读</Text>
@@ -171,11 +186,7 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
           style={[styles.swipeAction, styles.pinAction]}
           onPress={() => {
             onPin(conversation.id, !conversation.isPinned);
-            Animated.spring(panX, {
-              toValue: 0,
-              useNativeDriver: true,
-              friction: 8,
-            }).start(() => setIsSwiped(false));
+            closeSwipe();
           }}
         >
           <Text style={styles.swipeActionText}>{conversation.isPinned ? '取消置顶' : '置顶'}</Text>
@@ -184,11 +195,7 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
           style={[styles.swipeAction, styles.deleteAction]}
           onPress={() => {
             onDelete(conversation);
-            Animated.spring(panX, {
-              toValue: 0,
-              useNativeDriver: true,
-              friction: 8,
-            }).start(() => setIsSwiped(false));
+            closeSwipe();
           }}
         >
           <Text style={styles.swipeActionText}>删除</Text>
@@ -225,12 +232,18 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
               status={conversation.isOnline ? 'online' : 'offline'}
             />
             {hasUnread && !isSelectionMode && <View style={styles.unreadDot} />}
+            {conversation.isMuted && !hasUnread && !isSelectionMode && (
+              <View style={styles.mutedBadge}>
+                <Text style={styles.mutedText}>🔕</Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.contentContainer}>
             <View style={styles.headerRow}>
               <Text style={[styles.name, hasUnread && styles.unreadName]} numberOfLines={1}>
                 {conversation.isPinned && '📌 '}
+                {conversation.isMuted && '🔇 '}
                 {conversation.name}
               </Text>
               <SceneTag tag={conversation.sceneTag} />
@@ -250,11 +263,76 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
               </Text>
             </View>
           </View>
+
+          {!isSelectionMode && (
+            <TouchableOpacity
+              style={styles.moreButton}
+              onPress={() => {
+                showConversationActions(conversation, {
+                  onArchive,
+                  onMute,
+                  onClearHistory,
+                  onDelete,
+                });
+              }}
+            >
+              <Text style={styles.moreText}>⋯</Text>
+            </TouchableOpacity>
+          )}
         </TouchableOpacity>
       </Animated.View>
     </View>
   );
 };
+
+function showConversationActions(
+  conversation: Conversation,
+  actions: {
+    onArchive: (id: string) => void;
+    onMute: (id: string, muted: boolean) => void;
+    onClearHistory: (id: string) => void;
+    onDelete: (conversation: Conversation) => void;
+  }
+) {
+  const options = [
+    {
+      text: conversation.isMuted ? '取消静音' : '静音',
+      action: () => actions.onMute(conversation.id, !conversation.isMuted),
+    },
+    {
+      text: conversation.isArchived ? '取消归档' : '归档',
+      action: () => actions.onArchive(conversation.id),
+    },
+    {
+      text: '清空聊天记录',
+      action: () => {
+        Alert.alert('清空聊天记录', '确定清空所有聊天记录吗？此操作不可恢复。', [
+          { text: '取消', style: 'cancel' },
+          {
+            text: '清空',
+            style: 'destructive',
+            onPress: () => actions.onClearHistory(conversation.id),
+          },
+        ]);
+      },
+    },
+    { text: '删除会话', action: () => actions.onDelete(conversation), destructive: true },
+  ];
+
+  Alert.alert(
+    conversation.name,
+    '选择操作',
+    [
+      ...options.map(o => ({
+        text: o.text,
+        style: 'default' as const,
+        onPress: o.action,
+      })),
+      { text: '取消', style: 'cancel' as const },
+    ],
+    { cancelable: true }
+  );
+}
 
 function formatTime(timeStr: string): string {
   const date = new Date(timeStr);
@@ -322,6 +400,10 @@ export const MessagesListScreen: React.FC = () => {
     deleteConversation,
     deleteMultiple,
     pinConversation,
+    archiveConversation,
+    muteConversation,
+    clearChatHistory,
+    markAllNotificationsRead,
     toggleSelectionMode,
     toggleSelection,
     selectAll,
@@ -393,56 +475,15 @@ export const MessagesListScreen: React.FC = () => {
     clearSelection();
   }, [selectedIds, markMultipleRead, clearSelection]);
 
-  const activeConversations = conversations.filter(c => c.status !== 'ended');
-  const historyConversations = conversations.filter(c => c.status === 'ended');
+  const handleMarkAllRead = useCallback(() => {
+    markAllNotificationsRead();
+  }, [markAllNotificationsRead]);
 
-  const renderSectionHeader = useCallback(
-    (title: string) => (
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionHeaderText}>{title}</Text>
-      </View>
-    ),
-    []
-  );
+  const activeConversations = conversations.filter(c => c.status !== 'ended' && !c.isArchived);
+  const historyConversations = conversations.filter(c => c.status === 'ended' && !c.isArchived);
+  const archivedConversations = conversations.filter(c => c.isArchived);
 
-  const renderConversation = useCallback(
-    ({ item }: { item: Conversation }) => (
-      <ConversationListItem
-        conversation={item}
-        isSelected={selectedIds.includes(item.id)}
-        isSelectionMode={isSelectionMode}
-        onPress={handleConversationPress}
-        onLongPress={handleLongPress}
-        onMarkRead={markConversationRead}
-        onPin={pinConversation}
-        onDelete={handleDelete}
-      />
-    ),
-    [
-      selectedIds,
-      isSelectionMode,
-      handleConversationPress,
-      handleLongPress,
-      markConversationRead,
-      pinConversation,
-      handleDelete,
-    ]
-  );
-
-  const renderNotification = useCallback(
-    ({ item }: { item: (typeof notifications)[0] }) => (
-      <NotificationItem
-        title={item.title}
-        content={item.content}
-        time={formatTime(item.createdAt)}
-        icon={item.type === 'MATCH_NEW' || item.type === 'MATCH_ACCEPTED' ? '🔔' : '💎'}
-        onPress={() => {}}
-      />
-    ),
-    []
-  );
-
-  const data = [
+  const data: ListItemData[] = [
     ...(notifications.length > 0
       ? [
           { type: 'section' as const, title: '系统通知' },
@@ -461,10 +502,73 @@ export const MessagesListScreen: React.FC = () => {
           ...historyConversations.map(c => ({ type: 'conversation' as const, data: c })),
         ]
       : []),
+    ...(archivedConversations.length > 0
+      ? [
+          { type: 'section' as const, title: '已归档' },
+          ...archivedConversations.map(c => ({ type: 'conversation' as const, data: c })),
+        ]
+      : []),
   ];
 
+  const renderSectionHeader = useCallback(
+    (title: string) => (
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionHeaderText}>{title}</Text>
+        {title === '系统通知' && notifications.length > 0 && (
+          <TouchableOpacity onPress={handleMarkAllRead}>
+            <Text style={styles.markAllReadText}>全部已读</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    ),
+    [notifications, handleMarkAllRead]
+  );
+
+  const renderConversation = useCallback(
+    ({ item }: { item: Conversation }) => (
+      <ConversationListItem
+        conversation={item}
+        isSelected={selectedIds.includes(item.id)}
+        isSelectionMode={isSelectionMode}
+        onPress={handleConversationPress}
+        onLongPress={handleLongPress}
+        onMarkRead={markConversationRead}
+        onPin={pinConversation}
+        onDelete={handleDelete}
+        onArchive={archiveConversation}
+        onMute={muteConversation}
+        onClearHistory={clearChatHistory}
+      />
+    ),
+    [
+      selectedIds,
+      isSelectionMode,
+      handleConversationPress,
+      handleLongPress,
+      markConversationRead,
+      pinConversation,
+      handleDelete,
+      archiveConversation,
+      muteConversation,
+      clearChatHistory,
+    ]
+  );
+
+  const renderNotification = useCallback(
+    ({ item }: { item: (typeof notifications)[0] }) => (
+      <NotificationItem
+        title={item.title}
+        content={item.content}
+        time={formatTime(item.createdAt)}
+        icon={item.type === 'MATCH_NEW' || item.type === 'MATCH_ACCEPTED' ? '🔔' : '💎'}
+        onPress={() => navigation.navigate('NotificationDetail', { notificationId: item.id })}
+      />
+    ),
+    [navigation]
+  );
+
   const renderItem = useCallback(
-    ({ item }: { item: (typeof data)[0] }) => {
+    ({ item }: { item: ListItemData }) => {
       if (item.type === 'section') {
         return renderSectionHeader(item.title);
       }
@@ -477,12 +581,11 @@ export const MessagesListScreen: React.FC = () => {
   );
 
   const keyExtractor = useCallback(
-    (item: (typeof data)[0], index: number) => `${item.type}-${index}`,
+    (item: ListItemData, index: number) => `${item.type}-${index}`,
     []
   );
 
-  const hasContent =
-    notifications.length > 0 || activeConversations.length > 0 || historyConversations.length > 0;
+  const hasContent = data.length > 0;
 
   return (
     <ScreenContainer safeAreaTop safeAreaBottom={false}>
@@ -495,6 +598,18 @@ export const MessagesListScreen: React.FC = () => {
             </TouchableOpacity>
           ) : (
             <View style={styles.headerRight}>
+              <TouchableOpacity
+                style={styles.headerIcon}
+                onPress={() => navigation.navigate('MessageSettings')}
+              >
+                <Text>⚙️</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.headerIcon}
+                onPress={() => navigation.navigate('NewChat')}
+              >
+                <Text>✏️</Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.headerIcon}
                 onPress={() => navigation.navigate('MessageSearch')}
@@ -570,7 +685,7 @@ export const MessagesListScreen: React.FC = () => {
           title="还没有聊天消息"
           description="去场景页面发布需求或供给，开始与他人的 Agent 交流吧！"
           actionLabel="去发布需求"
-          onAction={() => navigation.navigate('Chat', { conversationId: '', userName: '' })}
+          onAction={() => navigation.navigate('NewChat')}
         />
       )}
 
@@ -643,6 +758,9 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.lg,
   },
   sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: theme.spacing.base,
     paddingVertical: theme.spacing.sm,
     backgroundColor: theme.colors.background,
@@ -651,6 +769,10 @@ const styles = StyleSheet.create({
     fontSize: theme.fonts.sizes.sm,
     fontWeight: theme.fonts.weights.semibold,
     color: theme.colors.textSecondary,
+  },
+  markAllReadText: {
+    fontSize: theme.fonts.sizes.sm,
+    color: theme.colors.primary,
   },
   itemWrapper: {
     position: 'relative',
@@ -719,6 +841,14 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: theme.colors.background,
   },
+  mutedBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+  },
+  mutedText: {
+    fontSize: 10,
+  },
   contentContainer: {
     flex: 1,
   },
@@ -781,6 +911,14 @@ const styles = StyleSheet.create({
   unreadTime: {
     color: theme.colors.error,
     fontWeight: theme.fonts.weights.medium,
+  },
+  moreButton: {
+    padding: theme.spacing.sm,
+    marginLeft: theme.spacing.xs,
+  },
+  moreText: {
+    fontSize: 20,
+    color: theme.colors.textTertiary,
   },
   notificationItem: {
     flexDirection: 'row',

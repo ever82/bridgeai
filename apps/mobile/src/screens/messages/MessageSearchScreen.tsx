@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  type TextStyle,
+  type TextProps,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -20,6 +22,43 @@ import { MessagesStackParamList } from '../../types/navigation';
 import { theme } from '../../theme';
 
 type NavigationProp = NativeStackNavigationProp<MessagesStackParamList, 'MessageSearch'>;
+
+interface HighlightTextProps extends TextProps {
+  text: string;
+  query: string;
+  highlightStyle?: TextStyle;
+}
+
+const HighlightText: React.FC<HighlightTextProps> = ({
+  text,
+  query,
+  style,
+  highlightStyle,
+  numberOfLines,
+}) => {
+  if (!query.trim()) {
+    return (
+      <Text style={style} numberOfLines={numberOfLines}>
+        {text}
+      </Text>
+    );
+  }
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+  return (
+    <Text style={style} numberOfLines={numberOfLines}>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <Text key={i} style={[style as TextStyle, highlightStyle]}>
+            {part}
+          </Text>
+        ) : (
+          part
+        )
+      )}
+    </Text>
+  );
+};
 
 export const MessageSearchScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -108,16 +147,19 @@ export const MessageSearchScreen: React.FC = () => {
       >
         <UserAvatar uri={item.avatarUri} name={item.name} size="md" />
         <View style={styles.resultContent}>
-          <Text style={styles.resultName} numberOfLines={1}>
-            {item.name}
-          </Text>
+          <HighlightText
+            text={item.name}
+            query={query}
+            style={styles.resultName}
+            highlightStyle={styles.highlightText}
+          />
           <Text style={styles.resultMeta}>
             {item.sceneTag} · {item.conversationCount}个会话
           </Text>
         </View>
       </TouchableOpacity>
     ),
-    [handleContactPress, searchResults]
+    [handleContactPress, searchResults, query]
   );
 
   const renderMessageItem = useCallback(
@@ -131,18 +173,20 @@ export const MessageSearchScreen: React.FC = () => {
           <Text style={styles.messageIconText}>💬</Text>
         </View>
         <View style={styles.resultContent}>
-          <Text style={styles.resultMessage} numberOfLines={2}>
-            {'\u201C'}
-            {item.content}
-            {'\u201D'}
-          </Text>
+          <HighlightText
+            text={`\u201C${item.content}\u201D`}
+            query={query}
+            style={styles.resultMessage}
+            highlightStyle={styles.highlightText}
+            numberOfLines={2}
+          />
           <Text style={styles.resultMeta}>
             {item.senderName} · {item.createdAt}
           </Text>
         </View>
       </TouchableOpacity>
     ),
-    [handleMessagePress, searchResults]
+    [handleMessagePress, searchResults, query]
   );
 
   const hasResults = searchResults.contacts.length > 0 || searchResults.messages.length > 0;
@@ -336,6 +380,10 @@ const styles = StyleSheet.create({
   },
   resultsContent: {
     flexGrow: 1,
+  },
+  highlightText: {
+    backgroundColor: 'rgba(255, 213, 79, 0.4)',
+    fontWeight: theme.fonts.weights.bold,
   },
 });
 

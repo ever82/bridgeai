@@ -75,6 +75,9 @@ export type MessagesStackParamList = {
   MessagesList: undefined;
   Chat: { conversationId: string; userName: string };
   MessageSearch: undefined;
+  NewChat: undefined;
+  NotificationDetail: { notificationId: string };
+  MessageSettings: undefined;
 };
 
 /* eslint-disable @typescript-eslint/no-namespace */
