@@ -61,6 +61,11 @@ export type ProfileStackParamList = {
   };
 };
 
+export type MessagesStackParamList = {
+  MessagesList: undefined;
+  Chat: { conversationId: string; userName: string };
+};
+
 export type JobStackParamList = {
   JobList: undefined;
   JobPosting: { jobId?: string } | undefined;

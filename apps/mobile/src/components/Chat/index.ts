@@ -13,3 +13,11 @@ export type {
   GroupReadStatusProps,
   ReadReceiptBadgeProps,
 } from './MessageStatus';
+export { MessageBubble } from './MessageBubble';
+export type { MessageBubbleProps } from './MessageBubble';
+export { MessageList } from './MessageList';
+export type { MessageListProps } from './MessageList';
+export { ChatInput } from './ChatInput';
+export type { ChatInputProps } from './ChatInput';
+export { QuickReply } from './QuickReply';
+export type { QuickReplyProps, QuickReplyItem } from './QuickReply';
