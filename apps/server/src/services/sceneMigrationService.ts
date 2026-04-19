@@ -3,7 +3,6 @@
  * 场景迁移服务
  */
 
-import { prisma } from '../db/client';
 import {
   SceneMigration,
   SceneId,
@@ -12,6 +11,8 @@ import {
   SceneConfig,
 } from '@bridgeai/shared';
 import { getSceneConfig, SCENE_IDS } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
 
 // Predefined migration rules between scenes
@@ -22,9 +23,7 @@ const MIGRATION_RULES: Record<string, Partial<SceneMigration>> = {
       { sourceField: 'style', targetField: 'personality_traits' },
       { sourceField: 'portfolio_url', targetField: 'about_me' },
     ],
-    transformations: [
-      { field: 'content_type', type: 'convert', config: { to: 'interests' } },
-    ],
+    transformations: [{ field: 'content_type', type: 'convert', config: { to: 'interests' } }],
     warnings: ['内容类型需要手动映射到兴趣爱好'],
   },
   'visionshare:agentjob': {
@@ -53,15 +52,124 @@ const MIGRATION_RULES: Record<string, Partial<SceneMigration>> = {
     transformations: [],
     warnings: [],
   },
+
+  // agentad ↔ visionshare
+  'visionshare:agentad': {
+    fieldMappings: [
+      { sourceField: 'content_type', targetField: 'product_category' },
+      { sourceField: 'skills', targetField: 'key_features' },
+      { sourceField: 'portfolio_url', targetField: 'website_url' },
+      { sourceField: 'price_range', targetField: 'price_info' },
+      { sourceField: 'availability', targetField: 'business_hours' },
+    ],
+    transformations: [
+      { field: 'content_type', type: 'convert', config: { to: 'product_category' } },
+    ],
+    warnings: ['视觉内容类型需要手动映射到产品类别', '需要补充广告推广目标'],
+  },
+  'agentad:visionshare': {
+    fieldMappings: [
+      { sourceField: 'product_category', targetField: 'content_type' },
+      { sourceField: 'key_features', targetField: 'skills' },
+      { sourceField: 'website_url', targetField: 'portfolio_url' },
+      { sourceField: 'price_info', targetField: 'price_range' },
+    ],
+    transformations: [
+      { field: 'product_category', type: 'convert', config: { to: 'content_type' } },
+    ],
+    warnings: ['广告产品类别需要手动映射到视觉内容类型'],
+  },
+
+  // agentad ↔ agentdate
+  'agentdate:agentad': {
+    fieldMappings: [
+      { sourceField: 'interests', targetField: 'product_category' },
+      { sourceField: 'about_me', targetField: 'product_description' },
+      { sourceField: 'occupation', targetField: 'product_name' },
+      { sourceField: 'location_preference', targetField: 'location' },
+    ],
+    transformations: [
+      {
+        field: 'interests',
+        type: 'convert',
+        config: { fromType: 'multiselect', toType: 'select' },
+      },
+    ],
+    warnings: ['约会兴趣需要手动映射到产品类别', '需要补充广告类型和推广目标'],
+  },
+  'agentad:agentdate': {
+    fieldMappings: [
+      { sourceField: 'product_category', targetField: 'interests' },
+      { sourceField: 'product_description', targetField: 'about_me' },
+      { sourceField: 'product_name', targetField: 'occupation' },
+      { sourceField: 'location', targetField: 'location_preference' },
+    ],
+    transformations: [
+      {
+        field: 'product_category',
+        type: 'convert',
+        config: { fromType: 'select', toType: 'multiselect' },
+      },
+    ],
+    warnings: ['产品类别需要手动映射到兴趣爱好', '需要补充约会目的和性别偏好'],
+  },
+
+  // agentad ↔ agentjob
+  'agentjob:agentad': {
+    fieldMappings: [
+      { sourceField: 'skills', targetField: 'key_features' },
+      { sourceField: 'career_summary', targetField: 'product_description' },
+      { sourceField: 'portfolio_url', targetField: 'website_url' },
+      { sourceField: 'expected_salary', targetField: 'budget_range' },
+      { sourceField: 'work_location', targetField: 'location' },
+    ],
+    transformations: [],
+    warnings: ['求职技能需要手动映射到产品特点', '需要补充广告类型和推广目标'],
+  },
+  'agentad:agentjob': {
+    fieldMappings: [
+      { sourceField: 'key_features', targetField: 'skills' },
+      { sourceField: 'product_description', targetField: 'career_summary' },
+      { sourceField: 'website_url', targetField: 'portfolio_url' },
+      { sourceField: 'budget_range', targetField: 'expected_salary' },
+      { sourceField: 'location', targetField: 'work_location' },
+    ],
+    transformations: [],
+    warnings: ['广告产品特点需要手动映射到求职技能', '需要补充求职类型和职位类别'],
+  },
+
+  // agentdate ↔ agentjob
+  'agentdate:agentjob': {
+    fieldMappings: [
+      { sourceField: 'occupation', targetField: 'job_category' },
+      { sourceField: 'education', targetField: 'education' },
+      { sourceField: 'about_me', targetField: 'career_summary' },
+      { sourceField: 'interests', targetField: 'skills' },
+      { sourceField: 'lifestyle', targetField: 'work_location' },
+    ],
+    transformations: [
+      { field: 'interests', type: 'convert', config: { fromType: 'multiselect', toType: 'tags' } },
+    ],
+    warnings: ['约会职业需要手动映射到职位类别', '需要补充求职类型和目标职位'],
+  },
+  'agentjob:agentdate': {
+    fieldMappings: [
+      { sourceField: 'job_category', targetField: 'occupation' },
+      { sourceField: 'education', targetField: 'education' },
+      { sourceField: 'career_summary', targetField: 'about_me' },
+      { sourceField: 'skills', targetField: 'interests' },
+    ],
+    transformations: [
+      { field: 'skills', type: 'convert', config: { fromType: 'tags', toType: 'multiselect' } },
+    ],
+    warnings: ['求职技能需要手动映射到兴趣爱好', '需要补充约会目的和性别偏好'],
+  },
 };
 
 /**
  * Generate migration plan between two scenes
  */
-export function generateMigrationPlan(
-  fromScene: SceneId,
-  toScene: SceneId
-): SceneMigration {
+export function generateMigrationPlan(fromScene: SceneId, toScene: SceneId): SceneMigration {
   const fromConfig = getSceneConfig(fromScene);
   const toConfig = getSceneConfig(toScene);
 
@@ -94,10 +202,7 @@ export function generateMigrationPlan(
 /**
  * Auto-generate field mappings based on field names
  */
-function generateAutoMappings(
-  fromConfig: SceneConfig,
-  toConfig: SceneConfig
-): FieldMapping[] {
+function generateAutoMappings(fromConfig: SceneConfig, toConfig: SceneConfig): FieldMapping[] {
   const mappings: FieldMapping[] = [];
   const toFieldMap = new Map(toConfig.fields.map(f => [f.name, f]));
 
@@ -161,17 +266,12 @@ function generateAutoTransformations(
 /**
  * Generate warnings for data loss
  */
-function generateWarnings(
-  fromConfig: SceneConfig,
-  toConfig: SceneConfig
-): string[] {
+function generateWarnings(fromConfig: SceneConfig, toConfig: SceneConfig): string[] {
   const warnings: string[] = [];
   const toFieldNames = new Set(toConfig.fields.map(f => f.name));
 
   // Find fields that will be lost
-  const lostFields = fromConfig.fields.filter(
-    f => !toFieldNames.has(f.name)
-  );
+  const lostFields = fromConfig.fields.filter(f => !toFieldNames.has(f.name));
 
   if (lostFields.length > 0) {
     warnings.push(
@@ -180,17 +280,11 @@ function generateWarnings(
   }
 
   // Find required fields in target that don't have mappings
-  const mappedFields = new Set(
-    fromConfig.fields.map(f => f.name).filter(n => toFieldNames.has(n))
-  );
-  const unmappedRequired = toConfig.fields.filter(
-    f => f.required && !mappedFields.has(f.name)
-  );
+  const mappedFields = new Set(fromConfig.fields.map(f => f.name).filter(n => toFieldNames.has(n)));
+  const unmappedRequired = toConfig.fields.filter(f => f.required && !mappedFields.has(f.name));
 
   if (unmappedRequired.length > 0) {
-    warnings.push(
-      `以下必填字段需要手动填写: ${unmappedRequired.map(f => f.label).join(', ')}`
-    );
+    warnings.push(`以下必填字段需要手动填写: ${unmappedRequired.map(f => f.label).join(', ')}`);
   }
 
   return warnings;
@@ -234,14 +328,11 @@ export async function previewMigration(
   // Find data that will be lost
   const toConfig = getSceneConfig(toScene);
   const toFieldNames = new Set(toConfig?.fields.map(f => f.name) || []);
-  const willLoseData = Object.keys(currentData).filter(
-    key => !toFieldNames.has(key)
-  );
+  const willLoseData = Object.keys(currentData).filter(key => !toFieldNames.has(key));
 
   // Find fields that need manual input
-  const needsManualInput = toConfig?.fields
-    .filter(f => f.required && !previewData[f.name])
-    .map(f => f.name) || [];
+  const needsManualInput =
+    toConfig?.fields.filter(f => f.required && !previewData[f.name]).map(f => f.name) || [];
 
   return {
     migration,
@@ -272,10 +363,7 @@ function applyMigrationTransformations(
   // Apply transformations
   for (const transformation of transformations) {
     if (result[transformation.field] !== undefined) {
-      result[transformation.field] = transformField(
-        result[transformation.field],
-        transformation
-      );
+      result[transformation.field] = transformField(result[transformation.field], transformation);
     }
   }
 
@@ -285,16 +373,13 @@ function applyMigrationTransformations(
 /**
  * Transform a single field
  */
-function transformField(
-  value: any,
-  transformation: FieldTransformation
-): any {
+function transformField(value: any, transformation: FieldTransformation): any {
   switch (transformation.type) {
     case 'rename':
       // Renaming is handled by mapping
       return value;
 
-    case 'convert':
+    case 'convert': {
       // Type conversion
       const { fromType, toType } = transformation.config;
       if (fromType === 'multiselect' && toType === 'select') {
@@ -306,16 +391,19 @@ function transformField(
         return value ? [value] : [];
       }
       return value;
+    }
 
-    case 'merge':
+    case 'merge': {
       // Merge multiple fields
       const fields = transformation.config.fields as string[];
-      return fields.map(f => value).join(' ');
+      return fields.map(() => value).join(' ');
+    }
 
-    case 'split':
+    case 'split': {
       // Split field
       const separator = transformation.config.separator as string;
       return value.split(separator);
+    }
 
     default:
       return value;
@@ -408,9 +496,7 @@ export async function executeMigration(
 /**
  * Get migration history
  */
-export async function getMigrationHistory(
-  agentId: string
-): Promise<
+export async function getMigrationHistory(_agentId: string): Promise<
   Array<{
     id: string;
     fromScene: SceneId;

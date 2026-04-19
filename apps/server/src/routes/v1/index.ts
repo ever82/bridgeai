@@ -13,15 +13,19 @@ import offerRoutes from '../offers';
 import jobPostingRoutes from '../job/jobPostingRoutes';
 import consumerDemandRoutes from '../consumerDemand';
 import reviewRoutes from '../reviews';
+import authRoutes from '../auth';
+import disclosureRoutes from '../disclosure';
 
 import healthRoutes from './health';
-import authRoutes from '../auth';
+import sceneRoutes from './scene';
 
 const router: Router = Router();
 
 // Mount routes
 router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
+router.use('/scenes', sceneRoutes);
+router.use('/disclosure', disclosureRoutes);
 router.use('/users', userRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/credit', creditRoutes);
