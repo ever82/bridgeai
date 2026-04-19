@@ -9,9 +9,11 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { SenderType } from '@bridgeai/shared';
 
 import { ChatRoom, ChatRoomListProps, ChatRoomListItemProps } from '../../types/chat';
 import { formatDistanceToNow } from '../../utils/date';
+import { UserStatusIndicator } from '../UserStatusIndicator';
 
 /**
  * ChatRoomListItem Component
@@ -91,8 +93,18 @@ const ChatRoomListItem: React.FC<ChatRoomListItemProps> = ({
             </Text>
           </View>
         )}
-        {/* 在线状态指示器（可以扩展） */}
-        {room.type === 'PRIVATE' && <View style={styles.onlineIndicator} />}
+        {/* Agent/Human status indicator for private chats */}
+        {room.type === 'PRIVATE' && room.participantIds && room.participantIds.length > 0 && (
+          <UserStatusIndicator
+            userId={room.participantIds[room.participantIds.length - 1]}
+            senderType={SenderType.AGENT}
+            variant="minimal"
+            showPresence
+            showIdentity={false}
+            showTyping={false}
+            testID={`room-${room.id}-status`}
+          />
+        )}
       </View>
 
       {/* 房间信息 */}
@@ -234,17 +246,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#FFFFFF',
-  },
-  onlineIndicator: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#34C759',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
   },
   content: {
     flex: 1,

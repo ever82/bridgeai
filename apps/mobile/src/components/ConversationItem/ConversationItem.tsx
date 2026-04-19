@@ -6,9 +6,11 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native';
+import { SenderType } from '@bridgeai/shared';
 
 import { theme } from '../../theme';
 import { UserAvatar } from '../UserAvatar/UserAvatar';
+import { UserStatusIndicator } from '../UserStatusIndicator';
 import { formatRelativeTime } from '../LastSeen/LastSeen';
 
 export type ConversationPriority = 'normal' | 'high' | 'urgent';
@@ -114,6 +116,16 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
             {name}
             {isMuted && ' 🔇'}
           </Text>
+          <UserStatusIndicator
+            userId={id}
+            senderType={userType === 'agent' ? SenderType.AGENT : SenderType.HUMAN}
+            displayName={name}
+            variant="minimal"
+            showPresence
+            showIdentity
+            showTyping={false}
+            testID={`${testID}-status`}
+          />
           <Text style={[styles.time, { color: getPriorityColor() }]}>
             {formatRelativeTime(lastMessageTime)}
           </Text>
