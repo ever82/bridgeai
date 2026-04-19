@@ -71,6 +71,12 @@ export type JobStackParamList = {
   CandidateRecommendations: { jobId?: string } | undefined;
 };
 
+export type MessagesStackParamList = {
+  MessagesList: undefined;
+  Chat: { conversationId: string; userName: string };
+  MessageSearch: undefined;
+};
+
 /* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace ReactNavigation {
