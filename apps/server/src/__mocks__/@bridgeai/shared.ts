@@ -34,14 +34,17 @@ export interface AgentDisclosureSettings {
   createdAt: string;
 }
 
-export const DISCLOSURE_LEVEL_INFO: Record<DisclosureLevel, {
-  level: DisclosureLevel;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  order: number;
-}> = {
+export const DISCLOSURE_LEVEL_INFO: Record<
+  DisclosureLevel,
+  {
+    level: DisclosureLevel;
+    name: string;
+    description: string;
+    icon: string;
+    color: string;
+    order: number;
+  }
+> = {
   [DisclosureLevel.PUBLIC]: {
     level: DisclosureLevel.PUBLIC,
     name: '公开',
@@ -74,12 +77,27 @@ export const DISCLOSURE_LEVEL_INFO: Record<DisclosureLevel, {
     color: '#9C27B0',
     order: 3,
   },
-}
+};
 
 export const DEFAULT_FIELD_DISCLOSURES: FieldDisclosure[] = [
-  { fieldName: 'name', level: DisclosureLevel.PUBLIC, isDisclosable: true, defaultLevel: DisclosureLevel.PUBLIC },
-  { fieldName: 'email', level: DisclosureLevel.AFTER_MATCH, isDisclosable: true, defaultLevel: DisclosureLevel.AFTER_MATCH },
-  { fieldName: 'phone', level: DisclosureLevel.AFTER_REFERRAL, isDisclosable: true, defaultLevel: DisclosureLevel.AFTER_REFERRAL },
+  {
+    fieldName: 'name',
+    level: DisclosureLevel.PUBLIC,
+    isDisclosable: true,
+    defaultLevel: DisclosureLevel.PUBLIC,
+  },
+  {
+    fieldName: 'email',
+    level: DisclosureLevel.AFTER_MATCH,
+    isDisclosable: true,
+    defaultLevel: DisclosureLevel.AFTER_MATCH,
+  },
+  {
+    fieldName: 'phone',
+    level: DisclosureLevel.AFTER_REFERRAL,
+    isDisclosable: true,
+    defaultLevel: DisclosureLevel.AFTER_REFERRAL,
+  },
 ];
 
 export const DISCLOSABLE_FIELDS = ['name', 'email', 'phone', 'bio', 'location'];
@@ -99,10 +117,9 @@ export function getRequiredStage(level: DisclosureLevel): RelationshipStage {
   }
 }
 
-
 export function canDiscloseAtStage(
   requiredLevel: DisclosureLevel,
-   currentStage: RelationshipStage
+  currentStage: RelationshipStage
 ): boolean {
   const requiredStage = getRequiredStage(requiredLevel);
   const stageOrder: Record<RelationshipStage, number> = {
@@ -114,7 +131,10 @@ export function canDiscloseAtStage(
   return stageOrder[currentStage] >= stageOrder[requiredStage];
 }
 
-export function createDefaultDisclosureSettings(agentId: string, userId: string): AgentDisclosureSettings {
+export function createDefaultDisclosureSettings(
+  agentId: string,
+  userId: string
+): AgentDisclosureSettings {
   return {
     agentId,
     userId,
@@ -271,7 +291,7 @@ export interface AgentProtocolError {
 
 export const PROTOCOL_VERSION = '1.0.0';
 
-export function validateAgentMessage(message: unknown): {
+export function validateAgentMessage(_message: unknown): {
   valid: boolean;
   errors: string[];
 } {
@@ -313,4 +333,100 @@ export function parseMessage(json: string): AgentMessage | null {
   } catch {
     return null;
   }
+}
+
+// Points types
+export enum SceneCode {
+  VISION_SHARE = 'vision_share',
+  AGENT_DATE = 'agent_date',
+  AGENT_JOB = 'agent_job',
+  AGENT_AD = 'agent_ad',
+}
+
+export enum PointsTransactionType {
+  EARN = 'EARN',
+  SPEND = 'SPEND',
+  FROZEN = 'FROZEN',
+  UNFROZEN = 'UNFROZEN',
+  TRANSFER_IN = 'TRANSFER_IN',
+  TRANSFER_OUT = 'TRANSFER_OUT',
+}
+
+export enum FreezeStatus {
+  FROZEN = 'FROZEN',
+  RELEASED = 'RELEASED',
+  USED = 'USED',
+}
+
+export interface PointsAccount {
+  id: string;
+  userId: string;
+  balance: number;
+  totalEarned: number;
+  totalSpent: number;
+  frozenAmount: number;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PointsTransaction {
+  id: string;
+  accountId: string;
+  userId: string;
+  type: PointsTransactionType;
+  amount: number;
+  balanceAfter: number;
+  description?: string;
+  scene?: SceneCode;
+  referenceId?: string;
+  metadata?: string;
+  createdAt: Date;
+}
+
+export interface PointsFreeze {
+  id: string;
+  accountId: string;
+  amount: number;
+  reason: string;
+  scene?: SceneCode;
+  referenceId?: string;
+  status: FreezeStatus;
+  expiresAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PointsAccountResponse {
+  id: string;
+  balance: number;
+  totalEarned: number;
+  totalSpent: number;
+  frozenAmount: number;
+  availableBalance: number;
+}
+
+export interface PointsTransactionListResponse {
+  transactions: PointsTransaction[];
+  pagination: { page: number; pageSize: number; total: number; totalPages: number };
+}
+
+export interface PointsFreezeListResponse {
+  freezes: PointsFreeze[];
+  pagination: { page: number; pageSize: number; total: number; totalPages: number };
+}
+
+export interface CreatePointsFreezeRequest {
+  amount: number;
+  reason: string;
+  scene?: SceneCode;
+  referenceId?: string;
+  expiresAt?: string;
+}
+
+export interface PointsOperationResult {
+  success: boolean;
+  transaction?: PointsTransaction;
+  freeze?: PointsFreeze;
+  error?: string;
 }

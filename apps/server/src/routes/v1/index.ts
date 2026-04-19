@@ -15,6 +15,7 @@ import consumerDemandRoutes from '../consumerDemand';
 import reviewRoutes from '../reviews';
 import authRoutes from '../auth';
 import disclosureRoutes from '../disclosure';
+import pointsRoutes from '../points';
 
 import healthRoutes from './health';
 import sceneRoutes from './scene';
@@ -29,6 +30,7 @@ router.use('/disclosure', disclosureRoutes);
 router.use('/users', userRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/credit', creditRoutes);
+router.use('/points', pointsRoutes);
 router.use('/agents', agentRoutes);
 router.use('/agents', agentProfileRoutes);
 router.use('/location', locationRoutes);
