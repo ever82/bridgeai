@@ -11,6 +11,20 @@ import { ValidationError } from '../errors';
 import { getRequestContext } from './requestContext';
 
 /**
+ * Custom validator function type
+ */
+export type CustomValidatorFn<T = unknown> = (value: T) => boolean | string;
+
+/**
+ * Custom validation rule
+ */
+export interface ValidationRule {
+  name: string;
+  validator: CustomValidatorFn;
+  message: string;
+}
+
+/**
  * Validation target type
  */
 export type ValidationTarget = 'body' | 'params' | 'query' | 'headers';
@@ -23,6 +37,143 @@ export interface ValidationSchemas {
   params?: ZodType<any, any, any>;
   query?: ZodType<any, any, any>;
   headers?: ZodType<any, any, any>;
+}
+
+/**
+ * Create a custom schema with validation rules
+ */
+export function createValidatedSchema<T extends Record<string, unknown>>(
+  baseSchema: ZodType<T>,
+  rules?: ValidationRule[]
+): ZodType<T> {
+  if (!rules || rules.length === 0) return baseSchema;
+
+  return baseSchema.refine(
+    data => {
+      for (const rule of rules) {
+        for (const [, value] of Object.entries(data)) {
+          const result = rule.validator(value);
+          if (result === false) {
+            return false;
+          }
+          if (typeof result === 'string') {
+            return false;
+          }
+        }
+      }
+      return true;
+    },
+    {
+      message: rules.map(r => r.message).join('; '),
+    }
+  );
+}
+
+/**
+ * Built-in custom validators
+ */
+export const Validators = {
+  /**
+   * Chinese mobile phone number validator
+   */
+  chinesePhone: (val: unknown): boolean | string => {
+    if (typeof val !== 'string') return false;
+    const phoneRegex = /^1[3-9]\d{9}$/;
+    return phoneRegex.test(val.replace(/\s/g, '')) || 'Invalid Chinese mobile number';
+  },
+
+  /**
+   * URL validator
+   */
+  url: (val: unknown): boolean | string => {
+    if (typeof val !== 'string') return false;
+    try {
+      new URL(val);
+      return true;
+    } catch {
+      return 'Invalid URL format';
+    }
+  },
+
+  /**
+   * Strong password validator (min 8 chars, upper, lower, number)
+   */
+  strongPassword: (val: unknown): boolean | string => {
+    if (typeof val !== 'string') return false;
+    if (val.length < 8) return 'Password must be at least 8 characters';
+    if (!/[A-Z]/.test(val)) return 'Password must contain uppercase letter';
+    if (!/[a-z]/.test(val)) return 'Password must contain lowercase letter';
+    if (!/\d/.test(val)) return 'Password must contain a number';
+    return true;
+  },
+
+  /**
+   * UUID validator
+   */
+  uuid: (val: unknown): boolean | string => {
+    if (typeof val !== 'string') return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(val) || 'Invalid UUID format';
+  },
+
+  /**
+   * Date range validator
+   */
+  dateRange:
+    (min: Date, max: Date) =>
+    (val: unknown): boolean | string => {
+      if (typeof val !== 'string') return false;
+      const date = new Date(val);
+      if (isNaN(date.getTime())) return 'Invalid date format';
+      if (date < min) return `Date must be after ${min.toISOString()}`;
+      if (date > max) return `Date must be before ${max.toISOString()}`;
+      return true;
+    },
+
+  /**
+   * File extension validator
+   */
+  fileExtension:
+    (allowedExtensions: string[]) =>
+    (val: unknown): boolean | string => {
+      if (typeof val !== 'string') return false;
+      const ext = val.split('.').pop()?.toLowerCase() || '';
+      return (
+        allowedExtensions.includes(ext) ||
+        `File extension must be one of: ${allowedExtensions.join(', ')}`
+      );
+    },
+
+  /**
+   * Array length validator
+   */
+  arrayLength:
+    (min: number, max: number) =>
+    (val: unknown): boolean | string => {
+      if (!Array.isArray(val)) return false;
+      if (val.length < min) return `Array must have at least ${min} items`;
+      if (val.length > max) return `Array must have at most ${max} items`;
+      return true;
+    },
+};
+
+/**
+ * Create custom Zod refinement
+ */
+export function createRefinement<T>(
+  schema: ZodType<T>,
+  validator: (val: T) => boolean | string,
+  message?: string
+): ZodType<T> {
+  return schema.refine(
+    val => {
+      const result = validator(val);
+      return result === true;
+    },
+    {
+      message: message || (typeof validator === 'function' ? 'Validation failed' : 'Invalid value'),
+    }
+  );
 }
 
 /**
