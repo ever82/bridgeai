@@ -17,7 +17,7 @@ import { authenticate as authenticateToken } from '../../middleware/auth';
 import { validate as validateRequest } from '../../middleware/validation';
 import { SupplyExtractionService } from '../../services/ai/supplyExtractionService';
 import { prisma } from '../../db/client';
-import logger from '../../utils/logger';
+import { logger } from '../../utils/logger';
 
 const router = Router();
 
@@ -299,9 +299,8 @@ router.get(
         where: { agentId },
         select: {
           sceneId: true,
-          l3ExtractionData: true,
-          l3ExtractionConfidence: true,
-          extractionHistory: true,
+          l2Data: true,
+          l3Description: true,
         },
       });
 
@@ -315,20 +314,14 @@ router.get(
       // 构建质量报告
       const qualityReports = profiles.map(profile => ({
         scene: profile.sceneId,
-        confidence: profile.l3ExtractionConfidence || 0,
-        extraction_data: profile.l3ExtractionData,
-        history: profile.extractionHistory,
+        l2Data: profile.l2Data,
+        l3Description: profile.l3Description,
       }));
-
-      // 计算平均质量指标
-      const avgConfidence =
-        qualityReports.reduce((sum, r) => sum + r.confidence, 0) / qualityReports.length;
 
       res.json({
         success: true,
         data: {
           agent_id: agentId,
-          overall_quality: Math.round(avgConfidence),
           scenes: qualityReports.length,
           reports: qualityReports,
         },
@@ -392,8 +385,8 @@ async function storeExtractionResult(agentId: string, scene: string, result: any
     return;
   }
 
-  // 准备 L3 提取数据
-  const l3ExtractionData = {
+  // 准备 L2 提取数据
+  const l2Data = {
     supply: {
       title: result.supply.title,
       description: result.supply.description,
@@ -419,8 +412,7 @@ async function storeExtractionResult(agentId: string, scene: string, result: any
       },
     },
     update: {
-      l3ExtractionData,
-      l3ExtractionConfidence: result.supply.quality.confidence,
+      l2Data,
       l3Description: result.supply.description,
       updatedAt: new Date(),
     },
@@ -428,9 +420,7 @@ async function storeExtractionResult(agentId: string, scene: string, result: any
       agentId,
       sceneId: sceneRecord.id,
       l1Data: {},
-      l2Data: {},
-      l3ExtractionData,
-      l3ExtractionConfidence: result.supply.quality.confidence,
+      l2Data,
       l3Description: result.supply.description,
     },
   });

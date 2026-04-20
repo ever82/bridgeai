@@ -6,7 +6,7 @@
 
 import { L2Schema, L2Data, L2FieldType } from '@bridgeai/shared';
 
-import { Supply, Capability } from '../../supplyExtractionService';
+import { Supply, Capability } from '../supplyExtractionService';
 import { logger } from '../../../utils/logger';
 
 /**
@@ -594,10 +594,6 @@ export class SupplyToL2Mapper {
 
     // Infer currency from location
     if (field.id === 'priceCurrency' && !supply.pricing?.currency) {
-      const city = supply.location?.city || '';
-      if (/北京|上海|广州|深圳|中国|杭州|成都/.test(city)) {
-        return 'CNY';
-      }
       return 'CNY';
     }
 

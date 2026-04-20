@@ -10,7 +10,7 @@
  * - 补全确认流程
  */
 
-import { logger } from '../utils/logger';
+import { logger } from '../../utils/logger';
 
 import { Supply, PricingInfo, Capability, LocationInfo, ExperienceInfo, AvailabilityInfo } from './supplyExtractionService';
 
@@ -369,7 +369,7 @@ export class SupplyCompletionService {
    */
   complete(supply: Supply): CompletionResult {
     const { missing, incomplete } = this.detectIncomplete(supply);
-    const suggestions = this.generateSuggestions(suggestions.length > 0 ? supply : supply);
+    const suggestions = this.generateSuggestions(supply);
 
     // Calculate completeness score
     const totalFields = 8; // title, description, serviceType, pricing, capabilities, skills, location, experience

@@ -284,7 +284,7 @@ export class SupplyQualityAssessor {
    * Assess competitiveness - how the supply compares to typical market offerings
    */
   private assessCompetitiveness(supply: Supply): number {
-    let score = 50; // Baseline
+    let score = 40; // Baseline
 
     // Detail level bonus
     if (supply.description?.length > 200) score += 10;
@@ -420,18 +420,16 @@ export class SupplyQualityAssessor {
       });
     }
 
-    // Credibility-based suggestions
-    if (scores.credibilityScore < 70) {
-      if (supply.pricing?.minRate !== undefined && supply.pricing?.maxRate !== undefined) {
-        if (supply.pricing.minRate > supply.pricing.maxRate) {
-          suggestions.push({
-            field: 'pricing',
-            type: 'fix_inconsistency',
-            priority: 'high',
-            message: '最低价高于最高价，请检查定价信息',
-            impact: 20,
-          });
-        }
+    // Credibility-based suggestions — always flag pricing inconsistencies
+    if (supply.pricing?.minRate !== undefined && supply.pricing?.maxRate !== undefined) {
+      if (supply.pricing.minRate > supply.pricing.maxRate) {
+        suggestions.push({
+          field: 'pricing',
+          type: 'fix_inconsistency',
+          priority: 'high',
+          message: '最低价高于最高价，请检查定价信息',
+          impact: 20,
+        });
       }
     }
 
