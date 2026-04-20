@@ -283,6 +283,8 @@ export const ApiPaths = {
     logout: '/api/v1/auth/logout',
     refresh: '/api/v1/auth/refresh',
     me: '/api/v1/auth/me',
+    forgotPassword: '/api/v1/auth/forgot-password',
+    resetPassword: '/api/v1/auth/reset-password',
   },
   users: {
     list: '/api/v1/users',

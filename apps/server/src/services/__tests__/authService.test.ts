@@ -295,6 +295,7 @@ describe('Auth Service', () => {
 
     it('should login with valid verification code', async () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue(mockUser);
+      (prisma.user.update as jest.Mock).mockResolvedValue(mockUser);
 
       const result = await loginUser({
         email: 'test@example.com',

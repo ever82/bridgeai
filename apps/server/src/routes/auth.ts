@@ -152,19 +152,20 @@ router.post(
 
       const result = await authService.refreshAccessToken(refreshToken);
 
-    res.json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    logger.error('Token refresh failed', error as Error);
+      res.json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      logger.error('Token refresh failed', error as Error);
 
-    res.status(401).json({
-      success: false,
-      error: (error as Error).message,
-    });
+      res.status(401).json({
+        success: false,
+        error: (error as Error).message,
+      });
+    }
   }
-});
+);
 
 /**
  * POST /api/v1/auth/logout
@@ -245,22 +246,23 @@ router.post(
 
       const resetToken = await authService.requestPasswordReset(email, phone);
 
-    // 实际应该发送邮件或短信
-    res.json({
-      success: true,
-      message: '密码重置链接已发送',
-      // 开发环境返回令牌（生产环境不应该返回）
-      ...(process.env.NODE_ENV === 'development' && { resetToken }),
-    });
-  } catch (error) {
-    logger.error('Password reset request failed', error as Error);
+      // 实际应该发送邮件或短信
+      res.json({
+        success: true,
+        message: '密码重置链接已发送',
+        // 开发环境返回令牌（生产环境不应该返回）
+        ...(process.env.NODE_ENV === 'development' && { resetToken }),
+      });
+    } catch (error) {
+      logger.error('Password reset request failed', error as Error);
 
-    res.status(400).json({
-      success: false,
-      error: (error as Error).message,
-    });
+      res.status(400).json({
+        success: false,
+        error: (error as Error).message,
+      });
+    }
   }
-});
+);
 
 /**
  * POST /api/v1/auth/reset-password
@@ -275,19 +277,20 @@ router.post(
 
       await authService.resetPassword(resetToken, newPassword);
 
-    res.json({
-      success: true,
-      message: '密码重置成功',
-    });
-  } catch (error) {
-    logger.error('Password reset failed', error as Error);
+      res.json({
+        success: true,
+        message: '密码重置成功',
+      });
+    } catch (error) {
+      logger.error('Password reset failed', error as Error);
 
-    res.status(400).json({
-      success: false,
-      error: (error as Error).message,
-    });
+      res.status(400).json({
+        success: false,
+        error: (error as Error).message,
+      });
+    }
   }
-});
+);
 
 /**
  * POST /api/v1/auth/change-password
@@ -445,24 +448,25 @@ router.post(
       }
 
       await oauthService.bindOAuthAccount(
-      context.userId,
-      provider as 'wechat' | 'google',
-      code
-    );
+        context.userId,
+        provider as 'wechat' | 'google',
+        code
+      );
 
-    res.json({
-      success: true,
-      message: 'OAuth 账户绑定成功',
-    });
-  } catch (error) {
-    logger.error('OAuth bind failed', error as Error);
+      res.json({
+        success: true,
+        message: 'OAuth 账户绑定成功',
+      });
+    } catch (error) {
+      logger.error('OAuth bind failed', error as Error);
 
-    res.status(400).json({
-      success: false,
-      error: (error as Error).message,
-    });
+      res.status(400).json({
+        success: false,
+        error: (error as Error).message,
+      });
+    }
   }
-});
+);
 
 /**
  * DELETE /api/v1/auth/oauth/:provider

@@ -1,4 +1,5 @@
 import * as jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 import { prisma } from '../../db/client';
 
@@ -145,12 +146,14 @@ export async function createTestUser(
   const user = { ...defaultUser, ...overrides };
 
   // Create user in database
+  const passwordHash = await bcrypt.hash(user.password || 'TestPassword123!', 10);
   await prisma.user.create({
     data: {
       id: user.id,
       email: user.email,
       name: user.name,
-      passwordHash: user.password || 'hashed-password',
+      passwordHash,
+      status: 'ACTIVE',
     },
   });
 

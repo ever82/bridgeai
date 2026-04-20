@@ -51,7 +51,10 @@ export abstract class BaseSceneExtractor<T extends SceneExtractedData>
     }
 
     const confidence = matchCount > 0
-      ? Math.min(matchCount / Math.max(this.detectionKeywords.length * 0.3, 1), 1)
+      ? Math.min(
+          Math.max(matchCount * 0.4, matchCount / Math.max(this.detectionKeywords.length * 0.3, 1)),
+          1
+        )
       : 0;
 
     logger.debug('Scene detection check', {

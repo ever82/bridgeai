@@ -233,8 +233,8 @@ export class AgentJobExtractor extends BaseSceneExtractor<AgentJobData> {
       period: 'monthly',
     };
 
-    // Determine period
-    if (/年/.test(text) && !/月.*年/.test(text)) {
+    // Determine period - be careful not to match '年' in '薪资'
+    if (/年薪|一年|\/年|per year/i.test(text)) {
       salary.period = 'yearly';
     } else if (/天/.test(text)) {
       salary.period = 'daily';
@@ -242,8 +242,8 @@ export class AgentJobExtractor extends BaseSceneExtractor<AgentJobData> {
       salary.period = 'hourly';
     }
 
-    // Extract salary range
-    const salaryRangeMatch = text.match(/(\d+)\s*[-~到至]\s*(\d+)\s*[Kk千]/);
+    // Extract salary range - handle patterns like "20K-30K" or "20-30K"
+    const salaryRangeMatch = text.match(/(\d+)\s*[Kk千]?\s*[-~到至]\s*(\d+)\s*[Kk千]/);
     if (salaryRangeMatch) {
       const multiplier = salary.period === 'yearly' ? 10000 : 1000;
       salary.min = parseInt(salaryRangeMatch[1], 10) * multiplier;

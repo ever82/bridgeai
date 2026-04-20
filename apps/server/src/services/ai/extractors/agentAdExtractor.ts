@@ -352,7 +352,7 @@ export class AgentAdExtractor extends BaseSceneExtractor<AgentAdData> {
    */
   protected getClarificationQuestion(field: string): string {
     const agentAdQuestions: Record<string, string> = {
-      'product': '请问您想购买什么商品？',
+      'product': '请问您想购买什么产品？',
       'product.name': '请问具体是什么商品？（如：iPhone 15、MacBook Pro等）',
       'product.category': '请问商品属于哪个类别？（如：手机、电脑、相机等）',
       'product.condition': '请问您接受全新、二手还是官方翻新的商品？',
