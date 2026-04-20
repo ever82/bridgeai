@@ -15,9 +15,9 @@ import {
 /**
  * Base class for scene-specific extractors
  */
-export abstract class BaseSceneExtractor<T extends SceneExtractedData>
-  implements SceneSpecificExtractor<T>
-{
+export abstract class BaseSceneExtractor<
+  T extends SceneExtractedData,
+> implements SceneSpecificExtractor<T> {
   abstract readonly sceneType: SceneType;
 
   // Scene-specific keywords for detection
@@ -50,12 +50,16 @@ export abstract class BaseSceneExtractor<T extends SceneExtractedData>
       }
     }
 
-    const confidence = matchCount > 0
-      ? Math.min(
-          Math.max(matchCount * 0.4, matchCount / Math.max(this.detectionKeywords.length * 0.3, 1)),
-          1
-        )
-      : 0;
+    const confidence =
+      matchCount > 0
+        ? Math.min(
+            Math.max(
+              matchCount * 0.4,
+              matchCount / Math.max(this.detectionKeywords.length * 0.3, 1)
+            ),
+            1
+          )
+        : 0;
 
     logger.debug('Scene detection check', {
       sceneType: this.sceneType,
@@ -75,6 +79,13 @@ export abstract class BaseSceneExtractor<T extends SceneExtractedData>
    */
   getRequiredFields(): string[] {
     return this.requiredFields;
+  }
+
+  /**
+   * Get detection keywords for this scene
+   */
+  getDetectionKeywords(): string[] {
+    return this.detectionKeywords;
   }
 
   /**
@@ -138,20 +149,20 @@ export abstract class BaseSceneExtractor<T extends SceneExtractedData>
    */
   protected getClarificationQuestion(field: string): string {
     const questionMap: Record<string, string> = {
-      'photographyTime': '请问您希望在什么时间拍摄？',
-      'photographyType': '请问您需要什么摄影类型的服务？',
-      'budget': '请问您的预算范围是多少？',
-      'location': '请问拍摄地点在哪里？',
-      'partnerPreferences': '请问您对理想伴侣有什么要求？',
-      'interests': '请问您有什么兴趣爱好？',
-      'dateTime': '请问您希望在什么时间见面？',
-      'skills': '请问您具备哪些技能？',
-      'experience': '请问您有多少年工作经验？',
-      'salaryExpectation': '请问您的薪资期望是多少？',
-      'jobType': '请问您希望找什么类型的工作？',
-      'product': '请问您想购买什么商品？',
-      'brandPreferences': '请问您对品牌有什么偏好吗？',
-      'urgency': '请问您的需求有多紧急？',
+      photographyTime: '请问您希望在什么时间拍摄？',
+      photographyType: '请问您需要什么摄影类型的服务？',
+      budget: '请问您的预算范围是多少？',
+      location: '请问拍摄地点在哪里？',
+      partnerPreferences: '请问您对理想伴侣有什么要求？',
+      interests: '请问您有什么兴趣爱好？',
+      dateTime: '请问您希望在什么时间见面？',
+      skills: '请问您具备哪些技能？',
+      experience: '请问您有多少年工作经验？',
+      salaryExpectation: '请问您的薪资期望是多少？',
+      jobType: '请问您希望找什么类型的工作？',
+      product: '请问您想购买什么商品？',
+      brandPreferences: '请问您对品牌有什么偏好吗？',
+      urgency: '请问您的需求有多紧急？',
     };
 
     // Try to find exact match first
@@ -200,7 +211,9 @@ export abstract class BaseSceneExtractor<T extends SceneExtractedData>
   /**
    * Parse budget from text
    */
-  protected parseBudget(text: string): { min?: number; max?: number; currency: string } | undefined {
+  protected parseBudget(
+    text: string
+  ): { min?: number; max?: number; currency: string } | undefined {
     const currency = text.includes('$') || text.includes('USD') ? 'USD' : 'CNY';
 
     // Range pattern: 1000-2000, 1000~2000, 1000到2000

@@ -3,18 +3,13 @@
  * 场景特定提取器类型定义
  */
 
-import { Demand, ExtractedEntity, IntentResult } from '../demandExtractionService';
+import { ExtractedEntity } from '../demandExtractionService';
 
 /**
  * Scene Types
  * 业务场景类型
  */
-export type SceneType =
-  | 'visionshare'
-  | 'agentdate'
-  | 'agentjob'
-  | 'agentad'
-  | 'unknown';
+export type SceneType = 'visionshare' | 'agentdate' | 'agentjob' | 'agentad' | 'unknown';
 
 /**
  * Scene Detection Result
@@ -230,6 +225,11 @@ export interface SceneSpecificExtractor<T extends SceneExtractedData = SceneExtr
    * Validate extracted data
    */
   validate(data: T): { valid: boolean; missingFields: string[] };
+
+  /**
+   * Get detection keywords for this scene
+   */
+  getDetectionKeywords(): string[];
 
   /**
    * Generate clarification questions for missing fields

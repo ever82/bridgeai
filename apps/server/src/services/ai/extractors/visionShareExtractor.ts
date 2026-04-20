@@ -15,15 +15,29 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
   readonly sceneType: SceneType = 'visionshare';
 
   protected readonly detectionKeywords = [
-    '摄影', '拍照', '拍摄', '照片', '写真', '摄影师', '模特', '服务',
-    'photography', 'photo', 'shoot', 'picture', 'service',
-    '摄影棚', '外景', '内景',
-    '婚礼摄影', '商业摄影', '人像摄影', '风景摄影',
+    '摄影',
+    '拍照',
+    '拍摄',
+    '照片',
+    '写真',
+    '摄影师',
+    '模特',
+    '服务',
+    'photography',
+    'photo',
+    'shoot',
+    'picture',
+    'service',
+    '摄影棚',
+    '外景',
+    '内景',
+    '婚礼摄影',
+    '商业摄影',
+    '人像摄影',
+    '风景摄影',
   ];
 
-  protected readonly requiredFields = [
-    'photographyType',
-  ];
+  protected readonly requiredFields = ['photographyType'];
 
   protected readonly optionalFields = [
     'photographyTime',
@@ -77,10 +91,7 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
         /(\d+)\s*[-~到至]\s*(\d+)\s*[元块￥$]/g,
         /(\d+)\s*[元块￥$]/g,
       ],
-      location: [
-        /([\u4e00-\u9fa5]{2,5}(?:市|区|县|镇))/g,
-        /(内景|外景|摄影棚|工作室)/g,
-      ],
+      location: [/([\u4e00-\u9fa5]{2,5}(?:市|区|县|镇))/g, /(内景|外景|摄影棚|工作室)/g],
       requirement: [
         /需要\s*([^，。]+)(?:风格|效果|感觉)/g,
         /([\u4e00-\u9fa5]{2,8})(?:风格|感觉|效果)/g,
@@ -93,7 +104,10 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
   /**
    * Build structured VisionShare data from entities
    */
-  private buildStructuredData(text: string, entities: SceneExtractedEntity[]): VisionShareData['structured'] {
+  private buildStructuredData(
+    text: string,
+    entities: SceneExtractedEntity[]
+  ): VisionShareData['structured'] {
     const structured: VisionShareData['structured'] = {};
 
     // Extract photography type
@@ -115,7 +129,7 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
       // Try common district name lengths (2 chars like 朝阳 first, then 3 like 浦东新)
       let districtName: string | null = null;
       let districtStart = 0;
-      for (const len of [2, 3, 1, 4]) {
+      for (const len of [3, 2, 4, 1]) {
         const match = before.match(new RegExp(`([\u4e00-\u9fa5]{${len}})$`));
         if (match && !/[省市县省]/.test(match[1].charAt(0))) {
           districtName = match[1];
@@ -202,7 +216,10 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
   /**
    * Extract photography time from text
    */
-  private extractPhotographyTime(text: string, entities: SceneExtractedEntity[]): VisionShareData['structured']['photographyTime'] {
+  private extractPhotographyTime(
+    text: string,
+    _entities: SceneExtractedEntity[]
+  ): VisionShareData['structured']['photographyTime'] {
     const time = this.parseTime(text);
 
     // Determine time of day
@@ -227,7 +244,7 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
   /**
    * Extract requirements from text
    */
-  private extractRequirements(text: string, entities: SceneExtractedEntity[]): string[] {
+  private extractRequirements(text: string, _entities: SceneExtractedEntity[]): string[] {
     const requirements: string[] = [];
 
     // Check for style requirements
@@ -252,7 +269,9 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
   /**
    * Extract photographer preferences from text
    */
-  private extractPhotographerPreferences(text: string): VisionShareData['structured']['photographerPreferences'] {
+  private extractPhotographerPreferences(
+    text: string
+  ): VisionShareData['structured']['photographerPreferences'] {
     const preferences: VisionShareData['structured']['photographerPreferences'] = {};
 
     // Extract style preferences
@@ -288,7 +307,10 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
   /**
    * Calculate confidence score
    */
-  private calculateConfidence(entities: SceneExtractedEntity[], structured: VisionShareData['structured']): number {
+  private calculateConfidence(
+    entities: SceneExtractedEntity[],
+    structured: VisionShareData['structured']
+  ): number {
     let score = 0.5; // Base score
 
     // +0.2 for having photography type
@@ -319,8 +341,8 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
    */
   protected getClarificationQuestion(field: string): string {
     const visionShareQuestions: Record<string, string> = {
-      'photographyTime': '请问您希望在什么时间拍摄？（如：下周六下午、下个月等）',
-      'photographyType': '请问您需要什么摄影类型的服务？（如：人像写真、婚礼摄影、商业拍摄等）',
+      photographyTime: '请问您希望在什么时间拍摄？（如：下周六下午、下个月等）',
+      photographyType: '请问您需要什么摄影类型的服务？（如：人像写真、婚礼摄影、商业拍摄等）',
       'photographerPreferences.style': '请问您希望拍摄什么风格的照片？（如：自然、唯美、时尚等）',
       'photographerPreferences.experience': '请问您对摄影师的经验有要求吗？',
       'location.indoor': '请问您希望在室内棚拍还是外景拍摄？',

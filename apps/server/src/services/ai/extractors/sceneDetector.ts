@@ -147,36 +147,10 @@ export class SceneDetector {
       return [];
     }
 
-    // Access detection keywords from the extractor
-    // This is a simplified version - in production, you might want to expose this via the interface
     const keywords: string[] = [];
     const lowerText = text.toLowerCase();
 
-    // Define keyword sets for each scene
-    const keywordSets: Record<SceneType, string[]> = {
-      visionshare: [
-        '摄影', '拍照', '拍摄', '照片', '写真', '摄影师', '模特',
-        'photography', 'photo', 'shoot', 'picture',
-      ],
-      agentdate: [
-        '约会', '相亲', '交友', '脱单', '找对象',
-        'date', 'dating', 'matchmaking', 'relationship',
-        '男朋友', '女朋友', '伴侣', '择偶',
-      ],
-      agentjob: [
-        '工作', '求职', '招聘', '找工作', '应聘',
-        'job', 'work', 'career', 'employment',
-        '职位', '岗位', '薪资', '工资', '经验', '技能',
-      ],
-      agentad: [
-        '商品', '购买', '买', '卖', '购物',
-        'product', 'buy', 'purchase', 'shop', 'shopping',
-        '品牌', '预算', '价格', '淘宝', '京东', '拼多多',
-      ],
-      unknown: [],
-    };
-
-    const sceneKeywords = keywordSets[scene] || [];
+    const sceneKeywords = extractor.getDetectionKeywords();
     for (const keyword of sceneKeywords) {
       if (lowerText.includes(keyword.toLowerCase())) {
         keywords.push(keyword);
