@@ -20,6 +20,16 @@ describe('ClarificationService', () => {
     }
   });
 
+  afterAll(() => {
+    // Stop singleton's cleanup interval to prevent open handle warnings
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { clarificationService: _singleton } = require('../clarificationService');
+    const store = (_singleton as any).sessionStore;
+    if (store?.stopCleanup) {
+      store.stopCleanup();
+    }
+  });
+
   const createMockDemand = (overrides?: Partial<Demand>): Demand => ({
     id: 'test-demand-1',
     rawText: '我想找摄影师',
@@ -113,8 +123,9 @@ describe('ClarificationService', () => {
       });
 
       expect(response.sessionId).toBe(session.sessionId);
-      expect(response.status).toBe('clarifying');
+      expect(response.status).toBe('completed');
       expect(response.clarificationHistory.length).toBe(1);
+      expect(response.remainingFields).toHaveLength(0);
     });
 
     it('should track progress', async () => {

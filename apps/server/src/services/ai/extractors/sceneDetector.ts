@@ -71,7 +71,7 @@ export class SceneDetector {
     // Get the best match
     const bestMatch = results[0];
 
-    if (bestMatch && bestMatch.confidence > 0.5) {
+    if (bestMatch && bestMatch.confidence >= 0.4) {
       logger.info('Scene detected', {
         scene: bestMatch.scene,
         confidence: bestMatch.confidence,

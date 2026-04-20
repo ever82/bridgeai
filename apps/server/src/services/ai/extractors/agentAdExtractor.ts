@@ -19,7 +19,7 @@ export class AgentAdExtractor extends BaseSceneExtractor<AgentAdData> {
     'product', 'buy', 'purchase', 'shop', 'shopping',
     '品牌', '预算', '价格', '多少钱', '优惠',
     '淘宝', '京东', '拼多多', '天猫', '亚马逊',
-    '推荐', '想买', '需要', '求购',
+    '推荐', '想买', '求购',
   ];
 
   protected readonly requiredFields = [

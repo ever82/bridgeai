@@ -20,6 +20,7 @@ export class AgentJobExtractor extends BaseSceneExtractor<AgentJobData> {
     '职位', '岗位', '薪资', '工资', '待遇',
     '经验', '技能', '简历', '面试', 'offer',
     '全职', '兼职', '实习', '自由职业', '远程',
+    '开发', '编程', '工程师', '设计师', '经理',
   ];
 
   protected readonly requiredFields = [

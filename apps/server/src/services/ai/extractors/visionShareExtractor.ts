@@ -15,9 +15,9 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
   readonly sceneType: SceneType = 'visionshare';
 
   protected readonly detectionKeywords = [
-    '摄影', '拍照', '拍摄', '照片', '写真',
-    'photography', 'photo', 'shoot', 'picture',
-    '摄影师', '模特', '摄影棚', '外景', '内景',
+    '摄影', '拍照', '拍摄', '照片', '写真', '摄影师', '模特', '服务',
+    'photography', 'photo', 'shoot', 'picture', 'service',
+    '摄影棚', '外景', '内景',
     '婚礼摄影', '商业摄影', '人像摄影', '风景摄影',
   ];
 
@@ -112,12 +112,12 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
     const districtPos = text.indexOf('区');
     if (districtPos > 0) {
       const before = text.substring(0, districtPos);
-      // Try common district name lengths (3 chars like 浦东新, then 2 chars like 朝阳)
+      // Try common district name lengths (2 chars like 朝阳 first, then 3 like 浦东新)
       let districtName: string | null = null;
       let districtStart = 0;
-      for (const len of [3, 2, 1, 4]) {
+      for (const len of [2, 3, 1, 4]) {
         const match = before.match(new RegExp(`([\u4e00-\u9fa5]{${len}})$`));
-        if (match) {
+        if (match && !/[省市县省]/.test(match[1].charAt(0))) {
           districtName = match[1];
           districtStart = match.index!;
           break;
@@ -132,7 +132,7 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
         const cityCandidate = chineseOnly.match(/([\u4e00-\u9fa5]{2,3})$/);
         if (cityCandidate) {
           // Strip common suffixes (市, 县, etc.) and leading prepositions (在, 从, 到)
-          location.city = cityCandidate[1].replace(/^[在从到去回]/, '').replace(/[市县城省]$/, '');
+          location.city = cityCandidate[1].replace(/^[在从到去回]/, '');
         }
       }
     } else {
