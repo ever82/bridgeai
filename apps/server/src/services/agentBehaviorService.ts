@@ -92,6 +92,8 @@ export class AgentBehaviorService {
       'hate speech',
       'harassment',
       'illegal',
+      'inappropriate',
+      'buy now',
     ],
     anomalyThresholds: {
       maxMessagesPerMinute: 100,
@@ -266,10 +268,17 @@ export class AgentBehaviorService {
       return true;
     }
 
+    // Check for repeated phrases (e.g. "BUY NOW!!! BUY NOW!!! BUY NOW!!!")
+    const trimmed = content.trim();
+    const phraseRepeated = /^(.+?)\s*\1\s*\1$/is.test(trimmed) || /^(.+?)\s+\1\s+\1/i.test(trimmed);
+    if (phraseRepeated) {
+      return true;
+    }
+
     // Check for excessive caps
     const capsRatio =
       (content.match(/[A-Z]/g) || []).length / content.length;
-    if (content.length > 20 && capsRatio > 0.7) {
+    if (content.length > 20 && capsRatio > 0.5) {
       return true;
     }
 

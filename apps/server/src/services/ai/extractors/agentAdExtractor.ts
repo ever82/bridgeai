@@ -19,7 +19,7 @@ export class AgentAdExtractor extends BaseSceneExtractor<AgentAdData> {
     'product', 'buy', 'purchase', 'shop', 'shopping',
     '品牌', '预算', '价格', '多少钱', '优惠',
     '淘宝', '京东', '拼多多', '天猫', '亚马逊',
-    '推荐', '想买', '需要', '找', '求购',
+    '推荐', '想买', '需要', '求购',
   ];
 
   protected readonly requiredFields = [
@@ -128,7 +128,7 @@ export class AgentAdExtractor extends BaseSceneExtractor<AgentAdData> {
 
     // Extract product name
     const productPatterns = [
-      { pattern: /iPhone\s*(\d+)/i, name: (m: string[]) => `iPhone ${m[1]}` },
+      { pattern: /iPhone\s*(\d+(?:\s+(?:Pro(?:\s+Max)?|Plus|Mini))?)/i, name: (m: string[]) => `iPhone ${m[1]}` },
       { pattern: /小米\s*(\d+)/, name: (m: string[]) => `小米${m[1]}` },
       { pattern: /华为\s*([\u4e00-\u9fa5\w]+)/, name: (m: string[]) => `华为${m[1]}` },
       { pattern: /MacBook\s*(Pro|Air)?/i, name: (m: string[]) => `MacBook${m[1] ? ' ' + m[1] : ''}` },
