@@ -1,64 +1,127 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
+
 import { prisma } from '../../db/client';
-import { generateTokens, verifyToken } from '../../services/auth/jwt';
+import { verifyToken } from '../../services/auth/jwt';
 import { createRefreshToken, findRefreshToken, revokeRefreshToken, isRefreshTokenValid, rotateRefreshToken } from '../../services/auth/refreshToken';
 import { blacklistToken } from '../../services/auth/blacklist';
 import { authenticate } from '../../middleware/auth';
 import { ApiResponse } from '../../utils/response';
-import { UnauthorizedError, ValidationError } from '../../errors/AppError';
+import { UnauthorizedError, ValidationError, ConflictError } from '../../errors/AppError';
 import { UserRole } from '../../types';
+import { registerUser, loginUser, requestPasswordReset, resetPassword } from '../../services/authService';
 
 const router = Router();
 
 // POST /api/v1/auth/login - Login with email and password
 router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password } = req.body;
+    const { email, phone, password, verificationCode } = req.body;
 
-    if (!email || !password) {
-      throw new ValidationError('Email and password are required');
+    if (!email && !phone) {
+      throw new ValidationError('Email or phone is required');
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user) {
-      throw new UnauthorizedError('Invalid credentials');
+    if (!password && !verificationCode) {
+      throw new ValidationError('Password or verification code is required');
     }
 
-    if (user.status !== 'ACTIVE') {
-      throw new UnauthorizedError('Account is not active');
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
-      throw new UnauthorizedError('Invalid credentials');
-    }
-
-    const tokens = generateTokens(user.id, user.email, user.role as UserRole);
+    const result = await loginUser({ email, phone, password, verificationCode });
 
     await createRefreshToken({
-      userId: user.id,
-      token: tokens.refreshToken,
+      userId: result.user.id,
+      token: result.refreshToken,
       deviceInfo: req.body.deviceInfo,
       ipAddress: req.ip,
     });
 
     res.json(ApiResponse.success({
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
+        id: result.user.id,
+        email: result.user.email,
+        name: result.user.name,
+        role: result.user.role,
       },
       tokens: {
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        expiresIn: tokens.expiresIn,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        expiresIn: result.expiresIn,
       },
     }));
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('不存在')) {
+      next(new UnauthorizedError('Invalid credentials'));
+    } else if (error instanceof Error && error.message.includes('锁定')) {
+      next(new UnauthorizedError(error.message));
+    } else {
+      next(error);
+    }
+  }
+});
+
+// POST /api/v1/auth/register - Register a new user
+router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, phone, password, name, verificationCode } = req.body;
+
+    if (!email && !phone) {
+      throw new ValidationError('Email or phone is required');
+    }
+
+    if (!password) {
+      throw new ValidationError('Password is required');
+    }
+
+    if (!name) {
+      throw new ValidationError('Name is required');
+    }
+
+    const result = await registerUser({ email, phone, password, name, verificationCode });
+
+    res.status(201).json(ApiResponse.success(result.user, 'User registered successfully'));
+  } catch (error) {
+    if (error instanceof Error && error.message === '用户已存在') {
+      next(new ConflictError('User already exists'));
+    } else {
+      next(error);
+    }
+  }
+});
+
+// POST /api/v1/auth/forgot-password - Request password reset
+router.post('/forgot-password', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, phone } = req.body;
+
+    if (!email && !phone) {
+      throw new ValidationError('Email or phone is required');
+    }
+
+    await requestPasswordReset(email, phone);
+
+    // Always return success to prevent user enumeration
+    res.json(ApiResponse.success({ message: 'Password reset instructions sent' }));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/v1/auth/reset-password - Reset password with token
+router.post('/reset-password', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { resetToken, newPassword } = req.body;
+
+    if (!resetToken) {
+      throw new ValidationError('Reset token is required');
+    }
+
+    if (!newPassword) {
+      throw new ValidationError('New password is required');
+    }
+
+    await resetPassword(resetToken, newPassword);
+
+    res.json(ApiResponse.success({ message: 'Password reset successfully' }));
   } catch (error) {
     next(error);
   }

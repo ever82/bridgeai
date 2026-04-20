@@ -1,5 +1,3 @@
-import { prisma } from '../db/client';
-import { AppError } from '../errors/AppError';
 import type {
   L1Profile,
   L2Profile,
@@ -10,6 +8,9 @@ import type {
   UpdateL3ProfileRequest,
 } from '@bridgeai/shared';
 import { L1_FIELD_WEIGHTS } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
+import { AppError } from '../errors/AppError';
 
 // Agent Profile with L1, L2, L3 data
 export interface AgentProfile {

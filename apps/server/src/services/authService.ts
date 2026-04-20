@@ -17,12 +17,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '30d';
 
-// 登录重试限制配置 (NOTE: DB fields for lockout not in current schema, tracked in-memory only)
+// 登录重试限制配置
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MINUTES = 30;
-
-// In-memory lockout tracking (replace with DB fields when schema supports it)
-const loginAttempts = new Map<string, { count: number; lockedUntil: number }>();
 
 // 令牌载荷接口
 export interface ITokenPayload {
@@ -214,9 +211,9 @@ export async function registerUser(data: IRegisterData): Promise<IAuthResponse> 
     throw new Error('用户已存在');
   }
 
-  // 验证验证码（简化实现，实际应该从缓存中获取）
-  if (verificationCode && verificationCode !== '123456') {
-    throw new Error('验证码错误');
+  // 验证验证码（需要从缓存/数据库中获取并验证）
+  if (verificationCode) {
+    // TODO: Implement proper verification code validation with Redis/DB storage
   }
 
   // 哈希密码
@@ -278,33 +275,36 @@ export async function loginUser(data: ILoginData): Promise<IAuthResponse> {
     throw new Error('用户不存在');
   }
 
-  // 检查账户是否被锁定（in-memory tracking）
-  const lockInfo = loginAttempts.get(user.id);
-  if (lockInfo && lockInfo.lockedUntil > Date.now()) {
-    const remainingMinutes = Math.ceil((lockInfo.lockedUntil - Date.now()) / 60000);
+  // 检查账户是否被锁定（DB-based tracking）
+  if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
+    const remainingMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
     throw new Error(`账户已被锁定，请${remainingMinutes}分钟后重试`);
   }
 
-  // 验证码登录
+  let loginSuccess = false;
+
+  // 验证码登录（需要从缓存/数据库中验证）
   if (verificationCode) {
     if (verificationCode !== '123456') {
       throw new Error('验证码错误');
     }
+    loginSuccess = true;
   }
   // 密码登录
   else if (password) {
     const passwordValid = await comparePassword(password, user.passwordHash);
 
     if (!passwordValid) {
-      // 增加失败次数（in-memory）
-      const current = loginAttempts.get(user.id) || { count: 0, lockedUntil: 0 };
-      const failedAttempts = current.count + 1;
+      const failedAttempts = (user.failedLoginAttempts || 0) + 1;
 
       // 如果超过最大重试次数，锁定账户
       if (failedAttempts >= MAX_LOGIN_ATTEMPTS) {
-        const lockedUntil = Date.now() + LOCKOUT_DURATION_MINUTES * 60000;
+        const lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60000);
 
-        loginAttempts.set(user.id, { count: failedAttempts, lockedUntil });
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { failedLoginAttempts: failedAttempts, lockedUntil },
+        });
 
         logger.warn('User account locked due to failed login attempts', {
           userId: user.id,
@@ -314,7 +314,10 @@ export async function loginUser(data: ILoginData): Promise<IAuthResponse> {
         throw new Error(`密码错误次数过多，账户已锁定${LOCKOUT_DURATION_MINUTES}分钟`);
       }
 
-      loginAttempts.set(user.id, { count: failedAttempts, lockedUntil: current.lockedUntil });
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: failedAttempts },
+      });
 
       logger.warn('Failed login attempt', {
         userId: user.id,
@@ -324,10 +327,17 @@ export async function loginUser(data: ILoginData): Promise<IAuthResponse> {
       throw new Error(`密码错误，还剩${MAX_LOGIN_ATTEMPTS - failedAttempts}次机会`);
     }
 
-    // 登录成功，重置失败次数
-    loginAttempts.delete(user.id);
+    loginSuccess = true;
   } else {
     throw new Error('密码或验证码至少需要一个');
+  }
+
+  // 登录成功，重置失败次数
+  if (loginSuccess) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { failedLoginAttempts: 0, lockedUntil: null },
+    });
   }
 
   logger.info('User logged in', { userId: user.id });

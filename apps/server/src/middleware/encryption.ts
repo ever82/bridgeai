@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+
 import { encrypt, decrypt, EncryptedData } from '../utils/encryption';
 import { isSensitiveField } from '../config/security';
 

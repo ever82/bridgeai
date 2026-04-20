@@ -9,6 +9,7 @@ import {
   NegotiationMessage,
   NegotiationTopic
 } from '../../models/NegotiationRoom';
+
 import { negotiationRoomService } from './negotiationRoom';
 
 export interface NegotiationResult {

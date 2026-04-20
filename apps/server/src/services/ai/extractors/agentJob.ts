@@ -3,9 +3,10 @@
  * 招聘求职场景提取器 - 提取技能、经验、薪资期望等信息
  */
 
-import { BaseSceneExtractor, SceneType } from './base';
 import { Demand, DemandExtractionRequest, ExtractedEntity } from '../demandExtractionService';
 import { logger } from '../../../utils/logger';
+
+import { BaseSceneExtractor, SceneType } from './base';
 
 /**
  * AgentJob Specific Fields

@@ -3,8 +3,9 @@
  * 交友隐私服务测试
  */
 
-import * as privacyService from '../dating/privacyService';
 import type { DatingProfile, PrivacySettings } from '@bridgeai/shared';
+
+import * as privacyService from '../dating/privacyService';
 
 describe('DatingPrivacyService', () => {
   const mockDate = new Date('2026-04-10');

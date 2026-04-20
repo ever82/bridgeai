@@ -1,5 +1,4 @@
 import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
 import * as Crypto from 'expo-crypto';
 
 const ENCRYPTION_KEY_NAME = 'local_album_encryption_key';

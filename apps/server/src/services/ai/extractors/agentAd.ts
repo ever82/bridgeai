@@ -3,9 +3,10 @@
  * 广告投放场景提取器 - 提取商品、预算、品牌偏好等信息
  */
 
-import { BaseSceneExtractor, SceneType } from './base';
 import { Demand, DemandExtractionRequest, ExtractedEntity } from '../demandExtractionService';
 import { logger } from '../../../utils/logger';
+
+import { BaseSceneExtractor, SceneType } from './base';
 
 /**
  * AgentAd Specific Fields

@@ -11,12 +11,15 @@
  * - 最优方案推荐与人工确认
  */
 
+import { v4 as uuidv4 } from 'uuid';
+
+import { logger } from '../../utils/logger';
+
 import { llmService } from './llmService';
 import { metricsService } from './metricsService';
 import { LLMProvider } from './types';
-import { logger } from '../../utils/logger';
 import { demandExtractionService } from './demandExtractionService';
-import { v4 as uuidv4 } from 'uuid';
+
 
 /**
  * Agent类型

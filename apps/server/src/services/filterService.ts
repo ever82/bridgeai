@@ -5,9 +5,16 @@
  * 提供统一的 Agent 过滤接口，支持信用分范围筛选、信用等级过滤等功能
  */
 
-import { prisma } from '../db/client';
 import { FilterDSL, FilterCondition, FilterOperator } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
+import {
+  getSceneThreshold,
+  checkSceneCreditThreshold,
+  isUserExempted,
+} from '../config/creditThresholds';
+
 import {
   CreditLevel,
   CreditFilterOptions,
@@ -15,11 +22,6 @@ import {
   CREDIT_LEVEL_THRESHOLDS,
   getCreditLevel,
 } from './creditFilterService';
-import {
-  getSceneThreshold,
-  checkSceneCreditThreshold,
-  isUserExempted,
-} from '../config/creditThresholds';
 
 export interface AgentFilterOptions {
   // 基础过滤条件

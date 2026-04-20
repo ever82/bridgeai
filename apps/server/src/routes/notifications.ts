@@ -6,6 +6,7 @@
  */
 
 import { Router, Request, Response } from 'express';
+
 import { authenticate } from '../middleware/auth';
 import { notificationService } from '../services/notificationService';
 import { logger } from '../utils/logger';

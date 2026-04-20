@@ -3,9 +3,6 @@
  * VisionShare任务管理服务
  */
 
-import { prisma } from '../../db/client';
-import { logger } from '../../utils/logger';
-import { emitToUser } from '../../socket';
 import type {
   VisionShareTask,
   VisionShareTaskStatus,
@@ -15,8 +12,13 @@ import type {
   DemandRefinementResult,
   PublishValidationResult,
 } from '@packages/shared/types/visionShare';
+
+import { prisma } from '../../db/client';
+import { logger } from '../../utils/logger';
+import { emitToUser } from '../../socket';
 import { visionShareDemandRefinementService } from '../ai/visionShareDemandRefinement';
 import { visionShareNLPService } from '../ai/visionShareNLP';
+
 import { publishValidationService } from './publishValidation';
 
 /**

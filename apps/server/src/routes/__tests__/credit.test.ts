@@ -1,5 +1,6 @@
 import request from 'supertest';
 import express from 'express';
+
 import creditRoutes from '../credit';
 import { CreditScoreService } from '../../services/creditScoreService';
 

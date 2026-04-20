@@ -3,8 +3,9 @@
  * Redis-based caching for performance optimization
  */
 
-import { redis, isRedisConnected } from './redis';
 import { logger } from '../utils/logger';
+
+import { redis, isRedisConnected } from './redis';
 
 // Cache TTLs in seconds
 export const CacheTTL = {

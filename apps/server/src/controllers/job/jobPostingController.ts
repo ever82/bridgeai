@@ -5,6 +5,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
+
 import {
   createJobPosting,
   getJobPosting,

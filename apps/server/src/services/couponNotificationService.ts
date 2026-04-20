@@ -1,10 +1,12 @@
+import { CouponStatus } from '@prisma/client';
+
 import { prisma } from '../db/client';
+
 import {
   getExpiringCoupons,
   markReminderSent,
   getCouponById,
 } from './promoCodeService';
-import { CouponStatus } from '@prisma/client';
 
 /**
  * Notification service for coupon-related notifications

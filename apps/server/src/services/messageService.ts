@@ -3,8 +3,10 @@
  *
  * Handles message persistence, retrieval, sync, and read receipts.
  */
-import { prisma } from '../db/client';
 import type { MessageType, MessageStatus, Prisma } from '@prisma/client';
+
+import { prisma } from '../db/client';
+
 import { encryptionService } from './encryptionService';
 
 export interface CreateMessageInput {

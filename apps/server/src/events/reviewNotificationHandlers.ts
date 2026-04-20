@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+
 import { prisma } from '../db/client';
 import {
   sendNotification,
@@ -11,6 +12,7 @@ import {
   sendBadReviewWarning,
   sendCreditScoreChangeNotification,
 } from '../services/notificationService';
+
 import { reviewEvents, ReviewEventType } from './reviewEventHandlers';
 
 // Notification Handler Events

@@ -1,13 +1,14 @@
 /**
  * Disclosure Service Tests
  */
-import { disclosureService, DisclosureService } from '../disclosureService';
-import { disclosureAuditService } from '../disclosureAuditService';
 import {
   DisclosureLevel,
   RelationshipStage,
   createDefaultDisclosureSettings,
 } from '@bridgeai/shared';
+
+import { disclosureService, DisclosureService } from '../disclosureService';
+import { disclosureAuditService } from '../disclosureAuditService';
 import { prisma } from '../../db/client';
 
 // Mock dependencies

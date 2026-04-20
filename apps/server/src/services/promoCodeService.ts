@@ -1,6 +1,8 @@
-import { prisma } from '../db/client';
-import { CouponStatus, TransactionStatus, RatingType, Prisma } from '@prisma/client';
 import crypto from 'crypto';
+
+import { CouponStatus, TransactionStatus, RatingType, Prisma } from '@prisma/client';
+
+import { prisma } from '../db/client';
 
 /**
  * Generate a unique promo code

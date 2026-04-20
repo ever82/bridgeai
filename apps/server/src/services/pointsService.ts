@@ -17,15 +17,9 @@ import {
   PointsTransactionType,
   SceneCode,
 } from '@bridgeai/shared';
+
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
-import { PointsRuleEngine, pointsRuleEngine } from './pointsRuleEngine';
-import {
-  PointsTransactionService,
-  pointsTransactionService,
-  TransactionOptions,
-  FreezeOptions,
-} from './pointsTransactionService';
 import {
   getRuleByCode,
   getPointsValueConfig,
@@ -35,6 +29,14 @@ import {
   calculateRechargePoints,
   calculatePointsRmbValue,
 } from '../config/pointsRules';
+
+import { PointsRuleEngine, pointsRuleEngine } from './pointsRuleEngine';
+import {
+  PointsTransactionService,
+  pointsTransactionService,
+  TransactionOptions,
+  FreezeOptions,
+} from './pointsTransactionService';
 
 // 规则执行选项
 export interface RuleExecuteOptions {

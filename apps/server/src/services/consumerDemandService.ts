@@ -11,9 +11,6 @@
  * - 需求预览和发布
  */
 
-import { prisma } from '../db/client';
-import { AppError } from '../errors/AppError';
-import { logger } from '../utils/logger';
 import {
   AgentType,
   AgentStatus,
@@ -30,6 +27,10 @@ import {
   UpdateConsumerConfigRequest,
   ExtractedDemandData,
 } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
+import { AppError } from '../errors/AppError';
+import { logger } from '../utils/logger';
 
 // Re-export types from shared
 export {

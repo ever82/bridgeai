@@ -7,12 +7,22 @@
 
 import { Router, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
+
 import { logger } from '../utils/logger';
 import { getRequestContext } from '../middleware/requestContext';
+import { validate } from '../middleware/validation';
 import * as authService from '../services/authService';
 import * as oauthService from '../services/oauthService';
 import * as blacklistService from '../services/auth/blacklist';
 import { authenticate } from '../middleware/auth';
+import {
+  registerSchema,
+  loginSchema,
+  refreshTokenSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  oauthBindSchema,
+} from '../schemas/authSchemas';
 
 const router = Router();
 
@@ -32,6 +42,15 @@ const registerLimiter = rateLimit({
   message: { error: '注册尝试次数过多，请稍后重试' },
 });
 
+// 密码重置限流
+const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15分钟
+  max: 5, // 最多5次
+  message: { error: '密码重置尝试次数过多，请稍后重试' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 /**
  * POST /api/v1/auth/register
  * 用户注册
@@ -39,6 +58,7 @@ const registerLimiter = rateLimit({
 router.post(
   '/register',
   registerLimiter,
+  validate({ body: registerSchema }),
   async (req: Request, res: Response) => {
     try {
       const { email, phone, password, name, verificationCode } = req.body;
@@ -89,13 +109,10 @@ router.post(
 router.post(
   '/login',
   loginLimiter,
+  validate({ body: loginSchema }),
   async (req: Request, res: Response) => {
     try {
       const { email, phone, password, verificationCode } = req.body;
-
-      if (!email && !phone) {
-        return res.status(400).json({ error: '邮箱或手机号至少需要一个' });
-      }
 
       // 执行登录
       const result = await authService.loginUser({
@@ -126,15 +143,14 @@ router.post(
  * POST /api/v1/auth/refresh
  * 刷新访问令牌
  */
-router.post('/refresh', async (req: Request, res: Response) => {
-  try {
-    const { refreshToken } = req.body;
+router.post(
+  '/refresh',
+  validate({ body: refreshTokenSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const { refreshToken } = req.body;
 
-    if (!refreshToken) {
-      return res.status(400).json({ error: '刷新令牌不能为空' });
-    }
-
-    const result = await authService.refreshAccessToken(refreshToken);
+      const result = await authService.refreshAccessToken(refreshToken);
 
     res.json({
       success: true,
@@ -219,15 +235,15 @@ router.post('/logout-all', authenticate, async (req: Request, res: Response) => 
  * POST /api/v1/auth/forgot-password
  * 申请密码重置
  */
-router.post('/forgot-password', async (req: Request, res: Response) => {
-  try {
-    const { email, phone } = req.body;
+router.post(
+  '/forgot-password',
+  passwordResetLimiter,
+  validate({ body: forgotPasswordSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const { email, phone } = req.body;
 
-    if (!email && !phone) {
-      return res.status(400).json({ error: '邮箱或手机号至少需要一个' });
-    }
-
-    const resetToken = await authService.requestPasswordReset(email, phone);
+      const resetToken = await authService.requestPasswordReset(email, phone);
 
     // 实际应该发送邮件或短信
     res.json({
@@ -250,15 +266,14 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
  * POST /api/v1/auth/reset-password
  * 重置密码
  */
-router.post('/reset-password', async (req: Request, res: Response) => {
-  try {
-    const { resetToken, newPassword } = req.body;
+router.post(
+  '/reset-password',
+  validate({ body: resetPasswordSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const { resetToken, newPassword } = req.body;
 
-    if (!resetToken || !newPassword) {
-      return res.status(400).json({ error: '重置令牌和新密码不能为空' });
-    }
-
-    await authService.resetPassword(resetToken, newPassword);
+      await authService.resetPassword(resetToken, newPassword);
 
     res.json({
       success: true,
@@ -416,17 +431,20 @@ router.get('/oauth/:provider/callback', async (req: Request, res: Response) => {
  * POST /api/v1/auth/oauth/:provider/bind
  * 绑定 OAuth 账户
  */
-router.post('/oauth/:provider/bind', async (req: Request, res: Response) => {
-  try {
-    const { provider } = req.params;
-    const { code } = req.body;
-    const context = getRequestContext();
+router.post(
+  '/oauth/:provider/bind',
+  validate({ body: oauthBindSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const { provider } = req.params;
+      const { code } = req.body;
+      const context = getRequestContext();
 
-    if (!context?.userId) {
-      return res.status(401).json({ error: '未登录' });
-    }
+      if (!context?.userId) {
+        return res.status(401).json({ error: '未登录' });
+      }
 
-    await oauthService.bindOAuthAccount(
+      await oauthService.bindOAuthAccount(
       context.userId,
       provider as 'wechat' | 'google',
       code

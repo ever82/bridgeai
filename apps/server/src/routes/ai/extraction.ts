@@ -7,12 +7,14 @@
 import { Router, Request, Response } from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
 import { getL2Schema, L2Schema } from '@bridgeai/shared';
+
 import { demandExtractionService, DemandExtractionRequest } from '../../services/ai/demandExtractionService';
 import { demandToL2Mapper, MappingResult } from '../../services/ai/mappers/demandToL2Mapper';
 import { extractionValidator, ValidationReport } from '../../services/ai/validators/extractionValidator';
 import { extractL2FromL3, ExtractionResult } from '../../services/ai/extractionService';
 import { processNaturalLanguageDemand } from '../../services/ai/consumerDemandAI';
 import { logger } from '../../utils/logger';
+
 import offerExtractionRoutes from './offerExtraction';
 
 const router: Router = Router();

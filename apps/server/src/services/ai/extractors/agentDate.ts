@@ -3,9 +3,10 @@
  * 婚恋交友场景提取器 - 提取择偶标准、兴趣、时间等信息
  */
 
-import { BaseSceneExtractor, SceneType } from './base';
 import { Demand, DemandExtractionRequest, ExtractedEntity } from '../demandExtractionService';
 import { logger } from '../../../utils/logger';
+
+import { BaseSceneExtractor, SceneType } from './base';
 
 /**
  * AgentDate Specific Fields

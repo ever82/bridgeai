@@ -14,6 +14,7 @@ import {
   hasScene,
   SCENE_IDS,
 } from '@bridgeai/shared';
+
 import {
   getEnabledCapabilities,
   getCapabilityStatus,

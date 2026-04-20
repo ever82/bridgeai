@@ -1,6 +1,7 @@
 // Test setup file
-import dotenv from 'dotenv';
 import path from 'path';
+
+import dotenv from 'dotenv';
 
 // Load test environment variables
 const envPath = path.resolve(__dirname, '../../.env.test');

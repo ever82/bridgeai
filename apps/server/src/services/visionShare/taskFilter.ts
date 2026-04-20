@@ -14,6 +14,7 @@ import {
   calculateDistance,
   DEFAULT_TASK_FILTER,
 } from '@bridgeai/shared';
+
 import { logger } from '../../utils/logger';
 
 // Mock task database - in production, this would be from Prisma

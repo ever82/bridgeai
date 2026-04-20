@@ -13,6 +13,7 @@ import {
   companyVerificationRequestSchema,
   verifyEmailSchema,
 } from '@bridgeai/shared';
+
 import { AppError } from '../../errors';
 
 // TODO: Replace with actual database implementation

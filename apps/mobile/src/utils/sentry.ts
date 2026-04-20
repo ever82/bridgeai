@@ -168,7 +168,7 @@ export function configureNavigationBreadcrumb(
 /**
  * Error boundary wrapper for React Native
  */
-export function withErrorBoundary<T extends React.ComponentType<any>>(
+export function withErrorBoundary<T extends React.ComponentType<object>>(
   Component: T
 ): T {
   return Sentry.wrap(Component);

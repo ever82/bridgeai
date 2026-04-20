@@ -3,9 +3,10 @@
  * VisionShare场景提取器 - 摄影服务需求
  */
 
+import { logger } from '../../../utils/logger';
+
 import { BaseSceneExtractor } from './baseExtractor';
 import { VisionShareData, SceneType, SceneExtractedEntity } from './types';
-import { logger } from '../../../utils/logger';
 
 /**
  * VisionShare Extractor - Handles photography service demands
@@ -35,7 +36,7 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
   /**
    * Extract VisionShare-specific data from text
    */
-  async extract(text: string, context?: Record<string, any>): Promise<VisionShareData> {
+  async extract(text: string, _context?: Record<string, any>): Promise<VisionShareData> {
     logger.info('Extracting VisionShare demand', { textLength: text.length });
 
     const entities = this.extractVisionShareEntities(text);
@@ -104,13 +105,31 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
     // Extract budget
     structured.budget = this.parseBudget(text);
 
-    // Extract location
-    const location = this.parseLocation(text);
+    // Extract location - enhanced city/district extraction
+    const location: VisionShareData['structured']['location'] = {};
+
+    // Try to extract city from phrases like "上海浦东新区"
+    const cityMatch = text.match(/([\u4e00-\u9fa5]{2,10}?)(?=[\u4e00-\u9fa5]{0,3}(?:区|县|镇|开发区|新区|新城))/);
+    if (cityMatch) {
+      location.city = cityMatch[1];
+    }
+
+    const parsedLocation = this.parseLocation(text);
+    if (parsedLocation.city && !location.city) {
+      location.city = parsedLocation.city;
+    }
+    if (parsedLocation.district) {
+      location.district = parsedLocation.district;
+    }
+
+    // Extract indoor/outdoor preference
+    location.indoor = /内景|棚拍|室内|摄影棚/.test(text);
+    if (location.indoor === undefined && /外景|户外|室外/.test(text)) {
+      location.indoor = false;
+    }
+
     if (Object.keys(location).length > 0) {
-      structured.location = {
-        ...location,
-        indoor: /内景|棚拍|室内|工作室/.test(text),
-      };
+      structured.location = location;
     }
 
     // Extract requirements
@@ -158,7 +177,7 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
       }
     }
 
-    return types.length > 0 ? types : ['人像摄影'];
+    return types.length > 0 ? types : [];
   }
 
   /**

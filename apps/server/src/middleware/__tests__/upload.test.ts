@@ -2,6 +2,7 @@
  * Tests for upload middleware
  */
 import { Request, Response } from 'express';
+
 import {
   uploadSingle,
   uploadMultiple,

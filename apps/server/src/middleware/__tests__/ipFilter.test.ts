@@ -2,6 +2,7 @@
  * Tests for IP Filter Middleware
  */
 import { Request, Response } from 'express';
+
 import {
   ipFilter,
   addToWhitelist,

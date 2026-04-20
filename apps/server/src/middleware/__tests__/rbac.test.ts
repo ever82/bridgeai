@@ -2,6 +2,7 @@
  * RBAC Middleware Tests
  */
 import { Request, Response, NextFunction } from 'express';
+
 import {
   requireRole,
   requirePermission,

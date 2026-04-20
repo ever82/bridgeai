@@ -54,6 +54,8 @@ export class ValidationError extends AppError {
       400,
       details
     );
+    // Fix instanceof check for transpiled ES6 class inheritance
+    Object.setPrototypeOf(this, ValidationError.prototype);
   }
 }
 

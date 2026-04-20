@@ -8,9 +8,10 @@
  * - IP whitelist/blacklist management
  */
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
+
 import { authenticate, requireRole } from '../../middleware/auth';
 import { validate } from '../../middleware/validation';
-import { z } from 'zod';
 import {
   getBlockedIPs,
   unblockIP,

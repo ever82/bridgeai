@@ -1,12 +1,57 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Response } from 'express';
+import { z } from 'zod';
+import multer from 'multer';
+
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/common';
+import { validateBody } from '../middleware/validation';
 import { ApiResponse } from '../utils/response';
 import * as userService from '../services/userService';
 import * as storageService from '../services/storageService';
 import { AppError } from '../errors/AppError';
 
+// Multer config for avatar upload
+const avatarUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
+  },
+});
+
 const router: Router = Router();
+
+// Zod schema for profile update
+const updateProfileSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  displayName: z.string().max(50).optional(),
+  bio: z.string().max(500).optional(),
+  website: z.string().url().max(500).optional().or(z.literal('').transform(() => undefined)),
+  location: z.string().max(200).optional(),
+});
+
+/**
+ * Validate avatarUrl - only allow https:// URLs from allowed domains
+ */
+function validateAvatarUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      throw new AppError('Avatar URL must use http or https protocol', 'INVALID_AVATAR_URL', 400);
+    }
+    if (parsed.protocol === 'http:') {
+      throw new AppError('Avatar URL must use https protocol', 'INVALID_AVATAR_URL', 400);
+    }
+    return url;
+  } catch {
+    throw new AppError('Invalid avatar URL format', 'INVALID_AVATAR_URL', 400);
+  }
+}
 
 /**
  * @route GET /api/v1/users/me
@@ -39,6 +84,7 @@ router.get(
 router.put(
   '/me',
   authenticate,
+  validateBody(updateProfileSchema),
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
@@ -66,6 +112,7 @@ router.put(
 router.post(
   '/avatar',
   authenticate,
+  avatarUpload.single('avatar'),
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
@@ -90,8 +137,8 @@ router.post(
       const result = await storageService.uploadAvatar(fileInfo, req.user.id);
       avatarUrl = result.url;
     } else {
-      // Use provided URL
-      avatarUrl = req.body.avatarUrl;
+      // Use provided URL with validation
+      avatarUrl = validateAvatarUrl(req.body.avatarUrl);
     }
 
     const updatedUser = await userService.updateAvatar(req.user.id, avatarUrl);

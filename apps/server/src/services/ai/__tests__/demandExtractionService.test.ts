@@ -50,6 +50,7 @@ describe('DemandExtractionService', () => {
         provider: 'openai',
         model: 'gpt-4',
         latencyMs: 100,
+        cost: 0,
       });
 
       // Mock LLM response for entity extraction
@@ -73,6 +74,7 @@ describe('DemandExtractionService', () => {
         provider: 'openai',
         model: 'gpt-4',
         latencyMs: 100,
+        cost: 0,
       });
 
       const request: DemandExtractionRequest = {

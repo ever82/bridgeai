@@ -4,6 +4,7 @@
  */
 
 import { logger } from '../../../../utils/logger';
+
 import { BaseSupplyExtractor } from './baseSupplyExtractor';
 import { AdSupplyData, SupplySceneType, SupplyQualification } from './types';
 

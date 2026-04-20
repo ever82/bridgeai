@@ -3,6 +3,8 @@
  * 聊天房间服务单元测试
  */
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { ChatRoomType, ChatRoomStatus, ParticipantRole } from '@prisma/client';
+
 import {
   createRoom,
   getRoomById,
@@ -14,7 +16,6 @@ import {
   resetUnreadCount,
   updateLastMessage,
 } from '../roomService';
-import { ChatRoomType, ChatRoomStatus, ParticipantRole } from '@prisma/client';
 import { prisma } from '../../../db/client';
 
 // Mock the prisma client

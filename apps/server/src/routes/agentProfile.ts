@@ -1,11 +1,12 @@
 import { Router, Request, Response } from 'express';
+import type { UpdateL1ProfileRequest } from '@bridgeai/shared';
+
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/common';
 import { ApiResponse } from '../utils/response';
 import { AppError } from '../errors/AppError';
 import * as agentProfileService from '../services/agentProfileService';
 import { calculateL1Completion } from '../services/agentProfileService';
-import type { UpdateL1ProfileRequest } from '@bridgeai/shared';
 
 const router: Router = Router();
 

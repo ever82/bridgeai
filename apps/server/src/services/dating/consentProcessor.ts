@@ -22,6 +22,7 @@ import {
   recordUserDecision,
   addToBlacklist,
 } from '../../models/ReferralRecord';
+
 import { getConsentByReferral } from './consentStateManager';
 
 // 模拟存储
@@ -183,7 +184,7 @@ async function handleMutualReject(
   const updatedReferral = updateReferralStatus(referral, ReferralStatus.FAILED, ReferralResult.MUTUAL_REJECT);
 
   // 加入黑名单（避免重复推荐）
-  let finalReferral = addToBlacklist(updatedReferral, '双方拒绝');
+  const finalReferral = addToBlacklist(updatedReferral, '双方拒绝');
 
   referralStore.set(referral.id, finalReferral);
 
@@ -223,7 +224,7 @@ async function handleSingleReject(
   const acceptedUserId = userARejected ? consent.userBId : consent.userAId;
 
   // 加入黑名单
-  let finalReferral = addToBlacklist(updatedReferral, '单方拒绝');
+  const finalReferral = addToBlacklist(updatedReferral, '单方拒绝');
   referralStore.set(referral.id, finalReferral);
 
   // 更新推荐算法

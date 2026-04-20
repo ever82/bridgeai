@@ -8,6 +8,7 @@ import {
   PointsTransactionType,
   SceneCode,
 } from '@bridgeai/shared';
+
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
 import {

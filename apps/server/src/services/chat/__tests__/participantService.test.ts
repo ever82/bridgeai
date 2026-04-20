@@ -3,6 +3,8 @@
  * 参与者服务单元测试
  */
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { ChatRoomType, ParticipantRole } from '@prisma/client';
+
 import {
   addParticipant,
   removeParticipant,
@@ -13,7 +15,6 @@ import {
   hasPermission,
   getRolePermissions,
 } from '../participantService';
-import { ChatRoomType, ParticipantRole } from '@prisma/client';
 import { prisma } from '../../../db/client';
 
 // Mock the prisma client - mock db/client directly since that's what the service imports

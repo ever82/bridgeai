@@ -13,7 +13,9 @@ import {
   UserTaskSummary,
   calculateDistance,
 } from '@bridgeai/shared';
+
 import { logger } from '../../utils/logger';
+
 import { getTaskById } from './taskFilter';
 
 // Minimum requirements

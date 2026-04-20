@@ -3,9 +3,10 @@
  * AgentJob场景提取器 - 求职招聘需求
  */
 
+import { logger } from '../../../utils/logger';
+
 import { BaseSceneExtractor } from './baseExtractor';
 import { AgentJobData, SceneType, SceneExtractedEntity } from './types';
-import { logger } from '../../../utils/logger';
 
 /**
  * AgentJob Extractor - Handles job search and recruitment demands
@@ -37,7 +38,7 @@ export class AgentJobExtractor extends BaseSceneExtractor<AgentJobData> {
   /**
    * Extract AgentJob-specific data from text
    */
-  async extract(text: string, context?: Record<string, any>): Promise<AgentJobData> {
+  async extract(text: string, _context?: Record<string, any>): Promise<AgentJobData> {
     logger.info('Extracting AgentJob demand', { textLength: text.length });
 
     const entities = this.extractAgentJobEntities(text);
@@ -269,7 +270,7 @@ export class AgentJobExtractor extends BaseSceneExtractor<AgentJobData> {
   /**
    * Extract job type from text
    */
-  private extractJobType(text: string, entities: SceneExtractedEntity[]): string[] {
+  private extractJobType(text: string, _entities: SceneExtractedEntity[]): string[] {
     const types: string[] = [];
 
     const typePatterns = [
@@ -358,7 +359,10 @@ export class AgentJobExtractor extends BaseSceneExtractor<AgentJobData> {
     if (/医疗保险|医保/.test(text)) {
       benefits.push('医疗保险');
     }
-    if (/年假|带薪/.test(text)) {
+    if (/年假/.test(text)) {
+      benefits.push('年假');
+    }
+    if (/带薪/.test(text)) {
       benefits.push('带薪年假');
     }
     if (/双休/.test(text)) {

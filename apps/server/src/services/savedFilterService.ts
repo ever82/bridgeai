@@ -3,8 +3,9 @@
  * 保存筛选器服务
  */
 
-import { prisma } from '../db/client';
 import { FilterDSL, SavedFilter, SavedFilterInput } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
 
 /**

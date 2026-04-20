@@ -3,11 +3,13 @@
  * 使用 LLM 从自然语言文本中提取结构化 L2 数据
  */
 
+import { L2Schema, L2Data, L2FieldType, getL2Schema } from '@bridgeai/shared';
+
+import { logger } from '../../utils/logger';
+
 import { llmService } from './llmService';
 import { metricsService } from './metricsService';
 import { LLMProvider } from './types';
-import { L2Schema, L2Data, L2FieldType, getL2Schema } from '@bridgeai/shared';
-import { logger } from '../../utils/logger';
 
 // Extraction result
 export interface ExtractionResult {

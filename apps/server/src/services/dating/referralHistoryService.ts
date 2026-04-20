@@ -56,7 +56,7 @@ export async function getReferralHistory(
 ): Promise<ReferralHistoryResult> {
   const { userId, status, type, startDate, endDate, limit = 20, offset = 0 } = query;
 
-  let referrals: ReferralRecord[] = [];
+  const referrals: ReferralRecord[] = [];
 
   for (const referral of referralStore.values()) {
     // 检查是否涉及该用户

@@ -1,4 +1,5 @@
 import { createHash } from 'crypto';
+
 import sharp from 'sharp';
 
 export interface ImageSecurityCheckResult {

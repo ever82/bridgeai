@@ -11,10 +11,12 @@ import {
   PointsTransaction,
   PointsFreeze,
 } from '@bridgeai/shared';
+
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
-import { PointsRuleEngine, pointsRuleEngine } from './pointsRuleEngine';
 import { getFreezeConfig } from '../config/pointsRules';
+
+import { PointsRuleEngine, pointsRuleEngine } from './pointsRuleEngine';
 
 // 交易选项
 export interface TransactionOptions {
@@ -824,7 +826,7 @@ export class PointsTransactionService {
   ): Promise<BatchTransactionResult> {
     const transactions: PointsTransaction[] = [];
     let totalEarned = 0;
-    let totalSpent = 0;
+    const totalSpent = 0;
 
     // 串行处理避免并发冲突
     for (const op of operations) {

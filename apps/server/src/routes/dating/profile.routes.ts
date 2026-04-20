@@ -1,14 +1,15 @@
 import { Router, Request, Response } from 'express';
+import type {
+  CreateDatingProfileRequest,
+  UpdateDatingProfileRequest,
+} from '@bridgeai/shared';
+
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
 import { asyncHandler } from '../../middleware/common';
 import { ApiResponse } from '../../utils/response';
 import { AppError } from '../../errors/AppError';
 import * as profileService from '../../services/dating/profileService';
 import * as qualityService from '../../services/dating/profileQualityService';
-import type {
-  CreateDatingProfileRequest,
-  UpdateDatingProfileRequest,
-} from '@bridgeai/shared';
 
 const router: Router = Router();
 

@@ -2,8 +2,10 @@
  * Socket Server Tests
  */
 import { createServer } from 'http';
+
 import { Server as SocketServer } from 'socket.io';
 import { io as Client } from 'socket.io-client';
+
 import { initializeSocketServer, getIO, emitToUser, broadcast } from '../../src/socket';
 import { rbacService } from '../../src/services/rbacService';
 import { jwtService } from '../../src/services/jwtService';

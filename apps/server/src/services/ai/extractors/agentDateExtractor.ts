@@ -3,9 +3,10 @@
  * AgentDate场景提取器 - 交友约会需求
  */
 
+import { logger } from '../../../utils/logger';
+
 import { BaseSceneExtractor } from './baseExtractor';
 import { AgentDateData, SceneType, SceneExtractedEntity } from './types';
-import { logger } from '../../../utils/logger';
 
 /**
  * AgentDate Extractor - Handles dating and matchmaking demands
@@ -35,7 +36,7 @@ export class AgentDateExtractor extends BaseSceneExtractor<AgentDateData> {
   /**
    * Extract AgentDate-specific data from text
    */
-  async extract(text: string, context?: Record<string, any>): Promise<AgentDateData> {
+  async extract(text: string, _context?: Record<string, any>): Promise<AgentDateData> {
     logger.info('Extracting AgentDate demand', { textLength: text.length });
 
     const entities = this.extractAgentDateEntities(text);
@@ -318,7 +319,7 @@ export class AgentDateExtractor extends BaseSceneExtractor<AgentDateData> {
    */
   protected getClarificationQuestion(field: string): string {
     const agentDateQuestions: Record<string, string> = {
-      'partnerPreferences': '请问您对理想伴侣有什么要求？（如：年龄、身高、学历、职业等）',
+      'partnerCriteria': '请问您对理想伴侣有什么要求？（如：年龄、身高、学历、职业等）',
       'partnerPreferences.ageRange': '请问您希望对方的年龄范围是多少？',
       'partnerPreferences.education': '请问您对对方的学历有要求吗？',
       'partnerPreferences.occupation': '请问您希望对方从事什么职业？',

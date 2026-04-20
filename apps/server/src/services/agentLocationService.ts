@@ -3,8 +3,6 @@
  * Agent位置服务 - 管理Agent地理位置数据
  */
 
-import { prisma } from '../db/client';
-import { logger } from '../utils/logger';
 import { calculateDistance, isWithinBoundingBox, createBoundingBox } from '@bridgeai/shared';
 import type {
   Location,
@@ -18,6 +16,9 @@ import {
   findContainingGeoFences,
   getGeoFencesWithinDistance,
 } from '@bridgeai/shared';
+
+import { logger } from '../utils/logger';
+import { prisma } from '../db/client';
 
 export interface AgentLocationData {
   agentId: string;

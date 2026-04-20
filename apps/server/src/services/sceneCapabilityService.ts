@@ -15,6 +15,7 @@ import {
   SCENE_IDS,
 } from '@bridgeai/shared';
 import { getSceneConfig } from '@bridgeai/shared';
+
 import { logger } from '../utils/logger';
 
 // Capability version cache

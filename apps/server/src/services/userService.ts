@@ -1,6 +1,9 @@
+import bcrypt from 'bcryptjs';
+
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
-import bcrypt from 'bcryptjs';
+
+import * as storageService from './storageService';
 
 export interface UserProfile {
   id: string;
@@ -144,6 +147,18 @@ export async function updateUser(
  * Update user avatar
  */
 export async function updateAvatar(userId: string, avatarUrl: string): Promise<UserProfile> {
+  // Clean up old avatar before updating
+  const oldUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { avatarUrl: true },
+  });
+  if (oldUser?.avatarUrl) {
+    try {
+      await storageService.deleteFile(oldUser.avatarUrl);
+    } catch (err) {
+      // Ignore cleanup errors - file may already be gone
+    }
+  }
   return updateUser(userId, { avatarUrl });
 }
 
@@ -151,6 +166,12 @@ export async function updateAvatar(userId: string, avatarUrl: string): Promise<U
  * Delete user account
  */
 export async function deleteUser(userId: string): Promise<void> {
+  // Fetch avatar URL before deletion for cleanup
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { avatarUrl: true },
+  });
+
   // Delete related records first due to foreign key constraints
   await prisma.$transaction([
     prisma.blockedUser.deleteMany({
@@ -166,6 +187,15 @@ export async function deleteUser(userId: string): Promise<void> {
       where: { id: userId },
     }),
   ]);
+
+  // Clean up avatar file after user deletion
+  if (user?.avatarUrl) {
+    try {
+      await storageService.deleteFile(user.avatarUrl);
+    } catch (err) {
+      // Ignore cleanup errors
+    }
+  }
 }
 
 /**

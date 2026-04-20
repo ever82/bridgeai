@@ -4,12 +4,14 @@
  * Provides audit logging and change tracking for disclosure settings.
  * Tracks disclosure changes, access attempts, and manages notifications.
  */
-import { prisma } from '../db/client';
 import {
   DisclosureLevel,
   DisclosureAuditEntry,
   DisclosureChangeRecord,
 } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
+
 import { auditService } from './auditService';
 
 /**

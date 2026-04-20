@@ -8,6 +8,7 @@
  */
 
 import { Queue, Job } from 'bullmq';
+
 import { getQueueManager, QueueManager } from './queues';
 import { QueueName } from './config';
 

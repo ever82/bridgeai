@@ -3,12 +3,13 @@
  * OpenAI GPT-4 Vision模型适配器
  */
 
-import { BaseVisionAdapter } from './base';
 import {
   ImageInput,
   VisionModelConfig,
   VisionRequestContext
 } from '../../vision/types';
+
+import { BaseVisionAdapter } from './base';
 
 interface GPT4VisionConfig {
   apiKey: string;

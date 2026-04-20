@@ -3,7 +3,6 @@
  * OpenAI GPT系列模型适配器
  */
 
-import { BaseLLMAdapter } from './base';
 import {
   ChatCompletionRequest,
   ChatCompletionResponse,
@@ -14,6 +13,8 @@ import {
   RequestContext,
   ChatMessage
 } from '../types';
+
+import { BaseLLMAdapter } from './base';
 
 interface OpenAIConfig {
   apiKey: string;

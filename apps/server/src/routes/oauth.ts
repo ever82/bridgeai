@@ -6,6 +6,7 @@
  */
 
 import { Router, Request, Response } from 'express';
+
 import * as oauthService from '../services/oauthService';
 import { logger } from '../utils/logger';
 

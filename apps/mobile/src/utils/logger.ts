@@ -5,7 +5,6 @@
  * 支持本地存储、日志上传、崩溃报告
  */
 
-import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 日志级别
@@ -103,10 +102,10 @@ class MobileLogger {
     });
 
     // 未处理的 Promise 拒绝
-    // @ts-ignore - React Native specific
-    if (global?. HermesInternal || global) {
-      // @ts-ignore
-      const originalRejection = global?. HermesInternal?. PromiseRejectionTrackingOptions?.onUnhandled;
+    // @ts-expect-error - React Native specific runtime
+    if (global?.HermesInternal || global) {
+      // @ts-expect-error - runtime-specific global property
+      void global?.HermesInternal?.PromiseRejectionTrackingOptions;
     }
   }
 
@@ -220,7 +219,7 @@ class MobileLogger {
   /**
    * 上报崩溃
    */
-  private reportCrash(error: Error, isFatal?: boolean): void {
+  private reportCrash(error: Error, _isFatal?: boolean): void {
     const report: CrashReport = {
       timestamp: new Date().toISOString(),
       error: {
@@ -443,8 +442,8 @@ class MobileLogger {
 
 // 全局 ErrorUtils 类型声明
 declare const ErrorUtils: {
-  getGlobalHandler: () => ((error: Error, isFatal?: boolean) => void) | null;
-  setGlobalHandler: (handler: (error: Error, isFatal?: boolean) => void) => void;
+  getGlobalHandler: () => ((error: Error, _isFatal?: boolean) => void) | null;
+  setGlobalHandler: (handler: (error: Error, _isFatal?: boolean) => void) => void;
 };
 
 // 创建默认 Logger 实例

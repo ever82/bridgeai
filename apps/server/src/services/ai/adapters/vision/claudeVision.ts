@@ -3,11 +3,12 @@
  * Anthropic Claude Vision模型适配器
  */
 
-import { BaseVisionAdapter } from './base';
 import {
   ImageInput,
   VisionModelConfig
 } from '../../vision/types';
+
+import { BaseVisionAdapter } from './base';
 
 interface ClaudeVisionConfig {
   apiKey: string;

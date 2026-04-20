@@ -4,12 +4,14 @@
  */
 
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
+
 import { LLMService } from '../services/ai/llmService';
 import { CircuitBreakerManager } from '../services/ai/circuitBreaker';
 import { authenticate as authenticateToken } from '../middleware/auth';
 import { validate } from '../middleware/validation';
-import { z } from 'zod';
 import logger from '../utils/logger';
+
 import extractionRoutes from './ai/extraction';
 // TODO: fix negotiation route imports (body/param validator mismatch)
 // import negotiationRoutes from './ai/negotiation';

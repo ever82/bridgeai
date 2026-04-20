@@ -1,4 +1,3 @@
-import { AgentBehaviorService } from '../agentBehaviorService';
 import {
   AgentMessage,
   AgentMessageType,
@@ -6,6 +5,8 @@ import {
   MessagePriority,
   AgentProtocolErrorCode,
 } from '@bridgeai/shared';
+
+import { AgentBehaviorService } from '../agentBehaviorService';
 
 describe('AgentBehaviorService', () => {
   let service: AgentBehaviorService;

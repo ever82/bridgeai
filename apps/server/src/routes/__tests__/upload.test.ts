@@ -5,13 +5,9 @@
 
 import request from 'supertest';
 import express from 'express';
-import uploadRoutes from '../upload';
-import * as storageService from '../../services/storageService';
-import * as userService from '../../services/userService';
 
-// Mock services
-jest.mock('../../services/storageService');
-jest.mock('../../services/userService');
+import uploadRoutes from '../upload';
+import { authenticate } from '../../middleware/auth';
 
 // Mock auth middleware
 jest.mock('../../middleware/auth', () => ({
@@ -58,8 +54,7 @@ describe('Upload Routes', () => {
       const failingAuthApp = express();
       failingAuthApp.use(express.json());
       // Override the mock for this specific test
-      const authMock = require('../../middleware/auth');
-      authMock.authenticate.mockImplementationOnce((req: any, res: any, next: any) => {
+      (authenticate as jest.Mock).mockImplementationOnce((_req: any, res: any, _next: any) => {
         res.status(401).json({
           success: false,
           error: { code: 'UNAUTHORIZED', message: '未认证' },
@@ -72,98 +67,47 @@ describe('Upload Routes', () => {
 
       expect(response.status).toBe(401);
     });
-  });
 
-  describe('DELETE /api/v1/users/avatar', () => {
-    it('should delete avatar successfully', async () => {
-      const mockUser = {
-        id: 'user-123',
-        email: 'test@example.com',
-        name: 'Test User',
-        avatarUrl: '',
-        phone: '13800138000',
-        status: 'ACTIVE',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      (userService.updateUserAvatar as jest.Mock).mockResolvedValue(mockUser);
-
+    it('should return 400 for invalid file type (.exe)', async () => {
       const response = await request(app)
-        .delete('/api/v1/users/avatar')
-        .set('Authorization', 'Bearer valid-token');
+        .post('/api/v1/users/avatar')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('avatar', Buffer.from('MZ header'), {
+          filename: 'malware.exe',
+          contentType: 'application/x-msdownload',
+        });
 
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(response.body.message).toBe('头像已删除');
-    });
-
-    it('should return 404 when user not found', async () => {
-      (userService.updateUserAvatar as jest.Mock).mockRejectedValue(new Error('用户不存在'));
-
-      const response = await request(app)
-        .delete('/api/v1/users/avatar')
-        .set('Authorization', 'Bearer valid-token');
-
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.error.code).toBe('USER_NOT_FOUND');
-    });
-  });
-});
-
-describe('Storage Service', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    // Reset the mock implementations
-    (storageService.isAllowedImageType as jest.Mock).mockImplementation((mimetype: string) => {
-      return ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(mimetype);
-    });
-    (storageService.getExtensionFromMimetype as jest.Mock).mockImplementation((mimetype: string) => {
-      const map: Record<string, string> = {
-        'image/jpeg': 'jpg',
-        'image/png': 'png',
-        'image/gif': 'gif',
-        'image/webp': 'webp',
-      };
-      return map[mimetype] || 'jpg';
-    });
-    (storageService.generateStoragePath as jest.Mock).mockImplementation((userId: string, filename: string) => {
-      return `avatars/${userId}/2024/01/test.jpg`;
-    });
-  });
-
-  describe('isAllowedImageType', () => {
-    it('should allow valid image types', () => {
-      expect(storageService.isAllowedImageType('image/jpeg')).toBe(true);
-      expect(storageService.isAllowedImageType('image/png')).toBe(true);
-      expect(storageService.isAllowedImageType('image/gif')).toBe(true);
-      expect(storageService.isAllowedImageType('image/webp')).toBe(true);
     });
 
-    it('should reject invalid types', () => {
-      expect(storageService.isAllowedImageType('application/pdf')).toBe(false);
-      expect(storageService.isAllowedImageType('text/plain')).toBe(false);
+    it('should return 400 for invalid file type (.pdf)', async () => {
+      const response = await request(app)
+        .post('/api/v1/users/avatar')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('avatar', Buffer.from('%PDF-1.4 fake content'), {
+          filename: 'document.pdf',
+          contentType: 'application/pdf',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should return 413 for file exceeding size limit', async () => {
+      // Create a buffer larger than 5MB
+      const largeBuffer = Buffer.alloc(6 * 1024 * 1024 + 1);
+      const response = await request(app)
+        .post('/api/v1/users/avatar')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('avatar', largeBuffer, {
+          filename: 'huge.jpg',
+          contentType: 'image/jpeg',
+        });
+
+      expect(response.status).toBe(413);
+      expect(response.body.success).toBe(false);
     });
   });
 
-  describe('getExtensionFromMimetype', () => {
-    it('should return correct extensions', () => {
-      expect(storageService.getExtensionFromMimetype('image/jpeg')).toBe('jpg');
-      expect(storageService.getExtensionFromMimetype('image/png')).toBe('png');
-      expect(storageService.getExtensionFromMimetype('image/gif')).toBe('gif');
-      expect(storageService.getExtensionFromMimetype('image/webp')).toBe('webp');
-    });
-
-    it('should return default extension for unknown types', () => {
-      expect(storageService.getExtensionFromMimetype('image/bmp')).toBe('jpg');
-    });
-  });
-
-  describe('generateStoragePath', () => {
-    it('should generate valid storage path', () => {
-      const path = storageService.generateStoragePath('user-123', 'avatar.jpg');
-      expect(path).toMatch(/^avatars\/user-123\/.*\.jpg$/);
-    });
-  });
 });

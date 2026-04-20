@@ -6,6 +6,14 @@
  */
 
 import {
+  ExtractedDemandData,
+  AgentAdRole,
+  DemandUrgency,
+} from '@bridgeai/shared';
+
+import { logger } from '../../utils/logger';
+
+import {
   demandExtractionService,
   sceneDetector,
   AgentAdExtractor,
@@ -13,12 +21,6 @@ import {
   extractionValidator,
   clarificationService,
 } from './index';
-import { logger } from '../../utils/logger';
-import {
-  ExtractedDemandData,
-  AgentAdRole,
-  DemandUrgency,
-} from '@bridgeai/shared';
 
 // Re-export types
 export { ExtractedDemandData } from '@bridgeai/shared';
@@ -293,7 +295,7 @@ function extractLocationFromText(text: string): { city?: string; radius?: number
   for (const pattern of cityPatterns) {
     const match = text.match(pattern);
     if (match) {
-      let city = match[1] || '当前城市';
+      const city = match[1] || '当前城市';
       let radius = 5; // Default 5km
 
       // Check for distance specification

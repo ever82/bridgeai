@@ -5,6 +5,7 @@
 
 import request from 'supertest';
 import express from 'express';
+
 import agentRoutes from '../agents';
 import * as agentService from '../../services/agentService';
 import { authenticate } from '../../middleware/auth';

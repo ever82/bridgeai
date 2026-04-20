@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '../../db/client';
+
 import { getTokenExpirationDate } from './jwt';
 
 // Refresh token configuration

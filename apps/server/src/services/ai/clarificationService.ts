@@ -4,6 +4,7 @@
  */
 
 import { logger } from '../../utils/logger';
+
 import { Demand } from './demandExtractionService';
 import { SceneSpecificExtractor, SceneType } from './extractors/types';
 import { sceneDetector } from './extractors/sceneDetector';

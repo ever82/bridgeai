@@ -3,15 +3,17 @@
  * 场景模板服务
  */
 
-import { prisma } from '../db/client';
 import {
   SceneTemplate,
   SceneTemplateConfig,
   SceneId,
   SCENE_IDS,
 } from '@bridgeai/shared';
-import { logger } from '../utils/logger';
 import { getSceneConfig } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
+import { logger } from '../utils/logger';
+
 
 /**
  * Create a new template

@@ -7,6 +7,9 @@
 // User schemas
 export * from './userSchemas';
 
+// Auth schemas
+export * from './authSchemas';
+
 // Agent schemas
 export * from './agentSchemas';
 

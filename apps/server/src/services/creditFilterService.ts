@@ -3,7 +3,6 @@
  * 信用分过滤服务
  */
 
-import { prisma } from '../db/client';
 import {
   FilterDSL,
   FilterCondition,
@@ -14,6 +13,8 @@ import {
   CreditLevel,
   CREDIT_LEVEL_THRESHOLDS,
 } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
 
 export interface CreditRange {

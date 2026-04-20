@@ -3,6 +3,9 @@
  * 场景能力服务测试
  */
 
+import { getSceneConfig } from '@bridgeai/shared';
+import type { SceneCapability } from '@bridgeai/shared';
+
 import {
   isCapabilityEnabled,
   getEnabledCapabilities,
@@ -18,8 +21,6 @@ import {
   isAnyCapabilityEnabled,
   getMissingDependencies,
 } from '../sceneCapabilityService';
-import { getSceneConfig } from '@bridgeai/shared';
-import type { SceneCapability } from '@bridgeai/shared';
 
 describe('SceneCapabilityService', () => {
   describe('isCapabilityEnabled', () => {

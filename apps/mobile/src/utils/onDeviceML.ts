@@ -113,12 +113,12 @@ export class OnDeviceML {
     };
   }
 
-  async estimatePowerConsumption(modelName: string): number {
+  async estimatePowerConsumption(_modelName: string): number {
     // Estimate power consumption based on model size and complexity
     return 0.5; // Watts
   }
 
-  getOptimalBatchSize(modelName: string): number {
+  getOptimalBatchSize(_modelName: string): number {
     const capabilities = this.getDeviceCapabilities();
 
     if (capabilities.gpuDelegate) {

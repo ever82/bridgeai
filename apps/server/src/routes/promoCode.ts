@@ -1,7 +1,9 @@
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
+import { CouponStatus, TransactionStatus, RatingType } from '@prisma/client';
+
 import { authenticate, requireRoles } from '../../middleware/auth';
 import { validate as validateRequest } from '../../middleware/validation';
-import { z } from 'zod';
 import {
   createCoupon,
   getCouponById,
@@ -18,7 +20,6 @@ import {
   getCouponStatistics,
   verifyQRCodeData,
 } from '../../services/promoCodeService';
-import { CouponStatus, TransactionStatus, RatingType } from '@prisma/client';
 import { AppError } from '../../errors/AppError';
 
 const router: Router = Router();

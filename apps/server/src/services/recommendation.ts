@@ -4,8 +4,9 @@
  */
 
 import { Agent } from '../models/Agent';
-import { FilterResult, smartFilter } from './smartFilter';
 import { calculateCompositeScore, calculateActivityScore } from '../utils/sorting';
+
+import { FilterResult, smartFilter } from './smartFilter';
 
 // Mock user preferences database (in production, use a real database)
 const userPreferencesDB = new Map<string, UserPreferences>();

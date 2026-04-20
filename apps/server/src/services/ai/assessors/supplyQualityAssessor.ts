@@ -210,7 +210,7 @@ export class SupplyQualityAssessor {
    * Assess credibility - how believable and consistent the information is
    */
   private assessCredibility(supply: Supply): number {
-    let score = 100;
+    const score = 100;
     let deductions = 0;
 
     // Check for inconsistencies

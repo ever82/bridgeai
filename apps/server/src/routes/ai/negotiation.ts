@@ -6,6 +6,7 @@
  */
 
 import { Router } from 'express';
+
 import { agentNegotiationService } from '../../services/ai/agentNegotiationService';
 import { authenticate, requireAuth } from '../../middleware/auth';
 import { validate as validateRequest } from '../../middleware/validation';

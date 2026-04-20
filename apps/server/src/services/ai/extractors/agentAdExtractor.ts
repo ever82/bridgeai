@@ -3,9 +3,10 @@
  * AgentAd场景提取器 - 广告商品需求
  */
 
+import { logger } from '../../../utils/logger';
+
 import { BaseSceneExtractor } from './baseExtractor';
 import { AgentAdData, SceneType, SceneExtractedEntity } from './types';
-import { logger } from '../../../utils/logger';
 
 /**
  * AgentAd Extractor - Handles product advertisement and shopping demands
@@ -37,7 +38,7 @@ export class AgentAdExtractor extends BaseSceneExtractor<AgentAdData> {
   /**
    * Extract AgentAd-specific data from text
    */
-  async extract(text: string, context?: Record<string, any>): Promise<AgentAdData> {
+  async extract(text: string, _context?: Record<string, any>): Promise<AgentAdData> {
     logger.info('Extracting AgentAd demand', { textLength: text.length });
 
     const entities = this.extractAgentAdEntities(text);
@@ -229,7 +230,7 @@ export class AgentAdExtractor extends BaseSceneExtractor<AgentAdData> {
   /**
    * Extract platform preferences from text
    */
-  private extractPlatform(text: string, entities: SceneExtractedEntity[]): string[] {
+  private extractPlatform(text: string, _entities: SceneExtractedEntity[]): string[] {
     const platforms: string[] = [];
 
     const platformPatterns = [
@@ -283,11 +284,12 @@ export class AgentAdExtractor extends BaseSceneExtractor<AgentAdData> {
    * Extract urgency level from text
    */
   private extractUrgency(text: string): AgentAdData['structured']['urgency'] {
+    // Check negative urgency first (higher priority)
+    if (/不急|可以等|慢慢|不着急|以后再说/.test(text)) {
+      return 'low';
+    }
     if (/急|紧急|马上|立刻|尽快|急需|急用/.test(text)) {
       return 'high';
-    }
-    if (/不急|可以等|慢慢|过段时间/.test(text)) {
-      return 'low';
     }
     return 'medium';
   }

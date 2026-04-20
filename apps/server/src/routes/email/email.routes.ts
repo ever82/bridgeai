@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+
 import { EmailTrackingService } from '../../services/email/tracking/tracking.service';
 
 export function createEmailTrackingRoutes(trackingService: EmailTrackingService): Router {

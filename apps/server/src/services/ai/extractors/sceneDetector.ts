@@ -4,6 +4,7 @@
  */
 
 import { logger } from '../../../utils/logger';
+
 import { SceneSpecificExtractor, SceneType, SceneDetectionResult } from './types';
 import { VisionShareExtractor } from './visionShareExtractor';
 import { AgentDateExtractor } from './agentDateExtractor';

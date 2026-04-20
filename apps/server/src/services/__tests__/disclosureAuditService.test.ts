@@ -1,8 +1,9 @@
 /**
  * Disclosure Audit Service Tests
  */
-import { disclosureAuditService, DisclosureAuditService } from '../disclosureAuditService';
 import { DisclosureLevel, DisclosureAuditEntry, DisclosureChangeRecord } from '@bridgeai/shared';
+
+import { disclosureAuditService, DisclosureAuditService } from '../disclosureAuditService';
 import { auditService } from '../auditService';
 
 // Mock auditService

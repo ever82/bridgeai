@@ -3,9 +3,10 @@
  * 发布验证服务，负责检查用户发布权限和内容合规性
  */
 
+import type { PublishValidationResult } from '@packages/shared/types/visionShare';
+
 import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
-import type { PublishValidationResult } from '@packages/shared/types/visionShare';
 
 interface ValidationOptions {
   userId: string;

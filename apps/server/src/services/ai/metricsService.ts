@@ -4,6 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
+
 import {
   LLMProvider,
   RequestMetrics,

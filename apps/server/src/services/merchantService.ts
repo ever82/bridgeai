@@ -8,6 +8,7 @@ import {
   MerchantFilterOptions,
   MerchantListResult,
 } from '../types/merchant.types';
+
 import { AgentType } from './agentService';
 
 /**

@@ -4,6 +4,7 @@
  */
 
 import { logger } from '../../../utils/logger';
+
 import {
   SceneSpecificExtractor,
   SceneType,
@@ -61,7 +62,7 @@ export abstract class BaseSceneExtractor<T extends SceneExtractedData>
     });
 
     return {
-      canHandle: confidence > 0.3,
+      canHandle: confidence > 0.15,
       confidence,
     };
   }

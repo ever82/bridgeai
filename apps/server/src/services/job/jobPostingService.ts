@@ -22,8 +22,10 @@ import {
   createJobPostingSchema,
   updateJobPostingSchema,
 } from '@bridgeai/shared';
-import { extractJobFromDescription, evaluateJobQuality } from './jobExtraction';
+
 import { AppError } from '../../errors';
+
+import { extractJobFromDescription, evaluateJobQuality } from './jobExtraction';
 
 // TODO: Replace with actual database implementation
 const jobPostings: Map<string, JobPosting> = new Map();

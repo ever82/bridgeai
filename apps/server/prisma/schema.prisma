@@ -19,10 +19,19 @@ model User {
   email         String    @unique
   passwordHash  String    @map("password_hash")
   name          String?
+  displayName   String?   @map("display_name")
   avatarUrl     String?   @map("avatar_url")
+  bio           String?   @db.Text
+  website       String?
+  location      String?
   phone         String?
-  status        UserStatus @default(ACTIVE)
-  createdAt     DateTime  @default(now()) @map("created_at")
+  emailVerified Boolean   @default(false) @map("email_verified")
+  phoneVerified Boolean   @default(false) @map("phone_verified")
+  privacySettings Json?   @map("privacy_settings")
+  status                UserStatus @default(ACTIVE)
+  failedLoginAttempts   Int        @default(0) @map("failed_login_attempts")
+  lockedUntil            DateTime? @map("locked_until")
+  createdAt              DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
   // Relations

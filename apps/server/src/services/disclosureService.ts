@@ -4,7 +4,6 @@
  * Provides disclosure level calculation and access permission verification
  * for agent information disclosure control.
  */
-import { prisma } from '../db/client';
 import {
   DisclosureLevel,
   RelationshipStage,
@@ -17,6 +16,9 @@ import {
   DEFAULT_FIELD_DISCLOSURES,
   DISCLOSABLE_FIELDS,
 } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
+
 import { auditService } from './auditService';
 import { disclosureAuditService } from './disclosureAuditService';
 

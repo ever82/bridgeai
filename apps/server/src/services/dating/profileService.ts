@@ -1,5 +1,3 @@
-import { prisma } from '../db/client';
-import { AppError } from '../errors/AppError';
 import type {
   DatingProfile,
   CreateDatingProfileRequest,
@@ -12,6 +10,9 @@ import type {
   PrivacySettings,
   ProfileQualityResult,
 } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
+import { AppError } from '../errors/AppError';
 
 // Default privacy settings
 const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {

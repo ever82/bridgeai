@@ -3,8 +3,9 @@
  * 交友画像质量评估服务测试
  */
 
-import * as qualityService from '../dating/profileQualityService';
 import type { DatingProfile } from '@bridgeai/shared';
+
+import * as qualityService from '../dating/profileQualityService';
 
 describe('ProfileQualityService', () => {
   const mockDate = new Date('2026-04-10');

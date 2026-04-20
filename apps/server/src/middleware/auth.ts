@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
 
@@ -9,6 +10,7 @@ export interface AuthenticatedRequest extends Request {
     email: string;
     role?: string;
   };
+  token?: string;
 }
 
 interface JWTPayload {
@@ -19,7 +21,10 @@ interface JWTPayload {
   exp: number;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
 
 /**
  * Extract token from Authorization header
@@ -55,6 +60,9 @@ export async function authenticate(
     if (!token) {
       throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
+
+    // Store token for blacklisting in logout
+    req.token = token;
 
     // Verify token
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;

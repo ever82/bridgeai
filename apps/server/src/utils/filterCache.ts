@@ -4,6 +4,7 @@
  */
 
 import { FilterDSL, FilterResult } from '@bridgeai/shared';
+
 import { logger } from './logger';
 
 interface CacheEntry<T> {

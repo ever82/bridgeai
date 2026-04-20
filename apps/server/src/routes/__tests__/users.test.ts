@@ -5,12 +5,16 @@
 
 import request from 'supertest';
 import express from 'express';
+import multer from 'multer';
+
 import userRoutes from '../users';
 import * as userService from '../../services/userService';
-import { authenticate } from '../../middleware/auth';
+import * as storageService from '../../services/storageService';
 
 // Mock user service
 jest.mock('../../services/userService');
+// Mock storage service
+jest.mock('../../services/storageService');
 
 // Mock auth middleware
 jest.mock('../../middleware/auth', () => ({
@@ -29,6 +33,10 @@ jest.mock('../../utils/logger', () => ({
   },
 }));
 
+// Multer memory storage for tests
+const memoryStorage = multer.memoryStorage();
+const upload = multer({ storage: memoryStorage, limits: { fileSize: 5 * 1024 * 1024 } });
+
 describe('User Routes', () => {
   let app: express.Application;
 
@@ -45,14 +53,21 @@ describe('User Routes', () => {
         id: 'user-123',
         email: 'test@example.com',
         name: 'Test User',
+        displayName: null,
+        bio: null,
+        website: null,
+        location: null,
         avatarUrl: null,
         phone: '13800138000',
+        emailVerified: false,
+        phoneVerified: false,
+        privacySettings: null,
         status: 'ACTIVE',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      (userService.getUserProfile as jest.Mock).mockResolvedValue(mockUser);
+      (userService.getUserById as jest.Mock).mockResolvedValue(mockUser);
 
       const response = await request(app)
         .get('/api/v1/users/me')
@@ -64,7 +79,7 @@ describe('User Routes', () => {
     });
 
     it('should return 404 when user not found', async () => {
-      (userService.getUserProfile as jest.Mock).mockRejectedValue(new Error('用户不存在'));
+      (userService.getUserById as jest.Mock).mockResolvedValue(null);
 
       const response = await request(app)
         .get('/api/v1/users/me')
@@ -82,14 +97,21 @@ describe('User Routes', () => {
         id: 'user-123',
         email: 'test@example.com',
         name: 'New Name',
+        displayName: null,
+        bio: null,
+        website: null,
+        location: null,
         avatarUrl: null,
         phone: '13900139000',
+        emailVerified: false,
+        phoneVerified: false,
+        privacySettings: null,
         status: 'ACTIVE',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      (userService.updateUserProfile as jest.Mock).mockResolvedValue(mockUser);
+      (userService.updateUser as jest.Mock).mockResolvedValue(mockUser);
 
       const response = await request(app)
         .put('/api/v1/users/me')
@@ -101,65 +123,216 @@ describe('User Routes', () => {
       expect(response.body.data.name).toBe('New Name');
     });
 
-    it('should return 400 for invalid phone format', async () => {
+    it('should return 400 for invalid profile field length', async () => {
       const response = await request(app)
         .put('/api/v1/users/me')
         .set('Authorization', 'Bearer valid-token')
-        .send({ phone: 'invalid-phone' });
+        .send({ name: '' });
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.error.code).toBe('INVALID_PHONE');
     });
 
-    it('should return 400 for invalid email format', async () => {
+    it('should return 400 for bio exceeding max length', async () => {
+      const longBio = 'a'.repeat(501);
       const response = await request(app)
         .put('/api/v1/users/me')
         .set('Authorization', 'Bearer valid-token')
-        .send({ email: 'invalid-email' });
+        .send({ bio: longBio });
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.error.code).toBe('INVALID_EMAIL');
     });
 
-    it('should return 409 when email already exists', async () => {
-      (userService.updateUserProfile as jest.Mock).mockRejectedValue(new Error('邮箱已被使用'));
-
+    it('should return 400 for invalid website URL', async () => {
       const response = await request(app)
         .put('/api/v1/users/me')
         .set('Authorization', 'Bearer valid-token')
-        .send({ email: 'existing@example.com' });
+        .send({ website: 'not-a-valid-url' });
 
-      expect(response.status).toBe(409);
+      expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.error.code).toBe('EMAIL_EXISTS');
     });
   });
 
   describe('DELETE /api/v1/users/me', () => {
     it('should delete user account successfully', async () => {
-      (userService.deleteUserAccount as jest.Mock).mockResolvedValue(undefined);
+      (userService.deleteUser as jest.Mock).mockResolvedValue(undefined);
 
       const response = await request(app)
         .delete('/api/v1/users/me')
-        .set('Authorization', 'Bearer valid-token');
+        .set('Authorization', 'Bearer valid-token')
+        .send({ password: 'correct-password' });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(response.body.message).toBe('账号已删除');
+      expect(response.body.message).toBe('Account deleted successfully');
     });
 
-    it('should return 404 when user not found', async () => {
-      (userService.deleteUserAccount as jest.Mock).mockRejectedValue(new Error('用户不存在'));
-
+    it('should return 400 when password is missing', async () => {
       const response = await request(app)
         .delete('/api/v1/users/me')
         .set('Authorization', 'Bearer valid-token');
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.error.code).toBe('USER_NOT_FOUND');
+      expect(response.body.error.code).toBe('PASSWORD_REQUIRED');
+    });
+  });
+
+  describe('POST /api/v1/users/avatar', () => {
+    let avatarApp: express.Application;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      avatarApp = express();
+      avatarApp.use(express.json());
+      // Use multer for file upload testing
+      avatarApp.use('/api/v1/users', upload.single('avatar'));
+      avatarApp.use('/api/v1/users', userRoutes);
+    });
+
+    it('should upload avatar successfully', async () => {
+      const mockUser = {
+        id: 'user-123',
+        email: 'test@example.com',
+        name: 'Test User',
+        displayName: null,
+        bio: null,
+        website: null,
+        location: null,
+        avatarUrl: 'https://cdn.example.com/avatar.jpg',
+        phone: null,
+        emailVerified: false,
+        phoneVerified: false,
+        privacySettings: null,
+        status: 'ACTIVE',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      (storageService.uploadAvatar as jest.Mock).mockResolvedValue({
+        url: 'https://cdn.example.com/avatar.jpg',
+        thumbnailUrl: 'https://cdn.example.com/avatar-thumb.jpg',
+        size: 12345,
+      });
+      (storageService.deleteFile as jest.Mock).mockResolvedValue(undefined);
+      (userService.updateAvatar as jest.Mock).mockResolvedValue(mockUser);
+
+      const response = await request(avatarApp)
+        .post('/api/v1/users/avatar')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('avatar', Buffer.from('fake-image'), {
+          filename: 'avatar.jpg',
+          contentType: 'image/jpeg',
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.avatarUrl).toBe('https://cdn.example.com/avatar.jpg');
+    });
+
+    it('should upload avatar via URL bypass with https', async () => {
+      const mockUser = {
+        id: 'user-123',
+        email: 'test@example.com',
+        name: 'Test User',
+        displayName: null,
+        bio: null,
+        website: null,
+        location: null,
+        avatarUrl: 'https://images.example.com/my-avatar.jpg',
+        phone: null,
+        emailVerified: false,
+        phoneVerified: false,
+        privacySettings: null,
+        status: 'ACTIVE',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      (storageService.deleteFile as jest.Mock).mockResolvedValue(undefined);
+      (userService.updateAvatar as jest.Mock).mockResolvedValue(mockUser);
+
+      const response = await request(avatarApp)
+        .post('/api/v1/users/avatar')
+        .set('Authorization', 'Bearer valid-token')
+        .field('avatarUrl', 'https://images.example.com/my-avatar.jpg');
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should return 400 when no file and no avatarUrl provided', async () => {
+      const response = await request(avatarApp)
+        .post('/api/v1/users/avatar')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('NO_FILE');
+    });
+
+    it('should return 400 for invalid avatarUrl protocol (http)', async () => {
+      const response = await request(avatarApp)
+        .post('/api/v1/users/avatar')
+        .set('Authorization', 'Bearer valid-token')
+        .field('avatarUrl', 'http://evil.com/avatar.jpg');
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('INVALID_AVATAR_URL');
+    });
+
+    it('should return 400 for invalid avatarUrl format', async () => {
+      const response = await request(avatarApp)
+        .post('/api/v1/users/avatar')
+        .set('Authorization', 'Bearer valid-token')
+        .field('avatarUrl', 'not-a-valid-url');
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('INVALID_AVATAR_URL');
+    });
+
+    it('should clean up old avatar before uploading new one', async () => {
+      const oldUser = {
+        id: 'user-123',
+        email: 'test@example.com',
+        name: 'Test User',
+        displayName: null,
+        bio: null,
+        website: null,
+        location: null,
+        avatarUrl: 'https://cdn.example.com/old-avatar.jpg',
+        phone: null,
+        emailVerified: false,
+        phoneVerified: false,
+        privacySettings: null,
+        status: 'ACTIVE',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const newUser = { ...oldUser, avatarUrl: 'https://cdn.example.com/new-avatar.jpg' };
+
+      (storageService.uploadAvatar as jest.Mock).mockResolvedValue({
+        url: 'https://cdn.example.com/new-avatar.jpg',
+        thumbnailUrl: 'https://cdn.example.com/new-avatar-thumb.jpg',
+        size: 12345,
+      });
+      (storageService.deleteFile as jest.Mock).mockResolvedValue(undefined);
+      (userService.updateAvatar as jest.Mock).mockResolvedValue(newUser);
+
+      const response = await request(avatarApp)
+        .post('/api/v1/users/avatar')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('avatar', Buffer.from('new-image'), {
+          filename: 'new-avatar.jpg',
+          contentType: 'image/jpeg',
+        });
+
+      expect(response.status).toBe(200);
+      expect(storageService.deleteFile).toHaveBeenCalledWith('https://cdn.example.com/old-avatar.jpg');
     });
   });
 });

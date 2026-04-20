@@ -4,6 +4,7 @@
  */
 
 import { redis } from '../redis';
+
 import { DecodedToken, decodeToken } from './jwt';
 
 // Key prefix for blacklisted tokens

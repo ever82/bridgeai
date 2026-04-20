@@ -4,13 +4,14 @@
  */
 
 import { Router, Request, Response } from 'express';
+import type { CreateTaskRequest, UpdateTaskRequest } from '@packages/shared/types/visionShare';
+
 import { authenticate } from '../../middleware/auth';
 import { validate as validateRequest } from '../../middleware/validation';
 import { visionShareTaskService } from '../../services/visionShare/taskService';
 import { publishValidationService } from '../../services/visionShare/publishValidation';
 import { visionShareDemandRefinementService } from '../../services/ai/visionShareDemandRefinement';
 import { logger } from '../../utils/logger';
-import type { CreateTaskRequest, UpdateTaskRequest } from '@packages/shared/types/visionShare';
 
 const router = Router();
 const loggerCtx = logger.child({ module: 'VisionSharePublishRoutes' });

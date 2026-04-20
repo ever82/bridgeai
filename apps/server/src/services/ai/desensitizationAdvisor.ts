@@ -3,9 +3,10 @@
  * Provides intelligent recommendations and suggestions for privacy desensitization
  */
 
-import { DetectionResult, SensitiveType, getRiskLevel } from './sensitiveContentDetection';
 import { DesensitizationMethod } from '../image/desensitization';
 import { PrivacyLevel, getRecommendedTemplateForScene, DesensitizationTemplate } from '../privacy/desensitizationPolicy';
+
+import { DetectionResult, SensitiveType, getRiskLevel } from './sensitiveContentDetection';
 
 export interface AIRecommendation {
   id: string;

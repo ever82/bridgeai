@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+
 import { encrypt } from '../utils/encryption';
 import { maskObject } from '../utils/mask';
 import { PIIField, piiManager, PIIPermission } from '../models/user';

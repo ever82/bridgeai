@@ -1,8 +1,6 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeModules } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
-
-import { ImageCacheManager } from '../services/performance/searchOptimization';
 
 const { ImageResizer } = NativeModules;
 

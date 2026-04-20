@@ -4,6 +4,7 @@
  */
 
 import { Router } from 'express';
+
 import sceneRoutes from '../scene';
 
 const router = Router();

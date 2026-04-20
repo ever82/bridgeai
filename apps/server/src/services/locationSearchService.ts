@@ -3,7 +3,6 @@
  * 位置搜索服务
  */
 
-import { prisma } from '../db/client';
 import {
   Location,
   GeoCoordinates,
@@ -18,6 +17,8 @@ import {
   isWithinBoundingBox,
   createBoundingBox,
 } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
 
 // Mock data for provinces, cities, districts

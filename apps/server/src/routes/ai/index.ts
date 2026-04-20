@@ -4,7 +4,9 @@
  */
 
 import { Router } from 'express';
+
 import llmRoutes from '../aiRoute';
+
 import visionRoutes from './vision';
 
 const router = Router();

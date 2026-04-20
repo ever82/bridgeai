@@ -5,6 +5,7 @@
  */
 
 import { L2Schema, L2Data, L2FieldType } from '@bridgeai/shared';
+
 import { Supply, Capability, PricingInfo, ExperienceInfo, LocationInfo } from '../../supplyExtractionService';
 import { logger } from '../../../utils/logger';
 

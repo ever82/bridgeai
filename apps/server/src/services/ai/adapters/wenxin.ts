@@ -3,7 +3,6 @@
  * 百度文心一言(ERNIE)模型适配器
  */
 
-import { BaseLLMAdapter } from './base';
 import {
   ChatCompletionRequest,
   ChatCompletionResponse,
@@ -13,6 +12,8 @@ import {
   StreamChunk,
   RequestContext
 } from '../types';
+
+import { BaseLLMAdapter } from './base';
 
 interface WenxinConfig {
   apiKey: string;

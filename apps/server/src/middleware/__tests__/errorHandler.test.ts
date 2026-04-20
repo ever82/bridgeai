@@ -1,8 +1,9 @@
+import type { Request, Response, NextFunction } from 'express';
+
 import { errorHandler } from '../errorHandler';
 import { AppError, NotFoundError, ValidationError, UnauthorizedError } from '../../errors/AppError';
 import { createMockRequest, createMockResponse, createMockNext } from '../../__tests__/helpers';
 import { logger } from '../../utils/logger';
-import type { Request, Response, NextFunction } from 'express';
 
 describe('errorHandler middleware', () => {
   let req: Request;

@@ -11,8 +11,9 @@ import {
   NegotiationTopic,
   NegotiationStatus
 } from '../../models/NegotiationRoom';
-import { negotiationRoomService } from './negotiationRoom';
 import { getSalaryNegotiationPrompt } from '../../ai/prompts/salaryNegotiation';
+
+import { negotiationRoomService } from './negotiationRoom';
 
 export interface MarketData {
   position: string;

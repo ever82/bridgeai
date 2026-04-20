@@ -1,6 +1,7 @@
+import { PrismaClient } from '@prisma/client';
+
 import { CreditScoreService } from '../creditScoreService';
 import { CreditLevel, CreditFactorType } from '../../types/credit';
-import { PrismaClient } from '@prisma/client';
 
 // Mock Prisma
 jest.mock('@prisma/client', () => ({

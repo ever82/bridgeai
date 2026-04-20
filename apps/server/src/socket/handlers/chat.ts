@@ -4,6 +4,7 @@
  * Handles chat-related socket events with message persistence.
  */
 import type { Namespace } from 'socket.io';
+
 import type { AuthenticatedSocket } from '../middleware/auth';
 import {
   createMessage,

@@ -5,8 +5,9 @@
  * and status subscriptions.
  */
 
-import { connectionService } from './connectionService';
 import { getIO } from '../socket';
+
+import { connectionService } from './connectionService';
 
 /**
  * User presence status

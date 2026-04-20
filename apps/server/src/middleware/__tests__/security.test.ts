@@ -2,6 +2,7 @@
  * Tests for security middleware
  */
 import { Request, Response } from 'express';
+
 import {
   xssProtection,
   sqlInjectionProtection,

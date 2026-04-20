@@ -2,6 +2,8 @@
  * Handoff Auth Middleware Tests
  */
 import { Request, Response, NextFunction } from 'express';
+import { HandoffErrorCode } from '@bridgeai/shared';
+
 import {
   handoffPermissionMiddleware,
   requireTakeoverPermission,
@@ -14,7 +16,6 @@ import {
   type HandoffRequest,
 } from '../../src/middleware/handoffAuth';
 import { rbacService } from '../../src/services/rbacService';
-import { HandoffErrorCode } from '@bridgeai/shared';
 
 // Mock RBAC service
 jest.mock('../../src/services/rbacService', () => ({

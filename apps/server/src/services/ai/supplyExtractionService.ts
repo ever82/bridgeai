@@ -10,10 +10,11 @@
  * - 能力评估评分
  */
 
+import { logger } from '../../utils/logger';
+
 import { LLMService } from './llmService';
 import { LLMMetricsService } from './metricsService';
 import { LLMProvider } from './types';
-import { logger } from '../../utils/logger';
 
 // LLM Service configuration from environment
 function createLLMService(): LLMService {

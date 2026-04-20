@@ -5,6 +5,7 @@
  */
 
 import { L2Schema, L2Data, L2FieldType, L2ValidationError, L2ValidationResult } from '@bridgeai/shared';
+
 import { Demand } from '../demandExtractionService';
 import { logger } from '../../../utils/logger';
 

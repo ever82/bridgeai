@@ -1,11 +1,12 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import { FilterDSL } from '@bridgeai/shared';
+
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/common';
 import { ApiResponse } from '../utils/response';
 import * as agentService from '../services/agentService';
 import { AppError } from '../errors/AppError';
 import { buildPrismaQuery, validateFilterDSL } from '../utils/queryBuilder';
-import { FilterDSL } from '@bridgeai/shared';
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
 import { smartFilter, filterAndSort, FilterCriteria } from '../services/smartFilter';

@@ -1,7 +1,8 @@
-import { AppError } from '../errors/AppError';
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
+
+import { AppError } from '../errors/AppError';
 
 export interface UploadOptions {
   maxSize?: number; // in bytes

@@ -4,9 +4,10 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
+
 import { authenticate } from '../middleware/auth';
 import { validate } from '../middleware/validation';
-import { z } from 'zod';
 import {
   getProvinces,
   getCitiesByProvince,

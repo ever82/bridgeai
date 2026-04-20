@@ -32,9 +32,17 @@ const XSS_PATTERNS = [
 
 /**
  * Detect if string contains potential XSS payload
+ * Uses Symbol.match to avoid lastIndex state issues with /g-flagged patterns
  */
 function containsXSS(input: string): boolean {
-  return XSS_PATTERNS.some(pattern => pattern.test(input));
+  return XSS_PATTERNS.some(pattern => {
+    if (typeof input[Symbol.match] === 'function') {
+      return input[Symbol.match](pattern) !== null;
+    }
+    // Fallback: clone pattern without global flag
+    const safe = new RegExp(pattern.source, pattern.flags.replace('g', ''));
+    return safe.test(input);
+  });
 }
 
 /**
@@ -134,15 +142,38 @@ const SQL_INJECTION_PATTERNS = [
   /ALTER\s+TABLE/gi,
   /;\s*shutdown/gi,
   /;\s*drop/gi,
+  // Backtick-quoted injection
+  /`[^`]*`(union|select|insert|update|delete|drop)/gi,
+  // Double-dash comment terminators
+  /--\s/g,
+  /#\s/g,
+  /\/\*[\s\S]*?\*\//g,
+  // Subqueries
+  /\(\s*(select|insert|update|delete)/gi,
+  // Prisma ORM operators
+  /\{\s*\$/g,
+  /where\s*:\s*\{.*\$/gi,
+  /select\s*:\s*\{/gi,
+  /include\s*:\s*\{/gi,
+  /orderBy\s*:/gi,
+  /_skip\s*:/gi,
+  /_take\s*:/gi,
 ];
 
 /**
  * Detect if string contains potential SQL injection
+ * Uses Symbol.match to avoid lastIndex state issues
  */
 function containsSQLInjection(input: string): boolean {
   // Skip if input is too short
   if (input.length < 3) return false;
-  return SQL_INJECTION_PATTERNS.some(pattern => pattern.test(input));
+  return SQL_INJECTION_PATTERNS.some(pattern => {
+    if (typeof input[Symbol.match] === 'function') {
+      return input[Symbol.match](pattern) !== null;
+    }
+    const safe = new RegExp(pattern.source, pattern.flags.replace('g', ''));
+    return safe.test(input);
+  });
 }
 
 /**

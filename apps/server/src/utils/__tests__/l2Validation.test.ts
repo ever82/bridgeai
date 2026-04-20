@@ -1,16 +1,37 @@
 /**
  * L2 Validation Tests
  */
-import {
-  validateL2Data,
-  getFieldValueLabel,
-  calculateL2Completion,
-} from '../l2Validation';
+jest.mock('@bridgeai/shared', () => {
+  const actual = jest.requireActual('@bridgeai/shared');
+  return {
+    ...actual,
+    // Ensure L2FieldType is always available even if package not built
+    L2FieldType: actual.L2FieldType ?? {
+      TEXT: 'TEXT',
+      LONG_TEXT: 'LONG_TEXT',
+      NUMBER: 'NUMBER',
+      BOOLEAN: 'BOOLEAN',
+      ENUM: 'ENUM',
+      MULTI_SELECT: 'MULTI_SELECT',
+      RANGE: 'RANGE',
+      DATE: 'DATE',
+      IMAGE: 'IMAGE',
+      LOCATION: 'LOCATION',
+    },
+  };
+});
+
 import {
   L2Schema,
   L2FieldType,
   L2Data,
 } from '@bridgeai/shared';
+
+import {
+  validateL2Data,
+  getFieldValueLabel,
+  calculateL2Completion,
+} from '../l2Validation';
 
 const mockSchema: L2Schema = {
   id: 'test-schema',

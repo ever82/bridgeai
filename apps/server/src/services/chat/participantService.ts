@@ -4,6 +4,7 @@
  */
 import { RoomParticipant, ParticipantRole, ChatRoomType, ChatRoom } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+
 import { prisma } from '../../db/client';
 
 export interface AddParticipantInput {

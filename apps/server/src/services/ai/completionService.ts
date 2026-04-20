@@ -10,8 +10,9 @@
  * - 补全确认流程
  */
 
-import { Supply, PricingInfo, Capability, LocationInfo, ExperienceInfo, AvailabilityInfo } from './supplyExtractionService';
 import { logger } from '../utils/logger';
+
+import { Supply, PricingInfo, Capability, LocationInfo, ExperienceInfo, AvailabilityInfo } from './supplyExtractionService';
 
 /**
  * Completion suggestion for a single field

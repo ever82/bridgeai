@@ -1,25 +1,31 @@
-import { ImageSecurityService } from '../imageSecurity';
 import sharp from 'sharp';
 
+import { ImageSecurityService } from '../imageSecurity';
+
+// Mock sharp - returns a fresh mock instance each time so chained calls work independently
 jest.mock('sharp', () => {
-  return jest.fn(() => ({
-    metadata: jest.fn().mockResolvedValue({
-      width: 1920,
-      height: 1080,
-      format: 'jpeg',
-      hasAlpha: false,
-    }),
-    stats: jest.fn().mockResolvedValue({
-      channels: [
-        { mean: 128, std: 50, min: 0, max: 255, entropy: 7 },
-        { mean: 128, std: 50, min: 0, max: 255, entropy: 7 },
-        { mean: 128, std: 50, min: 0, max: 255, entropy: 7 },
-      ],
-    }),
-    resize: jest.fn().mockReturnThis(),
-    jpeg: jest.fn().mockReturnThis(),
-    toBuffer: jest.fn().mockResolvedValue(Buffer.from('test')),
-  }));
+  const mockSharp = jest.fn(() => {
+    const instance = {
+      metadata: jest.fn().mockResolvedValue({
+        width: 1920,
+        height: 1080,
+        format: 'jpeg',
+        hasAlpha: false,
+      }),
+      stats: jest.fn().mockResolvedValue({
+        channels: [
+          { mean: 128, std: 50, min: 0, max: 255, entropy: 7 },
+          { mean: 128, std: 50, min: 0, max: 255, entropy: 7 },
+          { mean: 128, std: 50, min: 0, max: 255, entropy: 7 },
+        ],
+      }),
+      resize: jest.fn().mockReturnThis(),
+      jpeg: jest.fn().mockReturnThis(),
+      toBuffer: jest.fn().mockResolvedValue(Buffer.from('test')),
+    };
+    return instance;
+  });
+  return mockSharp;
 });
 
 describe('ImageSecurityService', () => {
@@ -95,11 +101,13 @@ describe('ImageSecurityService', () => {
 
     it('should detect sensitive content', async () => {
       const buffer = Buffer.from('test');
-      (sharp as jest.Mock).mockImplementationOnce(() => ({
+      // Override mock to return suspicious stats (low mean = mostly black image)
+      (sharp as jest.Mock).mockImplementation(() => ({
         metadata: jest.fn().mockResolvedValue({
           width: 1920,
           height: 1080,
           format: 'jpeg',
+          hasAlpha: false,
         }),
         stats: jest.fn().mockResolvedValue({
           channels: [
@@ -108,6 +116,9 @@ describe('ImageSecurityService', () => {
             { mean: 5, std: 2, min: 0, max: 20, entropy: 0.5 },
           ],
         }),
+        resize: jest.fn().mockReturnThis(),
+        jpeg: jest.fn().mockReturnThis(),
+        toBuffer: jest.fn().mockResolvedValue(Buffer.from('test')),
       }));
 
       const result = await service.checkImage(buffer, { checkSensitiveContent: true });

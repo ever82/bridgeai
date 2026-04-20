@@ -3,8 +3,9 @@
  * 收集用户修正反馈并追踪提炼质量
  */
 
-import { prisma } from '../../db/client';
 import { L2Data } from '@bridgeai/shared';
+
+import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
 
 // Feedback record

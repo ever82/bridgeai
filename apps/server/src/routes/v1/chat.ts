@@ -4,9 +4,11 @@
  * REST API endpoints for chat history, message search, sync, and room management.
  */
 import { Router } from 'express';
+import { z } from 'zod';
+import { ChatRoomType, ParticipantRole } from '@prisma/client';
+
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
 import { validate } from '../../middleware/validation';
-import { z } from 'zod';
 import {
   getMessagesByConversation,
   searchMessages,
@@ -30,7 +32,7 @@ import {
   getRoomParticipants,
   transferOwnership,
 } from '../../services/chat/participantService';
-import { ChatRoomType, ParticipantRole } from '@prisma/client';
+
 
 const router = Router();
 

@@ -10,6 +10,7 @@
  */
 
 import { Job } from 'bullmq';
+
 import { getQueueManager } from './queues';
 import { QueueNames, QueueName } from './config';
 import { DeadLetterJobData, getRetryStrategy } from './retry';

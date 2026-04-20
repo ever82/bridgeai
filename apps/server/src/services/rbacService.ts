@@ -4,6 +4,7 @@
  * Provides role and permission management functionality.
  */
 import { prisma } from '../lib/prisma';
+
 import { auditService } from './auditService';
 
 /**

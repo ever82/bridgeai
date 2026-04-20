@@ -3,9 +3,10 @@
  * 摄影约拍场景提取器 - 提取拍照时间、类型、预算等信息
  */
 
-import { BaseSceneExtractor, SceneType } from './base';
 import { Demand, DemandExtractionRequest, ExtractedEntity } from '../demandExtractionService';
 import { logger } from '../../../utils/logger';
+
+import { BaseSceneExtractor, SceneType } from './base';
 
 /**
  * VisionShare Specific Fields

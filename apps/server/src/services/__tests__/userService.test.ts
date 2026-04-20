@@ -1,3 +1,5 @@
+import bcrypt from 'bcryptjs';
+
 import {
   getUserById,
   getUserByEmail,
@@ -18,7 +20,6 @@ import {
   isUserBlocked,
 } from '../../services/userService';
 import { prisma } from '../../db/client';
-import bcrypt from 'bcryptjs';
 
 // Mock the prisma client
 jest.mock('../../db/client', () => ({
