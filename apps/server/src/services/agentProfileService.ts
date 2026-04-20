@@ -1,15 +1,15 @@
-import { prisma } from '../db/client';
-import { AppError } from '../errors/AppError';
 import type {
   L1Profile,
   L2Profile,
-  L3Profile,
   ProfileCompletionResult,
   UpdateL1ProfileRequest,
   UpdateL2ProfileRequest,
   UpdateL3ProfileRequest,
 } from '@bridgeai/shared';
 import { L1_FIELD_WEIGHTS } from '@bridgeai/shared';
+
+import { prisma } from '../db/client';
+import { AppError } from '../errors/AppError';
 
 // Agent Profile with L1, L2, L3 data
 export interface AgentProfile {
@@ -28,10 +28,7 @@ export interface AgentProfile {
 /**
  * Get or create agent profile
  */
-export async function getOrCreateProfile(
-  agentId: string,
-  sceneId?: string
-): Promise<AgentProfile> {
+export async function getOrCreateProfile(agentId: string, sceneId?: string): Promise<AgentProfile> {
   // Check if agent exists
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
@@ -75,10 +72,7 @@ export async function getOrCreateProfile(
 /**
  * Get L1 profile for an agent
  */
-export async function getL1Profile(
-  agentId: string,
-  userId: string
-): Promise<L1Profile | null> {
+export async function getL1Profile(agentId: string, userId: string): Promise<L1Profile | null> {
   // Verify agent ownership
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
@@ -157,10 +151,7 @@ export async function updateL1Profile(
 /**
  * Get L2 profile for an agent
  */
-export async function getL2Profile(
-  agentId: string,
-  userId: string
-): Promise<L2Profile | null> {
+export async function getL2Profile(agentId: string, userId: string): Promise<L2Profile | null> {
   // Verify agent ownership
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
@@ -229,10 +220,7 @@ export async function updateL2Profile(
 /**
  * Get L3 profile for an agent
  */
-export async function getL3Profile(
-  agentId: string,
-  userId: string
-): Promise<string | null> {
+export async function getL3Profile(agentId: string, userId: string): Promise<string | null> {
   // Verify agent ownership
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
@@ -307,7 +295,7 @@ export function calculateL1Completion(l1Data: L1Profile | null): ProfileCompleti
     return value !== undefined && value !== null && value !== '';
   });
 
-  const missingFields = fields.filter(field => !filledFields.includes(field));
+  const l1MissingFields = fields.filter(field => !filledFields.includes(field));
 
   // Calculate weighted score
   let weightedScore = 0;
@@ -330,7 +318,10 @@ export function calculateL1Completion(l1Data: L1Profile | null): ProfileCompleti
 /**
  * Validate L1 data
  */
-function validateL1Data(data: UpdateL1ProfileRequest): { valid: boolean; errors: Array<{ field: string; message: string }> } {
+function validateL1Data(data: UpdateL1ProfileRequest): {
+  valid: boolean;
+  errors: Array<{ field: string; message: string }>;
+} {
   const errors: Array<{ field: string; message: string }> = [];
 
   // Validate occupation length
