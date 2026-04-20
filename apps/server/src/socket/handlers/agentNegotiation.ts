@@ -599,6 +599,7 @@ export function registerAgentNegotiationHandlers(
             content: msg.content,
             messageType: msg.messageType,
             timestamp: msg.timestamp,
+            creditScore: msg.creditScore,
           })),
         },
       });
