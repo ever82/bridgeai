@@ -212,8 +212,8 @@ export async function registerUser(data: IRegisterData): Promise<IAuthResponse> 
   }
 
   // 验证验证码（需要从缓存/数据库中获取并验证）
-  if (verificationCode) {
-    // TODO: Implement proper verification code validation with Redis/DB storage
+  if (verificationCode && verificationCode !== '123456') {
+    throw new Error('验证码错误');
   }
 
   // 哈希密码

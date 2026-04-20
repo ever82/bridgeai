@@ -1,15 +1,23 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcrypt';
 
-import { prisma } from '../../db/client';
 import { verifyToken } from '../../services/auth/jwt';
-import { createRefreshToken, findRefreshToken, revokeRefreshToken, isRefreshTokenValid, rotateRefreshToken } from '../../services/auth/refreshToken';
+import {
+  createRefreshToken,
+  findRefreshToken,
+  revokeRefreshToken,
+  isRefreshTokenValid,
+  rotateRefreshToken,
+} from '../../services/auth/refreshToken';
 import { blacklistToken } from '../../services/auth/blacklist';
 import { authenticate } from '../../middleware/auth';
 import { ApiResponse } from '../../utils/response';
 import { UnauthorizedError, ValidationError, ConflictError } from '../../errors/AppError';
-import { UserRole } from '../../types';
-import { registerUser, loginUser, requestPasswordReset, resetPassword } from '../../services/authService';
+import {
+  registerUser,
+  loginUser,
+  requestPasswordReset,
+  resetPassword,
+} from '../../services/authService';
 
 const router = Router();
 
@@ -35,19 +43,21 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
       ipAddress: req.ip,
     });
 
-    res.json(ApiResponse.success({
-      user: {
-        id: result.user.id,
-        email: result.user.email,
-        name: result.user.name,
-        role: result.user.role,
-      },
-      tokens: {
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-        expiresIn: result.expiresIn,
-      },
-    }));
+    res.json(
+      ApiResponse.success({
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          name: result.user.name,
+          role: result.user.role,
+        },
+        tokens: {
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+          expiresIn: result.expiresIn,
+        },
+      })
+    );
   } catch (error) {
     if (error instanceof Error && error.message.includes('不存在')) {
       next(new UnauthorizedError('Invalid credentials'));
@@ -168,13 +178,15 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
       req.ip
     );
 
-    res.json(ApiResponse.success({
-      tokens: {
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        expiresIn: tokens.expiresIn,
-      },
-    }));
+    res.json(
+      ApiResponse.success({
+        tokens: {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          expiresIn: tokens.expiresIn,
+        },
+      })
+    );
   } catch (error) {
     next(error);
   }
@@ -199,23 +211,29 @@ router.post('/logout', authenticate, async (req: Request, res: Response, next: N
 });
 
 // POST /api/v1/auth/logout-all - Logout from all devices
-router.post('/logout-all', authenticate, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    if (req.token) {
-      await blacklistToken(req.token);
+router.post(
+  '/logout-all',
+  authenticate,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (req.token) {
+        await blacklistToken(req.token);
+      }
+
+      const { revokeAllUserRefreshTokens } = await import('../../services/auth/refreshToken');
+      const count = await revokeAllUserRefreshTokens(req.user!.userId, req.user!.userId);
+
+      res.json(
+        ApiResponse.success({
+          message: 'Logged out from all devices',
+          revokedTokens: count,
+        })
+      );
+    } catch (error) {
+      next(error);
     }
-
-    const { revokeAllUserRefreshTokens } = await import('../../services/auth/refreshToken');
-    const count = await revokeAllUserRefreshTokens(req.user!.userId, req.user!.userId);
-
-    res.json(ApiResponse.success({
-      message: 'Logged out from all devices',
-      revokedTokens: count,
-    }));
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 // GET /api/v1/auth/me - Get current user info
 router.get('/me', authenticate, async (req: Request, res: Response, next: NextFunction) => {
