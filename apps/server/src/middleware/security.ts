@@ -292,7 +292,7 @@ function containsNoSQLOperators(obj: unknown): boolean {
 
     // Check string values
     if (typeof value === 'string') {
-      if (NOSQL_INJECTION_PATTERNS.some(pattern => pattern.test(value))) {
+      if (NOSQL_INJECTION_PATTERNS.some(pattern => new RegExp(pattern.source, pattern.flags.replace('g', '')).test(value))) {
         return true;
       }
     }

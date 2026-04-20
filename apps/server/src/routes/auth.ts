@@ -21,6 +21,7 @@ import {
   refreshTokenSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  changePasswordSchema,
   oauthBindSchema,
 } from '../schemas/authSchemas';
 
@@ -296,17 +297,13 @@ router.post(
  * POST /api/v1/auth/change-password
  * 修改密码（需要登录）
  */
-router.post('/change-password', async (req: Request, res: Response) => {
+router.post('/change-password', validate({ body: changePasswordSchema }), async (req: Request, res: Response) => {
   try {
     const { oldPassword, newPassword } = req.body;
     const context = getRequestContext();
 
     if (!context?.userId) {
       return res.status(401).json({ error: '未登录' });
-    }
-
-    if (!oldPassword || !newPassword) {
-      return res.status(400).json({ error: '旧密码和新密码不能为空' });
     }
 
     await authService.changePassword(context.userId, oldPassword, newPassword);

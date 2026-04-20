@@ -165,7 +165,7 @@ export function validateQuery<T>(schema: ZodType<T, any, any>) {
 export function sanitizeString(input: string): string {
   return input
     .trim()
-    .replace(/[<>]/g, '') // Remove < and > to prevent HTML injection
+    .replace(/<[^>]*>/g, '') // Remove HTML tags to prevent HTML injection
     .replace(/javascript:/gi, '') // Remove javascript: protocol
     .replace(/on\w+=/gi, ''); // Remove event handlers
 }

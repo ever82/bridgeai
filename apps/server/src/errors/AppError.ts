@@ -40,6 +40,7 @@ export class NotFoundError extends AppError {
       404,
       details
     );
+    Object.setPrototypeOf(this, NotFoundError.prototype);
   }
 }
 
@@ -70,6 +71,7 @@ export class UnauthorizedError extends AppError {
       401,
       details
     );
+    Object.setPrototypeOf(this, UnauthorizedError.prototype);
   }
 }
 
@@ -84,6 +86,7 @@ export class ForbiddenError extends AppError {
       403,
       details
     );
+    Object.setPrototypeOf(this, ForbiddenError.prototype);
   }
 }
 
@@ -98,6 +101,7 @@ export class ConflictError extends AppError {
       409,
       details
     );
+    Object.setPrototypeOf(this, ConflictError.prototype);
   }
 }
 
@@ -112,6 +116,7 @@ export class RateLimitError extends AppError {
       429,
       details
     );
+    Object.setPrototypeOf(this, RateLimitError.prototype);
   }
 }
 
