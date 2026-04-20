@@ -11,6 +11,9 @@ export { LLMMetricsService } from './metricsService';
 export { LLMService } from './llmService';
 export * from './fallback';
 
+// Resilience Services (ISSUE-AI006)
+export * from './resilience';
+
 // Demand Extraction Service (ISSUE-AI002a)
 export {
   DemandExtractionService,

@@ -498,9 +498,70 @@ export class LLMService {
     request: ChatCompletionRequest,
     error: Error
   ): Promise<import('./fallback').FallbackResult> {
-    // 降级策略暂未实现完整逻辑
-    // 实际项目中需要实现FallbackContext
-    return { success: false, strategy: 'none', message: 'Fallback not implemented' };
+    try {
+      const availableProviders = this.getAvailableProviders();
+      const models = new Map<string, import('./types').ModelInfo>();
+
+      // Build models map from registered models
+      for (const provider of this.adapters.keys()) {
+        try {
+          const adapterModels = await this.adapters.get(provider)!.getModels();
+          for (const m of adapterModels) {
+            models.set(m.id, m);
+          }
+        } catch {
+          // Skip provider if getModels fails
+        }
+      }
+
+      const context: import('./fallback').FallbackContext = {
+        availableProviders,
+        models,
+        attemptCount: 0,
+        originalProvider: this.detectProvider(request.model),
+      };
+
+      const result = await this.fallbackChain.execute(request, error, context);
+
+      if (result.success) {
+        // If the result suggests a different model/provider, make a new call
+        if (result.model && result.provider && !result.response) {
+          try {
+            const adapter = this.adapters.get(result.provider);
+            if (adapter) {
+              const response = await adapter.chatCompletion({
+                ...request,
+                model: result.model,
+              });
+              return {
+                success: true,
+                response,
+                strategy: result.strategy,
+                provider: result.provider,
+                model: result.model,
+                message: result.message,
+              };
+            }
+          } catch {
+            // Fallback call also failed
+          }
+        }
+      }
+
+      return result;
+    } catch (fallbackError) {
+      return {
+        success: false,
+        strategy: 'none',
+        message: `Fallback failed: ${fallbackError instanceof Error ? fallbackError.message : 'Unknown error'}`,
+      };
+    }
+  }
+
+  private detectProvider(model: string): LLMProvider {
+    if (model.includes('claude')) return 'claude';
+    if (model.includes('ernie') || model.includes('wenxin')) return 'wenxin';
+    return 'openai';
   }
 
   private recordMetrics(metrics: RequestMetrics): void {
