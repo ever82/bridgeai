@@ -42,8 +42,8 @@ export const errorHandler = (
   }
 
   // Handle multer errors directly (MulterError instances)
-  if ((err as any).name === 'MulterError') {
-    const multerErr = err as multer.MulterError;
+  if (err instanceof multer.MulterError) {
+    const multerErr = err;
     if (multerErr.code === 'LIMIT_FILE_SIZE') {
       res
         .status(413)
