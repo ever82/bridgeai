@@ -8,8 +8,6 @@ import {
   FilterExpression,
   FilterCondition,
   AndFilter,
-  OrFilter,
-  NotFilter,
   FilterOperator,
   FilterValue,
   OrderByClause,
@@ -122,9 +120,7 @@ function buildCondition(condition: FilterCondition): any {
       return { [fieldPath]: { endsWith: value, mode: 'insensitive' } };
 
     case 'exists':
-      return value
-        ? { [fieldPath]: { not: null } }
-        : { [fieldPath]: { equals: null } };
+      return value ? { [fieldPath]: { not: null } } : { [fieldPath]: { equals: null } };
 
     case 'regex':
       // Prisma doesn't support regex directly, use contains as fallback

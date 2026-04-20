@@ -1,5 +1,5 @@
 import type { L1Profile, ProfileCompletionResult } from '@bridgeai/shared';
-import { L1_FIELD_WEIGHTS } from '@bridgeai/shared';
+import { L1_FIELD_WEIGHTS, L1_FIELD_LABELS } from '@bridgeai/shared';
 
 /**
  * Calculate L1 profile completion percentage
@@ -47,7 +47,6 @@ export function calculateL1Completion(l1Data: L1Profile | null): ProfileCompleti
  * Get missing field labels for display
  */
 export function getMissingFieldLabels(missingFields: (keyof L1Profile)[]): string[] {
-  const { L1_FIELD_LABELS } = require('@bridgeai/shared');
   return missingFields.map(field => L1_FIELD_LABELS[field] || field);
 }
 
