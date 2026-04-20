@@ -12,6 +12,14 @@ describe('ClarificationService', () => {
     service = new ClarificationService();
   });
 
+  afterEach(() => {
+    // Stop cleanup interval to prevent Jest timeout
+    const store = (service as any).sessionStore;
+    if (store?.stopCleanup) {
+      store.stopCleanup();
+    }
+  });
+
   const createMockDemand = (overrides?: Partial<Demand>): Demand => ({
     id: 'test-demand-1',
     rawText: '我想找摄影师',

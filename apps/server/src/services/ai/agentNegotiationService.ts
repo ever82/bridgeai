@@ -18,9 +18,6 @@ import { logger } from '../../utils/logger';
 import { llmService } from './llmService';
 import { metricsService } from './metricsService';
 import { LLMProvider } from './types';
-import { demandExtractionService } from './demandExtractionService';
-
-
 /**
  * Agent类型
  */
@@ -47,6 +44,7 @@ export interface ConsumerProfile {
   categoryPreferences?: string[];
   brandPreferences?: string[];
   purchaseHistory?: string[];
+  creditScore?: number;
 }
 
 /**
@@ -59,6 +57,7 @@ export interface MerchantProfile {
   rating?: number;
   location?: string;
   offers: MerchantOffer[];
+  creditScore?: number;
 }
 
 /**
@@ -89,6 +88,7 @@ export interface NegotiationMessage {
   roomId: string;
   senderId: string;
   senderType: AgentType;
+  creditScore?: number;
   content: string;
   messageType: 'introduction' | 'offer' | 'question' | 'response' | 'comparison' | 'recommendation' | 'system';
   timestamp: Date;
@@ -314,6 +314,7 @@ export class AgentNegotiationService {
         roomId,
         senderId: room.consumerAgent.id,
         senderType: 'consumer',
+        creditScore: (room.consumerAgent.profile as ConsumerProfile)?.creditScore,
         content: response.text.trim(),
         messageType: 'introduction',
         timestamp: new Date(),
@@ -375,6 +376,7 @@ export class AgentNegotiationService {
         roomId,
         senderId: merchantId,
         senderType: 'merchant',
+        creditScore: (merchant.profile as MerchantProfile)?.creditScore,
         content: response.text.trim(),
         messageType: 'offer',
         timestamp: new Date(),
@@ -476,6 +478,7 @@ export class AgentNegotiationService {
         roomId,
         senderId: room.consumerAgent.id,
         senderType: 'consumer',
+        creditScore: (room.consumerAgent.profile as ConsumerProfile)?.creditScore,
         content: question.question,
         messageType: 'question',
         timestamp: new Date(),
@@ -503,6 +506,7 @@ export class AgentNegotiationService {
         roomId,
         senderId: question.targetMerchantId,
         senderType: 'merchant',
+        creditScore: (merchant.profile as MerchantProfile)?.creditScore,
         content: response.text.trim(),
         messageType: 'response',
         timestamp: new Date(),
@@ -604,6 +608,7 @@ export class AgentNegotiationService {
         roomId,
         senderId: room.consumerAgent.id,
         senderType: 'consumer',
+        creditScore: (room.consumerAgent.profile as ConsumerProfile)?.creditScore,
         content: reportContent,
         messageType: 'comparison',
         timestamp: new Date(),
@@ -722,6 +727,7 @@ ${recommendation.savingsEstimate ? `💰 预计节省：${recommendation.savings
         roomId,
         senderId: room.consumerAgent.id,
         senderType: 'consumer',
+        creditScore: (room.consumerAgent.profile as ConsumerProfile)?.creditScore,
         content,
         messageType: 'recommendation',
         timestamp: new Date(),
@@ -764,6 +770,7 @@ ${recommendation.savingsEstimate ? `💰 预计节省：${recommendation.savings
           roomId,
           senderId: room.consumerAgent.id,
           senderType: 'consumer',
+          creditScore: (room.consumerAgent.profile as ConsumerProfile)?.creditScore,
           content: '✅ 已确认选择此方案！正在为您准备购买流程...',
           messageType: 'system',
           timestamp: new Date(),

@@ -91,11 +91,24 @@ interface SessionStore {
 class InMemorySessionStore implements SessionStore {
   private sessions = new Map<string, ClarificationSession>();
   private readonly maxAgeMs: number;
+  private cleanupInterval?: ReturnType<typeof setInterval>;
 
-  constructor(maxAgeMinutes: number = 30) {
+  constructor(maxAgeMinutes: number = 30, cleanupIntervalMs: number = 5 * 60 * 1000) {
     this.maxAgeMs = maxAgeMinutes * 60 * 1000;
-    // Start cleanup interval
-    setInterval(() => this.cleanup(), 5 * 60 * 1000); // Clean every 5 minutes
+    // Start cleanup interval (disabled if cleanupIntervalMs is 0)
+    if (cleanupIntervalMs > 0) {
+      this.cleanupInterval = setInterval(() => this.cleanup(), cleanupIntervalMs);
+    }
+  }
+
+  /**
+   * Stop the cleanup interval (call in tests to prevent Jest timeout)
+   */
+  stopCleanup(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = undefined;
+    }
   }
 
   get(sessionId: string): ClarificationSession | undefined {

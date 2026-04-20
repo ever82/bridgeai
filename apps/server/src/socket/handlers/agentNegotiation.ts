@@ -128,6 +128,7 @@ export function registerAgentNegotiationHandlers(
           id: message.id,
           senderId: message.senderId,
           senderType: message.senderType,
+          creditScore: message.creditScore,
           content: message.content,
           messageType: message.messageType,
           timestamp: message.timestamp,

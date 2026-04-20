@@ -723,11 +723,42 @@ export class SupplyToL2Mapper {
     for (const field of schema.fields) {
       if (field.required) {
         const value = result.data[field.id];
-        if (value === undefined || value === null || value === '') {
+        if (!this.isValidFieldValue(value)) {
           return false;
         }
       }
     }
+    return true;
+  }
+
+  /**
+   * Check if a field value is valid (non-empty meaningful value)
+   */
+  private isValidFieldValue(value: any): boolean {
+    if (value === undefined || value === null) {
+      return false;
+    }
+
+    if (typeof value === 'string') {
+      return value.trim().length > 0;
+    }
+
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+
+    if (typeof value === 'object') {
+      // Check for range object { min, max }
+      if ('min' in value && 'max' in value) {
+        const range = value as { min?: number; max?: number };
+        return (range.min !== undefined && range.min !== null) ||
+               (range.max !== undefined && range.max !== null);
+      }
+      // Empty object
+      return Object.keys(value).length > 0;
+    }
+
+    // For numbers and booleans, any value is valid
     return true;
   }
 }
