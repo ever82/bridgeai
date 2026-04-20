@@ -10,18 +10,18 @@
  * - 质量等级划分
  */
 
-import { Supply, Capability, PricingInfo, QualityMetrics } from '../supplyExtractionService';
-import { logger } from '../../utils/logger';
+import { Supply } from '../supplyExtractionService';
+import { logger } from '../../../utils/logger';
 
 /**
  * Quality Assessment Result
  */
 export interface SupplyQualityAssessment {
   supplyId: string;
-  completenessScore: number;       // 0-100
-  credibilityScore: number;        // 0-100
-  competitivenessScore: number;    // 0-100
-  overallScore: number;            // 0-100
+  completenessScore: number; // 0-100
+  credibilityScore: number; // 0-100
+  competitivenessScore: number; // 0-100
+  overallScore: number; // 0-100
   grade: QualityGrade;
   optimizationSuggestions: OptimizationSuggestion[];
   assessedAt: string;
@@ -70,8 +70,8 @@ export class SupplyQualityAssessor {
 
       const overallScore = Math.round(
         completenessScore * SCORING_WEIGHTS.completeness +
-        credibilityScore * SCORING_WEIGHTS.credibility +
-        competitivenessScore * SCORING_WEIGHTS.competitiveness
+          credibilityScore * SCORING_WEIGHTS.credibility +
+          competitivenessScore * SCORING_WEIGHTS.competitiveness
       );
 
       const grade = this.scoreToGrade(overallScore);
@@ -160,7 +160,8 @@ export class SupplyQualityAssessor {
     if (supply.capabilities?.length > 0) {
       const capScore = Math.min(supply.capabilities.length / 3, 1) * capWeight;
       // Bonus for having levels set
-      const hasLevels = supply.capabilities.filter(c => c.level).length / supply.capabilities.length;
+      const hasLevels =
+        supply.capabilities.filter(c => c.level).length / supply.capabilities.length;
       score += capScore * (0.7 + hasLevels * 0.3);
     }
 
@@ -171,7 +172,8 @@ export class SupplyQualityAssessor {
       let priceScore = 0;
       if (supply.pricing.type) priceScore += 0.3;
       if (supply.pricing.currency) priceScore += 0.2;
-      if (supply.pricing.minRate !== undefined || supply.pricing.maxRate !== undefined) priceScore += 0.5;
+      if (supply.pricing.minRate !== undefined || supply.pricing.maxRate !== undefined)
+        priceScore += 0.5;
       score += priceScore * priceWeight;
     }
 
@@ -199,7 +201,8 @@ export class SupplyQualityAssessor {
     if (supply.location) {
       let locScore = 0;
       if (supply.location.city) locScore += 0.4;
-      if (supply.location.remote !== undefined || supply.location.onsite !== undefined) locScore += 0.6;
+      if (supply.location.remote !== undefined || supply.location.onsite !== undefined)
+        locScore += 0.6;
       score += locScore * locWeight;
     }
 
@@ -237,7 +240,10 @@ export class SupplyQualityAssessor {
     if (supply.capabilities?.length > 0 && supply.skills?.length > 0) {
       const capKeywords = supply.capabilities.flatMap(c => [c.name, ...(c.keywords || [])]);
       const skillOverlap = supply.skills.filter(s =>
-        capKeywords.some(k => k.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(k.toLowerCase()))
+        capKeywords.some(
+          k =>
+            k.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(k.toLowerCase())
+        )
       );
       if (skillOverlap.length === 0 && supply.skills.length > 3) {
         deductions += 10; // Skills completely unrelated to capabilities
@@ -253,17 +259,19 @@ export class SupplyQualityAssessor {
 
     // 5. Quality score consistency
     if (supply.quality) {
-      const scoreRange = Math.max(
-        supply.quality.overallScore,
-        supply.quality.completenessScore,
-        supply.quality.clarityScore,
-        supply.quality.relevanceScore
-      ) - Math.min(
-        supply.quality.overallScore,
-        supply.quality.completenessScore,
-        supply.quality.clarityScore,
-        supply.quality.relevanceScore
-      );
+      const scoreRange =
+        Math.max(
+          supply.quality.overallScore,
+          supply.quality.completenessScore,
+          supply.quality.clarityScore,
+          supply.quality.relevanceScore
+        ) -
+        Math.min(
+          supply.quality.overallScore,
+          supply.quality.completenessScore,
+          supply.quality.clarityScore,
+          supply.quality.relevanceScore
+        );
       if (scoreRange > 50) {
         deductions += 10; // Large variance in quality scores
       }
@@ -300,7 +308,11 @@ export class SupplyQualityAssessor {
     }
 
     // Pricing transparency bonus
-    if (supply.pricing?.type === 'range' || supply.pricing?.type === 'hourly' || supply.pricing?.type === 'fixed') {
+    if (
+      supply.pricing?.type === 'range' ||
+      supply.pricing?.type === 'hourly' ||
+      supply.pricing?.type === 'fixed'
+    ) {
       score += 5;
     }
 
@@ -395,7 +407,10 @@ export class SupplyQualityAssessor {
       });
     }
 
-    if (!supply.location || (supply.location.remote === undefined && supply.location.onsite === undefined)) {
+    if (
+      !supply.location ||
+      (supply.location.remote === undefined && supply.location.onsite === undefined)
+    ) {
       suggestions.push({
         field: 'location',
         type: 'add_missing',

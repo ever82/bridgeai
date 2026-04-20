@@ -6,7 +6,7 @@
 
 import { L2Schema, L2Data, L2FieldType } from '@bridgeai/shared';
 
-import { Supply, Capability, PricingInfo, ExperienceInfo, LocationInfo } from '../../supplyExtractionService';
+import { Supply, Capability } from '../../supplyExtractionService';
 import { logger } from '../../../utils/logger';
 
 /**
@@ -72,29 +72,6 @@ const CAPABILITY_LEVEL_SCORE: Record<string, number> = {
   advanced: 75,
   expert: 100,
 };
-
-/**
- * Normalize pricing to a standard format
- */
-function normalizePricing(pricing: PricingInfo): { min?: number; max?: number; currency: string; type: string } {
-  const result: { min?: number; max?: number; currency: string; type: string } = {
-    currency: pricing.currency || 'CNY',
-    type: pricing.type,
-  };
-
-  if (pricing.type === 'range' || pricing.type === 'hourly' || pricing.type === 'fixed') {
-    if (pricing.minRate !== undefined) result.min = pricing.minRate;
-    if (pricing.maxRate !== undefined) result.max = pricing.maxRate;
-    if (pricing.minRate === undefined && pricing.maxRate !== undefined) {
-      result.min = 0;
-    }
-    if (pricing.maxRate === undefined && pricing.minRate !== undefined) {
-      result.max = pricing.minRate;
-    }
-  }
-
-  return result;
-}
 
 /**
  * Map capability level to L2-compatible value
@@ -292,10 +269,10 @@ export class SupplyToL2Mapper {
    */
   private getDefaultFieldValue(fieldId: string, supply: Supply): any {
     const fieldMappings: Record<string, (s: Supply) => any> = {
-      title: s => s.title || '未命名供给',
+      title: s => s.title || undefined,
       description: s => s.description || '',
       serviceType: s => s.serviceType,
-      skills: s => s.skills?.length ? s.skills : undefined,
+      skills: s => (s.skills?.length ? s.skills : undefined),
       priceMin: s => s.pricing?.minRate,
       priceMax: s => s.pricing?.maxRate,
       priceCurrency: s => s.pricing?.currency || 'CNY',
@@ -316,19 +293,23 @@ export class SupplyToL2Mapper {
       experienceYears: s => s.experience?.years,
       totalProjects: s => s.experience?.totalProjects,
       relevantProjects: s => s.experience?.relevantProjects,
-      certifications: s => s.experience?.certifications?.length ? s.experience.certifications : undefined,
+      certifications: s =>
+        s.experience?.certifications?.length ? s.experience.certifications : undefined,
       availabilitySchedule: s => s.availability?.schedule,
       availabilityTimezone: s => s.availability?.timezone,
       responseTime: s => s.availability?.responseTime,
       qualityScore: s => s.quality?.overallScore,
       qualityConfidence: s => s.quality?.confidence,
       qualityCompleteness: s => s.quality?.completenessScore,
-      capabilities: s => s.capabilities?.length ? s.capabilities.map(c => ({
-        name: c.name,
-        level: mapCapabilityLevel(c.level),
-        category: c.category,
-        score: CAPABILITY_LEVEL_SCORE[c.level] || 50,
-      })) : undefined,
+      capabilities: s =>
+        s.capabilities?.length
+          ? s.capabilities.map(c => ({
+              name: c.name,
+              level: mapCapabilityLevel(c.level),
+              category: c.category,
+              score: CAPABILITY_LEVEL_SCORE[c.level] || 50,
+            }))
+          : undefined,
     };
 
     const mapper = fieldMappings[fieldId];
@@ -338,10 +319,7 @@ export class SupplyToL2Mapper {
   /**
    * Get value from capabilities
    */
-  private getValueFromCapabilities(
-    field: L2Schema['fields'][0],
-    capabilities: Capability[]
-  ): any {
+  private getValueFromCapabilities(field: L2Schema['fields'][0], capabilities: Capability[]): any {
     if (!capabilities || capabilities.length === 0) return undefined;
 
     const entityTypeMap: Record<string, string> = {
@@ -458,9 +436,8 @@ export class SupplyToL2Mapper {
     }
 
     // Fuzzy match by label
-    const option = field.options.find(o =>
-      o.label.toLowerCase().includes(valueStr) ||
-      valueStr.includes(o.label.toLowerCase())
+    const option = field.options.find(
+      o => o.label.toLowerCase().includes(valueStr) || valueStr.includes(o.label.toLowerCase())
     );
 
     return option?.value;
@@ -496,9 +473,8 @@ export class SupplyToL2Mapper {
         continue;
       }
 
-      const option = field.options.find(o =>
-        o.label.toLowerCase().includes(vStr) ||
-        vStr.includes(o.label.toLowerCase())
+      const option = field.options.find(
+        o => o.label.toLowerCase().includes(vStr) || vStr.includes(o.label.toLowerCase())
       );
 
       if (option) {
@@ -644,7 +620,7 @@ export class SupplyToL2Mapper {
     const tags: string[] = [];
 
     // Tags from skills
-    for (const skill of (supply.skills || [])) {
+    for (const skill of supply.skills || []) {
       tags.push(skill);
     }
 
@@ -681,7 +657,7 @@ export class SupplyToL2Mapper {
   /**
    * Resolve conflicts in mapped data
    */
-  private resolveConflicts(result: SupplyMappingResult, schema: L2Schema): void {
+  private resolveConflicts(result: SupplyMappingResult, _schema: L2Schema): void {
     for (const conflict of result.conflicts) {
       if (conflict.values.length > 0) {
         const validValues = conflict.values.filter(v => v !== null && v !== undefined);
@@ -745,8 +721,11 @@ export class SupplyToL2Mapper {
    */
   validateMapping(result: SupplyMappingResult, schema: L2Schema): boolean {
     for (const field of schema.fields) {
-      if (field.required && !result.data[field.id]) {
-        return false;
+      if (field.required) {
+        const value = result.data[field.id];
+        if (value === undefined || value === null || value === '') {
+          return false;
+        }
       }
     }
     return true;

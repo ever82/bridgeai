@@ -84,3 +84,32 @@ export {
   processNaturalLanguageDemand,
   ExtractedDemandData,
 } from './consumerDemandAI';
+
+// Supply Extraction Service (ISSUE-AI003)
+export {
+  SupplyExtractionService,
+  supplyExtractionService,
+  Supply,
+  Capability,
+  PricingInfo,
+  AvailabilityInfo,
+  LocationInfo,
+  ExperienceInfo,
+  QualityMetrics,
+  SupplyExtractionRequest,
+  ExtractionOptions,
+  SupplyExtractionResult,
+  BulkSupplyExtractionRequest,
+  BulkSupplyExtractionResult,
+  QualityReport,
+  QualityIssue,
+} from './supplyExtractionService';
+
+// Supply Quality Assessor (ISSUE-AI003)
+export {
+  SupplyQualityAssessor,
+  supplyQualityAssessor,
+  SupplyQualityAssessment,
+  QualityGrade,
+  OptimizationSuggestion,
+} from './assessors/supplyQualityAssessor';

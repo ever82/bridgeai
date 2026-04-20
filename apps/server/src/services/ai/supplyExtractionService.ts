@@ -22,18 +22,18 @@ function createLLMService(): LLMService {
     openai: {
       apiKey: process.env.OPENAI_API_KEY || '',
       apiUrl: process.env.OPENAI_API_URL,
-      organization: process.env.OPENAI_ORGANIZATION
+      organization: process.env.OPENAI_ORGANIZATION,
     },
     claude: {
       apiKey: process.env.CLAUDE_API_KEY || '',
-      apiUrl: process.env.CLAUDE_API_URL
+      apiUrl: process.env.CLAUDE_API_URL,
     },
     wenxin: {
       apiKey: process.env.WENXIN_API_KEY || '',
       secretKey: process.env.WENXIN_SECRET_KEY || '',
-      apiUrl: process.env.WENXIN_API_URL
+      apiUrl: process.env.WENXIN_API_URL,
     },
-    defaultStrategy: (process.env.LLM_ROUTING_STRATEGY as any) || 'round-robin'
+    defaultStrategy: (process.env.LLM_ROUTING_STRATEGY as any) || 'round-robin',
   });
 }
 
@@ -209,7 +209,7 @@ export class SupplyExtractionService {
    */
   async extract(request: SupplyExtractionRequest): Promise<SupplyExtractionResult> {
     const startTime = Date.now();
-    const { text, scene, agentId, userId, options = {} } = request;
+    const { text, scene, agentId, userId: _userId, options = {} } = request;
 
     try {
       logger.info(`Starting supply extraction`, { agentId, scene, textLength: text.length });
@@ -336,15 +336,13 @@ export class SupplyExtractionService {
   /**
    * 构建提取提示词
    */
-  private buildExtractionPrompt(
-    text: string,
-    scene: string,
-    options: ExtractionOptions
-  ): string {
+  private buildExtractionPrompt(text: string, scene: string, options: ExtractionOptions): string {
     const sections: string[] = [];
 
     // 基础指令
-    sections.push(`You are an expert supply/service extraction system. Your task is to analyze service descriptions and extract structured supply information.`);
+    sections.push(
+      `You are an expert supply/service extraction system. Your task is to analyze service descriptions and extract structured supply information.`
+    );
 
     // 场景信息
     sections.push(`\n## Scene: ${scene}`);
@@ -462,7 +460,11 @@ export class SupplyExtractionService {
   /**
    * 评估提取质量
    */
-  private evaluateQuality(extraction: any, originalText: string, options: ExtractionOptions): ExtractionQuality {
+  private evaluateQuality(
+    extraction: any,
+    originalText: string,
+    _options: ExtractionOptions
+  ): ExtractionQuality {
     const issues: QualityIssue[] = [];
     let completeness = 0;
     let clarity = 0;
@@ -470,9 +472,9 @@ export class SupplyExtractionService {
 
     // 评估完整性
     const requiredFields = ['title', 'description', 'service_type', 'capabilities', 'pricing'];
-    const optionalFields = ['skills', 'availability', 'location', 'experience'];
+    const _optionalFields = ['skills', 'availability', 'location', 'experience'];
 
-    const fieldsPresent = requiredFields.filter((f) => {
+    const fieldsPresent = requiredFields.filter(f => {
       const value = extraction[f] || extraction[this.toSnakeCase(f)];
       return value !== undefined && value !== null && value !== '';
     }).length;
@@ -511,7 +513,9 @@ export class SupplyExtractionService {
     }
 
     // 计算置信度
-    const confidence = extraction.quality_assessment?.confidence || Math.round((completeness + clarity + relevance) / 3);
+    const confidence =
+      extraction.quality_assessment?.confidence ||
+      Math.round((completeness + clarity + relevance) / 3);
 
     return {
       completeness,
@@ -610,8 +614,13 @@ export class SupplyExtractionService {
     if (options.includeCapabilities !== false && !extraction.capabilities?.length) {
       failed.push('capabilities');
     }
-    if (options.includePricing !== false && !(extraction.pricing || extraction.pricing_info)) {
-      failed.push('pricing');
+    if (options.includePricing !== false) {
+      const hasPricing =
+        (extraction.pricing && Object.keys(extraction.pricing).length > 0) ||
+        (extraction.pricing_info && Object.keys(extraction.pricing_info).length > 0);
+      if (!hasPricing) {
+        failed.push('pricing');
+      }
     }
     return failed;
   }
@@ -632,13 +641,16 @@ export class SupplyExtractionService {
     }
 
     const totalConfidence = results.reduce((sum, r) => sum + r.supply.quality.confidence, 0);
-    const totalCompleteness = results.reduce((sum, r) => sum + r.supply.quality.completenessScore, 0);
+    const totalCompleteness = results.reduce(
+      (sum, r) => sum + r.supply.quality.completenessScore,
+      0
+    );
 
     const allIssues: QualityIssue[] = [];
-    results.forEach((r) => {
+    results.forEach(r => {
       // 收集所有质量问题
       if (r.fieldsFailed.length > 0) {
-        r.fieldsFailed.forEach((field) => {
+        r.fieldsFailed.forEach(field => {
           allIssues.push({
             type: 'missing_field',
             field,
@@ -652,7 +664,7 @@ export class SupplyExtractionService {
     const avgConfidence = Math.round(totalConfidence / results.length);
     const avgCompleteness = Math.round(totalCompleteness / results.length);
     const extractionRate = Math.round(
-      (results.filter((r) => r.success).length / results.length) * 100
+      (results.filter(r => r.success).length / results.length) * 100
     );
 
     // 生成建议
@@ -681,7 +693,7 @@ export class SupplyExtractionService {
    * 将 camelCase 转换为 snake_case
    */
   private toSnakeCase(str: string): string {
-    return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+    return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
   }
 
   /**
