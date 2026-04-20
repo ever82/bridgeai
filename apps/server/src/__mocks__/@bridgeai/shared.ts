@@ -271,7 +271,7 @@ export interface AgentProtocolError {
 
 export const PROTOCOL_VERSION = '1.0.0';
 
-export function validateAgentMessage(message: unknown): {
+export function validateAgentMessage(_message: unknown): {
   valid: boolean;
   errors: string[];
 } {
@@ -302,6 +302,31 @@ export function createAgentMessage(params: any): AgentMessage {
 export function isVersionCompatible(version: string): boolean {
   return version.startsWith('1.');
 }
+
+export function getSceneConfig(_sceneId: any): any {
+  const validSceneIds = ['visionshare', 'agentdate', 'agentjob', 'agentad'];
+  if (!_sceneId || !validSceneIds.includes(_sceneId)) {
+    return undefined;
+  }
+  return {
+    id: _sceneId,
+    metadata: { name: 'VisionShare', description: 'VisionShare scene', isActive: true },
+    fields: [],
+    capabilities: [],
+    templates: [
+      { name: 'Preset 1', description: 'A preset template', prompt: 'Test prompt', isPreset: true },
+    ],
+    validation: {},
+    ui: {},
+  };
+}
+
+export function getAllSceneConfigs(): any[] {
+  return [getSceneConfig('visionshare')];
+}
+
+// Scene IDs
+export const SCENE_IDS: string[] = ['visionshare', 'agentdate', 'agentjob', 'agentad'];
 
 export function serializeMessage(message: AgentMessage): string {
   return JSON.stringify(message);

@@ -167,15 +167,15 @@ describe('TemplateService', () => {
   });
 
   describe('getPresetTemplates', () => {
-    it('should return preset templates for a scene', () => {
-      const templates = getPresetTemplates('visionshare');
+    it('should return preset templates for a scene', async () => {
+      const templates = await getPresetTemplates('visionshare');
 
       expect(templates.length).toBeGreaterThan(0);
       expect(templates.every(t => t.isPreset)).toBe(true);
     });
 
-    it('should return empty array for invalid scene', () => {
-      const templates = getPresetTemplates('invalid' as any);
+    it('should return empty array for invalid scene', async () => {
+      const templates = await getPresetTemplates('invalid' as any);
 
       expect(templates).toEqual([]);
     });

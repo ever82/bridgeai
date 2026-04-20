@@ -86,16 +86,22 @@ describe('AgentBehaviorService', () => {
     });
 
     it('should reject message exceeding rate limit', async () => {
-      // Send 61 messages (limit is 60/min for DIRECT)
-      for (let i = 0; i < 61; i++) {
+      const rateLimitAgentId = 'agent_rate_limit_test';
+      // Fill the rate limit bucket (60/min for DIRECT)
+      // Generate genuinely different content for each message
+      for (let i = 0; i < 60; i++) {
+        const randomSuffix = Math.random().toString(36).repeat(10).substring(0, 80);
         const msg = {
           ...mockMessage,
           id: `msg_rate_${i}`,
+          sender: { ...mockMessage.sender, agentId: rateLimitAgentId },
+          content: { text: `${i}-unique-content-${randomSuffix}` },
         };
-        await service.checkBehavior(agentId, msg);
+        await service.checkBehavior(rateLimitAgentId, msg);
       }
 
-      const result = await service.checkBehavior(agentId, mockMessage);
+      // 61st message should be rate-limited
+      const result = await service.checkBehavior(rateLimitAgentId, mockMessage);
       expect(result.allowed).toBe(false);
       expect(result.error?.code).toBe(AgentProtocolErrorCode.RATE_LIMITED);
     });
@@ -241,7 +247,7 @@ describe('AgentBehaviorService', () => {
       for (let i = 0; i < 3; i++) {
         const badMessage = {
           ...mockMessage,
-          content: { text: 'bad content' },
+          content: { text: 'spam content here' },
         };
         await service.checkBehavior(agentId, badMessage);
       }
@@ -291,7 +297,7 @@ describe('AgentBehaviorService', () => {
       for (let i = 0; i < 3; i++) {
         const badMessage = {
           ...mockMessage,
-          content: { text: 'bad' },
+          content: { text: 'spam here' },
         };
         await service.checkBehavior(agentId, badMessage);
       }

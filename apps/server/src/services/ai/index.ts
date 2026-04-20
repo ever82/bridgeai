@@ -97,7 +97,7 @@ export {
   ExperienceInfo,
   QualityMetrics,
   SupplyExtractionRequest,
-  ExtractionOptions,
+  ExtractionOptions as SupplyExtractionOptions,
   SupplyExtractionResult,
   BulkSupplyExtractionRequest,
   BulkSupplyExtractionResult,
