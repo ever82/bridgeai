@@ -105,31 +105,50 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
     // Extract budget
     structured.budget = this.parseBudget(text);
 
-    // Extract location - enhanced city/district extraction
+    // Extract location
     const location: VisionShareData['structured']['location'] = {};
 
-    // Try to extract city from phrases like "上海浦东新区"
-    const cityMatch = text.match(/([\u4e00-\u9fa5]{2,10}?)(?=[\u4e00-\u9fa5]{0,3}(?:区|县|镇|开发区|新区|新城))/);
-    if (cityMatch) {
-      location.city = cityMatch[1];
+    // Find '区' first, then look backward for district name
+    const districtPos = text.indexOf('区');
+    if (districtPos > 0) {
+      const before = text.substring(0, districtPos);
+      // Try common district name lengths (3 chars like 浦东新, then 2 chars like 朝阳)
+      let districtName: string | null = null;
+      let districtStart = 0;
+      for (const len of [3, 2, 1, 4]) {
+        const match = before.match(new RegExp(`([\u4e00-\u9fa5]{${len}})$`));
+        if (match) {
+          districtName = match[1];
+          districtStart = match.index!;
+          break;
+        }
+      }
+      if (districtName) {
+        location.district = districtName + '区';
+        // Look for city in text before the district start
+        const textBeforeDistrict = text.substring(0, districtStart);
+        // Try to find city: last 2-3 Chinese chars, stripping common suffixes
+        const chineseOnly = textBeforeDistrict.replace(/[^\u4e00-\u9fa5]/g, '');
+        const cityCandidate = chineseOnly.match(/([\u4e00-\u9fa5]{2,3})$/);
+        if (cityCandidate) {
+          // Strip common suffixes (市, 县, etc.) and leading prepositions (在, 从, 到)
+          location.city = cityCandidate[1].replace(/^[在从到去回]/, '').replace(/[市县城省]$/, '');
+        }
+      }
+    } else {
+      // Fallback to base parseLocation
+      const parsedLocation = this.parseLocation(text);
+      if (parsedLocation.city) location.city = parsedLocation.city;
+      if (parsedLocation.district) location.district = parsedLocation.district;
     }
 
-    const parsedLocation = this.parseLocation(text);
-    if (parsedLocation.city && !location.city) {
-      location.city = parsedLocation.city;
-    }
-    if (parsedLocation.district) {
-      location.district = parsedLocation.district;
-    }
-
-    // Extract indoor/outdoor preference
-    location.indoor = /内景|棚拍|室内|摄影棚/.test(text);
-    if (location.indoor === undefined && /外景|户外|室外/.test(text)) {
-      location.indoor = false;
-    }
-
-    if (Object.keys(location).length > 0) {
-      structured.location = location;
+    const indoorKeyword = /内景|棚拍|室内|摄影棚/.test(text);
+    const outdoorKeyword = /外景|户外|室外/.test(text);
+    if (location.city || location.district || indoorKeyword || outdoorKeyword) {
+      structured.location = {
+        ...location,
+        indoor: indoorKeyword ? true : outdoorKeyword ? false : undefined,
+      };
     }
 
     // Extract requirements
@@ -149,7 +168,7 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
     const typePatterns = [
       { pattern: /婚礼|婚纱/, type: '婚礼摄影' },
       { pattern: /商业|产品/, type: '商业摄影' },
-      { pattern: /人像|写真|肖像/, type: '人像摄影' },
+      { pattern: /人像|肖像/, type: '人像摄影' },
       { pattern: /风景|风光/, type: '风景摄影' },
       { pattern: /建筑|空间/, type: '建筑摄影' },
       { pattern: /美食|餐饮/, type: '美食摄影' },
@@ -301,7 +320,7 @@ export class VisionShareExtractor extends BaseSceneExtractor<VisionShareData> {
   protected getClarificationQuestion(field: string): string {
     const visionShareQuestions: Record<string, string> = {
       'photographyTime': '请问您希望在什么时间拍摄？（如：下周六下午、下个月等）',
-      'photographyType': '请问您需要什么类型的摄影服务？（如：人像写真、婚礼摄影、商业拍摄等）',
+      'photographyType': '请问您需要什么摄影类型的服务？（如：人像写真、婚礼摄影、商业拍摄等）',
       'photographerPreferences.style': '请问您希望拍摄什么风格的照片？（如：自然、唯美、时尚等）',
       'photographerPreferences.experience': '请问您对摄影师的经验有要求吗？',
       'location.indoor': '请问您希望在室内棚拍还是外景拍摄？',

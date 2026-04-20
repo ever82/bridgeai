@@ -412,11 +412,13 @@ export function handleUploadError(
   if (err instanceof multer.MulterError) {
     let message = 'File upload error';
     let code = 'UPLOAD_ERROR';
+    let statusCode = 400;
 
     switch (err.code) {
       case 'LIMIT_FILE_SIZE':
         message = 'File too large';
         code = 'FILE_TOO_LARGE';
+        statusCode = 413;
         break;
       case 'LIMIT_FILE_COUNT':
         message = 'Too many files';
@@ -432,7 +434,7 @@ export function handleUploadError(
         break;
     }
 
-    res.status(400).json({
+    res.status(statusCode).json({
       success: false,
       error: { code, message },
     });
@@ -442,7 +444,9 @@ export function handleUploadError(
   // Handle custom file filter errors
   if (
     err.message.includes('File type not allowed') ||
-    err.message.includes('File category not allowed')
+    err.message.includes('File category not allowed') ||
+    err.message.includes('Invalid file type') ||
+    err.message.toLowerCase().includes('invalid file')
   ) {
     res.status(400).json({
       success: false,

@@ -5,6 +5,7 @@ import multer from 'multer';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/common';
 import { validateBody } from '../middleware/validation';
+import { handleUploadError } from '../middleware/upload';
 import { ApiResponse } from '../utils/response';
 import * as userService from '../services/userService';
 import * as storageService from '../services/storageService';
@@ -113,6 +114,7 @@ router.post(
   '/avatar',
   authenticate,
   avatarUpload.single('avatar'),
+  handleUploadError,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);

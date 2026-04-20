@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import multer from 'multer';
 
 import { logger } from '../utils/logger';
 import { ApiResponse } from '../utils/response';
-import { AppError } from '../errors/AppError';
+import { AppError, MulterUploadError } from '../errors/AppError';
 
 export const errorHandler = (
   err: Error | AppError,
@@ -29,6 +30,40 @@ export const errorHandler = (
     res
       .status(err.statusCode)
       .json(ApiResponse.error(err.message, err.code, err.statusCode, err.details));
+    return;
+  }
+
+  // Handle multer upload errors
+  if (err instanceof MulterUploadError) {
+    res
+      .status(err.statusCode)
+      .json(ApiResponse.error(err.message, err.code, err.statusCode));
+    return;
+  }
+
+  // Handle multer errors directly (MulterError instances)
+  if ((err as any).name === 'MulterError') {
+    const multerErr = err as multer.MulterError;
+    if (multerErr.code === 'LIMIT_FILE_SIZE') {
+      res
+        .status(413)
+        .json(ApiResponse.error('File too large', 'FILE_TOO_LARGE', 413));
+    } else {
+      res
+        .status(400)
+        .json(ApiResponse.error(err.message, 'UPLOAD_ERROR', 400));
+    }
+    return;
+  }
+
+  // Handle custom file filter errors
+  if (
+    err.message.includes('File type not allowed') ||
+    err.message.includes('File category not allowed') ||
+    err.message.includes('Invalid file type') ||
+    err.message.toLowerCase().includes('invalid file')
+  ) {
+    res.status(400).json(ApiResponse.error(err.message, 'INVALID_FILE_TYPE', 400));
     return;
   }
 

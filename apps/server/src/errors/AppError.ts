@@ -114,3 +114,13 @@ export class RateLimitError extends AppError {
     );
   }
 }
+
+/**
+ * Multer Upload Error (400/413)
+ */
+export class MulterUploadError extends AppError {
+  constructor(message: string, code: string, statusCode: number) {
+    super(message, code, statusCode);
+    Object.setPrototypeOf(this, MulterUploadError.prototype);
+  }
+}

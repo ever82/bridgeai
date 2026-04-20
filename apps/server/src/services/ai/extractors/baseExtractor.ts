@@ -139,7 +139,7 @@ export abstract class BaseSceneExtractor<T extends SceneExtractedData>
   protected getClarificationQuestion(field: string): string {
     const questionMap: Record<string, string> = {
       'photographyTime': '请问您希望在什么时间拍摄？',
-      'photographyType': '请问您需要什么类型的摄影服务？',
+      'photographyType': '请问您需要什么摄影类型的服务？',
       'budget': '请问您的预算范围是多少？',
       'location': '请问拍摄地点在哪里？',
       'partnerPreferences': '请问您对理想伴侣有什么要求？',
