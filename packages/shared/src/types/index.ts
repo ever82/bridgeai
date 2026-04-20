@@ -1,5 +1,6 @@
 // Export all shared types
 export * from './agent';
+export * from './dating';
 export {
   // Explicitly re-export from agentProfile, excluding Location (see ./location)
   AgeRange,

@@ -3,6 +3,12 @@
  * AgentDate场景提取器 - 交友约会需求
  */
 
+import {
+  PersonalityTrait,
+  InterestCategory,
+  DatingPurpose,
+} from '@bridgeai/shared';
+
 import { logger } from '../../../utils/logger';
 
 import { BaseSceneExtractor } from './baseExtractor';
@@ -36,7 +42,7 @@ export class AgentDateExtractor extends BaseSceneExtractor<AgentDateData> {
   /**
    * Extract AgentDate-specific data from text
    */
-  async extract(text: string, _context?: Record<string, any>): Promise<AgentDateData> {
+  async extract(text: string, _context?: Record<string, unknown>): Promise<AgentDateData> {
     logger.info('Extracting AgentDate demand', { textLength: text.length });
 
     const entities = this.extractAgentDateEntities(text);
@@ -123,7 +129,7 @@ export class AgentDateExtractor extends BaseSceneExtractor<AgentDateData> {
   /**
    * Extract partner preferences from text
    */
-  private extractPartnerPreferences(text: string, entities: SceneExtractedEntity[]): AgentDateData['structured']['partnerPreferences'] {
+  private extractPartnerPreferences(text: string, _entities: SceneExtractedEntity[]): AgentDateData['structured']['partnerPreferences'] {
     const preferences: AgentDateData['structured']['partnerPreferences'] = {};
 
     // Extract age range
@@ -189,7 +195,7 @@ export class AgentDateExtractor extends BaseSceneExtractor<AgentDateData> {
   /**
    * Extract interests from text
    */
-  private extractInterests(text: string, entities: SceneExtractedEntity[]): string[] {
+  private extractInterests(text: string, _entities: SceneExtractedEntity[]): string[] {
     const interests: string[] = [];
 
     // Extract interests from patterns
@@ -213,7 +219,7 @@ export class AgentDateExtractor extends BaseSceneExtractor<AgentDateData> {
     }
 
     // Extract from entities
-    for (const entity of entities) {
+    for (const entity of _entities) {
       if (entity.type === 'interest' && !interests.includes(entity.value)) {
         interests.push(entity.value);
       }
@@ -330,4 +336,242 @@ export class AgentDateExtractor extends BaseSceneExtractor<AgentDateData> {
 
     return agentDateQuestions[field] || super.getClarificationQuestion(field);
   }
+
+  /**
+   * Generate an ice-breaking greeting message for initial chat with another agent.
+   * AS-DATE-002-AC-1: 寒暄破冰
+   *
+   * @param ownerName - Name of the owner's agent
+   * @param partnerProfile - Partner's profile info for personalization
+   * @returns Ice-breaking message content
+   */
+  generateIceBreakingMessage(
+    ownerName: string,
+    partnerProfile?: { name?: string; interests?: string[]; personality?: string[] }
+  ): string {
+    const greetings = [
+      '你好呀，很高兴认识你！',
+      '你好！今天过得怎么样？',
+      '嗨，你好！终于有机会认识你了～',
+    ];
+
+    const opener = greetings[Math.floor(Math.random() * greetings.length)];
+
+    let body = '';
+
+    if (partnerProfile?.interests && partnerProfile.interests.length > 0) {
+      const interest = partnerProfile.interests[0];
+      const interestOpeners = [
+        `我看到你对${interest}挺感兴趣的，平时经常做这个吗？`,
+        `听说你喜欢${interest}，这个爱好很棒呀！`,
+        `你提到喜欢${interest}，能聊聊吗？`,
+      ];
+      body = interestOpeners[Math.floor(Math.random() * interestOpeners.length)];
+    } else {
+      const topics = [
+        '最近有什么有趣的事吗？',
+        '平时空闲时间喜欢做什么呢？',
+        '有什么兴趣爱好吗？',
+      ];
+      body = topics[Math.floor(Math.random() * topics.length)];
+    }
+
+    const closings = [
+      '期待多了解你一些 😊',
+      '希望我们能聊得开心！',
+      '很高兴有机会认识你～',
+    ];
+    const closing = closings[Math.floor(Math.random() * closings.length)];
+
+    logger.debug('Generated ice-breaking message', { ownerName, partnerProfile });
+    return `${opener} ${body} ${closing}`;
+  }
+
+  /**
+   * Evaluate personality match between owner and partner.
+   * AS-DATE-002-AC-2: 评估性格匹配度
+   *
+   * @param ownerTraits - Owner's personality traits
+   * @param partnerTraits - Partner's personality traits
+   * @param ownerInterests - Owner's interests
+   * @param partnerInterests - Partner's interests
+   * @param datingPurpose - Dating purpose/goals
+   * @returns Personality match evaluation result
+   */
+  evaluatePersonalityMatch(
+    ownerTraits: PersonalityTrait[],
+    partnerTraits: PersonalityTrait[],
+    ownerInterests: InterestCategory[],
+    partnerInterests: InterestCategory[],
+    datingPurpose?: DatingPurpose
+  ): PersonalityMatchResult {
+    // Trait compatibility scoring
+    const traitScore = this.scoreTraitCompatibility(ownerTraits, partnerTraits);
+
+    // Interest overlap scoring
+    const interestScore = this.scoreInterestOverlap(ownerInterests, partnerInterests);
+
+    // MBTI-style complement check
+    const mbtiScore = this.scoreMbtiComplement(ownerTraits, partnerTraits);
+
+    // Dating purpose weight adjustment
+    const purposeWeight = this.getPurposeWeight(datingPurpose);
+
+    // Weighted composite score
+    const totalScore = Math.round(
+      (traitScore * 0.4 + interestScore * 0.35 + mbtiScore * 0.25) * purposeWeight
+    );
+
+    const sharedTraits = ownerTraits.filter(t => partnerTraits.includes(t));
+    const sharedInterests = ownerInterests.filter(i => partnerInterests.includes(i));
+
+    const matchLevel =
+      totalScore >= 75 ? 'high' :
+      totalScore >= 45 ? 'medium' :
+      'low';
+
+    const result: PersonalityMatchResult = {
+      overallScore: Math.min(totalScore, 100),
+      traitScore,
+      interestScore,
+      mbtiScore,
+      sharedTraits,
+      sharedTraitsCount: sharedTraits.length,
+      sharedInterests,
+      sharedInterestsCount: sharedInterests.length,
+      matchLevel,
+      advice: this.generateMatchAdvice(totalScore, sharedTraits, sharedInterests, matchLevel),
+    };
+
+    logger.info('Personality match evaluated', {
+      overallScore: result.overallScore,
+      matchLevel: result.matchLevel,
+      sharedTraitsCount: result.sharedTraitsCount,
+      sharedInterestsCount: result.sharedInterestsCount,
+    });
+
+    return result;
+  }
+
+  /**
+   * Score trait compatibility between two personality sets.
+   */
+  private scoreTraitCompatibility(
+    ownerTraits: PersonalityTrait[],
+    partnerTraits: PersonalityTrait[]
+  ): number {
+    if (ownerTraits.length === 0 || partnerTraits.length === 0) return 50;
+
+    const shared = ownerTraits.filter(t => partnerTraits.includes(t)).length;
+    const union = new Set([...ownerTraits, ...partnerTraits]).size;
+
+    return Math.round((shared / union) * 100);
+  }
+
+  /**
+   * Score interest overlap between owner and partner.
+   */
+  private scoreInterestOverlap(
+    ownerInterests: InterestCategory[],
+    partnerInterests: InterestCategory[]
+  ): number {
+    if (ownerInterests.length === 0 && partnerInterests.length === 0) return 50;
+    if (ownerInterests.length === 0 || partnerInterests.length === 0) return 30;
+
+    const shared = ownerInterests.filter(i => partnerInterests.includes(i)).length;
+    const maxPossible = Math.max(ownerInterests.length, partnerInterests.length);
+
+    return Math.round((shared / maxPossible) * 100);
+  }
+
+  /**
+   * Score MBTI complement compatibility (introvert-extrovert balance).
+   */
+  private scoreMbtiComplement(
+    ownerTraits: PersonalityTrait[],
+    partnerTraits: PersonalityTrait[]
+  ): number {
+    const isIntrovert = (traits: PersonalityTrait[]) =>
+      traits.includes(PersonalityTrait.INTROVERTED);
+    const isExtrovert = (traits: PersonalityTrait[]) =>
+      traits.includes(PersonalityTrait.EXTROVERTED);
+
+    // Same energy type gets a decent baseline
+    if (
+      (isIntrovert(ownerTraits) && isIntrovert(partnerTraits)) ||
+      (isExtrovert(ownerTraits) && isExtrovert(partnerTraits))
+    ) {
+      return 70;
+    }
+
+    // Complementary personalities can be great for relationships
+    if (
+      (isIntrovert(ownerTraits) && isExtrovert(partnerTraits)) ||
+      (isExtrovert(ownerTraits) && isIntrovert(partnerTraits))
+    ) {
+      return 85;
+    }
+
+    // Ambivert or no clear energy type
+    return 60;
+  }
+
+  /**
+   * Get purpose weight multiplier for dating purpose.
+   */
+  private getPurposeWeight(datingPurpose?: DatingPurpose): number {
+    switch (datingPurpose) {
+      case DatingPurpose.MARRIAGE:
+        return 1.1; // Marriage needs deeper compatibility
+      case DatingPurpose.SERIOUS_RELATIONSHIP:
+        return 1.05;
+      case DatingPurpose.CASUAL_DATING:
+        return 0.9; // Casual can tolerate lower match
+      default:
+        return 1.0;
+    }
+  }
+
+  /**
+   * Generate match advice based on evaluation results.
+   */
+  private generateMatchAdvice(
+    score: number,
+    sharedTraits: PersonalityTrait[],
+    sharedInterests: InterestCategory[],
+    matchLevel: 'high' | 'medium' | 'low'
+  ): string {
+    if (matchLevel === 'high') {
+      if (sharedInterests.length > 0) {
+        const interestNames = sharedInterests.slice(0, 2).join('和');
+        return `你们在${interestNames}方面很有共同点，匹配度很高！建议可以约个咖啡聊聊看～`;
+      }
+      return '你们的性格很搭，匹配度很高！值得深入了解。';
+    }
+
+    if (matchLevel === 'medium') {
+      if (sharedTraits.length > 0) {
+        return '你们的性格有一定契合度，可以先聊聊看，多了解彼此。';
+      }
+      return '匹配度中等，建议多聊几次再判断是否合适。';
+    }
+
+    return '性格和兴趣重合度较低，可能需要更多时间磨合。建议先做朋友了解彼此。';
+  }
+}
+
+/**
+ * Personality match evaluation result
+ */
+export interface PersonalityMatchResult {
+  overallScore: number;
+  traitScore: number;
+  interestScore: number;
+  mbtiScore: number;
+  sharedTraits: PersonalityTrait[];
+  sharedTraitsCount: number;
+  sharedInterests: InterestCategory[];
+  sharedInterestsCount: number;
+  matchLevel: 'high' | 'medium' | 'low';
+  advice: string;
 }
