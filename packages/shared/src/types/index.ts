@@ -32,5 +32,7 @@ export * from './scene';
 export * from './agentAdConsumer';
 export * from './disclosure';
 export * from './visionShare';
+export * from './jobSeeker';
+export * from './resume';
 export * from '../schemas/l2';
 export * from '../schemas/sceneFields';

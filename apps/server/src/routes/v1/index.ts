@@ -11,6 +11,8 @@ import aiExtractionRoutes from '../ai/extraction';
 import merchantRoutes from '../merchants';
 import offerRoutes from '../offers';
 import jobPostingRoutes from '../job/jobPostingRoutes';
+import jobSeekerProfileRoutes from '../jobSeeker/profile.routes';
+import jobSeekerDeliveryRoutes from '../jobSeeker/delivery.routes';
 import consumerDemandRoutes from '../consumerDemand';
 import reviewRoutes from '../reviews';
 import authRoutes from '../auth';
@@ -37,6 +39,8 @@ router.use('/ai', aiExtractionRoutes);
 router.use('/merchants', merchantRoutes);
 router.use('/offers', offerRoutes);
 router.use('/jobs', jobPostingRoutes);
+router.use('/job-seeker/profiles', jobSeekerProfileRoutes);
+router.use('/job-seeker/deliveries', jobSeekerDeliveryRoutes);
 router.use('/consumer', consumerDemandRoutes);
 router.use('/reviews', reviewRoutes);
 

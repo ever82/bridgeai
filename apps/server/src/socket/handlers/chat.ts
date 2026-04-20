@@ -4,6 +4,8 @@
  * Handles chat-related socket events with message persistence.
  */
 import type { Namespace } from 'socket.io';
+import type { Prisma } from '@prisma/client';
+
 import type { AuthenticatedSocket } from '../middleware/auth';
 import {
   createMessage,
@@ -442,8 +444,5 @@ async function deliverOfflineMessages(socket: AuthenticatedSocket, roomId: strin
     console.error('[Chat] Deliver offline messages error:', error);
   }
 }
-
-// Import Prisma type
-import type { Prisma } from '@prisma/client';
 
 export default { registerChatHandlers };
