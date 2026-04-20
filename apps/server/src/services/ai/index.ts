@@ -84,3 +84,11 @@ export {
   processNaturalLanguageDemand,
   ExtractedDemandData,
 } from './consumerDemandAI';
+
+// Vision Services (ISSUE-AI005)
+export * from './vision/types';
+export { ImageAnalysisService } from './imageAnalysisService';
+export { ImageModerationService } from './imageModerationService';
+export { OCRService } from './ocrService';
+export { ImageSearchService } from './imageSearchService';
+export * from './adapters/vision';
