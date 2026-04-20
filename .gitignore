@@ -65,6 +65,9 @@ postgis-*/
 .cache/
 .temp/
 .tmp/
+
+# IssueTree temp files
+.issuetree/tmp/
 *.pem
 
 # Expo

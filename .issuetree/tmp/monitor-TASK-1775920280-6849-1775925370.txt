@@ -1,3 +1,0 @@
-You are monitoring task TASK-1775920280-6849.
-Attach to tmux session: task-task-1775920280-6849
-Test prompt content.

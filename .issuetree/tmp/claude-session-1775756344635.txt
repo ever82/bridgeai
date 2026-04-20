@@ -1,7 +1,0 @@
-Task: TASK-1
-Issue: ISSUE-CR002c
-
-Please execute the task according to the IssueTree workflow.
-1. Read the Issue YAML at .issuetree/issues/ISSUE-CR002c/ISSUE-CR002c~*.yaml
-2. Create a Task YAML at .issuetree/issues/ISSUE-CR002c/tasks/TASK-1~*.yaml
-3. Execute the task and update the Task YAML with results.
