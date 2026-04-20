@@ -4,8 +4,10 @@
  * Provides Zod-based validation for request body, params, and query.
  */
 import type { Request, Response, NextFunction } from 'express';
-import { ZodError, ZodSchema, ZodType, ZodTypeAny } from 'zod';
+import { ZodError, ZodType } from 'zod';
+
 import { ValidationError } from '../errors';
+
 import { getRequestContext } from './requestContext';
 
 /**
@@ -27,16 +29,14 @@ export interface ValidationSchemas {
  * Format Zod error into readable message
  */
 function formatZodError(error: ZodError): string {
-  return error.errors
-    .map((err) => `${err.path.join('.')}: ${err.message}`)
-    .join('; ');
+  return error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join('; ');
 }
 
 /**
  * Create validation error from Zod error
  */
 function createValidationError(error: ZodError, target: ValidationTarget): ValidationError {
-  const details = error.errors.map((err) => {
+  const details = error.errors.map(err => {
     const detail: Record<string, any> = {
       field: err.path.join('.'),
       message: err.message,
@@ -52,10 +52,10 @@ function createValidationError(error: ZodError, target: ValidationTarget): Valid
     return detail;
   });
 
-  return new ValidationError(
-    `Validation failed for ${target}: ${formatZodError(error)}`,
-    { details, target }
-  );
+  return new ValidationError(`Validation failed for ${target}: ${formatZodError(error)}`, {
+    details,
+    target,
+  });
 }
 
 /**
@@ -96,7 +96,7 @@ export function validate(schemas: ValidationSchemas) {
       const validatedBody = validateTarget(req.body, schemas.body, 'body');
       const validatedParams = validateTarget(req.params, schemas.params, 'params');
       const validatedQuery = validateTarget(req.query, schemas.query, 'query');
-      const validatedHeaders = validateTarget(req.headers, schemas.headers, 'headers');
+      validateTarget(req.headers, schemas.headers, 'headers');
 
       // Replace request data with validated data
       if (validatedBody !== undefined) {
@@ -163,7 +163,7 @@ export function validateQuery<T>(schema: ZodType<T, any, any>) {
 export function sanitizeString(input: string): string {
   return input
     .trim()
-    .replace(/[<>]/g, '') // Remove < and > to prevent HTML injection
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
     .replace(/javascript:/gi, '') // Remove javascript: protocol
     .replace(/on\w+=/gi, ''); // Remove event handlers
 }
