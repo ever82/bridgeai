@@ -12,14 +12,24 @@ import { User } from '@prisma/client';
 import { logger } from '../utils/logger';
 import { prisma } from '../db/client';
 
+import { cacheGet, cacheSet, cacheDel } from './cache';
+
+
 // JWT 配置
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '30d';
 
 // 登录重试限制配置
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MINUTES = 30;
+
+// 验证码配置
+const VERIFICATION_CODE_TTL = 300; // 5分钟
+const VERIFICATION_CODE_PREFIX = 'verification:code:';
 
 // 令牌载荷接口
 export interface ITokenPayload {
@@ -113,6 +123,35 @@ export function validatePasswordStrength(password: string): IPasswordStrength {
     score,
     errors,
   };
+}
+
+/**
+ * 生成并存储验证码（Redis TTL 5分钟）
+ * @param identifier 手机号或邮箱
+ * @returns 验证码
+ */
+export function generateVerificationCode(identifier: string): string {
+  const code = Math.random().toString().slice(2, 8);
+  const key = `${VERIFICATION_CODE_PREFIX}${identifier}`;
+  cacheSet(key, code, VERIFICATION_CODE_TTL);
+  return code;
+}
+
+/**
+ * 验证验证码
+ * @param identifier 手机号或邮箱
+ * @param code 用户输入的验证码
+ * @returns 是否验证通过
+ */
+export async function verifyVerificationCode(identifier: string, code: string): Promise<boolean> {
+  const key = `${VERIFICATION_CODE_PREFIX}${identifier}`;
+  const stored = await cacheGet<string>(key);
+  if (!stored || stored !== code) {
+    return false;
+  }
+  // 验证通过后删除，防止重复使用
+  await cacheDel(key);
+  return true;
 }
 
 /**
@@ -211,9 +250,13 @@ export async function registerUser(data: IRegisterData): Promise<IAuthResponse> 
     throw new Error('用户已存在');
   }
 
-  // 验证验证码（需要从缓存/数据库中获取并验证）
-  if (verificationCode && verificationCode !== '123456') {
-    throw new Error('验证码错误');
+  // 验证验证码（从Redis中获取并验证）
+  if (verificationCode) {
+    const identifier = email || phone || '';
+    const valid = await verifyVerificationCode(identifier, verificationCode);
+    if (!valid) {
+      throw new Error('验证码错误或已过期');
+    }
   }
 
   // 哈希密码
@@ -283,10 +326,12 @@ export async function loginUser(data: ILoginData): Promise<IAuthResponse> {
 
   let loginSuccess = false;
 
-  // 验证码登录（需要从缓存/数据库中验证）
+  // 验证码登录（从Redis中验证）
   if (verificationCode) {
-    if (verificationCode !== '123456') {
-      throw new Error('验证码错误');
+    const identifier = email || phone || '';
+    const valid = await verifyVerificationCode(identifier, verificationCode);
+    if (!valid) {
+      throw new Error('验证码错误或已过期');
     }
     loginSuccess = true;
   }

@@ -17,6 +17,7 @@ import {
 } from '../authService';
 import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
+import { cacheGet } from '../cache';
 
 // Mock prisma
 jest.mock('../../db/client', () => ({
@@ -40,6 +41,13 @@ jest.mock('../../utils/logger', () => ({
     warn: jest.fn(),
     error: jest.fn(),
   },
+}));
+
+// Mock cache
+jest.mock('../cache', () => ({
+  cacheGet: jest.fn(),
+  cacheSet: jest.fn(),
+  cacheDel: jest.fn(),
 }));
 
 describe('Auth Service', () => {
@@ -184,13 +192,15 @@ describe('Auth Service', () => {
 
     it('should throw error for wrong verification code', async () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
+      (cacheGet as jest.Mock).mockResolvedValue('654321');
       await expect(
         registerUser({ ...validRegisterData, verificationCode: '999999' })
-      ).rejects.toThrow('验证码错误');
+      ).rejects.toThrow('验证码错误或已过期');
     });
 
     it('should accept valid verification code', async () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
+      (cacheGet as jest.Mock).mockResolvedValue('123456');
       (prisma.user.create as jest.Mock).mockResolvedValue({
         id: 'user-1',
         email: 'newuser@example.com',
@@ -296,6 +306,7 @@ describe('Auth Service', () => {
     it('should login with valid verification code', async () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue(mockUser);
       (prisma.user.update as jest.Mock).mockResolvedValue(mockUser);
+      (cacheGet as jest.Mock).mockResolvedValue('123456');
 
       const result = await loginUser({
         email: 'test@example.com',
@@ -308,10 +319,11 @@ describe('Auth Service', () => {
 
     it('should throw error for invalid verification code', async () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue(mockUser);
+      (cacheGet as jest.Mock).mockResolvedValue('654321');
 
       await expect(
         loginUser({ email: 'test@example.com', verificationCode: '999999' })
-      ).rejects.toThrow('验证码错误');
+      ).rejects.toThrow('验证码错误或已过期');
     });
 
     it('should throw error when user does not exist', async () => {
