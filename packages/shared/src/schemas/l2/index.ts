@@ -24,11 +24,13 @@ export const L2_SCHEMAS: Record<string, L2Schema> = {
 
 // Get schema by scene code
 export function getL2Schema(scene: string, role?: string): L2Schema | undefined {
+  // Normalize scene to uppercase for lookup
+  const normalizedScene = scene?.toUpperCase();
   // For AgentAd with CONSUMER role, use consumer schema
-  if (scene === 'AGENTAD' && role === 'CONSUMER') {
+  if (normalizedScene === 'AGENTAD' && role === 'CONSUMER') {
     return agentAdConsumerL2Schema;
   }
-  return L2_SCHEMAS[scene];
+  return L2_SCHEMAS[normalizedScene];
 }
 
 // Get all schemas

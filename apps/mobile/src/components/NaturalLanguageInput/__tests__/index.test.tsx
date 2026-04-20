@@ -21,7 +21,7 @@ jest.mock('../../../hooks/useAIExtraction', () => ({
 }));
 
 // Mock the theme hook
-jest.mock('../../../hooks/useTheme', () => ({
+jest.mock('../../hooks/useTheme', () => ({
   useTheme: () => ({
     theme: {
       colors: {
