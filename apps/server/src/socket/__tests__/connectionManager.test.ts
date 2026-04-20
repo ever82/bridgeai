@@ -1,7 +1,7 @@
 /**
  * Connection Manager Tests
  */
-import { connectionManager } from '../../src/socket/connectionManager';
+import { connectionManager } from '../connectionManager';
 
 // Mock Socket
 const createMockSocket = (id: string, userId?: string) => ({
