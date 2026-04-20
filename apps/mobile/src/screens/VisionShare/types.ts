@@ -98,4 +98,5 @@ export interface VisionShareParams {
   PhotoPayment: { photoIds: string[]; totalAmount: number };
   TransactionHistory: { userId: string };
   RefundRequest: { transactionId: string };
+  NaturalLanguagePublish: { scene?: string };
 }
