@@ -65,6 +65,13 @@ const SCENE_REQUIRED_FIELDS: Record<string, string[]> = {
  * Common defaults by service type
  */
 const SERVICE_DEFAULTS: Record<string, Record<string, any>> = {
+  default: {
+    priceCurrency: 'CNY',
+    priceType: 'fixed',
+    priceUnit: 'session',
+    locationRemote: true,
+    locationOnsite: true,
+  },
   photography: {
     priceCurrency: 'CNY',
     priceType: 'fixed',

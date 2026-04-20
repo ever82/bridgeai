@@ -4,7 +4,7 @@
  * Provides Zod-based validation for request body, params, and query.
  */
 import type { Request, Response, NextFunction } from 'express';
-import { ZodError, ZodSchema, ZodType, ZodTypeAny } from 'zod';
+import { ZodError, ZodType } from 'zod';
 
 import { ValidationError } from '../errors';
 
@@ -29,16 +29,14 @@ export interface ValidationSchemas {
  * Format Zod error into readable message
  */
 function formatZodError(error: ZodError): string {
-  return error.errors
-    .map((err) => `${err.path.join('.')}: ${err.message}`)
-    .join('; ');
+  return error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join('; ');
 }
 
 /**
  * Create validation error from Zod error
  */
 function createValidationError(error: ZodError, target: ValidationTarget): ValidationError {
-  const details = error.errors.map((err) => {
+  const details = error.errors.map(err => {
     const detail: Record<string, any> = {
       field: err.path.join('.'),
       message: err.message,
@@ -54,10 +52,10 @@ function createValidationError(error: ZodError, target: ValidationTarget): Valid
     return detail;
   });
 
-  return new ValidationError(
-    `Validation failed for ${target}: ${formatZodError(error)}`,
-    { details, target }
-  );
+  return new ValidationError(`Validation failed for ${target}: ${formatZodError(error)}`, {
+    details,
+    target,
+  });
 }
 
 /**
@@ -98,7 +96,7 @@ export function validate(schemas: ValidationSchemas) {
       const validatedBody = validateTarget(req.body, schemas.body, 'body');
       const validatedParams = validateTarget(req.params, schemas.params, 'params');
       const validatedQuery = validateTarget(req.query, schemas.query, 'query');
-      const validatedHeaders = validateTarget(req.headers, schemas.headers, 'headers');
+      const _validatedHeaders = validateTarget(req.headers, schemas.headers, 'headers');
 
       // Replace request data with validated data
       if (validatedBody !== undefined) {
@@ -160,14 +158,43 @@ export function validateQuery<T>(schema: ZodType<T, any, any>) {
 }
 
 /**
- * Sanitize string input - remove dangerous characters
+ * Normalize unicode and whitespace to neutralize obfuscation attempts
+ */
+function normalizeString(input: string): string {
+  // eslint-disable-next-line no-control-regex -- intentionally removing control chars for sanitization
+  let result = input.replace(/[\x00-\x1F\x7F]/g, '');
+  result = result.replace(/[\u200B-\u200F\u2028-\u202F\u3000]/g, '');
+  result = result.replace(/[\t\n\r\f\v]/g, ' ');
+  result = result.replace(/\s+/g, ' ').trim();
+  try {
+    result = result.normalize('NFKC');
+  } catch {
+    // Fallback: skip normalization if it fails
+  }
+  return result;
+}
+
+/**
+ * Remove dangerous patterns from a normalized string
+ */
+function removeDangerousPatterns(input: string): string {
+  let result = input;
+  result = result.replace(/on[a-z][a-z0-9]*(?:\s|%09|%0A|%0D)*=(?:\s|%09|%0A|%0D)*/gi, '');
+  result = result.replace(/javascript\s*:\s*/gi, '');
+  result = result.replace(/data\s*:\s*/gi, '');
+  result = result.replace(/vbscript\s*:\s*/gi, '');
+  result = result.replace(/expression\s*\((?:[^)]*)\)/gi, '');
+  result = result.replace(/<[^>]*>/g, '');
+  result = result.replace(/[<>]/g, '');
+  return result;
+}
+
+/**
+ * Sanitize string input - remove dangerous characters and patterns
  */
 export function sanitizeString(input: string): string {
-  return input
-    .trim()
-    .replace(/<[^>]*>/g, '') // Remove HTML tags to prevent HTML injection
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, ''); // Remove event handlers
+  const normalized = normalizeString(input);
+  return removeDangerousPatterns(normalized);
 }
 
 /**
