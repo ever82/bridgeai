@@ -12,7 +12,7 @@ import {
   sendNewReviewNotification,
   sendBadReviewWarning,
   sendCreditScoreChangeNotification,
-  notificationEvents,
+  scheduleReviewReminders,
 } from '../services/notificationService';
 
 // Review Event Types
@@ -113,7 +113,7 @@ export async function handleRatingSubmitted(
 export async function handleRatingDeleted(
   payload: RatingDeletedPayload
 ): Promise<void> {
-  const { ratingId, rateeId, score } = payload;
+  const { ratingId, rateeId, score: _score } = payload;
 
   try {
     // Recalculate credit score for the ratee
@@ -200,9 +200,6 @@ export async function handleMatchCompleted(
   const { matchId, completedAt } = payload;
 
   try {
-    // Import here to avoid circular dependency
-    const { scheduleReviewReminders } = await import('../services/notificationService');
-
     // Schedule review reminders for 24 hours later
     await scheduleReviewReminders(matchId, completedAt);
 

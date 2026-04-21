@@ -2,7 +2,6 @@ import { EventEmitter } from 'events';
 
 import { prisma } from '../db/client';
 import {
-  sendNotification,
   NotificationType,
   NotificationChannel,
   notificationEvents,
@@ -491,7 +490,7 @@ export function initializeReviewNotificationHandlers(): void {
  * @param userId - User ID
  * @returns Notification statistics
  */
-export async function getUserNotificationStats(userId: string): Promise<{
+export async function getUserNotificationStats(_userId: string): Promise<{
   unreadCount: number;
   lastNotificationAt: Date | null;
 }> {
@@ -526,8 +525,8 @@ export async function markNotificationsAsRead(
  */
 export async function getNotificationHistory(
   userId: string,
-  limit: number = 20,
-  offset: number = 0
+  _limit: number = 20,
+  _offset: number = 0
 ): Promise<Array<{
   id: string;
   type: NotificationType;

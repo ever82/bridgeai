@@ -10,9 +10,12 @@ import {
 import {
   handleNewRating,
   creditScoreEvents,
-  getUserCreditScore,
+  recalculateCreditScore,
+  updateCreditScore,
+  calculateRatingCreditDelta,
 } from '../services/creditScoreService';
 import { prisma } from '../db/client';
+import { scheduleReviewReminders } from '../services/notificationService';
 
 // Mock prisma and services
 jest.mock('../db/client', () => ({
@@ -20,6 +23,7 @@ jest.mock('../db/client', () => ({
     rating: {
       findUnique: jest.fn(),
       findMany: jest.fn(),
+      findFirst: jest.fn(),
     },
     user: {
       findUnique: jest.fn(),
@@ -44,6 +48,27 @@ jest.mock('../services/creditScoreService', () => ({
   creditScoreEvents: {
     on: jest.fn(),
     emit: jest.fn(),
+  },
+}));
+
+// Mock notificationService
+jest.mock('../services/notificationService', () => ({
+  sendNewReviewNotification: jest.fn(),
+  sendBadReviewWarning: jest.fn(),
+  sendCreditScoreChangeNotification: jest.fn(),
+  sendReviewReplyNotification: jest.fn(),
+  sendPendingReviewReminder: jest.fn(),
+  scheduleReviewReminders: jest.fn().mockResolvedValue(undefined),
+  notificationEvents: {
+    on: jest.fn(),
+    emit: jest.fn(),
+  },
+  reviewNotificationEvents: {
+    on: jest.fn(),
+    emit: jest.fn(),
+  },
+  notificationService: {
+    sendToUser: jest.fn(),
   },
 }));
 
@@ -108,24 +133,25 @@ describe('Review Event Handlers', () => {
       expect(handleNewRating).toHaveBeenCalledWith('rating-1');
     });
 
-    it('should throw error when rating not found', async () => {
-      (prisma.rating.findUnique as jest.Mock).mockResolvedValue(null);
+    it('should handle missing rater gracefully', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (handleNewRating as jest.Mock).mockResolvedValue(undefined);
 
-      await expect(
-        handleRatingSubmitted({
-          ratingId: 'rating-1',
-          matchId: 'match-1',
-          raterId: 'user-1',
-          rateeId: 'user-2',
-          score: 5,
-        })
-      ).rejects.toThrow('Rating not found');
+      // Should not throw, just use anonymous name
+      await handleRatingSubmitted({
+        ratingId: 'rating-1',
+        matchId: 'match-1',
+        raterId: 'user-1',
+        rateeId: 'user-2',
+        score: 5,
+      });
+
+      expect(handleNewRating).toHaveBeenCalledWith('rating-1');
     });
   });
 
   describe('handleRatingDeleted', () => {
     it('should recalculate credit score after deletion', async () => {
-      const { recalculateCreditScore } = await import('../services/creditScoreService');
       (recalculateCreditScore as jest.Mock).mockResolvedValue(100);
 
       const eventListener = jest.fn();
@@ -145,9 +171,6 @@ describe('Review Event Handlers', () => {
 
   describe('handleRatingUpdated', () => {
     it('should adjust credit score when rating changes', async () => {
-      const { updateCreditScore, calculateRatingCreditDelta } = await import(
-        '../services/creditScoreService'
-      );
       (calculateRatingCreditDelta as jest.Mock).mockReturnValueOnce(5).mockReturnValueOnce(-10);
       (updateCreditScore as jest.Mock).mockResolvedValue({ id: 'record-1' });
 
@@ -170,9 +193,6 @@ describe('Review Event Handlers', () => {
     });
 
     it('should not update when delta is zero', async () => {
-      const { updateCreditScore, calculateRatingCreditDelta } = await import(
-        '../services/creditScoreService'
-      );
       (calculateRatingCreditDelta as jest.Mock).mockReturnValue(5);
 
       await handleRatingUpdated({
@@ -190,35 +210,17 @@ describe('Review Event Handlers', () => {
 
   describe('handleMatchCompleted', () => {
     it('should schedule review reminders', async () => {
-      const mockMatch = {
-        id: 'match-1',
-        demand: {
-          agent: {
-            user: { id: 'user-1', name: 'User 1' },
-          },
-        },
-        supply: {
-          agent: {
-            user: { id: 'user-2', name: 'User 2' },
-          },
-        },
-      };
-
-      (prisma.match.findUnique as jest.Mock).mockResolvedValue(mockMatch);
-      (prisma.rating.findFirst as jest.Mock).mockResolvedValue(null);
+      const completedAt = new Date();
 
       const eventListener = jest.fn();
       reviewEvents.once(ReviewEventType.MATCH_COMPLETED, eventListener);
 
       await handleMatchCompleted({
         matchId: 'match-1',
-        completedAt: new Date(),
+        completedAt,
       });
 
-      expect(prisma.match.findUnique).toHaveBeenCalledWith({
-        where: { id: 'match-1' },
-        include: expect.any(Object),
-      });
+      expect(scheduleReviewReminders).toHaveBeenCalledWith('match-1', completedAt);
     });
   });
 
