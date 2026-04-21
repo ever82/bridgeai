@@ -59,6 +59,8 @@ export type ProfileStackParamList = {
     rateeName: string;
     matchTitle: string;
   };
+  AgentList: undefined;
+  CreateAgent: undefined;
 };
 
 export type JobStackParamList = {

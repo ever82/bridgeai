@@ -1,21 +1,8 @@
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
 
-// Agent Types
-export enum AgentType {
-  VISIONSHARE = 'VISIONSHARE',
-  AGENTDATE = 'AGENTDATE',
-  AGENTJOB = 'AGENTJOB',
-  AGENTAD = 'AGENTAD',
-}
-
-// Agent Status
-export enum AgentStatus {
-  DRAFT = 'DRAFT',
-  ACTIVE = 'ACTIVE',
-  PAUSED = 'PAUSED',
-  ARCHIVED = 'ARCHIVED',
-}
+// Re-export Prisma enums for backward compatibility
+export { AgentType, AgentStatus } from '@prisma/client';
 
 // Agent interface
 export interface Agent {
@@ -86,10 +73,7 @@ const VALID_STATUS_TRANSITIONS: Record<AgentStatus, AgentStatus[]> = {
 /**
  * Validate status transition
  */
-function isValidStatusTransition(
-  currentStatus: AgentStatus,
-  newStatus: AgentStatus
-): boolean {
+function isValidStatusTransition(currentStatus: AgentStatus, newStatus: AgentStatus): boolean {
   if (currentStatus === newStatus) return true;
   const validTransitions = VALID_STATUS_TRANSITIONS[currentStatus];
   return validTransitions.includes(newStatus);
@@ -98,10 +82,7 @@ function isValidStatusTransition(
 /**
  * Create a new agent
  */
-export async function createAgent(
-  userId: string,
-  input: CreateAgentInput
-): Promise<Agent> {
+export async function createAgent(userId: string, input: CreateAgentInput): Promise<Agent> {
   // Validate agent type
   if (!Object.values(AgentType).includes(input.type)) {
     throw new AppError(
@@ -131,6 +112,12 @@ export async function createAgent(
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
       isActive: true,
+      statusHistory: {
+        create: {
+          status: AgentStatus.DRAFT,
+          reason: 'Agent created',
+        },
+      },
     },
   });
 
@@ -140,10 +127,7 @@ export async function createAgent(
 /**
  * Get agent by ID
  */
-export async function getAgentById(
-  agentId: string,
-  userId?: string
-): Promise<Agent | null> {
+export async function getAgentById(agentId: string, userId?: string): Promise<Agent | null> {
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
   });
@@ -165,14 +149,7 @@ export async function getAgentsByUserId(
   userId: string,
   options: AgentFilterOptions = {}
 ): Promise<AgentListResult> {
-  const {
-    type,
-    status,
-    page = 1,
-    limit = 20,
-    sortBy = 'createdAt',
-    sortOrder = 'desc',
-  } = options;
+  const { type, status, page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = options;
 
   const skip = (page - 1) * limit;
 
@@ -283,7 +260,15 @@ export async function updateAgentStatus(
 
   const updatedAgent = await prisma.agent.update({
     where: { id: agentId },
-    data: { status: newStatus },
+    data: {
+      status: newStatus,
+      statusHistory: {
+        create: {
+          status: newStatus,
+          reason: `Status changed from ${currentStatus} to ${newStatus}`,
+        },
+      },
+    },
   });
 
   return mapPrismaAgentToAgent(updatedAgent);
@@ -292,10 +277,7 @@ export async function updateAgentStatus(
 /**
  * Delete agent
  */
-export async function deleteAgent(
-  agentId: string,
-  userId: string
-): Promise<void> {
+export async function deleteAgent(agentId: string, userId: string): Promise<void> {
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
   });
@@ -314,26 +296,27 @@ export async function deleteAgent(
 }
 
 /**
- * Get agent status history (placeholder - would require a separate table for full implementation)
+ * Get agent status history
  */
 export async function getAgentStatusHistory(agentId: string): Promise<any[]> {
-  // This is a placeholder - in a full implementation, we would have a separate
-  // AgentStatusHistory table to track all status changes
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
-    select: { status: true, updatedAt: true },
   });
 
   if (!agent) {
     throw new AppError('Agent not found', 'AGENT_NOT_FOUND', 404);
   }
 
-  return [
-    {
-      status: agent.status,
-      changedAt: agent.updatedAt,
-    },
-  ];
+  const history = await prisma.agentStatusHistory.findMany({
+    where: { agentId },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  return history.map((entry: { status: string; createdAt: Date; reason: string | null }) => ({
+    status: entry.status,
+    changedAt: entry.createdAt,
+    reason: entry.reason,
+  }));
 }
 
 /**

@@ -8,11 +8,9 @@ import { MyMomentsScreen } from '../screens/profile/MyMomentsScreen';
 import { LikedMomentsScreen } from '../screens/profile/LikedMomentsScreen';
 import { MomentDetailScreen } from '../screens/moment/MomentDetailScreen';
 import { UserProfileScreen } from '../screens/user/UserProfileScreen';
-import {
-  ReviewListScreen,
-  ReviewDetailScreen,
-  WriteReviewScreen,
-} from '../screens/Reviews';
+import { ReviewListScreen, ReviewDetailScreen, WriteReviewScreen } from '../screens/Reviews';
+import { AgentListScreen } from '../screens/agent/AgentListScreen';
+import { CreateAgentScreen } from '../screens/agent/CreateAgentScreen';
 import { ProfileStackParamList } from '../types/navigation';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -35,6 +33,8 @@ export const ProfileStackNavigator = () => {
       <Stack.Screen name="ReviewList" component={ReviewListScreen} />
       <Stack.Screen name="ReviewDetail" component={ReviewDetailScreen} />
       <Stack.Screen name="WriteReview" component={WriteReviewScreen} />
+      <Stack.Screen name="AgentList" component={AgentListScreen} />
+      <Stack.Screen name="CreateAgent" component={CreateAgentScreen} />
     </Stack.Navigator>
   );
 };

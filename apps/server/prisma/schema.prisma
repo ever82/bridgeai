@@ -72,24 +72,27 @@ enum UserStatus {
 // ============================================
 
 model Agent {
-  id          String     @id @default(uuid())
-  userId      String     @map("user_id")
+  id          String      @id @default(uuid())
+  userId      String      @map("user_id")
   type        AgentType
   name        String
+  description String?     @map("description") @db.Text
+  status      AgentStatus @default(DRAFT)
   config      Json?
   latitude    Float?
   longitude   Float?
-  isActive    Boolean    @default(true) @map("is_active")
-  creditScore Int        @default(75) @map("credit_score")
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  isActive    Boolean     @default(true) @map("is_active")
+  creditScore Int         @default(75) @map("credit_score")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
 
   // Relations
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   demands     Demand[]
   supplies    Supply[]
   profiles    AgentProfile[]
   merchant    Merchant?
+  statusHistory AgentStatusHistory[]
 
   @@index([userId])
   @@index([type])
@@ -97,9 +100,36 @@ model Agent {
   @@map("agents")
 }
 
+model AgentStatusHistory {
+  id        String      @id @default(uuid())
+  agentId   String      @map("agent_id")
+  status    AgentStatus
+  reason    String?
+  metadata  Json?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  agent     Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@index([createdAt])
+  @@map("agent_status_history")
+}
+
 enum AgentType {
   DEMAND
   SUPPLY
+  VISIONSHARE
+  AGENTDATE
+  AGENTJOB
+  AGENTAD
+}
+
+enum AgentStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
 }
 
 // ============================================

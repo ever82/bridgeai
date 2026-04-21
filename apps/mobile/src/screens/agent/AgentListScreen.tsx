@@ -12,14 +12,13 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   Agent,
-  AgentType,
-  AgentStatus,
   AGENT_TYPE_LABELS,
   AGENT_STATUS_LABELS,
   AGENT_TYPE_COLORS,
   AGENT_STATUS_COLORS,
 } from '@bridgeai/shared';
 
+import { agentsApi } from '../../services/api/agents';
 import { ProfileStackParamList } from '../../types/navigation';
 
 interface AgentCardProps {
@@ -31,25 +30,11 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent, onPress }) => {
   return (
     <TouchableOpacity style={styles.card} onPress={() => onPress(agent)}>
       <View style={styles.cardHeader}>
-        <View
-          style={[
-            styles.typeBadge,
-            { backgroundColor: AGENT_TYPE_COLORS[agent.type] },
-          ]}
-        >
-          <Text style={styles.typeBadgeText}>
-            {AGENT_TYPE_LABELS[agent.type]}
-          </Text>
+        <View style={[styles.typeBadge, { backgroundColor: AGENT_TYPE_COLORS[agent.type] }]}>
+          <Text style={styles.typeBadgeText}>{AGENT_TYPE_LABELS[agent.type]}</Text>
         </View>
-        <View
-          style={[
-            styles.statusBadge,
-            { backgroundColor: AGENT_STATUS_COLORS[agent.status] },
-          ]}
-        >
-          <Text style={styles.statusBadgeText}>
-            {AGENT_STATUS_LABELS[agent.status]}
-          </Text>
+        <View style={[styles.statusBadge, { backgroundColor: AGENT_STATUS_COLORS[agent.status] }]}>
+          <Text style={styles.statusBadgeText}>{AGENT_STATUS_LABELS[agent.status]}</Text>
         </View>
       </View>
 
@@ -99,29 +84,10 @@ export const AgentListScreen: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // TODO: Replace with actual API call
-      // const response = await agentApi.getAgents();
-      // setAgents(response.agents);
-
-      // Mock data for now
-      setAgents([
-        {
-          id: '1',
-          userId: 'user1',
-          type: AgentType.VISIONSHARE,
-          name: 'My Vision Share Agent',
-          description: 'Helps share and discover visual content',
-          status: AgentStatus.ACTIVE,
-          config: {},
-          latitude: null,
-          longitude: null,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ]);
+      const response = await agentsApi.getAgents({ limit: 50 });
+      setAgents(response.data.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch agents');
+      setError((err as Error)?.message || 'Failed to fetch agents');
     } finally {
       setLoading(false);
     }
@@ -133,13 +99,10 @@ export const AgentListScreen: React.FC = () => {
     setRefreshing(false);
   }, [fetchAgents]);
 
-  const handleAgentPress = useCallback(
-    (agent: Agent) => {
-      // TODO: Navigate to agent detail screen
-      console.log('Agent pressed:', agent.id);
-    },
-    []
-  );
+  const handleAgentPress = useCallback((agent: Agent) => {
+    // TODO: Navigate to agent detail screen
+    console.log('Agent pressed:', agent.id);
+  }, []);
 
   const handleCreatePress = useCallback(() => {
     navigation.navigate('CreateAgent');
@@ -186,14 +149,10 @@ export const AgentListScreen: React.FC = () => {
 
       <FlatList
         data={agents}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <AgentCard agent={item} onPress={handleAgentPress} />
-        )}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => <AgentCard agent={item} onPress={handleAgentPress} />}
         contentContainerStyle={styles.listContainer}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       />
     </View>
   );

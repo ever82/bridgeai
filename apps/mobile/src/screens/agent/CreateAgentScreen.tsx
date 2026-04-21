@@ -17,8 +17,8 @@ import {
   AGENT_TYPE_COLORS,
   CreateAgentRequest,
 } from '@bridgeai/shared';
-import { Agent } from '@bridgeai/shared';
 
+import { agentsApi } from '../../services/api/agents';
 import { ProfileStackParamList } from '../../types/navigation';
 
 import { SceneConfigForm } from './components/SceneConfigForm';
@@ -106,19 +106,13 @@ export const CreateAgentScreen: React.FC = () => {
         },
       };
 
-      // TODO: Replace with actual API call
-      // await agentApi.createAgent(agentData);
-
-      console.log('Creating agent:', agentData);
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await agentsApi.createAgent(agentData);
 
       Alert.alert('Success', 'Agent created successfully!', [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (err) {
-      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to create agent');
+      Alert.alert('Error', (err as Error)?.message || 'Failed to create agent');
     } finally {
       setLoading(false);
     }

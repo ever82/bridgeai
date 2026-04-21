@@ -95,8 +95,12 @@ export const systemPromptSchema = z
  * Create agent request
  */
 export const createAgentSchema = z.object({
+  type: z.enum(['DEMAND', 'SUPPLY', 'VISIONSHARE', 'AGENTDATE', 'AGENTJOB', 'AGENTAD']),
   name: agentNameSchema,
   description: agentDescriptionSchema,
+  config: z.record(z.unknown()).optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
   model: agentModelSchema,
   temperature: temperatureSchema,
   maxTokens: maxTokensSchema,
