@@ -16,6 +16,9 @@ import {
   rateLimitEnv,
 } from '../config/rateLimit';
 
+// Re-export for external use
+export { rateLimitConfigs, getRateLimitConfig };
+
 // Extend Express Request type to include user property
 interface RateLimitRequest extends Request {
   user?: {
@@ -62,7 +65,15 @@ function cleanupExpiredEntries(): void {
 }
 
 // Run cleanup every 5 minutes
-setInterval(cleanupExpiredEntries, 5 * 60 * 1000);
+let cleanupInterval: ReturnType<typeof setInterval> | null = null;
+
+function startCleanupInterval(): void {
+  if (cleanupInterval === null) {
+    cleanupInterval = setInterval(cleanupExpiredEntries, 5 * 60 * 1000);
+  }
+}
+
+startCleanupInterval();
 
 /**
  * Get rate limit headers for response
@@ -307,4 +318,8 @@ export function combinedRateLimiter(): RateLimitRequestHandler {
  */
 export function resetUserRequestStore(): void {
   userRequestStore.clear();
+  if (cleanupInterval !== null) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+  }
 }

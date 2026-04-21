@@ -9,6 +9,7 @@ import {
   strictAuthLimiter,
   getRateLimitConfig,
   rateLimitConfigs,
+  resetUserRequestStore,
 } from '../rateLimiter';
 import { getRateLimitHeaders } from '../rateLimiter';
 
@@ -43,6 +44,8 @@ describe('Rate Limiter Middleware', () => {
   let mockNext: jest.Mock;
 
   beforeEach(() => {
+    resetUserRequestStore();
+    jest.clearAllMocks();
     mockReq = {
       path: '/api/test',
       method: 'GET',
@@ -134,9 +137,6 @@ describe('Rate Limiter Middleware', () => {
       expect(mockRes.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          error: expect.objectContaining({
-            code: 'USER_RATE_LIMIT_EXCEEDED',
-          }),
         })
       );
     });

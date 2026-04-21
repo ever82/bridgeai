@@ -134,7 +134,7 @@ export function testMatching() {
 
   check(res, {
     'matching status is 200': r => r.status === 200,
-    'matching response time < 500ms': r => r.timings.duration < 500,
+    'matching response time < 200ms': r => r.timings.duration < 200,
   });
 
   responseTime.add(res.timings.duration);
