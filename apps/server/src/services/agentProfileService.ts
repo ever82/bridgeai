@@ -1,13 +1,12 @@
 import type {
   L1Profile,
   L2Profile,
-  L3Profile,
   ProfileCompletionResult,
   UpdateL1ProfileRequest,
   UpdateL2ProfileRequest,
   UpdateL3ProfileRequest,
 } from '@bridgeai/shared';
-import { L1_FIELD_WEIGHTS } from '@bridgeai/shared';
+import { AgeRange, EducationLevel, Gender, L1_FIELD_WEIGHTS } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
@@ -29,10 +28,7 @@ export interface AgentProfile {
 /**
  * Get or create agent profile
  */
-export async function getOrCreateProfile(
-  agentId: string,
-  sceneId?: string
-): Promise<AgentProfile> {
+export async function getOrCreateProfile(agentId: string, sceneId?: string): Promise<AgentProfile> {
   // Check if agent exists
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
@@ -76,10 +72,7 @@ export async function getOrCreateProfile(
 /**
  * Get L1 profile for an agent
  */
-export async function getL1Profile(
-  agentId: string,
-  userId: string
-): Promise<L1Profile | null> {
+export async function getL1Profile(agentId: string, userId: string): Promise<L1Profile | null> {
   // Verify agent ownership
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
@@ -158,10 +151,7 @@ export async function updateL1Profile(
 /**
  * Get L2 profile for an agent
  */
-export async function getL2Profile(
-  agentId: string,
-  userId: string
-): Promise<L2Profile | null> {
+export async function getL2Profile(agentId: string, userId: string): Promise<L2Profile | null> {
   // Verify agent ownership
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
@@ -230,10 +220,7 @@ export async function updateL2Profile(
 /**
  * Get L3 profile for an agent
  */
-export async function getL3Profile(
-  agentId: string,
-  userId: string
-): Promise<string | null> {
+export async function getL3Profile(agentId: string, userId: string): Promise<string | null> {
   // Verify agent ownership
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
@@ -270,6 +257,15 @@ export async function updateL3Profile(
 
   if (agent.userId !== userId) {
     throw new AppError('Unauthorized to update this agent', 'UNAUTHORIZED', 403);
+  }
+
+  // Validate description
+  if (data.description !== undefined && data.description.length > 10000) {
+    throw new AppError(
+      'L3 description must be less than 10000 characters',
+      'VALIDATION_ERROR',
+      400
+    );
   }
 
   // Get or create profile
@@ -323,7 +319,7 @@ export function calculateL1Completion(l1Data: L1Profile | null): ProfileCompleti
     l1Percentage: percentage,
     l1FilledFields: filledFields.length,
     l1TotalFields: totalFields,
-    l1MissingFields,
+    l1MissingFields: missingFields,
     l1WeightedScore: weightedScore,
   };
 }
@@ -331,8 +327,41 @@ export function calculateL1Completion(l1Data: L1Profile | null): ProfileCompleti
 /**
  * Validate L1 data
  */
-function validateL1Data(data: UpdateL1ProfileRequest): { valid: boolean; errors: Array<{ field: string; message: string }> } {
+function validateL1Data(data: UpdateL1ProfileRequest): {
+  valid: boolean;
+  errors: Array<{ field: string; message: string }>;
+} {
   const errors: Array<{ field: string; message: string }> = [];
+
+  // Validate age enum
+  if (data.age !== undefined) {
+    if (!Object.values(AgeRange).includes(data.age)) {
+      errors.push({
+        field: 'age',
+        message: `Invalid age value. Must be one of: ${Object.values(AgeRange).join(', ')}`,
+      });
+    }
+  }
+
+  // Validate gender enum
+  if (data.gender !== undefined) {
+    if (!Object.values(Gender).includes(data.gender)) {
+      errors.push({
+        field: 'gender',
+        message: `Invalid gender value. Must be one of: ${Object.values(Gender).join(', ')}`,
+      });
+    }
+  }
+
+  // Validate education enum
+  if (data.education !== undefined) {
+    if (!Object.values(EducationLevel).includes(data.education)) {
+      errors.push({
+        field: 'education',
+        message: `Invalid education value. Must be one of: ${Object.values(EducationLevel).join(', ')}`,
+      });
+    }
+  }
 
   // Validate occupation length
   if (data.occupation !== undefined) {
