@@ -2,6 +2,10 @@ import bcrypt from 'bcryptjs';
 
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
+import { PrivacySettings, DEFAULT_PRIVACY_SETTINGS } from '../types/privacy';
+
+// Re-export PrivacySettings for convenience
+export type { PrivacySettings } from '../types/privacy';
 
 import * as storageService from './storageService';
 
@@ -30,15 +34,6 @@ export interface UpdateUserData {
   website?: string;
   location?: string;
   avatarUrl?: string;
-}
-
-export interface PrivacySettings {
-  profileVisibility: 'public' | 'friends' | 'private';
-  onlineStatusVisible: boolean;
-  phoneVisible: boolean;
-  emailVisible: boolean;
-  allowSearchByPhone: boolean;
-  allowSearchByEmail: boolean;
 }
 
 export interface DeviceInfo {
@@ -112,10 +107,7 @@ export async function getUserByEmail(email: string): Promise<UserProfile | null>
 /**
  * Update user profile
  */
-export async function updateUser(
-  userId: string,
-  data: UpdateUserData
-): Promise<UserProfile> {
+export async function updateUser(userId: string, data: UpdateUserData): Promise<UserProfile> {
   const user = await prisma.user.update({
     where: { id: userId },
     data: {
@@ -210,13 +202,8 @@ export async function updatePrivacySettings(
     select: { privacySettings: true },
   });
 
-  const currentSettings = (user?.privacySettings as PrivacySettings) || {
-    profileVisibility: 'public',
-    onlineStatusVisible: true,
-    phoneVisible: false,
-    emailVisible: false,
-    allowSearchByPhone: true,
-    allowSearchByEmail: true,
+  const currentSettings = (user?.privacySettings as unknown as PrivacySettings) || {
+    ...DEFAULT_PRIVACY_SETTINGS,
   };
 
   const newSettings = { ...currentSettings, ...settings };
@@ -241,14 +228,11 @@ export async function getPrivacySettings(userId: string): Promise<PrivacySetting
     select: { privacySettings: true },
   });
 
-  return (user?.privacySettings as PrivacySettings) || {
-    profileVisibility: 'public',
-    onlineStatusVisible: true,
-    phoneVisible: false,
-    emailVisible: false,
-    allowSearchByPhone: true,
-    allowSearchByEmail: true,
-  };
+  return (
+    (user?.privacySettings as unknown as PrivacySettings) || {
+      ...DEFAULT_PRIVACY_SETTINGS,
+    }
+  );
 }
 
 /**
@@ -371,10 +355,7 @@ export async function updateEmail(userId: string, email: string): Promise<UserPr
 /**
  * Register or update device
  */
-export async function registerDevice(
-  userId: string,
-  deviceInfo: DeviceInfo
-): Promise<void> {
+export async function registerDevice(userId: string, deviceInfo: DeviceInfo): Promise<void> {
   await prisma.userDevice.upsert({
     where: { deviceId: deviceInfo.deviceId },
     create: {

@@ -15,6 +15,7 @@ import consumerDemandRoutes from '../consumerDemand';
 import reviewRoutes from '../reviews';
 import authRoutes from '../auth';
 import disclosureRoutes from '../disclosure';
+import userPrivacyRoutes from '../userPrivacy';
 
 import healthRoutes from './health';
 import sceneRoutes from './scene';
@@ -27,6 +28,7 @@ router.use('/auth', authRoutes);
 router.use('/scenes', sceneRoutes);
 router.use('/disclosure', disclosureRoutes);
 router.use('/users', userRoutes);
+router.use('/users', userPrivacyRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/credit', creditRoutes);
 router.use('/agents', agentRoutes);

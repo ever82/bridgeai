@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,57 +7,70 @@ import {
   ScrollView,
   Switch,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { useAuthStore } from '../../stores/authStore';
 import { theme } from '../../theme';
-
-interface PrivacySettings {
-  profileVisibility: 'public' | 'friends' | 'private';
-  onlineStatusVisible: boolean;
-  phoneVisible: boolean;
-  emailVisible: boolean;
-  allowSearchByPhone: boolean;
-  allowSearchByEmail: boolean;
-  // Desensitization settings
-  autoDesensitize: boolean;
-  desensitizationTemplate: 'strict' | 'standard' | 'relaxed' | 'custom';
-  defaultDesensitizationMethod: 'blur' | 'mosaic' | 'pixelate';
-  saveOriginalImage: boolean;
-}
+import {
+  getPrivacySettings,
+  updatePrivacySettings as updatePrivacySettingsApi,
+  handleUserApiError,
+} from '../../api/user';
+import type { PrivacySettings, PrivacySettingsUpdate } from '../../api/user';
 
 export const PrivacySettingsScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { user } = useAuthStore();
+  useAuthStore(); // Keep store subscription for reactivity
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState<PrivacySettings>({
     profileVisibility: 'public',
-    onlineStatusVisible: true,
-    phoneVisible: false,
-    emailVisible: false,
-    allowSearchByPhone: true,
-    allowSearchByEmail: true,
-    // Desensitization settings
-    autoDesensitize: true,
-    desensitizationTemplate: 'standard',
-    defaultDesensitizationMethod: 'blur',
-    saveOriginalImage: true,
+    onlineStatusVisibility: 'everyone',
+    phoneVisibility: 'hidden',
+    emailVisibility: 'hidden',
+    allowSearchByPhone: false,
+    allowSearchByEmail: false,
+    showLastSeen: true,
   });
 
-  const updateSetting = useCallback(<K extends keyof PrivacySettings>(
-    key: K,
-    value: PrivacySettings[K]
-  ) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const data = await getPrivacySettings();
+        setSettings(data);
+      } catch {
+        Alert.alert('提示', '无法加载隐私设置，使用默认值');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadSettings();
   }, []);
 
+  const updateSetting = useCallback(
+    <K extends keyof PrivacySettings>(key: K, value: PrivacySettings[K]) => {
+      setSettings(prev => ({ ...prev, [key]: value }));
+    },
+    []
+  );
+
   const handleSave = async () => {
-    // TODO: Implement API call to save privacy settings
-    Alert.alert('成功', '隐私设置已保存');
-    navigation.goBack();
+    setIsSaving(true);
+    try {
+      await updatePrivacySettingsApi(settings as PrivacySettingsUpdate);
+      Alert.alert('成功', '隐私设置已保存');
+      navigation.goBack();
+    } catch (error) {
+      const apiError = handleUserApiError(error);
+      Alert.alert('错误', apiError.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const visibilityOptions = [
@@ -70,7 +83,7 @@ export const PrivacySettingsScreen = () => {
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>资料可见性</Text>
       <View style={styles.optionsContainer}>
-        {visibilityOptions.map((option) => (
+        {visibilityOptions.map(option => (
           <TouchableOpacity
             key={option.value}
             style={[
@@ -104,7 +117,7 @@ export const PrivacySettingsScreen = () => {
   const renderSwitchItem = (
     title: string,
     description: string,
-    key: keyof PrivacySettings,
+    key: 'onlineStatusVisibility' | 'allowSearchByPhone' | 'allowSearchByEmail',
     value: boolean
   ) => (
     <View style={styles.switchItem}>
@@ -114,7 +127,13 @@ export const PrivacySettingsScreen = () => {
       </View>
       <Switch
         value={value}
-        onValueChange={(newValue) => updateSetting(key, newValue)}
+        onValueChange={newValue => {
+          if (key === 'onlineStatusVisibility') {
+            updateSetting('onlineStatusVisibility', newValue ? 'everyone' : 'nobody');
+          } else {
+            updateSetting(key, newValue);
+          }
+        }}
         trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
         thumbColor={theme.colors.background}
       />
@@ -124,30 +143,66 @@ export const PrivacySettingsScreen = () => {
   const renderOnlineStatusSection = () => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>在线状态</Text>
-      {renderSwitchItem(
-        '显示在线状态',
-        '允许其他人看到您的在线状态',
-        'onlineStatusVisible',
-        settings.onlineStatusVisible
-      )}
+      <View style={styles.switchItem}>
+        <View style={styles.switchContent}>
+          <Text style={styles.switchTitle}>显示在线状态</Text>
+          <Text style={styles.switchDescription}>允许其他人看到您的在线状态</Text>
+        </View>
+        <Switch
+          value={settings.onlineStatusVisibility === 'everyone'}
+          onValueChange={newValue =>
+            updateSetting('onlineStatusVisibility', newValue ? 'everyone' : 'nobody')
+          }
+          trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+          thumbColor={theme.colors.background}
+        />
+      </View>
+      <View style={styles.switchItem}>
+        <View style={styles.switchContent}>
+          <Text style={styles.switchTitle}>显示最后在线时间</Text>
+          <Text style={styles.switchDescription}>允许其他人看到您的最后在线时间</Text>
+        </View>
+        <Switch
+          value={settings.showLastSeen}
+          onValueChange={newValue => updateSetting('showLastSeen', newValue)}
+          trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+          thumbColor={theme.colors.background}
+        />
+      </View>
     </View>
   );
 
   const renderContactInfoSection = () => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>联系方式可见性</Text>
-      {renderSwitchItem(
-        '显示手机号',
-        '允许其他人看到您的手机号',
-        'phoneVisible',
-        settings.phoneVisible
-      )}
-      {renderSwitchItem(
-        '显示邮箱',
-        '允许其他人看到您的邮箱地址',
-        'emailVisible',
-        settings.emailVisible
-      )}
+      <View style={styles.switchItem}>
+        <View style={styles.switchContent}>
+          <Text style={styles.switchTitle}>显示手机号</Text>
+          <Text style={styles.switchDescription}>允许其他人看到您的手机号</Text>
+        </View>
+        <Switch
+          value={settings.phoneVisibility !== 'hidden'}
+          onValueChange={newValue =>
+            updateSetting('phoneVisibility', newValue ? 'friends' : 'hidden')
+          }
+          trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+          thumbColor={theme.colors.background}
+        />
+      </View>
+      <View style={styles.switchItem}>
+        <View style={styles.switchContent}>
+          <Text style={styles.switchTitle}>显示邮箱</Text>
+          <Text style={styles.switchDescription}>允许其他人看到您的邮箱地址</Text>
+        </View>
+        <Switch
+          value={settings.emailVisibility !== 'hidden'}
+          onValueChange={newValue =>
+            updateSetting('emailVisibility', newValue ? 'friends' : 'hidden')
+          }
+          trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+          thumbColor={theme.colors.background}
+        />
+      </View>
     </View>
   );
 
@@ -182,103 +237,6 @@ export const PrivacySettingsScreen = () => {
     </View>
   );
 
-  const desensitizationTemplates = [
-    {
-      value: 'strict',
-      label: '严格模式',
-      description: '最高级别的隐私保护，自动脱敏所有敏感内容',
-    },
-    {
-      value: 'standard',
-      label: '标准模式',
-      label: '标准模式',
-      description: '平衡的隐私保护和图像质量',
-    },
-    {
-      value: 'relaxed',
-      label: '宽松模式',
-      description: '最小限度的脱敏，适用于非敏感场合',
-    },
-    {
-      value: 'custom',
-      label: '自定义',
-      description: '根据您的偏好自定义脱敏规则',
-    },
-  ] as const;
-
-  const renderDesensitizationTemplateSection = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>脱敏策略模板</Text>
-      <View style={styles.optionsContainer}>
-        {desensitizationTemplates.map((option) => (
-          <TouchableOpacity
-            key={option.value}
-            style={[
-              styles.optionItem,
-              settings.desensitizationTemplate === option.value && styles.optionItemActive,
-            ]}
-            onPress={() => updateSetting('desensitizationTemplate', option.value)}
-          >
-            <View style={styles.optionContent}>
-              <Text
-                style={[
-                  styles.optionLabel,
-                  settings.desensitizationTemplate === option.value && styles.optionLabelActive,
-                ]}
-              >
-                {option.label}
-              </Text>
-              <Text style={styles.optionDescription}>{option.description}</Text>
-            </View>
-            {settings.desensitizationTemplate === option.value && (
-              <View style={styles.checkmark}>
-                <Text style={styles.checkmarkText}>✓</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-  );
-
-  const renderAutoDesensitizationSection = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>自动脱敏</Text>
-      {renderSwitchItem(
-        '自动脱敏上传的图片',
-        '上传时自动检测并脱敏敏感内容',
-        'autoDesensitize',
-        settings.autoDesensitize
-      )}
-      {renderSwitchItem(
-        '保存原始图片',
-        '同时保存脱敏前后的版本',
-        'saveOriginalImage',
-        settings.saveOriginalImage
-      )}
-    </View>
-  );
-
-  const renderDesensitizationSettingsSection = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>脱敏设置</Text>
-      <TouchableOpacity
-        style={styles.blockedButton}
-        onPress={() => Alert.alert('提示', '自定义规则功能即将推出')}
-      >
-        <Text style={styles.blockedButtonText}>自定义脱敏规则</Text>
-        <Text style={styles.blockedArrow}>›</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.blockedButton}
-        onPress={() => Alert.alert('提示', '白名单管理功能即将推出')}
-      >
-        <Text style={styles.blockedButtonText}>管理白名单</Text>
-        <Text style={styles.blockedArrow}>›</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -286,21 +244,27 @@ export const PrivacySettingsScreen = () => {
           <Text style={styles.backButton}>返回</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>隐私设置</Text>
-        <TouchableOpacity onPress={handleSave}>
-          <Text style={styles.saveButton}>保存</Text>
+        <TouchableOpacity onPress={handleSave} disabled={isLoading || isSaving}>
+          <Text style={[styles.saveButton, (isLoading || isSaving) && styles.saveButtonDisabled]}>
+            {isSaving ? '保存中...' : '保存'}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
-        {renderVisibilitySection()}
-        {renderOnlineStatusSection()}
-        {renderContactInfoSection()}
-        {renderSearchSection()}
-        {renderDesensitizationTemplateSection()}
-        {renderAutoDesensitizationSection()}
-        {renderDesensitizationSettingsSection()}
-        {renderBlockedSection()}
-      </ScrollView>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={styles.loadingText}>加载中...</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.content}>
+          {renderVisibilitySection()}
+          {renderOnlineStatusSection()}
+          {renderContactInfoSection()}
+          {renderSearchSection()}
+          {renderBlockedSection()}
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -332,6 +296,19 @@ const styles = StyleSheet.create({
     fontSize: theme.fonts.sizes.base,
     color: theme.colors.primary,
     fontWeight: theme.fonts.weights.semibold,
+  },
+  saveButtonDisabled: {
+    color: theme.colors.textSecondary,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: theme.spacing.base,
+    fontSize: theme.fonts.sizes.base,
+    color: theme.colors.textSecondary,
   },
   content: {
     flex: 1,

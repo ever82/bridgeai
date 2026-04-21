@@ -1,24 +1,18 @@
-import bcrypt from 'bcryptjs';
-
 import {
   getUserById,
   getUserByEmail,
   updateUser,
   updateAvatar,
-  deleteUser,
   updatePrivacySettings,
   getPrivacySettings,
-  changePassword,
-  updatePhone,
-  updateEmail,
   registerDevice,
   getUserDevices,
   removeDevice,
   blockUser,
   unblockUser,
-  getBlockedUsers,
   isUserBlocked,
 } from '../../services/userService';
+import { OnlineStatusVisibility } from '../../types/privacy';
 import { prisma } from '../../db/client';
 
 // Mock the prisma client
@@ -190,21 +184,21 @@ describe('User Service', () => {
       const result = await getPrivacySettings('user-1');
 
       expect(result.profileVisibility).toBe('public');
-      expect(result.onlineStatusVisible).toBe(true);
+      expect(result.onlineStatusVisibility).toBe(OnlineStatusVisibility.EVERYONE);
     });
 
     it('should return saved settings', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         privacySettings: {
           profileVisibility: 'private',
-          onlineStatusVisible: false,
+          onlineStatusVisibility: OnlineStatusVisibility.NOBODY,
         },
       });
 
       const result = await getPrivacySettings('user-1');
 
       expect(result.profileVisibility).toBe('private');
-      expect(result.onlineStatusVisible).toBe(false);
+      expect(result.onlineStatusVisibility).toBe(OnlineStatusVisibility.NOBODY);
     });
   });
 
@@ -214,7 +208,7 @@ describe('User Service', () => {
       (prisma.user.update as jest.Mock).mockResolvedValue({
         privacySettings: {
           profileVisibility: 'friends',
-          onlineStatusVisible: true,
+          onlineStatusVisibility: OnlineStatusVisibility.EVERYONE,
         },
       });
 
