@@ -108,7 +108,6 @@ describe('Disclosure Types', () => {
 
     it('should have valid timestamps', () => {
       const settings = createDefaultDisclosureSettings('agent-1', 'user-1');
-      const now = new Date().toISOString();
 
       expect(settings.createdAt).toBeDefined();
       expect(settings.updatedAt).toBeDefined();

@@ -1,0 +1,162 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.agentDateL2Schema = void 0;
+const types_1 = require("./types");
+/**
+ * AgentDate Scene L2 Schema
+ * 约会场景 - 用于匹配约会对象
+ */
+exports.agentDateL2Schema = {
+    id: 'agentdate-l2',
+    version: '1.0.0',
+    scene: 'AGENTDATE',
+    title: '约会偏好',
+    description: '设置您的约会偏好和期望',
+    fields: [
+        {
+            id: 'relationshipGoal',
+            type: types_1.L2FieldType.ENUM,
+            label: '关系目标',
+            description: '您寻找的关系类型',
+            required: true,
+            options: [
+                { value: 'casual', label: '轻松约会', description: '不严肃的关系' },
+                { value: 'dating', label: '认真交往', description: '寻找长期伴侣' },
+                { value: 'friendship', label: '交友', description: '先做朋友' },
+                { value: 'marriage', label: '婚恋', description: '以结婚为目标' },
+                { value: 'unsure', label: '不确定', description: '看缘分' },
+            ],
+        },
+        {
+            id: 'preferredAgeRange',
+            type: types_1.L2FieldType.RANGE,
+            label: '期望年龄范围',
+            description: '您期望对方的年龄范围',
+            required: true,
+            min: 18,
+            max: 80,
+            step: 1,
+            defaultValue: { min: 25, max: 35 },
+        },
+        {
+            id: 'interests',
+            type: types_1.L2FieldType.MULTI_SELECT,
+            label: '兴趣爱好',
+            description: '您感兴趣的活动和话题',
+            required: true,
+            options: [
+                { value: 'movies', label: '电影', icon: '🎬' },
+                { value: 'music', label: '音乐', icon: '🎵' },
+                { value: 'sports', label: '运动', icon: '⚽' },
+                { value: 'reading', label: '阅读', icon: '📚' },
+                { value: 'travel', label: '旅行', icon: '✈️' },
+                { value: 'cooking', label: '烹饪', icon: '🍳' },
+                { value: 'gaming', label: '游戏', icon: '🎮' },
+                { value: 'outdoor', label: '户外活动', icon: '🏔️' },
+                { value: 'art', label: '艺术', icon: '🎨' },
+                { value: 'tech', label: '科技', icon: '💻' },
+                { value: 'pets', label: '宠物', icon: '🐱' },
+                { value: 'photography', label: '摄影', icon: '📷' },
+            ],
+        },
+        {
+            id: 'personalityTraits',
+            type: types_1.L2FieldType.MULTI_SELECT,
+            label: '性格特点',
+            description: '您偏好的性格特点（可多选）',
+            required: false,
+            options: [
+                { value: 'outgoing', label: '外向开朗' },
+                { value: 'introverted', label: '内向安静' },
+                { value: 'humorous', label: '幽默风趣' },
+                { value: 'mature', label: '成熟稳重' },
+                { value: 'creative', label: '创意丰富' },
+                { value: 'adventurous', label: '喜欢冒险' },
+                { value: 'romantic', label: '浪漫多情' },
+                { value: 'practical', label: '务实理性' },
+            ],
+        },
+        {
+            id: 'dateActivities',
+            type: types_1.L2FieldType.MULTI_SELECT,
+            label: '约会活动',
+            description: '您喜欢的约会活动',
+            required: false,
+            options: [
+                { value: 'coffee', label: '咖啡/下午茶' },
+                { value: 'dinner', label: '共进晚餐' },
+                { value: 'movie', label: '看电影' },
+                { value: 'walk', label: '散步聊天' },
+                { value: 'museum', label: '逛博物馆' },
+                { value: 'concert', label: '音乐会/演出' },
+                { value: 'outdoor', label: '户外活动' },
+                { value: 'sports', label: '运动健身' },
+                { value: 'cooking', label: '一起做饭' },
+                { value: 'travel', label: '短途旅行' },
+            ],
+        },
+        {
+            id: 'dealBreakers',
+            type: types_1.L2FieldType.MULTI_SELECT,
+            label: '绝对不接受',
+            description: '您在约会中的底线（可多选）',
+            required: false,
+            options: [
+                { value: 'smoking', label: '吸烟' },
+                { value: 'drinking', label: '酗酒' },
+                { value: 'dishonesty', label: '不诚实' },
+                { value: 'disrespect', label: '不尊重' },
+                { value: 'unambitious', label: '没有上进心' },
+                { value: 'clingy', label: '过于黏人' },
+                { value: 'longDistance', label: '异地恋' },
+            ],
+        },
+        {
+            id: 'selfDescription',
+            type: types_1.L2FieldType.LONG_TEXT,
+            label: '关于我',
+            description: '简单介绍一下自己',
+            required: true,
+            placeholder: '描述一下您的性格、爱好、生活方式等...',
+            minLength: 20,
+            maxLength: 500,
+        },
+        {
+            id: 'idealMatch',
+            type: types_1.L2FieldType.LONG_TEXT,
+            label: '理想对象',
+            description: '描述一下您的理想对象',
+            required: false,
+            placeholder: '您希望对方是什么样的人...',
+            maxLength: 300,
+        },
+    ],
+    steps: [
+        {
+            id: 'goals',
+            title: '约会目标',
+            description: '设置您的关系目标和期望',
+            fields: ['relationshipGoal', 'preferredAgeRange'],
+        },
+        {
+            id: 'interests',
+            title: '兴趣爱好',
+            description: '分享您的兴趣和喜欢的活动',
+            fields: ['interests', 'dateActivities'],
+        },
+        {
+            id: 'personality',
+            title: '性格偏好',
+            description: '设置性格和底线',
+            fields: ['personalityTraits', 'dealBreakers'],
+        },
+        {
+            id: 'about',
+            title: '关于您',
+            description: '介绍您自己和理想对象',
+            fields: ['selfDescription', 'idealMatch'],
+        },
+    ],
+};
+exports.default = exports.agentDateL2Schema;
+//# sourceMappingURL=agentDate.js.map

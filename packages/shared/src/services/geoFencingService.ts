@@ -8,13 +8,11 @@ import {
   GeoFenceCheckResult,
   GeoCoordinates,
   GeoJSONPolygon,
-  DistanceFilter,
 } from '../types/location';
 import {
   calculateDistance,
   isPointInPolygon,
   calculatePolygonCentroid,
-  toGeoJSONPoint,
 } from '../utils/geoUtils';
 
 // In-memory store for geo-fences (in production, use database)
