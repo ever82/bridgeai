@@ -65,6 +65,7 @@ postgis-*/
 .cache/
 .temp/
 .tmp/
+.turbo/cache/
 
 # IssueTree temp files
 .issuetree/tmp/
