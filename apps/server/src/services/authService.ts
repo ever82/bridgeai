@@ -413,44 +413,46 @@ export async function loginUser(data: ILoginData): Promise<IAuthResponse> {
  * @returns 新的认证响应
  */
 export async function refreshAccessToken(refreshToken: string): Promise<IAuthResponse> {
+  let decoded: { userId: string; type: string };
+
   try {
-    const decoded = jwt.verify(refreshToken, JWT_SECRET) as { userId: string; type: string };
-
-    if (decoded.type !== 'refresh') {
-      throw new Error('无效的刷新令牌');
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-    });
-
-    if (!user) {
-      throw new Error('用户不存在');
-    }
-
-    if (user.status !== 'ACTIVE') {
-      throw new Error('账户已被禁用');
-    }
-
-    const accessToken = generateAccessToken({
-      userId: user.id,
-      email: user.email || undefined,
-      phone: user.phone || undefined,
-      role: user.role,
-    });
-    const newRefreshToken = generateRefreshToken(user.id);
-
-    const { passwordHash: _ph, ...userWithoutPassword } = user;
-
-    return {
-      user: userWithoutPassword,
-      accessToken,
-      refreshToken: newRefreshToken,
-      expiresIn: 7 * 24 * 60 * 60,
-    };
-  } catch (error) {
+    decoded = jwt.verify(refreshToken, JWT_SECRET) as { userId: string; type: string };
+  } catch {
     throw new Error('刷新令牌无效或已过期');
   }
+
+  if (decoded.type !== 'refresh') {
+    throw new Error('无效的刷新令牌');
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: decoded.userId },
+  });
+
+  if (!user) {
+    throw new Error('用户不存在');
+  }
+
+  if (user.status !== 'ACTIVE') {
+    throw new Error('账户已被禁用');
+  }
+
+  const accessToken = generateAccessToken({
+    userId: user.id,
+    email: user.email || undefined,
+    phone: user.phone || undefined,
+    role: user.role,
+  });
+  const newRefreshToken = generateRefreshToken(user.id);
+
+  const { passwordHash: _ph, ...userWithoutPassword } = user;
+
+  return {
+    user: userWithoutPassword,
+    accessToken,
+    refreshToken: newRefreshToken,
+    expiresIn: 7 * 24 * 60 * 60,
+  };
 }
 
 /**

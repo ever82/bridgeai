@@ -382,7 +382,7 @@ describe('SupplyQualityAssessor', () => {
 
     it('should suggest adding pricing', () => {
       const supply = createFullSupply({
-        pricing: { type: 'negotiable', currency: 'CNY' },
+        pricing: { type: '', currency: 'CNY' },
       });
       const result = assessor.assess(supply);
 

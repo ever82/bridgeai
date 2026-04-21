@@ -83,13 +83,17 @@ describe('SupplyCompletionService', () => {
 
     it('should detect all missing fields for sparse supply', () => {
       const supply = createSparseSupply();
-      const { missing } = service.detectIncomplete(supply);
+      const { missing, incomplete } = service.detectIncomplete(supply);
 
       expect(missing).toContain('title');
       expect(missing).toContain('description');
       expect(missing).toContain('serviceType');
-      expect(missing).toContain('pricing');
       expect(missing).toContain('capabilities');
+      // pricing: { type: 'negotiable', currency: 'CNY' } is present and valid → not missing
+      expect(incomplete).toContain('skills');
+      expect(incomplete).toContain('location');
+      expect(incomplete).toContain('experience');
+      expect(incomplete).toContain('availability');
     });
 
     it('should detect missing title', () => {
@@ -482,7 +486,7 @@ describe('SupplyCompletionService', () => {
     });
 
     it('should provide suggestions for sparse supply', () => {
-      const supply = createSparseSupply();
+      const supply = createSparseSupply({ serviceType: 'photography' });
       const result = service.complete(supply);
 
       expect(result.suggestions.length).toBeGreaterThan(0);

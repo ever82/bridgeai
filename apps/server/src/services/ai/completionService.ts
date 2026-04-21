@@ -382,7 +382,7 @@ export class SupplyCompletionService {
     const totalFields = 8; // title, description, serviceType, pricing, capabilities, skills, location, experience
     const filledFields = totalFields - missing.length;
     const partialCredit = incomplete.length * 0.5;
-    const completenessScore = Math.round(((filledFields + partialCredit) / totalFields) * 100);
+    const completenessScore = Math.min(100, Math.round(((filledFields + partialCredit) / totalFields) * 100));
 
     const appliedDefaults: string[] = [];
     const externalQueries = this.queryExternalData(supply);

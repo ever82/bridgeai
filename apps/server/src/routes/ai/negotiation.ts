@@ -6,15 +6,48 @@
  */
 
 import { Router } from 'express';
+import { z } from 'zod';
 
 import { agentNegotiationService } from '../../services/ai/agentNegotiationService';
-import { authenticate, requireAuth } from '../../middleware/auth';
+import { requireAuth } from '../../middleware/auth';
 import { validate as validateRequest } from '../../middleware/validation';
-import { validateBody as body, validateParams as param } from '../../middleware/validation';
 import { logger } from '../../utils/logger';
 import { AppError } from '../../errors';
 
 const router = Router();
+
+// ===== Validation Schemas =====
+
+const createRoomBodySchema = z.object({
+  consumerAgentId: z.string().min(1),
+  merchantAgentIds: z.array(z.string()).min(2),
+  consumerDemand: z.object({}).passthrough(),
+  config: z.object({}).passthrough().optional(),
+});
+
+const roomIdParamSchema = z.object({
+  roomId: z.string().min(1),
+});
+
+const submitOfferBodySchema = z.object({
+  merchantId: z.string().min(1),
+  offer: z.object({}).passthrough(),
+});
+
+const followUpQuestionBodySchema = z.object({
+  question: z.string().min(1),
+  targetMerchantId: z.string().min(1),
+  questionType: z.enum(['discount', 'validity', 'condition', 'hidden_benefit', 'stacking']),
+});
+
+const confirmSelectionBodySchema = z.object({
+  offerId: z.string().min(1),
+  confirmed: z.boolean(),
+});
+
+const questionsQuerySchema = z.object({
+  merchantId: z.string().optional(),
+});
 
 /**
  * @route POST /api/v1/ai/negotiation/rooms
@@ -24,14 +57,7 @@ const router = Router();
 router.post(
   '/rooms',
   requireAuth,
-  validateRequest({
-    body: {
-      consumerAgentId: body('consumerAgentId').isString().notEmpty(),
-      merchantAgentIds: body('merchantAgentIds').isArray({ min: 2 }),
-      consumerDemand: body('consumerDemand').isObject(),
-      config: body('config').optional().isObject(),
-    },
-  }),
+  validateRequest({ body: createRoomBodySchema }),
   async (req, res, next) => {
     try {
       const { consumerAgentId, merchantAgentIds, consumerDemand, config } = req.body;
@@ -90,11 +116,7 @@ router.post(
 router.get(
   '/rooms/:roomId',
   requireAuth,
-  validateRequest({
-    params: {
-      roomId: param('roomId').isString().notEmpty(),
-    },
-  }),
+  validateRequest({ params: roomIdParamSchema }),
   async (req, res, next) => {
     try {
       const { roomId } = req.params;
@@ -134,11 +156,7 @@ router.get(
 router.post(
   '/rooms/:roomId/introduction',
   requireAuth,
-  validateRequest({
-    params: {
-      roomId: param('roomId').isString().notEmpty(),
-    },
-  }),
+  validateRequest({ params: roomIdParamSchema }),
   async (req, res, next) => {
     try {
       const { roomId } = req.params;
@@ -170,15 +188,7 @@ router.post(
 router.post(
   '/rooms/:roomId/offers',
   requireAuth,
-  validateRequest({
-    params: {
-      roomId: param('roomId').isString().notEmpty(),
-    },
-    body: {
-      merchantId: body('merchantId').isString().notEmpty(),
-      offer: body('offer').isObject(),
-    },
-  }),
+  validateRequest({ params: roomIdParamSchema, body: submitOfferBodySchema }),
   async (req, res, next) => {
     try {
       const { roomId } = req.params;
@@ -216,14 +226,7 @@ router.post(
 router.get(
   '/rooms/:roomId/questions',
   requireAuth,
-  validateRequest({
-    params: {
-      roomId: param('roomId').isString().notEmpty(),
-    },
-    query: {
-      merchantId: body('merchantId').optional().isString(),
-    },
-  }),
+  validateRequest({ params: roomIdParamSchema, query: questionsQuerySchema }),
   async (req, res, next) => {
     try {
       const { roomId } = req.params;
@@ -276,22 +279,7 @@ router.get(
 router.post(
   '/rooms/:roomId/questions',
   requireAuth,
-  validateRequest({
-    params: {
-      roomId: param('roomId').isString().notEmpty(),
-    },
-    body: {
-      question: body('question').isString().notEmpty(),
-      targetMerchantId: body('targetMerchantId').isString().notEmpty(),
-      questionType: body('questionType').isIn([
-        'discount',
-        'validity',
-        'condition',
-        'hidden_benefit',
-        'stacking',
-      ]),
-    },
-  }),
+  validateRequest({ params: roomIdParamSchema, body: followUpQuestionBodySchema }),
   async (req, res, next) => {
     try {
       const { roomId } = req.params;
@@ -332,11 +320,7 @@ router.post(
 router.post(
   '/rooms/:roomId/compare',
   requireAuth,
-  validateRequest({
-    params: {
-      roomId: param('roomId').isString().notEmpty(),
-    },
-  }),
+  validateRequest({ params: roomIdParamSchema }),
   async (req, res, next) => {
     try {
       const { roomId } = req.params;
@@ -378,11 +362,7 @@ router.post(
 router.post(
   '/rooms/:roomId/recommend',
   requireAuth,
-  validateRequest({
-    params: {
-      roomId: param('roomId').isString().notEmpty(),
-    },
-  }),
+  validateRequest({ params: roomIdParamSchema }),
   async (req, res, next) => {
     try {
       const { roomId } = req.params;
@@ -426,15 +406,7 @@ router.post(
 router.post(
   '/rooms/:roomId/confirm',
   requireAuth,
-  validateRequest({
-    params: {
-      roomId: param('roomId').isString().notEmpty(),
-    },
-    body: {
-      offerId: body('offerId').isString().notEmpty(),
-      confirmed: body('confirmed').isBoolean(),
-    },
-  }),
+  validateRequest({ params: roomIdParamSchema, body: confirmSelectionBodySchema }),
   async (req, res, next) => {
     try {
       const { roomId } = req.params;
@@ -467,11 +439,7 @@ router.post(
 router.get(
   '/rooms/:roomId/messages',
   requireAuth,
-  validateRequest({
-    params: {
-      roomId: param('roomId').isString().notEmpty(),
-    },
-  }),
+  validateRequest({ params: roomIdParamSchema }),
   async (req, res, next) => {
     try {
       const { roomId } = req.params;
