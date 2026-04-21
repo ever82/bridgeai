@@ -3,7 +3,7 @@
  * Type definitions for VisionShare server services
  */
 
-import { Photo, PhotoFilter, GalleryConfig, PhotoStatus } from '../../../shared/types/photo.types';
+import { Photo, PhotoFilter, PhotoStatus } from '../../../shared/types/photo.types';
 import {
   PaymentTransaction,
   PaymentRequest,

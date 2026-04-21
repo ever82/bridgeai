@@ -5,10 +5,8 @@
 
 import {
   Task,
-  TaskFilter,
   TaskSearchRequest,
   TaskSearchResponse,
-  TaskType,
   NearbyTaskQuery,
   NearbyTaskResult,
   calculateDistance,
@@ -208,9 +206,7 @@ export function initializeMockTasks(): void {
  * Search tasks with filter
  * 根据筛选条件搜索任务
  */
-export async function searchTasks(
-  request: TaskSearchRequest
-): Promise<TaskSearchResponse> {
+export async function searchTasks(request: TaskSearchRequest): Promise<TaskSearchResponse> {
   try {
     const { userLocation, filter = {}, keyword } = request;
     const mergedFilter = { ...DEFAULT_TASK_FILTER, ...filter };
@@ -221,24 +217,24 @@ export async function searchTasks(
     if (keyword) {
       const lowerKeyword = keyword.toLowerCase();
       tasks = tasks.filter(
-        (task) =>
+        task =>
           task.title.toLowerCase().includes(lowerKeyword) ||
           task.description.toLowerCase().includes(lowerKeyword) ||
-          task.tags?.some((tag) => tag.toLowerCase().includes(lowerKeyword))
+          task.tags?.some(tag => tag.toLowerCase().includes(lowerKeyword))
       );
     }
 
     // Filter by task types
     if (mergedFilter.types && mergedFilter.types.length > 0) {
-      tasks = tasks.filter((task) => mergedFilter.types!.includes(task.type));
+      tasks = tasks.filter(task => mergedFilter.types!.includes(task.type));
     }
 
     // Filter by budget
     if (mergedFilter.budgetMin !== undefined) {
-      tasks = tasks.filter((task) => task.budgetMax >= mergedFilter.budgetMin!);
+      tasks = tasks.filter(task => task.budgetMax >= mergedFilter.budgetMin!);
     }
     if (mergedFilter.budgetMax !== undefined) {
-      tasks = tasks.filter((task) => task.budgetMin <= mergedFilter.budgetMax!);
+      tasks = tasks.filter(task => task.budgetMin <= mergedFilter.budgetMax!);
     }
 
     // Filter by publish time
@@ -260,16 +256,13 @@ export async function searchTasks(
           cutoffDate = new Date(0);
       }
 
-      tasks = tasks.filter((task) => task.publishTime >= cutoffDate);
+      tasks = tasks.filter(task => task.publishTime >= cutoffDate);
     }
 
     // Filter by distance
     if (mergedFilter.distanceRange && mergedFilter.distanceRange > 0) {
-      tasks = tasks.filter((task) => {
-        const { distanceKm } = calculateDistance(
-          userLocation,
-          task.coordinates
-        );
+      tasks = tasks.filter(task => {
+        const { distanceKm } = calculateDistance(userLocation, task.coordinates);
         return distanceKm <= mergedFilter.distanceRange!;
       });
     }
@@ -323,9 +316,7 @@ export async function searchTasks(
  * Get nearby tasks
  * 获取附近的任务
  */
-export async function getNearbyTasks(
-  query: NearbyTaskQuery
-): Promise<NearbyTaskResult[]> {
+export async function getNearbyTasks(query: NearbyTaskQuery): Promise<NearbyTaskResult[]> {
   try {
     const { latitude, longitude, radiusKm, filter } = query;
     const userLocation = { latitude, longitude };
@@ -342,13 +333,10 @@ export async function getNearbyTasks(
 
     const response = await searchTasks(request);
 
-    return response.tasks.map((task) => ({
+    return response.tasks.map(task => ({
       task,
       distanceKm: calculateDistance(userLocation, task.coordinates).distanceKm,
-      estimatedArrivalMinutes: calculateEstimatedArrival(
-        userLocation,
-        task.coordinates
-      ),
+      estimatedArrivalMinutes: calculateEstimatedArrival(userLocation, task.coordinates),
     }));
   } catch (error) {
     logger.error('Error getting nearby tasks', { error });
@@ -361,7 +349,7 @@ export async function getNearbyTasks(
  * 根据ID获取任务
  */
 export async function getTaskById(taskId: string): Promise<Task | null> {
-  const task = mockTasks.find((t) => t.id === taskId);
+  const task = mockTasks.find(t => t.id === taskId);
   return task || null;
 }
 

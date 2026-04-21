@@ -10,7 +10,6 @@ import type {
   UpdateTaskRequest,
   PublishTaskResponse,
   DemandRefinementResult,
-  PublishValidationResult,
 } from '@packages/shared/types/visionShare';
 
 import { prisma } from '../../db/client';
@@ -98,10 +97,7 @@ export class VisionShareTaskService {
       this.logger.info('Refining demand', { taskId, userId });
 
       // 调用AI服务提炼需求
-      const refinement = await visionShareDemandRefinementService.refineDemand(
-        description,
-        userId
-      );
+      const refinement = await visionShareDemandRefinementService.refineDemand(description, userId);
 
       // 更新任务
       await prisma.visionShareTask.update({
@@ -161,10 +157,14 @@ export class VisionShareTaskService {
       if (!validationResult.valid) {
         const errors: string[] = [];
         if (!validationResult.creditCheck.passed) {
-          errors.push(`信用分不足，当前${validationResult.creditCheck.score}，需要${validationResult.creditCheck.requiredScore}`);
+          errors.push(
+            `信用分不足，当前${validationResult.creditCheck.score}，需要${validationResult.creditCheck.requiredScore}`
+          );
         }
         if (!validationResult.balanceCheck.passed) {
-          errors.push(`积分余额不足，当前${validationResult.balanceCheck.balance}，需要${validationResult.balanceCheck.required}`);
+          errors.push(
+            `积分余额不足，当前${validationResult.balanceCheck.balance}，需要${validationResult.balanceCheck.required}`
+          );
         }
         if (!validationResult.limitCheck.passed) {
           errors.push(`今日发布数量已达上限(${validationResult.limitCheck.dailyLimit}个)`);
@@ -305,7 +305,10 @@ export class VisionShareTaskService {
       });
 
       // 记录历史
-      await this.createHistoryRecord(taskId, 'DRAFT', { action: 'update', fields: Object.keys(data) });
+      await this.createHistoryRecord(taskId, 'DRAFT', {
+        action: 'update',
+        fields: Object.keys(data),
+      });
 
       this.logger.info('Task updated', { taskId });
 
@@ -319,7 +322,11 @@ export class VisionShareTaskService {
   /**
    * 取消任务
    */
-  async cancelTask(userId: string, taskId: string, reason?: string): Promise<VisionShareTask | null> {
+  async cancelTask(
+    userId: string,
+    taskId: string,
+    reason?: string
+  ): Promise<VisionShareTask | null> {
     try {
       this.logger.info('Cancelling task', { userId, taskId });
 
@@ -454,11 +461,7 @@ export class VisionShareTaskService {
   /**
    * 推送状态更新
    */
-  private pushStatusUpdate(
-    taskId: string,
-    status: VisionShareTaskStatus,
-    userId: string
-  ): void {
+  private pushStatusUpdate(taskId: string, status: VisionShareTaskStatus, userId: string): void {
     try {
       emitToUser(userId, 'visionShare:taskStatus', {
         taskId,
@@ -513,7 +516,10 @@ export class VisionShareTaskService {
   /**
    * 分享任务
    */
-  async shareTask(taskId: string, userId: string): Promise<{ shareLink: string; success: boolean }> {
+  async shareTask(
+    taskId: string,
+    userId: string
+  ): Promise<{ shareLink: string; success: boolean }> {
     try {
       const task = await prisma.visionShareTask.findFirst({
         where: { id: taskId, userId },

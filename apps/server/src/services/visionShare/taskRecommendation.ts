@@ -8,14 +8,13 @@ import {
   TaskRecommendation,
   TaskRecommendationRequest,
   TaskRecommendationPreferences,
-  TaskType,
   GeoCoordinates,
   calculateDistance,
 } from '@bridgeai/shared';
 
 import { logger } from '../../utils/logger';
 
-import { getNearbyTasks, getTaskById } from './taskFilter';
+import { getNearbyTasks } from './taskFilter';
 
 // User preferences cache
 const userPreferencesCache: Map<string, TaskRecommendationPreferences> = new Map();
@@ -47,32 +46,26 @@ export async function getTaskRecommendations(
 
     // Filter out excluded tasks
     let tasks = nearbyResults.filter(
-      (result) => !preferences.excludeTaskIds?.includes(result.task.id)
+      result => !preferences.excludeTaskIds?.includes(result.task.id)
     );
 
     // Filter by preferred types
     if (preferences.preferredTypes && preferences.preferredTypes.length > 0) {
-      tasks = tasks.filter((result) =>
-        preferences.preferredTypes!.includes(result.task.type)
-      );
+      tasks = tasks.filter(result => preferences.preferredTypes!.includes(result.task.type));
     }
 
     // Filter by minimum budget
     if (preferences.minBudget !== undefined) {
-      tasks = tasks.filter(
-        (result) => result.task.budgetMax >= preferences.minBudget!
-      );
+      tasks = tasks.filter(result => result.task.budgetMax >= preferences.minBudget!);
     }
 
     // Filter by max distance
     if (preferences.maxDistanceKm !== undefined) {
-      tasks = tasks.filter(
-        (result) => result.distanceKm <= preferences.maxDistanceKm!
-      );
+      tasks = tasks.filter(result => result.distanceKm <= preferences.maxDistanceKm!);
     }
 
     // Calculate match scores
-    const recommendations: TaskRecommendation[] = tasks.map((result) => ({
+    const recommendations: TaskRecommendation[] = tasks.map(result => ({
       task: result.task,
       matchScore: calculateMatchScore(result.task, userLocation, userId, preferences),
       matchReasons: generateMatchReasons(result.task, result.distanceKm, preferences),
@@ -252,7 +245,7 @@ export async function recordTaskInteraction(
  * Get user's accepted tasks
  * 获取用户已接任务
  */
-export async function getUserAcceptedTasks(userId: string): Promise<Task[]> {
+export async function getUserAcceptedTasks(_userId: string): Promise<Task[]> {
   // In production, this would query the database
   // For now, return an empty array
   return [];
@@ -270,7 +263,7 @@ export async function getUserTaskStats(userId: string): Promise<{
 }> {
   const history = userTaskHistory.get(userId) || [];
   const totalAccepted = history.length;
-  const totalCompleted = history.filter((h) => h.accepted).length;
+  const totalCompleted = history.filter(h => h.accepted).length;
 
   return {
     totalAccepted,
@@ -306,7 +299,7 @@ export function subscribeToNearbyTasks(
   userId: string,
   userLocation: GeoCoordinates,
   radiusKm: number,
-  callback: (recommendations: TaskRecommendation[]) => void
+  _callback: (recommendations: TaskRecommendation[]) => void
 ): () => void {
   logger.info('Subscribed to nearby tasks', { userId, radiusKm });
 

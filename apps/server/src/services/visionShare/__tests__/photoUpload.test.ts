@@ -1,17 +1,28 @@
 import { PhotoUploadService, UploadOptions } from '../photoUpload';
 import { ImageSecurityService } from '../../security/imageSecurity';
 
-jest.mock('../../security/imageSecurity');
+jest.mock('../../security/imageSecurity', () => ({
+  ImageSecurityService: {
+    getInstance: jest.fn().mockReturnValue({
+      checkImage: jest.fn(),
+      compressImage: jest.fn(),
+      createThumbnail: jest.fn(),
+    }),
+  },
+}));
 
 describe('PhotoUploadService', () => {
   let service: PhotoUploadService;
-  let mockSecurityService: jest.Mocked<ImageSecurityService>;
+  let mockSecurityService: ReturnType<typeof ImageSecurityService.getInstance>;
 
   beforeEach(() => {
-    service = PhotoUploadService.getInstance();
-    mockSecurityService = ImageSecurityService.getInstance() as jest.Mocked<ImageSecurityService>;
+    jest.clearAllMocks();
+    // Reset singleton to ensure clean state
+    (PhotoUploadService as any).instance = undefined;
 
-    mockSecurityService.checkImage = jest.fn().mockResolvedValue({
+    mockSecurityService = (ImageSecurityService.getInstance as jest.Mock)();
+
+    (mockSecurityService.checkImage as jest.Mock).mockResolvedValue({
       passed: true,
       violations: [],
       warnings: [],
@@ -26,8 +37,10 @@ describe('PhotoUploadService', () => {
       quality: { score: 90, blurDetected: false, overexposed: false, underexposed: false },
     });
 
-    mockSecurityService.compressImage = jest.fn().mockResolvedValue(Buffer.from('compressed'));
-    mockSecurityService.createThumbnail = jest.fn().mockResolvedValue(Buffer.from('thumbnail'));
+    (mockSecurityService.compressImage as jest.Mock).mockResolvedValue(Buffer.from('compressed'));
+    (mockSecurityService.createThumbnail as jest.Mock).mockResolvedValue(Buffer.from('thumbnail'));
+
+    service = PhotoUploadService.getInstance();
   });
 
   describe('uploadPhoto', () => {
@@ -48,7 +61,7 @@ describe('PhotoUploadService', () => {
     });
 
     it('should fail if security check fails', async () => {
-      mockSecurityService.checkImage = jest.fn().mockResolvedValue({
+      (mockSecurityService.checkImage as jest.Mock).mockResolvedValue({
         passed: false,
         violations: ['File too large'],
         warnings: [],
@@ -125,7 +138,7 @@ describe('PhotoUploadService', () => {
     });
 
     it('should upload chunks', async () => {
-      const uploadId = service.initChunkedUpload('test.jpg', 100, 2);
+      const uploadId = service.initChunkedUpload('test.jpg', 12, 2);
 
       const result1 = await service.uploadChunk(uploadId, 0, Buffer.from('chunk1'));
       expect(result1.complete).toBe(false);
@@ -137,9 +150,9 @@ describe('PhotoUploadService', () => {
     });
 
     it('should throw error for invalid upload session', async () => {
-      await expect(
-        service.uploadChunk('invalid-id', 0, Buffer.from('chunk'))
-      ).rejects.toThrow('Upload session not found');
+      await expect(service.uploadChunk('invalid-id', 0, Buffer.from('chunk'))).rejects.toThrow(
+        'Upload session not found'
+      );
     });
 
     it('should get upload progress', async () => {
@@ -154,7 +167,7 @@ describe('PhotoUploadService', () => {
     });
 
     it('should cancel upload', () => {
-      const uploadId = service.initChunkedUpload('test.jpg', 100, 2);
+      const uploadId = service.initChunkedUpload('test.jpg', 12, 2);
       const cancelled = service.cancelUpload(uploadId);
 
       expect(cancelled).toBe(true);
