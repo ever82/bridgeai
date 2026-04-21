@@ -11,6 +11,10 @@ import {
   validateQuery,
   sanitizeString,
   sanitizeObject,
+  Validators,
+  createRefinement,
+  createValidatedSchema,
+  type ValidationRule,
 } from '../validation';
 import { ValidationError } from '../../errors';
 
@@ -235,6 +239,136 @@ describe('Validation Middleware', () => {
       const result = sanitizeObject(input);
 
       expect(result.user.name).toBe('test');
+    });
+  });
+
+  describe('Validators', () => {
+    describe('chinesePhone', () => {
+      it('should validate correct Chinese mobile numbers', () => {
+        expect(Validators.chinesePhone('13812345678')).toBe(true);
+        expect(Validators.chinesePhone('15912345678')).toBe(true);
+        expect(Validators.chinesePhone('18612345678')).toBe(true);
+      });
+
+      it('should reject invalid Chinese mobile numbers', () => {
+        expect(typeof Validators.chinesePhone('12345')).toBe('string');
+        expect(typeof Validators.chinesePhone('abcdefghijk')).toBe('string');
+        expect(typeof Validators.chinesePhone('12345678901')).toBe('string'); // wrong prefix
+      });
+    });
+
+    describe('url', () => {
+      it('should validate correct URLs', () => {
+        expect(Validators.url('https://example.com')).toBe(true);
+        expect(Validators.url('http://localhost:3000')).toBe(true);
+      });
+
+      it('should reject invalid URLs', () => {
+        expect(typeof Validators.url('not-a-url')).toBe('string');
+        expect(typeof Validators.url('')).toBe('string');
+      });
+    });
+
+    describe('strongPassword', () => {
+      it('should validate strong passwords', () => {
+        expect(Validators.strongPassword('Password1')).toBe(true);
+        expect(Validators.strongPassword('MyP@ssw0rd')).toBe(true);
+      });
+
+      it('should reject weak passwords', () => {
+        expect(typeof Validators.strongPassword('short')).toBe('string');
+        expect(typeof Validators.strongPassword('nouppercase1')).toBe('string');
+        expect(typeof Validators.strongPassword('NOLOWERCASE1')).toBe('string');
+        expect(typeof Validators.strongPassword('NoNumbersHere')).toBe('string');
+      });
+    });
+
+    describe('uuid', () => {
+      it('should validate correct UUIDs', () => {
+        expect(Validators.uuid('550e8400-e29b-41d4-a716-446655440000')).toBe(true);
+        expect(Validators.uuid('f47ac10b-58cc-4372-a567-0e02b2c3d479')).toBe(true);
+      });
+
+      it('should reject invalid UUIDs', () => {
+        expect(typeof Validators.uuid('not-a-uuid')).toBe('string');
+        expect(typeof Validators.uuid('550e8400-e29b-41d4-a716')).toBe('string');
+      });
+    });
+
+    describe('dateRange', () => {
+      const min = new Date('2024-01-01');
+      const max = new Date('2024-12-31');
+      const validator = Validators.dateRange(min, max);
+
+      it('should validate dates within range', () => {
+        expect(validator('2024-06-15')).toBe(true);
+      });
+
+      it('should reject dates outside range', () => {
+        expect(typeof validator('2023-12-31')).toBe('string');
+        expect(typeof validator('2025-01-01')).toBe('string');
+      });
+    });
+
+    describe('fileExtension', () => {
+      const validator = Validators.fileExtension(['jpg', 'png', 'gif']);
+
+      it('should validate allowed extensions', () => {
+        expect(validator('photo.jpg')).toBe(true);
+        expect(validator('image.PNG')).toBe(true);
+      });
+
+      it('should reject disallowed extensions', () => {
+        expect(typeof validator('document.pdf')).toBe('string');
+        expect(typeof validator('script.exe')).toBe('string');
+      });
+    });
+
+    describe('arrayLength', () => {
+      const validator = Validators.arrayLength(1, 5);
+
+      it('should validate arrays within length', () => {
+        expect(validator(['a'])).toBe(true);
+        expect(validator(['a', 'b', 'c'])).toBe(true);
+      });
+
+      it('should reject arrays outside length', () => {
+        expect(typeof validator([])).toBe('string');
+        expect(typeof validator(['a', 'b', 'c', 'd', 'e', 'f'])).toBe('string');
+      });
+    });
+  });
+
+  describe('createRefinement', () => {
+    it('should create custom validation schema', () => {
+      const schema = createRefinement(
+        z.string(),
+        val => val.length > 0 || 'String cannot be empty',
+        'Custom error message'
+      );
+
+      const result = schema.safeParse('');
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.errors[0].message).toBe('Custom error message');
+      }
+    });
+  });
+
+  describe('createValidatedSchema', () => {
+    it('should apply validation rules to schema', () => {
+      const rules: ValidationRule[] = [
+        {
+          name: 'positive',
+          validator: val => (typeof val === 'number' && val > 0) || 'Must be positive',
+          message: 'All numbers must be positive',
+        },
+      ];
+
+      const schema = createValidatedSchema(z.object({ count: z.number() }), rules);
+
+      const result = schema.safeParse({ count: -1 });
+      expect(result.success).toBe(false);
     });
   });
 });
