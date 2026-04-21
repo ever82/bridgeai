@@ -110,8 +110,8 @@ router.get(
   '/rooms/:roomId/messages',
   authenticate,
   validate({
-    query: getHistorySchema.query,
-    params: getHistorySchema.params,
+    query: (getHistorySchema as any).query,
+    params: (getHistorySchema as any).params,
   }),
   async (req, res, next) => {
     try {
@@ -171,8 +171,8 @@ router.get(
   '/rooms/:roomId/sync',
   authenticate,
   validate({
-    query: syncMessagesSchema.query,
-    params: syncMessagesSchema.params,
+    query: (syncMessagesSchema as any).query,
+    params: (syncMessagesSchema as any).params,
   }),
   async (req, res, next) => {
     try {
@@ -184,7 +184,7 @@ router.get(
 
       const result = await syncMessages({
         conversationId: roomId,
-        lastSequenceId: lastSequenceId ? BigInt(lastSequenceId) : BigInt(0),
+        lastSequenceId: lastSequenceId ? Number(lastSequenceId) : 0,
         limit: limit ? parseInt(limit, 10) : 100,
       });
 
@@ -226,8 +226,8 @@ router.get(
   '/rooms/:roomId/search',
   authenticate,
   validate({
-    query: searchMessagesSchema.query,
-    params: searchMessagesSchema.params,
+    query: (searchMessagesSchema as any).query,
+    params: (searchMessagesSchema as any).params,
   }),
   async (req, res, next) => {
     try {
@@ -278,7 +278,7 @@ router.get(
   '/messages/:messageId',
   authenticate,
   validate({
-    params: getMessageSchema.params,
+    params: (getMessageSchema as any).params,
   }),
   async (req, res, next) => {
     try {

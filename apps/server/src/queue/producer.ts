@@ -53,14 +53,7 @@ export interface DemandExtractionJobData {
 }
 
 // Generic job data type
-export type JobData =
-  | CreditUpdateJobData
-  | NotificationJobData
-  | EmailJobData
-  | ExportJobData
-  | ImageAnalysisJobData
-  | DemandExtractionJobData
-  | Record<string, unknown>;
+export type JobData = Record<string, unknown>;
 
 // Job options
 export interface JobOptions {

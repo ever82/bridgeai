@@ -14,7 +14,7 @@ import { getQueueManager, QueueManager } from './queues';
 import { QueueName, QueueConfig, queueConfigurations } from './config';
 
 // Job processor function type
-export type JobProcessor<T = unknown> = (job: Job<T>) => Promise<void>;
+export type JobProcessor<T = any> = (job: Job<T>) => Promise<void>;
 
 // Worker events
 export interface WorkerEvents {
@@ -96,16 +96,16 @@ class QueueWorker {
     // Setup event handlers
     if (events) {
       if (events.onCompleted) {
-        worker.on('completed', events.onCompleted as (job: any) => void);
+        worker.on('completed', events.onCompleted as any);
       }
       if (events.onFailed) {
-        worker.on('failed', events.onFailed as (job: any, err: Error) => void);
+        worker.on('failed', events.onFailed as any);
       }
       if (events.onProgress) {
-        worker.on('progress', events.onProgress as (job: any, progress: number) => void);
+        worker.on('progress', events.onProgress as any);
       }
       if (events.onError) {
-        worker.on('error', events.onError);
+        worker.on('error', events.onError as any);
       }
     }
 
@@ -161,7 +161,7 @@ class QueueWorker {
   async pauseProcessor(queueName: QueueName): Promise<void> {
     const worker = this.manager.getWorker(queueName);
     if (worker) {
-      await worker.pause();
+      await (worker as any).pause();
       console.log(`[Worker] Queue ${queueName} paused`);
     }
   }
@@ -172,7 +172,7 @@ class QueueWorker {
   async resumeProcessor(queueName: QueueName): Promise<void> {
     const worker = this.manager.getWorker(queueName);
     if (worker) {
-      await worker.resume();
+      await (worker as any).resume();
       console.log(`[Worker] Queue ${queueName} resumed`);
     }
   }

@@ -3,7 +3,8 @@
  *
  * Configures Redis adapter for multi-node Socket.io scaling.
  */
-import { createClient, type RedisClientType } from 'redis';
+import { createClient } from 'redis';
+import type { RedisClientType } from 'redis';
 
 /**
  * Redis clients for adapter
@@ -42,7 +43,7 @@ export async function initializeRedisAdapter(): Promise<{
     });
 
     // Create sub client (duplicate pub client config)
-    subClient = pubClient.duplicate();
+    subClient = await pubClient.duplicate() as RedisClientType;
 
     // Setup error handlers
     pubClient.on('error', (err) => {

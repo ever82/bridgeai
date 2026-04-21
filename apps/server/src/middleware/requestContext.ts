@@ -25,6 +25,8 @@ export interface IRequestContext {
   method: string;
   ip: string;
   userAgent?: string;
+  logWarning: (message: string, data?: Record<string, unknown>) => void;
+  logError: (message: string, data?: Record<string, unknown>) => void;
   [key: string]: unknown;
 }
 
@@ -109,6 +111,12 @@ export function createRequestContext(req: Request): IRequestContext {
     method: req.method,
     ip: req.ip || req.socket.remoteAddress || 'unknown',
     userAgent: req.headers['user-agent'],
+    logWarning: (message: string, data?: Record<string, unknown>) => {
+      console.warn(`[${requestId}] ${message}`, data || {});
+    },
+    logError: (message: string, data?: Record<string, unknown>) => {
+      console.error(`[${requestId}] ${message}`, data || {});
+    },
   };
 }
 

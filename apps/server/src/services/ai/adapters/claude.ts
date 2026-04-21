@@ -121,7 +121,7 @@ export class ClaudeAdapter extends BaseLLMAdapter {
       stream: false
     });
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     // 转换为统一响应格式
     return {
@@ -131,14 +131,14 @@ export class ClaudeAdapter extends BaseLLMAdapter {
         index: 0,
         message: {
           role: 'assistant',
-          content: data.content[0]?.text || ''
+          content: data.content?.[0]?.text || ''
         },
         finishReason: data.stop_reason || 'stop'
       }],
       usage: {
-        promptTokens: data.usage.input_tokens,
-        completionTokens: data.usage.output_tokens,
-        totalTokens: data.usage.input_tokens + data.usage.output_tokens
+        promptTokens: (data as any).usage.input_tokens,
+        completionTokens: (data as any).usage.output_tokens,
+        totalTokens: (data as any).usage.input_tokens + (data as any).usage.output_tokens
       },
       createdAt: new Date()
     };

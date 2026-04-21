@@ -196,8 +196,8 @@ router.get(
       since: since ? new Date(since as string) : undefined,
       until: until ? new Date(until as string) : undefined,
       limit: limit ? parseInt(limit as string, 10) : 100,
-      type: type as string,
-      severity: severity as string,
+      type: type as any,
+      severity: severity as any,
     });
 
     res.json({

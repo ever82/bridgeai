@@ -11,12 +11,30 @@ import {
   HandoffSocketEvents,
   HandoffErrorCode,
   type HandoffRequest,
-  type HandoffState,
   type HandoffAuditLog,
   DEFAULT_HANDOFF_CONFIG,
 } from '@bridgeai/shared';
 
 import type { AuthenticatedSocket } from '../middleware/auth';
+
+// Local HandoffState type definition (not exported from @bridgeai/shared)
+interface HandoffState {
+  conversationId: string;
+  currentStatus: string;
+  previousStatus: string;
+  currentHandler: string | null;
+  currentHandlerType: string;
+  activeRequest: any;
+  lastHandoffAt: string | null;
+  handoffHistory: Array<{
+    id: string;
+    timestamp: string;
+    fromStatus: string;
+    toStatus: string;
+    fromHandler: string | null;
+    toHandler: string | null;
+  }>;
+}
 
 // In-memory store for handoff states (in production, use Redis)
 const handoffStates = new Map<string, HandoffState>();

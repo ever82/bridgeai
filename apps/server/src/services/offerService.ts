@@ -118,9 +118,9 @@ export async function updateOffer(id: string, input: UpdateOfferInput): Promise<
   // Validate offer type specific fields
   if (input.type || input.discountValue !== undefined) {
     validateOfferTypeFields({
-      type: input.type || existingOffer.type,
-      discountValue: input.discountValue ?? existingOffer.discountValue ?? undefined,
-      minPurchaseAmount: input.minPurchaseAmount ?? existingOffer.minPurchaseAmount ?? undefined,
+      type: (input.type || existingOffer.type) as OfferType,
+      discountValue: (input.discountValue ?? existingOffer.discountValue ?? undefined) as any,
+      minPurchaseAmount: (input.minPurchaseAmount ?? existingOffer.minPurchaseAmount ?? undefined) as any,
     });
   }
 
@@ -129,10 +129,10 @@ export async function updateOffer(id: string, input: UpdateOfferInput): Promise<
     data: {
       title: input.title,
       description: input.description,
-      type: input.type,
-      discountValue: input.discountValue ?? undefined,
-      minPurchaseAmount: input.minPurchaseAmount ?? undefined,
-      maxDiscountAmount: input.maxDiscountAmount ?? undefined,
+      type: input.type as any,
+      discountValue: input.discountValue != null ? Number(input.discountValue) as number : undefined,
+      minPurchaseAmount: input.minPurchaseAmount != null ? Number(input.minPurchaseAmount) as number : undefined,
+      maxDiscountAmount: input.maxDiscountAmount != null ? Number(input.maxDiscountAmount) : undefined,
       applicableScope: input.applicableScope
         ? JSON.stringify(input.applicableScope)
         : undefined,
@@ -141,10 +141,10 @@ export async function updateOffer(id: string, input: UpdateOfferInput): Promise<
       totalStock: input.totalStock,
       dailyLimit: input.dailyLimit,
       stockAlertThreshold: input.stockAlertThreshold,
-      status: input.status,
-      publishType: input.publishType,
+      status: input.status as any,
+      publishType: input.publishType as any,
       scheduledPublishAt: input.scheduledPublishAt,
-    },
+    } as any,
   });
 
   return mapPrismaOfferToOffer(offer);
@@ -163,7 +163,7 @@ export async function deleteOffer(id: string): Promise<void> {
   }
 
   // Only allow deleting draft or disabled offers
-  if (![OfferStatus.DRAFT, OfferStatus.DISABLED].includes(existingOffer.status)) {
+  if (![(OfferStatus as any).DRAFT, (OfferStatus as any).DISABLED].includes((existingOffer.status as any))) {
     throw new AppError(
       'Can only delete draft or disabled offers',
       'CANNOT_DELETE_OFFER',

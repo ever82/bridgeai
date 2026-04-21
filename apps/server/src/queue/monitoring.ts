@@ -105,7 +105,7 @@ class QueueMonitor {
     for (const name of Object.values(QueueNames)) {
       try {
         const queue = this.manager.getQueue(name);
-        const client = await queue.client;
+        const client = await (queue as any).client;
         await client.ping();
 
         health.push({
@@ -150,9 +150,9 @@ class QueueMonitor {
   async getDeadLetterJobs(
     start: number = 0,
     end: number = 10
-  ): Promise<Array<Job<DeadLetterJobData>>> {
+  ): Promise<Array<Job<any>>> {
     const deadLetterQueue = this.manager.getQueue(QueueNames.DEAD_LETTER);
-    return deadLetterQueue.getJobs([], start, start + end) as Promise<Job<DeadLetterJobData>[]>;
+    return deadLetterQueue.getJobs([], start, start + end) as Promise<Job<any>[]>;
   }
 
   /**

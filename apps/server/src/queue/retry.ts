@@ -7,10 +7,13 @@
  * - Retry state tracking
  */
 
+export {};
+
 import { Job } from 'bullmq';
 
 import { getQueueManager } from './queues';
 import { QueueNames, QueueName } from './config';
+import { JobData } from './producer';
 
 export interface RetryOptions {
   /** Maximum number of retry attempts */
@@ -169,7 +172,7 @@ class RetryStrategy {
       originalJobOptions: job.opts as Record<string, unknown>,
     };
 
-    await deadLetterQueue.add('dead-letter', deadLetterData, {
+    await deadLetterQueue.add('dead-letter', deadLetterData as unknown as JobData, {
       jobId: `dlq-${job.id}-${Date.now()}`,
       removeOnComplete: false,
       removeOnFail: false,
@@ -193,11 +196,11 @@ class RetryStrategy {
       throw new Error(`Dead letter job ${jobId} not found`);
     }
 
-    const data = deadLetterJob.data as DeadLetterJobData;
+    const data = deadLetterJob.data as unknown as DeadLetterJobData;
 
     // Add job back to original queue
     const originalQueueInstance = this.manager.getQueue(originalQueue);
-    await originalQueueInstance.add(originalQueue, data.originalJobData, {
+    await originalQueueInstance.add(originalQueue, data.originalJobData as unknown as JobData, {
       attempts: 1, // Single attempt when reprocessing
       jobId: `${data.originalJobId}-reprocessed-${Date.now()}`,
     });
@@ -216,11 +219,11 @@ class RetryStrategy {
     byOriginalQueue: Record<string, number>;
   }> {
     const deadLetterQueue = this.manager.getQueue(QueueNames.DEAD_LETTER);
-    const jobs = await deadLetterQueue.getJobs();
+    const jobs = await deadLetterQueue.getJobs([]);
 
     const byOriginalQueue: Record<string, number> = {};
     for (const job of jobs) {
-      const data = job.data as DeadLetterJobData;
+      const data = job.data as unknown as DeadLetterJobData;
       byOriginalQueue[data.originalQueue] = (byOriginalQueue[data.originalQueue] || 0) + 1;
     }
 
@@ -235,13 +238,13 @@ class RetryStrategy {
    */
   async cleanupDeadLetterJobs(olderThanDays: number = 30): Promise<number> {
     const deadLetterQueue = this.manager.getQueue(QueueNames.DEAD_LETTER);
-    const jobs = await deadLetterQueue.getJobs();
+    const jobs = await deadLetterQueue.getJobs([]);
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
 
     let removed = 0;
     for (const job of jobs) {
-      const data = job.data as DeadLetterJobData;
+      const data = job.data as unknown as DeadLetterJobData;
       const failedAt = new Date(data.failedAt);
       if (failedAt < cutoffDate) {
         await job.remove();

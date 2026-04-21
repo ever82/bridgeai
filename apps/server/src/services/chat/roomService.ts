@@ -74,9 +74,9 @@ export async function createRoom(input: CreateRoomInput): Promise<ChatRoom> {
       matchId,
       participantIds,
       metadata: metadata || {},
-      settings: settings || getDefaultSettings(type),
+      settings: (settings || getDefaultSettings(type)) as any,
       status: ChatRoomStatus.ACTIVE,
-    },
+    } as any,
   });
 
   // 创建参与者记录
@@ -189,7 +189,7 @@ export async function getRoomById(roomId: string): Promise<RoomWithParticipants 
     },
   });
 
-  return room as RoomWithParticipants | null;
+  return room as unknown as RoomWithParticipants | null;
 }
 
 /**
@@ -312,7 +312,7 @@ export async function getUserRooms(
 
       return {
         ...room,
-        unreadCount: participant?.unreadCount || 0,
+        unreadCount: (participant as any)?.unreadCount || 0,
       };
     })
   );
@@ -369,9 +369,9 @@ export async function updateLastMessage(
   await prisma.chatRoom.update({
     where: { id: roomId },
     data: {
-      lastMessage: message,
+      lastMessage: message as any,
       lastMessageAt: message.createdAt,
-    },
+    } as any,
   });
 
   // 增加其他参与者的未读数
@@ -385,7 +385,7 @@ export async function updateLastMessage(
       unreadCount: {
         increment: 1,
       },
-    },
+    } as any,
   });
 }
 
@@ -403,6 +403,6 @@ export async function resetUnreadCount(roomId: string, userId: string): Promise<
     data: {
       unreadCount: 0,
       lastReadAt: new Date(),
-    },
+    } as any,
   });
 }

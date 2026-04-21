@@ -54,7 +54,7 @@ class ConnectionManager {
   addConnection(socket: Socket, namespace: string): void {
     const info: ConnectionInfo = {
       socketId: socket.id,
-      userId: socket.user?.id,
+      userId: (socket as any).user?.id,
       namespace,
       connectedAt: new Date(),
       lastPingAt: new Date(),
@@ -175,7 +175,7 @@ class ConnectionManager {
     if (!this.io) return;
 
     // Try to find and disconnect socket in all namespaces
-    for (const nsp of this.io.nsps.values()) {
+    for (const nsp of (this.io as any).nsps.values()) {
       const socket = nsp.sockets.get(socketId);
       if (socket) {
         socket.disconnect(true);

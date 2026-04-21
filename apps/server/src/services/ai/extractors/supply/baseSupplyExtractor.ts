@@ -230,58 +230,41 @@ export abstract class BaseSupplyExtractor<T extends SupplyExtractedData>
   /**
    * 解析价格区间
    */
-  protected parsePricing(text: string): { min: number; max: number; currency: string } | undefined {
+  protected parsePricing(text: string): { price: number; currency: string; unit?: string } | undefined {
     const currency = text.includes('$') || text.includes('USD') ? 'USD' : 'CNY';
 
     // Range with K suffix: 15K-25K, 15k~25k
     const kRangeMatch = text.match(/(\d+)\s*[Kk千]\s*[-~到至]\s*(\d+)\s*[Kk千]/);
     if (kRangeMatch) {
-      return {
-        min: parseInt(kRangeMatch[1], 10) * 1000,
-        max: parseInt(kRangeMatch[2], 10) * 1000,
-        currency,
-      };
+      const min = parseInt(kRangeMatch[1], 10) * 1000;
+      const max = parseInt(kRangeMatch[2], 10) * 1000;
+      return { price: (min + max) / 2, currency, unit: 'range' };
     }
 
     // Range: 1000-3000元, 1000~3000, 1000到3000
     const rangeMatch = text.match(/(\d+)\s*[-~到至]\s*(\d+)\s*[元块￥$]?/);
     if (rangeMatch) {
-      return {
-        min: parseInt(rangeMatch[1], 10),
-        max: parseInt(rangeMatch[2], 10),
-        currency,
-      };
+      const min = parseInt(rangeMatch[1], 10);
+      const max = parseInt(rangeMatch[2], 10);
+      return { price: (min + max) / 2, currency, unit: 'range' };
     }
 
     // Single value with K: 20K
     const kSingleMatch = text.match(/(\d+)\s*[Kk千]/);
     if (kSingleMatch) {
-      const value = parseInt(kSingleMatch[1], 10) * 1000;
-      return {
-        min: value,
-        max: value,
-        currency,
-      };
+      return { price: parseInt(kSingleMatch[1], 10) * 1000, currency };
     }
 
     // Starting from: 起、起价
     const startMatch = text.match(/(\d+)\s*[元块￥$]?\s*起/);
     if (startMatch) {
-      return {
-        min: parseInt(startMatch[1], 10),
-        max: parseInt(startMatch[1], 10) * 2,
-        currency,
-      };
+      return { price: parseInt(startMatch[1], 10), currency, unit: 'starting' };
     }
 
     // Single value with context
     const singleMatch = text.match(/(?:收费|价格|定价|报价)\s*[约大概]?\s*(\d+)/);
     if (singleMatch) {
-      return {
-        min: parseInt(singleMatch[1], 10),
-        max: parseInt(singleMatch[1], 10),
-        currency,
-      };
+      return { price: parseInt(singleMatch[1], 10), currency };
     }
 
     return undefined;

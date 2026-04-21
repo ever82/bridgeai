@@ -557,7 +557,7 @@ export class PointsService {
     ]);
 
     return {
-      freezes: freezes as PointsFreeze[],
+      freezes: freezes as unknown as PointsFreeze[],
       pagination: {
         page,
         pageSize,
@@ -636,7 +636,7 @@ export class PointsService {
     ]);
 
     return {
-      transactions: transactions as PointsTransaction[],
+      transactions: transactions as unknown as PointsTransaction[],
       pagination: {
         page,
         pageSize,
@@ -657,7 +657,7 @@ export class PointsService {
       },
     });
 
-    return transaction as PointsTransaction | null;
+    return transaction as unknown as PointsTransaction | null;
   }
 
   // ==================== 规则查询 ====================

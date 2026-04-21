@@ -103,6 +103,7 @@ export class PointsTransactionService {
     options: TransactionOptions = {}
   ): Promise<TransactionResult> {
     const { description, scene, referenceId, metadata } = options;
+    const sceneCode: any = scene;
 
     if (amount <= 0) {
       return { success: false, balanceAfter: 0, error: 'Earn amount must be positive' };
@@ -151,7 +152,7 @@ export class PointsTransactionService {
               amount,
               balanceAfter: newBalance,
               description,
-              scene,
+              scene: sceneCode,
               referenceId,
               metadata: metadata ? JSON.stringify(metadata) : null,
             },
@@ -167,7 +168,7 @@ export class PointsTransactionService {
 
         return {
           success: true,
-          transaction: result.transaction as PointsTransaction,
+          transaction: result.transaction as unknown as PointsTransaction,
           balanceAfter: result.balanceAfter,
         };
       } catch (error) {
@@ -203,6 +204,7 @@ export class PointsTransactionService {
     options: TransactionOptions = {}
   ): Promise<TransactionResult> {
     const { description, scene, referenceId, metadata } = options;
+    const sceneCode: any = scene;
 
     if (amount <= 0) {
       return { success: false, balanceAfter: 0, error: 'Spend amount must be positive' };
@@ -260,7 +262,7 @@ export class PointsTransactionService {
               amount: -amount, // 消耗为负值
               balanceAfter: newBalance,
               description,
-              scene,
+              scene: sceneCode,
               referenceId,
               metadata: metadata ? JSON.stringify(metadata) : null,
             },
@@ -276,7 +278,7 @@ export class PointsTransactionService {
 
         return {
           success: true,
-          transaction: result.transaction as PointsTransaction,
+          transaction: result.transaction as unknown as PointsTransaction,
           balanceAfter: result.balanceAfter,
         };
       } catch (error) {
@@ -309,6 +311,7 @@ export class PointsTransactionService {
     options: FreezeOptions
   ): Promise<TransactionResult> {
     const { reason, scene, referenceId, expiresAt } = options;
+    const sceneCode: any = scene;
 
     if (amount <= 0) {
       return { success: false, balanceAfter: 0, error: 'Freeze amount must be positive' };
@@ -361,7 +364,7 @@ export class PointsTransactionService {
               accountId: account.id,
               amount,
               reason,
-              scene,
+              scene: scene as any,
               referenceId,
               status: 'FROZEN',
               expiresAt: expiresAt || this.getDefaultExpiry(),
@@ -377,7 +380,7 @@ export class PointsTransactionService {
               amount: -amount,
               balanceAfter: account.balance, // 余额不变，只是冻结
               description: `Freeze: ${reason}`,
-              scene,
+              scene: scene as any,
               referenceId,
             },
           });
@@ -394,8 +397,8 @@ export class PointsTransactionService {
 
         return {
           success: true,
-          transaction: result.transaction as PointsTransaction,
-          freeze: result.freeze as PointsFreeze,
+          transaction: result.transaction as unknown as PointsTransaction,
+          freeze: result.freeze as unknown as PointsFreeze,
           balanceAfter: result.balanceAfter,
           frozenAmountAfter: result.frozenAmountAfter,
         };
@@ -492,7 +495,7 @@ export class PointsTransactionService {
               amount: freezeRecord.amount,
               balanceAfter: account.balance,
               description: options.description || `Unfreeze: ${freezeRecord.reason}`,
-              scene: freezeRecord.scene as SceneCode,
+              scene: freezeRecord.scene as any,
               referenceId: freezeRecord.referenceId,
             },
           });
@@ -509,8 +512,8 @@ export class PointsTransactionService {
 
         return {
           success: true,
-          transaction: result.transaction as PointsTransaction,
-          freeze: result.freeze as PointsFreeze,
+          transaction: result.transaction as unknown as PointsTransaction,
+          freeze: result.freeze as unknown as PointsFreeze,
           balanceAfter: result.balanceAfter,
           frozenAmountAfter: result.frozenAmountAfter,
         };
@@ -611,7 +614,7 @@ export class PointsTransactionService {
               amount: -freezeRecord.amount,
               balanceAfter: newBalance,
               description: options.description || `Use frozen: ${freezeRecord.reason}`,
-              scene: freezeRecord.scene as SceneCode,
+              scene: freezeRecord.scene as any,
               referenceId: freezeRecord.referenceId,
             },
           });
@@ -628,8 +631,8 @@ export class PointsTransactionService {
 
         return {
           success: true,
-          transaction: result.transaction as PointsTransaction,
-          freeze: result.freeze as PointsFreeze,
+          transaction: result.transaction as unknown as PointsTransaction,
+          freeze: result.freeze as unknown as PointsFreeze,
           balanceAfter: result.balanceAfter,
           frozenAmountAfter: result.frozenAmountAfter,
         };
@@ -790,7 +793,7 @@ export class PointsTransactionService {
 
         return {
           success: true,
-          transaction: result.transaction as PointsTransaction,
+          transaction: result.transaction as unknown as PointsTransaction,
           balanceAfter: result.balanceAfter,
         };
       } catch (error) {

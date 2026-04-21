@@ -79,10 +79,10 @@ export interface VisionShareSupplyData extends SupplyExtractedData {
     techniques: string[];    // 技法
   };
   pricing?: {
-    portrait?: { min: number; max: number; currency: string };
-    wedding?: { min: number; max: number; currency: string };
-    commercial?: { min: number; max: number; currency: string };
-    other?: { min: number; max: number; currency: string };
+    portrait?: { price: number; currency: string; unit?: string };
+    wedding?: { price: number; currency: string; unit?: string };
+    commercial?: { price: number; currency: string; unit?: string };
+    other?: { price: number; currency: string; unit?: string };
   };
   availability?: {
     weekdays: boolean;
@@ -112,7 +112,7 @@ export interface JobSupplyData extends SupplyExtractedData {
     roles: string[];         // 职位经历
   };
   expectations: {
-    salaryRange?: { min: number; max: number; currency: string; period: 'monthly' | 'yearly' };
+    salaryRange?: { price: number; currency: string; unit?: string; period: 'monthly' | 'yearly' };
     jobTypes: string[];      // 全职/兼职/远程
     location?: string;
     remote: boolean;

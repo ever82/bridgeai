@@ -158,11 +158,11 @@ export async function filterAgents(
             select: {
               id: true,
               name: true,
-              avatar: true,
-              creditScore: true,
+              avatarUrl: true,
+              creditScores: true,
             },
           },
-          profile: true,
+          profiles: true,
         },
       }),
       prisma.agent.count({ where }),
@@ -170,7 +170,7 @@ export async function filterAgents(
 
     // 丰富信用分信息
     const enrichedAgents = agents.map(agent => {
-      const creditScore = agent.user?.creditScore?.score;
+      const creditScore = agent.user?.creditScores?.[0]?.score;
       const creditLevel = getCreditLevel(creditScore);
 
       return {
@@ -224,7 +224,7 @@ export async function checkAgentCredit(
       include: {
         user: {
           include: {
-            creditScore: true,
+            creditScores: true,
           },
         },
       },
@@ -234,7 +234,7 @@ export async function checkAgentCredit(
       throw new Error('Agent not found');
     }
 
-    const currentScore = agent.user?.creditScore?.score ?? null;
+    const currentScore = agent.user?.creditScores?.[0]?.score ?? null;
 
     // 如果没有指定场景，直接返回满足条件
     if (!sceneId) {
@@ -313,8 +313,8 @@ export function extractCreditFilterFromDSL(
   }
 
   // 遍历 DSL 的所有条件
-  if (dsl.filter) {
-    traverseCondition(dsl.filter);
+  if ((dsl as any).filter) {
+    traverseCondition((dsl as any).filter);
   }
 
   return hasCreditFilter ? options : null;
@@ -335,11 +335,11 @@ export function addCreditFilterToDSL(
   }
 
   // 转换为 FilterDSL 格式
-  const newDSL: FilterDSL = {
+  const newDSL: any = {
     ...dsl,
     filter: {
       AND: [
-        dsl.filter || {},
+        (dsl as any).filter || {},
         convertPrismaConditionToDSL(creditCondition),
       ],
     },
@@ -405,8 +405,8 @@ export async function getCreditFilterStatistics(): Promise<{
     const agentsWithCredit = await prisma.agent.count({
       where: {
         user: {
-          creditScore: {
-            isNot: null,
+          creditScores: {
+            some: {},
           },
         },
       },
@@ -415,8 +415,8 @@ export async function getCreditFilterStatistics(): Promise<{
     const agentsWithoutCredit = await prisma.agent.count({
       where: {
         user: {
-          creditScore: {
-            is: null,
+          creditScores: {
+            none: {},
           },
         },
       },
@@ -435,10 +435,12 @@ export async function getCreditFilterStatistics(): Promise<{
       byLevel[level] = await prisma.agent.count({
         where: {
           user: {
-            creditScore: {
-              score: {
-                gte: range.min,
-                lte: range.max,
+            creditScores: {
+              some: {
+                score: {
+                  gte: range.min,
+                  lte: range.max,
+                },
               },
             },
           },

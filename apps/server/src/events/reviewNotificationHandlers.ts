@@ -4,7 +4,6 @@ import { prisma } from '../db/client';
 import {
   NotificationType,
   NotificationChannel,
-  notificationEvents,
   sendNewReviewNotification,
   sendReviewReplyNotification,
   sendPendingReviewReminder,
@@ -14,8 +13,11 @@ import {
 
 import { reviewEvents, ReviewEventType } from './reviewEventHandlers';
 
+// Re-export reviewNotificationEvents from notificationService
+export { reviewNotificationEvents } from '../services/notificationService';
+
 // Notification Handler Events
-export const reviewNotificationEvents = new EventEmitter();
+const notificationEvents = new EventEmitter();
 
 // Notification Handler Types
 export enum ReviewNotificationType {
@@ -92,7 +94,7 @@ export async function handleReviewCreatedNotification(
     );
 
     // Emit event
-    reviewNotificationEvents.emit(ReviewNotificationType.REVIEW_CREATED, {
+    notificationEvents.emit(ReviewNotificationType.REVIEW_CREATED, {
       ratingId,
       rateeId: rating.rateeId,
       raterId: rating.raterId,
@@ -155,7 +157,7 @@ export async function handleReviewReplyNotification(
     );
 
     // Emit event
-    reviewNotificationEvents.emit(ReviewNotificationType.REVIEW_REPLIED, {
+    notificationEvents.emit(ReviewNotificationType.REVIEW_REPLIED, {
       ratingId,
       raterId: rating.raterId,
       rateeId: rating.rateeId,
@@ -204,7 +206,7 @@ export async function handlePendingReviewReminder(
     await sendPendingReviewReminder(userId, matchId, partnerName);
 
     // Emit event
-    reviewNotificationEvents.emit(ReviewNotificationType.REVIEW_REMINDER, {
+    notificationEvents.emit(ReviewNotificationType.REVIEW_REMINDER, {
       matchId,
       userId,
       partnerName,
@@ -263,7 +265,7 @@ export async function handleBadReviewWarningNotification(
     );
 
     // Emit event
-    reviewNotificationEvents.emit(ReviewNotificationType.REVIEW_CREATED, {
+    notificationEvents.emit(ReviewNotificationType.REVIEW_CREATED, {
       ratingId,
       rateeId: rating.rateeId,
       score: rating.score,
@@ -313,7 +315,7 @@ export async function handleCreditScoreChangeNotification(
     );
 
     // Emit event
-    reviewNotificationEvents.emit(
+    notificationEvents.emit(
       ReviewNotificationType.CREDIT_SCORE_UPDATED,
       {
         userId,
@@ -354,7 +356,7 @@ export async function handleReviewReportedNotification(
     console.log(`[NOTIFICATION] Review reported: ${reportId}`);
 
     // Emit event
-    reviewNotificationEvents.emit(ReviewNotificationType.REVIEW_REPORTED, {
+    notificationEvents.emit(ReviewNotificationType.REVIEW_REPORTED, {
       reportId,
     });
   } catch (error) {
@@ -445,35 +447,35 @@ export function initializeReviewNotificationHandlers(): void {
   setupReviewEventListeners();
 
   // Setup review notification event listeners
-  reviewNotificationEvents.on(
+  notificationEvents.on(
     ReviewNotificationType.REVIEW_CREATED,
     (data) => {
       console.log(`[NOTIFICATION_EVENT] Review created: ${data.ratingId}`);
     }
   );
 
-  reviewNotificationEvents.on(
+  notificationEvents.on(
     ReviewNotificationType.REVIEW_REPLIED,
     (data) => {
       console.log(`[NOTIFICATION_EVENT] Review replied: ${data.ratingId}`);
     }
   );
 
-  reviewNotificationEvents.on(
+  notificationEvents.on(
     ReviewNotificationType.REVIEW_REMINDER,
     (data) => {
       console.log(`[NOTIFICATION_EVENT] Review reminder: ${data.matchId}`);
     }
   );
 
-  reviewNotificationEvents.on(
+  notificationEvents.on(
     ReviewNotificationType.REVIEW_REPORTED,
     (data) => {
       console.log(`[NOTIFICATION_EVENT] Review reported: ${data.reportId}`);
     }
   );
 
-  reviewNotificationEvents.on(
+  notificationEvents.on(
     ReviewNotificationType.CREDIT_SCORE_UPDATED,
     (data) => {
       console.log(

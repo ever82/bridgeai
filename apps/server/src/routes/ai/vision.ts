@@ -7,7 +7,7 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 
 import { authenticate as authenticateToken } from '../../middleware/auth';
-import logger from '../../utils/logger';
+import { logger } from '../../utils/logger';
 
 // Vision Services
 import { ImageAnalysisService } from '../../services/ai/imageAnalysisService';
@@ -150,7 +150,7 @@ router.post(
       // 执行图像分析
       const result = await analysisService!.analyze(imageInput, {
         userId: req.user?.id,
-        requestId: req.id,
+        requestId: (req as any).id,
         timestamp: new Date(),
         source: 'api'
       });
@@ -212,7 +212,7 @@ router.post(
       const imageInputs = files.map(fileToImageInput);
       const results = await analysisService!.analyzeBatch(imageInputs, {
         userId: req.user?.id,
-        requestId: req.id,
+        requestId: (req as any).id,
         timestamp: new Date(),
         source: 'api'
       });
@@ -279,7 +279,7 @@ router.post(
 
       const result = await moderationService!.moderate(imageInput, {
         userId: req.user?.id,
-        requestId: req.id
+        requestId: (req as any).id
       });
 
       res.json({

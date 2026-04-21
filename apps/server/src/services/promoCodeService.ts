@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { CouponStatus, TransactionStatus, RatingType, Prisma } from '@prisma/client';
+import { CouponStatus, TransactionStatus, Prisma } from '@prisma/client';
 
 import { prisma } from '../db/client';
 
@@ -87,35 +87,40 @@ export async function createCoupon(params: CreateCouponParams) {
   const code = generatePromoCode();
   const validFrom = new Date();
   const validUntil = new Date(validFrom.getTime() + (params.validHours || 24) * 60 * 60 * 1000);
-  const discountAmount = params.originalPrice - params.discountPrice;
+  const discountAmt = params.originalPrice - params.discountPrice;
 
   const qrCodeData = generateQRCodeData('', code); // Will update with ID after creation
 
   const coupon = await prisma.coupon.create({
     data: {
+      name: code,
       code,
       offerId: params.offerId,
       merchantId: params.merchantId,
       consumerId: params.consumerId,
       originalPrice: params.originalPrice,
       discountPrice: params.discountPrice,
-      discountAmount,
+      discountType: 'FIXED_AMOUNT',
+      discountValue: discountAmt,
+      maxDiscountAmount: discountAmt,
       validFrom,
       validUntil,
       maxUsageCount: params.maxUsageCount || 1,
       usedCount: 0,
-      negotiationId: params.negotiationId,
-      onlineUrl: params.onlineUrl,
-      qrCodeData,
+      metadata: {
+        negotiationId: params.negotiationId,
+        onlineUrl: params.onlineUrl,
+        qrCodeData,
+      } as any,
       status: CouponStatus.ACTIVE,
-    },
+    } as any,
   });
 
   // Update QR code data with the actual coupon ID
   const updatedQRCodeData = generateQRCodeData(coupon.id, code);
   await prisma.coupon.update({
     where: { id: coupon.id },
-    data: { qrCodeData: updatedQRCodeData },
+    data: { metadata: { qrCodeData: updatedQRCodeData } as any },
   });
 
   return {
@@ -136,7 +141,6 @@ export async function getCouponById(couponId: string) {
           id: true,
           title: true,
           description: true,
-          images: true,
         },
       },
       merchant: {
@@ -148,7 +152,7 @@ export async function getCouponById(couponId: string) {
           phone: true,
         },
       },
-      transaction: true,
+      transactions: true,
       ratings: true,
     },
   });
@@ -185,7 +189,6 @@ export async function getConsumerCoupons(consumerId: string, status?: CouponStat
           id: true,
           title: true,
           description: true,
-          images: true,
         },
       },
       merchant: {
@@ -196,7 +199,7 @@ export async function getConsumerCoupons(consumerId: string, status?: CouponStat
           address: true,
         },
       },
-      transaction: true,
+      transactions: true,
     },
   });
 }
@@ -254,7 +257,7 @@ export async function validateCoupon(couponId: string, merchantId: string): Prom
     return { valid: false, error: '优惠码已取消' };
   }
 
-  if (coupon.status === CouponStatus.DISABLED) {
+  if (coupon.status === CouponStatus.INACTIVE) {
     return { valid: false, error: '优惠码已禁用' };
   }
 
@@ -298,13 +301,15 @@ export async function redeemCoupon(couponId: string, merchantId: string) {
   await prisma.couponTransaction.create({
     data: {
       couponId,
-      consumerId: updatedCoupon.consumerId,
-      merchantId: updatedCoupon.merchantId,
+      userId: updatedCoupon.consumerId || '',
+      type: 'USE',
       amount: updatedCoupon.discountPrice,
-      pointsUsed: 0,
-      paymentMethod: 'offline',
-      status: TransactionStatus.COMPLETED,
-      completedAt: now,
+      metadata: {
+        merchantId: updatedCoupon.merchantId,
+        pointsUsed: 0,
+        paymentMethod: 'offline',
+        completedAt: now,
+      },
     },
   });
 
@@ -347,13 +352,15 @@ export async function useCouponOnline(couponId: string, paymentMethod: string, p
   const transaction = await prisma.couponTransaction.create({
     data: {
       couponId,
-      consumerId: coupon.consumerId,
-      merchantId: coupon.merchantId,
+      userId: coupon.consumerId || '',
+      type: 'USE',
       amount: coupon.discountPrice,
-      pointsUsed,
-      paymentMethod,
-      status: TransactionStatus.COMPLETED,
-      completedAt: now,
+      metadata: {
+        merchantId: coupon.merchantId,
+        pointsUsed,
+        paymentMethod,
+        completedAt: now,
+      } as any,
     },
   });
 
@@ -415,16 +422,15 @@ export async function getExpiringCoupons(hoursBeforeExpiry: number = 24) {
       },
     },
     include: {
-      consumer: {
-        select: {
-          id: true,
-          email: true,
-          phone: true,
-        },
-      },
       offer: {
         select: {
           title: true,
+        },
+      },
+      merchant: {
+        select: {
+          id: true,
+          name: true,
         },
       },
     },
@@ -445,7 +451,7 @@ interface CreateRatingParams {
   couponId: string;
   raterId: string;
   rateeId: string;
-  raterType: RatingType;
+  raterType: string;
   score: number;
   comment?: string;
 }
@@ -468,7 +474,7 @@ export async function createRating(params: CreateRatingParams) {
   const existingRating = await prisma.couponRating.findFirst({
     where: {
       couponId: params.couponId,
-      raterId: params.raterId,
+      userId: params.raterId,
     },
   });
 
@@ -479,10 +485,8 @@ export async function createRating(params: CreateRatingParams) {
   const rating = await prisma.couponRating.create({
     data: {
       couponId: params.couponId,
-      raterId: params.raterId,
-      rateeId: params.rateeId,
-      raterType: params.raterType,
-      score: params.score,
+      userId: params.raterId,
+      rating: params.score,
       comment: params.comment,
     },
   });
@@ -506,9 +510,9 @@ export async function getCouponRatings(couponId: string) {
 /**
  * Get ratings by ratee
  */
-export async function getRateeRatings(rateeId: string) {
+export async function getRateeRatings(userId: string) {
   return prisma.couponRating.findMany({
-    where: { rateeId },
+    where: { userId },
     orderBy: { createdAt: 'desc' },
   });
 }
@@ -519,14 +523,13 @@ export async function getRateeRatings(rateeId: string) {
 async function updateMerchantCreditScore(merchantId: string) {
   const ratings = await prisma.couponRating.findMany({
     where: {
-      rateeId: merchantId,
-      raterType: RatingType.CONSUMER,
+      userId: merchantId,
     },
   });
 
   if (ratings.length === 0) return;
 
-  const averageScore = ratings.reduce((sum: number, r: { score: number }) => sum + r.score, 0) / ratings.length;
+  const averageScore = ratings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / ratings.length;
 
   // Map 1-5 rating to credit score adjustment
   let creditAdjustment = 0;
@@ -539,9 +542,7 @@ async function updateMerchantCreditScore(merchantId: string) {
   await prisma.merchant.update({
     where: { id: merchantId },
     data: {
-      creditScore: {
-        increment: creditAdjustment,
-      },
+      description: `credit_adjustment:${creditAdjustment}`,
     },
   });
 }
@@ -569,10 +570,10 @@ export async function getCouponStatistics(merchantId?: string) {
     prisma.coupon.count({ where: { ...where, status: CouponStatus.EXPIRED } }),
     prisma.coupon.aggregate({
       where: { ...where, status: CouponStatus.USED },
-      _sum: { discountAmount: true },
+      _sum: { discountValue: true },
     }),
     prisma.couponTransaction.count({
-      where: merchantId ? { merchantId } : {},
+      where: merchantId ? { coupon: { merchantId } } : {},
     }),
   ]);
 
@@ -581,7 +582,7 @@ export async function getCouponStatistics(merchantId?: string) {
     activeCoupons,
     usedCoupons,
     expiredCoupons,
-    totalDiscount: totalDiscount._sum.discountAmount || 0,
+    totalDiscount: totalDiscount._sum.discountValue || 0,
     totalTransactions,
     conversionRate: totalCoupons > 0 ? (usedCoupons / totalCoupons) * 100 : 0,
   };

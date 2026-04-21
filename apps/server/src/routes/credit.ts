@@ -39,9 +39,9 @@ router.get('/score', authenticate, async (req, res, next) => {
         level: creditScore.level,
         levelName: levelConfig.name,
         levelDescription: levelConfig.description,
-        lastUpdatedAt: creditScore.lastUpdatedAt,
+        lastUpdatedAt: (creditScore as any).lastUpdatedAt ?? (creditScore as any).lastUpdated,
         nextUpdateAt: creditScore.nextUpdateAt,
-        updateCount: creditScore.updateCount,
+        updateCount: (creditScore as any).updateCount ?? (creditScore as any).metadata?.updateCount ?? 0,
       },
     });
   } catch (error) {
@@ -70,8 +70,8 @@ router.get(
         data: {
           histories: history.histories.map(h => ({
             id: h.id,
-            oldScore: h.oldScore,
-            newScore: h.newScore,
+            oldScore: (h as any).oldScore ?? h.score - h.delta,
+            newScore: (h as any).newScore ?? h.score,
             delta: h.delta,
             reason: h.reason,
             sourceType: h.sourceType,

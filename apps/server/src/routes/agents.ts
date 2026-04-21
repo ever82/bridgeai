@@ -59,7 +59,7 @@ router.post(
         skip: query.skip,
         take: query.take,
         include: {
-          profile: true,
+          profiles: true,
         },
       }),
       prisma.agent.count({ where }),
@@ -109,7 +109,7 @@ router.get(
         type: field === 'type' ? true : undefined,
         status: field === 'status' ? true : undefined,
       } as any,
-      distinct: [field as string],
+      distinct: [field as any],
       take: parseInt(limit as string, 10),
     });
 
@@ -249,7 +249,7 @@ router.get(
     const agents = await prisma.agent.findMany({
       where: { userId: req.user.id },
       include: {
-        profile: true,
+        profiles: true,
       },
       take: limitNum,
       skip,
@@ -331,7 +331,7 @@ router.get(
       prisma.agent.findMany({
         where: { userId: req.user.id },
         include: {
-          profile: true,
+          profiles: true,
         },
         take: limit,
         skip,

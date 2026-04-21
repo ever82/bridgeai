@@ -4,7 +4,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import type { CreateTaskRequest, UpdateTaskRequest } from '@packages/shared/types/visionShare';
+import type { CreateTaskRequest, UpdateTaskRequest } from '@bridgeai/shared/types/visionShare';
 
 import { authenticate } from '../../middleware/auth';
 import { validate as validateRequest } from '../../middleware/validation';
@@ -23,7 +23,7 @@ const loggerCtx = logger.child({ module: 'VisionSharePublishRoutes' });
 router.post(
   '/tasks',
   authenticate,
-  validateRequest({
+  (validateRequest as any)({
     body: {
       title: { type: 'string', required: true, minLength: 2, maxLength: 100 },
       description: { type: 'string', maxLength: 1000 },

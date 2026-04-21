@@ -4,7 +4,7 @@
  */
 
 export * from './consentStateManager';
-export * from './consentProcessor';
+export { getReferral, ReferralNotFoundError } from './consentProcessor';
 export * from './referralService';
 export * from './referralNotificationService';
 export * from './referralHistoryService';

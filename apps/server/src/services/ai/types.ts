@@ -38,13 +38,21 @@ export interface ChatMessage {
 // 聊天完成请求
 export interface ChatCompletionRequest {
   model: string;
-  messages: ChatMessage[];
+  messages: Array<{ role: string; content: string; name?: string }>;
   temperature?: number;
   maxTokens?: number;
+  max_tokens?: number;
+  n?: number;
   stream?: boolean;
+  stop?: string | string[];
   topP?: number;
   frequencyPenalty?: number;
   presencePenalty?: number;
+  logitBias?: Record<string, number>;
+  user?: string;
+  functions?: unknown[];
+  functionCall?: unknown;
+  response_format?: { type: 'text' | 'json_object' };
 }
 
 // 聊天完成响应
@@ -68,6 +76,8 @@ export interface ChatCompletionResponse {
 export interface EmbeddingRequest {
   model: string;
   input: string | string[];
+  dimensions?: number;
+  encodingFormat?: string;
 }
 
 // 嵌入响应
@@ -157,4 +167,14 @@ export interface RequestMetrics {
     total: number;
   };
   costUsd: number;
+}
+
+/** Extended ChatCompletionRequest for legacy compatibility - merged above */
+
+// Extend EmbeddingRequest
+export interface EmbeddingRequest {
+  model: string;
+  input: string | string[];
+  dimensions?: number;
+  encodingFormat?: string;
 }

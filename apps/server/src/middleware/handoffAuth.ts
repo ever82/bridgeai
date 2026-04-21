@@ -273,13 +273,13 @@ export function validateForcedTakeover(
   }
 
   // Check if user has admin role
-  const hasAdminRole = req.user?.roles?.some(role => ['admin', 'super_admin'].includes(role));
+  const hasAdminRole = (req.user as any)?.roles?.some((role: string) => ['admin', 'super_admin'].includes(role));
 
   if (!hasAdminRole) {
     const context = getRequestContext();
     context?.logWarning('Forced takeover attempted by non-admin', {
-      userId: req.user?.id,
-      roles: req.user?.roles,
+      userId: (req.user as any)?.id,
+      roles: (req.user as any)?.roles,
     });
 
     res.status(403).json({

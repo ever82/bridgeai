@@ -84,7 +84,7 @@ router.put('/:agentId/settings', authenticate, async (req: AuthenticatedRequest,
     const { agentId } = agentIdSchema.parse(req.params);
     const updates = updateSettingsSchema.parse(req.body);
     const userId = req.user?.id || '';
-    const settings = await disclosureService.updateDisclosureSettings(agentId, updates, userId);
+    const settings = await disclosureService.updateDisclosureSettings(agentId, updates as any, userId);
     res.json({ success: true, data: settings });
   } catch (error) {
     logger.error('Failed to update disclosure settings', { error });
@@ -103,7 +103,7 @@ router.post('/:agentId/bulk', authenticate, async (req: AuthenticatedRequest, re
     const userId = req.user?.id || '';
     const settings = await disclosureService.bulkUpdateDisclosure(
       agentId,
-      fieldUpdates,
+      fieldUpdates as any,
       userId,
       notifyAffectedUsers
     );

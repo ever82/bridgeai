@@ -1,6 +1,6 @@
-import { EmailProviderManager } from '../adapters';
-import { TemplateStore, TemplateVariable } from '../templates';
-import { EmailMessage } from '../adapters/base.interface';
+import { EmailProviderManager } from './adapters';
+import { TemplateStore, TemplateVariable } from './templates';
+import { EmailMessage } from './adapters/base.interface';
 
 export type TransactionalEmailType =
   | 'verification'

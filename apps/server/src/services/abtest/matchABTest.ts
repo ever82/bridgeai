@@ -3,7 +3,7 @@
  * 匹配算法 A/B 测试框架
  */
 
-import { MatchScoringModel, MatchConfig, MatchResult } from '../matchAlgorithm';
+import { MatchScoringModel, MatchConfig, MatchResult } from '../matchAlgorithm/matchAlgorithm';
 
 export interface ABTestVariant {
   id: string;

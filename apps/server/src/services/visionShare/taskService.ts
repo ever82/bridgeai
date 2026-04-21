@@ -10,7 +10,7 @@ import type {
   UpdateTaskRequest,
   PublishTaskResponse,
   DemandRefinementResult,
-} from '@packages/shared/types/visionShare';
+} from '@bridgeai/shared/types/visionShare';
 
 import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
@@ -211,10 +211,10 @@ export class VisionShareTaskService {
         data: {
           status: 'PUBLISHED',
           creditChecked: true,
-          creditScore: validationResult.creditCheck.score,
+          creditScore: validationResult.creditCheck.score as any,
           contentFiltered: true,
           publishedAt: new Date(),
-        },
+        } as any,
       });
 
       // 记录历史
@@ -349,7 +349,7 @@ export class VisionShareTaskService {
         data: {
           status: 'CANCELLED',
           cancelledAt: new Date(),
-        },
+        } as any,
       });
 
       // 记录历史
@@ -450,7 +450,7 @@ export class VisionShareTaskService {
         data: {
           taskId,
           status,
-          metadata,
+          metadata: metadata as any,
         },
       });
     } catch (error) {

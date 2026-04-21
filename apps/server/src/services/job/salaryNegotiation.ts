@@ -87,9 +87,17 @@ export class SalaryNegotiationService {
     isJobSeeker: boolean
   ): Promise<NegotiationStrategy> {
     const prompt = getSalaryNegotiationPrompt('strategy', {
-      context,
+      room: context.room,
+      messages: context.messages,
       isJobSeeker,
-      room: context.room
+      marketData: context.marketData ? {
+        position: context.marketData.position,
+        location: context.marketData.location,
+        experienceYears: context.marketData.experienceYears,
+        marketRange: context.marketData.marketRange,
+      } : undefined,
+      jobSeekerProfile: context.jobSeekerProfile,
+      employerProfile: context.employerProfile,
     });
 
     try {
@@ -122,10 +130,18 @@ export class SalaryNegotiationService {
     lastOffer?: number
   ): Promise<CounterOffer> {
     const prompt = getSalaryNegotiationPrompt('counter_offer', {
-      context,
+      room: context.room,
+      messages: context.messages,
       isJobSeeker,
       lastOffer,
-      room: context.room
+      marketData: context.marketData ? {
+        position: context.marketData.position,
+        location: context.marketData.location,
+        experienceYears: context.marketData.experienceYears,
+        marketRange: context.marketData.marketRange,
+      } : undefined,
+      jobSeekerProfile: context.jobSeekerProfile,
+      employerProfile: context.employerProfile,
     });
 
     try {
@@ -152,8 +168,14 @@ export class SalaryNegotiationService {
    */
   async analyzeNegotiation(context: NegotiationContext): Promise<NegotiationAnalysis> {
     const prompt = getSalaryNegotiationPrompt('analysis', {
-      context,
-      room: context.room
+      room: context.room,
+      messages: context.messages,
+      marketData: context.marketData ? {
+        position: context.marketData.position,
+        location: context.marketData.location,
+        experienceYears: context.marketData.experienceYears,
+        marketRange: context.marketData.marketRange,
+      } : undefined,
     });
 
     try {
@@ -189,10 +211,16 @@ export class SalaryNegotiationService {
     topic?: NegotiationTopic;
   }> {
     const prompt = getSalaryNegotiationPrompt('message', {
-      context,
+      room: context.room,
+      messages: context.messages,
       isJobSeeker,
       messageType,
-      room: context.room
+      marketData: context.marketData ? {
+        position: context.marketData.position,
+        location: context.marketData.location,
+        experienceYears: context.marketData.experienceYears,
+        marketRange: context.marketData.marketRange,
+      } : undefined,
     });
 
     try {
@@ -224,8 +252,9 @@ export class SalaryNegotiationService {
     confidence: number;
   }> {
     const prompt = getSalaryNegotiationPrompt('check_agreement', {
-      context,
-      room: context.room
+      room: context.room,
+      messages: context.messages,
+      isJobSeeker: false,
     });
 
     try {

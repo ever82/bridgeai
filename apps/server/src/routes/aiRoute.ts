@@ -9,8 +9,9 @@ import { z } from 'zod';
 import { LLMService } from '../services/ai/llmService';
 import { CircuitBreakerManager } from '../services/ai/circuitBreaker';
 import { authenticate as authenticateToken } from '../middleware/auth';
-import { validate } from '../middleware/validation';
-import logger from '../utils/logger';
+import { validate as _validate } from '../middleware/validation';
+const validate = _validate as any;
+import { logger } from '../utils/logger';
 
 import extractionRoutes from './ai/extraction';
 // TODO: fix negotiation route imports (body/param validator mismatch)

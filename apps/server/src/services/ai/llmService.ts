@@ -360,6 +360,33 @@ export class LLMService {
   /**
    * 执行嵌入请求
    */
+  async createEmbedding(
+    request: EmbeddingRequest,
+    preferredProvider?: LLMProvider
+  ): Promise<EmbeddingResponse> {
+    return this.embeddings(request, preferredProvider);
+  }
+
+  /**
+   * 简单补全接口（用于兼容旧代码）
+   */
+  async complete(prompt: string, options?: { provider?: LLMProvider; maxTokens?: number; temperature?: number }): Promise<{ content: string; provider: string }> {
+    const provider = options?.provider || 'claude';
+    const response = await this.chatCompletion({
+      model: 'claude-sonnet-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: options?.temperature ?? 0.3,
+      maxTokens: options?.maxTokens ?? 2000,
+    }, provider as LLMProvider);
+    return {
+      content: response.choices[0]?.message?.content || '',
+      provider,
+    };
+  }
+
+  /**
+   * 执行嵌入请求
+   */
   async embeddings(
     request: EmbeddingRequest,
     preferredProvider?: LLMProvider

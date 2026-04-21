@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 
-import { verifyToken } from '../../services/auth/jwt';
+import { verifyToken, generateTokens } from '../../services/auth/jwt';
+import { prisma } from '../../db/client';
 import {
   createRefreshToken,
   findRefreshToken,
@@ -49,7 +50,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
           id: result.user.id,
           email: result.user.email,
           name: result.user.name,
-          role: result.user.role,
+          role: (result.user as any).role,
         },
         tokens: {
           accessToken: result.accessToken,
@@ -201,7 +202,7 @@ router.post('/logout', authenticate, async (req: Request, res: Response, next: N
 
     const { refreshToken } = req.body;
     if (refreshToken) {
-      await revokeRefreshToken(refreshToken, req.user?.userId);
+      await revokeRefreshToken(refreshToken, (req.user as any)?.userId || (req.user as any)?.id);
     }
 
     res.json(ApiResponse.success({ message: 'Logged out successfully' }));
@@ -221,7 +222,8 @@ router.post(
       }
 
       const { revokeAllUserRefreshTokens } = await import('../../services/auth/refreshToken');
-      const count = await revokeAllUserRefreshTokens(req.user!.userId, req.user!.userId);
+      const userId = (req.user as any)?.userId || (req.user as any)?.id;
+      const count = await revokeAllUserRefreshTokens(userId, userId);
 
       res.json(
         ApiResponse.success({
@@ -238,8 +240,9 @@ router.post(
 // GET /api/v1/auth/me - Get current user info
 router.get('/me', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const userId = (req.user as any)?.userId || (req.user as any)?.id;
     const user = await prisma.user.findUnique({
-      where: { id: req.user!.userId },
+      where: { id: userId },
       select: {
         id: true,
         email: true,
@@ -247,9 +250,9 @@ router.get('/me', authenticate, async (req: Request, res: Response, next: NextFu
         avatarUrl: true,
         phone: true,
         status: true,
-        role: true,
+        roles: true,
         createdAt: true,
-      },
+      } as any,
     });
 
     if (!user) {

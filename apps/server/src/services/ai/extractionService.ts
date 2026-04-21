@@ -99,7 +99,7 @@ export async function extractL2FromL3(
     // Record metrics
     await metricsService.recordRequest({
       requestId: `${agentId}-${Date.now()}`,
-      provider: response.provider,
+      provider: response.provider as LLMProvider,
       model: response.model,
       latencyMs,
       success: true,
@@ -125,7 +125,7 @@ export async function extractL2FromL3(
       fieldsExtracted,
       fieldsFailed,
       reasoning: extraction.reasoning,
-      provider: response.provider,
+      provider: response.provider as LLMProvider,
       model: response.model,
       latencyMs,
     };
@@ -140,7 +140,7 @@ export async function extractL2FromL3(
     // Record failure metrics
     await metricsService.recordRequest({
       requestId: `${agentId}-${Date.now()}`,
-      provider: 'unknown',
+      provider: 'unknown' as unknown as LLMProvider,
       model: 'unknown',
       latencyMs,
       success: false,

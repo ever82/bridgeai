@@ -49,7 +49,7 @@ export async function createGeoFence(input: CreateGeoFenceInput) {
       radiusMeters: input.radiusMeters,
       color: input.color,
       createdBy: input.createdBy,
-      metadata: input.metadata || {},
+      metadata: (input.metadata || {}) as any,
     },
   });
 }
@@ -131,7 +131,7 @@ export async function checkPointInFence(
     return { inside: false };
   }
 
-  const polygon = coords[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng }));
+  const polygon = coords[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng })) as unknown as GeoJSONPolygon;
   const inside = isPointInPolygon(point, polygon);
 
   return { inside };
@@ -170,7 +170,7 @@ export async function findContainingFences(point: GeoCoordinates) {
     } else {
       const coords = fence.coordinates as number[][][];
       if (coords && coords.length > 0 && coords[0].length >= 3) {
-        const polygon = coords[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng }));
+        const polygon = coords[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng })) as unknown as GeoJSONPolygon;
         if (isPointInPolygon(point, polygon)) {
           containing.push(fence);
         }

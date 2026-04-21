@@ -288,11 +288,12 @@ router.post(
       console.log(`Verifying SMS code: ${code}`);
 
       // 检查手机号是否已被使用
-      const existingUser = await prisma.user.findUnique({
-        where: { phone },
+      const phoneUser = await prisma.user.findMany({
+        where: { phone } as any,
       });
+      const existingPhoneUser = phoneUser.find(u => u.id !== userId);
 
-      if (existingUser && existingUser.id !== userId) {
+      if (existingPhoneUser) {
         throw new AppError('该手机号已被其他账号绑定', 'PHONE_EXISTS', 400);
       }
 

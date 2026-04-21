@@ -14,7 +14,8 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 
 import { authenticate as authenticateToken } from '../../middleware/auth';
-import { validate as validateRequest } from '../../middleware/validation';
+import { validate as _validateRequest } from '../../middleware/validation';
+const validateRequest = _validateRequest as any;
 import { SupplyExtractionService } from '../../services/ai/supplyExtractionService';
 import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';

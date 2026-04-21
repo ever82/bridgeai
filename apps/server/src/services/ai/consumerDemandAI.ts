@@ -9,6 +9,7 @@ import {
   ExtractedDemandData,
   AgentAdRole,
   DemandUrgency,
+  L2Data,
 } from '@bridgeai/shared';
 
 import { logger } from '../../utils/logger';
@@ -67,7 +68,7 @@ export async function extractConsumerDemand(
     const extractedData = mapToConsumerDemand(extractionResult, text);
 
     // Step 4: Validate extraction
-    const validationResult = extractionValidator.validate(extractedData, {
+    const validationResult = (extractionValidator as any).validate(extractedData, {
       requiredFields: ['categories'],
       customRules: [
         {

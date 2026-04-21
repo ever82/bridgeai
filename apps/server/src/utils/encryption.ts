@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { getDataEncryptionKey, getMasterKey } from '../services/keyManagement';
+import { getDataEncryptionKey } from '../services/keyManagement';
 
 const AES_ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;

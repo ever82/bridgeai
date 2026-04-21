@@ -6,9 +6,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
 
-import { rbacService } from '../services/rbacService';
-import { requireRole, requirePermission } from '../middleware/rbac';
-import { validateBody, validateParams } from '../middleware/validation';
+import { rbacService } from '../../services/rbacService';
+import { requireRole, requirePermission } from '../../middleware/rbac';
+import { validateBody, validateParams } from '../../middleware/validation';
 
 const router = Router();
 

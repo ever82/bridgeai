@@ -151,16 +151,16 @@ export async function detectCreditFluctuations(threshold: number = 50): Promise<
       sourceType: 'SCHEDULED',
     },
     orderBy: { createdAt: 'desc' },
-    distinct: ['creditId'],
+    distinct: ['userId'],
   });
 
   for (const history of recentHistories) {
     const delta = Math.abs(history.delta);
     if (delta >= threshold) {
       fluctuations.push({
-        userId: history.creditId,
-        oldScore: history.oldScore,
-        newScore: history.newScore,
+        userId: history.userId,
+        oldScore: history.score - history.delta,
+        newScore: history.score,
         delta,
       });
     }

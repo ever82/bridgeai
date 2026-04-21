@@ -7,9 +7,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import {
   type EmployerProfile,
-  VerificationStatus,
   type EmployerVerification,
   type EmployerVerificationResponse,
+  VerificationStatus,
   companyVerificationRequestSchema,
   verifyEmailSchema,
 } from '@bridgeai/shared';
@@ -77,7 +77,7 @@ export async function verifyEmail(
   profile.verification.emailVerifiedAt = now;
 
   if (profile.verification.status === VerificationStatus.UNVERIFIED) {
-    profile.verification.status = VerificationStatus.EMAIL_VERIFIED;
+    profile.verification.status = VerificationStatus.EMAIL_VERIFIED as any;
   }
 
   profile.updatedAt = now;
@@ -125,7 +125,7 @@ export async function submitBusinessVerification(
   const now = new Date().toISOString();
 
   // Update verification status to pending
-  profile.verification.status = VerificationStatus.PENDING;
+  profile.verification.status = VerificationStatus.PENDING as any;
   profile.verification.businessLicenseUrl = validated.businessLicenseUrl;
   profile.verification.submittedAt = now;
 
@@ -135,7 +135,7 @@ export async function submitBusinessVerification(
   employerProfiles.set(employerProfileId, profile);
 
   return {
-    status: VerificationStatus.PENDING,
+    status: VerificationStatus.PENDING as VerificationStatus,
     message: 'Business verification submitted successfully and is pending review',
     nextSteps: [
       'Our team will review your submission within 1-3 business days',
@@ -165,7 +165,7 @@ export async function approveBusinessVerification(
 
   const now = new Date().toISOString();
 
-  profile.verification.status = VerificationStatus.BUSINESS_VERIFIED;
+  profile.verification.status = VerificationStatus.BUSINESS_VERIFIED as any;
   profile.verification.businessLicenseVerifiedAt = now;
   profile.verification.reviewedAt = now;
   profile.verification.rejectedReason = undefined;
@@ -176,7 +176,7 @@ export async function approveBusinessVerification(
   employerProfiles.set(employerProfileId, profile);
 
   return {
-    status: VerificationStatus.BUSINESS_VERIFIED,
+    status: VerificationStatus.BUSINESS_VERIFIED as VerificationStatus,
     message: 'Business verification approved successfully',
   };
 }
@@ -203,7 +203,7 @@ export async function rejectBusinessVerification(
 
   const now = new Date().toISOString();
 
-  profile.verification.status = VerificationStatus.REJECTED;
+  profile.verification.status = VerificationStatus.REJECTED as any;
   profile.verification.rejectedReason = reason;
   profile.verification.reviewedAt = now;
 
@@ -213,7 +213,7 @@ export async function rejectBusinessVerification(
   employerProfiles.set(employerProfileId, profile);
 
   return {
-    status: VerificationStatus.REJECTED,
+    status: VerificationStatus.REJECTED as VerificationStatus,
     message: 'Business verification rejected',
     nextSteps: [
       'Please review the rejection reason and resubmit with corrected information',
@@ -277,7 +277,7 @@ export function canPostJobs(verification: EmployerVerification): boolean {
   return [
     VerificationStatus.EMAIL_VERIFIED,
     VerificationStatus.BUSINESS_VERIFIED,
-  ].includes(verification.status);
+  ].includes(verification.status as any);
 }
 
 /**

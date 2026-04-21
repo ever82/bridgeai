@@ -3,17 +3,35 @@
  * Type definitions for VisionShare server services
  */
 
-import { Photo, PhotoFilter, PhotoStatus } from '../../../shared/types/photo.types';
-import {
-  PaymentTransaction,
-  PaymentRequest,
-  PaymentResponse,
-  PaymentStatus,
-  UnlockedPhotoInfo,
-  DownloadAuth,
-  RefundRequest,
-  RefundResponse,
-} from '../../../shared/types/payment.types';
+// Stub types for missing shared modules
+export interface Photo {
+  id: string;
+  url: string;
+  thumbnailUrl?: string;
+  width?: number;
+  height?: number;
+  metadata?: Record<string, unknown>;
+  status: string;
+  createdAt: Date;
+}
+
+export type PhotoFilter = Record<string, unknown>;
+export type PhotoStatus = string;
+
+export interface PaymentTransaction {
+  id: string;
+  amount: number;
+  status: string;
+  metadata?: Record<string, unknown>;
+}
+
+export type PaymentRequest = Record<string, unknown>;
+export type PaymentResponse = Record<string, unknown>;
+export type PaymentStatus = string;
+export type UnlockedPhotoInfo = Record<string, unknown>;
+export type DownloadAuth = Record<string, unknown>;
+export type RefundRequest = Record<string, unknown>;
+export type RefundResponse = Record<string, unknown>;
 
 // ============================================================================
 // Photo Service Types

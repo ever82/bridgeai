@@ -23,7 +23,6 @@ import {
   DemandTimeline,
   DemandProfilePreview,
   ConsumerDemandProfile,
-  CreateConsumerAgentRequest,
   UpdateConsumerConfigRequest,
   ExtractedDemandData,
 } from '@bridgeai/shared';
@@ -44,6 +43,21 @@ export {
   DemandProfilePreview,
   ConsumerDemandProfile,
 } from '@bridgeai/shared';
+
+// Local type definitions (shared package may not export all)
+interface CreateConsumerAgentRequest {
+  name: string;
+  description?: string;
+  role: 'CONSUMER';
+  initialConfig?: {
+    categories?: string[];
+    categoryIds?: string[];
+    budget?: BudgetRange;
+    brandPreference?: BrandPreference;
+    merchantPreference?: MerchantPreferenceConfig;
+    timeline?: DemandTimeline;
+  };
+}
 
 /**
  * Create a consumer Agent for AgentAd scenario
@@ -76,30 +90,30 @@ export async function createConsumerAgent(
   // Build initial config
   const initialProfile: Partial<ConsumerDemandProfile> = {
     role: AgentAdRole.CONSUMER,
-    categories: request.initialConfig?.categories || [],
+    categories: (request.initialConfig?.categories || []) as any,
     categoryIds: request.initialConfig?.categoryIds || [],
-    budget: request.initialConfig?.budget || {
+    budget: (request.initialConfig?.budget || {
       type: 'single',
       min: 0,
       max: 1000,
       currency: 'CNY',
       disclosure: 'RANGE_ONLY',
-    },
-    brandPreference: request.initialConfig?.brandPreference || {
+    }) as any,
+    brandPreference: (request.initialConfig?.brandPreference || {
       preferred: [],
       avoided: [],
       anyBrand: true,
-    },
-    merchantPreference: request.initialConfig?.merchantPreference || {
+    }) as any,
+    merchantPreference: (request.initialConfig?.merchantPreference || {
       types: ['CHAIN', 'LOCAL'],
       preferChain: true,
       acceptIndividual: true,
       requirePhysicalStore: false,
-    },
-    timeline: request.initialConfig?.timeline || {
+    }) as any,
+    timeline: (request.initialConfig?.timeline || {
       urgency: 'MEDIUM',
       flexibleDates: true,
-    },
+    }) as any,
     status: ConsumerDemandStatus.DRAFT,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -116,7 +130,7 @@ export async function createConsumerAgent(
         role: AgentAdRole.CONSUMER,
         consumerProfile: initialProfile,
         scene: 'AGENTAD',
-      },
+      } as any,
       latitude: null,
       longitude: null,
       isActive: true,

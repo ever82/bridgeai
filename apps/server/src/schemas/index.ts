@@ -4,8 +4,33 @@
  * Central export for all validation schemas
  */
 
-// User schemas
-export * from './userSchemas';
+// User schemas (exclude duplicates with authSchemas)
+export {
+  userIdSchema,
+  emailSchema,
+  passwordSchema,
+  usernameSchema,
+  displayNameSchema,
+  phoneSchema,
+  avatarUrlSchema,
+  bioSchema,
+  registerUserSchema,
+  type RegisterUserInput,
+  loginUserSchema,
+  type LoginUserInput,
+  updateUserSchema,
+  type UpdateUserInput,
+  setNewPasswordSchema,
+  type SetNewPasswordInput,
+  userIdParamsSchema,
+  type UserIdParams,
+  usernameParamsSchema,
+  type UsernameParams,
+  listUsersQuerySchema,
+  type ListUsersQuery,
+  searchUsersQuerySchema,
+  type SearchUsersQuery,
+} from './userSchemas';
 
 // Auth schemas
 export * from './authSchemas';

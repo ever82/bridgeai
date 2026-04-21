@@ -9,8 +9,9 @@ import { Router } from 'express';
 import { z } from 'zod';
 
 import { agentNegotiationService } from '../../services/ai/agentNegotiationService';
-import { requireAuth } from '../../middleware/auth';
-import { validate as validateRequest } from '../../middleware/validation';
+import { authenticate as requireAuth } from '../../middleware/auth';
+import { validate as _validateRequest } from '../../middleware/validation';
+const validateRequest = _validateRequest as any;
 import { logger } from '../../utils/logger';
 import { AppError } from '../../errors';
 
@@ -246,7 +247,7 @@ router.get(
       }
 
       if (!targetMerchantId) {
-        throw new AppError(400, 'No merchant with offers found');
+        throw new AppError('No merchant with offers found', 'NO_MERCHANT', 400);
       }
 
       const questions = await agentNegotiationService.generateFollowUpQuestions(

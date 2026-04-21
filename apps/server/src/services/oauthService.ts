@@ -130,7 +130,7 @@ export async function exchangeCodeForToken(
     throw new Error(`OAuth token exchange failed: ${error}`);
   }
 
-  const data = await response.json();
+  const data: any = await response.json();
 
   return {
     accessToken: data.access_token,
@@ -167,7 +167,7 @@ export async function getOAuthUserInfo(
     throw new Error(`Failed to get user info: ${error}`);
   }
 
-  const data = await response.json();
+  const data: any = await response.json();
 
   if (provider === 'wechat') {
     return {
@@ -245,7 +245,7 @@ export async function handleOAuthCallback(
     userId: user.id,
     email: user.email || undefined,
     phone: user.phone || undefined,
-    role: user.role,
+    role: (user as any).role,
   });
   const refreshToken = generateRefreshToken(user.id);
 
@@ -298,9 +298,9 @@ async function createOAuthUser(provider: OAuthProvider, data: IOAuthUserData): P
       name: data.name,
       avatar: data.avatar,
       role: 'user',
-      status: 'active',
+      status: 'ACTIVE',
       passwordHash: '', // OAuth 用户不需要密码
-    },
+    } as any,
   });
 
   // 创建 OAuth 连接

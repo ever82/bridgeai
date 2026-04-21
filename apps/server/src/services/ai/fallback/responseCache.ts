@@ -14,7 +14,7 @@ interface CacheEntry {
   createdAt: number;
 }
 
-interface CacheStats {
+export interface CacheStats {
   size: number;
   hits: number;
   misses: number;

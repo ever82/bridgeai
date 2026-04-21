@@ -112,7 +112,7 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
         conversationId: roomId,
         senderId: socket.user.id,
         content,
-        type: type.toUpperCase() as 'TEXT' | 'IMAGE' | 'FILE' | 'SYSTEM',
+        type: (type || 'TEXT').toUpperCase() as 'TEXT' | 'IMAGE' | 'FILE',
         attachments: attachments as Prisma.InputJsonValue,
         metadata: metadata as Prisma.InputJsonValue,
       });
@@ -235,7 +235,7 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
 
       const result = await syncMessages({
         conversationId: roomId,
-        lastSequenceId: BigInt(lastSequenceId),
+        lastSequenceId: BigInt(lastSequenceId) as unknown as number,
         limit,
       });
 

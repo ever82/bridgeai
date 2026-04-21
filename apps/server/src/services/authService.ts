@@ -160,7 +160,7 @@ export async function verifyVerificationCode(identifier: string, code: string): 
  * @returns 访问令牌
  */
 export function generateAccessToken(payload: ITokenPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as any);
 }
 
 /**
@@ -171,7 +171,7 @@ export function generateAccessToken(payload: ITokenPayload): string {
 export function generateRefreshToken(userId: string): string {
   return jwt.sign({ userId, type: 'refresh' }, JWT_SECRET, {
     expiresIn: JWT_REFRESH_EXPIRES_IN,
-  });
+  } as any);
 }
 
 /**
@@ -441,7 +441,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<IAuthRes
     userId: user.id,
     email: user.email || undefined,
     phone: user.phone || undefined,
-    role: user.role,
+    role: (user as any).role,
   });
   const newRefreshToken = generateRefreshToken(user.id);
 

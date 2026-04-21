@@ -1,9 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { CouponStatus, TransactionStatus, RatingType } from '@prisma/client';
+import { CouponStatus, TransactionStatus } from '@prisma/client';
 
-import { authenticate, requireRoles } from '../../middleware/auth';
-import { validate as validateRequest } from '../../middleware/validation';
+import { authenticate, requireRole } from '../middleware/auth';
+import { validate as validateRequest } from '../middleware/validation';
 import {
   createCoupon,
   getCouponById,
@@ -19,8 +19,8 @@ import {
   getRateeRatings,
   getCouponStatistics,
   verifyQRCodeData,
-} from '../../services/promoCodeService';
-import { AppError } from '../../errors/AppError';
+} from '../services/promoCodeService';
+import { AppError } from '../errors/AppError';
 
 const router: Router = Router();
 
@@ -30,7 +30,7 @@ const createCouponSchema = z.object({
   merchantId: z.string().uuid(),
   originalPrice: z.number().positive(),
   discountPrice: z.number().positive(),
-  validHours: z.number().int().min(1).max(720).optional(), // Max 30 days
+  validHours: z.number().int().min(1).max(720).optional(),
   maxUsageCount: z.number().int().min(1).max(100).optional(),
   negotiationId: z.string().uuid().optional(),
   onlineUrl: z.string().url().optional(),
@@ -64,11 +64,11 @@ const querySchema = z.object({
 router.post(
   '/',
   authenticate,
-  validateRequest(createCouponSchema),
+  (validateRequest as any)(createCouponSchema),
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const coupon = await createCoupon({
@@ -92,13 +92,12 @@ router.get(
     const coupon = await getCouponById(couponId);
 
     if (!coupon) {
-      throw new AppError(404, '优惠码不存在', 'COUPON_NOT_FOUND');
+      throw new AppError('优惠码不存在', 'COUPON_NOT_FOUND', 404);
     }
 
-    // Check ownership
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (coupon.consumerId !== userId && coupon.merchantId !== userId) {
-      throw new AppError(403, '无权访问此优惠码', 'FORBIDDEN');
+      throw new AppError('无权访问此优惠码', 'FORBIDDEN', 403);
     }
 
     res.json({
@@ -117,18 +116,17 @@ router.get(
     const coupon = await getCouponByCode(code);
 
     if (!coupon) {
-      throw new AppError(404, '优惠码不存在', 'COUPON_NOT_FOUND');
+      throw new AppError('优惠码不存在', 'COUPON_NOT_FOUND', 404);
     }
 
-    // Only return basic info for public access
     res.json({
       success: true,
       data: {
         code: coupon.code,
         status: coupon.status,
         validUntil: coupon.validUntil,
-        merchant: coupon.merchant,
-        offer: coupon.offer,
+        merchant: (coupon as any).merchant,
+        offer: (coupon as any).offer,
       },
     });
   }
@@ -138,11 +136,11 @@ router.get(
 router.get(
   '/consumer/my-coupons',
   authenticate,
-  validateRequest(querySchema),
+  (validateRequest as any)(querySchema),
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const status = req.query.status as CouponStatus | undefined;
@@ -151,7 +149,6 @@ router.get(
 
     const coupons = await getConsumerCoupons(userId, status);
 
-    // Pagination
     const start = (page - 1) * limit;
     const paginatedCoupons = coupons.slice(start, start + limit);
 
@@ -174,12 +171,12 @@ router.get(
 router.get(
   '/merchant/my-coupons',
   authenticate,
-  requireRoles(['MERCHANT', 'ADMIN']),
-  validateRequest(querySchema),
+  (requireRole as any)('MERCHANT', 'ADMIN'),
+  (validateRequest as any)(querySchema),
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const status = req.query.status as CouponStatus | undefined;
@@ -188,7 +185,6 @@ router.get(
 
     const coupons = await getMerchantCoupons(userId, status);
 
-    // Pagination
     const start = (page - 1) * limit;
     const paginatedCoupons = coupons.slice(start, start + limit);
 
@@ -211,25 +207,25 @@ router.get(
 router.post(
   '/validate-qr',
   authenticate,
-  requireRoles(['MERCHANT', 'ADMIN']),
-  validateRequest(redeemSchema),
+  (requireRole as any)('MERCHANT', 'ADMIN'),
+  (validateRequest as any)(redeemSchema),
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const { qrCodeData } = req.body;
     const verification = verifyQRCodeData(qrCodeData);
 
     if (!verification.valid || !verification.couponId) {
-      throw new AppError(400, '无效的二维码', 'INVALID_QR_CODE');
+      throw new AppError('无效的二维码', 'INVALID_QR_CODE', 400);
     }
 
     const validation = await validateCoupon(verification.couponId, userId);
 
     if (!validation.valid) {
-      throw new AppError(400, validation.error, 'COUPON_INVALID');
+      throw new AppError(validation.error || 'Invalid coupon', 'COUPON_INVALID', 400);
     }
 
     res.json({
@@ -243,19 +239,19 @@ router.post(
 router.post(
   '/redeem',
   authenticate,
-  requireRoles(['MERCHANT', 'ADMIN']),
-  validateRequest(redeemSchema),
+  (requireRole as any)('MERCHANT', 'ADMIN'),
+  (validateRequest as any)(redeemSchema),
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const { qrCodeData } = req.body;
     const verification = verifyQRCodeData(qrCodeData);
 
     if (!verification.valid || !verification.couponId) {
-      throw new AppError(400, '无效的二维码', 'INVALID_QR_CODE');
+      throw new AppError('无效的二维码', 'INVALID_QR_CODE', 400);
     }
 
     const coupon = await redeemCoupon(verification.couponId, userId);
@@ -272,19 +268,18 @@ router.post(
 router.post(
   '/use-online',
   authenticate,
-  validateRequest(onlineUseSchema),
+  (validateRequest as any)(onlineUseSchema),
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const { couponId, paymentMethod, pointsUsed } = req.body;
 
-    // Verify ownership
     const coupon = await getCouponById(couponId);
     if (!coupon || coupon.consumerId !== userId) {
-      throw new AppError(403, '无权使用此优惠码', 'FORBIDDEN');
+      throw new AppError('无权使用此优惠码', 'FORBIDDEN', 403);
     }
 
     const result = await useCouponOnline(couponId, paymentMethod, pointsUsed);
@@ -302,9 +297,9 @@ router.post(
   '/:couponId/cancel',
   authenticate,
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const { couponId } = req.params;
@@ -322,11 +317,11 @@ router.post(
 router.post(
   '/ratings',
   authenticate,
-  validateRequest(ratingSchema),
+  (validateRequest as any)(ratingSchema),
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const rating = await createRating({
@@ -361,9 +356,9 @@ router.get(
   '/ratings/my',
   authenticate,
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const ratings = await getRateeRatings(userId);
@@ -380,9 +375,9 @@ router.get(
   '/statistics',
   authenticate,
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const stats = await getCouponStatistics(userId);
@@ -398,11 +393,11 @@ router.get(
 router.get(
   '/merchant/statistics',
   authenticate,
-  requireRoles(['MERCHANT', 'ADMIN']),
+  (requireRole as any)('MERCHANT', 'ADMIN'),
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const stats = await getCouponStatistics(userId);
@@ -419,24 +414,23 @@ router.get(
   '/:couponId/online-url',
   authenticate,
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
-      throw new AppError(401, 'Unauthorized', 'AUTH_REQUIRED');
+      throw new AppError('Unauthorized', 'AUTH_REQUIRED', 401);
     }
 
     const { couponId } = req.params;
     const coupon = await getCouponById(couponId);
 
     if (!coupon || coupon.consumerId !== userId) {
-      throw new AppError(403, '无权访问此优惠码', 'FORBIDDEN');
+      throw new AppError('无权访问此优惠码', 'FORBIDDEN', 403);
     }
 
     if (coupon.status !== CouponStatus.ACTIVE) {
-      throw new AppError(400, '优惠码状态无效', 'COUPON_INVALID');
+      throw new AppError('优惠码状态无效', 'COUPON_INVALID', 400);
     }
 
-    // Build URL with coupon code
-    const baseUrl = coupon.onlineUrl || `/merchant/${coupon.merchantId}/pay`;
+    const baseUrl = (coupon as any).onlineUrl || `/merchant/${coupon.merchantId}/pay`;
     const separator = baseUrl.includes('?') ? '&' : '?';
     const onlineUrl = `${baseUrl}${separator}couponCode=${coupon.code}`;
 

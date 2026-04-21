@@ -179,7 +179,7 @@ router.get('/name/:code', async (req, res, next) => {
  * GET /api/location/agents
  * Search agents by location
  */
-router.get('/agents', authenticate, validate(locationFilterSchema, 'query'), async (req, res, next) => {
+router.get('/agents', authenticate, validate({ query: locationFilterSchema }), async (req, res, next) => {
   try {
     const { province, city, district, lat, lng, radius, page, limit } = req.query;
 
@@ -220,7 +220,7 @@ router.get('/agents', authenticate, validate(locationFilterSchema, 'query'), asy
 router.get(
   '/agents/nearby',
   authenticate,
-  validate(radiusSearchSchema, 'query'),
+  validate({ query: radiusSearchSchema }),
   async (req, res, next) => {
     try {
       const { lat, lng, radius, agentType, excludeAgentId } = req.query;
@@ -254,7 +254,7 @@ router.get(
 router.get(
   '/distance',
   authenticate,
-  validate(distanceSchema, 'query'),
+  validate({ query: distanceSchema }),
   async (req, res, next) => {
     try {
       const { agentId1, agentId2 } = req.query;

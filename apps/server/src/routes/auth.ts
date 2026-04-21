@@ -202,7 +202,7 @@ router.post('/logout', authenticate, async (req: Request, res: Response) => {
  */
 router.post('/logout-all', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = (req.user as any)?.userId || (req.user as any)?.id;
 
     if (!userId) {
       return res.status(401).json({

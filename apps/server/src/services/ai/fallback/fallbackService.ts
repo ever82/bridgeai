@@ -13,7 +13,7 @@ import {
   RequestMetrics,
   CircuitBreakerEvent,
   CircuitBreakerState,
-} from './types';
+} from '../types';
 import {
   FallbackStrategy,
   FallbackContext,
@@ -24,8 +24,8 @@ import {
   AsyncQueueFallbackStrategy,
 } from './strategies';
 import { LRAResponseCache } from './responseCache';
-import { CircuitBreaker, CircuitBreakerManager } from './circuitBreaker';
-import { LLMRouter } from './llmRouter';
+import { CircuitBreaker, CircuitBreakerManager } from '../circuitBreaker';
+import { LLMRouter } from '../llmRouter';
 
 /**
  * 健康检查配置

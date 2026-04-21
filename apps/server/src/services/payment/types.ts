@@ -3,15 +3,51 @@
  * Type definitions for payment server services
  */
 
-import {
-  PaymentTransaction,
-  PaymentRequest,
-  PaymentResponse,
-  PaymentStatus,
-  PaymentError,
-  CreditBalance,
-  PaymentConfirmation,
-} from '../../../shared/types/payment.types';
+// Local type stubs for payment types (shared module not available)
+export interface PaymentTransaction {
+  id: string;
+  userId: string;
+  type: string;
+  status: string;
+  amount: number;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaymentRequest {
+  userId: string;
+  amount: number;
+  currency: string;
+  type: string;
+  description?: string;
+}
+
+export interface PaymentResponse {
+  success: boolean;
+  transactionId?: string;
+  error?: string;
+}
+
+export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled';
+
+export interface PaymentError {
+  code: string;
+  message: string;
+  details?: string;
+}
+
+export interface CreditBalance {
+  available: number;
+  frozen: number;
+  total: number;
+}
+
+export interface PaymentConfirmation {
+  transactionId: string;
+  confirmedAt: string;
+  details?: Record<string, unknown>;
+}
 
 // ============================================================================
 // Core Payment Service

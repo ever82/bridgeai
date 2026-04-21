@@ -5,7 +5,6 @@
 
 export {
   createGeoFence,
-  getGeoFence,
   getAllGeoFences,
   updateGeoFence,
   deleteGeoFence,

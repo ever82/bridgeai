@@ -19,14 +19,8 @@ import {
 // Re-export for external use
 export { rateLimitConfigs, getRateLimitConfig };
 
-// Extend Express Request type to include user property
-interface RateLimitRequest extends Request {
-  user?: {
-    id?: string;
-    role?: string;
-    isPremium?: boolean;
-  };
-}
+// Use any-typed request for rate limiting
+type RateLimitRequest = Request & { user?: any; token?: string };
 
 // In-memory store for user-based rate limiting (replace with Redis in production)
 interface UserRequestRecord {

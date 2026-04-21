@@ -99,7 +99,7 @@ router.post('/', authenticate, async (req, res, next) => {
     }
 
     const fence = await createGeoFence({
-      ...parsed.data,
+      ...(parsed.data as any),
       createdBy: req.user!.id,
     });
 

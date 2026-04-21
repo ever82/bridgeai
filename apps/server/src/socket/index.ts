@@ -55,7 +55,7 @@ export async function initializeSocketServer(
 
   // Setup Redis adapter for multi-node support
   if (pubClient && subClient) {
-    io.adapter(createAdapter(pubClient, subClient));
+    io.adapter(createAdapter(pubClient as any, subClient as any) as any);
     console.log('[Socket.io] Redis adapter configured');
   }
 

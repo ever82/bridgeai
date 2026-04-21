@@ -241,11 +241,11 @@ export class SupplyExtractionService {
       // 记录指标
       await metricsService.recordRequest({
         requestId: `supply-${agentId || 'unknown'}-${Date.now()}`,
-        provider: response.provider,
+        provider: response.provider as LLMProvider,
         model: response.model,
         latencyMs,
         success: true,
-        tokenUsage: response.usage || { input: 0, output: 0, total: 0 },
+        tokenUsage: (response.usage as any) || { input: 0, output: 0, total: 0 },
         costUsd: response.cost || 0,
       });
 
@@ -261,7 +261,7 @@ export class SupplyExtractionService {
         supply,
         fieldsExtracted,
         fieldsFailed,
-        provider: response.provider,
+        provider: response.provider as LLMProvider,
         model: response.model,
         latencyMs,
       };
@@ -276,7 +276,7 @@ export class SupplyExtractionService {
       // 记录失败指标
       await metricsService.recordRequest({
         requestId: `supply-${agentId || 'unknown'}-${Date.now()}`,
-        provider: 'unknown',
+        provider: 'unknown' as unknown as LLMProvider,
         model: 'unknown',
         latencyMs,
         success: false,

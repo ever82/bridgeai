@@ -47,7 +47,7 @@ export function calculateL1Completion(l1Data: L1Profile | null): ProfileCompleti
  * Get missing field labels for display
  */
 export function getMissingFieldLabels(missingFields: (keyof L1Profile)[]): string[] {
-  return missingFields.map(field => L1_FIELD_LABELS[field] || field);
+  return missingFields.map(field => L1_FIELD_LABELS[field] || String(field)) as string[];
 }
 
 /**

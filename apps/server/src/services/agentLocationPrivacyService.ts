@@ -30,7 +30,7 @@ export async function getAgentLocationPrivacy(
     }
 
     return {
-      privacyLevel: privacy.privacyLevel as LocationPrivacyLevel,
+      privacyLevel: (privacy.privacyLevel || 'CITY') as LocationPrivacyLevel,
       showExactCoords: privacy.showExactCoords,
       hideFromPublic: privacy.hideFromPublic,
     };

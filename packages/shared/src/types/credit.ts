@@ -7,7 +7,7 @@
 export enum CreditLevelEnum {
   EXCELLENT = 'excellent', // 优秀 800-1000
   GOOD = 'good',           // 良好 600-799
-  GENERAL = 'general',     // 一般 400-599
+  AVERAGE = 'average',      // 一般 400-599
   POOR = 'poor',           // 较差 0-399
 }
 

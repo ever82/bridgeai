@@ -7,8 +7,6 @@ import type { MessageType, MessageStatus, Prisma } from '@prisma/client';
 
 import { prisma } from '../db/client';
 
-import { encryptionService } from './encryptionService';
-
 export interface CreateMessageInput {
   conversationId: string;
   senderId: string;
@@ -28,7 +26,7 @@ export interface MessageQueryFilters {
 
 export interface SyncMessagesInput {
   conversationId: string;
-  lastSequenceId?: bigint;
+  lastSequenceId?: number;
   limit?: number;
 }
 
@@ -124,7 +122,7 @@ export async function getMessagesByConversation(filters: MessageQueryFilters) {
   }
 
   if (cursor) {
-    where.sequenceId = { lt: BigInt(cursor) };
+    where.sequenceId = { lt: Number(cursor) };
   }
 
   const messages = await prisma.message.findMany({
@@ -309,31 +307,39 @@ export async function getOfflineMessages(userId: string) {
       userId,
       deliveredAt: null,
     },
-    include: {
-      message: {
-        include: {
-          sender: {
-            select: {
-              id: true,
-              name: true,
-              avatarUrl: true,
-            },
-          },
-        },
-      },
-    },
     orderBy: { createdAt: 'asc' },
   });
 
+  // Fetch associated messages
+  const messageIds = offlineMessages.map(om => om.messageId);
+  const messages = await prisma.message.findMany({
+    where: { id: { in: messageIds } },
+    include: {
+      sender: {
+        select: {
+          id: true,
+          name: true,
+          avatarUrl: true,
+        },
+      },
+    },
+  });
+
+  const messageMap = new Map(messages.map(m => [m.id, m]));
+
   // Decrypt message content
   return Promise.all(
-    offlineMessages.map(async (om) => ({
-      ...om,
-      message: {
-        ...om.message,
-        content: await encryptionService.decrypt(om.message.content),
-      },
-    }))
+    offlineMessages.map(async (om) => {
+      const msg = messageMap.get(om.messageId);
+      if (!msg) return null;
+      return {
+        ...om,
+        message: {
+          ...msg,
+          content: await encryptionService.decrypt(msg.content),
+        },
+      };
+    }).filter(Boolean)
   );
 }
 
@@ -359,7 +365,7 @@ export async function markOfflineMessagesDelivered(
  * Sync messages (incremental sync)
  */
 export async function syncMessages(input: SyncMessagesInput) {
-  const { conversationId, lastSequenceId = BigInt(0), limit = 100 } = input;
+  const { conversationId, lastSequenceId = 0, limit = 100 } = input;
 
   const messages = await prisma.message.findMany({
     where: {
@@ -395,7 +401,7 @@ export async function syncMessages(input: SyncMessagesInput) {
 
   // Get the latest sequence ID
   const latestSequenceId = messages.length > 0
-    ? messages[messages.length - 1].sequenceId
+    ? messages[messages.length - 1].sequenceId ?? lastSequenceId
     : lastSequenceId;
 
   // Check if there are more messages

@@ -391,7 +391,7 @@ export class PushNotificationService {
         subject: notification.title,
         content: notification.content,
         variables: {
-          ...notification.data,
+          ...(notification.data as Record<string, unknown> || {}),
           title: notification.title,
           content: notification.content,
         },

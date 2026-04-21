@@ -5,8 +5,19 @@
 
 import { Prisma } from '@prisma/client';
 
-import { getOrSet, CacheNamespaces } from '../cache';
-import { prisma } from '../db/client';
+import { cacheGetOrSet, cacheGet, cacheSet } from '../cache';
+import { prisma } from '../../db/client';
+
+const CacheNamespaces = { MATCH: 'match', CREDIT: 'credit', AGENT: 'agent' } as const;
+
+async function getOrSet<T>(ns: string, key: string, factory: () => Promise<T>, ttl: number): Promise<T> {
+  const cacheKey = `${ns}:${key}`;
+  const cached = await cacheGet<T>(cacheKey);
+  if (cached !== null) return cached;
+  const value = await factory();
+  await cacheSet(cacheKey, value, ttl);
+  return value;
+}
 
 // Cache TTLs (in seconds)
 const CACHE_TTL = {
@@ -111,7 +122,7 @@ export class OptimizedMatchingService {
     const total = await prisma.match.count({ where });
 
     // Use optimized query with select instead of deep includes
-    const matches = await prisma.match.findMany({
+    const matches = await (prisma.match.findMany({
       where,
       select: {
         id: true,
@@ -126,7 +137,8 @@ export class OptimizedMatchingService {
               select: {
                 user: {
                   select: {
-                    creditScore: {
+                    creditScores: {
+                      take: 1,
                       select: {
                         score: true,
                         level: true,
@@ -144,7 +156,8 @@ export class OptimizedMatchingService {
               select: {
                 user: {
                   select: {
-                    creditScore: {
+                    creditScores: {
+                      take: 1,
                       select: {
                         score: true,
                         level: true,
@@ -160,7 +173,7 @@ export class OptimizedMatchingService {
       take: limit * 3,
       skip: offset,
       orderBy: { score: 'desc' },
-    });
+    })) as any;
 
     // Apply credit score filtering in memory
     let filteredMatches = matches;
@@ -263,7 +276,8 @@ export class OptimizedMatchingService {
               select: {
                 user: {
                   select: {
-                    creditScore: {
+                    creditScores: {
+                      take: 1,
                       select: {
                         score: true,
                         level: true,
@@ -281,7 +295,8 @@ export class OptimizedMatchingService {
               select: {
                 user: {
                   select: {
-                    creditScore: {
+                    creditScores: {
+                      take: 1,
                       select: {
                         score: true,
                         level: true,
@@ -296,7 +311,7 @@ export class OptimizedMatchingService {
       },
       take: limit * 2,
       orderBy: { score: 'desc' },
-    });
+    }) as any;
 
     // Calculate weighted scores with higher credit weight
     const scoredMatches: MatchResult[] = matches.map(match => {
@@ -337,7 +352,7 @@ export class OptimizedMatchingService {
   }> {
     const cacheKey = `credit:${userId}`;
 
-    const creditScore = await getOrSet(
+    const creditScore = await getOrSet<{ score: number; level: string } | null>(
       CacheNamespaces.CREDIT,
       cacheKey,
       async () => {
@@ -373,9 +388,9 @@ export class OptimizedMatchingService {
   /**
    * Invalidate match cache
    */
-  async invalidateCache(): Promise<void> {
-    const { invalidateNamespace } = await import('../cache');
-    await invalidateNamespace(CacheNamespaces.MATCH);
+  async invalidateCache(userId: string): Promise<void> {
+    const { invalidateMatchResults } = await import('../cache');
+    await invalidateMatchResults(userId);
   }
 
   /**

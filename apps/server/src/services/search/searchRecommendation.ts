@@ -202,7 +202,7 @@ export class SearchRecommendationService {
           recommendations.push({
             type: 'similar',
             query: similarQuery,
-            score: 0.75 - (index * 0.05),
+            score: 0.75 - (Number(index) * 0.05),
             metadata: {
               icon: '💡',
               reason: `Similar to "${query}"`,
@@ -419,7 +419,7 @@ export class SearchRecommendationService {
         return {
           query,
           count: data.count,
-          trend: changePercent > 10 ? 'up' : changePercent < -10 ? 'down' : 'stable',
+          trend: (changePercent > 10 ? 'up' : changePercent < -10 ? 'down' : 'stable') as 'up' | 'down' | 'stable',
           changePercent: Math.abs(changePercent)
         };
       })

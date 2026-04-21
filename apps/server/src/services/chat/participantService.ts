@@ -60,8 +60,8 @@ export async function addParticipant(input: AddParticipantInput): Promise<RoomPa
   }
 
   // 检查是否已达到最大人数限制
-  if (room.type === ChatRoomType.GROUP && room.settings) {
-    const settings = room.settings as Record<string, any>;
+  if (room.type === ChatRoomType.GROUP && (room as any).settings) {
+    const settings = (room as any).settings as Record<string, any>;
     const maxParticipants = settings.maxParticipants || 500;
     const activeCount = room.participants.filter((p) => p.isActive).length;
 
@@ -109,7 +109,7 @@ export async function addParticipant(input: AddParticipantInput): Promise<RoomPa
       role,
       isActive: true,
       unreadCount: 0,
-    },
+    } as any,
   });
 
   // 更新房间的participantIds
@@ -163,8 +163,8 @@ export async function removeParticipant(
       where: { id: roomId },
     });
 
-    if (room?.settings) {
-      const settings = room.settings as Record<string, any>;
+    if ((room as any)?.settings) {
+      const settings = (room as any).settings as Record<string, any>;
       if (settings.allowLeave === false) {
         throw new Error('Cannot leave this room');
       }
@@ -182,7 +182,7 @@ export async function removeParticipant(
     data: {
       isActive: false,
       leftAt: new Date(),
-    },
+    } as any,
   });
 
   // 从房间的participantIds中移除

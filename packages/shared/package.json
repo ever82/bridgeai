@@ -10,10 +10,19 @@
       "types": "./src/index.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./types/visionShare": {
+      "types": "./src/types/visionShare.ts"
+    },
+    "./types/dating": {
+      "types": "./src/types/dating.ts"
+    },
+    "./types/disclosure": {
+      "types": "./src/types/disclosure.ts"
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build": "tsc --declaration --emitDeclarationOnly -p tsconfig.json && tsup src/index.ts --format cjs,esm",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",

@@ -23,14 +23,8 @@ import {
 } from '../../services/job';
 import { AppError } from '../../errors';
 
-// Extend Express Request to include user
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    employerProfileId?: string;
-    agentId?: string;
-  };
-}
+// Use any-typed request for convenience
+type AuthenticatedRequest = Request & { user?: any; token?: string };
 
 /**
  * Create a new job posting

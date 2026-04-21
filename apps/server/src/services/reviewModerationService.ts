@@ -337,7 +337,7 @@ export async function moderateReview(reviewId: string): Promise<IModerationResul
         metadata: {
           score: result.score,
           matchedWords: result.matchedWords,
-        } as import('@prisma/client').Prisma.InputJsonValue,
+        } as unknown as import('@prisma/client').Prisma.InputJsonValue,
       },
     });
   } else if (result.flagged) {
@@ -358,7 +358,7 @@ export async function moderateReview(reviewId: string): Promise<IModerationResul
         metadata: {
           score: result.score,
           matchedWords: result.matchedWords,
-        } as import('@prisma/client').Prisma.InputJsonValue,
+        } as unknown as import('@prisma/client').Prisma.InputJsonValue,
       },
     });
   } else {

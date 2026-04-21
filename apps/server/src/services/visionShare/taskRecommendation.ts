@@ -29,8 +29,8 @@ const userTaskHistory: Map<string, { taskId: string; accepted: boolean }[]> = ne
 export async function getTaskRecommendations(
   request: TaskRecommendationRequest
 ): Promise<TaskRecommendation[]> {
+  const { userId, userLocation, preferences = {}, limit = 10 } = request;
   try {
-    const { userId, userLocation, preferences = {}, limit = 10 } = request;
 
     // Get nearby tasks within 10km
     const nearbyResults = await getNearbyTasks({

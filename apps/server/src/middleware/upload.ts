@@ -278,7 +278,8 @@ export interface UploadOptions {
 /**
  * Create single file upload middleware
  */
-export function uploadSingle(options: UploadOptions = {}) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function uploadSingle(options: UploadOptions = {}): any {
   const { categories, mimeTypes, maxSize, storage = 'memory', fieldName = 'file' } = options;
 
   const limits: multer.Options['limits'] = {

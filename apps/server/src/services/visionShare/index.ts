@@ -3,5 +3,5 @@
  */
 
 export * from './taskFilter';
-export * from './taskRecommendation';
+export { getUserAcceptedTasks } from './taskRecommendation';
 export * from './acceptTask';

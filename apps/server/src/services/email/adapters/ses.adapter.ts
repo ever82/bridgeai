@@ -18,9 +18,19 @@ export class SesEmailAdapter implements EmailAdapter {
   }
 
   private async getClient() {
-    const { SESClient, SendEmailCommand } = await import('@aws-sdk/client-ses').catch(() => {
-      return { SESClient: null, SendEmailCommand: null };
-    });
+    const module = await import('@aws-sdk/client-ses').catch(() => null);
+    if (!module || !module.default) {
+      // Try named exports if default is not available
+      const SESClient = (module as any)?.SESClient;
+      const SendEmailCommand = (module as any)?.SendEmailCommand;
+      if (!SESClient || !SendEmailCommand) {
+        return null;
+      }
+      return { SESClient, SendEmailCommand };
+    }
+    // Use default export's SESClient and SendEmailCommand
+    const SESClient = module.default.SESClient;
+    const SendEmailCommand = module.default.SendEmailCommand;
     if (!SESClient || !SendEmailCommand) {
       return null;
     }
@@ -38,7 +48,7 @@ export class SesEmailAdapter implements EmailAdapter {
         };
       }
 
-      const { SESClient, SendEmailCommand } = clientModule;
+      const { SESClient, SendEmailCommand } = clientModule as any;
       const client = new SESClient({
         region: this.config.region,
         credentials: {

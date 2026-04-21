@@ -156,7 +156,7 @@ export class OpenAIAdapter extends BaseLLMAdapter {
       stream: false
     });
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     return {
       id: data.id,
@@ -170,11 +170,11 @@ export class OpenAIAdapter extends BaseLLMAdapter {
         finishReason: c.finish_reason
       })),
       usage: {
-        promptTokens: data.usage.prompt_tokens,
-        completionTokens: data.usage.completion_tokens,
-        totalTokens: data.usage.total_tokens
+        promptTokens: (data as any).usage.prompt_tokens,
+        completionTokens: (data as any).usage.completion_tokens,
+        totalTokens: (data as any).usage.total_tokens
       },
-      createdAt: new Date(data.created * 1000)
+      createdAt: new Date((data as any).created * 1000)
     };
   }
 
@@ -249,7 +249,7 @@ export class OpenAIAdapter extends BaseLLMAdapter {
       input: inputs
     });
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     return {
       model: data.model,
@@ -258,8 +258,8 @@ export class OpenAIAdapter extends BaseLLMAdapter {
         embedding: item.embedding
       })),
       usage: {
-        promptTokens: data.usage.prompt_tokens,
-        totalTokens: data.usage.total_tokens
+        promptTokens: (data as any).usage.prompt_tokens,
+        totalTokens: (data as any).usage.total_tokens
       }
     };
   }

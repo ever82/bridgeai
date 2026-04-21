@@ -30,7 +30,7 @@ export async function checkQueueHealth(): Promise<{
 
   for (const [name, queue] of manager.getAllQueues()) {
     try {
-      const client = await queue.client;
+      const client = await (queue as any).client;
       await client.ping();
       queueHealth[name] = true;
     } catch {

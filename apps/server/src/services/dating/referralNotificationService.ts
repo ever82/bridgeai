@@ -65,72 +65,84 @@ export interface ReferralNotification {
 const notificationTemplates: Record<NotificationType, {
   title: string;
   body: string;
+  type: NotificationType;
   priority: 'high' | 'normal' | 'low';
   channels: NotificationChannel[];
 }> = {
   [NotificationType.OTHER_USER_DECIDED]: {
     title: '新动态',
     body: '对方已对引荐做出了回应，快去看看吧！',
+    type: NotificationType.OTHER_USER_DECIDED,
     priority: 'high',
     channels: [NotificationChannel.PUSH, NotificationChannel.IN_APP],
   },
   [NotificationType.MUTUAL_ACCEPT]: {
     title: '🎉 匹配成功！',
     body: '恭喜！你们双方已同意交换联系方式，真人聊天已开启。',
+    type: NotificationType.MUTUAL_ACCEPT,
     priority: 'high',
     channels: [NotificationChannel.PUSH, NotificationChannel.IN_APP, NotificationChannel.SMS],
   },
   [NotificationType.SINGLE_ACCEPT]: {
     title: '引荐结果',
     body: '这次引荐的结果出来了。虽然未能匹配成功，但别灰心，更好的缘分在前方等你。',
+    type: NotificationType.SINGLE_ACCEPT,
     priority: 'normal',
     channels: [NotificationChannel.PUSH, NotificationChannel.IN_APP],
   },
   [NotificationType.MUTUAL_REJECT]: {
     title: '引荐结果',
     body: '这次引荐未能成功，但这只是缘分未到。我们会继续为你寻找更合适的对象。',
+    type: NotificationType.MUTUAL_REJECT,
     priority: 'normal',
     channels: [NotificationChannel.PUSH, NotificationChannel.IN_APP],
   },
   [NotificationType.SINGLE_REJECT]: {
     title: '引荐结果',
     body: '这次引荐未能成功。有时候缘分需要一点时间，我们会继续为你寻找更合适的人。',
+    type: NotificationType.SINGLE_REJECT,
     priority: 'normal',
     channels: [NotificationChannel.PUSH, NotificationChannel.IN_APP],
   },
   [NotificationType.TIMEOUT_WARNING]: {
     title: '决策提醒',
     body: '你对引荐的决策即将过期，请尽快做出选择。',
+    type: NotificationType.TIMEOUT_WARNING,
     priority: 'high',
     channels: [NotificationChannel.PUSH, NotificationChannel.IN_APP],
   },
   [NotificationType.TIMEOUT_EXPIRED]: {
     title: '引荐过期',
     body: '引荐决策时间已过期。如果仍有意向，可以重新发起引荐请求。',
+    type: NotificationType.TIMEOUT_EXPIRED,
     priority: 'normal',
     channels: [NotificationChannel.PUSH, NotificationChannel.IN_APP],
   },
   [NotificationType.NEW_HUMAN_MESSAGE]: {
     title: '新消息',
     body: '你收到了一条新消息',
+    type: NotificationType.NEW_HUMAN_MESSAGE,
     priority: 'normal',
     channels: [NotificationChannel.PUSH, NotificationChannel.IN_APP],
   },
   [NotificationType.FIRST_MESSAGE]: {
     title: '开启对话',
     body: '你们已经成功匹配，可以开始聊天了！建议从共同的兴趣爱好聊起。',
+    type: NotificationType.FIRST_MESSAGE,
     priority: 'normal',
     channels: [NotificationChannel.IN_APP],
   },
   [NotificationType.REFERRAL_CANCELLED]: {
     title: '引荐取消',
     body: '对方取消了这次引荐。',
+    type: NotificationType.REFERRAL_CANCELLED,
     priority: 'normal',
     channels: [NotificationChannel.PUSH, NotificationChannel.IN_APP],
   },
   [NotificationType.SYSTEM_MAINTENANCE]: {
     title: '系统维护',
     body: '系统即将进行维护，可能会影响引荐功能的使用。',
+    type: NotificationType.SYSTEM_MAINTENANCE,
     priority: 'low',
     channels: [NotificationChannel.IN_APP],
   },

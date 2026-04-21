@@ -229,11 +229,11 @@ export async function processReferralDecision(
   // 计算结果
   const result = calculateReferralResult(updatedConsent);
   const finalConsent = { ...updatedConsent, result };
-  consentStore.set(consent.id, finalConsent);
+  consentStore.set(consent.id, finalConsent as MutualConsent);
 
-  // 如果双方都已完成决策，处理最终结果
-  if (isBothDecided(finalConsent)) {
-    return await finalizeReferral(referral, finalConsent);
+// 如果双方都已完成决策，处理最终结果
+  if (isBothDecided(finalConsent as MutualConsent)) {
+    return await finalizeReferral(referral, finalConsent as MutualConsent);
   }
 
   // 通知对方已决策（不透露具体选择）
@@ -290,7 +290,7 @@ async function finalizeReferral(
   referral: ReferralRecord,
   consent: MutualConsent
 ): Promise<ReferralDecisionResponse> {
-  const result = consent.result;
+  const result = consent.result as Exclude<typeof consent.result, 'pending'> | 'mutual_accept';
 
   switch (result) {
     case 'mutual_accept':

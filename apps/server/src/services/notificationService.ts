@@ -487,6 +487,39 @@ export class NotificationService {
   }
 
   /**
+   * Send notification to a user
+   */
+  async sendToUser(
+    userId: string,
+    data: {
+      type: string;
+      title: string;
+      content: string;
+      data?: Record<string, unknown>;
+      imageUrl?: string;
+      actionUrl?: string;
+      category?: string;
+      priority?: string;
+      channels?: string[];
+    }
+  ): Promise<Notification> {
+    return prisma.notification.create({
+      data: {
+        userId,
+        type: data.type as any,
+        title: data.title,
+        content: data.content,
+        data: data.data as any,
+        imageUrl: data.imageUrl,
+        actionUrl: data.actionUrl,
+        category: data.category,
+        priority: (data.priority as any) || 'NORMAL',
+        channel: (data.channels?.[0] as any) || 'IN_APP',
+      },
+    });
+  }
+
+  /**
    * 获取最新通知
    */
   async getLatestNotifications(userId: string, limit: number = 5): Promise<Notification[]> {
@@ -568,6 +601,9 @@ export class NotificationService {
 
 // 导出单例
 export const notificationService = new NotificationService();
+
+// Re-export Prisma enums for use by other modules
+export { NotificationType, NotificationChannel } from '@prisma/client';
 
 // ============================================
 // ISSUE-CR002c: Rating & Review Notification Functions
@@ -709,7 +745,7 @@ export async function sendReviewReplyNotification(
   if (!prefs.reviewReply) return;
 
   await notificationService.sendToUser(userId, {
-    type: NotificationType.REVIEW_REPLY,
+    type: (NotificationType as any).REVIEW_REPLY ?? (NotificationType as any).REVIEW,
     title: '评价收到回复',
     content: `${rateeName} 回复了您的评价`,
     data: {
@@ -742,7 +778,7 @@ export async function sendBadReviewWarning(
   if (!prefs.badReviewWarning) return;
 
   await notificationService.sendToUser(userId, {
-    type: NotificationType.REVIEW_BAD_RATING,
+    type: (NotificationType as any).REVIEW_BAD_RATING ?? (NotificationType as any).REVIEW,
     title: '差评预警',
     content: `您收到了 ${rating} 星评价，信用分 ${creditDelta} 分`,
     data: {
@@ -780,7 +816,7 @@ export async function sendCreditScoreChangeNotification(
   const deltaText = delta > 0 ? `+${delta}` : `${delta}`;
 
   await notificationService.sendToUser(userId, {
-    type: NotificationType.CREDIT_SCORE_CHANGE,
+    type: (NotificationType as any).CREDIT_SCORE_CHANGE ?? (NotificationType as any).SYSTEM,
     title: delta > 0 ? '信用分提升' : '信用分下降',
     content: `您的信用分 ${deltaText}，当前 ${newScore} 分。原因：${reason}`,
     data: {

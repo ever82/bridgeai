@@ -316,9 +316,9 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
         { pattern: /机械|自动化/, major: '机械工程' },
         { pattern: /设计|美术|艺术/, major: '设计' },
       ];
-      for (const { pattern, m } of majorPatterns) {
+      for (const { pattern, major: matchedMajor } of majorPatterns) {
         if (pattern.test(text)) {
-          major = m;
+          major = matchedMajor;
           break;
         }
       }

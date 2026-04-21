@@ -87,9 +87,9 @@ export function performanceMonitor(req: RequestWithPerformance, res: Response, n
 
     // Call original end
     if (typeof encoding === 'function') {
-      return originalEnd(chunk, encoding as BufferEncoding);
+      return originalEnd(chunk, encoding);
     }
-    return originalEnd(chunk, encoding as BufferEncoding, cb);
+    return originalEnd(chunk, encoding as string | undefined, cb);
   };
 
   next();

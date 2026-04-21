@@ -47,7 +47,7 @@ export async function updateAgentLocation(
   try {
     const agent = await prisma.agent.findUnique({
       where: { id: agentId },
-      include: { profile: true },
+      include: { profiles: true },
     });
 
     if (!agent) {
@@ -62,12 +62,12 @@ export async function updateAgentLocation(
 
     // Update agent's profile with location data
     await prisma.agentProfile.update({
-      where: { id: agent.profile!.id },
+      where: { id: agent.profiles[0]!.id },
       data: {
         l1Data: {
-          ...(agent.profile?.l1Data as object || {}),
+          ...(agent.profiles[0]?.l1Data as object || {}),
           location: locationData,
-        },
+        } as any,
       },
     });
 
@@ -99,14 +99,14 @@ export async function getAgentLocation(
   try {
     const agent = await prisma.agent.findUnique({
       where: { id: agentId },
-      include: { profile: true },
+      include: { profiles: true },
     });
 
-    if (!agent?.profile?.l1Data) {
+    if (!agent?.profiles[0]?.l1Data) {
       return null;
     }
 
-    const locationData = (agent.profile.l1Data as any).location as Location;
+    const locationData = (agent.profiles[0].l1Data as any).location as Location;
 
     return {
       agentId: agent.id,
@@ -135,7 +135,7 @@ export async function searchAgentsByLocation(
 
     // Province filter
     if (filter.province) {
-      where.profile = {
+      where.profiles = {
         l1Data: {
           path: ['location', 'province'],
           equals: filter.province,
@@ -145,8 +145,8 @@ export async function searchAgentsByLocation(
 
     // City filter
     if (filter.city) {
-      where.profile = {
-        ...where.profile,
+      where.profiles = {
+        ...where.profiles,
         l1Data: {
           path: ['location', 'city'],
           equals: filter.city,
@@ -156,8 +156,8 @@ export async function searchAgentsByLocation(
 
     // District filter
     if (filter.district) {
-      where.profile = {
-        ...where.profile,
+      where.profiles = {
+        ...where.profiles,
         l1Data: {
           path: ['location', 'district'],
           equals: filter.district,
@@ -170,13 +170,13 @@ export async function searchAgentsByLocation(
         where,
         skip: (page - 1) * limit,
         take: limit,
-        include: { profile: { select: { l1Data: true } } },
+        include: { profiles: { select: { l1Data: true } } },
       }),
       prisma.agent.count({ where }),
     ]);
 
     let results: AgentWithLocation[] = agents.map(agent => {
-      const locationData = (agent.profile?.l1Data as any)?.location as Location;
+      const locationData = (agent.profiles[0]?.l1Data as any)?.location as Location;
       return {
         id: agent.id,
         name: agent.name,
@@ -252,7 +252,7 @@ export async function findAgentsNearLocation(
 
     const agents = await prisma.agent.findMany({
       where,
-      include: { profile: { select: { l1Data: true } } },
+      include: { profiles: { select: { l1Data: true } } },
     });
 
     const results: AgentWithLocation[] = [];
@@ -268,7 +268,7 @@ export async function findAgentsNearLocation(
       const { distanceKm } = calculateDistance(center, coords);
 
       if (distanceKm <= radiusKm) {
-        const locationData = (agent.profile?.l1Data as any)?.location as Location;
+        const locationData = (agent.profiles[0]?.l1Data as any)?.location as Location;
         results.push({
           id: agent.id,
           name: agent.name,
@@ -299,7 +299,7 @@ export async function getAgentsInGeoFence(
         latitude: { not: null },
         longitude: { not: null },
       },
-      include: { profile: { select: { l1Data: true } } },
+      include: { profiles: { select: { l1Data: true } } },
     });
 
     const results: AgentWithLocation[] = [];
@@ -315,7 +315,7 @@ export async function getAgentsInGeoFence(
       const result = checkGeoFence(coords, fenceId);
 
       if (result.inside) {
-        const locationData = (agent.profile?.l1Data as any)?.location as Location;
+        const locationData = (agent.profiles[0]?.l1Data as any)?.location as Location;
         results.push({
           id: agent.id,
           name: agent.name,

@@ -14,6 +14,9 @@ import {
   CREDIT_LEVEL_THRESHOLDS,
 } from '@bridgeai/shared';
 
+// Re-export credit types for convenience
+export { type CreditLevel, CREDIT_LEVEL_THRESHOLDS } from '@bridgeai/shared';
+
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
 
@@ -125,8 +128,8 @@ export function buildCreditFilterCondition(
   if (options.includeNoCredit) {
     conditions.push({
       user: {
-        creditScore: {
-          is: null,
+        creditScores: {
+          none: {},
         },
       },
     });
@@ -176,19 +179,14 @@ export async function filterAgentsByCredit(
         take: pagination?.limit || 20,
         include: {
           user: {
-            select: {
-              creditScore: {
+            include: {
+              creditScores: {
                 select: {
                   score: true,
                 },
+                take: 1,
+                orderBy: { score: 'desc' as const },
               },
-            },
-          },
-        },
-        orderBy: {
-          user: {
-            creditScore: {
-              score: 'desc',
             },
           },
         },
@@ -198,7 +196,7 @@ export async function filterAgentsByCredit(
 
     return {
       items: agents.map((agent: any) => {
-        const score = agent.user?.creditScore?.score ?? null;
+        const score = agent.user?.creditScores?.[0]?.score ?? null;
         return {
           id: agent.id,
           name: agent.name,
@@ -234,7 +232,9 @@ export async function checkCreditThreshold(
       include: {
         user: {
           select: {
-            creditScore: {
+            creditScores: {
+              take: 1,
+              orderBy: { createdAt: 'desc' as const },
               select: {
                 score: true,
               },
@@ -248,7 +248,7 @@ export async function checkCreditThreshold(
       throw new Error('Agent not found');
     }
 
-    const score = agent.user?.creditScore?.score ?? null;
+    const score = ((agent.user as any)?.[0]?.score ?? null);
     const level = getCreditLevel(score);
     const meetsThreshold = score !== null && score >= minCreditScore;
 
@@ -303,8 +303,8 @@ export async function getCreditStatistics(): Promise<{
     // Count users without credit score
     const noCreditCount = await prisma.user.count({
       where: {
-        creditScore: {
-          is: null,
+        creditScores: {
+          none: {},
         },
       },
     });

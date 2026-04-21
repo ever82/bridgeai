@@ -355,6 +355,21 @@ export class LLMMetricsService extends EventEmitter {
     this.emit('reset');
   }
 
+  /**
+   * Record LLM call (legacy method for backward compatibility)
+   */
+  recordLLMCall(name: string, provider: string, duration: number, success: boolean): void {
+    this.recordRequest({
+      requestId: name,
+      provider: provider as LLMProvider,
+      model: name,
+      latencyMs: duration,
+      success,
+      tokenUsage: { input: 0, output: 0, total: 0 },
+      costUsd: 0,
+    });
+  }
+
   private incrementCounter(name: string, provider: LLMProvider, model: string): void {
     const key = `${provider}:${model}:${name}`;
     const current = this.requestCounter.get(key) || 0;

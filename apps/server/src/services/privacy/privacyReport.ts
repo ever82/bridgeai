@@ -436,7 +436,7 @@ export function createSummaryReport(report: PrivacyReport): Partial<PrivacyRepor
       hasComparison: report.comparison.hasComparison,
       regionsChanged: report.comparison.regionsChanged,
       visualDiffScore: report.comparison.visualDiffScore,
-    },
+    } as BeforeAfterComparison,
   };
 }
 

@@ -4,7 +4,7 @@
  * 提供自然语言理解、关键信息提取、智能标签生成、质量评分和优化建议
  */
 
-import type { DemandRefinementResult } from '@packages/shared/types/visionShare';
+import type { DemandRefinementResult } from '@bridgeai/shared/types/visionShare';
 
 import { logger } from '../../utils/logger';
 

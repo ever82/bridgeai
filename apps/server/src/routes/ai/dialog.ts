@@ -7,7 +7,8 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 
 import { authenticate as authenticateToken } from '../../middleware/auth';
-import { validate } from '../../middleware/validation';
+import { validate as _validate } from '../../middleware/validation';
+const validate = _validate as any;
 import { logger } from '../../utils/logger';
 import {
   agentDialogService,

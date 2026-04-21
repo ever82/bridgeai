@@ -282,7 +282,7 @@ export class DemandToL2Mapper {
    * Get value from entities
    */
   private getValueFromEntities(field: L2Schema['fields'][0], entities: ExtractedEntity[]): any {
-    const entityTypeMap: Record<string, EntityType> = {
+    const entityTypeMap: Record<string, 'location' | 'time' | 'person' | 'budget' | 'requirement' | 'preference'> = {
       location: 'location',
       city: 'location',
       district: 'location',

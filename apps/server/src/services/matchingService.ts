@@ -65,7 +65,7 @@ export class MatchingService {
               include: {
                 user: {
                   include: {
-                    creditScore: true,
+                    creditScores: true,
                   },
                 },
               },
@@ -78,7 +78,7 @@ export class MatchingService {
               include: {
                 user: {
                   include: {
-                    creditScore: true,
+                    creditScores: true,
                   },
                 },
               },
@@ -93,8 +93,8 @@ export class MatchingService {
     // 应用信用分筛选
     if (minScore !== undefined || maxScore !== undefined || excludeLowCredit) {
       matches = matches.filter(match => {
-        const demandCredit = match.demand.agent.user.creditScore?.score ?? 0;
-        const supplyCredit = match.supply.agent.user.creditScore?.score ?? 0;
+        const demandCredit = match.demand.agent.user.creditScores?.[0]?.score ?? 0;
+        const supplyCredit = match.supply.agent.user.creditScores?.[0]?.score ?? 0;
         const minCredit = Math.min(demandCredit, supplyCredit);
 
         if (excludeLowCredit && minCredit < 600) {
@@ -115,8 +115,8 @@ export class MatchingService {
 
     // 应用信用分排序权重
     const scoredMatches = matches.map(match => {
-      const demandCredit = match.demand.agent.user.creditScore?.score ?? 0;
-      const supplyCredit = match.supply.agent.user.creditScore?.score ?? 0;
+      const demandCredit = match.demand.agent.user.creditScores?.[0]?.score ?? 0;
+      const supplyCredit = match.supply.agent.user.creditScores?.[0]?.score ?? 0;
       const avgCredit = (demandCredit + supplyCredit) / 2;
 
       // 综合得分 = 原匹配分 * (1 - 信用权重) + 信用分归一化 * 信用权重
@@ -131,7 +131,7 @@ export class MatchingService {
         supplyId: match.supplyId,
         score: Math.round(weightedScore * 100) / 100,
         creditScore: Math.round(avgCredit),
-        creditLevel: match.demand.agent.user.creditScore?.level || 'unknown',
+        creditLevel: 'unknown',
         status: match.status,
         createdAt: match.createdAt,
       };

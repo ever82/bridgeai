@@ -1,8 +1,9 @@
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
+import { AgentType, AgentStatus } from '@prisma/client';
 
 // Re-export Prisma enums for backward compatibility
-export { AgentType, AgentStatus } from '@prisma/client';
+export { AgentType, AgentStatus };
 
 // Agent interface
 export interface Agent {

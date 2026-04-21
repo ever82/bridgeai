@@ -106,7 +106,7 @@ export async function searchAgentsByLocation(
       skip: (page - 1) * limit,
       take: limit,
       include: {
-        profile: {
+        profiles: {
           select: {
             l1Data: true,
           },
@@ -118,7 +118,7 @@ export async function searchAgentsByLocation(
     let results = agents.map(agent => ({
       id: agent.id,
       name: agent.name,
-      location: (agent.profile?.l1Data as any)?.location as Location,
+      location: (agent.profiles[0]?.l1Data as any)?.location as Location,
     }));
 
     // Filter by radius if specified
@@ -332,22 +332,22 @@ export async function getDistanceBetweenAgents(
     const [agent1, agent2] = await Promise.all([
       prisma.agent.findUnique({
         where: { id: agentId1 },
-        include: { profile: { select: { l1Data: true } } },
+        include: { profiles: { select: { l1Data: true } } },
       }),
       prisma.agent.findUnique({
         where: { id: agentId2 },
-        include: { profile: { select: { l1Data: true } } },
+        include: { profiles: { select: { l1Data: true } } },
       }),
     ]);
 
-    if (!agent1?.profile?.l1Data || !agent2?.profile?.l1Data) {
+    if (!agent1?.profiles[0]?.l1Data || !agent2?.profiles[0]?.l1Data) {
       return null;
     }
 
-    const location1 = (agent1.profile.l1Data as any).location as Location & {
+    const location1 = (agent1.profiles[0].l1Data as any).location as Location & {
       coordinates?: GeoCoordinates;
     };
-    const location2 = (agent2.profile.l1Data as any).location as Location & {
+    const location2 = (agent2.profiles[0].l1Data as any).location as Location & {
       coordinates?: GeoCoordinates;
     };
 
@@ -398,7 +398,7 @@ export async function findAgentsWithinRadius(
     const agents = await prisma.agent.findMany({
       where,
       include: {
-        profile: {
+        profiles: {
           select: {
             l1Data: true,
           },
@@ -412,7 +412,7 @@ export async function findAgentsWithinRadius(
     }> = [];
 
     for (const agent of agents) {
-      const location = (agent.profile?.l1Data as any)?.location as Location & {
+      const location = (agent.profiles[0]?.l1Data as any)?.location as Location & {
         coordinates?: GeoCoordinates;
       };
 

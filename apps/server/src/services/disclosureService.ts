@@ -238,12 +238,12 @@ export class DisclosureService {
           { userId, matchedUserId: otherUserId },
           { userId: otherUserId, matchedUserId: userId },
         ],
-        status: 'ACTIVE',
-      },
+        status: 'ACTIVE' as any,
+      } as any,
     });
 
     // Check for chats
-    const chat = await prisma.chat.findFirst({
+    const chat = await (prisma as any).chat?.findFirst({
       where: {
         OR: [
           { senderId: userId, receiverId: otherUserId },
@@ -253,7 +253,7 @@ export class DisclosureService {
     });
 
     // Check for referrals
-    const referral = await prisma.referral.findFirst({
+    const referral = await (prisma as any).referral?.findFirst({
       where: {
         OR: [
           { referrerId: userId, referredId: otherUserId },

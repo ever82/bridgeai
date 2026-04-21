@@ -1,9 +1,9 @@
 import type {
   DatingProfile,
   PrivacySettings,
-  VisibilityLevel,
   FieldVisibility,
 } from '@bridgeai/shared';
+import { VisibilityLevel } from '@bridgeai/shared';
 
 /**
  * Field definitions with sensitivity levels
@@ -13,22 +13,22 @@ export const FIELD_DEFINITIONS: Record<string, {
   sensitivity: 'high' | 'medium' | 'low';
   defaultVisibility: VisibilityLevel;
 }> = {
-  ageRange: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: 'PUBLIC' },
-  heightRange: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: 'PUBLIC' },
-  education: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: 'PUBLIC' },
-  photos: { category: 'photos', sensitivity: 'medium', defaultVisibility: 'PUBLIC' },
-  income: { category: 'income', sensitivity: 'high', defaultVisibility: 'MATCHED_ONLY' },
-  location: { category: 'location', sensitivity: 'medium', defaultVisibility: 'MATCHED_ONLY' },
-  phone: { category: 'contactInfo', sensitivity: 'high', defaultVisibility: 'PRIVATE' },
-  wechat: { category: 'contactInfo', sensitivity: 'high', defaultVisibility: 'PRIVATE' },
-  address: { category: 'location', sensitivity: 'high', defaultVisibility: 'PRIVATE' },
-  occupation: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: 'PUBLIC' },
-  company: { category: 'basicInfo', sensitivity: 'medium', defaultVisibility: 'MATCHED_ONLY' },
-  personality: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: 'PUBLIC' },
-  interests: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: 'PUBLIC' },
-  lifestyle: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: 'PUBLIC' },
-  expectations: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: 'PUBLIC' },
-  description: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: 'PUBLIC' },
+  ageRange: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
+  heightRange: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
+  education: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
+  photos: { category: 'photos', sensitivity: 'medium', defaultVisibility: VisibilityLevel.PUBLIC },
+  income: { category: 'income', sensitivity: 'high', defaultVisibility: VisibilityLevel.MATCHED_ONLY },
+  location: { category: 'location', sensitivity: 'medium', defaultVisibility: VisibilityLevel.MATCHED_ONLY },
+  phone: { category: 'contactInfo', sensitivity: 'high', defaultVisibility: VisibilityLevel.PRIVATE },
+  wechat: { category: 'contactInfo', sensitivity: 'high', defaultVisibility: VisibilityLevel.PRIVATE },
+  address: { category: 'location', sensitivity: 'high', defaultVisibility: VisibilityLevel.PRIVATE },
+  occupation: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
+  company: { category: 'basicInfo', sensitivity: 'medium', defaultVisibility: VisibilityLevel.MATCHED_ONLY },
+  personality: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
+  interests: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
+  lifestyle: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
+  expectations: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
+  description: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
 };
 
 /**
@@ -64,11 +64,11 @@ export function getVisibleFieldsAtStage(
   visibleFields.push(...alwaysVisible);
 
   // Check profile visibility setting
-  if (visibility.profileVisibility === 'PRIVATE') {
+  if (visibility.profileVisibility === VisibilityLevel.PRIVATE) {
     return visibleFields;
   }
 
-  if (visibility.profileVisibility === 'MATCHED_ONLY' && !isMatched) {
+  if (visibility.profileVisibility === VisibilityLevel.MATCHED_ONLY && !isMatched) {
     return visibleFields;
   }
 
@@ -99,14 +99,14 @@ function shouldFieldBeVisible(
   isMatched: boolean
 ): boolean {
   switch (visibility) {
-    case 'PUBLIC':
+    case VisibilityLevel.PUBLIC:
       return true;
-    case 'MATCHED_ONLY':
+    case VisibilityLevel.MATCHED_ONLY:
       return isMatched;
-    case 'VERIFIED_ONLY':
+    case VisibilityLevel.VERIFIED_ONLY:
       // Would need to check if viewer is verified
       return isMatched;
-    case 'PRIVATE':
+    case VisibilityLevel.PRIVATE:
       return false;
     default:
       return false;
@@ -211,23 +211,23 @@ export function canAccessField(
   // Check profile visibility
   const visibility = profile.privacySettings;
 
-  if (visibility.profileVisibility === 'PRIVATE') {
+  if (visibility.profileVisibility === VisibilityLevel.PRIVATE) {
     return false;
   }
 
-  if (visibility.profileVisibility === 'MATCHED_ONLY' && !isMatched) {
+  if (visibility.profileVisibility === VisibilityLevel.MATCHED_ONLY && !isMatched) {
     return false;
   }
 
-  if (visibility.profileVisibility === 'VERIFIED_ONLY' && !isVerified) {
+  if (visibility.profileVisibility === VisibilityLevel.VERIFIED_ONLY && !isVerified) {
     return false;
   }
 
   // Check field-level visibility
   const fieldVisibility = visibility.fieldVisibility || {};
-  const fieldLevel = (fieldVisibility as any)[field] || 'PUBLIC';
+  const fieldLevel = (fieldVisibility as any)[field] || VisibilityLevel.PUBLIC;
 
-  return shouldFieldBeVisible(fieldLevel, relationshipStage, isMatched);
+  return shouldFieldBeVisible(fieldLevel as VisibilityLevel, relationshipStage, isMatched);
 }
 
 /**
@@ -241,7 +241,7 @@ export function validatePrivacySettings(settings: Partial<PrivacySettings>): {
 
   // Validate profile visibility
   if (settings.profileVisibility) {
-    const validLevels = ['PUBLIC', 'MATCHED_ONLY', 'VERIFIED_ONLY', 'PRIVATE'];
+    const validLevels = [VisibilityLevel.PUBLIC, VisibilityLevel.MATCHED_ONLY, VisibilityLevel.VERIFIED_ONLY, VisibilityLevel.PRIVATE];
     if (!validLevels.includes(settings.profileVisibility)) {
       errors.push('Invalid profile visibility level');
     }
@@ -249,9 +249,9 @@ export function validatePrivacySettings(settings: Partial<PrivacySettings>): {
 
   // Validate field visibility
   if (settings.fieldVisibility) {
-    const validLevels = ['PUBLIC', 'MATCHED_ONLY', 'VERIFIED_ONLY', 'PRIVATE'];
+    const validLevels = [VisibilityLevel.PUBLIC, VisibilityLevel.MATCHED_ONLY, VisibilityLevel.VERIFIED_ONLY, VisibilityLevel.PRIVATE];
     Object.entries(settings.fieldVisibility).forEach(([field, level]) => {
-      if (!validLevels.includes(level as string)) {
+      if (!validLevels.includes(level as VisibilityLevel)) {
         errors.push(`Invalid visibility level for field ${field}`);
       }
     });
@@ -278,19 +278,19 @@ export function validatePrivacySettings(settings: Partial<PrivacySettings>): {
  */
 export function getDefaultPrivacySettings(): PrivacySettings {
   return {
-    profileVisibility: 'PUBLIC',
+    profileVisibility: VisibilityLevel.PUBLIC,
     fieldVisibility: {
-      basicInfo: 'PUBLIC',
-      photos: 'PUBLIC',
-      income: 'MATCHED_ONLY',
-      location: 'MATCHED_ONLY',
-      contactInfo: 'PRIVATE',
-      personalDetails: 'PUBLIC',
+      basicInfo: VisibilityLevel.PUBLIC,
+      photos: VisibilityLevel.PUBLIC,
+      income: VisibilityLevel.MATCHED_ONLY,
+      location: VisibilityLevel.MATCHED_ONLY,
+      contactInfo: VisibilityLevel.PRIVATE,
+      personalDetails: VisibilityLevel.PUBLIC,
     },
     allowScreenshot: false,
     showOnlineStatus: true,
     hideFromSearch: false,
-  };
+  } as unknown as PrivacySettings;
 }
 
 /**
@@ -299,20 +299,20 @@ export function getDefaultPrivacySettings(): PrivacySettings {
 export function getRecommendedPrivacySettings(
   level: 'low' | 'medium' | 'high'
 ): PrivacySettings {
-  const base: PrivacySettings = {
-    profileVisibility: 'PUBLIC',
+  const base = {
+    profileVisibility: VisibilityLevel.PUBLIC,
     fieldVisibility: {
-      basicInfo: 'PUBLIC',
-      photos: 'PUBLIC',
-      income: 'MATCHED_ONLY',
-      location: 'MATCHED_ONLY',
-      contactInfo: 'PRIVATE',
-      personalDetails: 'PUBLIC',
+      basicInfo: VisibilityLevel.PUBLIC,
+      photos: VisibilityLevel.PUBLIC,
+      income: VisibilityLevel.MATCHED_ONLY,
+      location: VisibilityLevel.MATCHED_ONLY,
+      contactInfo: VisibilityLevel.PRIVATE,
+      personalDetails: VisibilityLevel.PUBLIC,
     },
     allowScreenshot: false,
     showOnlineStatus: true,
     hideFromSearch: false,
-  };
+  } as unknown as PrivacySettings;
 
   switch (level) {
     case 'low':
@@ -321,28 +321,28 @@ export function getRecommendedPrivacySettings(
     case 'medium':
       return {
         ...base,
-        profileVisibility: 'MATCHED_ONLY',
+        profileVisibility: VisibilityLevel.MATCHED_ONLY,
         fieldVisibility: {
           ...base.fieldVisibility,
-          photos: 'MATCHED_ONLY',
-          personalDetails: 'MATCHED_ONLY',
+          photos: VisibilityLevel.MATCHED_ONLY,
+          personalDetails: VisibilityLevel.MATCHED_ONLY,
         },
-      };
+      } as unknown as PrivacySettings;
 
     case 'high':
       return {
         ...base,
-        profileVisibility: 'VERIFIED_ONLY',
+        profileVisibility: VisibilityLevel.VERIFIED_ONLY,
         fieldVisibility: {
-          basicInfo: 'MATCHED_ONLY',
-          photos: 'MATCHED_ONLY',
-          income: 'PRIVATE',
-          location: 'PRIVATE',
-          contactInfo: 'PRIVATE',
-          personalDetails: 'MATCHED_ONLY',
+          basicInfo: VisibilityLevel.MATCHED_ONLY,
+          photos: VisibilityLevel.MATCHED_ONLY,
+          income: VisibilityLevel.PRIVATE,
+          location: VisibilityLevel.PRIVATE,
+          contactInfo: VisibilityLevel.PRIVATE,
+          personalDetails: VisibilityLevel.MATCHED_ONLY,
         },
         showOnlineStatus: false,
-      };
+      } as unknown as PrivacySettings;
 
     default:
       return base;
@@ -397,21 +397,21 @@ export function getDisclosureRecommendations(
   const visibility = profile.privacySettings.fieldVisibility || {};
 
   // Recommend protecting income
-  if (profile.basicConditions?.income && visibility.income === 'PUBLIC') {
+  if (profile.basicConditions?.income && visibility.income === VisibilityLevel.PUBLIC) {
     recommendations.push({
       field: 'income',
-      currentVisibility: 'PUBLIC',
-      recommendedVisibility: 'MATCHED_ONLY',
+      currentVisibility: VisibilityLevel.PUBLIC,
+      recommendedVisibility: VisibilityLevel.MATCHED_ONLY,
       reason: '收入信息属于敏感信息，建议仅匹配后可见',
     });
   }
 
   // Recommend protecting location
-  if (profile.basicConditions?.location?.district && visibility.location === 'PUBLIC') {
+  if (profile.basicConditions?.location?.district && visibility.location === VisibilityLevel.PUBLIC) {
     recommendations.push({
       field: 'location',
-      currentVisibility: 'PUBLIC',
-      recommendedVisibility: 'MATCHED_ONLY',
+      currentVisibility: VisibilityLevel.PUBLIC,
+      recommendedVisibility: VisibilityLevel.MATCHED_ONLY,
       reason: '详细地址信息建议仅匹配后可见，保护个人安全',
     });
   }

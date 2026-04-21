@@ -57,6 +57,16 @@ model User {
   reviewsReceived Review[]  @relation("ReviewReviewee")
   reviewReplies  ReviewReply[] @relation("ReviewReplyAuthor")
   reviewStats    ReviewStats[] @relation("ReviewStatsUser")
+  refreshTokens  RefreshToken[]
+  creditHistories CreditHistory[]
+  creditScores   CreditScore[]
+  roomParticipants RoomParticipant[]
+  oauthConnections OAuthConnection[]
+  visionShareTasks VisionShareTask[]
+  couponTransactions CouponTransaction[]
+  couponRatings   CouponRating[]
+  offlineMessages  OfflineMessage[]
+  readReceipts     ReadReceipt[]
 
   @@map("users")
 }
@@ -262,15 +272,36 @@ model Message {
   type            MessageType   @default(TEXT)
   status          MessageStatus @default(SENT)
   attachments     Json?
+  sequenceId      Int?          @default(autoincrement()) @map("sequence_id")
+  metadata        Json?
+  editedAt        DateTime?     @map("edited_at")
   createdAt       DateTime      @default(now()) @map("created_at")
 
   // Relations
   conversation    Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender          User          @relation("SentMessages", fields: [senderId], references: [id])
+  readReceipts    ReadReceipt[]
 
   @@index([conversationId])
   @@index([createdAt])
   @@map("messages")
+}
+
+// Read Receipt for messages
+model ReadReceipt {
+  id           String   @id @default(uuid())
+  messageId    String   @map("message_id")
+  userId       String   @map("user_id")
+  readAt       DateTime @default(now()) @map("read_at")
+
+  // Relations
+  message      Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("read_receipts")
 }
 
 enum MessageType {
@@ -541,6 +572,7 @@ model ChatRoom {
   scene         Scene?        @relation(fields: [sceneId], references: [id])
   messages      ChatMessage[]
   connections   Connection[]
+  participants  RoomParticipant[]
 
   @@index([sceneId])
   @@index([matchId])
@@ -910,6 +942,7 @@ model Merchant {
   // Relations
   agent       Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
   offers      Offer[]
+  coupons     Coupon[]
 
   @@index([agentId])
   @@index([status])
@@ -966,6 +999,7 @@ model Offer {
 
   // Relations
   merchant    Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  coupons     Coupon[]
 
   @@index([merchantId])
   @@index([status])
@@ -1093,6 +1127,8 @@ enum NotificationType {
   MATCH_COMPLETED     @map("match_completed")     // 匹配完成
   MESSAGE_NEW         @map("message_new")         // 新消息
   RATING_RECEIVED     @map("rating_received")     // 收到评分
+  REVIEW_RATING       @map("review_rating")       // 收到评价
+  REVIEW_REMINDER     @map("review_reminder")     // 评价提醒
   SYSTEM_ANNOUNCEMENT @map("system_announcement") // 系统公告
   PROMOTION           @map("promotion")           // 促销活动
   REMINDER            @map("reminder")            // 提醒
@@ -1274,4 +1310,350 @@ enum SMSStatus {
   SENT      @map("sent")
   DELIVERED @map("delivered")
   FAILED    @map("failed")
+}
+
+enum CouponStatus {
+  ACTIVE      @map("active")
+  INACTIVE    @map("inactive")
+  EXPIRED     @map("expired")
+  USED        @map("used")
+  REMINDER_SENT @map("reminder_sent")
+  CANCELLED   @map("cancelled")
+}
+
+// ============================================
+// 刷新令牌 (Refresh Token)
+// ============================================
+
+enum ParticipantRole {
+  OWNER     @map("owner")
+  ADMIN     @map("admin")
+  MEMBER    @map("member")
+  GUEST     @map("guest")
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid())
+  token       String    @unique
+  userId      String    @map("user_id")
+  deviceInfo  Json?     @map("device_info")
+  ipAddress   String?   @map("ip_address")
+  expiresAt   DateTime  @map("expires_at")
+  revokedAt   DateTime? @map("revoked_at")
+  revokedBy   String?   @map("revoked_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// ============================================
+// 聊天室参与者 (Room Participant)
+// ============================================
+
+model RoomParticipant {
+  id          String         @id @default(uuid())
+  roomId      String         @map("room_id")
+  userId      String         @map("user_id")
+  role        ParticipantRole @default(MEMBER)
+  permissions Json?          // 参与者权限配置
+  isActive    Boolean        @default(true) @map("is_active")
+  joinedAt    DateTime       @default(now()) @map("joined_at")
+  addedBy     String?        @map("added_by")
+  lastActiveAt DateTime?     @map("last_active_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  room        ChatRoom       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@index([roomId])
+  @@index([userId])
+  @@map("room_participants")
+}
+
+// ============================================
+// 信用分历史 (Credit History)
+// ============================================
+
+model CreditHistory {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  score       Int      // 当前信用分
+  delta       Int      // 变化值
+  reason      String   // 变化原因
+  sourceType  String   @map("source_type")
+  sourceId    String? @map("source_id")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("credit_history")
+}
+
+// ============================================
+// 信用分快照 (Credit Score)
+// ============================================
+
+model CreditScore {
+  id          String   @id @default(uuid())
+  userId      String   @unique @map("user_id")
+  score       Int      @default(75)
+  level       String   @default("GENERAL")
+  lastUpdated DateTime @default(now()) @map("last_updated")
+  updatedBy   String?  @map("updated_by")
+  reason      String?  // 更新原因
+  nextUpdateAt DateTime? @map("next_update_at")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("credit_scores")
+}
+
+// ============================================
+// 地理位置围栏 (Geo-Fence)
+// ============================================
+
+model GeoFence {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  type         String   @default("POLYGON") // POLYGON, CIRCLE, RECTANGLE
+  coordinates  Json?    // GeoJSON Polygon coordinates
+  centerLat    Float?   @map("center_lat")
+  centerLng    Float?   @map("center_lng")
+  radiusMeters Float?   @map("radius_meters")
+  color        String?
+  createdBy    String?  @map("created_by")
+  isActive     Boolean  @default(true) @map("is_active")
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive])
+  @@index([createdBy])
+  @@map("geo_fences")
+}
+
+// ============================================
+// OAuth 连接 (OAuth Connection)
+// ============================================
+
+model OAuthConnection {
+  id               String    @id @default(uuid())
+  userId           String    @map("user_id")
+  provider         String    // google, apple, wechat, etc.
+  providerUserId   String    @map("provider_user_id")
+  accessToken      String?   @map("access_token")
+  refreshToken     String?   @map("refresh_token")
+  expiresAt        DateTime? @map("expires_at")
+  scope            String?
+  metadata         Json?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@index([provider])
+  @@map("oauth_connections")
+}
+
+// ============================================
+// VisionShare 任务 (VisionShare Task)
+// ============================================
+
+model VisionShareTask {
+  id                   String    @id @default(uuid())
+  userId               String    @map("user_id")
+  title                String
+  description           String?
+  budgetType            String?   @map("budget_type")
+  budgetAmount          Float?    @map("budget_amount")
+  budgetCurrency        String?   @map("budget_currency")
+  latitude              Float?
+  longitude             Float?
+  locationName          String?   @map("location_name")
+  locationAddress       String?   @map("location_address")
+  startTime             DateTime? @map("start_time")
+  endTime               DateTime? @map("end_time")
+  timeType              String?   @map("time_type")
+  validHours            Int       @default(24) @map("valid_hours")
+  expiresAt             DateTime  @map("expires_at")
+  category              String?
+  tags                  String[]  @default([])
+  aiGeneratedTags       String[]  @default([]) @map("ai_generated_tags")
+  aiRefinedDescription  String?   @map("ai_refined_description")
+  qualityScore          Float?    @map("quality_score")
+  status                String    @default("DRAFT")
+  creditChecked         Boolean   @default(false) @map("credit_checked")
+  contentFiltered       Boolean   @default(false) @map("content_filtered")
+  viewCount             Int       @default(0) @map("view_count")
+  matchCount            Int       @default(0) @map("match_count")
+  shareCount            Int       @default(0) @map("share_count")
+  publishCount          Int       @default(0) @map("publish_count")
+  dailyLimitHit         Boolean   @default(false) @map("daily_limit_hit")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+  @@map("vision_share_tasks")
+}
+
+// VisionShare Task History
+model VisionShareTaskHistory {
+  id        String   @id @default(uuid())
+  taskId    String   @map("task_id")
+  status    String
+  reason    String?
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([taskId])
+  @@map("vision_share_task_history")
+}
+
+// ============================================
+// 优惠券 (Coupon) & 优惠券交易
+// ============================================
+
+model Coupon {
+  id              String    @id @default(uuid())
+  code            String    @unique
+  name            String
+  description     String?
+  offerId         String?   @map("offer_id")
+  merchantId      String?   @map("merchant_id")
+  consumerId      String?   @map("consumer_id")
+  originalPrice   Float?    @map("original_price")
+  discountPrice   Float?    @map("discount_price")
+  discountType     String    @map("discount_type") // PERCENTAGE, FIXED_AMOUNT
+  discountValue    Float     @map("discount_value")
+  minOrderAmount   Float?    @map("min_order_amount")
+  maxDiscountAmount Float?   @map("max_discount_amount")
+  validFrom       DateTime  @map("valid_from")
+  validUntil      DateTime  @map("valid_until")
+  totalCount      Int       @default(0) @map("total_count")
+  remainingCount  Int       @default(0) @map("remaining_count")
+  perUserLimit    Int       @default(1) @map("per_user_limit")
+  usedCount       Int       @default(0) @map("used_count")
+  maxUsageCount   Int       @default(1) @map("max_usage_count")
+  usedAt          DateTime? @map("used_at")
+  reminderSent    Boolean   @default(false) @map("reminder_sent")
+  status          CouponStatus @default(ACTIVE)
+  redeemedBy      String?   @map("redeemed_by")
+  metadata        Json?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  transactions    CouponTransaction[]
+  ratings         CouponRating[]
+  offer           Offer?    @relation(fields: [offerId], references: [id])
+  merchant        Merchant? @relation(fields: [merchantId], references: [id])
+
+  @@index([code])
+  @@index([status])
+  @@index([merchantId])
+  @@index([consumerId])
+  @@map("coupons")
+}
+
+model CouponTransaction {
+  id          String   @id @default(uuid())
+  couponId    String   @map("coupon_id")
+  userId      String   @map("user_id")
+  type        String   // ISSUE, USE, EXPIRE, CANCEL
+  amount      Float?
+  orderId     String?  @map("order_id")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  coupon      Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([couponId])
+  @@index([userId])
+  @@map("coupon_transactions")
+}
+
+model CouponRating {
+  id          String   @id @default(uuid())
+  couponId    String   @map("coupon_id")
+  userId      String   @map("user_id")
+  rating      Int      // 1-5
+  comment     String?
+  isUseful    Boolean  @default(false) @map("is_useful")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  coupon      Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([couponId, userId])
+  @@index([couponId])
+  @@index([userId])
+  @@map("coupon_ratings")
+}
+
+// ============================================
+// 离线消息 (Offline Message)
+// ============================================
+
+model OfflineMessage {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  messageId       String    @map("message_id")
+  conversationId  String    @map("conversation_id")
+  deliveredAt     DateTime? @map("delivered_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, deliveredAt])
+  @@map("offline_messages")
+}
+
+// ============================================
+// Agent Location Privacy Settings
+// ============================================
+
+model AgentLocationPrivacy {
+  id              String   @id @default(uuid())
+  agentId         String   @unique @map("agent_id")
+  showExactCoords  Boolean @default(true) @map("show_exact_coords")
+  hideFromPublic  Boolean @default(false) @map("hide_from_public")
+  maxDistanceKm    Int     @default(50) @map("max_distance_km")
+  privacyLevel    String?  @map("privacy_level")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([agentId])
+  @@map("agent_location_privacy")
 }

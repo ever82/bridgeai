@@ -5,7 +5,21 @@
  * 配置日志级别、输出目标、格式化选项
  */
 
-import { LoggerOptions } from 'pino';
+// pino doesn't export LoggerOptions directly, use our own interface
+interface PinoLoggerOptions {
+  level?: string;
+  base?: object;
+  timestamp?: (() => string) | boolean;
+  formatters?: {
+    level?: (label: string) => object;
+    bindings?: (bindings: Record<string, unknown>) => object;
+  };
+  redact?: {
+    paths?: string[];
+    remove?: boolean;
+    censor?: string | ((value: unknown) => unknown);
+  };
+}
 
 // 日志级别
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
@@ -55,8 +69,8 @@ export const defaultConfig: ILoggerConfig = {
 };
 
 // Pino 配置选项
-export function getPinoOptions(config: ILoggerConfig = defaultConfig): LoggerOptions {
-  const options: LoggerOptions = {
+export function getPinoOptions(config: ILoggerConfig = defaultConfig): PinoLoggerOptions {
+  const options: PinoLoggerOptions = {
     level: config.level,
     base: {
       pid: process.pid,

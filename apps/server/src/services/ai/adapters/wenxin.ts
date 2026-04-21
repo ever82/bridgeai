@@ -150,7 +150,7 @@ export class WenxinAdapter extends BaseLLMAdapter {
       penalty_score: request.frequencyPenalty ?? 1.0
     });
 
-    const data = await response.json();
+    const data: any = await response.json();
 
     if (data.error_code) {
       throw new Error(`Wenxin API error: ${data.error_code} - ${data.error_msg}`);
@@ -168,9 +168,9 @@ export class WenxinAdapter extends BaseLLMAdapter {
         finishReason: data.is_truncated ? 'length' : 'stop'
       }],
       usage: {
-        promptTokens: data.usage?.prompt_tokens || 0,
-        completionTokens: data.usage?.completion_tokens || 0,
-        totalTokens: data.usage?.total_tokens || 0
+        promptTokens: (data as any).usage?.prompt_tokens || 0,
+        completionTokens: (data as any).usage?.completion_tokens || 0,
+        totalTokens: (data as any).usage?.total_tokens || 0
       },
       createdAt: new Date()
     };
@@ -269,7 +269,7 @@ export class WenxinAdapter extends BaseLLMAdapter {
         input: inputs[i]
       });
 
-      const data = await response.json();
+      const data: any = await response.json();
 
       if (data.error_code) {
         throw new Error(`Wenxin embedding error: ${data.error_code} - ${data.error_msg}`);
@@ -280,7 +280,7 @@ export class WenxinAdapter extends BaseLLMAdapter {
         embedding: data.data[0].embedding
       });
 
-      totalTokens += data.usage?.prompt_tokens || 0;
+      totalTokens += (data as any).usage?.prompt_tokens || 0;
     }
 
     return {
@@ -318,7 +318,7 @@ export class WenxinAdapter extends BaseLLMAdapter {
       throw new Error(`Failed to get Wenxin access token: ${response.status}`);
     }
 
-    const data: AccessTokenResponse = await response.json();
+    const data: any = await response.json();
     this.accessToken = data.access_token;
     this.tokenExpireTime = Date.now() + (data.expires_in * 1000) - 60000; // 提前1分钟过期
   }

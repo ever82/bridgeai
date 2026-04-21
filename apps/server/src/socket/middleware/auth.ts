@@ -5,8 +5,8 @@
  */
 import type { Socket } from 'socket.io';
 
-import { jwtService } from '../services/jwtService';
-import { rbacService } from '../services/rbacService';
+import { jwtService } from '../../services/jwtService';
+import { rbacService } from '../../services/rbacService';
 
 /**
  * Extended Socket type with user info

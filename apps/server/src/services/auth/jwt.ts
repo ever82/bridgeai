@@ -57,7 +57,7 @@ export function generateTokens(
       jti,
     } as TokenPayload & { jti: string },
     JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
+    { expiresIn: JWT_EXPIRES_IN } as any
   );
 
   // Generate refresh token
@@ -70,7 +70,7 @@ export function generateTokens(
       jti: jti + '_refresh',
     } as TokenPayload & { jti: string },
     JWT_SECRET,
-    { expiresIn: JWT_REFRESH_EXPIRES_IN }
+    { expiresIn: JWT_REFRESH_EXPIRES_IN } as any
   );
 
   // Calculate expiration time in seconds
