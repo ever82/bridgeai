@@ -12,15 +12,51 @@ import {
   getNotificationHistory,
 } from '../events/reviewNotificationHandlers';
 import { prisma } from '../db/client';
-import { reviewNotificationEvents, notificationService } from '../services/notificationService';
 
 // Mock prisma
 jest.mock('../db/client', () => ({
   prisma: {
+    review: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+    },
     rating: {
       findUnique: jest.fn(),
       findFirst: jest.fn(),
     },
+  },
+}));
+
+// Mock notificationService functions used by notification handlers
+jest.mock('../services/notificationService', () => ({
+  sendNewReviewNotification: jest.fn(),
+  sendReviewReplyNotification: jest.fn(),
+  sendPendingReviewReminder: jest.fn(),
+  sendBadReviewWarning: jest.fn(),
+  sendCreditScoreChangeNotification: jest.fn(),
+  scheduleReviewReminders: jest.fn(),
+  notificationEvents: {
+    on: jest.fn(),
+    emit: jest.fn(),
+  },
+  reviewNotificationEvents: {
+    on: jest.fn(),
+    emit: jest.fn(),
+  },
+}));
+
+// Mock reviewEventHandlers to avoid circular dependency
+jest.mock('../events/reviewEventHandlers', () => ({
+  reviewEvents: {
+    on: jest.fn(),
+    emit: jest.fn(),
+    once: jest.fn(),
+  },
+  ReviewEventType: {
+    RATING_SUBMITTED: 'RATING_SUBMITTED',
+    RATING_DELETED: 'RATING_DELETED',
+    RATING_UPDATED: 'RATING_UPDATED',
+    MATCH_COMPLETED: 'MATCH_COMPLETED',
   },
 }));
 
@@ -31,38 +67,38 @@ describe('Review Notification Handlers', () => {
 
   describe('handleReviewCreatedNotification', () => {
     it('should send notification for new review', async () => {
-      const mockRating = {
+      const mockReview = {
         id: 'rating-1',
-        raterId: 'user-1',
-        rateeId: 'user-2',
-        score: 5,
-        rater: { id: 'user-1', name: 'Test User', avatarUrl: null },
-        ratee: { id: 'user-2', name: 'Recipient' },
+        reviewerId: 'user-1',
+        revieweeId: 'user-2',
+        rating: 5,
+        reviewer: { id: 'user-1', name: 'Test User', avatarUrl: null },
+        reviewee: { id: 'user-2', name: 'Recipient' },
         match: {
           demand: { agent: { user: { id: 'user-2' } } },
           supply: { agent: { user: { id: 'user-1' } } },
         },
       };
 
-      (prisma.rating.findUnique as jest.Mock).mockResolvedValue(mockRating);
+      (prisma.review.findUnique as jest.Mock).mockResolvedValue(mockReview);
 
       const eventListener = jest.fn();
       reviewNotificationEvents.once(ReviewNotificationType.REVIEW_CREATED, eventListener);
 
       await handleReviewCreatedNotification('rating-1');
 
-      expect(prisma.rating.findUnique).toHaveBeenCalledWith({
+      expect(prisma.review.findUnique).toHaveBeenCalledWith({
         where: { id: 'rating-1' },
         include: expect.any(Object),
       });
     });
 
     it('should handle missing rating gracefully', async () => {
-      (prisma.rating.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.review.findUnique as jest.Mock).mockResolvedValue(null);
 
       await handleReviewCreatedNotification('rating-1');
 
-      expect(prisma.rating.findUnique).toHaveBeenCalled();
+      expect(prisma.review.findUnique).toHaveBeenCalled();
     });
   });
 
