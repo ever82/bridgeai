@@ -1,7 +1,7 @@
 /**
  * RBAC Middleware Tests
  */
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 
 import {
   requireRole,
@@ -10,11 +10,11 @@ import {
   loadUserPermissions,
   requireOwnership,
   AuthenticatedRequest,
-} from '../../src/middleware/rbac';
-import { rbacService } from '../../src/services/rbacService';
+} from '../rbac';
+import { rbacService } from '../../services/rbacService';
 
 // Mock RBAC service
-jest.mock('../../src/services/rbacService', () => ({
+jest.mock('../../services/rbacService', () => ({
   rbacService: {
     getUserRoles: jest.fn(),
     getUserPermissions: jest.fn(),
@@ -22,7 +22,7 @@ jest.mock('../../src/services/rbacService', () => ({
 }));
 
 // Mock request context
-jest.mock('../../src/middleware/requestContext', () => ({
+jest.mock('../requestContext', () => ({
   getRequestContext: jest.fn(() => ({
     logWarning: jest.fn(),
     logError: jest.fn(),
@@ -52,9 +52,7 @@ describe('RBAC Middleware', () => {
 
   describe('requireRole', () => {
     it('should call next() if user has required role', async () => {
-      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([
-        { role: { name: 'admin' } },
-      ]);
+      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([{ role: { name: 'admin' } }]);
 
       const middleware = requireRole('admin');
       await middleware(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
@@ -77,9 +75,7 @@ describe('RBAC Middleware', () => {
     });
 
     it('should return 403 if user does not have required role', async () => {
-      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([
-        { role: { name: 'user' } },
-      ]);
+      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([{ role: { name: 'user' } }]);
 
       const middleware = requireRole('admin');
       await middleware(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
@@ -92,9 +88,7 @@ describe('RBAC Middleware', () => {
     });
 
     it('should allow access if user has any of the required roles', async () => {
-      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([
-        { role: { name: 'moderator' } },
-      ]);
+      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([{ role: { name: 'moderator' } }]);
 
       const middleware = requireRole('admin', 'moderator');
       await middleware(mockReq as AuthenticatedRequest, mockRes as Response, mockNext);
@@ -172,9 +166,7 @@ describe('RBAC Middleware', () => {
 
   describe('loadUserPermissions', () => {
     it('should load user roles and permissions into request', async () => {
-      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([
-        { role: { name: 'admin' } },
-      ]);
+      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([{ role: { name: 'admin' } }]);
       (rbacService.getUserPermissions as jest.Mock).mockResolvedValue([
         { name: 'users:read', resource: 'users', action: 'read' },
       ]);

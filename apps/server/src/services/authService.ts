@@ -5,8 +5,6 @@
  * 用户注册、登录、密码管理、令牌生成
  */
 
-import crypto from 'crypto';
-
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from '@prisma/client';
@@ -16,14 +14,7 @@ import { prisma } from '../db/client';
 
 import { cacheGet, cacheSet, cacheDel } from './cache';
 import * as refreshTokenService from './auth/refreshToken';
-
-// JWT 配置
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required');
-}
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
-const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '30d';
+import { JWT_SECRET, generateTokens, verifyToken as verifyJwtToken } from './auth/jwt';
 
 // 登录重试限制配置
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -162,8 +153,8 @@ export async function verifyVerificationCode(identifier: string, code: string): 
  * @returns 访问令牌
  */
 export function generateAccessToken(payload: ITokenPayload): string {
-  const jti = crypto.randomUUID();
-  return jwt.sign({ ...payload, jti }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as any);
+  const tokens = generateTokens(payload.userId, payload.email || '', payload.role);
+  return tokens.accessToken;
 }
 
 /**
@@ -172,10 +163,8 @@ export function generateAccessToken(payload: ITokenPayload): string {
  * @returns 刷新令牌
  */
 export function generateRefreshToken(userId: string): string {
-  const jti = crypto.randomUUID();
-  return jwt.sign({ userId, type: 'refresh', jti }, JWT_SECRET, {
-    expiresIn: JWT_REFRESH_EXPIRES_IN,
-  } as any);
+  const tokens = generateTokens(userId, '', 'user');
+  return tokens.refreshToken;
 }
 
 /**
@@ -184,7 +173,12 @@ export function generateRefreshToken(userId: string): string {
  * @returns 解码后的载荷
  */
 export function verifyToken(token: string): ITokenPayload {
-  return jwt.verify(token, JWT_SECRET) as ITokenPayload;
+  const decoded = verifyJwtToken(token);
+  return {
+    userId: decoded.userId,
+    email: decoded.email,
+    role: decoded.role,
+  };
 }
 
 /**
@@ -426,7 +420,8 @@ export async function refreshAccessToken(refreshToken: string): Promise<IAuthRes
   let decoded: { userId: string; type: string };
 
   try {
-    decoded = jwt.verify(refreshToken, JWT_SECRET) as { userId: string; type: string };
+    const decodedJwt = verifyJwtToken(refreshToken);
+    decoded = { userId: decodedJwt.userId, type: decodedJwt.type };
   } catch {
     throw new Error('刷新令牌无效或已过期');
   }
@@ -499,6 +494,7 @@ export async function requestPasswordReset(email?: string, phone?: string): Prom
   // 生成重置令牌（15分钟有效）
   const resetToken = jwt.sign({ userId: user.id, type: 'password-reset' }, JWT_SECRET, {
     expiresIn: '15m',
+    algorithm: 'HS256',
   });
 
   logger.info('Password reset requested', { userId: user.id });
@@ -520,7 +516,10 @@ export async function resetPassword(resetToken: string, newPassword: string): Pr
   }
 
   try {
-    const decoded = jwt.verify(resetToken, JWT_SECRET) as { userId: string; type: string };
+    const decoded = jwt.verify(resetToken, JWT_SECRET, { algorithms: ['HS256'] }) as {
+      userId: string;
+      type: string;
+    };
 
     if (decoded.type !== 'password-reset') {
       throw new Error('无效的重置令牌');

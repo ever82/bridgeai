@@ -8,7 +8,7 @@ import { prisma } from '../../db/client';
 import { getTokenExpirationDate } from './jwt';
 
 // Refresh token configuration
-const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '7d';
+const REFRESH_TOKEN_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 
 export interface DeviceInfo {
   deviceType?: string;
@@ -27,9 +27,7 @@ export interface CreateRefreshTokenInput {
 /**
  * Create a new refresh token in the database
  */
-export async function createRefreshToken(
-  input: CreateRefreshTokenInput
-): Promise<void> {
+export async function createRefreshToken(input: CreateRefreshTokenInput): Promise<void> {
   const expiresAt = getTokenExpirationDate(REFRESH_TOKEN_EXPIRES_IN);
 
   await prisma.refreshToken.create({
@@ -49,17 +47,13 @@ export async function createRefreshToken(
 export async function findRefreshToken(token: string) {
   return await prisma.refreshToken.findUnique({
     where: { token },
-    include: { user: true },
   });
 }
 
 /**
  * Revoke a refresh token
  */
-export async function revokeRefreshToken(
-  token: string,
-  revokedBy?: string
-): Promise<void> {
+export async function revokeRefreshToken(token: string, revokedBy?: string): Promise<void> {
   await prisma.refreshToken.update({
     where: { token },
     data: {
@@ -121,10 +115,7 @@ export async function isRefreshTokenValid(token: string): Promise<boolean> {
 export async function cleanupExpiredTokens(): Promise<number> {
   const result = await prisma.refreshToken.deleteMany({
     where: {
-      OR: [
-        { expiresAt: { lt: new Date() } },
-        { revokedAt: { not: null } },
-      ],
+      OR: [{ expiresAt: { lt: new Date() } }, { revokedAt: { not: null } }],
     },
   });
 

@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 import { UserRole } from '../../types';
 
 // JWT Configuration
-const JWT_SECRET = process.env.JWT_SECRET;
+export const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is required');
 }
@@ -40,11 +40,7 @@ export interface TokenPair {
 /**
  * Generate JWT tokens for a user
  */
-export function generateTokens(
-  userId: string,
-  email: string,
-  role: UserRole
-): TokenPair {
+export function generateTokens(userId: string, email: string, role: UserRole): TokenPair {
   const jti = generateJti();
 
   // Generate access token
@@ -57,7 +53,7 @@ export function generateTokens(
       jti,
     } as TokenPayload & { jti: string },
     JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN } as any
+    { expiresIn: JWT_EXPIRES_IN, algorithm: 'HS256' } as Parameters<typeof jwt.sign>[2]
   );
 
   // Generate refresh token
@@ -70,7 +66,7 @@ export function generateTokens(
       jti: jti + '_refresh',
     } as TokenPayload & { jti: string },
     JWT_SECRET,
-    { expiresIn: JWT_REFRESH_EXPIRES_IN } as any
+    { expiresIn: JWT_REFRESH_EXPIRES_IN, algorithm: 'HS256' } as Parameters<typeof jwt.sign>[2]
   );
 
   // Calculate expiration time in seconds
@@ -88,7 +84,7 @@ export function generateTokens(
  */
 export function verifyToken(token: string): DecodedToken {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as DecodedToken;
     return decoded;
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {

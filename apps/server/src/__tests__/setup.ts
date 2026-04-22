@@ -3,9 +3,11 @@ import path from 'path';
 
 import dotenv from 'dotenv';
 
-// Load test environment variables
-const envPath = path.resolve(__dirname, '../../.env.test');
-dotenv.config({ path: envPath });
+// Load test environment variables (fallback to .env if .env.test missing)
+const testEnvPath = path.resolve(__dirname, '../../.env.test');
+const defaultEnvPath = path.resolve(__dirname, '../../.env');
+dotenv.config({ path: testEnvPath });
+dotenv.config({ path: defaultEnvPath }); // .env.test takes precedence, .env fills gaps
 
 // Ensure test environment
 process.env.NODE_ENV = 'test';

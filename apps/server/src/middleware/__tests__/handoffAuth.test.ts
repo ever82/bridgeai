@@ -1,7 +1,7 @@
 /**
  * Handoff Auth Middleware Tests
  */
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { HandoffErrorCode } from '@bridgeai/shared';
 
 import {
@@ -14,11 +14,11 @@ import {
   getHandoffRateLimitStatus,
   clearHandoffRateLimit,
   type HandoffRequest,
-} from '../../src/middleware/handoffAuth';
-import { rbacService } from '../../src/services/rbacService';
+} from '../handoffAuth';
+import { rbacService } from '../../services/rbacService';
 
 // Mock RBAC service
-jest.mock('../../src/services/rbacService', () => ({
+jest.mock('../../services/rbacService', () => ({
   rbacService: {
     getUserRoles: jest.fn(),
     getUserPermissions: jest.fn(),
@@ -26,7 +26,7 @@ jest.mock('../../src/services/rbacService', () => ({
 }));
 
 // Mock request context
-jest.mock('../../src/middleware/requestContext', () => ({
+jest.mock('../requestContext', () => ({
   getRequestContext: jest.fn(() => ({
     logWarning: jest.fn(),
     logError: jest.fn(),
@@ -60,18 +60,12 @@ describe('Handoff Auth Middleware', () => {
 
   describe('handoffPermissionMiddleware', () => {
     it('should attach handoff info to request for authorized user', async () => {
-      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([
-        { role: { name: 'user' } },
-      ]);
+      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([{ role: { name: 'user' } }]);
       (rbacService.getUserPermissions as jest.Mock).mockResolvedValue([
         { name: 'handoff:takeover' },
       ]);
 
-      await handoffPermissionMiddleware(
-        mockReq as HandoffRequest,
-        mockRes as Response,
-        mockNext
-      );
+      await handoffPermissionMiddleware(mockReq as HandoffRequest, mockRes as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
       expect(mockReq.handoff).toBeDefined();
@@ -83,11 +77,7 @@ describe('Handoff Auth Middleware', () => {
     it('should return 401 if user not authenticated', async () => {
       mockReq.user = undefined;
 
-      await handoffPermissionMiddleware(
-        mockReq as HandoffRequest,
-        mockRes as Response,
-        mockNext
-      );
+      await handoffPermissionMiddleware(mockReq as HandoffRequest, mockRes as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(401);
       expect(jsonMock).toHaveBeenCalledWith(
@@ -101,16 +91,10 @@ describe('Handoff Auth Middleware', () => {
     });
 
     it('should set canTakeover to false for unauthorized roles', async () => {
-      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([
-        { role: { name: 'guest' } },
-      ]);
+      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([{ role: { name: 'guest' } }]);
       (rbacService.getUserPermissions as jest.Mock).mockResolvedValue([]);
 
-      await handoffPermissionMiddleware(
-        mockReq as HandoffRequest,
-        mockRes as Response,
-        mockNext
-      );
+      await handoffPermissionMiddleware(mockReq as HandoffRequest, mockRes as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
       expect(mockReq.handoff?.canTakeover).toBe(false);
@@ -118,18 +102,12 @@ describe('Handoff Auth Middleware', () => {
     });
 
     it('should handle rate limiting', async () => {
-      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([
-        { role: { name: 'user' } },
-      ]);
+      (rbacService.getUserRoles as jest.Mock).mockResolvedValue([{ role: { name: 'user' } }]);
       (rbacService.getUserPermissions as jest.Mock).mockResolvedValue([]);
 
       // Simulate many requests to trigger rate limit
       for (let i = 0; i < 65; i++) {
-        await handoffPermissionMiddleware(
-          mockReq as HandoffRequest,
-          mockRes as Response,
-          mockNext
-        );
+        await handoffPermissionMiddleware(mockReq as HandoffRequest, mockRes as Response, mockNext);
         // Reset mockReq.handoff for next iteration
         mockReq.handoff = undefined;
       }

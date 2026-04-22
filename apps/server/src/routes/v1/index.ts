@@ -16,6 +16,7 @@ import reviewRoutes from '../reviews';
 import authRoutes from '../auth';
 import disclosureRoutes from '../disclosure';
 import userPrivacyRoutes from '../userPrivacy';
+import { strictAuthLimiter } from '../../middleware/rateLimiter';
 
 import healthRoutes from './health';
 import sceneRoutes from './scene';
@@ -24,7 +25,7 @@ const router: Router = Router();
 
 // Mount routes
 router.use('/health', healthRoutes);
-router.use('/auth', authRoutes);
+router.use('/auth', strictAuthLimiter, authRoutes);
 router.use('/scenes', sceneRoutes);
 router.use('/disclosure', disclosureRoutes);
 router.use('/users', userRoutes);

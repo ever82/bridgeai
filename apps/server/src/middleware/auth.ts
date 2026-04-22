@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
 import * as blacklistService from '../services/auth/blacklist';
+import { verifyToken as verifyJwtToken } from '../services/auth/jwt';
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -22,11 +22,6 @@ interface JWTPayload {
   role?: string;
   iat: number;
   exp: number;
-}
-
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required');
 }
 
 /**
@@ -68,7 +63,7 @@ export async function authenticate(
     req.token = token;
 
     // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = verifyJwtToken(token) as unknown as JWTPayload;
 
     // Check if token has been revoked
     try {
@@ -109,12 +104,12 @@ export async function authenticate(
       return;
     }
 
-    if (error instanceof jwt.TokenExpiredError) {
+    if (error instanceof Error && error.message === 'Token has expired') {
       next(new AppError('Token has expired', 'TOKEN_EXPIRED', 401));
       return;
     }
 
-    if (error instanceof jwt.JsonWebTokenError) {
+    if (error instanceof Error && error.message === 'Invalid token') {
       next(new AppError('Invalid token', 'INVALID_TOKEN', 401));
       return;
     }
@@ -140,7 +135,7 @@ export async function optionalAuth(
       return;
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = verifyJwtToken(token) as unknown as JWTPayload;
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },

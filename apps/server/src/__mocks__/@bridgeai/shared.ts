@@ -34,14 +34,17 @@ export interface AgentDisclosureSettings {
   createdAt: string;
 }
 
-export const DISCLOSURE_LEVEL_INFO: Record<DisclosureLevel, {
-  level: DisclosureLevel;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  order: number;
-}> = {
+export const DISCLOSURE_LEVEL_INFO: Record<
+  DisclosureLevel,
+  {
+    level: DisclosureLevel;
+    name: string;
+    description: string;
+    icon: string;
+    color: string;
+    order: number;
+  }
+> = {
   [DisclosureLevel.PUBLIC]: {
     level: DisclosureLevel.PUBLIC,
     name: '公开',
@@ -74,12 +77,27 @@ export const DISCLOSURE_LEVEL_INFO: Record<DisclosureLevel, {
     color: '#9C27B0',
     order: 3,
   },
-}
+};
 
 export const DEFAULT_FIELD_DISCLOSURES: FieldDisclosure[] = [
-  { fieldName: 'name', level: DisclosureLevel.PUBLIC, isDisclosable: true, defaultLevel: DisclosureLevel.PUBLIC },
-  { fieldName: 'email', level: DisclosureLevel.AFTER_MATCH, isDisclosable: true, defaultLevel: DisclosureLevel.AFTER_MATCH },
-  { fieldName: 'phone', level: DisclosureLevel.AFTER_REFERRAL, isDisclosable: true, defaultLevel: DisclosureLevel.AFTER_REFERRAL },
+  {
+    fieldName: 'name',
+    level: DisclosureLevel.PUBLIC,
+    isDisclosable: true,
+    defaultLevel: DisclosureLevel.PUBLIC,
+  },
+  {
+    fieldName: 'email',
+    level: DisclosureLevel.AFTER_MATCH,
+    isDisclosable: true,
+    defaultLevel: DisclosureLevel.AFTER_MATCH,
+  },
+  {
+    fieldName: 'phone',
+    level: DisclosureLevel.AFTER_REFERRAL,
+    isDisclosable: true,
+    defaultLevel: DisclosureLevel.AFTER_REFERRAL,
+  },
 ];
 
 export const DISCLOSABLE_FIELDS = ['name', 'email', 'phone', 'bio', 'location'];
@@ -99,10 +117,9 @@ export function getRequiredStage(level: DisclosureLevel): RelationshipStage {
   }
 }
 
-
 export function canDiscloseAtStage(
   requiredLevel: DisclosureLevel,
-   currentStage: RelationshipStage
+  currentStage: RelationshipStage
 ): boolean {
   const requiredStage = getRequiredStage(requiredLevel);
   const stageOrder: Record<RelationshipStage, number> = {
@@ -114,7 +131,10 @@ export function canDiscloseAtStage(
   return stageOrder[currentStage] >= stageOrder[requiredStage];
 }
 
-export function createDefaultDisclosureSettings(agentId: string, userId: string): AgentDisclosureSettings {
+export function createDefaultDisclosureSettings(
+  agentId: string,
+  userId: string
+): AgentDisclosureSettings {
   return {
     agentId,
     userId,
@@ -513,4 +533,45 @@ export enum DatingPurpose {
   FRIENDSHIP_FIRST = 'FRIENDSHIP_FIRST',
   COMPANIONSHIP = 'COMPANIONSHIP',
   NOT_SURE = 'NOT_SURE',
+}
+
+// Handoff types
+export enum HandoffErrorCode {
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  FORBIDDEN = 'FORBIDDEN',
+  RATE_LIMITED = 'RATE_LIMITED',
+  FORCE_TAKEOVER_DISABLED = 'FORCE_TAKEOVER_DISABLED',
+  SELF_HANDOFF = 'SELF_HANDOFF',
+  INVALID_TARGET = 'INVALID_TARGET',
+}
+
+export interface HandoffConfig {
+  allowedRoles: string[];
+  maxHandoffsPerHour: number;
+  minHandoffIntervalSeconds: number;
+  allowForcedTakeover: boolean;
+  allowedForcedTakeoverRoles: string[];
+  auditLogEnabled: boolean;
+  requestTimeoutSeconds: number;
+}
+
+export const DEFAULT_HANDOFF_CONFIG: HandoffConfig = {
+  allowedRoles: ['user', 'admin'],
+  maxHandoffsPerHour: 60,
+  minHandoffIntervalSeconds: 5,
+  allowForcedTakeover: true,
+  allowedForcedTakeoverRoles: ['admin'],
+  auditLogEnabled: true,
+  requestTimeoutSeconds: 30,
+};
+
+export interface HandoffAuditLog {
+  id: string;
+  conversationId: string;
+  fromUserId: string;
+  toUserId: string;
+  action: string;
+  timestamp: string;
+  reason?: string;
+  metadata?: Record<string, unknown>;
 }
