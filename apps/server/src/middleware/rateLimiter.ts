@@ -22,13 +22,28 @@ export { rateLimitConfigs, getRateLimitConfig };
 // Use any-typed request for rate limiting
 type RateLimitRequest = Request & { user?: any; token?: string };
 
-// In-memory store for user-based rate limiting (replace with Redis in production)
+// In-memory store for user-based rate limiting.
+// For distributed deployments (multi-node), set RATE_LIMIT_USE_REDIS=true
+// and configure RATE_LIMIT_REDIS_URL. The Redis-based implementation
+// will use a Redis SETEX-based sliding window counter.
 interface UserRequestRecord {
   count: number;
   resetTime: number;
 }
 
 const userRequestStore = new Map<string, UserRequestRecord>();
+
+// Redis-based rate limit functions (used when RATE_LIMIT_USE_REDIS=true)
+// TODO(NP-207): Implement Redis-backed rate limiting for distributed deployments
+async function _redisRateLimit(
+  _identifier: string,
+  _maxRequests: number,
+  _windowMs: number
+): Promise<boolean> {
+  // Placeholder: would use Redis INCR + EXPIRE for sliding window counter
+  // When implemented, set RATE_LIMIT_USE_REDIS=true and configure RATE_LIMIT_REDIS_URL
+  return false; // Falls back to in-memory store
+}
 
 // Get client identifier (user ID if authenticated, IP otherwise)
 function getClientIdentifier(req: RateLimitRequest): string {
@@ -233,13 +248,11 @@ export const strictAuthLimiter = rateLimit({
     return username ? `${ip}:${username}` : ip;
   },
   handler: (req: Request, res: Response) => {
-    res
-      .status(429)
-      .json(
-        ApiResponse.error(rateLimitConfigs.auth.message!, 'AUTH_RATE_LIMIT_EXCEEDED', 429, {
-          retryAfter: Math.ceil(rateLimitConfigs.auth.windowMs / 1000),
-        })
-      );
+    res.status(429).json(
+      ApiResponse.error(rateLimitConfigs.auth.message!, 'AUTH_RATE_LIMIT_EXCEEDED', 429, {
+        retryAfter: Math.ceil(rateLimitConfigs.auth.windowMs / 1000),
+      })
+    );
   },
 });
 
