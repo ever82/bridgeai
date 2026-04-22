@@ -20,7 +20,7 @@ import { SupplyExtractionService } from '../../services/ai/supplyExtractionServi
 import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
 
-const router = Router();
+const router: Router = Router();
 
 // 初始化供给提取服务
 const supplyExtractionService = new SupplyExtractionService();

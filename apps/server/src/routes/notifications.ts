@@ -11,7 +11,7 @@ import { authenticate } from '../middleware/auth';
 import { notificationService } from '../services/notificationService';
 import { logger } from '../utils/logger';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * GET /api/v1/notifications

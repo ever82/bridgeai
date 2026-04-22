@@ -15,7 +15,7 @@ const validateRequest = _validateRequest as any;
 import { logger } from '../../utils/logger';
 import { AppError } from '../../errors';
 
-const router = Router();
+const router: Router = Router();
 
 // ===== Validation Schemas =====
 

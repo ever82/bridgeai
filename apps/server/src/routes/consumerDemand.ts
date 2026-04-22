@@ -11,7 +11,7 @@ import { ApiResponse } from '../utils/response';
 import * as consumerDemandService from '../services/consumerDemandService';
 import { AppError } from '../errors/AppError';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * @route POST /api/v1/agents/consumer

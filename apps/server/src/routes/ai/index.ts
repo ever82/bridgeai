@@ -12,7 +12,7 @@ import negotiationRoutes from './negotiation';
 import supplyRoutes from './supply';
 import visionRoutes from './vision';
 
-const router = Router();
+const router: Router = Router();
 
 // LLM服务路由
 router.use('/', llmRoutes);

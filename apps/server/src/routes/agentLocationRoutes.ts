@@ -22,7 +22,7 @@ import {
 } from '../services/agentLocationPrivacyService';
 import { logger } from '../utils/logger';
 
-const router = Router();
+const router: Router = Router();
 
 const updateLocationSchema = z.object({
   location: z.object({

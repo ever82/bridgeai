@@ -16,7 +16,7 @@ import {
   isValidNegotiationTopic
 } from '../../models/NegotiationRoom';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * POST /api/job/negotiations

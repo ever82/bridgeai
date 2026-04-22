@@ -7,7 +7,7 @@ import { Router } from 'express';
 
 import sceneRoutes from '../scene';
 
-const router = Router();
+const router: Router = Router();
 
 // Mount all scene routes under /v1/scenes
 router.use('/', sceneRoutes);

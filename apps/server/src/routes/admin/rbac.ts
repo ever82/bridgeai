@@ -10,7 +10,7 @@ import { rbacService } from '../../services/rbacService';
 import { requireRole, requirePermission } from '../../middleware/rbac';
 import { validateBody, validateParams } from '../../middleware/validation';
 
-const router = Router();
+const router: Router = Router();
 
 // ============================================================================
 // Validation Schemas

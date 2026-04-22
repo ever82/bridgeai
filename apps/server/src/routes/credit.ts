@@ -10,7 +10,7 @@ import { getCreditLevelConfigByScore } from '../config/creditLevels';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { validate } from '../middleware/validation';
 
-const router = Router();
+const router: Router = Router();
 
 // 验证模式
 const recalculateSchema = z.object({

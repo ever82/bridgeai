@@ -25,7 +25,7 @@ import {
   oauthBindSchema,
 } from '../schemas/authSchemas';
 
-const router = Router();
+const router: Router = Router();
 
 // 登录限流
 const loginLimiter = rateLimit({

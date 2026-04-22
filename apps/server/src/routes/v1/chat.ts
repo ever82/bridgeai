@@ -34,7 +34,7 @@ import {
 } from '../../services/chat/participantService';
 
 
-const router = Router();
+const router: Router = Router();
 
 // Validation schemas - Messages
 const getHistorySchema = z.object({

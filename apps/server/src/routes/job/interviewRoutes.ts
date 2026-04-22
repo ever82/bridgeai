@@ -16,7 +16,7 @@ import {
   isValidInterviewRound
 } from '../../models/Interview';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * POST /api/job/interviews

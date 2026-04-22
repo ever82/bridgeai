@@ -11,7 +11,7 @@ import { authenticate } from '../middleware/auth';
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * GET /api/v1/notification-preferences

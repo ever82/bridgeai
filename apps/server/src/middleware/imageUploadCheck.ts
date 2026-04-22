@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import multer, { FileFilterCallback } from 'multer';
 
 import { ImageSecurityService } from '../services/security/imageSecurity';
@@ -117,7 +117,7 @@ export const imageUploadCheck = async (
 /**
  * Middleware to handle single image upload
  */
-export const uploadSingleImage = (fieldName: string) => [
+export const uploadSingleImage = (fieldName: string): RequestHandler[] => [
   upload.single(fieldName),
   imageUploadCheck,
 ];
@@ -125,7 +125,7 @@ export const uploadSingleImage = (fieldName: string) => [
 /**
  * Middleware to handle multiple image uploads
  */
-export const uploadMultipleImages = (fieldName: string, maxCount: number = 10) => [
+export const uploadMultipleImages = (fieldName: string, maxCount: number = 10): RequestHandler[] => [
   upload.array(fieldName, maxCount),
   imageUploadCheck,
 ];
@@ -133,7 +133,7 @@ export const uploadMultipleImages = (fieldName: string, maxCount: number = 10) =
 /**
  * Middleware to handle mixed file uploads
  */
-export const uploadMixedImages = (fields: { name: string; maxCount: number }[]) => [
+export const uploadMixedImages = (fields: { name: string; maxCount: number }[]): RequestHandler[] => [
   upload.fields(fields),
   imageUploadCheck,
 ];

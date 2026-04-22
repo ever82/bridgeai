@@ -13,7 +13,7 @@ import { publishValidationService } from '../../services/visionShare/publishVali
 import { visionShareDemandRefinementService } from '../../services/ai/visionShareDemandRefinement';
 import { logger } from '../../utils/logger';
 
-const router = Router();
+const router: Router = Router();
 const loggerCtx = logger.child({ module: 'VisionSharePublishRoutes' });
 
 /**

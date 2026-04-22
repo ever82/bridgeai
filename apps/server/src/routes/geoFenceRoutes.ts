@@ -20,7 +20,7 @@ import {
 } from '../services/geoFenceService';
 import { logger } from '../utils/logger';
 
-const router = Router();
+const router: Router = Router();
 
 // Validation schemas
 const createGeoFenceSchema = z.object({

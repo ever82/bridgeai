@@ -78,7 +78,7 @@ describe('AgentService', () => {
       expect(result.name).toBe(createInput.name);
       expect(result.type).toBe(createInput.type);
       expect(mockAgent.create).toHaveBeenCalledWith({
-        data: {
+        data: expect.objectContaining({
           userId: mockUserId,
           type: createInput.type,
           name: createInput.name,
@@ -88,7 +88,12 @@ describe('AgentService', () => {
           latitude: null,
           longitude: null,
           isActive: true,
-        },
+          statusHistory: expect.objectContaining({
+            create: expect.objectContaining({
+              status: agentService.AgentStatus.DRAFT,
+            }),
+          }),
+        }),
       });
     });
 

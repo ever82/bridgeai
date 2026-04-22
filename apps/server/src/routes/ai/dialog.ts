@@ -16,7 +16,7 @@ import {
   DialogType,
 } from '../../services/ai/agentDialogService';
 
-const router = Router();
+const router: Router = Router();
 
 // Sub-schemas
 const personaSchema = z.object({

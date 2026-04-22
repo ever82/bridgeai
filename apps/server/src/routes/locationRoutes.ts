@@ -21,7 +21,7 @@ import {
 } from '../services/locationSearchService';
 import { logger } from '../utils/logger';
 
-const router = Router();
+const router: Router = Router();
 
 // Validation schemas
 const locationFilterSchema = z.object({

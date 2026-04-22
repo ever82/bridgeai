@@ -9,7 +9,7 @@
  */
 import path from 'path';
 
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import multer, { type FileFilterCallback } from 'multer';
 
 import { getRequestContext } from './requestContext';
@@ -297,7 +297,7 @@ export function uploadSingle(options: UploadOptions = {}): any {
 /**
  * Create multiple files upload middleware
  */
-export function uploadMultiple(options: UploadOptions = {}) {
+export function uploadMultiple(options: UploadOptions = {}): RequestHandler {
   const {
     categories,
     mimeTypes,
@@ -322,7 +322,7 @@ export function uploadMultiple(options: UploadOptions = {}) {
 /**
  * Create mixed fields upload middleware
  */
-export function uploadFields(fields: multer.Field[], options: UploadOptions = {}) {
+export function uploadFields(fields: multer.Field[], options: UploadOptions = {}): RequestHandler {
   const { categories, mimeTypes, maxSize, storage = 'memory' } = options;
 
   const limits: multer.Options['limits'] = {
@@ -355,7 +355,7 @@ export function uploadImage(fieldName = 'image', maxSize?: number) {
 /**
  * Upload multiple images
  */
-export function uploadImages(fieldName = 'images', maxCount = 10, maxSize?: number) {
+export function uploadImages(fieldName = 'images', maxCount = 10, maxSize?: number): RequestHandler {
   return uploadMultiple({
     categories: ['image'],
     fieldName,

@@ -17,7 +17,7 @@ import extractionRoutes from './ai/extraction';
 // TODO: fix negotiation route imports (body/param validator mismatch)
 // import negotiationRoutes from './ai/negotiation';
 
-const router = Router();
+const router: Router = Router();
 
 // Mount extraction routes
 router.use('/extract', extractionRoutes);

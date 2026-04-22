@@ -20,7 +20,7 @@ import {
   resetPassword,
 } from '../../services/authService';
 
-const router = Router();
+const router: Router = Router();
 
 // POST /api/v1/auth/login - Login with email and password
 router.post('/login', async (req: Request, res: Response, next: NextFunction) => {

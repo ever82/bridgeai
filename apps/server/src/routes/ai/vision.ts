@@ -22,7 +22,7 @@ import { ClaudeVisionAdapter } from '../../services/ai/adapters/vision/claudeVis
 // Types
 import { ImageInput } from '../../services/ai/vision/types';
 
-const router = Router();
+const router: Router = Router();
 
 // 配置multer用于图像上传
 const upload = multer({

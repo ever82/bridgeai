@@ -12,7 +12,7 @@ import { disclosureAuditService } from '../services/disclosureAuditService';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { logger } from '../utils/logger';
 
-const router = Router();
+const router: Router = Router();
 
 // Validation schemas
 const agentIdSchema = z.object({

@@ -20,6 +20,7 @@ describe('Agent Schemas', () => {
       maxTokens: 2048,
       systemPrompt: 'You are a helpful assistant',
       isPublic: false,
+      type: 'VISIONSHARE',
     };
 
     it('should validate a valid agent creation', () => {
@@ -81,7 +82,7 @@ describe('Agent Schemas', () => {
     });
 
     it('should use defaults for optional fields', () => {
-      const minimalAgent = { name: 'Test Agent' };
+      const minimalAgent = { name: 'Test Agent', type: 'VISIONSHARE' };
       const result = createAgentSchema.safeParse(minimalAgent);
       expect(result.success).toBe(true);
       if (result.success) {

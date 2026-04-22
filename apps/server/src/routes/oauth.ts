@@ -10,7 +10,7 @@ import { Router, Request, Response } from 'express';
 import * as oauthService from '../services/oauthService';
 import { logger } from '../utils/logger';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * GET /api/v1/oauth/wechat

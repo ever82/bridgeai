@@ -12,7 +12,7 @@ import { validate } from '../middleware/validation';
 import { AppError } from '../errors/AppError';
 import { DEFAULT_PRIVACY_SETTINGS } from '../types/privacy';
 
-const router = Router();
+const router: Router = Router();
 
 // 验证模式
 const privacySettingsSchema = z.object({
