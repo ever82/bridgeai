@@ -8,18 +8,26 @@ import Redis from 'ioredis';
 
 // Redis Configuration
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const REDIS_PASSWORD = process.env.REDIS_PASSWORD || undefined;
 
 let _redisClient: Redis | null = null;
 
 function createRedisClient(): Redis {
-  const client = new Redis(REDIS_URL, {
+  const options: Record<string, unknown> = {
     lazyConnect: true,
     retryStrategy: times => {
       const delay = Math.min(times * 50, 2000);
       return delay;
     },
     maxRetriesPerRequest: 3,
-  });
+  };
+
+  // Add password authentication for production environments
+  if (REDIS_PASSWORD) {
+    options.password = REDIS_PASSWORD;
+  }
+
+  const client = new Redis(REDIS_URL, options);
 
   client.on('connect', () => {
     console.log('Redis connected successfully');

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 
 import { ApiResponse } from '../../utils/response';
 import { prisma } from '../../db/client';
+import { isRedisConnected, redis } from '../../services/redis';
 
 const router: Router = Router();
 
@@ -11,12 +12,14 @@ const router: Router = Router();
  * @access Public
  */
 router.get('/', (req: Request, res: Response) => {
-  res.json(ApiResponse.success({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-  }));
+  res.json(
+    ApiResponse.success({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+    })
+  );
 });
 
 /**
@@ -27,6 +30,7 @@ router.get('/', (req: Request, res: Response) => {
 router.get('/detailed', async (req: Request, res: Response) => {
   const checks = {
     database: false,
+    redis: false,
     timestamp: new Date().toISOString(),
   };
 
@@ -38,13 +42,25 @@ router.get('/detailed', async (req: Request, res: Response) => {
     checks.database = false;
   }
 
+  try {
+    // Test Redis connection
+    if (isRedisConnected()) {
+      await redis.ping();
+      checks.redis = true;
+    }
+  } catch (error) {
+    checks.redis = false;
+  }
+
   const allHealthy = Object.values(checks).every(v => v === true || typeof v === 'string');
 
-  res.status(allHealthy ? 200 : 503).json(ApiResponse.success({
-    status: allHealthy ? 'healthy' : 'unhealthy',
-    checks,
-    uptime: process.uptime(),
-  }));
+  res.status(allHealthy ? 200 : 503).json(
+    ApiResponse.success({
+      status: allHealthy ? 'healthy' : 'unhealthy',
+      checks,
+      uptime: process.uptime(),
+    })
+  );
 });
 
 export default router;
