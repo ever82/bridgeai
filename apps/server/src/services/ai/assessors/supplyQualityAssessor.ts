@@ -222,7 +222,7 @@ export class SupplyQualityAssessor {
       if (supply.pricing.minRate > supply.pricing.maxRate) {
         deductions += 20; // Min > Max is suspicious
       }
-      if (supply.pricing.maxRate / supply.pricing.minRate > 10) {
+      if (supply.pricing.minRate > 0 && supply.pricing.maxRate / supply.pricing.minRate > 10) {
         deductions += 10; // Too wide a range is suspicious
       }
     }

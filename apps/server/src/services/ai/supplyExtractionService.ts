@@ -550,7 +550,7 @@ export class SupplyExtractionService {
         type: pricing.type || 'negotiable',
         minRate: pricing.min_rate || pricing.minRate,
         maxRate: pricing.max_rate || pricing.maxRate,
-        currency: pricing.currency || 'USD',
+        currency: pricing.currency || 'CNY',
         unit: pricing.unit || 'hour',
         description: pricing.description || '',
       },

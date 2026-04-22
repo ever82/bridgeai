@@ -658,7 +658,7 @@ export class SupplyToL2Mapper {
       if (conflict.values.length > 0) {
         const validValues = conflict.values.filter(v => v !== null && v !== undefined);
         if (validValues.length > 0) {
-          conflict.resolution = 'highest_confidence';
+          conflict.resolution = 'first';
           conflict.resolvedValue = validValues[0];
           result.data[conflict.field] = validValues[0];
         }
@@ -747,8 +747,10 @@ export class SupplyToL2Mapper {
       // Check for range object { min, max }
       if ('min' in value && 'max' in value) {
         const range = value as { min?: number; max?: number };
-        return (range.min !== undefined && range.min !== null) ||
-               (range.max !== undefined && range.max !== null);
+        return (
+          (range.min !== undefined && range.min !== null) ||
+          (range.max !== undefined && range.max !== null)
+        );
       }
       // Empty object
       return Object.keys(value).length > 0;
