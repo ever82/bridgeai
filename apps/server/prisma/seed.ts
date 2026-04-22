@@ -8,6 +8,7 @@ import {
   TransactionType,
   TransactionStatus,
   MessageStatus,
+  SenderType,
 } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -325,7 +326,7 @@ async function main() {
       data: {
         chatRoomId: chatRooms[0].id,
         senderId: testUsers[0].id,
-        senderType: 'USER',
+        senderType: SenderType.USER,
         content: '你好，我想看看三里屯现在的路况',
         type: 'TEXT',
         status: MessageStatus.READ,
@@ -335,7 +336,7 @@ async function main() {
       data: {
         chatRoomId: chatRooms[0].id,
         senderId: agents[0].id,
-        senderType: 'AGENT',
+        senderType: SenderType.AGENT,
         content: '主人想了解三里屯的交通情况，请问您能提供实时照片吗？',
         type: 'TEXT',
         status: MessageStatus.READ,
@@ -346,7 +347,7 @@ async function main() {
       data: {
         chatRoomId: chatRooms[1].id,
         senderId: testUsers[2].id,
-        senderType: 'USER',
+        senderType: SenderType.USER,
         content: '嗨，我也喜欢电影和音乐！',
         type: 'TEXT',
         status: MessageStatus.READ,

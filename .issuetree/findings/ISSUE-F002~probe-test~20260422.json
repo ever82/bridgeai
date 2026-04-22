@@ -1,0 +1,131 @@
+{
+  "issue": "ISSUE-F002",
+  "title": "数据库设计与Prisma ORM搭建",
+  "probe_test_date": "2026-04-22",
+  "arbitration_date": "2026-04-22",
+  "arbitration_result": "findings_minor",
+  "fix_date": "2026-04-22",
+  "findings": [
+    {
+      "id": "NP-PT-001",
+      "db_id": 174,
+      "severity": "critical",
+      "arbitrated_severity": "warning",
+      "category": "runtime_behavior",
+      "title": "creditScore 无范围验证",
+      "description": "Agent.creditScore 字段无约束，允许存入 -1、101 等无效值",
+      "evidence": "探针测试接受 creditScore: -1 和 creditScore: 101 均成功插入数据库",
+      "file_path": "apps/server/prisma/schema.prisma",
+      "line": 95,
+      "recommendation": "通过 migration SQL 添加 CHECK 约束 (credit_score >= 0 AND credit_score <= 100)",
+      "arbitration": "adopted — 降级为 warning。Prisma 不支持 schema 层范围约束，需用 CHECK。Disposition: fix_inline",
+      "status": "resolved",
+      "disposition": "fix_inline",
+      "fix": {
+        "file": "apps/server/prisma/migrations/20260422000000_add_check_constraints/migration.sql",
+        "action": "ADD CONSTRAINT agents_credit_score_check CHECK (credit_score >= 0 AND credit_score <= 100)"
+      }
+    },
+    {
+      "id": "NP-PT-002",
+      "db_id": 175,
+      "severity": "critical",
+      "arbitrated_severity": "warning",
+      "category": "runtime_behavior",
+      "title": "Match.score 无范围验证",
+      "description": "Match.score Decimal(5,2) 无边界约束，允许存入负数",
+      "evidence": "探针测试接受 score: -1 成功插入",
+      "file_path": "apps/server/prisma/schema.prisma",
+      "line": 221,
+      "recommendation": "通过 migration SQL 添加 CHECK 约束 (score >= 0 AND score <= 100)",
+      "arbitration": "adopted — 降级为 warning。同 NP-PT-001，Prisma 限制。Disposition: fix_inline",
+      "status": "resolved",
+      "disposition": "fix_inline",
+      "fix": {
+        "file": "apps/server/prisma/migrations/20260422000000_add_check_constraints/migration.sql",
+        "action": "ADD CONSTRAINT matches_score_check CHECK (score >= 0 AND score <= 100)"
+      }
+    },
+    {
+      "id": "NP-PT-003",
+      "db_id": 176,
+      "severity": "warning",
+      "arbitrated_severity": "info",
+      "category": "consistency",
+      "title": "seed.ts 字符串字面量 senderType",
+      "description": "seed.ts 使用 senderType: 'USER'/'AGENT' 而非 SenderType 枚举",
+      "evidence": "seed.ts 第 328/338/349 行使用字符串字面量",
+      "file_path": "apps/server/prisma/seed.ts",
+      "line_range": "328,338,349",
+      "recommendation": "导入 SenderType 枚举使用",
+      "arbitration": "adopted — 降级为 info。Prisma SenderType.USER === 'USER'，功能等价但缺少类型安全。Disposition: fix_inline",
+      "status": "resolved",
+      "disposition": "fix_inline",
+      "fix": {
+        "file": "apps/server/prisma/seed.ts",
+        "action": "导入 SenderType 枚举，将 senderType: 'USER'/'AGENT' 替换为 SenderType.USER/AGENT (3处)"
+      }
+    },
+    {
+      "id": "NP-PT-004",
+      "db_id": 177,
+      "severity": "warning",
+      "category": "runtime_behavior",
+      "title": "seed.ts Promise.all 无事务包装",
+      "description": "seed.ts 7 处 Promise.all 批量创建无原子性",
+      "arbitration": "dismissed — seed 脚本是开发工具，运行在空库上，有顶层 catch。过度解读。",
+      "status": "dismissed"
+    },
+    {
+      "id": "NP-PT-005",
+      "db_id": 178,
+      "severity": "warning",
+      "category": "code_quality",
+      "title": "Prisma Client/DB Schema 不同步",
+      "description": "RoomParticipant 表缺少 added_by 列",
+      "arbitration": "dismissed — RoomParticipant 模型由后续 Issue 添加，超出 F002 范围。",
+      "status": "dismissed"
+    },
+    {
+      "id": "NP-PT-006",
+      "db_id": 179,
+      "severity": "info",
+      "category": "test_coverage",
+      "title": "AgentFactory 缺少 creditScore 字段",
+      "description": "AgentFactoryData 接口和 createAgent 函数缺少 creditScore",
+      "file_path": "apps/server/src/__tests__/factories/agent.factory.ts",
+      "line_range": "7-37",
+      "recommendation": "添加 creditScore?: number 到接口",
+      "arbitration": "adopted — 真实缺失，影响测试质量。Disposition: fix_inline",
+      "status": "resolved",
+      "disposition": "fix_inline",
+      "fix": {
+        "file": "apps/server/src/__tests__/factories/agent.factory.ts",
+        "action": "AgentFactoryData 接口添加 creditScore?: number，createAgent 添加 creditScore: data.creditScore ?? 75"
+      }
+    },
+    {
+      "id": "NP-PT-007",
+      "db_id": 180,
+      "severity": "info",
+      "category": "consistency",
+      "title": "seed.ts Demand/Supply status 字符串字面量",
+      "description": "seed.ts 使用 status: 'OPEN'/'AVAILABLE' 而非枚举",
+      "arbitration": "dismissed — 与 NP-PT-003 相同模式，Prisma 枚举值即字符串。重复。",
+      "status": "dismissed"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "adopted": 4,
+    "dismissed": 3,
+    "resolved": 4,
+    "severity_changes": [
+      "NP-PT-001: critical → warning (Prisma 无 schema 层约束)",
+      "NP-PT-002: critical → warning (同上)",
+      "NP-PT-003: warning → info (功能等价)"
+    ]
+  },
+  "conclusion": "findings_minor — 所有 adopted findings 已修复为 resolved。",
+  "all_resolved": true
+}

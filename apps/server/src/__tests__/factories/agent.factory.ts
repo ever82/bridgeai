@@ -13,6 +13,7 @@ export interface AgentFactoryData {
   latitude?: number | null;
   longitude?: number | null;
   isActive?: boolean;
+  creditScore?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -32,6 +33,7 @@ export function createAgent(data: AgentFactoryData = {}): Agent {
     latitude: data.latitude ?? faker.location.latitude(),
     longitude: data.longitude ?? faker.location.longitude(),
     isActive: data.isActive ?? true,
+    creditScore: data.creditScore ?? 75,
     createdAt: data.createdAt ?? now,
     updatedAt: data.updatedAt ?? now,
   };
