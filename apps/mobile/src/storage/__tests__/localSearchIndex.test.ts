@@ -1,11 +1,10 @@
-import { LocalSearchIndexStorage, IndexMetadata, BackupMetadata } from '../localSearchIndex';
+import SQLite from 'react-native-sqlite-storage';
+
+import { LocalSearchIndexStorage } from '../localSearchIndex';
 
 // Mock react-native-sqlite-storage
 jest.mock('react-native-sqlite-storage', () => ({
-  openDatabase: jest.fn().mockResolvedValue({
-    executeSql: jest.fn(),
-    close: jest.fn().mockResolvedValue(undefined),
-  }),
+  openDatabase: jest.fn(),
   enablePromise: jest.fn(),
 }));
 
@@ -26,15 +25,15 @@ describe('LocalSearchIndexStorage', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    (LocalSearchIndexStorage as unknown as { instance: LocalSearchIndexStorage | null }).instance = null;
+    (LocalSearchIndexStorage as unknown as { instance: LocalSearchIndexStorage | null }).instance =
+      null;
 
     mockDb = {
       executeSql: jest.fn().mockResolvedValue([{ rows: { length: 0, item: jest.fn() } }]),
       close: jest.fn().mockResolvedValue(undefined),
     };
 
-    const SQLite = require('react-native-sqlite-storage');
-    SQLite.openDatabase.mockResolvedValue(mockDb);
+    (SQLite.openDatabase as jest.Mock).mockResolvedValue(mockDb);
 
     storage = LocalSearchIndexStorage.getInstance();
     await storage.initialize();
@@ -73,14 +72,16 @@ describe('LocalSearchIndexStorage', () => {
       });
 
       // Re-initialize to trigger metadata setup
-      (LocalSearchIndexStorage as unknown as { instance: LocalSearchIndexStorage | null }).instance = null;
+      (
+        LocalSearchIndexStorage as unknown as { instance: LocalSearchIndexStorage | null }
+      ).instance = null;
       storage = LocalSearchIndexStorage.getInstance();
       await storage.initialize();
 
       // Should insert version metadata
       const calls = mockDb.executeSql.mock.calls;
-      const versionInsert = calls.find((call: string[]) =>
-        call[0].includes('version') && call[0].includes('INSERT')
+      const versionInsert = calls.find(
+        (call: string[]) => call[0].includes('version') && call[0].includes('INSERT')
       );
       expect(versionInsert).toBeDefined();
     });
@@ -122,12 +123,14 @@ describe('LocalSearchIndexStorage', () => {
     it('searches images by tags using FTS', async () => {
       mockDb.executeSql.mockImplementation((sql: string) => {
         if (sql.includes('search_fts')) {
-          return [{
-            rows: {
-              length: 2,
-              item: (i: number) => ({ image_id: `id-${i}` }),
+          return [
+            {
+              rows: {
+                length: 2,
+                item: (i: number) => ({ image_id: `id-${i}` }),
+              },
             },
-          }];
+          ];
         }
         return [{ rows: { length: 0, item: jest.fn() } }];
       });
@@ -141,19 +144,21 @@ describe('LocalSearchIndexStorage', () => {
     it('returns metadata with correct structure', async () => {
       mockDb.executeSql.mockImplementation((sql: string) => {
         if (sql.includes('index_metadata')) {
-          return [{
-            rows: {
-              length: 3,
-              item: (i: number) => {
-                const items = [
-                  { key: 'version', value: '1' },
-                  { key: 'created_at', value: '1234567890' },
-                  { key: 'last_updated', value: '1234567890' },
-                ];
-                return items[i];
+          return [
+            {
+              rows: {
+                length: 3,
+                item: (i: number) => {
+                  const items = [
+                    { key: 'version', value: '1' },
+                    { key: 'created_at', value: '1234567890' },
+                    { key: 'last_updated', value: '1234567890' },
+                  ];
+                  return items[i];
+                },
               },
             },
-          }];
+          ];
         }
         if (sql.includes('COUNT')) {
           return [{ rows: { length: 1, item: () => ({ count: 100 }) } }];
@@ -196,16 +201,18 @@ describe('LocalSearchIndexStorage', () => {
 
       mockDb.executeSql.mockImplementation((sql: string) => {
         if (sql.includes('incremental_changes')) {
-          return [{
-            rows: {
-              length: 2,
-              item: (i: number) => ({
-                action: 'upsert',
-                image_id: `img-${i}`,
-                timestamp: Date.now(),
-              }),
+          return [
+            {
+              rows: {
+                length: 2,
+                item: (i: number) => ({
+                  action: 'upsert',
+                  image_id: `img-${i}`,
+                  timestamp: Date.now(),
+                }),
+              },
             },
-          }];
+          ];
         }
         return [{ rows: { length: 0, item: jest.fn() } }];
       });
@@ -234,8 +241,8 @@ describe('LocalSearchIndexStorage', () => {
     it('compresses the database using VACUUM', async () => {
       await storage.compressIndex();
 
-      const vacuumCall = mockDb.executeSql.mock.calls.find((call: string[]) =>
-        call[0] === 'VACUUM'
+      const vacuumCall = mockDb.executeSql.mock.calls.find(
+        (call: string[]) => call[0] === 'VACUUM'
       );
       expect(vacuumCall).toBeDefined();
     });
@@ -283,26 +290,28 @@ describe('LocalSearchIndexStorage', () => {
     it('records backup in database', async () => {
       await storage.createBackup();
 
-      const backupInsertCall = mockDb.executeSql.mock.calls.find((call: string[]) =>
-        call[0].includes('index_backups') && call[0].includes('INSERT')
+      const backupInsertCall = mockDb.executeSql.mock.calls.find(
+        (call: string[]) => call[0].includes('index_backups') && call[0].includes('INSERT')
       );
       expect(backupInsertCall).toBeDefined();
     });
 
     it('restores from backup by id', async () => {
-      mockDb.executeSql.mockImplementation((sql: string, params: any[]) => {
+      mockDb.executeSql.mockImplementation((sql: string, params: unknown[]) => {
         if (sql.includes('index_backups') && params?.[0] === 'backup-123') {
-          return [{
-            rows: {
-              length: 1,
-              item: () => ({
-                id: 'backup-123',
-                created_at: Date.now(),
-                size: 100000,
-                checksum: 'abc123',
-              }),
+          return [
+            {
+              rows: {
+                length: 1,
+                item: () => ({
+                  id: 'backup-123',
+                  created_at: Date.now(),
+                  size: 100000,
+                  checksum: 'abc123',
+                }),
+              },
             },
-          }];
+          ];
         }
         return [{ rows: { length: 0, item: jest.fn() } }];
       });
@@ -330,12 +339,14 @@ describe('LocalSearchIndexStorage', () => {
     it('stores version in metadata', async () => {
       mockDb.executeSql.mockImplementation((sql: string) => {
         if (sql.includes('index_metadata') && sql.includes('version')) {
-          return [{
-            rows: {
-              length: 1,
-              item: () => ({ key: 'version', value: '1' }),
+          return [
+            {
+              rows: {
+                length: 1,
+                item: () => ({ key: 'version', value: '1' }),
+              },
             },
-          }];
+          ];
         }
         return [{ rows: { length: 0, item: jest.fn() } }];
       });

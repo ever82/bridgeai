@@ -1,7 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
 
-const TOKEN_KEY = 'secure_tokens';
-
 export const secureStorage = {
   async getItem(key: string): Promise<string | null> {
     try {

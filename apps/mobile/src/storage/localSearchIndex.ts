@@ -1,4 +1,4 @@
-import SQLite, { SQLiteDatabase, Transaction } from 'react-native-sqlite-storage';
+import SQLite, { SQLiteDatabase } from 'react-native-sqlite-storage';
 import { Platform } from 'react-native';
 
 SQLite.enablePromise(true);
@@ -115,34 +115,31 @@ export class LocalSearchIndexStorage {
   private async initializeMetadata(): Promise<void> {
     if (!this.db) return;
 
-    const [result] = await this.db.executeSql(
-      'SELECT value FROM index_metadata WHERE key = ?',
-      ['version']
-    );
+    const [result] = await this.db.executeSql('SELECT value FROM index_metadata WHERE key = ?', [
+      'version',
+    ]);
 
     if (result.rows.length === 0) {
       const now = Date.now();
-      await this.db.executeSql(
-        `INSERT OR REPLACE INTO index_metadata (key, value) VALUES (?, ?)`,
-        ['version', CURRENT_VERSION.toString()]
-      );
-      await this.db.executeSql(
-        `INSERT OR REPLACE INTO index_metadata (key, value) VALUES (?, ?)`,
-        ['created_at', now.toString()]
-      );
-      await this.db.executeSql(
-        `INSERT OR REPLACE INTO index_metadata (key, value) VALUES (?, ?)`,
-        ['last_updated', now.toString()]
-      );
+      await this.db.executeSql(`INSERT OR REPLACE INTO index_metadata (key, value) VALUES (?, ?)`, [
+        'version',
+        CURRENT_VERSION.toString(),
+      ]);
+      await this.db.executeSql(`INSERT OR REPLACE INTO index_metadata (key, value) VALUES (?, ?)`, [
+        'created_at',
+        now.toString(),
+      ]);
+      await this.db.executeSql(`INSERT OR REPLACE INTO index_metadata (key, value) VALUES (?, ?)`, [
+        'last_updated',
+        now.toString(),
+      ]);
     }
   }
 
   async getMetadata(): Promise<IndexMetadata> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const [result] = await this.db.executeSql(
-      'SELECT key, value FROM index_metadata'
-    );
+    const [result] = await this.db.executeSql('SELECT key, value FROM index_metadata');
 
     const metadata: Record<string, string> = {};
     for (let i = 0; i < result.rows.length; i++) {
@@ -150,9 +147,7 @@ export class LocalSearchIndexStorage {
       metadata[row.key] = row.value;
     }
 
-    const [countResult] = await this.db.executeSql(
-      'SELECT COUNT(*) as count FROM image_index'
-    );
+    const [countResult] = await this.db.executeSql('SELECT COUNT(*) as count FROM image_index');
 
     return {
       version: parseInt(metadata['version'] || '1', 10),
@@ -168,7 +163,7 @@ export class LocalSearchIndexStorage {
 
     try {
       const [result] = await this.db.executeSql(
-        "SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()"
+        'SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()'
       );
       return result.rows.item(0)?.size || 0;
     } catch {
@@ -226,10 +221,10 @@ export class LocalSearchIndexStorage {
     );
 
     // Update last_updated
-    await this.db.executeSql(
-      `INSERT OR REPLACE INTO index_metadata (key, value) VALUES (?, ?)`,
-      ['last_updated', timestamp.toString()]
-    );
+    await this.db.executeSql(`INSERT OR REPLACE INTO index_metadata (key, value) VALUES (?, ?)`, [
+      'last_updated',
+      timestamp.toString(),
+    ]);
   }
 
   async removeImageIndex(imageId: string): Promise<void> {
@@ -237,15 +232,9 @@ export class LocalSearchIndexStorage {
 
     const timestamp = Date.now();
 
-    await this.db.executeSql(
-      'DELETE FROM image_index WHERE id = ?',
-      [imageId]
-    );
+    await this.db.executeSql('DELETE FROM image_index WHERE id = ?', [imageId]);
 
-    await this.db.executeSql(
-      'DELETE FROM search_fts WHERE image_id = ?',
-      [imageId]
-    );
+    await this.db.executeSql('DELETE FROM search_fts WHERE image_id = ?', [imageId]);
 
     await this.db.executeSql(
       `INSERT INTO incremental_changes (action, image_id, timestamp) VALUES (?, ?, ?)`,
@@ -320,10 +309,9 @@ export class LocalSearchIndexStorage {
   async restoreBackup(backupId: string): Promise<boolean> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const [result] = await this.db.executeSql(
-      'SELECT * FROM index_backups WHERE id = ?',
-      [backupId]
-    );
+    const [result] = await this.db.executeSql('SELECT * FROM index_backups WHERE id = ?', [
+      backupId,
+    ]);
 
     if (result.rows.length === 0) {
       return false;
@@ -361,10 +349,9 @@ export class LocalSearchIndexStorage {
 
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
-    await this.db.executeSql(
-      'DELETE FROM incremental_changes WHERE timestamp < ?',
-      [thirtyDaysAgo]
-    );
+    await this.db.executeSql('DELETE FROM incremental_changes WHERE timestamp < ?', [
+      thirtyDaysAgo,
+    ]);
   }
 
   async close(): Promise<void> {
