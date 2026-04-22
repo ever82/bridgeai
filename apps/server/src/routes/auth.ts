@@ -9,12 +9,11 @@ import { Router, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 
 import { logger } from '../utils/logger';
-import { getRequestContext } from '../middleware/requestContext';
 import { validate } from '../middleware/validation';
 import * as authService from '../services/authService';
 import * as oauthService from '../services/oauthService';
 import * as blacklistService from '../services/auth/blacklist';
-import { authenticate } from '../middleware/auth';
+import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import {
   registerSchema,
   loginSchema,
@@ -172,16 +171,15 @@ router.post(
  * POST /api/v1/auth/logout
  * 用户登出 - 撤销当前token
  */
-router.post('/logout', authenticate, async (req: Request, res: Response) => {
+router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     // Blacklist the current token
     if (req.token) {
       await blacklistService.blacklistToken(req.token);
     }
 
-    const context = getRequestContext();
-    if (context?.userId) {
-      logger.info('User logged out', { userId: context.userId });
+    if (req.user?.id) {
+      logger.info('User logged out', { userId: req.user.id });
     }
 
     res.json({
@@ -297,44 +295,49 @@ router.post(
  * POST /api/v1/auth/change-password
  * 修改密码（需要登录）
  */
-router.post('/change-password', validate({ body: changePasswordSchema }), async (req: Request, res: Response) => {
-  try {
-    const { oldPassword, newPassword } = req.body;
-    const context = getRequestContext();
+router.post(
+  '/change-password',
+  authenticate,
+  validate({ body: changePasswordSchema }),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { oldPassword, newPassword } = req.body;
+      const userId = req.user?.id || req.user?.userId;
 
-    if (!context?.userId) {
-      return res.status(401).json({ error: '未登录' });
+      if (!userId) {
+        return res.status(401).json({ error: '未登录' });
+      }
+
+      await authService.changePassword(userId, oldPassword, newPassword);
+
+      res.json({
+        success: true,
+        message: '密码修改成功',
+      });
+    } catch (error) {
+      logger.error('Password change failed', error as Error);
+
+      res.status(400).json({
+        success: false,
+        error: (error as Error).message,
+      });
     }
-
-    await authService.changePassword(context.userId, oldPassword, newPassword);
-
-    res.json({
-      success: true,
-      message: '密码修改成功',
-    });
-  } catch (error) {
-    logger.error('Password change failed', error as Error);
-
-    res.status(400).json({
-      success: false,
-      error: (error as Error).message,
-    });
   }
-});
+);
 
 /**
  * GET /api/v1/auth/me
  * 获取当前用户信息
  */
-router.get('/me', async (req: Request, res: Response) => {
+router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const context = getRequestContext();
+    const userId = req.user?.id || req.user?.userId;
 
-    if (!context?.userId) {
+    if (!userId) {
       return res.status(401).json({ error: '未登录' });
     }
 
-    const user = await authService.getCurrentUser(context.userId);
+    const user = await authService.getCurrentUser(userId);
 
     res.json({
       success: true,
@@ -407,9 +410,23 @@ router.get('/oauth/:provider/callback', async (req: Request, res: Response) => {
       code as string
     );
 
-    // 如果有 state，重定向回前端
+    // 如果有 state，重定向回前端（仅允许已配置的前端域名）
     if (state) {
-      const redirectUrl = `${state}?token=${result.accessToken}`;
+      const allowedOrigins = (process.env.ALLOWED_OAUTH_REDIRECT_ORIGINS || '')
+        .split(',')
+        .filter(Boolean);
+      const stateStr = String(state);
+      let isAllowed = false;
+      try {
+        const stateUrl = new URL(stateStr);
+        isAllowed = allowedOrigins.some(origin => stateUrl.origin === origin);
+      } catch {
+        isAllowed = false;
+      }
+      if (!isAllowed) {
+        return res.status(400).json({ error: '无效的重定向地址' });
+      }
+      const redirectUrl = `${stateStr}?token=${result.accessToken}`;
       return res.redirect(redirectUrl);
     }
 
@@ -433,22 +450,19 @@ router.get('/oauth/:provider/callback', async (req: Request, res: Response) => {
  */
 router.post(
   '/oauth/:provider/bind',
+  authenticate,
   validate({ body: oauthBindSchema }),
-  async (req: Request, res: Response) => {
+  async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { provider } = req.params;
       const { code } = req.body;
-      const context = getRequestContext();
+      const userId = req.user?.id || req.user?.userId;
 
-      if (!context?.userId) {
+      if (!userId) {
         return res.status(401).json({ error: '未登录' });
       }
 
-      await oauthService.bindOAuthAccount(
-        context.userId,
-        provider as 'wechat' | 'google',
-        code
-      );
+      await oauthService.bindOAuthAccount(userId, provider as 'wechat' | 'google', code);
 
       res.json({
         success: true,
@@ -469,44 +483,48 @@ router.post(
  * DELETE /api/v1/auth/oauth/:provider
  * 解绑 OAuth 账户
  */
-router.delete('/oauth/:provider', async (req: Request, res: Response) => {
-  try {
-    const { provider } = req.params;
-    const context = getRequestContext();
+router.delete(
+  '/oauth/:provider',
+  authenticate,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { provider } = req.params;
+      const userId = req.user?.id || req.user?.userId;
 
-    if (!context?.userId) {
-      return res.status(401).json({ error: '未登录' });
+      if (!userId) {
+        return res.status(401).json({ error: '未登录' });
+      }
+
+      await oauthService.unbindOAuthAccount(userId, provider as 'wechat' | 'google');
+
+      res.json({
+        success: true,
+        message: 'OAuth 账户解绑成功',
+      });
+    } catch (error) {
+      logger.error('OAuth unbind failed', error as Error);
+
+      res.status(500).json({
+        success: false,
+        error: (error as Error).message,
+      });
     }
-
-    await oauthService.unbindOAuthAccount(context.userId, provider as 'wechat' | 'google');
-
-    res.json({
-      success: true,
-      message: 'OAuth 账户解绑成功',
-    });
-  } catch (error) {
-    logger.error('OAuth unbind failed', error as Error);
-
-    res.status(500).json({
-      success: false,
-      error: (error as Error).message,
-    });
   }
-});
+);
 
 /**
  * GET /api/v1/auth/oauth/connections
  * 获取 OAuth 绑定列表
  */
-router.get('/oauth/connections', async (req: Request, res: Response) => {
+router.get('/oauth/connections', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const context = getRequestContext();
+    const userId = req.user?.id || req.user?.userId;
 
-    if (!context?.userId) {
+    if (!userId) {
       return res.status(401).json({ error: '未登录' });
     }
 
-    const connections = await oauthService.getUserOAuthConnections(context.userId);
+    const connections = await oauthService.getUserOAuthConnections(userId);
 
     res.json({
       success: true,

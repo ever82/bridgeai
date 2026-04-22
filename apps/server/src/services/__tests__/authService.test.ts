@@ -50,6 +50,15 @@ jest.mock('../cache', () => ({
   cacheDel: jest.fn(),
 }));
 
+// Mock refresh token service
+jest.mock('../auth/refreshToken', () => ({
+  createRefreshToken: jest.fn().mockResolvedValue(undefined),
+  isRefreshTokenValid: jest.fn().mockResolvedValue(true),
+  rotateRefreshToken: jest.fn().mockResolvedValue(undefined),
+  revokeAllUserRefreshTokens: jest.fn().mockResolvedValue(0),
+  revokeRefreshToken: jest.fn().mockResolvedValue(undefined),
+}));
+
 describe('Auth Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -330,7 +339,7 @@ describe('Auth Service', () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
 
       await expect(loginUser({ email: 'nobody@example.com', password: 'any' })).rejects.toThrow(
-        '用户不存在'
+        '邮箱/手机号或密码错误'
       );
     });
 
@@ -400,15 +409,16 @@ describe('Auth Service', () => {
       expect(token).toBeDefined();
       expect(typeof token).toBe('string');
       // Verify token is valid JWT
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
       expect(decoded.userId).toBe('user-1');
       expect(decoded.type).toBe('password-reset');
     });
 
-    it('should throw error for non-existent user', async () => {
+    it('should return safely for non-existent user (no enumeration)', async () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
 
-      await expect(requestPasswordReset('nobody@example.com')).rejects.toThrow('用户不存在');
+      const result = await requestPasswordReset('nobody@example.com');
+      expect(result).toBe('no-reset-needed');
     });
 
     it('should throw error when no email or phone', async () => {
@@ -419,11 +429,9 @@ describe('Auth Service', () => {
   describe('resetPassword', () => {
     it('should reset password with valid token', async () => {
       const userId = 'user-1';
-      const token = jwt.sign(
-        { userId, type: 'password-reset' },
-        process.env.JWT_SECRET || 'your-secret-key',
-        { expiresIn: '15m' }
-      );
+      const token = jwt.sign({ userId, type: 'password-reset' }, process.env.JWT_SECRET!, {
+        expiresIn: '15m',
+      });
       (prisma.user.update as jest.Mock).mockResolvedValue({});
 
       await resetPassword(token, 'NewSecurePass123!');
@@ -444,7 +452,7 @@ describe('Auth Service', () => {
     it('should throw error for weak new password', async () => {
       const token = jwt.sign(
         { userId: 'user-1', type: 'password-reset' },
-        process.env.JWT_SECRET || 'your-secret-key',
+        process.env.JWT_SECRET!,
         { expiresIn: '15m' }
       );
 

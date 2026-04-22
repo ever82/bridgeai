@@ -1,12 +1,7 @@
-import axios, {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  AxiosError,
-} from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
 import { API_BASE_URL } from '../../constants/config';
-import { ApiResponse, ApiError, AuthTokens } from '../../types';
+import { ApiResponse, ApiError } from '../../types';
 import { getAccessToken, getRefreshToken, updateAccessToken, clearTokens } from '../authToken';
 
 // Create axios instance
@@ -21,7 +16,7 @@ const apiClient: AxiosInstance = axios.create({
 
 // Request interceptor
 apiClient.interceptors.request.use(
-  async (config) => {
+  async config => {
     // Get token from SecureStore
     const accessToken = await getAccessToken();
     if (accessToken) {
@@ -29,7 +24,7 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
+  error => {
     return Promise.reject(error);
   }
 );
@@ -48,19 +43,22 @@ apiClient.interceptors.response.use(
         const refreshToken = await getRefreshToken();
         if (refreshToken) {
           // Attempt to refresh token
-          const response = await axios.post<AuthTokens>(
-            API_BASE_URL + '/auth/refresh',
-            { refreshToken }
-          );
-          
-          const newTokens = response.data;
-          
-          // Update tokens in SecureStore
-          await updateAccessToken(newTokens.accessToken, newTokens.expiresIn);
-          
+          const response = await axios.post(API_BASE_URL + '/auth/refresh', { refreshToken });
+
+          // Server returns { success, data: { user, accessToken, refreshToken, expiresIn } }
+          const authData = response.data?.data || response.data;
+          const newAccessToken = authData.accessToken;
+          const newRefreshToken = authData.refreshToken;
+          const expiresIn = authData.expiresIn;
+
+          if (!newAccessToken) throw new Error('No access token in refresh response');
+
+          // Update tokens in SecureStore (including rotated refresh token)
+          await updateAccessToken(newAccessToken, expiresIn, newRefreshToken);
+
           // Retry the original request with new token
           if (originalRequest.headers) {
-            originalRequest.headers.Authorization = 'Bearer ' + newTokens.accessToken;
+            originalRequest.headers.Authorization = 'Bearer ' + newAccessToken;
           }
           return apiClient(originalRequest);
         }
@@ -86,14 +84,23 @@ export const api = {
   get: <T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<ApiResponse<T>>> =>
     apiClient.get(url, config),
 
-  post: <T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<ApiResponse<T>>> =>
-    apiClient.post(url, data, config),
+  post: <T>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<AxiosResponse<ApiResponse<T>>> => apiClient.post(url, data, config),
 
-  put: <T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<ApiResponse<T>>> =>
-    apiClient.put(url, data, config),
+  put: <T>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<AxiosResponse<ApiResponse<T>>> => apiClient.put(url, data, config),
 
-  patch: <T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<ApiResponse<T>>> =>
-    apiClient.patch(url, data, config),
+  patch: <T>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<AxiosResponse<ApiResponse<T>>> => apiClient.patch(url, data, config),
 
   delete: <T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<ApiResponse<T>>> =>
     apiClient.delete(url, config),

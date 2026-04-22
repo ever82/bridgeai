@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
+import * as blacklistService from '../services/auth/blacklist';
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -68,6 +69,17 @@ export async function authenticate(
 
     // Verify token
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+
+    // Check if token has been revoked
+    try {
+      if (await blacklistService.isTokenBlacklisted(token)) {
+        throw new AppError('Token has been revoked', 'TOKEN_REVOKED', 401);
+      }
+    } catch (err) {
+      if (err instanceof AppError) throw err;
+      // If blacklist check fails (e.g. Redis unavailable), log but allow through
+      // This ensures availability when Redis is down
+    }
 
     // Check if user exists
     const user = await prisma.user.findUnique({
@@ -172,11 +184,7 @@ export function requireRole(...allowedRoles: string[]) {
 /**
  * Admin authorization middleware
  */
-export function requireAdmin(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): void {
+export function requireAdmin(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
   if (!req.user) {
     next(new AppError('Authentication required', 'UNAUTHORIZED', 401));
     return;

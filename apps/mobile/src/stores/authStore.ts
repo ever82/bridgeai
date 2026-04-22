@@ -155,7 +155,7 @@ export const useAuthStore = create<AuthState>()(
         // Load tokens from SecureStore
         const tokens = await getTokens();
 
-        if (tokens.accessToken && tokens.refreshToken) {
+        if (tokens && tokens.accessToken && tokens.refreshToken) {
           // Verify the token is still valid
           const { refreshToken } = get();
           const isValid = await refreshToken();

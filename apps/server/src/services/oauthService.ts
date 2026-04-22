@@ -290,10 +290,13 @@ async function findUserByOAuth(
  * @returns 创建的用户
  */
 async function createOAuthUser(provider: OAuthProvider, data: IOAuthUserData): Promise<User> {
+  // OAuth 用户可能没有 email，生成占位 email 以满足 NOT NULL 约束
+  const email = data.email || `${provider}_${data.providerUserId}@oauth.placeholder`;
+
   // 创建用户
   const user = await prisma.user.create({
     data: {
-      email: data.email,
+      email,
       phone: data.phone,
       name: data.name,
       avatar: data.avatar,

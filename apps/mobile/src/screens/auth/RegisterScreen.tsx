@@ -40,8 +40,8 @@ export const RegisterScreen = () => {
       return;
     }
 
-    if (form.password.length < 6) {
-      Alert.alert('错误', '密码长度至少为6位');
+    if (form.password.length < 8) {
+      Alert.alert('错误', '密码长度至少为8位，需包含大小写字母、数字和特殊字符');
       return;
     }
 

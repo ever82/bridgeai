@@ -5,6 +5,8 @@
  * 用户注册、登录、密码管理、令牌生成
  */
 
+import crypto from 'crypto';
+
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from '@prisma/client';
@@ -13,7 +15,7 @@ import { logger } from '../utils/logger';
 import { prisma } from '../db/client';
 
 import { cacheGet, cacheSet, cacheDel } from './cache';
-
+import * as refreshTokenService from './auth/refreshToken';
 
 // JWT 配置
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -160,7 +162,8 @@ export async function verifyVerificationCode(identifier: string, code: string): 
  * @returns 访问令牌
  */
 export function generateAccessToken(payload: ITokenPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as any);
+  const jti = crypto.randomUUID();
+  return jwt.sign({ ...payload, jti }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as any);
 }
 
 /**
@@ -169,7 +172,8 @@ export function generateAccessToken(payload: ITokenPayload): string {
  * @returns 刷新令牌
  */
 export function generateRefreshToken(userId: string): string {
-  return jwt.sign({ userId, type: 'refresh' }, JWT_SECRET, {
+  const jti = crypto.randomUUID();
+  return jwt.sign({ userId, type: 'refresh', jti }, JWT_SECRET, {
     expiresIn: JWT_REFRESH_EXPIRES_IN,
   } as any);
 }
@@ -284,6 +288,9 @@ export async function registerUser(data: IRegisterData): Promise<IAuthResponse> 
   });
   const refreshToken = generateRefreshToken(user.id);
 
+  // Store refresh token in database
+  await refreshTokenService.createRefreshToken({ userId: user.id, token: refreshToken });
+
   // 移除敏感字段
   const { passwordHash: _ph, ...userWithoutPassword } = user;
 
@@ -315,7 +322,7 @@ export async function loginUser(data: ILoginData): Promise<IAuthResponse> {
   });
 
   if (!user) {
-    throw new Error('用户不存在');
+    throw new Error('邮箱/手机号或密码错误');
   }
 
   // 检查账户是否被锁定（DB-based tracking）
@@ -396,6 +403,9 @@ export async function loginUser(data: ILoginData): Promise<IAuthResponse> {
   });
   const refreshToken = generateRefreshToken(user.id);
 
+  // Store refresh token in database
+  await refreshTokenService.createRefreshToken({ userId: user.id, token: refreshToken });
+
   // 移除敏感字段
   const { passwordHash: _ph, ...userWithoutPassword } = user;
 
@@ -425,6 +435,12 @@ export async function refreshAccessToken(refreshToken: string): Promise<IAuthRes
     throw new Error('无效的刷新令牌');
   }
 
+  // Check refresh token in database
+  const isValid = await refreshTokenService.isRefreshTokenValid(refreshToken);
+  if (!isValid) {
+    throw new Error('刷新令牌无效或已过期');
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: decoded.userId },
   });
@@ -444,6 +460,9 @@ export async function refreshAccessToken(refreshToken: string): Promise<IAuthRes
     role: (user as any).role,
   });
   const newRefreshToken = generateRefreshToken(user.id);
+
+  // Rotate: revoke old, create new in database
+  await refreshTokenService.rotateRefreshToken(refreshToken, newRefreshToken, user.id);
 
   const { passwordHash: _ph, ...userWithoutPassword } = user;
 
@@ -473,7 +492,8 @@ export async function requestPasswordReset(email?: string, phone?: string): Prom
   });
 
   if (!user) {
-    throw new Error('用户不存在');
+    // 不暴露用户是否存在的具体信息，直接返回成功
+    return 'no-reset-needed';
   }
 
   // 生成重置令牌（15分钟有效）
@@ -510,8 +530,11 @@ export async function resetPassword(resetToken: string, newPassword: string): Pr
 
     await prisma.user.update({
       where: { id: decoded.userId },
-      data: { passwordHash },
+      data: { passwordHash, failedLoginAttempts: 0, lockedUntil: null },
     });
+
+    // Revoke all refresh tokens to force re-login on all devices
+    await refreshTokenService.revokeAllUserRefreshTokens(decoded.userId);
 
     logger.info('Password reset successful', { userId: decoded.userId });
   } catch (error) {
@@ -555,6 +578,9 @@ export async function changePassword(
     where: { id: userId },
     data: { passwordHash },
   });
+
+  // Revoke all refresh tokens to force re-login on all devices
+  await refreshTokenService.revokeAllUserRefreshTokens(userId);
 
   logger.info('Password changed', { userId });
 }
