@@ -13,7 +13,7 @@ import {
 } from '../performance';
 
 // Mock Sentry functions
-jest.mock('../utils/sentry', () => ({
+jest.mock('../../utils/sentry', () => ({
   startTransaction: jest.fn(() => ({
     setHttpStatus: jest.fn(),
     setTag: jest.fn(),
@@ -68,11 +68,7 @@ describe('Performance Middleware', () => {
     });
 
     it('should add performance headers to response', () => {
-      performanceHeaders(
-        mockRequest as Request,
-        mockResponse as Response,
-        nextFunction
-      );
+      performanceHeaders(mockRequest as Request, mockResponse as Response, nextFunction);
 
       expect(mockResponse.on).toHaveBeenCalledWith('finish', expect.any(Function));
       expect(nextFunction).toHaveBeenCalled();
@@ -87,11 +83,7 @@ describe('Performance Middleware', () => {
         }
       });
 
-      performanceHeaders(
-        mockRequest as Request,
-        mockResponse as Response,
-        nextFunction
-      );
+      performanceHeaders(mockRequest as Request, mockResponse as Response, nextFunction);
 
       finishCallback?.();
 
@@ -116,15 +108,15 @@ describe('Performance Middleware', () => {
       const error = new Error('Database error');
       const mockQuery = jest.fn().mockRejectedValue(error);
 
-      await expect(
-        trackDatabaseQuery('findMany', 'User', mockQuery)
-      ).rejects.toThrow('Database error');
+      await expect(trackDatabaseQuery('findMany', 'User', mockQuery)).rejects.toThrow(
+        'Database error'
+      );
     });
 
     it('should warn on slow queries (>500ms)', async () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
       const slowQuery = jest.fn().mockImplementation(() => {
-        return new Promise((resolve) => setTimeout(() => resolve('result'), 600));
+        return new Promise(resolve => setTimeout(() => resolve('result'), 600));
       });
 
       await trackDatabaseQuery('findMany', 'User', slowQuery);

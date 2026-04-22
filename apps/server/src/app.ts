@@ -59,7 +59,11 @@ app.use('/api', (req: Request, res: Response, next: NextFunction) => {
       res
         .status(415)
         .json(
-          ApiResponse.error(`Unsupported Media Type: ${contentType}`, 'UNSUPPORTED_MEDIA_TYPE', 415)
+          ApiResponse.error(
+            `Unsupported Media Type: ${contentType.replace(/</g, '&lt;').replace(/>/g, '&gt;')}`,
+            'UNSUPPORTED_MEDIA_TYPE',
+            415
+          )
         );
       return;
     }
@@ -120,6 +124,24 @@ app.get('/ready', (req: Request, res: Response) => {
       checks: {
         database: 'ok', // Placeholder
       },
+    })
+  );
+});
+
+// Metrics endpoint (basic)
+app.get('/metrics', (req: Request, res: Response) => {
+  const mem = process.memoryUsage();
+  res.json(
+    ApiResponse.success({
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: {
+        rss: mem.rss,
+        heapTotal: mem.heapTotal,
+        heapUsed: mem.heapUsed,
+        external: mem.external,
+      },
+      pid: process.pid,
     })
   );
 });

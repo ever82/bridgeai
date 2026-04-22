@@ -34,12 +34,7 @@ export class AppError extends Error {
  */
 export class NotFoundError extends AppError {
   constructor(resource: string = 'Resource', details?: Record<string, unknown>) {
-    super(
-      `${resource} not found`,
-      'RESOURCE_NOT_FOUND',
-      404,
-      details
-    );
+    super(`${resource} not found`, 'RESOURCE_NOT_FOUND', 404, details);
     Object.setPrototypeOf(this, NotFoundError.prototype);
   }
 }
@@ -49,12 +44,7 @@ export class NotFoundError extends AppError {
  */
 export class ValidationError extends AppError {
   constructor(message: string = 'Validation failed', details?: Record<string, unknown>) {
-    super(
-      message,
-      'VALIDATION_ERROR',
-      400,
-      details
-    );
+    super(message, 'VALIDATION_ERROR', 400, details);
     // Fix instanceof check for transpiled ES6 class inheritance
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
@@ -65,12 +55,7 @@ export class ValidationError extends AppError {
  */
 export class UnauthorizedError extends AppError {
   constructor(message: string = 'Unauthorized', details?: Record<string, unknown>) {
-    super(
-      message,
-      'UNAUTHORIZED',
-      401,
-      details
-    );
+    super(message, 'UNAUTHORIZED', 401, details);
     Object.setPrototypeOf(this, UnauthorizedError.prototype);
   }
 }
@@ -80,12 +65,7 @@ export class UnauthorizedError extends AppError {
  */
 export class ForbiddenError extends AppError {
   constructor(message: string = 'Forbidden', details?: Record<string, unknown>) {
-    super(
-      message,
-      'FORBIDDEN',
-      403,
-      details
-    );
+    super(message, 'FORBIDDEN', 403, details);
     Object.setPrototypeOf(this, ForbiddenError.prototype);
   }
 }
@@ -95,12 +75,7 @@ export class ForbiddenError extends AppError {
  */
 export class ConflictError extends AppError {
   constructor(message: string = 'Resource conflict', details?: Record<string, unknown>) {
-    super(
-      message,
-      'RESOURCE_CONFLICT',
-      409,
-      details
-    );
+    super(message, 'RESOURCE_CONFLICT', 409, details);
     Object.setPrototypeOf(this, ConflictError.prototype);
   }
 }
@@ -110,12 +85,7 @@ export class ConflictError extends AppError {
  */
 export class RateLimitError extends AppError {
   constructor(message: string = 'Rate limit exceeded', details?: Record<string, unknown>) {
-    super(
-      message,
-      'RATE_LIMIT_EXCEEDED',
-      429,
-      details
-    );
+    super(message, 'RATE_LIMIT_EXCEEDED', 429, details);
     Object.setPrototypeOf(this, RateLimitError.prototype);
   }
 }
@@ -127,5 +97,15 @@ export class MulterUploadError extends AppError {
   constructor(message: string, code: string, statusCode: number) {
     super(message, code, statusCode);
     Object.setPrototypeOf(this, MulterUploadError.prototype);
+  }
+}
+
+/**
+ * File Validation Error (400)
+ */
+export class FileValidationError extends AppError {
+  constructor(message: string = 'Invalid file', details?: Record<string, unknown>) {
+    super(message, 'INVALID_FILE_TYPE', 400, details);
+    Object.setPrototypeOf(this, FileValidationError.prototype);
   }
 }
