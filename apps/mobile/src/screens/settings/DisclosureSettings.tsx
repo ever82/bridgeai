@@ -151,8 +151,11 @@ export const DisclosureSettings: React.FC<DisclosureSettingsProps> = ({ agentId:
   }, [effectiveAgentId, fields, defaultLevel, strictMode]);
 
   const handlePreview = useCallback(() => {
-    // Navigate to preview screen
-    navigation.navigate('DisclosurePreview', { agentId: effectiveAgentId, fields } as never);
+    const previewFields = fields.map(f => ({
+      fieldName: f.fieldName,
+      currentLevel: f.currentLevel,
+    }));
+    navigation.navigate('DisclosurePreview', { agentId: effectiveAgentId, fields: previewFields });
   }, [navigation, effectiveAgentId, fields]);
 
   const disclosureLevels = Object.values(DisclosureLevel);
