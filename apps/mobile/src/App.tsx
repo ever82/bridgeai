@@ -4,11 +4,15 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
 
 import { RootNavigator } from './navigation/RootNavigator';
-import { initSentry, withErrorBoundary } from './utils/sentry';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-// Initialize Sentry
-initSentry();
+// Initialize Sentry on React Native only (not web)
+const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
+if (isReactNative) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { initSentry } = require('./utils/sentry');
+  initSentry();
+}
 
 function App() {
   return (
@@ -23,8 +27,7 @@ function App() {
   );
 }
 
-// Wrap app with Sentry error boundary
-export default withErrorBoundary(App);
+export default App;
 
 const styles = StyleSheet.create({
   container: {

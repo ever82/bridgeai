@@ -27,10 +27,20 @@ export type AuthStackParamList = {
 
 export type MainTabParamList = {
   Home: undefined;
-  Explore: undefined;
-  Create: undefined;
-  Activity: undefined;
+  Messages: undefined;
+  Discover: undefined;
   Profile: undefined;
+};
+
+export type MessagesStackParamList = {
+  MessagesList: undefined;
+  Chat: { conversationId: string };
+};
+
+export type DiscoverStackParamList = {
+  DiscoverMain: undefined;
+  Search: undefined;
+  CategoryMoments: { categoryId: string; categoryName: string };
 };
 
 export type HomeStackParamList = {

@@ -157,8 +157,7 @@ export const useAuthStore = create<AuthState>()(
 
         if (tokens && tokens.accessToken && tokens.refreshToken) {
           // Verify the token is still valid
-          const { refreshToken } = get();
-          const isValid = await refreshToken();
+          const isValid = await get().refreshToken();
           if (!isValid) {
             set({ isLoading: false });
             return;
@@ -179,7 +178,6 @@ export const useAuthStore = create<AuthState>()(
       partialize: state => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
-        // Note: tokens are stored in SecureStore, not AsyncStorage
       }),
     }
   )

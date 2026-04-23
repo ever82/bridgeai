@@ -1,4 +1,6 @@
+import { registerRootComponent } from 'expo';
+
 import App from '../src/App';
 
-// Expo entry point
-export default App;
+// Register the app as the root component
+registerRootComponent(App);

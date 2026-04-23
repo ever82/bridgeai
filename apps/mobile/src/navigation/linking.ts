@@ -42,9 +42,6 @@ export const linking: LinkingOptions<RootStackParamList> = {
           Profile: 'profile',
         },
       },
-
-      // Drawer navigation
-      Drawer: 'menu',
     },
   },
 
@@ -56,7 +53,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
   },
 
   // Subscribe to incoming links
-  subscribe: (listener) => {
+  subscribe: _listener => {
     // The default subscription is handled by React Navigation
     // Return unsubscribe function
     return () => {
@@ -65,12 +62,12 @@ export const linking: LinkingOptions<RootStackParamList> = {
   },
 
   // Custom function to check if a URL can be handled
-  getStateFromPath: (path, config) => {
+  getStateFromPath: (path, _config) => {
     // Handle special cases or custom path parsing
     // For example: handle /user/:id or /moment/:id patterns
 
     // Check for user profile deep link: /user/:userId
-    const userMatch = path.match(/^\/user\/([^\/]+)$/);
+    const userMatch = path.match(/^\/user\/([^/]+)$/);
     if (userMatch) {
       return {
         routes: [
@@ -97,7 +94,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
     }
 
     // Check for moment detail deep link: /moment/:momentId
-    const momentMatch = path.match(/^\/moment\/([^\/]+)$/);
+    const momentMatch = path.match(/^\/moment\/([^/]+)$/);
     if (momentMatch) {
       return {
         routes: [
@@ -124,7 +121,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
     }
 
     // Check for chat deep link: /chat/:conversationId
-    const chatMatch = path.match(/^\/chat\/([^\/]+)$/);
+    const chatMatch = path.match(/^\/chat\/([^/]+)$/);
     if (chatMatch) {
       return {
         routes: [

@@ -25,7 +25,7 @@ export const useMessageStore = create<MessageState>()(
       error: null,
 
       // Actions
-      setUnreadCount: (count) => set({ unreadCount: count }),
+      setUnreadCount: count => set({ unreadCount: count }),
 
       incrementUnreadCount: () => {
         const currentCount = get().unreadCount;
@@ -43,15 +43,12 @@ export const useMessageStore = create<MessageState>()(
         set({ isLoading: true, error: null });
         try {
           // TODO: Replace with actual API call when API is ready
-          // const response = await messageApi.getUnreadCount();
-          // set({ unreadCount: response.data.count, isLoading: false });
-
-          // Mock implementation - simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 500));
           set({ isLoading: false });
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : '获取未读消息数失败';
           set({
-            error: error.message || '获取未读消息数失败',
+            error: message,
             isLoading: false,
           });
         }
@@ -60,7 +57,7 @@ export const useMessageStore = create<MessageState>()(
     {
       name: 'message-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ unreadCount: state.unreadCount }),
+      partialize: state => ({ unreadCount: state.unreadCount }),
     }
   )
 );

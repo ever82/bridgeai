@@ -1,18 +1,22 @@
 import * as Sentry from '@sentry/react-native';
-import { NavigationInstrumentation } from '@sentry/react-native';
 
 /**
  * Sentry configuration for React Native mobile error monitoring
  */
 
-// Navigation instrumentation for performance tracking
-export const navigationInstrumentation = new NavigationInstrumentation();
+// Navigation instrumentation for performance tracking (RN-only)
+const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
+let navigationInstrumentation: unknown = null;
+if (isReactNative) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { NavigationInstrumentation } = require('@sentry/react-native');
+  navigationInstrumentation = new NavigationInstrumentation();
+}
 
 // Initialize Sentry
 export function initSentry(): void {
   const dsn = process.env.SENTRY_DSN;
   const environment = process.env.NODE_ENV || 'development';
-  const release = process.env.SENTRY_RELEASE || `${process.env.npm_package_name}@${process.env.npm_package_version}`;
 
   if (!dsn) {
     console.warn('[Sentry] DSN not configured, error tracking disabled');
@@ -22,22 +26,19 @@ export function initSentry(): void {
   Sentry.init({
     dsn,
     environment,
-    release,
 
-    // Enable native crash reporting
-    enableNative: true,
-    enableNativeCrashHandling: true,
-    enableNativeNScope: true,
+    // Native options (only apply on React Native)
+    ...(isReactNative && {
+      enableNative: true,
+      enableNativeCrashHandling: true,
+      enableNativeNScope: true,
+      attachScreenshot: true,
+      autoSessionTracking: true,
+      sessionTrackingIntervalMillis: 30000,
+    }),
 
     // Performance monitoring
     tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.1'),
-
-    // Attach screenshots for errors
-    attachScreenshot: true,
-
-    // Session tracking
-    autoSessionTracking: true,
-    sessionTrackingIntervalMillis: 30000,
 
     // Enable auto performance tracking
     enableAutoPerformanceTracking: true,
@@ -63,10 +64,14 @@ export function initSentry(): void {
       return event;
     },
 
-    // Integrations
-    integrations: [
-      navigationInstrumentation,
-    ],
+    // Integrations (only with navigation instrumentation on RN)
+    ...(isReactNative && navigationInstrumentation
+      ? {
+          integrations: [
+            navigationInstrumentation as Parameters<typeof Sentry.init>[0]['integrations'],
+          ],
+        }
+      : {}),
   });
 
   console.log(`[Sentry] Initialized for environment: ${environment}`);
@@ -75,7 +80,11 @@ export function initSentry(): void {
 /**
  * Set user context for Sentry
  */
-export function setUserContext(userId: string, email?: string, extras?: Record<string, unknown>): void {
+export function setUserContext(
+  userId: string,
+  email?: string,
+  extras?: Record<string, unknown>
+): void {
   Sentry.setUser({
     id: userId,
     email,
@@ -113,7 +122,7 @@ export function addBreadcrumb(
  */
 export function captureException(error: Error, context?: Record<string, unknown>): string {
   if (context) {
-    Sentry.withScope((scope) => {
+    Sentry.withScope(scope => {
       scope.setExtras(context);
       Sentry.captureException(error);
     });
@@ -127,7 +136,10 @@ export function captureException(error: Error, context?: Record<string, unknown>
 /**
  * Capture message
  */
-export function captureMessage(message: string, level: Sentry.Severity = 'info' as Sentry.Severity): string {
+export function captureMessage(
+  message: string,
+  level: Sentry.Severity = 'info' as Sentry.Severity
+): string {
   Sentry.captureMessage(message, level);
   return Sentry.lastEventId() || '';
 }
@@ -154,23 +166,16 @@ export function configureNavigationBreadcrumb(
   routeName: string,
   params?: Record<string, unknown>
 ): void {
-  addBreadcrumb(
-    `Navigation: ${routeName}`,
-    'navigation',
-    'info',
-    {
-      route: routeName,
-      params,
-    }
-  );
+  addBreadcrumb(`Navigation: ${routeName}`, 'navigation', 'info', {
+    route: routeName,
+    params,
+  });
 }
 
 /**
  * Error boundary wrapper for React Native
  */
-export function withErrorBoundary<T extends React.ComponentType<object>>(
-  Component: T
-): T {
+export function withErrorBoundary<T extends React.ComponentType<object>>(Component: T): T {
   return Sentry.wrap(Component);
 }
 
@@ -209,28 +214,14 @@ export function trackComponentLifecycle(componentName: string): {
 
   return {
     mount: () => {
-      addBreadcrumb(
-        `Component mounted: ${componentName}`,
-        'ui.lifecycle',
-        'info'
-      );
+      addBreadcrumb(`Component mounted: ${componentName}`, 'ui.lifecycle', 'info');
     },
     unmount: () => {
       const lifetime = Date.now() - mountTime;
-      addBreadcrumb(
-        `Component unmounted: ${componentName}`,
-        'ui.lifecycle',
-        'info',
-        { lifetime }
-      );
+      addBreadcrumb(`Component unmounted: ${componentName}`, 'ui.lifecycle', 'info', { lifetime });
     },
     update: (data?: Record<string, unknown>) => {
-      addBreadcrumb(
-        `Component updated: ${componentName}`,
-        'ui.lifecycle',
-        'info',
-        data
-      );
+      addBreadcrumb(`Component updated: ${componentName}`, 'ui.lifecycle', 'info', data);
     },
   };
 }
