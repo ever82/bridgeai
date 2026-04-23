@@ -49,6 +49,12 @@ export type ProfileStackParamList = {
   ProfileMain: undefined;
   Settings: undefined;
   EditProfile: undefined;
+  SecuritySettings: undefined;
+  DeviceManagement: undefined;
+  PrivacySettings: undefined;
+  BlockedUsers: undefined;
+  DisclosureSettings: { agentId?: string };
+  DisclosurePreview: { agentId?: string; fields?: { fieldName: string; currentLevel: string }[] };
   MyMoments: undefined;
   LikedMoments: undefined;
   ReviewList: undefined;

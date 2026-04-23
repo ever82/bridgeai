@@ -7,22 +7,26 @@ import {
   ScrollView,
   Switch,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import {
   DisclosureLevel,
   DISCLOSURE_LEVEL_INFO,
-  FieldDisclosure,
   DISCLOSABLE_FIELDS,
   DEFAULT_FIELD_DISCLOSURES,
 } from '@bridgeai/shared/types/disclosure';
 
-import { useThemeStore } from '../../stores/themeStore';
 import { theme as themeColors } from '../../theme';
+import { apiClient } from '../../services/api/client';
+
+type DisclosureSettingsRouteParams = {
+  DisclosureSettings: { agentId?: string };
+};
 
 interface DisclosureSettingsProps {
-  agentId: string;
+  agentId?: string;
 }
 
 interface FieldSetting {
@@ -32,10 +36,12 @@ interface FieldSetting {
   isDisclosable: boolean;
 }
 
-export const DisclosureSettings: React.FC<DisclosureSettingsProps> = ({ agentId }) => {
+export const DisclosureSettings: React.FC<DisclosureSettingsProps> = ({ agentId: propAgentId }) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { isDarkMode } = useThemeStore();
+  const route = useRoute<RouteProp<DisclosureSettingsRouteParams, 'DisclosureSettings'>>();
+  const routeAgentId = route.params?.agentId;
+  const effectiveAgentId = propAgentId || routeAgentId || '';
 
   // Mock state - in real implementation, this would come from API
   const [fields, setFields] = useState<FieldSetting[]>(
@@ -53,6 +59,7 @@ export const DisclosureSettings: React.FC<DisclosureSettingsProps> = ({ agentId 
   const [strictMode, setStrictMode] = useState(false);
   const [defaultLevel, setDefaultLevel] = useState<DisclosureLevel>(DisclosureLevel.AFTER_MATCH);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const fieldLabels: Record<string, string> = {
     name: '姓名',
@@ -73,73 +80,80 @@ export const DisclosureSettings: React.FC<DisclosureSettingsProps> = ({ agentId 
 
   const handleFieldLevelChange = useCallback((fieldName: string, level: DisclosureLevel) => {
     setFields(prev =>
-      prev.map(f =>
-        f.fieldName === fieldName ? { ...f, currentLevel: level } : f
-      )
+      prev.map(f => (f.fieldName === fieldName ? { ...f, currentLevel: level } : f))
     );
     setHasChanges(true);
   }, []);
 
   const handleBulkSet = useCallback((level: DisclosureLevel) => {
-    Alert.alert(
-      '批量设置',
-      `将所有字段设置为"${DISCLOSURE_LEVEL_INFO[level].name}"？`,
-      [
-        { text: '取消', style: 'cancel' },
-        {
-          text: '确定',
-          onPress: () => {
-            setFields(prev =>
-              prev.map(f => ({ ...f, currentLevel: level }))
-            );
-            setHasChanges(true);
-          },
+    Alert.alert('批量设置', `将所有字段设置为"${DISCLOSURE_LEVEL_INFO[level].name}"？`, [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '确定',
+        onPress: () => {
+          setFields(prev => prev.map(f => ({ ...f, currentLevel: level })));
+          setHasChanges(true);
         },
-      ]
-    );
+      },
+    ]);
   }, []);
 
   const handleResetToDefaults = useCallback(() => {
-    Alert.alert(
-      '重置为默认',
-      '确定要重置所有披露设置为默认值吗？',
-      [
-        { text: '取消', style: 'cancel' },
-        {
-          text: '重置',
-          style: 'destructive',
-          onPress: () => {
-            setFields(
-              DISCLOSABLE_FIELDS.map(fieldName => {
-                const defaultConfig = DEFAULT_FIELD_DISCLOSURES.find(f => f.fieldName === fieldName);
-                return {
-                  fieldName,
-                  currentLevel: defaultConfig?.level || DisclosureLevel.AFTER_MATCH,
-                  defaultLevel: defaultConfig?.level || DisclosureLevel.AFTER_MATCH,
-                  isDisclosable: true,
-                };
-              })
-            );
-            setStrictMode(false);
-            setDefaultLevel(DisclosureLevel.AFTER_MATCH);
-            setHasChanges(true);
-          },
+    Alert.alert('重置为默认', '确定要重置所有披露设置为默认值吗？', [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '重置',
+        style: 'destructive',
+        onPress: () => {
+          setFields(
+            DISCLOSABLE_FIELDS.map(fieldName => {
+              const defaultConfig = DEFAULT_FIELD_DISCLOSURES.find(f => f.fieldName === fieldName);
+              return {
+                fieldName,
+                currentLevel: defaultConfig?.level || DisclosureLevel.AFTER_MATCH,
+                defaultLevel: defaultConfig?.level || DisclosureLevel.AFTER_MATCH,
+                isDisclosable: true,
+              };
+            })
+          );
+          setStrictMode(false);
+          setDefaultLevel(DisclosureLevel.AFTER_MATCH);
+          setHasChanges(true);
         },
-      ]
-    );
+      },
+    ]);
   }, []);
 
-  const handleSave = useCallback(() => {
-    // In real implementation, this would call the API
-    console.log('Saving disclosure settings:', { agentId, fields, strictMode, defaultLevel });
-    Alert.alert('保存成功', '披露设置已更新');
-    setHasChanges(false);
-  }, [agentId, fields, strictMode, defaultLevel]);
+  const handleSave = useCallback(async () => {
+    if (!effectiveAgentId) {
+      Alert.alert('错误', '缺少 Agent ID，请从设置页面重新进入');
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const fieldDisclosures = fields.map(f => ({
+        fieldName: f.fieldName,
+        level: f.currentLevel,
+        isDisclosable: f.isDisclosable,
+      }));
+      await apiClient.put(`/api/v1/disclosure/${effectiveAgentId}/settings`, {
+        fieldDisclosures,
+        defaultLevel,
+        strictMode,
+      });
+      Alert.alert('保存成功', '披露设置已更新');
+      setHasChanges(false);
+    } catch {
+      Alert.alert('错误', '保存失败，请稍后重试');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [effectiveAgentId, fields, defaultLevel, strictMode]);
 
   const handlePreview = useCallback(() => {
     // Navigate to preview screen
-    navigation.navigate('DisclosurePreview', { agentId, fields } as never);
-  }, [navigation, agentId, fields]);
+    navigation.navigate('DisclosurePreview', { agentId: effectiveAgentId, fields } as never);
+  }, [navigation, effectiveAgentId, fields]);
 
   const disclosureLevels = Object.values(DisclosureLevel);
 
@@ -153,10 +167,14 @@ export const DisclosureSettings: React.FC<DisclosureSettingsProps> = ({ agentId 
         <Text style={styles.headerTitle}>信息披露设置</Text>
         <TouchableOpacity
           onPress={handleSave}
-          style={[styles.saveButton, !hasChanges && styles.saveButtonDisabled]}
-          disabled={!hasChanges}
+          style={[styles.saveButton, (!hasChanges || isSaving) && styles.saveButtonDisabled]}
+          disabled={!hasChanges || isSaving}
         >
-          <Text style={[styles.saveText, !hasChanges && styles.saveTextDisabled]}>保存</Text>
+          {isSaving ? (
+            <ActivityIndicator size="small" color={themeColors.colors.primary} />
+          ) : (
+            <Text style={[styles.saveText, !hasChanges && styles.saveTextDisabled]}>保存</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -240,7 +258,9 @@ export const DisclosureSettings: React.FC<DisclosureSettingsProps> = ({ agentId 
           {fields.map(field => (
             <View key={field.fieldName} style={styles.fieldCard}>
               <View style={styles.fieldHeader}>
-                <Text style={styles.fieldName}>{fieldLabels[field.fieldName] || field.fieldName}</Text>
+                <Text style={styles.fieldName}>
+                  {fieldLabels[field.fieldName] || field.fieldName}
+                </Text>
                 {field.currentLevel !== field.defaultLevel && (
                   <View style={styles.modifiedBadge}>
                     <Text style={styles.modifiedText}>已修改</Text>

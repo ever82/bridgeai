@@ -4,6 +4,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { EditProfileScreen } from '../screens/settings/EditProfileScreen';
+import { SecuritySettingsScreen } from '../screens/settings/SecuritySettingsScreen';
+import { PrivacySettingsScreen } from '../screens/settings/PrivacySettingsScreen';
+import { DisclosureSettings } from '../screens/settings/DisclosureSettings';
+import { BlockedUsersScreen } from '../screens/settings/BlockedUsersScreen';
+import { DisclosurePreview } from '../components/Disclosure/DisclosurePreview';
 import { MyMomentsScreen } from '../screens/profile/MyMomentsScreen';
 import { LikedMomentsScreen } from '../screens/profile/LikedMomentsScreen';
 import { MomentDetailScreen } from '../screens/moment/MomentDetailScreen';
@@ -26,6 +31,11 @@ export const ProfileStackNavigator = () => {
       <Stack.Screen name="ProfileMain" component={ProfileScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen name="SecuritySettings" component={SecuritySettingsScreen} />
+      <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} />
+      <Stack.Screen name="BlockedUsers" component={BlockedUsersScreen} />
+      <Stack.Screen name="DisclosureSettings" component={DisclosureSettings} />
+      <Stack.Screen name="DisclosurePreview" component={DisclosurePreview} />
       <Stack.Screen name="MyMoments" component={MyMomentsScreen} />
       <Stack.Screen name="LikedMoments" component={LikedMomentsScreen} />
       <Stack.Screen name="MomentDetail" component={MomentDetailScreen} />
