@@ -238,6 +238,25 @@ export async function getPrivacySettings(userId: string): Promise<PrivacySetting
 /**
  * Change password
  */
+/**
+ * Verify user password (for account deletion confirmation)
+ */
+export async function verifyPassword(userId: string, password: string): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { passwordHash: true },
+  });
+
+  if (!user) {
+    throw new AppError('User not found', 'USER_NOT_FOUND', 404);
+  }
+
+  const isValid = await bcrypt.compare(password, user.passwordHash);
+  if (!isValid) {
+    throw new AppError('Password is incorrect', 'INVALID_PASSWORD', 401);
+  }
+}
+
 export async function changePassword(
   userId: string,
   currentPassword: string,

@@ -15,7 +15,7 @@ import { DEFAULT_PRIVACY_SETTINGS } from '../types/privacy';
 const router: Router = Router();
 
 // 验证模式
-const privacySettingsSchema = z.object({
+export const privacySettingsSchema = z.object({
   profileVisibility: z.enum(['public', 'friends', 'private']).optional(),
   onlineStatusVisibility: z.enum(['everyone', 'friends', 'nobody']).optional(),
   phoneVisibility: z.enum(['public', 'friends', 'hidden']).optional(),

@@ -2,14 +2,16 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import multer from 'multer';
 
+import { AppError } from '../errors/AppError';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/common';
-import { validateBody } from '../middleware/validation';
 import { handleUploadError } from '../middleware/upload';
+import { validateBody } from '../middleware/validation';
 import { ApiResponse } from '../utils/response';
-import * as userService from '../services/userService';
 import * as storageService from '../services/storageService';
-import { AppError } from '../errors/AppError';
+import * as userService from '../services/userService';
+
+import { privacySettingsSchema } from './userPrivacy';
 
 // Multer config for avatar upload
 const avatarUpload = multer({
@@ -32,7 +34,12 @@ const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   displayName: z.string().max(50).optional(),
   bio: z.string().max(500).optional(),
-  website: z.string().url().max(500).optional().or(z.literal('').transform(() => undefined)),
+  website: z
+    .string()
+    .url()
+    .max(500)
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
   location: z.string().max(200).optional(),
 });
 
@@ -145,10 +152,12 @@ router.post(
 
     const updatedUser = await userService.updateAvatar(req.user.id, avatarUrl);
 
-    res.json(ApiResponse.success({
-      avatarUrl: updatedUser.avatarUrl,
-      message: 'Avatar updated successfully',
-    }));
+    res.json(
+      ApiResponse.success({
+        avatarUrl: updatedUser.avatarUrl,
+        message: 'Avatar updated successfully',
+      })
+    );
   })
 );
 
@@ -171,12 +180,17 @@ router.delete(
       throw new AppError('Password is required', 'PASSWORD_REQUIRED', 400);
     }
 
+    // Verify password before deleting account
+    await userService.verifyPassword(req.user.id, password);
+
     // Delete user
     await userService.deleteUser(req.user.id);
 
-    res.json(ApiResponse.success({
-      message: 'Account deleted successfully',
-    }));
+    res.json(
+      ApiResponse.success({
+        message: 'Account deleted successfully',
+      })
+    );
   })
 );
 
@@ -207,6 +221,7 @@ router.get(
 router.put(
   '/privacy',
   authenticate,
+  validateBody(privacySettingsSchema),
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
@@ -243,9 +258,11 @@ router.post(
 
     await userService.changePassword(req.user.id, currentPassword, newPassword);
 
-    res.json(ApiResponse.success({
-      message: 'Password changed successfully',
-    }));
+    res.json(
+      ApiResponse.success({
+        message: 'Password changed successfully',
+      })
+    );
   })
 );
 
@@ -270,11 +287,13 @@ router.post(
 
     const updatedUser = await userService.updatePhone(req.user.id, phone);
 
-    res.json(ApiResponse.success({
-      phone: updatedUser.phone,
-      phoneVerified: updatedUser.phoneVerified,
-      message: 'Phone number updated successfully',
-    }));
+    res.json(
+      ApiResponse.success({
+        phone: updatedUser.phone,
+        phoneVerified: updatedUser.phoneVerified,
+        message: 'Phone number updated successfully',
+      })
+    );
   })
 );
 
@@ -299,11 +318,13 @@ router.post(
 
     const updatedUser = await userService.updateEmail(req.user.id, email);
 
-    res.json(ApiResponse.success({
-      email: updatedUser.email,
-      emailVerified: updatedUser.emailVerified,
-      message: 'Email updated successfully',
-    }));
+    res.json(
+      ApiResponse.success({
+        email: updatedUser.email,
+        emailVerified: updatedUser.emailVerified,
+        message: 'Email updated successfully',
+      })
+    );
   })
 );
 
@@ -343,9 +364,11 @@ router.delete(
 
     await userService.removeDevice(req.user.id, deviceId);
 
-    res.json(ApiResponse.success({
-      message: 'Device removed successfully',
-    }));
+    res.json(
+      ApiResponse.success({
+        message: 'Device removed successfully',
+      })
+    );
   })
 );
 
@@ -370,9 +393,11 @@ router.post(
 
     await userService.blockUser(req.user.id, userId, reason);
 
-    res.json(ApiResponse.success({
-      message: 'User blocked successfully',
-    }));
+    res.json(
+      ApiResponse.success({
+        message: 'User blocked successfully',
+      })
+    );
   })
 );
 
@@ -397,9 +422,11 @@ router.post(
 
     await userService.unblockUser(req.user.id, userId);
 
-    res.json(ApiResponse.success({
-      message: 'User unblocked successfully',
-    }));
+    res.json(
+      ApiResponse.success({
+        message: 'User unblocked successfully',
+      })
+    );
   })
 );
 
