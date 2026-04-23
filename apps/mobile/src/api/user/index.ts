@@ -65,22 +65,17 @@ export async function uploadAvatar(
 ): Promise<AvatarUploadResponse> {
   if (file) {
     const formData = new FormData();
-    formData.append('file', {
-      uri: file.uri,
-      name: file.name,
-      type: file.type,
-    } as unknown as Blob);
+    formData.append('file', file as unknown as Blob);
 
     const response = await apiClient.post<{ success: boolean; data: AvatarUploadResponse }>(
       '/api/v1/users/avatar',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
+      formData
     );
     return response.data.data;
+  }
+
+  if (!avatarUrl) {
+    throw new Error('Either file or avatarUrl must be provided');
   }
 
   const response = await apiClient.post<{ success: boolean; data: AvatarUploadResponse }>(
@@ -242,8 +237,9 @@ export async function getDevices(): Promise<Device[]> {
  * Remove a device
  */
 export async function removeDevice(deviceId: string): Promise<{ message: string }> {
+  const encodedId = encodeURIComponent(deviceId);
   const response = await apiClient.delete<{ success: boolean; message: string }>(
-    `/api/v1/users/devices/${deviceId}`
+    `/api/v1/users/devices/${encodedId}`
   );
   return { message: response.data.message };
 }

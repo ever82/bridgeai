@@ -208,29 +208,56 @@ export enum ApiErrorCode {
   NETWORK_ERROR = 'NETWORK_ERROR',
   SERVER_ERROR = 'SERVER_ERROR',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+  // Additional error codes from backend
+  FORBIDDEN = 'FORBIDDEN',
+  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
+  RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND',
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  INVALID_AVATAR_URL = 'INVALID_AVATAR_URL',
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
+  PHONE_EXISTS_ALT = 'PHONE_EXISTS_ALT',
+  EMAIL_EXISTS_ALT = 'EMAIL_EXISTS_ALT',
 }
 
 // Error classification helper
 export function isNetworkError(error: ApiError): boolean {
-  return error.code === 'NETWORK_ERROR' || error.code === 'ECONNABORTED';
+  return (
+    error.code === ApiErrorCode.NETWORK_ERROR ||
+    error.code === 'ECONNABORTED' ||
+    error.code === 'ETIMEDOUT' ||
+    error.code === 'ECONNREFUSED'
+  );
 }
 
 export function isAuthError(error: ApiError): boolean {
-  return error.code === ApiErrorCode.UNAUTHORIZED;
+  return error.code === ApiErrorCode.UNAUTHORIZED || error.code === ApiErrorCode.FORBIDDEN;
 }
 
 export function isValidationError(error: ApiError): boolean {
   return (
     error.code === ApiErrorCode.MISSING_FIELDS ||
     error.code === ApiErrorCode.WEAK_PASSWORD ||
-    error.code === ApiErrorCode.PASSWORD_REQUIRED
+    error.code === ApiErrorCode.PASSWORD_REQUIRED ||
+    error.code === ApiErrorCode.VALIDATION_ERROR ||
+    error.code === ApiErrorCode.INVALID_PASSWORD ||
+    error.code === ApiErrorCode.EMAIL_EXISTS ||
+    error.code === ApiErrorCode.PHONE_EXISTS ||
+    error.code === ApiErrorCode.SAME_PASSWORD ||
+    error.code === ApiErrorCode.USER_ID_REQUIRED ||
+    error.code === ApiErrorCode.INVALID_AVATAR_URL
   );
 }
 
 export function isNotFoundError(error: ApiError): boolean {
-  return error.code === ApiErrorCode.USER_NOT_FOUND;
+  return (
+    error.code === ApiErrorCode.USER_NOT_FOUND || error.code === ApiErrorCode.RESOURCE_NOT_FOUND
+  );
 }
 
 export function isServerError(error: ApiError): boolean {
-  return error.code === 'SERVER_ERROR' || error.code === 'INTERNAL_SERVER_ERROR';
+  return (
+    error.code === ApiErrorCode.SERVER_ERROR ||
+    error.code === ApiErrorCode.INTERNAL_ERROR ||
+    error.code === ApiErrorCode.RATE_LIMIT_EXCEEDED
+  );
 }
