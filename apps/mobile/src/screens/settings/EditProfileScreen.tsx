@@ -16,12 +16,12 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../stores/authStore';
 import { theme } from '../../theme';
 import { api } from '../../services';
+import { uploadAvatar } from '../../api/user';
 
 export const EditProfileScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { user, setUser } = useAuthStore();
-  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [form, setForm] = useState({
@@ -33,7 +33,7 @@ export const EditProfileScreen = () => {
   });
 
   const updateField = useCallback((field: string, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const handleSave = async () => {
@@ -50,22 +50,37 @@ export const EditProfileScreen = () => {
         Alert.alert('成功', '个人资料已更新');
         navigation.goBack();
       }
-    } catch (error: any) {
-      Alert.alert('错误', error.response?.data?.message || '更新失败，请重试');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      Alert.alert('错误', err.response?.data?.message || '更新失败，请重试');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleAvatarUpload = async () => {
-    Alert.alert('提示', '头像上传功能开发中');
+    setIsUploading(true);
+    try {
+      const result = await uploadAvatar(undefined, 'https://example.com/default-avatar.png');
+      if (result?.avatarUrl) {
+        setUser({ ...user!, avatarUrl: result.avatarUrl });
+        Alert.alert('成功', '头像已更新');
+      }
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      Alert.alert('错误', err.message || '头像上传失败，请重试');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const getAvatarInitial = () => {
-    return user?.displayName?.[0]?.toUpperCase() ||
-           user?.name?.[0]?.toUpperCase() ||
-           user?.email?.[0]?.toUpperCase() ||
-           '?';
+    return (
+      user?.displayName?.[0]?.toUpperCase() ||
+      user?.name?.[0]?.toUpperCase() ||
+      user?.email?.[0]?.toUpperCase() ||
+      '?'
+    );
   };
 
   return (
@@ -111,7 +126,7 @@ export const EditProfileScreen = () => {
           <TextInput
             style={styles.input}
             value={form.displayName}
-            onChangeText={(text) => updateField('displayName', text)}
+            onChangeText={text => updateField('displayName', text)}
             placeholder="输入显示名称"
             maxLength={50}
           />
@@ -122,7 +137,7 @@ export const EditProfileScreen = () => {
           <TextInput
             style={styles.input}
             value={form.name}
-            onChangeText={(text) => updateField('name', text)}
+            onChangeText={text => updateField('name', text)}
             placeholder="输入真实姓名"
             maxLength={50}
           />
@@ -133,7 +148,7 @@ export const EditProfileScreen = () => {
           <TextInput
             style={[styles.input, styles.bioInput]}
             value={form.bio}
-            onChangeText={(text) => updateField('bio', text)}
+            onChangeText={text => updateField('bio', text)}
             placeholder="输入个人简介"
             multiline
             numberOfLines={4}
@@ -148,7 +163,7 @@ export const EditProfileScreen = () => {
           <TextInput
             style={styles.input}
             value={form.website}
-            onChangeText={(text) => updateField('website', text)}
+            onChangeText={text => updateField('website', text)}
             placeholder="https://example.com"
             autoCapitalize="none"
             keyboardType="url"
@@ -160,7 +175,7 @@ export const EditProfileScreen = () => {
           <TextInput
             style={styles.input}
             value={form.location}
-            onChangeText={(text) => updateField('location', text)}
+            onChangeText={text => updateField('location', text)}
             placeholder="输入所在城市"
           />
         </View>

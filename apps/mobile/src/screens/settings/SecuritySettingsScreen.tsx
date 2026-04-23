@@ -18,6 +18,7 @@ import {
   changePassword,
   bindPhone,
   bindEmail,
+  deleteAccount,
   sendPhoneVerificationCode,
   sendEmailVerificationCode,
   handleUserApiError,
@@ -46,7 +47,6 @@ export const SecuritySettingsScreen = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
-
   const updateField = useCallback(
     <K extends keyof SecuritySettings>(key: K, value: SecuritySettings[K]) => {
       setSettings(prev => ({ ...prev, [key]: value }));
@@ -344,14 +344,26 @@ export const SecuritySettingsScreen = () => {
     <TouchableOpacity
       style={styles.dangerSection}
       onPress={() => {
+        if (!settings.currentPassword) {
+          Alert.alert('请先输入密码', '请在"修改密码"区域输入当前密码后再试');
+          return;
+        }
         Alert.alert('删除账号', '删除账号后将无法恢复，确定要继续吗？', [
           { text: '取消', style: 'cancel' },
           {
             text: '删除',
             style: 'destructive',
-            onPress: () => {
-              // TODO: Implement account deletion
-              Alert.alert('提示', '请联系客服完成账号删除');
+            onPress: async () => {
+              try {
+                setIsLoading(true);
+                await deleteAccount({ password: settings.currentPassword });
+                Alert.alert('成功', '账号已删除');
+              } catch (error: unknown) {
+                const err = error as { message?: string };
+                Alert.alert('错误', err.message || '删除账号失败，请确认密码正确');
+              } finally {
+                setIsLoading(false);
+              }
             },
           },
         ]);
