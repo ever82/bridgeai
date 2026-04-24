@@ -5,13 +5,13 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { useAuthStore } from '../../stores/authStore';
+import { showAlert } from '../../utils/alert';
 import { theme } from '../../theme';
 
 export const RegisterScreen = () => {
@@ -31,17 +31,17 @@ export const RegisterScreen = () => {
 
   const handleRegister = async () => {
     if (!form.email || !form.username || !form.displayName || !form.password) {
-      Alert.alert('错误', '请填写所有必填项');
+      showAlert('错误', '请填写所有必填项');
       return;
     }
 
     if (form.password !== form.confirmPassword) {
-      Alert.alert('错误', '两次输入的密码不一致');
+      showAlert('错误', '两次输入的密码不一致');
       return;
     }
 
     if (form.password.length < 8) {
-      Alert.alert('错误', '密码长度至少为8位，需包含大小写字母、数字和特殊字符');
+      showAlert('错误', '密码长度至少为8位，需包含大小写字母、数字和特殊字符');
       return;
     }
 
@@ -54,7 +54,7 @@ export const RegisterScreen = () => {
         password: form.password,
       });
     } catch {
-      Alert.alert('注册失败', error || '请检查您的输入信息');
+      showAlert('注册失败', error || '请检查您的输入信息');
     }
   };
 

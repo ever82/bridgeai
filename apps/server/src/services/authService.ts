@@ -266,6 +266,7 @@ export async function registerUser(data: IRegisterData): Promise<IAuthResponse> 
       email: email!,
       phone,
       name,
+      displayName: name,
       passwordHash,
       status: 'ACTIVE',
     },

@@ -34,7 +34,14 @@ export const authApi = {
   },
 
   register: async (data: RegisterData) => {
-    const response = await api.post<ServerAuthResponse>('/auth/register', data);
+    // Map frontend fields to backend schema: displayName -> name
+    const payload = {
+      email: data.email,
+      name: data.displayName,
+      username: data.username,
+      password: data.password,
+    };
+    const response = await api.post<ServerAuthResponse>('/auth/register', payload);
     return { ...response, data: wrapServerResponse(response.data) };
   },
 

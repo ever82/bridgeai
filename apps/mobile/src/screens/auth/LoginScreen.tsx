@@ -5,12 +5,12 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { useAuthStore } from '../../stores/authStore';
+import { showAlert } from '../../utils/alert';
 import { theme } from '../../theme';
 
 export const LoginScreen = () => {
@@ -21,7 +21,7 @@ export const LoginScreen = () => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('错误', '请输入邮箱和密码');
+      showAlert('错误', '请输入邮箱和密码');
       return;
     }
 
@@ -29,13 +29,13 @@ export const LoginScreen = () => {
     try {
       await login({ email, password });
     } catch {
-      Alert.alert('登录失败', error || '请检查您的邮箱和密码');
+      showAlert('登录失败', error || '请检查您的邮箱和密码');
     }
   };
 
   const handleOAuthLogin = (provider: 'wechat' | 'google') => {
     // TODO: Implement OAuth login flow
-    Alert.alert('提示', `${provider === 'wechat' ? '微信' : 'Google'}登录功能开发中`);
+    showAlert('提示', `${provider === 'wechat' ? '微信' : 'Google'}登录功能开发中`);
   };
 
   return (
@@ -49,6 +49,7 @@ export const LoginScreen = () => {
       <View style={styles.form}>
         <TextInput
           style={styles.input}
+          testID="login-email-input"
           placeholder="邮箱"
           value={email}
           onChangeText={setEmail}
@@ -58,6 +59,7 @@ export const LoginScreen = () => {
         />
         <TextInput
           style={styles.input}
+          testID="login-password-input"
           placeholder="密码"
           value={password}
           onChangeText={setPassword}
@@ -69,6 +71,7 @@ export const LoginScreen = () => {
           style={[styles.button, isLoading && styles.buttonDisabled]}
           onPress={handleLogin}
           disabled={isLoading}
+          testID="login-button"
         >
           {isLoading ? (
             <ActivityIndicator color={theme.colors.textInverse} />
