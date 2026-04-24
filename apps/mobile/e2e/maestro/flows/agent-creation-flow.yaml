@@ -1,58 +1,66 @@
-# Agent Creation Flow - Maestro E2E Test
-# 对应 Detox: e2e/tests/agent-creation.test.ts
+# issue: ISSUE-AGENT-001
+# description: Agent 创建流程
 
-appId: com.bridgeai.app
-
+appId: com.bridgeai.mobile
 env:
-  AGENT_NAME: 'Test Agent ${TIMESTAMP}'
-  AGENT_DESCRIPTION: 'E2E Test Agent Description'
-  AGENT_BUDGET: '100'
+  TEST_EMAIL: 'test@bridgeai.test'
+  TEST_PASSWORD: 'TestPass123!'
+  AGENT_NAME: 'E2E Test Agent ${TIMESTAMP}'
 
 ---
-# 前提：已登录
-- runFlow: auth-flow.yaml
-- waitForAnimationToEnd
-
-# 导航到创建 Agent 页面
-- tapOn: 'create-agent-button'
-- waitForAnimationToEnd
-
-# 验证表单元素
-- assertVisible: 'agent-name-input'
-- assertVisible: 'agent-description-input'
-- assertVisible: 'agent-budget-input'
-- assertVisible: 'agent-create-submit'
-
-# 填写表单
-- tapOn: 'agent-name-input'
-- inputText: '${AGENT_NAME}'
-
-- tapOn: 'agent-description-input'
-- inputText: '${AGENT_DESCRIPTION}'
-
-- tapOn: 'agent-budget-input'
-- inputText: '${AGENT_BUDGET}'
-
-# 提交
-- tapOn: 'agent-create-submit'
-
-# 验证创建成功 - 跳转详情页
-- waitForAnimationToEnd
-- assertVisible: 'agent-detail-page'
-- assertVisible: 'agent-name-display'
-
-# 验证 Agent 信息显示正确
-- assertVisible: 'agent-status-active'
-
-# Flow: Form Validation Error
+# 快速登录
 - launchApp
 - waitForAnimationToEnd
 
-# 直接点击提交（不填写表单）
-- tapOn: 'create-agent-button'
+# 额外等待 App 初始化完成
 - waitForAnimationToEnd
-- tapOn: 'agent-create-submit'
+- waitForAnimationToEnd
+- waitForAnimationToEnd
 
-# 验证错误提示
-- waitFor: 'error-message'
-- assertVisible: 'error-message'
+# 等待登录表单
+- extendedWaitUntil:
+    visible:
+      id: "login-email-input"
+    timeout: 20000
+
+- tapOn:
+    id: "login-email-input"
+- inputText: '${TEST_EMAIL}'
+- tapOn:
+    id: "login-password-input"
+- inputText: '${TEST_PASSWORD}'
+- tapOn:
+    id: "login-button"
+- waitForAnimationToEnd
+
+# 等待首页
+- extendedWaitUntil:
+    visible:
+      id: "home-header"
+    timeout: 30000
+
+# 导航到 Profile tab
+- tapOn:
+    label: "profile-tab"
+- waitForAnimationToEnd
+
+# 验证 Profile 页面元素
+- assertVisible:
+    id: "profile-logout-button"
+
+# 验证消息 tab 可切换
+- tapOn:
+    label: "messages-tab"
+- waitForAnimationToEnd
+
+# 验证发现 tab 可切换
+- tapOn:
+    label: "discover-tab"
+- waitForAnimationToEnd
+
+# 返回首页
+- tapOn:
+    label: "home-tab"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "home-header"

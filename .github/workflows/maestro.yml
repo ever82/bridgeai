@@ -6,33 +6,100 @@ on:
     paths:
       - 'apps/mobile/e2e/maestro/**'
       - 'apps/mobile/src/**'
+      - 'apps/mobile/src/**/*.tsx'
+      - 'apps/server/**'
   pull_request:
     branches: [main, master]
     types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       platform:
-        description: 'Platform to test (ios/android/both)'
+        description: 'Platform to test (ios/android)'
         required: true
         default: 'ios'
 
 env:
   NODE_VERSION: '20'
-  JAVA_VERSION: '17'
 
 jobs:
-  maestro-ios:
-    runs-on: macos-13
-    timeout-minutes: 30
+  # L0: Health check (runs fast, always)
+  health-check:
+    runs-on: macos-14
+    timeout-minutes: 5
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+      - run: npm ci
+      - run: |
+          cd apps/mobile
+          npx ts-node e2e/maestro/runner.ts --layer 0
+      - name: Upload health report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: l0-health-check
+          path: apps/mobile/e2e/layer0/health-check.log
+
+  # L1: Backend server (start before tests)
+  backend-server:
+    runs-on: macos-14
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Start backend server
+        run: |
+          cd apps/server
+          npm ci
+          # Start server in background
+          npx tsx src/index.ts &
+          SERVER_PID=$!
+          echo "Backend server PID: $SERVER_PID"
+          echo $SERVER_PID > ../server.pid
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:3001/api/health > /dev/null 2>&1; then
+              echo "Backend server is ready"
+              break
+            fi
+            sleep 1
+          done
+      - name: Verify backend is running
+        run: curl -s http://localhost:3001/api/health || echo "Backend may need more time"
+
+  # L2: Maestro on iOS Simulator
+  maestro-ios:
+    runs-on: macos-14
+    timeout-minutes: 40
+    needs: [health-check, backend-server]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore backend server
+        run: |
+          # Ensure backend keeps running
+          if [ -f server.pid ]; then
+            PID=$(cat server.pid)
+            if ! kill -0 $PID 2>/dev/null; then
+              echo "Backend server not running, starting it..."
+              cd apps/server && npx tsx src/index.ts &
+            fi
+          else
+            cd apps/server && npx tsx src/index.ts &
+          fi
+          # Give it time to start
+          sleep 5
 
       - name: Install dependencies
         run: |
@@ -41,67 +108,78 @@ jobs:
 
       - name: Install Maestro
         run: |
-          cd apps/mobile
-          brew install maestro || curl -s "https://get.maestro.mobile.dev" | bash
+          curl -sL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
 
-      - name: Start iOS Simulator
-        run: xcrun simctl boot 'iPhone 14'
-        with:
-          action: boot
-
-      - name: Run Maestro Auth Flow
+      - name: Prebuild iOS project
         run: |
           cd apps/mobile
-          npx ts-node e2e/maestro/run-tests.ts test:auth ios
-        continue-on-error: true
+          npx expo prebuild --platform ios --clean
+
+      - name: Boot and Prepare Simulator
+        run: |
+          # Kill conflicting processes
+          pkill -f "expo run:ios" 2>/dev/null || true
+          pkill -f "metro" 2>/dev/null || true
+          sleep 2
+          # Ensure only ONE simulator is booted
+          xcrun simctl shutdown all 2>/dev/null || true
+          sleep 1
+          xcrun simctl boot 'iPhone 17 Pro'
+          sleep 2
+
+      - name: Build iOS App with JS Bundle
+        run: |
+          cd apps/mobile
+          # Kill expo processes that may have started from prebuild
+          pkill -f "expo run:ios" 2>/dev/null || true
+          sleep 1
+          # Build and bundle JS - use timeout to avoid hanging on Metro
+          # The app IS bundled with JS; we just kill the process before it waits for Metro
+          timeout 180 npx expo run:ios --scheme BridgeAI --no-install || true
+          sleep 2
+          # Kill any remaining expo/metro processes
+          pkill -f "expo run:ios" 2>/dev/null || true
+          pkill -f "metro" 2>/dev/null || true
+          sleep 1
+
+      - name: Install App on Simulator
+        run: |
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "BridgeAI.app" -type d 2>/dev/null | head -1)
+          echo "Installing app from: $APP_PATH"
+          if [ -n "$APP_PATH" ]; then
+            xcrun simctl install booted "$APP_PATH"
+          else
+            echo "App not found in DerivedData, searching build output..."
+            find apps/mobile/ios/build -name "BridgeAI.app" -type d 2>/dev/null | head -1 | xargs -I{} xcrun simctl install booted "{}" || echo "Will try launching anyway"
+          fi
+
+      - name: Run Maestro Flows
+        run: |
+          cd apps/mobile
+          # Ensure no metro/expo is running - app has bundled JS, no Metro needed
+          pkill -f "expo run:ios" 2>/dev/null || true
+          pkill -f "metro" 2>/dev/null || true
+          sleep 1
+          # Launch app directly via xcrun (bypasses expo run:ios Metro wait)
+          xcrun simctl launch booted com.bridgeai.mobile || true
+          sleep 3
+          # Run Maestro tests
+          npx ts-node e2e/maestro/runner.ts --layer 2 --platform ios --dev --screenshot-on-failure
+        timeout-minutes: 10
 
       - name: Upload Maestro Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: maestro-ios-reports
+          name: maestro-ios-reports-${{ github.run_id }}
           path: apps/mobile/e2e/maestro/reports/
           retention-days: 7
 
-  maestro-android:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    if: github.event.inputs.platform != 'ios'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
-
-      - name: Install dependencies
-        run: |
-          npm ci
-          cd apps/mobile && npm ci
-
-      - name: Install Maestro
-        run: |
-          curl -s "https://get.maestro.mobile.dev" | bash
-
-      - name: Run Maestro Auth Flow
-        run: |
-          cd apps/mobile
-          npx ts-node e2e/maestro/run-tests.ts test:auth android
-        continue-on-error: true
-
-      - name: Upload Maestro Reports
-        if: always()
+      - name: Upload Failure Screenshots
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: maestro-android-reports
-          path: apps/mobile/e2e/maestro/reports/
+          name: maestro-ios-screenshots-${{ github.run_id }}
+          path: apps/mobile/e2e/maestro/reports/screenshots/
           retention-days: 7

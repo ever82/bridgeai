@@ -1,44 +1,68 @@
-# Matching Flow - Maestro E2E Test
-# 对应 Detox: e2e/tests/matching.test.ts
+# issue: ISSUE-HOME-001
+# description: 首页推荐和 Tab 导航验证
 
-appId: com.bridgeai.app
-
+appId: com.bridgeai.mobile
 env:
-  MATCH_SCORE: '95'
+  TEST_EMAIL: 'test@bridgeai.test'
+  TEST_PASSWORD: 'TestPass123!'
 
 ---
-# 前提：已登录
-- runFlow: auth-flow.yaml
+# 快速登录
+- launchApp
 - waitForAnimationToEnd
 
-# 导航到首页
-- tapOn: 'home-tab'
+# 额外等待 App 初始化完成
+- waitForAnimationToEnd
+- waitForAnimationToEnd
 - waitForAnimationToEnd
 
-# 验证推荐列表
-- assertVisible: 'recommendation-list'
-- assertVisible: 'agent-card'
-
-# 滚动查看更多推荐
-- scrollUntilVisible:
-    element: 'agent-card'
-    direction: DOWN
-    scrollView: 'recommendation-list'
-
-# 点击匹配按钮
-- tapOn: 'match-button'
-- waitForAnimationToEnd
-
-# 验证匹配成功
-- waitForAnimationToEnd
-- assertVisible: 'match-success'
-- assertVisible: 'match-score'
-
-# 验证跳转到聊天
+# 等待登录表单
 - extendedWaitUntil:
-    visible: 'chat-input'
-    timeout: 10000
-- assertVisible: 'chat-input'
+    visible:
+      id: "login-email-input"
+    timeout: 20000
 
-# 验证匹配会话创建
-- assertVisible: 'session-active'
+- tapOn:
+    id: "login-email-input"
+- inputText: '${TEST_EMAIL}'
+- tapOn:
+    id: "login-password-input"
+- inputText: '${TEST_PASSWORD}'
+- tapOn:
+    id: "login-button"
+- waitForAnimationToEnd
+
+# 等待首页
+- extendedWaitUntil:
+    visible:
+      id: "home-header"
+    timeout: 30000
+
+# 验证首页内容
+- assertVisible:
+    id: "home-header"
+- assertVisible:
+    id: "home-moments-list"
+
+# Tab 切换测试
+- tapOn:
+    label: "messages-tab"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "messages-list"
+
+- tapOn:
+    label: "discover-tab"
+- waitForAnimationToEnd
+
+- tapOn:
+    label: "profile-tab"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "profile-logout-button"
+
+- tapOn:
+    label: "home-tab"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "home-header"

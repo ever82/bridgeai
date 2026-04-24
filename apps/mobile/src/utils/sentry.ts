@@ -4,15 +4,6 @@ import * as Sentry from '@sentry/react-native';
  * Sentry configuration for React Native mobile error monitoring
  */
 
-// Navigation instrumentation for performance tracking (RN-only)
-const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
-let navigationInstrumentation: unknown = null;
-if (isReactNative) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { NavigationInstrumentation } = require('@sentry/react-native');
-  navigationInstrumentation = new NavigationInstrumentation();
-}
-
 // Initialize Sentry
 export function initSentry(): void {
   const dsn = process.env.SENTRY_DSN;
@@ -27,15 +18,12 @@ export function initSentry(): void {
     dsn,
     environment,
 
-    // Native options (only apply on React Native)
-    ...(isReactNative && {
-      enableNative: true,
-      enableNativeCrashHandling: true,
-      enableNativeNScope: true,
-      attachScreenshot: true,
-      autoSessionTracking: true,
-      sessionTrackingIntervalMillis: 30000,
-    }),
+    // Native options
+    enableNative: true,
+    enableNativeCrashHandling: true,
+    attachScreenshot: true,
+    autoSessionTracking: true,
+    sessionTrackingIntervalMillis: 30000,
 
     // Performance monitoring
     tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.1'),
@@ -64,14 +52,8 @@ export function initSentry(): void {
       return event;
     },
 
-    // Integrations (only with navigation instrumentation on RN)
-    ...(isReactNative && navigationInstrumentation
-      ? {
-          integrations: [
-            navigationInstrumentation as Parameters<typeof Sentry.init>[0]['integrations'],
-          ],
-        }
-      : {}),
+    // Integrations
+    integrations: [],
   });
 
   console.log(`[Sentry] Initialized for environment: ${environment}`);

@@ -1,21 +1,62 @@
-# Logout Flow - Maestro E2E Test
+# issue: ISSUE-AUTH-002
+# description: 用户退出登录流程
 
-appId: com.bridgeai.app
+appId: com.bridgeai.mobile
+env:
+  TEST_EMAIL: 'test@bridgeai.test'
+  TEST_PASSWORD: 'TestPass123!'
 
 ---
-# Navigate to profile
-- tapOn: 'profile-tab'
+# 确保登录
+- launchApp
 - waitForAnimationToEnd
 
-# Tap logout
-- tapOn: 'logout-button'
+# 额外等待 App 初始化完成
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- waitForAnimationToEnd
 
-# Confirm if dialog appears
+# 等待登录表单
 - extendedWaitUntil:
-    visible: 'confirm-logout-button'
-    timeout: 3000
-- tapOn: 'confirm-logout-button'
+    visible:
+      id: "login-email-input"
+    timeout: 20000
 
-# Verify redirected to login
+# 快速登录
+- tapOn:
+    id: "login-email-input"
+- inputText: '${TEST_EMAIL}'
+- tapOn:
+    id: "login-password-input"
+- inputText: '${TEST_PASSWORD}'
+- tapOn:
+    id: "login-button"
 - waitForAnimationToEnd
-- assertVisible: 'login-email-input'
+
+# 等待首页
+- extendedWaitUntil:
+    visible:
+      id: "home-header"
+    timeout: 30000
+
+# 导航到 Profile tab
+- tapOn:
+    label: "profile-tab"
+- waitForAnimationToEnd
+
+# 点击登出按钮
+- extendedWaitUntil:
+    visible:
+      id: "profile-logout-button"
+    timeout: 10000
+- tapOn:
+    id: "profile-logout-button"
+- waitForAnimationToEnd
+
+# 验证返回登录页
+- extendedWaitUntil:
+    visible:
+      id: "login-email-input"
+    timeout: 10000
+- assertVisible:
+    id: "login-button"
