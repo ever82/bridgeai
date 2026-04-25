@@ -183,7 +183,7 @@ export const SceneConfigPreview: React.FC<SceneConfigPreviewProps> = ({
         )}
         <View style={styles.fieldsList}>
           {sectionFields.map(field => {
-            const isCompleted = completedFields.includes(field.name);
+            const isCompleted = completedFields.includes(field.id);
             return (
               <TouchableOpacity
                 key={field.id}
