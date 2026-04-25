@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import type { UpdateL1ProfileRequest } from '@bridgeai/shared';
 
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
@@ -29,10 +29,12 @@ router.get(
     // Calculate completion
     const completion = calculateL1Completion(l1Profile);
 
-    res.json(ApiResponse.success({
-      profile: l1Profile,
-      completion,
-    }));
+    res.json(
+      ApiResponse.success({
+        profile: l1Profile,
+        completion,
+      })
+    );
   })
 );
 
@@ -60,19 +62,20 @@ router.put(
       education,
     };
 
-    const l1Profile = await agentProfileService.updateL1Profile(
-      id,
-      req.user.id,
-      updateData
-    );
+    const l1Profile = await agentProfileService.updateL1Profile(id, req.user.id, updateData);
 
     // Calculate completion
     const completion = calculateL1Completion(l1Profile);
 
-    res.json(ApiResponse.success({
-      profile: l1Profile,
-      completion,
-    }, 'L1 profile updated successfully'));
+    res.json(
+      ApiResponse.success(
+        {
+          profile: l1Profile,
+          completion,
+        },
+        'L1 profile updated successfully'
+      )
+    );
   })
 );
 
@@ -133,17 +136,13 @@ router.put(
     const { id } = req.params;
     const { description, requirements, capabilities, preferences, constraints } = req.body;
 
-    const l2Profile = await agentProfileService.updateL2Profile(
-      id,
-      req.user.id,
-      {
-        description,
-        requirements,
-        capabilities,
-        preferences,
-        constraints,
-      }
-    );
+    const l2Profile = await agentProfileService.updateL2Profile(id, req.user.id, {
+      description,
+      requirements,
+      capabilities,
+      preferences,
+      constraints,
+    });
 
     res.json(ApiResponse.success({ profile: l2Profile }, 'L2 profile updated successfully'));
   })
@@ -189,11 +188,7 @@ router.put(
       throw new AppError('Description is required', 'DESCRIPTION_REQUIRED', 400);
     }
 
-    const l3Profile = await agentProfileService.updateL3Profile(
-      id,
-      req.user.id,
-      { description }
-    );
+    const l3Profile = await agentProfileService.updateL3Profile(id, req.user.id, { description });
 
     res.json(ApiResponse.success({ description: l3Profile }, 'L3 profile updated successfully'));
   })

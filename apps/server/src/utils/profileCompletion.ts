@@ -20,7 +20,13 @@ export function calculateL1Completion(l1Data: L1Profile | null): ProfileCompleti
 
   const filledFields = fields.filter(field => {
     const value = l1Data[field];
-    return value !== undefined && value !== null && value !== '';
+    if (value === undefined || value === null || value === '') return false;
+    if (field === 'location' && typeof value === 'object') {
+      // Empty location object {} should not count as filled
+      const loc = value as { province?: string; city?: string };
+      if (!loc.province && !loc.city) return false;
+    }
+    return true;
   });
 
   const missingFields = fields.filter(field => !filledFields.includes(field));

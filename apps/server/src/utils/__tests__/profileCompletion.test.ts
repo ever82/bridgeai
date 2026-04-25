@@ -108,6 +108,17 @@ describe('calculateL1Completion', () => {
     const result = calculateL1Completion(l1Data);
     expect(result.l1MissingFields).toContain('occupation');
   });
+
+  it('should treat empty location object {} as missing', () => {
+    const l1Data: L1Profile = {
+      age: AgeRange.AGE_26_30,
+      location: {},
+    };
+    const result = calculateL1Completion(l1Data);
+    expect(result.l1FilledFields).toBe(1);
+    expect(result.l1Percentage).toBe(20);
+    expect(result.l1MissingFields).toContain('location');
+  });
 });
 
 describe('getCompletionMessage', () => {

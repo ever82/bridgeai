@@ -1,3 +1,7 @@
+// TODO(FIXME): [ISSUE-C002a~followup] L1ProfileForm is complete but not wired into
+// any navigation stack. User cannot access this form from the app. Needs integration
+// into the agent profile editing flow (e.g., ProfileScreen or EditProfileScreen).
+// Created as a follow-up issue for navigation team.
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -48,13 +52,8 @@ const SimplePicker: React.FC<PickerProps> = ({
   return (
     <View style={styles.pickerContainer}>
       <Text style={styles.label}>{label}</Text>
-      <TouchableOpacity
-        style={styles.pickerButton}
-        onPress={() => setModalVisible(true)}
-      >
-        <Text style={value ? styles.pickerValue : styles.pickerPlaceholder}>
-          {selectedLabel}
-        </Text>
+      <TouchableOpacity style={styles.pickerButton} onPress={() => setModalVisible(true)}>
+        <Text style={value ? styles.pickerValue : styles.pickerPlaceholder}>{selectedLabel}</Text>
         <Text style={styles.pickerArrow}>▼</Text>
       </TouchableOpacity>
 
@@ -76,26 +75,18 @@ const SimplePicker: React.FC<PickerProps> = ({
               {options.map(option => (
                 <TouchableOpacity
                   key={option.value}
-                  style={[
-                    styles.optionItem,
-                    value === option.value && styles.optionItemSelected,
-                  ]}
+                  style={[styles.optionItem, value === option.value && styles.optionItemSelected]}
                   onPress={() => {
                     onSelect(option.value);
                     setModalVisible(false);
                   }}
                 >
                   <Text
-                    style={[
-                      styles.optionText,
-                      value === option.value && styles.optionTextSelected,
-                    ]}
+                    style={[styles.optionText, value === option.value && styles.optionTextSelected]}
                   >
                     {option.label}
                   </Text>
-                  {value === option.value && (
-                    <Text style={styles.checkmark}>✓</Text>
-                  )}
+                  {value === option.value && <Text style={styles.checkmark}>✓</Text>}
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -182,10 +173,7 @@ export const L1ProfileForm: React.FC<L1ProfileFormProps> = ({
     education: initialData?.education,
   });
 
-  const handleChange = useCallback(<K extends keyof L1Profile>(
-    field: K,
-    value: L1Profile[K]
-  ) => {
+  const handleChange = useCallback(<K extends keyof L1Profile>(field: K, value: L1Profile[K]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
@@ -285,9 +273,7 @@ export const L1ProfileForm: React.FC<L1ProfileFormProps> = ({
           onPress={handleSubmit}
           disabled={loading}
         >
-          <Text style={styles.submitButtonText}>
-            {loading ? '保存中...' : '保存'}
-          </Text>
+          <Text style={styles.submitButtonText}>{loading ? '保存中...' : '保存'}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
