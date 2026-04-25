@@ -244,8 +244,8 @@ export class SimplifiedOutputStrategy implements FallbackStrategy {
       };
     }
 
-    // 简化请求：降低max_tokens
-    const reducedMaxTokens = Math.floor((originalRequest.maxTokens || 2048) / 2);
+    // 简化请求：降低max_tokens (minimum 1 token to avoid useless output)
+    const reducedMaxTokens = Math.max(1, Math.floor((originalRequest.maxTokens || 2048) / 2));
 
     return {
       success: true,
@@ -264,12 +264,26 @@ export class SimplifiedOutputStrategy implements FallbackStrategy {
 export class AsyncQueueFallbackStrategy implements FallbackStrategy {
   readonly name = 'async-queue';
   private queue: Array<{ request: ChatCompletionRequest; timestamp: Date }> = [];
+  private maxQueueSize: number;
+
+  constructor(maxQueueSize = 1000) {
+    this.maxQueueSize = maxQueueSize;
+  }
 
   async execute(
     originalRequest: ChatCompletionRequest,
-    error: Error,
-    context: FallbackContext
+    _error: Error,
+    _context: FallbackContext
   ): Promise<FallbackResult> {
+    // Guard against unbounded queue growth
+    if (this.queue.length >= this.maxQueueSize) {
+      return {
+        success: false,
+        strategy: this.name,
+        message: 'Async queue is full, request dropped',
+      };
+    }
+
     // 将请求加入队列
     this.queue.push({
       request: originalRequest,

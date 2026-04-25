@@ -12,20 +12,15 @@ import {
 } from './types';
 
 /**
- * Prometheus指标格式
- */
-interface PrometheusMetric {
-  name: string;
-  type: 'counter' | 'gauge' | 'histogram';
-  help: string;
-  labels?: Record<string, string>;
-  value: number;
-}
-
-/**
  * 延迟直方图桶
  */
 const LATENCY_BUCKETS = [50, 100, 250, 500, 1000, 2500, 5000, 10000, 30000];
+
+/**
+ * Key separator for metrics maps. Uses a string unlikely to appear in
+ * provider or model names to avoid parsing ambiguity.
+ */
+const KEY_SEPARATOR = '::';
 
 /**
  * LLM指标服务
@@ -50,12 +45,20 @@ export class LLMMetricsService extends EventEmitter {
   private activeRequests: Map<string, number> = new Map();
 
   /**
+   * Sanitize a numeric metric value: reject NaN, Infinity, and negative numbers.
+   * Returns 0 for invalid values.
+   */
+  private sanitizeNumber(value: number): number {
+    if (!Number.isFinite(value) || value < 0) return 0;
+    return value;
+  }
+
+  /**
    * 记录请求指标
    */
   recordRequest(metrics: RequestMetrics): void {
     const provider = metrics.provider;
     const model = metrics.model;
-    const key = `${provider}:${model}`;
 
     // 请求总数
     this.incrementCounter('requests_total', provider, model);
@@ -87,7 +90,7 @@ export class LLMMetricsService extends EventEmitter {
    * 记录请求开始
    */
   recordRequestStart(requestId: string, provider: LLMProvider, model: string): void {
-    const key = `${provider}:${model}`;
+    const key = `${provider}${KEY_SEPARATOR}${model}`;
     const current = this.activeRequests.get(key) || 0;
     this.activeRequests.set(key, current + 1);
 
@@ -98,7 +101,7 @@ export class LLMMetricsService extends EventEmitter {
    * 记录请求结束
    */
   recordRequestEnd(requestId: string, provider: LLMProvider, model: string): void {
-    const key = `${provider}:${model}`;
+    const key = `${provider}${KEY_SEPARATOR}${model}`;
     const current = Math.max(0, (this.activeRequests.get(key) || 0) - 1);
     this.activeRequests.set(key, current);
 
@@ -129,8 +132,10 @@ export class LLMMetricsService extends EventEmitter {
     lines.push('# HELP llm_requests_total Total LLM requests');
     lines.push('# TYPE llm_requests_total counter');
     this.requestCounter.forEach((value, key) => {
-      if (key.endsWith(':requests_total')) {
-        const [provider, model] = key.split(':');
+      if (key.endsWith(`${KEY_SEPARATOR}requests_total`)) {
+        const parts = key.split(KEY_SEPARATOR);
+        const provider = parts[0];
+        const model = parts.slice(1, -1).join(KEY_SEPARATOR) || parts[1];
         lines.push(`llm_requests_total{provider="${provider}",model="${model}"} ${value}`);
       }
     });
@@ -140,10 +145,10 @@ export class LLMMetricsService extends EventEmitter {
     lines.push('# HELP llm_requests_success Total successful LLM requests');
     lines.push('# TYPE llm_requests_success counter');
     this.requestCounter.forEach((value, key) => {
-      if (key.endsWith(':requests_success')) {
-        const parts = key.split(':');
+      if (key.endsWith(`${KEY_SEPARATOR}requests_success`)) {
+        const parts = key.split(KEY_SEPARATOR);
         const provider = parts[0];
-        const model = parts[1];
+        const model = parts.slice(1, -1).join(KEY_SEPARATOR) || parts[1];
         lines.push(`llm_requests_success{provider="${provider}",model="${model}"} ${value}`);
       }
     });
@@ -153,10 +158,10 @@ export class LLMMetricsService extends EventEmitter {
     lines.push('# HELP llm_requests_failed Total failed LLM requests');
     lines.push('# TYPE llm_requests_failed counter');
     this.requestCounter.forEach((value, key) => {
-      if (key.endsWith(':requests_failed')) {
-        const parts = key.split(':');
+      if (key.endsWith(`${KEY_SEPARATOR}requests_failed`)) {
+        const parts = key.split(KEY_SEPARATOR);
         const provider = parts[0];
-        const model = parts[1];
+        const model = parts.slice(1, -1).join(KEY_SEPARATOR) || parts[1];
         lines.push(`llm_requests_failed{provider="${provider}",model="${model}"} ${value}`);
       }
     });
@@ -166,12 +171,12 @@ export class LLMMetricsService extends EventEmitter {
     lines.push('# HELP llm_latency_seconds LLM request latency in seconds');
     lines.push('# TYPE llm_latency_seconds histogram');
     this.latencyHistogram.forEach((buckets, key) => {
-      const [provider, model] = key.split(':');
-      let cumulativeCount = 0;
+      const sepIdx = key.indexOf(KEY_SEPARATOR);
+      const provider = key.substring(0, sepIdx);
+      const model = key.substring(sepIdx + KEY_SEPARATOR.length);
 
       for (const bucket of LATENCY_BUCKETS) {
         const count = buckets.filter(l => l <= bucket).length;
-        cumulativeCount = count;
         lines.push(`llm_latency_seconds_bucket{provider="${provider}",model="${model}",le="${bucket / 1000}"} ${count}`);
       }
 
@@ -187,7 +192,9 @@ export class LLMMetricsService extends EventEmitter {
     lines.push('# HELP llm_tokens_used_total Total tokens used');
     lines.push('# TYPE llm_tokens_used_total counter');
     this.tokenCounter.forEach((value, key) => {
-      const [provider, model] = key.split(':');
+      const sepIdx = key.indexOf(KEY_SEPARATOR);
+      const provider = key.substring(0, sepIdx);
+      const model = key.substring(sepIdx + KEY_SEPARATOR.length);
       lines.push(`llm_tokens_used_total{provider="${provider}",model="${model}",type="input"} ${value.input}`);
       lines.push(`llm_tokens_used_total{provider="${provider}",model="${model}",type="output"} ${value.output}`);
     });
@@ -197,7 +204,9 @@ export class LLMMetricsService extends EventEmitter {
     lines.push('# HELP llm_cost_usd_total Total cost in USD');
     lines.push('# TYPE llm_cost_usd_total counter');
     this.costCounter.forEach((value, key) => {
-      const [provider, model] = key.split(':');
+      const sepIdx = key.indexOf(KEY_SEPARATOR);
+      const provider = key.substring(0, sepIdx);
+      const model = key.substring(sepIdx + KEY_SEPARATOR.length);
       lines.push(`llm_cost_usd_total{provider="${provider}",model="${model}"} ${value.toFixed(6)}`);
     });
 
@@ -206,7 +215,9 @@ export class LLMMetricsService extends EventEmitter {
     lines.push('# HELP llm_active_requests Current active requests');
     lines.push('# TYPE llm_active_requests gauge');
     this.activeRequests.forEach((value, key) => {
-      const [provider, model] = key.split(':');
+      const sepIdx = key.indexOf(KEY_SEPARATOR);
+      const provider = key.substring(0, sepIdx);
+      const model = key.substring(sepIdx + KEY_SEPARATOR.length);
       lines.push(`llm_active_requests{provider="${provider}",model="${model}"} ${value}`);
     });
 
@@ -215,7 +226,7 @@ export class LLMMetricsService extends EventEmitter {
     lines.push('# HELP llm_errors_total Total errors by type');
     lines.push('# TYPE llm_errors_total counter');
     this.errorCounter.forEach((value, key) => {
-      const parts = key.split(':');
+      const parts = key.split(KEY_SEPARATOR);
       const provider = parts[0];
       const model = parts[1];
       const errorType = parts[2];
@@ -237,7 +248,7 @@ export class LLMMetricsService extends EventEmitter {
     circuitBreakerEvents: number;
   } {
     const totalRequests = Array.from(this.requestCounter.entries())
-      .filter(([key]) => key.endsWith(':requests_total'))
+      .filter(([key]) => key.endsWith(`${KEY_SEPARATOR}requests_total`))
       .reduce((sum, [, val]) => sum + val, 0);
 
     const totalTokens = Array.from(this.tokenCounter.values())
@@ -280,7 +291,7 @@ export class LLMMetricsService extends EventEmitter {
     errorCount: number;
   } | null {
     const providerKeys = Array.from(this.requestCounter.keys())
-      .filter(k => k.startsWith(`${provider}:`) && k.endsWith(':requests_total'));
+      .filter(k => k.startsWith(`${provider}${KEY_SEPARATOR}`) && k.endsWith(`${KEY_SEPARATOR}requests_total`));
 
     if (providerKeys.length === 0) return null;
 
@@ -289,7 +300,7 @@ export class LLMMetricsService extends EventEmitter {
       .reduce((a, b) => a + b, 0);
 
     // Extract base keys (provider:model) for other counters
-    const baseKeys = providerKeys.map(k => k.replace(':requests_total', ''));
+    const baseKeys = providerKeys.map(k => k.replace(`${KEY_SEPARATOR}requests_total`, ''));
 
     const tokens = baseKeys
       .map(k => this.tokenCounter.get(k) || { input: 0, output: 0 })
@@ -307,7 +318,7 @@ export class LLMMetricsService extends EventEmitter {
       : 0;
 
     const errorCount = Array.from(this.errorCounter.keys())
-      .filter(k => k.startsWith(`${provider}:`))
+      .filter(k => k.startsWith(`${provider}${KEY_SEPARATOR}`))
       .map(k => this.errorCounter.get(k) || 0)
       .reduce((a, b) => a + b, 0);
 
@@ -371,7 +382,7 @@ export class LLMMetricsService extends EventEmitter {
   }
 
   private incrementCounter(name: string, provider: LLMProvider, model: string): void {
-    const key = `${provider}:${model}:${name}`;
+    const key = `${provider}${KEY_SEPARATOR}${model}${KEY_SEPARATOR}${name}`;
     const current = this.requestCounter.get(key) || 0;
     this.requestCounter.set(key, current + 1);
   }
@@ -381,15 +392,16 @@ export class LLMMetricsService extends EventEmitter {
     model: string,
     errorType: string
   ): void {
-    const key = `${provider}:${model}:${errorType}`;
+    const key = `${provider}${KEY_SEPARATOR}${model}${KEY_SEPARATOR}${errorType}`;
     const current = this.errorCounter.get(key) || 0;
     this.errorCounter.set(key, current + 1);
   }
 
   private recordLatency(provider: LLMProvider, model: string, latencyMs: number): void {
-    const key = `${provider}:${model}`;
+    const safeLatency = this.sanitizeNumber(latencyMs);
+    const key = `${provider}${KEY_SEPARATOR}${model}`;
     const current = this.latencyHistogram.get(key) || [];
-    current.push(latencyMs);
+    current.push(safeLatency);
 
     // 只保留最近1000个样本
     if (current.length > 1000) {
@@ -405,17 +417,17 @@ export class LLMMetricsService extends EventEmitter {
     input: number,
     output: number
   ): void {
-    const key = `${provider}:${model}`;
+    const key = `${provider}${KEY_SEPARATOR}${model}`;
     const current = this.tokenCounter.get(key) || { input: 0, output: 0 };
-    current.input += input;
-    current.output += output;
+    current.input += this.sanitizeNumber(input);
+    current.output += this.sanitizeNumber(output);
     this.tokenCounter.set(key, current);
   }
 
   private incrementCost(provider: LLMProvider, model: string, cost: number): void {
-    const key = `${provider}:${model}`;
+    const key = `${provider}${KEY_SEPARATOR}${model}`;
     const current = this.costCounter.get(key) || 0;
-    this.costCounter.set(key, current + cost);
+    this.costCounter.set(key, current + this.sanitizeNumber(cost));
   }
 }
 

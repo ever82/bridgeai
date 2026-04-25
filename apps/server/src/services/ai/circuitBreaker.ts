@@ -108,7 +108,7 @@ export class CircuitBreaker extends EventEmitter {
   /**
    * 记录失败请求
    */
-  recordFailure(errorType?: string): void {
+  recordFailure(_errorType?: string): void {
     this.metrics.failures++;
     this.metrics.consecutiveSuccesses = 0;
     this.metrics.lastFailureTime = Date.now();
@@ -163,7 +163,12 @@ export class CircuitBreaker extends EventEmitter {
    * 手动关闭熔断器
    */
   forceClose(): void {
-    this.transitionTo('CLOSED');
+    // Always reset metrics when force-closing, even if already CLOSED
+    this.metrics = this.resetMetrics();
+    this.halfOpenCalls = 0;
+    if (this.state !== 'CLOSED') {
+      this.transitionTo('CLOSED');
+    }
   }
 
   /**
@@ -218,6 +223,11 @@ export class CircuitBreaker extends EventEmitter {
 
   private checkTransition(): void {
     if (this.state === 'OPEN') {
+      if (this.config.recoveryTimeoutMs <= 0) {
+        // recoveryTimeoutMs=0 means immediate transition
+        this.transitionTo('HALF_OPEN');
+        return;
+      }
       const timeSinceLastFailure = Date.now() - this.metrics.lastFailureTime;
       if (timeSinceLastFailure >= this.config.recoveryTimeoutMs) {
         this.transitionTo('HALF_OPEN');

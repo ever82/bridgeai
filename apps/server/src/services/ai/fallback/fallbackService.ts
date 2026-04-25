@@ -14,18 +14,16 @@ import {
   CircuitBreakerEvent,
   CircuitBreakerState,
 } from '../types';
+import { CircuitBreakerManager } from '../circuitBreaker';
+import { LLMRouter } from '../llmRouter';
+
 import {
-  FallbackStrategy,
+  FallbackChain,
   FallbackContext,
   FallbackResult,
-  FallbackChain,
-  createDefaultFallbackChain,
-  ResponseCache,
   AsyncQueueFallbackStrategy,
 } from './strategies';
 import { LRAResponseCache } from './responseCache';
-import { CircuitBreaker, CircuitBreakerManager } from '../circuitBreaker';
-import { LLMRouter } from '../llmRouter';
 
 /**
  * 健康检查配置
@@ -46,7 +44,7 @@ export interface ProviderHealthStatus {
   healthy: boolean;
   latencyMs: number;
   failureRate: number;
-  consecutiveFailures: number;
+  consecutiveSuccesses: number;
   lastChecked: Date;
 }
 
@@ -277,7 +275,7 @@ export class AIFallbackService extends EventEmitter {
         healthy: state !== 'OPEN',
         latencyMs: 0, // 需要从指标服务获取
         failureRate: breaker.getFailureRate(),
-        consecutiveFailures: metrics.consecutiveSuccesses,
+        consecutiveSuccesses: metrics.consecutiveSuccesses,
         lastChecked: new Date(),
       });
     }
@@ -412,7 +410,7 @@ export class AIFallbackService extends EventEmitter {
     this.fallbackChain.addStrategy({
       name: 'simplified-output',
       execute: async (req, err, ctx) => {
-        const reducedTokens = Math.floor((req.maxTokens || 2048) / 2);
+        const reducedTokens = Math.max(1, Math.floor((req.maxTokens || 2048) / 2));
         return {
           success: true,
           strategy: 'simplified-output',
@@ -463,7 +461,7 @@ export class AIFallbackService extends EventEmitter {
         healthy: state !== 'OPEN',
         latencyMs: 0,
         failureRate: breaker.getFailureRate(),
-        consecutiveFailures: breaker.getMetrics().consecutiveSuccesses,
+        consecutiveSuccesses: breaker.getMetrics().consecutiveSuccesses,
         lastChecked: new Date(),
       });
     }

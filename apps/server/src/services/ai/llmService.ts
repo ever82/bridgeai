@@ -521,7 +521,9 @@ export class LLMService {
     const healthyCount = results.filter(r => r.healthy).length;
     let status: 'healthy' | 'degraded' | 'unhealthy';
 
-    if (healthyCount === results.length) {
+    if (results.length === 0) {
+      status = 'unhealthy';
+    } else if (healthyCount === results.length) {
       status = 'healthy';
     } else if (healthyCount > 0) {
       status = 'degraded';

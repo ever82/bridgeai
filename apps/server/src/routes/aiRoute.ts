@@ -7,7 +7,6 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 
 import { LLMService } from '../services/ai/llmService';
-import { CircuitBreakerManager } from '../services/ai/circuitBreaker';
 import { authenticate as authenticateToken } from '../middleware/auth';
 import { validate as _validate } from '../middleware/validation';
 const validate = _validate as any;

@@ -269,8 +269,10 @@ export class ClaudeAdapter extends BaseLLMAdapter {
     const model = this.models.get(modelId);
     if (!model) return 0;
 
-    const inputCost = (inputTokens / 1000) * model.costPer1KTokens.input;
-    const outputCost = (outputTokens / 1000) * model.costPer1KTokens.output;
+    const safeInput = Math.max(0, inputTokens);
+    const safeOutput = Math.max(0, outputTokens);
+    const inputCost = (safeInput / 1000) * model.costPer1KTokens.input;
+    const outputCost = (safeOutput / 1000) * model.costPer1KTokens.output;
     return inputCost + outputCost;
   }
 

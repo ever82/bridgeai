@@ -6,10 +6,8 @@
 import {
   LLMProvider,
   ModelInfo,
-  RoutingStrategy,
   RoutingConfig,
   ChatCompletionRequest,
-  RequestContext
 } from './types';
 
 interface ProviderHealth {
@@ -235,7 +233,7 @@ export class LLMRouter {
       const weight = this.providerWeights.get(provider) || 10;
       random -= weight;
 
-      if (random <= 0) {
+      if (random < 0) {
         const models = this.getModelsForProviders([provider]);
         return {
           provider,

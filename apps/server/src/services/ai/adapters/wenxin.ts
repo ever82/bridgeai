@@ -22,11 +22,6 @@ interface WenxinConfig {
   timeoutMs?: number;
 }
 
-interface AccessTokenResponse {
-  access_token: string;
-  expires_in: number;
-}
-
 export class WenxinAdapter extends BaseLLMAdapter {
   readonly id = 'wenxin';
   readonly provider = '百度文心一言';
@@ -134,7 +129,7 @@ export class WenxinAdapter extends BaseLLMAdapter {
 
   async chatCompletion(
     request: ChatCompletionRequest,
-    context: RequestContext
+    _context: RequestContext
   ): Promise<ChatCompletionResponse> {
     await this.ensureAccessToken();
 
@@ -204,7 +199,8 @@ export class WenxinAdapter extends BaseLLMAdapter {
     const messageId = `wenxin-${Date.now()}`;
 
     try {
-      while (true) {
+      let streamDone = false;
+      while (!streamDone) {
         const { done, value } = await reader.read();
         if (done) break;
 
@@ -240,7 +236,7 @@ export class WenxinAdapter extends BaseLLMAdapter {
                 }]
               });
 
-              if (isDone) return;
+              if (isDone) { streamDone = true; return; }
             } catch (e) {
               // Skip invalid JSON
             }
@@ -254,7 +250,7 @@ export class WenxinAdapter extends BaseLLMAdapter {
 
   async embeddings(
     request: EmbeddingRequest,
-    context: RequestContext
+    _context: RequestContext
   ): Promise<EmbeddingResponse> {
     await this.ensureAccessToken();
 
@@ -297,8 +293,10 @@ export class WenxinAdapter extends BaseLLMAdapter {
     const model = this.models.get(modelId);
     if (!model) return 0;
 
-    const inputCost = (inputTokens / 1000) * model.costPer1KTokens.input;
-    const outputCost = (outputTokens / 1000) * model.costPer1KTokens.output;
+    const safeInput = Math.max(0, inputTokens);
+    const safeOutput = Math.max(0, outputTokens);
+    const inputCost = (safeInput / 1000) * model.costPer1KTokens.input;
+    const outputCost = (safeOutput / 1000) * model.costPer1KTokens.output;
     return inputCost + outputCost;
   }
 
