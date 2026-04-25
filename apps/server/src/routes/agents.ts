@@ -33,11 +33,7 @@ router.post(
     // Validate filter DSL
     const validation = validateFilterDSL(filterDSL);
     if (!validation.valid) {
-      throw new AppError(
-        `Invalid filter: ${validation.errors.join(', ')}`,
-        'INVALID_FILTER',
-        400
-      );
+      throw new AppError(`Invalid filter: ${validation.errors.join(', ')}`, 'INVALID_FILTER', 400);
     }
 
     // Build Prisma query
@@ -45,10 +41,7 @@ router.post(
 
     // Add user filter
     const where = {
-      AND: [
-        { userId: req.user.id },
-        query.where,
-      ],
+      AND: [{ userId: req.user.id }, query.where],
     };
 
     // Execute query
@@ -68,13 +61,15 @@ router.post(
     const page = filterDSL.pagination?.page || 1;
     const limit = filterDSL.pagination?.limit || 20;
 
-    res.json(ApiResponse.success({
-      items: agents,
-      total,
-      page,
-      limit,
-      hasMore: page * limit < total,
-    }));
+    res.json(
+      ApiResponse.success({
+        items: agents,
+        total,
+        page,
+        limit,
+        hasMore: page * limit < total,
+      })
+    );
   })
 );
 
@@ -117,15 +112,21 @@ router.get(
     const values = suggestions
       .map((a: any) => a[field as string])
       .filter((v: any) => v !== null && v !== undefined)
-      .filter((v: any) =>
-        !searchQuery ||
-        v.toString().toLowerCase().includes((searchQuery as string).toLowerCase())
+      .filter(
+        (v: any) =>
+          !searchQuery ||
+          v
+            .toString()
+            .toLowerCase()
+            .includes((searchQuery as string).toLowerCase())
       );
 
-    res.json(ApiResponse.success({
-      field,
-      values: values.map((v: any) => ({ value: v, count: 1 })),
-    }));
+    res.json(
+      ApiResponse.success({
+        field,
+        values: values.map((v: any) => ({ value: v, count: 1 })),
+      })
+    );
   })
 );
 
@@ -265,25 +266,27 @@ router.get(
 
     const total = await prisma.agent.count({ where: { userId: req.user.id } });
 
-    res.json(ApiResponse.success({
-      agents: results.map(r => ({
-        ...r.agent,
-        matchScore: r.score,
-        matchDetails: r.matchDetails,
-      })),
-      pagination: {
-        page: pageNum,
-        limit: limitNum,
-        total,
-        totalPages: Math.ceil(total / limitNum),
-        hasMore: skip + limitNum < total,
-      },
-      filters: {
-        applied: criteria,
-        sortBy,
-        sortOrder,
-      },
-    }));
+    res.json(
+      ApiResponse.success({
+        agents: results.map(r => ({
+          ...r.agent,
+          matchScore: r.score,
+          matchDetails: r.matchDetails,
+        })),
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum),
+          hasMore: skip + limitNum < total,
+        },
+        filters: {
+          applied: criteria,
+          sortBy,
+          sortOrder,
+        },
+      })
+    );
   })
 );
 
@@ -339,21 +342,20 @@ router.get(
       prisma.agent.count({ where: { userId: req.user.id } }),
     ]);
 
-    const recommendations = await getRecommendationsForUser(
-      req.user.id,
-      agents as any
-    );
+    const recommendations = await getRecommendationsForUser(req.user.id, agents as any);
 
-    res.json(ApiResponse.success({
-      agents: recommendations,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-      explanation: 'Based on your preferences and past interactions',
-    }));
+    res.json(
+      ApiResponse.success({
+        agents: recommendations,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+        explanation: 'Based on your preferences and past interactions',
+      })
+    );
   })
 );
 
@@ -422,11 +424,11 @@ router.get(
 );
 
 /**
- * @route PUT /api/v1/agents/:id
+ * @route PATCH /api/v1/agents/:id
  * @desc Update an agent
  * @access Private
  */
-router.put(
+router.patch(
   '/:id',
   authenticate,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

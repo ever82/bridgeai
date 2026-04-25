@@ -7,6 +7,27 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import { AgentListScreen } from '../AgentListScreen';
 
+// Mock agentsApi so tests don't make real API calls
+jest.mock('../../../services/api/agents', () => ({
+  agentsApi: {
+    getAgents: jest.fn().mockResolvedValue({
+      data: {
+        data: {
+          agents: [],
+          pagination: {
+            page: 1,
+            limit: 50,
+            total: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false,
+          },
+        },
+      },
+    }),
+  },
+}));
+
 // Mock navigation
 const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({
@@ -22,14 +43,16 @@ describe('AgentListScreen', () => {
     jest.clearAllMocks();
   });
 
-  it('renders correctly', () => {
+  it('renders correctly', async () => {
     render(
       <NavigationContainer>
         <AgentListScreen />
       </NavigationContainer>
     );
 
-    expect(screen.getByText('My Agents')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('My Agents')).toBeTruthy();
+    });
   });
 
   it('displays empty state when no agents', async () => {
@@ -41,7 +64,9 @@ describe('AgentListScreen', () => {
 
     await waitFor(() => {
       expect(screen.getByText('No Agents Yet')).toBeTruthy();
-      expect(screen.getByText('Create your first agent to get started with AI-powered matching')).toBeTruthy();
+      expect(
+        screen.getByText('Create your first agent to get started with AI-powered matching')
+      ).toBeTruthy();
     });
   });
 

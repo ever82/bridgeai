@@ -330,5 +330,26 @@ describe('AgentService', () => {
         code: 'AGENT_NOT_FOUND',
       });
     });
+
+    // NP-278: Test active-matches guard
+    it('should throw AGENT_HAS_ACTIVE_MATCHES when agent has active demands', async () => {
+      mockAgent.findUnique.mockResolvedValue(mockAgentData);
+      mockDemand.count.mockResolvedValue(2);
+      mockSupply.count.mockResolvedValue(0);
+
+      await expect(agentService.deleteAgent(mockAgentId, mockUserId)).rejects.toMatchObject({
+        code: 'AGENT_HAS_ACTIVE_MATCHES',
+      });
+    });
+
+    it('should throw AGENT_HAS_ACTIVE_MATCHES when agent has active supplies', async () => {
+      mockAgent.findUnique.mockResolvedValue(mockAgentData);
+      mockDemand.count.mockResolvedValue(0);
+      mockSupply.count.mockResolvedValue(1);
+
+      await expect(agentService.deleteAgent(mockAgentId, mockUserId)).rejects.toMatchObject({
+        code: 'AGENT_HAS_ACTIVE_MATCHES',
+      });
+    });
   });
 });

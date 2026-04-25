@@ -1,6 +1,7 @@
+import { AgentType, AgentStatus } from '@prisma/client';
+
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
-import { AgentType, AgentStatus } from '@prisma/client';
 
 // Re-export Prisma enums for backward compatibility
 export { AgentType, AgentStatus };
@@ -300,14 +301,12 @@ export async function updateAgent(
   }
 
   // Validate and sanitize name if provided (XSS prevention)
-  const sanitizedName = input.name !== undefined
-    ? validateAndSanitizeName(input.name)
-    : agent.name;
+  const sanitizedName = input.name !== undefined ? validateAndSanitizeName(input.name) : agent.name;
 
   // Validate coordinates if provided
   validateCoordinates(
     input.latitude !== undefined ? input.latitude : undefined,
-    input.longitude !== undefined ? input.longitude : undefined,
+    input.longitude !== undefined ? input.longitude : undefined
   );
 
   const updatedAgent = await prisma.agent.update({
