@@ -31,6 +31,7 @@ import {
   validateMigration,
   estimateDataLoss,
 } from '../services/sceneMigrationService';
+import { prisma } from '../db/client';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { validateBody, validateParams } from '../middleware/validation';
 import { logger } from '../utils/logger';
@@ -271,40 +272,6 @@ router.get(
 );
 
 /**
- * GET /api/v1/scenes/:sceneId/capabilities/:capabilityId
- * Get specific capability status
- */
-router.get(
-  '/:sceneId/capabilities/:capabilityId',
-  validateParams(sceneIdSchema),
-  (req: Request, res: Response) => {
-    try {
-      const { sceneId, capabilityId } = req.params;
-
-      if (!hasScene(sceneId as any)) {
-        return res.status(404).json({
-          success: false,
-          error: 'Scene not found',
-        });
-      }
-
-      const status = getCapabilityStatus(sceneId as any, capabilityId);
-
-      res.json({
-        success: true,
-        data: status,
-      });
-    } catch (error) {
-      logger.error('Failed to get capability status', { error });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to get capability status',
-      });
-    }
-  }
-);
-
-/**
  * GET /api/v1/scenes/:sceneId/capabilities/summary
  * Get capabilities summary
  */
@@ -333,6 +300,40 @@ router.get(
       res.status(500).json({
         success: false,
         error: 'Failed to get capabilities summary',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/v1/scenes/:sceneId/capabilities/:capabilityId
+ * Get specific capability status
+ */
+router.get(
+  '/:sceneId/capabilities/:capabilityId',
+  validateParams(sceneIdSchema),
+  (req: Request, res: Response) => {
+    try {
+      const { sceneId, capabilityId } = req.params;
+
+      if (!hasScene(sceneId as any)) {
+        return res.status(404).json({
+          success: false,
+          error: 'Scene not found',
+        });
+      }
+
+      const status = getCapabilityStatus(sceneId as any, capabilityId);
+
+      res.json({
+        success: true,
+        data: status,
+      });
+    } catch (error) {
+      logger.error('Failed to get capability status', { error });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get capability status',
       });
     }
   }
@@ -570,11 +571,24 @@ router.post(
     try {
       const { fromScene, toScene } = req.body;
       const { agentId } = req.query;
+      const userId = req.user?.id;
 
       if (!agentId) {
         return res.status(400).json({
           success: false,
           error: 'agentId is required',
+        });
+      }
+
+      // Verify agent belongs to the user (NP-365)
+      const agent = await prisma.agent.findFirst({
+        where: { id: agentId as string, userId },
+      });
+
+      if (!agent) {
+        return res.status(403).json({
+          success: false,
+          error: 'Agent not found or access denied',
         });
       }
 
@@ -606,11 +620,24 @@ router.post(
     try {
       const { fromScene, toScene, manualData } = req.body;
       const { agentId } = req.query;
+      const userId = req.user?.id;
 
       if (!agentId) {
         return res.status(400).json({
           success: false,
           error: 'agentId is required',
+        });
+      }
+
+      // Verify agent belongs to the user (NP-365)
+      const agent = await prisma.agent.findFirst({
+        where: { id: agentId as string, userId },
+      });
+
+      if (!agent) {
+        return res.status(403).json({
+          success: false,
+          error: 'Agent not found or access denied',
         });
       }
 

@@ -410,6 +410,9 @@ function transformField(
     case 'split': {
       // Split field
       const separator = transformation.config.separator as string;
+      if (typeof value !== 'string') {
+        return value;
+      }
       return value.split(separator);
     }
 
