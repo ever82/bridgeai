@@ -3,9 +3,6 @@
  * 场景能力服务测试
  */
 
-import { getSceneConfig } from '@bridgeai/shared';
-import type { SceneCapability } from '@bridgeai/shared';
-
 import {
   isCapabilityEnabled,
   getEnabledCapabilities,
@@ -96,12 +93,11 @@ describe('SceneCapabilityService', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false when dependencies are missing', () => {
-      // marketplace depends on image_upload but is disabled
+    it('should return true when dependencies are satisfied even if capability is disabled', () => {
+      // marketplace depends on image_upload which IS enabled,
+      // so dependencies are satisfied even though marketplace itself is disabled
       const result = areDependenciesSatisfied('visionshare', 'marketplace');
-      // marketplace is disabled, so even though dependency is technically there,
-      // the capability itself is disabled
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
   });
 

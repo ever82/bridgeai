@@ -363,7 +363,11 @@ function applyMigrationTransformations(
   // Apply transformations
   for (const transformation of transformations) {
     if (result[transformation.field] !== undefined) {
-      result[transformation.field] = transformField(result[transformation.field], transformation);
+      result[transformation.field] = transformField(
+        result[transformation.field],
+        transformation,
+        result
+      );
     }
   }
 
@@ -373,7 +377,11 @@ function applyMigrationTransformations(
 /**
  * Transform a single field
  */
-function transformField(value: any, transformation: FieldTransformation): any {
+function transformField(
+  value: any,
+  transformation: FieldTransformation,
+  context?: Record<string, any>
+): any {
   switch (transformation.type) {
     case 'rename':
       // Renaming is handled by mapping
@@ -396,7 +404,7 @@ function transformField(value: any, transformation: FieldTransformation): any {
     case 'merge': {
       // Merge multiple fields
       const fields = transformation.config.fields as string[];
-      return fields.map(f => data[f]).join(' ');
+      return fields.map(f => context?.[f] ?? '').join(' ');
     }
 
     case 'split': {

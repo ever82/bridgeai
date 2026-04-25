@@ -35,6 +35,9 @@ jest.mock('../../db/client', () => ({
       updateMany: jest.fn(),
       delete: jest.fn(),
     },
+    agent: {
+      findFirst: jest.fn(),
+    },
     agentProfile: {
       findFirst: jest.fn(),
       update: jest.fn(),
@@ -256,9 +259,13 @@ describe('TemplateService', () => {
       };
 
       (prisma.sceneTemplate.findFirst as jest.Mock).mockResolvedValue(mockTemplate);
+      (prisma.agent.findFirst as jest.Mock).mockResolvedValue({ id: 'agent-1', userId: 'user-1' });
       (prisma.agentProfile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
       (prisma.agentProfile.update as jest.Mock).mockResolvedValue(mockProfile);
-      (prisma.sceneTemplate.update as jest.Mock).mockResolvedValue({ ...mockTemplate, usageCount: 1 });
+      (prisma.sceneTemplate.update as jest.Mock).mockResolvedValue({
+        ...mockTemplate,
+        usageCount: 1,
+      });
 
       const result = await applyTemplate('template-1', 'agent-1', 'user-1');
 
