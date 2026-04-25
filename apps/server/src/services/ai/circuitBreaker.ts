@@ -9,7 +9,7 @@ import {
   CircuitBreakerState,
   CircuitBreakerConfig,
   CircuitBreakerEvent,
-  LLMProvider
+  LLMProvider,
 } from './types';
 
 interface CircuitBreakerMetrics {
@@ -31,10 +31,7 @@ export class CircuitBreaker extends EventEmitter {
   private provider: LLMProvider;
   private halfOpenCalls: number = 0;
 
-  constructor(
-    provider: LLMProvider,
-    config: Partial<CircuitBreakerConfig> = {}
-  ) {
+  constructor(provider: LLMProvider, config: Partial<CircuitBreakerConfig> = {}) {
     super();
     this.provider = provider;
     this.config = {
@@ -42,7 +39,7 @@ export class CircuitBreaker extends EventEmitter {
       recoveryTimeoutMs: 30000,
       halfOpenMaxCalls: 3,
       successThreshold: 2,
-      ...config
+      ...config,
     };
     this.metrics = this.resetMetrics();
   }
@@ -126,10 +123,7 @@ export class CircuitBreaker extends EventEmitter {
   /**
    * 执行受保护的函数
    */
-  async execute<T>(
-    fn: () => Promise<T>,
-    fallback?: () => Promise<T>
-  ): Promise<T> {
+  async execute<T>(fn: () => Promise<T>, fallback?: () => Promise<T>): Promise<T> {
     if (!this.canExecute()) {
       if (fallback) {
         return await fallback();
@@ -217,7 +211,7 @@ export class CircuitBreaker extends EventEmitter {
       provider: this.provider,
       failureRate: this.getFailureRate(),
       metrics: this.getMetrics(),
-      config: this.getConfig()
+      config: this.getConfig(),
     };
   }
 
@@ -255,7 +249,7 @@ export class CircuitBreaker extends EventEmitter {
       timestamp: new Date(),
       state: newState,
       provider: this.provider,
-      reason: `Transition from ${oldState} to ${newState}`
+      reason: `Transition from ${oldState} to ${newState}`,
     };
 
     this.emit('stateChange', event);
@@ -268,7 +262,7 @@ export class CircuitBreaker extends EventEmitter {
       successes: 0,
       lastFailureTime: 0,
       consecutiveSuccesses: 0,
-      totalCalls: 0
+      totalCalls: 0,
     };
   }
 }
@@ -283,10 +277,7 @@ export class CircuitBreakerManager {
   /**
    * 获取或创建熔断器
    */
-  getCircuitBreaker(
-    provider: LLMProvider,
-    config?: Partial<CircuitBreakerConfig>
-  ): CircuitBreaker {
+  getCircuitBreaker(provider: LLMProvider, config?: Partial<CircuitBreakerConfig>): CircuitBreaker {
     if (!this.breakers.has(provider)) {
       const breaker = new CircuitBreaker(provider, config);
       this.breakers.set(provider, breaker);
@@ -317,7 +308,7 @@ export class CircuitBreakerManager {
     return Array.from(this.breakers.entries()).map(([provider, breaker]) => ({
       provider,
       state: breaker.getState(),
-      failureRate: breaker.getFailureRate()
+      failureRate: breaker.getFailureRate(),
     }));
   }
 
@@ -335,5 +326,13 @@ export class CircuitBreakerManager {
     return Array.from(this.breakers.entries())
       .filter(([, breaker]) => breaker.canExecute())
       .map(([provider]) => provider);
+  }
+
+  /**
+   * Iterate over all circuit breakers.
+   * Provides read-only access without exposing the internal Map directly.
+   */
+  forEachBreaker(callback: (provider: LLMProvider, breaker: CircuitBreaker) => void): void {
+    this.breakers.forEach((breaker, provider) => callback(provider, breaker));
   }
 }

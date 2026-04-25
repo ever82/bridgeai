@@ -9,10 +9,7 @@ import { ILLMAdapter, OpenAIAdapter, ClaudeAdapter, WenxinAdapter } from './adap
 import { CircuitBreakerManager } from './circuitBreaker';
 import { LLMRouter } from './llmRouter';
 import { LLMMetricsService } from './metricsService';
-import {
-  FallbackChain,
-  createDefaultFallbackChain
-} from './fallback';
+import { FallbackChain, createDefaultFallbackChain } from './fallback';
 import {
   LLMProvider,
   ChatCompletionRequest,
@@ -23,7 +20,7 @@ import {
   RoutingStrategy,
   ModelInfo,
   RequestContext,
-  RequestMetrics
+  RequestMetrics,
 } from './types';
 
 interface LLMServiceConfig {
@@ -71,7 +68,7 @@ export class LLMService {
       strategy: config.defaultStrategy || 'round-robin',
       fallbackEnabled: true,
       maxRetries: 3,
-      timeoutMs: 60000
+      timeoutMs: 60000,
     });
     this.metrics = new LLMMetricsService();
     this.fallbackChain = createDefaultFallbackChain();
@@ -92,7 +89,7 @@ export class LLMService {
         apiKey: this.config.openai.apiKey,
         apiUrl: this.config.openai.apiUrl,
         organization: this.config.openai.organization,
-        timeoutMs: 60000
+        timeoutMs: 60000,
       });
 
       await adapter.initialize();
@@ -105,7 +102,7 @@ export class LLMService {
       // 配置熔断器
       this.circuitBreakerManager.getCircuitBreaker('openai', {
         failureThreshold: this.config.circuitBreaker?.failureThreshold || 5,
-        recoveryTimeoutMs: this.config.circuitBreaker?.recoveryTimeoutMs || 30000
+        recoveryTimeoutMs: this.config.circuitBreaker?.recoveryTimeoutMs || 30000,
       });
     }
 
@@ -117,7 +114,7 @@ export class LLMService {
       const adapter = new ClaudeAdapter({
         apiKey: this.config.claude.apiKey,
         apiUrl: this.config.claude.apiUrl,
-        timeoutMs: 60000
+        timeoutMs: 60000,
       });
 
       await adapter.initialize();
@@ -128,7 +125,7 @@ export class LLMService {
 
       this.circuitBreakerManager.getCircuitBreaker('claude', {
         failureThreshold: this.config.circuitBreaker?.failureThreshold || 5,
-        recoveryTimeoutMs: this.config.circuitBreaker?.recoveryTimeoutMs || 30000
+        recoveryTimeoutMs: this.config.circuitBreaker?.recoveryTimeoutMs || 30000,
       });
     }
 
@@ -141,7 +138,7 @@ export class LLMService {
         apiKey: this.config.wenxin.apiKey,
         secretKey: this.config.wenxin.secretKey,
         apiUrl: this.config.wenxin.apiUrl,
-        timeoutMs: 60000
+        timeoutMs: 60000,
       });
 
       await adapter.initialize();
@@ -152,14 +149,14 @@ export class LLMService {
 
       this.circuitBreakerManager.getCircuitBreaker('wenxin', {
         failureThreshold: this.config.circuitBreaker?.failureThreshold || 5,
-        recoveryTimeoutMs: this.config.circuitBreaker?.recoveryTimeoutMs || 30000
+        recoveryTimeoutMs: this.config.circuitBreaker?.recoveryTimeoutMs || 30000,
       });
     }
 
     // 设置熔断器事件监听
     this.circuitBreakerManager.getAllStats().forEach(({ provider }) => {
       const breaker = this.circuitBreakerManager.getCircuitBreaker(provider);
-      breaker.on('stateChange', (event) => {
+      breaker.on('stateChange', event => {
         this.metrics.recordCircuitBreakerEvent(event);
       });
     });
@@ -229,7 +226,7 @@ export class LLMService {
       provider,
       model,
       startTime: new Date(),
-      routingStrategy: this.router.getConfig().strategy
+      routingStrategy: this.router.getConfig().strategy,
     };
 
     // 记录请求开始
@@ -238,8 +235,8 @@ export class LLMService {
     try {
       // 使用熔断器执行
       const breaker = this.circuitBreakerManager.getCircuitBreaker(provider);
-      const response = await breaker.execute(
-        () => adapter.chatCompletion({ ...request, model }, context)
+      const response = await breaker.execute(() =>
+        adapter.chatCompletion({ ...request, model }, context)
       );
 
       // 计算成本
@@ -260,9 +257,9 @@ export class LLMService {
         tokenUsage: {
           input: response.usage.promptTokens,
           output: response.usage.completionTokens,
-          total: response.usage.totalTokens
+          total: response.usage.totalTokens,
         },
-        costUsd: cost
+        costUsd: cost,
       });
 
       return response;
@@ -277,7 +274,7 @@ export class LLMService {
         success: false,
         errorType: error instanceof Error ? error.name : 'unknown',
         tokenUsage: { input: 0, output: 0, total: 0 },
-        costUsd: 0
+        costUsd: 0,
       });
 
       // 尝试降级
@@ -329,15 +326,15 @@ export class LLMService {
       provider,
       model,
       startTime: new Date(),
-      routingStrategy: this.router.getConfig().strategy
+      routingStrategy: this.router.getConfig().strategy,
     };
 
     this.metrics.recordRequestStart(requestId, provider, model);
 
     try {
       const breaker = this.circuitBreakerManager.getCircuitBreaker(provider);
-      await breaker.execute(
-        () => adapter.streamChatCompletion({ ...request, model }, context, onChunk)
+      await breaker.execute(() =>
+        adapter.streamChatCompletion({ ...request, model }, context, onChunk)
       );
 
       const latencyMs = Date.now() - startTime;
@@ -348,7 +345,7 @@ export class LLMService {
         latencyMs,
         success: true,
         tokenUsage: { input: 0, output: 0, total: 0 }, // 流式请求token在回调中统计
-        costUsd: 0
+        costUsd: 0,
       });
     } catch (error) {
       const latencyMs = Date.now() - startTime;
@@ -360,7 +357,7 @@ export class LLMService {
         success: false,
         errorType: error instanceof Error ? error.name : 'unknown',
         tokenUsage: { input: 0, output: 0, total: 0 },
-        costUsd: 0
+        costUsd: 0,
       });
       throw error;
     } finally {
@@ -381,14 +378,20 @@ export class LLMService {
   /**
    * 简单补全接口（用于兼容旧代码）
    */
-  async complete(prompt: string, options?: { provider?: LLMProvider; maxTokens?: number; temperature?: number }): Promise<{ content: string; provider: string }> {
+  async complete(
+    prompt: string,
+    options?: { provider?: LLMProvider; maxTokens?: number; temperature?: number }
+  ): Promise<{ content: string; provider: string }> {
     const provider = options?.provider || 'claude';
-    const response = await this.chatCompletion({
-      model: 'claude-sonnet-4',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: options?.temperature ?? 0.3,
-      maxTokens: options?.maxTokens ?? 2000,
-    }, provider as LLMProvider);
+    const response = await this.chatCompletion(
+      {
+        model: 'claude-sonnet-4',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: options?.temperature ?? 0.3,
+        maxTokens: options?.maxTokens ?? 2000,
+      },
+      provider as LLMProvider
+    );
     return {
       content: response.choices[0]?.message?.content || '',
       provider,
@@ -430,7 +433,7 @@ export class LLMService {
       provider,
       model,
       startTime: new Date(),
-      routingStrategy: 'direct'
+      routingStrategy: 'direct',
     };
 
     try {
@@ -446,9 +449,9 @@ export class LLMService {
         tokenUsage: {
           input: response.usage.promptTokens,
           output: 0,
-          total: response.usage.totalTokens
+          total: response.usage.totalTokens,
         },
-        costUsd: 0
+        costUsd: 0,
       });
 
       return response;
@@ -462,7 +465,7 @@ export class LLMService {
         success: false,
         errorType: error instanceof Error ? error.name : 'unknown',
         tokenUsage: { input: 0, output: 0, total: 0 },
-        costUsd: 0
+        costUsd: 0,
       });
       throw error;
     }
@@ -535,11 +538,10 @@ export class LLMService {
   }
 
   private getAvailableProviders(): LLMProvider[] {
-    return Array.from(this.adapters.keys())
-      .filter(provider => {
-        const breaker = this.circuitBreakerManager.getCircuitBreaker(provider);
-        return breaker.canExecute();
-      });
+    return Array.from(this.adapters.keys()).filter(provider => {
+      const breaker = this.circuitBreakerManager.getCircuitBreaker(provider);
+      return breaker.canExecute();
+    });
   }
 
   private async tryFallback(
@@ -581,7 +583,11 @@ export class LLMService {
           );
           return { ...result, response };
         } catch (fallbackError) {
-          return { ...result, success: false, message: `Fallback execution failed: ${fallbackError instanceof Error ? fallbackError.message : 'Unknown error'}` };
+          return {
+            ...result,
+            success: false,
+            message: `Fallback execution failed: ${fallbackError instanceof Error ? fallbackError.message : 'Unknown error'}`,
+          };
         }
       }
     }
@@ -632,27 +638,49 @@ declare module './llmService' {
 }
 
 // Add generateText method to LLMService prototype
-LLMService.prototype.generateText = async function(
+LLMService.prototype.generateText = async function (
   this: LLMService,
   prompt: string,
   options: GenerateTextOptions = {}
 ): Promise<GenerateTextResponse> {
-  const response = await this.chatCompletion({
-    model: options.model || 'gpt-4',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: options.temperature ?? 0.7,
-    maxTokens: options.maxTokens,
-  }, options.provider);
+  const startTime = Date.now();
+
+  const response = await this.chatCompletion(
+    {
+      model: options.model || 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: options.temperature ?? 0.7,
+      maxTokens: options.maxTokens,
+    },
+    options.provider
+  );
 
   const text = response.choices[0]?.message?.content || '';
+  const provider: LLMProvider = response.model.includes('claude')
+    ? 'claude'
+    : response.model.includes('ernie')
+      ? 'wenxin'
+      : 'openai';
+  const latencyMs = Date.now() - startTime;
+
+  // Calculate actual cost using the adapter
+  let cost = 0;
+  const adaptersMap = (this as unknown as { adapters: Map<LLMProvider, ILLMAdapter> }).adapters;
+  const adapter = adaptersMap?.get(provider);
+  if (adapter) {
+    cost = adapter.calculateCost(
+      response.model,
+      response.usage.promptTokens,
+      response.usage.completionTokens
+    );
+  }
 
   return {
     text,
-    provider: response.model.includes('claude') ? 'claude' :
-              response.model.includes('ernie') ? 'wenxin' : 'openai',
+    provider,
     model: response.model,
-    latencyMs: 0, // Would need to track this
-    cost: 0, // Would need to calculate this
+    latencyMs,
+    cost,
     usage: {
       promptTokens: response.usage.promptTokens,
       completionTokens: response.usage.completionTokens,

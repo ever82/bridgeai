@@ -105,7 +105,14 @@ export interface StreamChunk {
 }
 
 // 路由策略
-export type RoutingStrategy = 'cost' | 'latency' | 'quality' | 'round-robin' | 'weighted' | 'direct' | 'fallback';
+export type RoutingStrategy =
+  | 'cost'
+  | 'latency'
+  | 'quality'
+  | 'round-robin'
+  | 'weighted'
+  | 'direct'
+  | 'fallback';
 
 // 路由配置
 export interface RoutingConfig {
@@ -121,10 +128,10 @@ export type CircuitBreakerState = 'CLOSED' | 'HALF_OPEN' | 'OPEN';
 
 // 熔断器配置
 export interface CircuitBreakerConfig {
-  failureThreshold: number;      // 触发熔断的失败次数阈值
-  recoveryTimeoutMs: number;     // 熔断后恢复探测的等待时间
-  halfOpenMaxCalls: number;      // 半开状态下允许的最大测试请求数
-  successThreshold: number;      // 半开状态下恢复所需的连续成功次数
+  failureThreshold: number; // 触发熔断的失败次数阈值
+  recoveryTimeoutMs: number; // 熔断后恢复探测的等待时间
+  halfOpenMaxCalls: number; // 半开状态下允许的最大测试请求数
+  successThreshold: number; // 半开状态下恢复所需的连续成功次数
 }
 
 // 熔断器事件
@@ -170,11 +177,3 @@ export interface RequestMetrics {
 }
 
 /** Extended ChatCompletionRequest for legacy compatibility - merged above */
-
-// Extend EmbeddingRequest
-export interface EmbeddingRequest {
-  model: string;
-  input: string | string[];
-  dimensions?: number;
-  encodingFormat?: string;
-}

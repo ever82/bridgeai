@@ -65,7 +65,13 @@ export interface AIFallbackServiceState {
  */
 export interface AIFallbackEvent {
   timestamp: Date;
-  type: 'degraded' | 'recovered' | 'provider_failed' | 'fallback_triggered' | 'cache_hit' | 'cache_miss';
+  type:
+    | 'degraded'
+    | 'recovered'
+    | 'provider_failed'
+    | 'fallback_triggered'
+    | 'cache_hit'
+    | 'cache_miss';
   provider?: LLMProvider;
   strategy?: string;
   message: string;
@@ -266,7 +272,7 @@ export class AIFallbackService extends EventEmitter {
    */
   getProviderHealthStatuses(): ProviderHealthStatus[] {
     const states: ProviderHealthStatus[] = [];
-    for (const [provider, breaker] of this.breakerManager['breakers']) {
+    this.breakerManager.forEachBreaker((provider, breaker) => {
       const metrics = breaker.getMetrics();
       const state = breaker.getState();
       states.push({
@@ -278,7 +284,7 @@ export class AIFallbackService extends EventEmitter {
         consecutiveSuccesses: metrics.consecutiveSuccesses,
         lastChecked: new Date(),
       });
-    }
+    });
     return states;
   }
 
@@ -353,7 +359,10 @@ export class AIFallbackService extends EventEmitter {
   /**
    * 获取健康状态摘要 (供 LLMService 使用)
    */
-  getHealthSummary(): { status: 'healthy' | 'degraded' | 'unhealthy'; providers: Array<{ provider: LLMProvider; healthy: boolean }> } {
+  getHealthSummary(): {
+    status: 'healthy' | 'degraded' | 'unhealthy';
+    providers: Array<{ provider: LLMProvider; healthy: boolean }>;
+  } {
     const states = this.getProviderHealthStatuses();
     const providers = states.map(s => ({
       provider: s.provider,
@@ -374,15 +383,28 @@ export class AIFallbackService extends EventEmitter {
       name: 'model-downgrade',
       execute: async (req, err, ctx) => {
         const model = ctx.models.get(req.model);
-        if (!model) return { success: false, strategy: 'model-downgrade', message: 'Model not found' };
+        if (!model)
+          return { success: false, strategy: 'model-downgrade', message: 'Model not found' };
 
         const cheaper = Array.from(ctx.models.values())
           .filter(m => m.provider === model.provider && m.id !== model.id)
-          .sort((a, b) => (a.costPer1KTokens.input + a.costPer1KTokens.output) - (b.costPer1KTokens.input + b.costPer1KTokens.output));
+          .sort(
+            (a, b) =>
+              a.costPer1KTokens.input +
+              a.costPer1KTokens.output -
+              (b.costPer1KTokens.input + b.costPer1KTokens.output)
+          );
 
-        if (cheaper.length === 0) return { success: false, strategy: 'model-downgrade', message: 'No cheaper model' };
+        if (cheaper.length === 0)
+          return { success: false, strategy: 'model-downgrade', message: 'No cheaper model' };
 
-        return { success: true, strategy: 'model-downgrade', provider: cheaper[0].provider, model: cheaper[0].id, message: `Downgraded to ${cheaper[0].id}` };
+        return {
+          success: true,
+          strategy: 'model-downgrade',
+          provider: cheaper[0].provider,
+          model: cheaper[0].id,
+          message: `Downgraded to ${cheaper[0].id}`,
+        };
       },
     });
 
@@ -391,18 +413,31 @@ export class AIFallbackService extends EventEmitter {
       name: 'provider-switch',
       execute: async (req, err, ctx) => {
         const model = ctx.models.get(req.model);
-        if (!model) return { success: false, strategy: 'provider-switch', message: 'Model not found' };
+        if (!model)
+          return { success: false, strategy: 'provider-switch', message: 'Model not found' };
 
         const other = ctx.availableProviders.filter(p => p !== model.provider);
-        if (other.length === 0) return { success: false, strategy: 'provider-switch', message: 'No alternative provider' };
+        if (other.length === 0)
+          return {
+            success: false,
+            strategy: 'provider-switch',
+            message: 'No alternative provider',
+          };
 
         const alternativeModels = Array.from(ctx.models.values())
           .filter(m => m.provider === other[0] && m.capabilities.chatCompletion)
           .sort((a, b) => b.qualityScore - a.qualityScore);
 
-        if (alternativeModels.length === 0) return { success: false, strategy: 'provider-switch', message: 'No alternative model' };
+        if (alternativeModels.length === 0)
+          return { success: false, strategy: 'provider-switch', message: 'No alternative model' };
 
-        return { success: true, strategy: 'provider-switch', provider: other[0], model: alternativeModels[0].id, message: `Switched to ${other[0]}` };
+        return {
+          success: true,
+          strategy: 'provider-switch',
+          provider: other[0],
+          model: alternativeModels[0].id,
+          message: `Switched to ${other[0]}`,
+        };
       },
     });
 
@@ -424,7 +459,7 @@ export class AIFallbackService extends EventEmitter {
 
   private setupCircuitBreakerListeners(): void {
     // 监听熔断器状态变化
-    for (const [, breaker] of this.breakerManager['breakers']) {
+    this.breakerManager.forEachBreaker((provider, breaker) => {
       breaker.on('stateChange', (event: CircuitBreakerEvent) => {
         this.emit('event', {
           timestamp: new Date(),
@@ -437,11 +472,11 @@ export class AIFallbackService extends EventEmitter {
           this.emit('providerOpen', event.provider);
         }
       });
-    }
+    });
   }
 
   private async performHealthCheck(): Promise<void> {
-    for (const [provider, breaker] of this.breakerManager['breakers']) {
+    this.breakerManager.forEachBreaker((provider, breaker) => {
       const state = breaker.getState();
       const lastState = this.providerLastHealth.get(provider);
 
@@ -464,7 +499,7 @@ export class AIFallbackService extends EventEmitter {
         consecutiveSuccesses: breaker.getMetrics().consecutiveSuccesses,
         lastChecked: new Date(),
       });
-    }
+    });
   }
 
   private async executeWithTimeout<T>(fn: () => Promise<T>, timeoutMs: number): Promise<T> {
