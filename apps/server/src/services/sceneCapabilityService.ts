@@ -9,26 +9,15 @@
  * - Feature toggling
  */
 
-import {
-  SceneCapability,
-  SceneId,
-  SCENE_IDS,
-} from '@bridgeai/shared';
+import { SceneCapability, SceneId, SCENE_IDS } from '@bridgeai/shared';
 import { getSceneConfig } from '@bridgeai/shared';
 
 import { logger } from '../utils/logger';
 
-// Capability version cache
-const capabilityVersionCache = new Map<string, { version: string; checkedAt: Date }>();
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-
 /**
  * Check if a capability is enabled for a scene
  */
-export function isCapabilityEnabled(
-  sceneId: SceneId,
-  capabilityId: string
-): boolean {
+export function isCapabilityEnabled(sceneId: SceneId, capabilityId: string): boolean {
   const sceneConfig = getSceneConfig(sceneId);
   if (!sceneConfig) {
     logger.warn('Scene not found', { sceneId });
@@ -78,10 +67,7 @@ export function getAllCapabilities(sceneId: SceneId): SceneCapability[] {
 /**
  * Get a specific capability
  */
-export function getCapability(
-  sceneId: SceneId,
-  capabilityId: string
-): SceneCapability | undefined {
+export function getCapability(sceneId: SceneId, capabilityId: string): SceneCapability | undefined {
   const sceneConfig = getSceneConfig(sceneId);
   if (!sceneConfig) {
     return undefined;
@@ -93,10 +79,7 @@ export function getCapability(
 /**
  * Check if all dependencies for a capability are satisfied
  */
-export function areDependenciesSatisfied(
-  sceneId: SceneId,
-  capabilityId: string
-): boolean {
+export function areDependenciesSatisfied(sceneId: SceneId, capabilityId: string): boolean {
   const sceneConfig = getSceneConfig(sceneId);
   if (!sceneConfig) {
     return false;
@@ -209,10 +192,7 @@ function compareVersions(v1: string, v2: string): number {
 /**
  * Get missing dependencies for a capability
  */
-export function getMissingDependencies(
-  sceneId: SceneId,
-  capabilityId: string
-): string[] {
+export function getMissingDependencies(sceneId: SceneId, capabilityId: string): string[] {
   const sceneConfig = getSceneConfig(sceneId);
   if (!sceneConfig) {
     return [];
@@ -255,9 +235,7 @@ export function getCapabilityStatus(
 
   const missingDependencies = getMissingDependencies(sceneId, capabilityId);
   const hasCircularDeps = hasCircularDependencies(sceneId, capabilityId);
-  const available = capability.enabled &&
-    missingDependencies.length === 0 &&
-    !hasCircularDeps;
+  const available = capability.enabled && missingDependencies.length === 0 && !hasCircularDeps;
 
   return {
     enabled: capability.enabled,
@@ -270,30 +248,21 @@ export function getCapabilityStatus(
 /**
  * Check if multiple capabilities are all enabled
  */
-export function areAllCapabilitiesEnabled(
-  sceneId: SceneId,
-  capabilityIds: string[]
-): boolean {
+export function areAllCapabilitiesEnabled(sceneId: SceneId, capabilityIds: string[]): boolean {
   return capabilityIds.every(id => isCapabilityEnabled(sceneId, id));
 }
 
 /**
  * Check if any of the capabilities is enabled
  */
-export function isAnyCapabilityEnabled(
-  sceneId: SceneId,
-  capabilityIds: string[]
-): boolean {
+export function isAnyCapabilityEnabled(sceneId: SceneId, capabilityIds: string[]): boolean {
   return capabilityIds.some(id => isCapabilityEnabled(sceneId, id));
 }
 
 /**
  * Get capabilities by category
  */
-export function getCapabilitiesByTag(
-  sceneId: SceneId,
-  tag: string
-): SceneCapability[] {
+export function getCapabilitiesByTag(sceneId: SceneId, tag: string): SceneCapability[] {
   const sceneConfig = getSceneConfig(sceneId);
   if (!sceneConfig) {
     return [];
@@ -301,18 +270,9 @@ export function getCapabilitiesByTag(
 
   // Tags can be extracted from capability name or description
   // This is a simple implementation that checks if tag is in name or description
-  return sceneConfig.capabilities.filter(capability =>
-    capability.name.includes(tag) ||
-    capability.description.includes(tag)
+  return sceneConfig.capabilities.filter(
+    capability => capability.name.includes(tag) || capability.description.includes(tag)
   );
-}
-
-/**
- * Clear capability version cache
- */
-export function clearCapabilityCache(): void {
-  capabilityVersionCache.clear();
-  logger.info('Capability version cache cleared');
 }
 
 /**
@@ -331,8 +291,8 @@ export function getSceneCapabilitiesSummary(sceneId: SceneId): {
 
   const capabilities = sceneConfig.capabilities;
   const enabled = capabilities.filter(c => c.enabled).length;
-  const available = capabilities.filter(c =>
-    c.enabled && areDependenciesSatisfied(sceneId, c.id)
+  const available = capabilities.filter(
+    c => c.enabled && areDependenciesSatisfied(sceneId, c.id)
   ).length;
   const withDependencies = capabilities.filter(c => c.dependencies.length > 0).length;
 
@@ -347,11 +307,14 @@ export function getSceneCapabilitiesSummary(sceneId: SceneId): {
 /**
  * Get all scenes capability summary
  */
-export function getAllScenesCapabilitySummary(): Record<SceneId, {
-  total: number;
-  enabled: number;
-  available: number;
-}> {
+export function getAllScenesCapabilitySummary(): Record<
+  SceneId,
+  {
+    total: number;
+    enabled: number;
+    available: number;
+  }
+> {
   const summary: Record<SceneId, { total: number; enabled: number; available: number }> = {} as any;
 
   for (const sceneId of SCENE_IDS) {
@@ -359,8 +322,8 @@ export function getAllScenesCapabilitySummary(): Record<SceneId, {
     if (sceneConfig) {
       const capabilities = sceneConfig.capabilities;
       const enabled = capabilities.filter(c => c.enabled).length;
-      const available = capabilities.filter(c =>
-        c.enabled && areDependenciesSatisfied(sceneId, c.id)
+      const available = capabilities.filter(
+        c => c.enabled && areDependenciesSatisfied(sceneId, c.id)
       ).length;
 
       summary[sceneId] = {

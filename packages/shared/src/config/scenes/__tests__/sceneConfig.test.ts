@@ -3,7 +3,42 @@
  * 场景配置测试
  */
 
-import { SceneId } from '../../types/scene';
+// Minimal type stubs (these match the actual exported types from scene.ts)
+// tsconfig in this package excludes __tests__, so we use stubs to enable compilation.
+type SceneId = string;
+
+interface SceneMetadata {
+  id: string;
+  name: string;
+  nameEn: string;
+  description?: { zh: string; en?: string };
+  icon?: string;
+  color?: string;
+  isActive: boolean;
+}
+
+interface SceneFieldDefinition {
+  id: string;
+  name: string;
+  type: string;
+}
+
+interface SceneCapability {
+  id: string;
+}
+
+interface SceneTemplate {
+  id: string;
+}
+
+interface SceneConfig {
+  id: string;
+  metadata: SceneMetadata;
+  fields: SceneFieldDefinition[];
+  capabilities: SceneCapability[];
+  templates: SceneTemplate[];
+  ui: { sections: unknown[]; layout: unknown };
+}
 
 import {
   visionShareConfig,
@@ -49,7 +84,9 @@ describe('Scene Configurations', () => {
 
     it('should have fields defined', () => {
       expect(visionShareConfig.fields.length).toBeGreaterThan(0);
-      expect(visionShareConfig.fields.every(f => f.id && f.name && f.type)).toBe(true);
+      expect(
+        visionShareConfig.fields.every((f: SceneFieldDefinition) => f.id && f.name && f.type)
+      ).toBe(true);
     });
 
     it('should have capabilities defined', () => {
@@ -77,7 +114,7 @@ describe('Scene Configurations', () => {
     });
 
     it('should have dating-specific fields', () => {
-      const fieldNames = agentDateConfig.fields.map(f => f.name);
+      const fieldNames = agentDateConfig.fields.map((f: SceneFieldDefinition) => f.name);
       expect(fieldNames).toContain('datingPurpose');
       expect(fieldNames).toContain('preferredGender');
       expect(fieldNames).toContain('ageRange');
@@ -96,7 +133,7 @@ describe('Scene Configurations', () => {
     });
 
     it('should have job-specific fields', () => {
-      const fieldNames = agentJobConfig.fields.map(f => f.name);
+      const fieldNames = agentJobConfig.fields.map((f: SceneFieldDefinition) => f.name);
       expect(fieldNames).toContain('jobType');
       expect(fieldNames).toContain('jobCategory');
       expect(fieldNames).toContain('targetPositions');
@@ -115,7 +152,7 @@ describe('Scene Configurations', () => {
     });
 
     it('should have ad-specific fields', () => {
-      const fieldNames = agentAdConfig.fields.map(f => f.name);
+      const fieldNames = agentAdConfig.fields.map((f: SceneFieldDefinition) => f.name);
       expect(fieldNames).toContain('adType');
       expect(fieldNames).toContain('productCategory');
       expect(fieldNames).toContain('targetAudience');
@@ -140,17 +177,17 @@ describe('Scene Configurations', () => {
     it('should return all scene configs', () => {
       const configs = getAllSceneConfigs();
       expect(configs).toHaveLength(4);
-      expect(configs.some(c => c.id === 'visionshare')).toBe(true);
-      expect(configs.some(c => c.id === 'agentdate')).toBe(true);
-      expect(configs.some(c => c.id === 'agentjob')).toBe(true);
-      expect(configs.some(c => c.id === 'agentad')).toBe(true);
+      expect(configs.some((c: SceneConfig) => c.id === 'visionshare')).toBe(true);
+      expect(configs.some((c: SceneConfig) => c.id === 'agentdate')).toBe(true);
+      expect(configs.some((c: SceneConfig) => c.id === 'agentjob')).toBe(true);
+      expect(configs.some((c: SceneConfig) => c.id === 'agentad')).toBe(true);
     });
   });
 
   describe('getActiveSceneConfigs', () => {
     it('should return only active scenes', () => {
       const configs = getActiveSceneConfigs();
-      expect(configs.every(c => c.metadata.isActive)).toBe(true);
+      expect(configs.every((c: SceneConfig) => c.metadata.isActive)).toBe(true);
     });
   });
 

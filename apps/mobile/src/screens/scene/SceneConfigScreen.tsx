@@ -17,7 +17,6 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import {
   SceneId,
   SceneConfig,
-  SceneFieldDefinition,
   SceneCapability,
   getSceneConfig,
   SCENE_DISPLAY_NAMES,
@@ -35,16 +34,16 @@ interface SceneConfigScreenProps {
 export const SceneConfigScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { agentId, initialScene } = route.params as SceneConfigScreenProps || {};
+  const { agentId, initialScene } = (route.params as SceneConfigScreenProps) || {};
 
   const [selectedScene, setSelectedScene] = useState<SceneId | undefined>(initialScene);
   const [sceneConfig, setSceneConfig] = useState<SceneConfig | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [fieldValues, setFieldValues] = useState<Record<string, any>>({});
+  const [_fieldValues, setFieldValues] = useState<Record<string, unknown>>({});
   const [completedFields, setCompletedFields] = useState<string[]>([]);
   const [capabilities, setCapabilities] = useState<SceneCapability[]>([]);
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<unknown[]>([]);
 
   // Load scene config when scene changes
   useEffect(() => {
@@ -88,13 +87,11 @@ export const SceneConfigScreen: React.FC = () => {
     }
   };
 
-  const handleSceneChange = useCallback((sceneId: SceneId) => {
-    if (selectedScene && selectedScene !== sceneId) {
-      // Show confirmation if there are unsaved changes
-      Alert.alert(
-        '切换场景',
-        '切换场景将清除当前未保存的配置，是否继续？',
-        [
+  const handleSceneChange = useCallback(
+    (sceneId: SceneId) => {
+      if (selectedScene && selectedScene !== sceneId) {
+        // Show confirmation if there are unsaved changes
+        Alert.alert('切换场景', '切换场景将清除当前未保存的配置，是否继续？', [
           { text: '取消', style: 'cancel' },
           {
             text: '继续',
@@ -105,14 +102,15 @@ export const SceneConfigScreen: React.FC = () => {
               setCompletedFields([]);
             },
           },
-        ]
-      );
-    } else {
-      setSelectedScene(sceneId);
-    }
-  }, [selectedScene]);
+        ]);
+      } else {
+        setSelectedScene(sceneId);
+      }
+    },
+    [selectedScene]
+  );
 
-  const handleFieldChange = (fieldId: string, value: any) => {
+  const _handleFieldChange = (fieldId: string, value: unknown) => {
     setFieldValues(prev => ({
       ...prev,
       [fieldId]: value,
@@ -120,9 +118,7 @@ export const SceneConfigScreen: React.FC = () => {
 
     // Mark field as completed if it has a value
     if (value !== undefined && value !== null && value !== '') {
-      setCompletedFields(prev =>
-        prev.includes(fieldId) ? prev : [...prev, fieldId]
-      );
+      setCompletedFields(prev => (prev.includes(fieldId) ? prev : [...prev, fieldId]));
     } else {
       setCompletedFields(prev => prev.filter(id => id !== fieldId));
     }
@@ -209,9 +205,7 @@ export const SceneConfigScreen: React.FC = () => {
           {capabilities.map(capability => (
             <View key={capability.id} style={styles.capabilityItem}>
               <Text style={styles.capabilityName}>{capability.name}</Text>
-              <Text style={styles.capabilityDescription}>
-                {capability.description}
-              </Text>
+              <Text style={styles.capabilityDescription}>{capability.description}</Text>
             </View>
           ))}
         </View>
@@ -238,9 +232,7 @@ export const SceneConfigScreen: React.FC = () => {
           onPress={handleSave}
           disabled={saving || !selectedScene}
         >
-          <Text style={styles.saveButtonText}>
-            {saving ? '保存中...' : '保存'}
-          </Text>
+          <Text style={styles.saveButtonText}>{saving ? '保存中...' : '保存'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -248,10 +240,7 @@ export const SceneConfigScreen: React.FC = () => {
         {/* Scene Selector */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>选择场景</Text>
-          <SceneSelector
-            selectedScene={selectedScene}
-            onSelectScene={handleSceneChange}
-          />
+          <SceneSelector selectedScene={selectedScene} onSelectScene={handleSceneChange} />
         </View>
 
         {/* Scene Info */}
@@ -270,13 +259,11 @@ export const SceneConfigScreen: React.FC = () => {
             <SceneConfigPreview
               sceneConfig={sceneConfig}
               completedFields={completedFields}
-              onFieldPress={(fieldId) => {
-                // Navigate to field editor
-                navigation.navigate('SceneFieldEditor', {
-                  sceneId: selectedScene,
-                  fieldId,
-                  agentId,
-                });
+              onFieldPress={_fieldId => {
+                // TODO: Create SceneFieldEditor screen and register in navigation
+                // Currently navigation.navigate('SceneFieldEditor') is a dead reference
+                // since the SceneFieldEditor screen does not exist.
+                console.warn('SceneFieldEditor screen not yet implemented');
               }}
             />
           </View>
