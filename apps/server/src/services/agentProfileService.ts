@@ -1,12 +1,14 @@
 import type {
   L1Profile,
   L2Profile,
-  ProfileCompletionResult,
   UpdateL1ProfileRequest,
   UpdateL2ProfileRequest,
   UpdateL3ProfileRequest,
 } from '@bridgeai/shared';
-import { AgeRange, EducationLevel, Gender, L1_FIELD_WEIGHTS } from '@bridgeai/shared';
+import { AgeRange, EducationLevel, Gender } from '@bridgeai/shared';
+
+// Re-export for route usage
+export { calculateL1Completion } from '../utils/profileCompletion';
 
 import { prisma } from '../db/client';
 import { AppError } from '../errors/AppError';
@@ -137,24 +139,25 @@ export async function updateL1Profile(
     }
   });
 
-  // Record change history
-  await prisma.profileHistory.create({
-    data: {
-      profileId: profile.id,
-      layer: 'L1',
-      action: 'update',
-      oldValue: profile.l1Data as any,
-      newValue: updatedL1Data as any,
-      changedBy: userId,
-    },
-  });
-
-  // Update profile
-  const updatedProfile = await prisma.agentProfile.update({
-    where: { id: profile.id },
-    data: {
-      l1Data: updatedL1Data as any,
-    },
+  // Update profile and record change history atomically
+  const updatedProfile = await prisma.$transaction(async tx => {
+    const updated = await tx.agentProfile.update({
+      where: { id: profile.id },
+      data: {
+        l1Data: updatedL1Data as any,
+      },
+    });
+    await tx.profileHistory.create({
+      data: {
+        profileId: profile.id,
+        layer: 'L1',
+        action: 'update',
+        oldValue: profile.l1Data as any,
+        newValue: updatedL1Data as any,
+        changedBy: userId,
+      },
+    });
+    return updated;
   });
 
   return (updatedProfile.l1Data as L1Profile) || {};
@@ -292,48 +295,6 @@ export async function updateL3Profile(
   });
 
   return updatedProfile.l3Description || '';
-}
-
-/**
- * Calculate L1 profile completion
- */
-export function calculateL1Completion(l1Data: L1Profile | null): ProfileCompletionResult {
-  const fields = Object.keys(L1_FIELD_WEIGHTS) as (keyof L1Profile)[];
-  const totalFields = fields.length;
-
-  if (!l1Data) {
-    return {
-      l1Percentage: 0,
-      l1FilledFields: 0,
-      l1TotalFields: totalFields,
-      l1MissingFields: fields,
-      l1WeightedScore: 0,
-    };
-  }
-
-  const filledFields = fields.filter(field => {
-    const value = l1Data[field];
-    return value !== undefined && value !== null && value !== '';
-  });
-
-  const missingFields = fields.filter(field => !filledFields.includes(field));
-
-  // Calculate weighted score
-  let weightedScore = 0;
-  filledFields.forEach(field => {
-    weightedScore += L1_FIELD_WEIGHTS[field];
-  });
-
-  // Calculate simple percentage
-  const percentage = Math.round((filledFields.length / totalFields) * 100);
-
-  return {
-    l1Percentage: percentage,
-    l1FilledFields: filledFields.length,
-    l1TotalFields: totalFields,
-    l1MissingFields: missingFields,
-    l1WeightedScore: weightedScore,
-  };
 }
 
 /**

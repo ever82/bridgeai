@@ -527,7 +527,7 @@ model AgentProfile {
   sceneId   String?  @map("scene_id")
 
   // L1 - 基础信息（系统可查询）
-  l1Data    Json     @map("l1_data")  // location, timeRange, category, budget
+  l1Data    Json     @map("l1_data")  // age, gender, location, occupation, education
 
   // L2 - 结构化信息（Agent可读的自然语言）
   l2Data    Json     @map("l2_data")  // description, requirements, capabilities
