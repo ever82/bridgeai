@@ -230,7 +230,7 @@ export class SupplyExtractionService {
       const quality = this.evaluateQuality(extraction, text, options);
 
       // 构建供给对象
-      const supply = this.buildSupplyObject(extraction, quality);
+      const supply = this.buildSupplyObject(extraction, quality, scene);
 
       // 获取提取和失败的字段
       const fieldsExtracted = this.getExtractedFields(extraction);
@@ -294,23 +294,31 @@ export class SupplyExtractionService {
    */
   async extractBulk(request: BulkSupplyExtractionRequest): Promise<BulkSupplyExtractionResult> {
     const { items, options = {} } = request;
-    const results: SupplyExtractionResult[] = [];
-    let failed = 0;
 
     logger.info(`Starting bulk supply extraction`, { total: items.length });
 
-    for (const item of items) {
-      try {
-        const result = await this.extract({
+    // Run all extractions concurrently for performance
+    const settled = await Promise.allSettled(
+      items.map(item =>
+        this.extract({
           ...item,
           options: { ...item.options, ...options },
-        });
-        results.push(result);
-      } catch (error) {
+        })
+      )
+    );
+
+    const results: SupplyExtractionResult[] = [];
+    let failed = 0;
+
+    for (let i = 0; i < settled.length; i++) {
+      const outcome = settled[i];
+      if (outcome.status === 'fulfilled') {
+        results.push(outcome.value);
+      } else {
         failed++;
         logger.error(`Bulk extraction failed for item`, {
-          agentId: item.agentId,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          agentId: items[i].agentId,
+          error: outcome.reason instanceof Error ? outcome.reason.message : 'Unknown error',
         });
       }
     }
@@ -338,6 +346,7 @@ export class SupplyExtractionService {
    */
   private buildExtractionPrompt(text: string, scene: string, options: ExtractionOptions): string {
     const sections: string[] = [];
+    const normalizedScene = scene.toUpperCase().replace(/-/g, '_');
 
     // 基础指令
     sections.push(
@@ -373,6 +382,37 @@ export class SupplyExtractionService {
 
     if (options.includeExperience !== false) {
       sections.push(`7. Extract experience information`);
+    }
+
+    // Scene-specific extraction instructions
+    if (normalizedScene === 'AGENT_DATE') {
+      sections.push(`\n## Scene-Specific Instructions (AgentDate - Dating/Companion Scene):`);
+      sections.push(`This is a dating/companion scene. You MUST extract these additional fields:`);
+      sections.push(`- "age": The person's age or age range (number)`);
+      sections.push(`- "interests": Array of hobbies and interests (e.g. ["travel", "photography", "cooking"])`);
+      sections.push(`- "personality": Array of personality traits (e.g. ["outgoing", "kind", "humorous"])`);
+      sections.push(`- "gender": Gender if mentioned`);
+      sections.push(`- "occupation": Occupation if mentioned`);
+      sections.push(`Map dating-related skills to the "skills" field. Map pricing to companion/dating service rates.`);
+    } else if (normalizedScene === 'AGENT_JOB') {
+      sections.push(`\n## Scene-Specific Instructions (AgentJob - Job/Recruitment Scene):`);
+      sections.push(`This is a job/recruitment scene. You MUST extract these additional fields:`);
+      sections.push(`- "skills": Array of professional skills required or offered (e.g. ["React", "Node.js", "SQL"])`);
+      sections.push(`- "salary_min": Minimum salary expectation (number)`);
+      sections.push(`- "salary_max": Maximum salary expectation (number)`);
+      sections.push(`- "salary_currency": Currency for salary (e.g. "CNY", "USD")`);
+      sections.push(`- "experience_years": Years of experience required or offered (number)`);
+      sections.push(`- "education": Education level if mentioned`);
+      sections.push(`- "company": Company name if mentioned`);
+      sections.push(`- "job_title": Specific job title if mentioned`);
+      sections.push(`Map salary info to the "pricing" field. Map professional qualifications to "capabilities".`);
+    } else if (normalizedScene === 'AGENT_AD') {
+      sections.push(`\n## Scene-Specific Instructions (AgentAd - Advertising Scene):`);
+      sections.push(`This is an advertising/classified scene. You MUST extract these additional fields:`);
+      sections.push(`- "ad_type": Type of advertisement (e.g. "product", "service", "event", "promotion")`);
+      sections.push(`- "target_audience": Intended audience if mentioned`);
+      sections.push(`- "valid_until": Expiry date if mentioned`);
+      sections.push(`Map product/service details to "capabilities". Map promotional pricing to "pricing".`);
     }
 
     // 输出格式
@@ -417,6 +457,28 @@ export class SupplyExtractionService {
     sections.push(`    "certifications": ["Cert 1"],`);
     sections.push(`    "portfolio": ["https://example.com/work1"]`);
     sections.push(`  },`);
+
+    // Scene-specific output fields
+    if (normalizedScene === 'AGENT_DATE') {
+      sections.push(`  "age": 25,`);
+      sections.push(`  "interests": ["interest1", "interest2"],`);
+      sections.push(`  "personality": ["trait1", "trait2"],`);
+      sections.push(`  "gender": "Gender if mentioned or null",`);
+      sections.push(`  "occupation": "Occupation if mentioned or null",`);
+    } else if (normalizedScene === 'AGENT_JOB') {
+      sections.push(`  "salary_min": 10000,`);
+      sections.push(`  "salary_max": 20000,`);
+      sections.push(`  "salary_currency": "CNY",`);
+      sections.push(`  "experience_years": 3,`);
+      sections.push(`  "education": "Education level or null",`);
+      sections.push(`  "company": "Company name or null",`);
+      sections.push(`  "job_title": "Job title or null",`);
+    } else if (normalizedScene === 'AGENT_AD') {
+      sections.push(`  "ad_type": "product|service|event|promotion",`);
+      sections.push(`  "target_audience": "Target audience or null",`);
+      sections.push(`  "valid_until": "Expiry date ISO string or null",`);
+    }
+
     sections.push(`  "quality_assessment": {`);
     sections.push(`    "completeness": 85,`);
     sections.push(`    "clarity": 90,`);
@@ -529,7 +591,7 @@ export class SupplyExtractionService {
   /**
    * 构建供给对象
    */
-  private buildSupplyObject(extraction: any, quality: ExtractionQuality): Supply {
+  private buildSupplyObject(extraction: any, quality: ExtractionQuality, scene?: string): Supply {
     const pricing = extraction.pricing || extraction.pricing_info || {};
     const location = extraction.location || {};
     const availability = extraction.availability || {};
@@ -583,6 +645,7 @@ export class SupplyExtractionService {
         relevanceScore: quality.relevance,
         confidence: quality.confidence,
       },
+      metadata: this.buildSceneMetadata(extraction, scene),
     };
   }
 
@@ -687,6 +750,37 @@ export class SupplyExtractionService {
       issues: allIssues.slice(0, 10), // 限制问题数量
       recommendations,
     };
+  }
+
+  /**
+   * Build scene-specific metadata from extraction results
+   */
+  private buildSceneMetadata(extraction: any, scene?: string): Record<string, unknown> {
+    if (!scene) return {};
+    const normalizedScene = scene.toUpperCase().replace(/-/g, '_');
+    const metadata: Record<string, unknown> = { scene };
+
+    if (normalizedScene === 'AGENT_DATE') {
+      if (extraction.age != null) metadata.age = extraction.age;
+      if (extraction.interests) metadata.interests = extraction.interests;
+      if (extraction.personality) metadata.personality = extraction.personality;
+      if (extraction.gender) metadata.gender = extraction.gender;
+      if (extraction.occupation) metadata.occupation = extraction.occupation;
+    } else if (normalizedScene === 'AGENT_JOB') {
+      if (extraction.salary_min != null) metadata.salaryMin = extraction.salary_min;
+      if (extraction.salary_max != null) metadata.salaryMax = extraction.salary_max;
+      if (extraction.salary_currency) metadata.salaryCurrency = extraction.salary_currency;
+      if (extraction.experience_years != null) metadata.experienceYears = extraction.experience_years;
+      if (extraction.education) metadata.education = extraction.education;
+      if (extraction.company) metadata.company = extraction.company;
+      if (extraction.job_title) metadata.jobTitle = extraction.job_title;
+    } else if (normalizedScene === 'AGENT_AD') {
+      if (extraction.ad_type) metadata.adType = extraction.ad_type;
+      if (extraction.target_audience) metadata.targetAudience = extraction.target_audience;
+      if (extraction.valid_until) metadata.validUntil = extraction.valid_until;
+    }
+
+    return metadata;
   }
 
   /**

@@ -206,6 +206,20 @@ export class DemandToL2Mapper {
       };
     }
 
+    // Try matching entities to field options (for ENUM/MULTI_SELECT fields)
+    if (field.options && field.options.length > 0) {
+      const optionValue = this.matchEntitiesToFieldOptions(field, demand.entities, demand.rawText, sceneConfig);
+      if (optionValue !== undefined) {
+        return {
+          mapped: true,
+          value: optionValue,
+          transformed: true,
+          originalValue: demand.rawText,
+          transformation: 'entity_option_match',
+        };
+      }
+    }
+
     // Try to infer value
     const inferredValue = this.inferFieldValue(field, demand);
     if (inferredValue !== undefined) {
@@ -272,6 +286,19 @@ export class DemandToL2Mapper {
       constraints: d => d.structured.constraints,
       intent: d => d.intent.intent,
       confidence: d => d.confidence,
+      // Common L2 schema field aliases
+      budgetRange: d => {
+        if (d.structured.budget?.min !== undefined && d.structured.budget?.max !== undefined) {
+          return { min: d.structured.budget.min, max: d.structured.budget.max };
+        }
+        if (d.structured.budget?.max !== undefined) {
+          return { min: 0, max: d.structured.budget.max };
+        }
+        return undefined;
+      },
+      adDescription: d => d.structured.description || d.rawText,
+      timeline: d => d.structured.time?.startTime,
+      additionalInfo: d => d.rawText,
     };
 
     const mapper = fieldMappings[fieldId];
@@ -296,8 +323,14 @@ export class DemandToL2Mapper {
       budget: 'budget',
       budgetMin: 'budget',
       budgetMax: 'budget',
+      budgetRange: 'budget',
       requirements: 'requirement',
       preferences: 'preference',
+      // Schema-specific field ID to entity type mappings
+      timeline: 'time',
+      campaignDuration: 'time',
+      adDescription: 'requirement',
+      additionalInfo: 'requirement',
     };
 
     const entityType = entityTypeMap[field.id];
@@ -306,12 +339,73 @@ export class DemandToL2Mapper {
     const matchingEntities = entities.filter(e => e.type === entityType);
     if (matchingEntities.length === 0) return undefined;
 
+    // For MULTI_SELECT and TAGS fields, collect all matching entity values
+    if (field.type === L2FieldType.MULTI_SELECT || field.type === L2FieldType.TAGS) {
+      return matchingEntities.map(e => e.value);
+    }
+
     // Return highest confidence entity value
     const bestEntity = matchingEntities.reduce((best, current) =>
       current.confidence > best.confidence ? current : best
     );
 
     return bestEntity.normalizedValue ?? bestEntity.value;
+  }
+
+  /**
+   * Match entities and raw text to field options (for ENUM/MULTI_SELECT fields)
+   */
+  private matchEntitiesToFieldOptions(
+    field: L2Schema['fields'][0],
+    entities: ExtractedEntity[],
+    rawText: string,
+    sceneConfig?: SceneMappingConfig
+  ): any {
+    if (!field.options || field.options.length === 0) return undefined;
+
+    const matchedOptions: string[] = [];
+    const textToSearch = rawText.toLowerCase();
+    const allEntityValues = entities.map(e => e.value.toLowerCase());
+
+    for (const option of field.options) {
+      const optionLabel = option.label.toLowerCase();
+      const optionValue = option.value.toLowerCase();
+      const optionDesc = (option.description || '').toLowerCase();
+
+      // Check if any entity value matches the option label or value
+      const entityMatches = allEntityValues.some(ev =>
+        ev.includes(optionLabel) || optionLabel.includes(ev) ||
+        ev.includes(optionValue) || optionValue.includes(ev)
+      );
+
+      // Check if raw text mentions the option label or description keywords
+      const textMatches = optionLabel.length >= 2 && textToSearch.includes(optionLabel);
+
+      // Check scene-specific enum mappings against entity values
+      let enumMapMatches = false;
+      if (sceneConfig?.enumMappings[field.id]) {
+        for (const entityValue of allEntityValues) {
+          const mapped = sceneConfig.enumMappings[field.id][entityValue];
+          if (mapped === option.value) {
+            enumMapMatches = true;
+            break;
+          }
+        }
+      }
+
+      if (entityMatches || textMatches || enumMapMatches) {
+        matchedOptions.push(option.value);
+      }
+    }
+
+    if (matchedOptions.length === 0) return undefined;
+
+    if (field.type === L2FieldType.MULTI_SELECT || field.type === L2FieldType.TAGS) {
+      return matchedOptions;
+    }
+
+    // For ENUM, return the first (best) match
+    return matchedOptions[0];
   }
 
   /**

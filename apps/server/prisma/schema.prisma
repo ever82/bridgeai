@@ -524,7 +524,7 @@ enum SceneCode {
 model AgentProfile {
   id        String   @id @default(uuid())
   agentId   String   @map("agent_id")
-  sceneId   String   @map("scene_id")
+  sceneId   String?  @map("scene_id")
 
   // L1 - 基础信息（系统可查询）
   l1Data    Json     @map("l1_data")  // location, timeRange, category, budget
@@ -544,7 +544,7 @@ model AgentProfile {
 
   // Relations
   agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  scene     Scene    @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  scene     Scene?   @relation(fields: [sceneId], references: [id], onDelete: Cascade)
 
   @@unique([agentId, sceneId])
   @@index([agentId])

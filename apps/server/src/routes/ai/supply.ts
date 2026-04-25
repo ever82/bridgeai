@@ -14,8 +14,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 
 import { authenticate as authenticateToken } from '../../middleware/auth';
-import { validate as _validateRequest } from '../../middleware/validation';
-const validateRequest = _validateRequest as any;
+import { validate } from '../../middleware/validation';
 import { SupplyExtractionService } from '../../services/ai/supplyExtractionService';
 import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
@@ -96,7 +95,7 @@ const updateSupplySchema = z.object({
 router.post(
   '/extract-supply',
   authenticateToken,
-  validateRequest(extractSupplySchema),
+  validate({ body: extractSupplySchema }),
   async (req: Request, res: Response) => {
     try {
       await ensureService();
@@ -157,6 +156,7 @@ router.post(
             availability: result.supply.availability,
             location: result.supply.location,
             experience: result.supply.experience,
+            scene_metadata: result.supply.metadata || {},
           },
           quality_report: qualityReport,
           metadata: {
@@ -188,7 +188,7 @@ router.post(
 router.post(
   '/extract-supply/bulk',
   authenticateToken,
-  validateRequest(bulkExtractSupplySchema),
+  validate({ body: bulkExtractSupplySchema }),
   async (req: Request, res: Response) => {
     try {
       await ensureService();
@@ -253,6 +253,7 @@ router.post(
               availability: r.supply.availability,
               location: r.supply.location,
               experience: r.supply.experience,
+              scene_metadata: r.supply.metadata || {},
             },
             fields_extracted: r.fieldsExtracted,
             fields_failed: r.fieldsFailed,
@@ -345,7 +346,7 @@ router.get(
 router.post(
   '/extract-supply/sync',
   authenticateToken,
-  validateRequest(updateSupplySchema),
+  validate({ body: updateSupplySchema }),
   async (req: Request, res: Response) => {
     try {
       const { supply_id, data } = req.body;
@@ -376,15 +377,19 @@ router.post(
  * 存储提取结果到 AgentProfile
  */
 async function storeExtractionResult(agentId: string, scene: string, result: any): Promise<void> {
-  // 查找或创建 AgentProfile
-  const sceneRecord = await prisma.scene.findUnique({
-    where: { code: scene.toUpperCase().replace(/-/g, '_') as any },
-  });
+  // Normalize scene code: uppercase, replace hyphens with underscores
+  const normalizedCode = scene.toUpperCase().replace(/-/g, '_');
 
-  if (!sceneRecord) {
-    logger.warn(`Scene not found: ${scene}`);
-    return;
-  }
+  // Upsert the Scene record so extraction results are never silently discarded
+  const sceneRecord = await prisma.scene.upsert({
+    where: { code: normalizedCode as any },
+    update: {},
+    create: {
+      code: normalizedCode as any,
+      name: normalizedCode.replace(/_/g, ' '),
+      isActive: true,
+    },
+  });
 
   // 准备 L2 提取数据
   const l2Data = {

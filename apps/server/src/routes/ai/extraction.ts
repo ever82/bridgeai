@@ -156,7 +156,7 @@ router.post('/extract-demand', async (req: Request, res: Response) => {
         },
       },
       meta: {
-        requestId: `${userId}-${Date.now()}`,
+        requestId: `${userId ?? 'anonymous'}-${Date.now()}`,
         latencyMs: Date.now() - startTime,
         version: '1.0.0',
       },
@@ -184,7 +184,7 @@ router.post('/extract-demand', async (req: Request, res: Response) => {
         message: error instanceof Error ? error.message : 'Extraction failed',
       },
       meta: {
-        requestId: `${userId}-${Date.now()}`,
+        requestId: `${userId ?? 'anonymous'}-${Date.now()}`,
         latencyMs: Date.now() - startTime,
       },
     });
@@ -298,7 +298,7 @@ router.post('/extract-demand/batch', async (req: Request, res: Response) => {
         },
       },
       meta: {
-        requestId: `${userId}-${Date.now()}`,
+        requestId: `${userId ?? 'anonymous'}-${Date.now()}`,
         latencyMs: Date.now() - startTime,
         version: '1.0.0',
       },
@@ -784,7 +784,7 @@ router.post('/extract-consumer-demand', async (req: Request, res: Response) => {
         agentId,
       },
       meta: {
-        requestId: `${userId}-${Date.now()}`,
+        requestId: `${userId ?? 'anonymous'}-${Date.now()}`,
         latencyMs: Date.now() - startTime,
         version: '1.0.0',
       },
@@ -811,7 +811,7 @@ router.post('/extract-consumer-demand', async (req: Request, res: Response) => {
         message: error instanceof Error ? error.message : 'Extraction failed',
       },
       meta: {
-        requestId: `${userId}-${Date.now()}`,
+        requestId: `${userId ?? 'anonymous'}-${Date.now()}`,
         latencyMs: Date.now() - startTime,
       },
     });

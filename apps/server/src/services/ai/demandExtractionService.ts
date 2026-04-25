@@ -4,6 +4,8 @@
  * 提供自然语言理解、实体识别、意图分类和结构化输出
  */
 
+import { v4 as uuidv4 } from 'uuid';
+
 import { logger } from '../../utils/logger';
 
 import { llmService } from './llmService';
@@ -177,6 +179,7 @@ export class DemandExtractionService {
 
       // Step 6: Build final demand object
       const demand: Demand = {
+        id: uuidv4(),
         rawText: text,
         intent,
         entities,

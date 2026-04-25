@@ -44,7 +44,7 @@ export async function getOrCreateProfile(agentId: string, sceneId?: string): Pro
     where.sceneId = sceneId;
   } else {
     // Get the base profile (without scene-specific config)
-    where.sceneId = '';
+    where.sceneId = null;
   }
 
   let profile = await prisma.agentProfile.findFirst({
@@ -56,7 +56,7 @@ export async function getOrCreateProfile(agentId: string, sceneId?: string): Pro
     profile = await prisma.agentProfile.create({
       data: {
         agentId,
-        sceneId: sceneId || '',
+        sceneId: sceneId || null,
         l1Data: {},
         l2Data: {},
         l3Description: null,
