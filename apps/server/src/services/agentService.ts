@@ -81,6 +81,48 @@ function isValidStatusTransition(currentStatus: AgentStatus, newStatus: AgentSta
 }
 
 /**
+ * Sanitize agent name — strip HTML/script tags to prevent XSS storage.
+ * Returns the stripped name.
+ */
+function sanitizeName(name: string): string {
+  return name.replace(/<[^>]*>/g, '').trim();
+}
+
+/**
+ * Validate latitude/longitude bounds (WGS84).
+ */
+function validateCoordinates(lat?: number, lon?: number): void {
+  if (lat !== undefined && (lat < -90 || lat > 90)) {
+    throw new AppError(
+      `Invalid latitude: ${lat}. Must be between -90 and 90.`,
+      'INVALID_COORDINATES',
+      400
+    );
+  }
+  if (lon !== undefined && (lon < -180 || lon > 180)) {
+    throw new AppError(
+      `Invalid longitude: ${lon}. Must be between -180 and 180.`,
+      'INVALID_COORDINATES',
+      400
+    );
+  }
+}
+
+/**
+ * Validate and sanitize agent name, returns sanitized name.
+ */
+function validateAndSanitizeName(name: string, fieldName: string = 'name'): string {
+  const trimmed = sanitizeName(name);
+  if (trimmed.length === 0) {
+    throw new AppError(`${fieldName} is required`, 'AGENT_NAME_REQUIRED', 400);
+  }
+  if (trimmed.length > 100) {
+    throw new AppError(`${fieldName} must be less than 100 characters`, 'AGENT_NAME_TOO_LONG', 400);
+  }
+  return trimmed;
+}
+
+/**
  * Create a new agent
  */
 export async function createAgent(userId: string, input: CreateAgentInput): Promise<Agent> {
@@ -93,14 +135,11 @@ export async function createAgent(userId: string, input: CreateAgentInput): Prom
     );
   }
 
-  // Validate name
-  if (!input.name || input.name.trim().length === 0) {
-    throw new AppError('Agent name is required', 'AGENT_NAME_REQUIRED', 400);
-  }
+  // Validate and sanitize name (XSS prevention)
+  const sanitizedName = validateAndSanitizeName(input.name);
 
-  if (input.name.length > 100) {
-    throw new AppError('Agent name must be less than 100 characters', 'AGENT_NAME_TOO_LONG', 400);
-  }
+  // Validate coordinates (WGS84 bounds)
+  validateCoordinates(input.latitude, input.longitude);
 
   // Generate initial personality based on agent type
   const personality = generateAgentPersonality(input.type);
@@ -113,7 +152,7 @@ export async function createAgent(userId: string, input: CreateAgentInput): Prom
     data: {
       userId,
       type: input.type,
-      name: input.name.trim(),
+      name: sanitizedName,
       description: input.description || null,
       status: AgentStatus.DRAFT,
       config: initialConfig,
@@ -194,7 +233,18 @@ export async function getAgentsByUserId(
   userId: string,
   options: AgentFilterOptions = {}
 ): Promise<AgentListResult> {
-  const { type, status, page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+  const {
+    type,
+    status,
+    page: rawPage = 1,
+    limit: rawLimit = 20,
+    sortBy = 'createdAt',
+    sortOrder = 'desc',
+  } = options;
+
+  // Probe fix: enforce bounds on pagination parameters
+  const page = Math.max(1, rawPage);
+  const limit = Math.min(100, Math.max(1, rawLimit));
 
   const skip = (page - 1) * limit;
 
@@ -249,20 +299,21 @@ export async function updateAgent(
     throw new AppError('Unauthorized to update this agent', 'UNAUTHORIZED', 403);
   }
 
-  // Validate name if provided
-  if (input.name !== undefined) {
-    if (input.name.trim().length === 0) {
-      throw new AppError('Agent name is required', 'AGENT_NAME_REQUIRED', 400);
-    }
-    if (input.name.length > 100) {
-      throw new AppError('Agent name must be less than 100 characters', 'AGENT_NAME_TOO_LONG', 400);
-    }
-  }
+  // Validate and sanitize name if provided (XSS prevention)
+  const sanitizedName = input.name !== undefined
+    ? validateAndSanitizeName(input.name)
+    : agent.name;
+
+  // Validate coordinates if provided
+  validateCoordinates(
+    input.latitude !== undefined ? input.latitude : undefined,
+    input.longitude !== undefined ? input.longitude : undefined,
+  );
 
   const updatedAgent = await prisma.agent.update({
     where: { id: agentId },
     data: {
-      name: input.name?.trim() ?? agent.name,
+      name: sanitizedName,
       description: input.description !== undefined ? input.description : agent.description,
       config: input.config !== undefined ? (input.config as any) : (agent.config as any),
       latitude: input.latitude !== undefined ? input.latitude : agent.latitude,
