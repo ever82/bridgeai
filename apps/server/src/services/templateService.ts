@@ -3,17 +3,11 @@
  * 场景模板服务
  */
 
-import {
-  SceneTemplate,
-  SceneTemplateConfig,
-  SceneId,
-  SCENE_IDS,
-} from '@bridgeai/shared';
+import { SceneTemplate, SceneTemplateConfig, SceneId, SCENE_IDS } from '@bridgeai/shared';
 import { getSceneConfig } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
-
 
 /**
  * Create a new template
@@ -74,19 +68,13 @@ export async function createTemplate(
 /**
  * Get template by ID
  */
-export async function getTemplate(
-  id: string,
-  userId?: string
-): Promise<SceneTemplate | null> {
+export async function getTemplate(id: string, userId?: string): Promise<SceneTemplate | null> {
   try {
     const where: any = { id };
 
     // If userId provided, check ownership or public
     if (userId) {
-      where.OR = [
-        { userId },
-        { isPublic: true },
-      ];
+      where.OR = [{ userId }, { isPublic: true }];
     }
 
     const template = await prisma.sceneTemplate.findFirst({ where });
@@ -130,11 +118,7 @@ export async function getTemplatesByScene(
     const where: any = { sceneId };
 
     if (options?.userId && options?.includePublic) {
-      where.OR = [
-        { userId: options.userId },
-        { isPublic: true },
-        { isPreset: true },
-      ];
+      where.OR = [{ userId: options.userId }, { isPublic: true }, { isPreset: true }];
     } else if (options?.userId) {
       where.userId = options.userId;
     }
@@ -211,6 +195,11 @@ export async function updateTemplate(
 
     if (!existing) return null;
 
+    // Guard: prevent modifying preset templates (NP-351)
+    if (existing.isPreset) {
+      throw new Error('Preset templates cannot be modified');
+    }
+
     const updated = await prisma.sceneTemplate.update({
       where: { id },
       data: {
@@ -248,16 +237,18 @@ export async function updateTemplate(
 /**
  * Delete a template
  */
-export async function deleteTemplate(
-  id: string,
-  userId: string
-): Promise<boolean> {
+export async function deleteTemplate(id: string, userId: string): Promise<boolean> {
   try {
     const existing = await prisma.sceneTemplate.findFirst({
       where: { id, userId },
     });
 
     if (!existing) return false;
+
+    // Guard: prevent deleting preset templates (NP-351)
+    if (existing.isPreset) {
+      throw new Error('Preset templates cannot be deleted');
+    }
 
     await prisma.sceneTemplate.delete({ where: { id } });
 
@@ -286,6 +277,15 @@ export async function applyTemplate(
     const template = await getTemplate(templateId, userId);
     if (!template) {
       throw new Error('Template not found');
+    }
+
+    // Verify agent belongs to the user (NP-350)
+    const agent = await prisma.agent.findFirst({
+      where: { id: agentId, userId },
+    });
+
+    if (!agent) {
+      throw new Error('Agent not found or access denied');
     }
 
     // Get agent profile
@@ -354,12 +354,17 @@ export async function duplicateTemplate(
     const template = await getTemplate(id, userId);
     if (!template) return null;
 
-    return await createTemplate(userId, template.sceneId, {
-      name: newName || `${template.name} (复制)`,
-      description: template.description,
-      isDefault: false,
-      fieldValues: template.fieldValues,
-    }, false);
+    return await createTemplate(
+      userId,
+      template.sceneId,
+      {
+        name: newName || `${template.name} (复制)`,
+        description: template.description,
+        isDefault: false,
+        fieldValues: template.fieldValues,
+      },
+      false
+    );
   } catch (error) {
     logger.error('Failed to duplicate template', { error, id, userId });
     throw error;
@@ -435,10 +440,7 @@ export async function getDefaultTemplate(
 /**
  * Share a template (make public)
  */
-export async function shareTemplate(
-  id: string,
-  userId: string
-): Promise<SceneTemplate | null> {
+export async function shareTemplate(id: string, userId: string): Promise<SceneTemplate | null> {
   return updateTemplate(id, userId, { isPublic: true });
 }
 

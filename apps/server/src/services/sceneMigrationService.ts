@@ -396,7 +396,7 @@ function transformField(value: any, transformation: FieldTransformation): any {
     case 'merge': {
       // Merge multiple fields
       const fields = transformation.config.fields as string[];
-      return fields.map(() => value).join(' ');
+      return fields.map(f => data[f]).join(' ');
     }
 
     case 'split': {
