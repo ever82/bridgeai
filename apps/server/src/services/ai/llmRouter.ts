@@ -117,6 +117,10 @@ export class LLMRouter {
         return costA - costB;
       });
 
+    if (sortedModels.length === 0) {
+      throw new Error('No suitable model found for cost-based routing');
+    }
+
     const selected = sortedModels[0];
 
     return {
@@ -141,6 +145,10 @@ export class LLMRouter {
       .filter(m => m.capabilities.chatCompletion)
       .sort((a, b) => a.averageLatencyMs - b.averageLatencyMs);
 
+    if (sortedModels.length === 0) {
+      throw new Error('No suitable model found for latency-based routing');
+    }
+
     const selected = sortedModels[0];
 
     return {
@@ -164,6 +172,10 @@ export class LLMRouter {
     const sortedModels = models
       .filter(m => m.capabilities.chatCompletion)
       .sort((a, b) => b.qualityScore - a.qualityScore);
+
+    if (sortedModels.length === 0) {
+      throw new Error('No suitable model found for quality-based routing');
+    }
 
     const selected = sortedModels[0];
 

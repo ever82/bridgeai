@@ -3,6 +3,8 @@
  * 统一的LLM服务入口
  */
 
+import { logger } from '../../utils/logger';
+
 import { ILLMAdapter, OpenAIAdapter, ClaudeAdapter, WenxinAdapter } from './adapters';
 import { CircuitBreakerManager } from './circuitBreaker';
 import { LLMRouter } from './llmRouter';
@@ -82,6 +84,9 @@ export class LLMService {
     if (this.initialized) return;
 
     // 初始化OpenAI适配器
+    if (!this.config.openai?.apiKey) {
+      logger.warn('OpenAI adapter not configured: OPENAI_API_KEY is missing');
+    }
     if (this.config.openai?.apiKey) {
       const adapter = new OpenAIAdapter({
         apiKey: this.config.openai.apiKey,
@@ -105,6 +110,9 @@ export class LLMService {
     }
 
     // 初始化Claude适配器
+    if (!this.config.claude?.apiKey) {
+      logger.warn('Claude adapter not configured: CLAUDE_API_KEY is missing');
+    }
     if (this.config.claude?.apiKey) {
       const adapter = new ClaudeAdapter({
         apiKey: this.config.claude.apiKey,
@@ -125,6 +133,9 @@ export class LLMService {
     }
 
     // 初始化文心一言适配器
+    if (!this.config.wenxin?.apiKey || !this.config.wenxin?.secretKey) {
+      logger.warn('Wenxin adapter not configured: WENXIN_API_KEY or WENXIN_SECRET_KEY is missing');
+    }
     if (this.config.wenxin?.apiKey && this.config.wenxin?.secretKey) {
       const adapter = new WenxinAdapter({
         apiKey: this.config.wenxin.apiKey,
@@ -533,9 +544,47 @@ export class LLMService {
     request: ChatCompletionRequest,
     error: Error
   ): Promise<import('./fallback').FallbackResult> {
-    // 降级策略暂未实现完整逻辑
-    // 实际项目中需要实现FallbackContext
-    return { success: false, strategy: 'none', message: 'Fallback not implemented' };
+    const availableProviders = this.getAvailableProviders();
+    const models = new Map<string, import('./types').ModelInfo>();
+
+    // Collect registered models from router
+    const allModels = await this.getModels();
+    for (const m of allModels) {
+      models.set(m.id, m);
+    }
+
+    const context: import('./fallback').FallbackContext = {
+      availableProviders,
+      models,
+      attemptCount: 1,
+      originalProvider: availableProviders[0] || 'openai',
+    };
+
+    const result = await this.fallbackChain.execute(request, error, context);
+
+    // If the fallback suggests a different provider/model, try executing it
+    if (result.success && result.provider && result.model && !result.response) {
+      const adapter = this.adapters.get(result.provider);
+      if (adapter) {
+        try {
+          const response = await adapter.chatCompletion(
+            { ...request, model: result.model },
+            {
+              requestId: `fallback-${Date.now()}`,
+              provider: result.provider,
+              model: result.model,
+              startTime: new Date(),
+              routingStrategy: 'fallback',
+            }
+          );
+          return { ...result, response };
+        } catch (fallbackError) {
+          return { ...result, success: false, message: `Fallback execution failed: ${fallbackError instanceof Error ? fallbackError.message : 'Unknown error'}` };
+        }
+      }
+    }
+
+    return result;
   }
 
   private recordMetrics(metrics: RequestMetrics): void {
