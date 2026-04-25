@@ -7,14 +7,12 @@ import {
   ScrollView,
   Share,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
 import { Coupon, CouponStatus } from '../../types/promoCode';
-import { promoCodeApi } from '../../services/api/promoCodeApi';
 import Icon from '../Icon/Icon';
 
 interface PromoCodeDisplayProps {
@@ -247,7 +245,7 @@ const PromoCodeDisplay: React.FC<PromoCodeDisplayProps> = ({
         </View>
         <View style={styles.instructionItem}>
           <Text style={styles.instructionNumber}>3</Text>
-          <Text style={styles.instructionText}>或点击"立即使用"在线完成支付</Text>
+          <Text style={styles.instructionText}>或点击&quot;立即使用&quot;在线完成支付</Text>
         </View>
         <View style={styles.instructionItem}>
           <Text style={styles.instructionNumber}>4</Text>

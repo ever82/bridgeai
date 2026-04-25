@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Switch,
   ActivityIndicator,
 } from 'react-native';
 import type { VisionSharePublishFormData } from '@packages/shared/types/visionShare';
@@ -60,14 +59,14 @@ export const PublishForm: React.FC<PublishFormProps> = ({
   const [budgetAmount, setBudgetAmount] = useState(
     initialData?.budgetAmount ? String(initialData.budgetAmount) : ''
   );
-  const [budgetCurrency, setBudgetCurrency] = useState(initialData?.budgetCurrency || 'CNY');
+  const [budgetCurrency, _setBudgetCurrency] = useState(initialData?.budgetCurrency || 'CNY');
   const [latitude, setLatitude] = useState<number | undefined>(initialData?.latitude);
   const [longitude, setLongitude] = useState<number | undefined>(initialData?.longitude);
   const [locationName, setLocationName] = useState(initialData?.locationName || '');
   const [locationAddress, setLocationAddress] = useState(initialData?.locationAddress || '');
   const [timeType, setTimeType] = useState<'IMMEDIATE' | 'SCHEDULED'>(initialData?.timeType || 'IMMEDIATE');
-  const [startTime, setStartTime] = useState<Date | undefined>(initialData?.startTime);
-  const [endTime, setEndTime] = useState<Date | undefined>(initialData?.endTime);
+  const [startTime, _setStartTime] = useState<Date | undefined>(initialData?.startTime);
+  const [endTime, _setEndTime] = useState<Date | undefined>(initialData?.endTime);
   const [validHours, setValidHours] = useState(initialData?.validHours ? String(initialData.validHours) : '24');
   const [category, setCategory] = useState(initialData?.category || '');
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);

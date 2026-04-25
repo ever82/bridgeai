@@ -16,15 +16,25 @@ jest.mock('../../db/client', () => {
     delete: jest.fn(),
     count: jest.fn(),
   };
+  const mockDemand = { count: jest.fn().mockResolvedValue(0) };
+  const mockSupply = { count: jest.fn().mockResolvedValue(0) };
   return {
     prisma: {
       agent: mockAgent,
+      demand: mockDemand,
+      supply: mockSupply,
     },
     __mockAgent: mockAgent,
+    __mockDemand: mockDemand,
+    __mockSupply: mockSupply,
   };
 });
 
-const { __mockAgent: mockAgent } = jest.requireMock('../../db/client');
+const {
+  __mockAgent: mockAgent,
+  __mockDemand: mockDemand,
+  __mockSupply: mockSupply,
+} = jest.requireMock('../../db/client');
 
 // Mock logger
 jest.mock('../../utils/logger', () => ({
@@ -57,6 +67,9 @@ describe('AgentService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // NP-276: deleteAgent now checks for active demands/supplies. Default to 0 active.
+    mockDemand.count.mockResolvedValue(0);
+    mockSupply.count.mockResolvedValue(0);
   });
 
   describe('createAgent', () => {
@@ -84,7 +97,13 @@ describe('AgentService', () => {
           name: createInput.name,
           description: createInput.description,
           status: agentService.AgentStatus.DRAFT,
-          config: {},
+          // NP-268: createAgent now injects an initial personality config.
+          config: expect.objectContaining({
+            personality: expect.objectContaining({
+              traits: expect.any(Array),
+              communicationStyle: expect.any(String),
+            }),
+          }),
           latitude: null,
           longitude: null,
           isActive: true,
@@ -285,14 +304,22 @@ describe('AgentService', () => {
   });
 
   describe('deleteAgent', () => {
-    it('should delete agent successfully', async () => {
+    it('should archive agent successfully (soft delete)', async () => {
       mockAgent.findUnique.mockResolvedValue(mockAgentData);
-      mockAgent.delete.mockResolvedValue(mockAgentData);
+      mockAgent.update.mockResolvedValue({
+        ...mockAgentData,
+        status: 'ARCHIVED',
+        isActive: false,
+      });
 
       await agentService.deleteAgent(mockAgentId, mockUserId);
 
-      expect(mockAgent.delete).toHaveBeenCalledWith({
+      expect(mockAgent.update).toHaveBeenCalledWith({
         where: { id: mockAgentId },
+        data: expect.objectContaining({
+          status: 'ARCHIVED',
+          isActive: false,
+        }),
       });
     });
 

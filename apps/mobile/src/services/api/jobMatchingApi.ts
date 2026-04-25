@@ -4,7 +4,7 @@
  * API functions for job matching and candidate recommendations
  */
 
-import { JobPosting, JobApplication, ApplicationStatus } from '@bridgeai/shared';
+import { JobPosting } from '@bridgeai/shared';
 
 import { api } from './client';
 

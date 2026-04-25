@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
-  Animated,
 } from 'react-native';
 import {
   SceneConfig,

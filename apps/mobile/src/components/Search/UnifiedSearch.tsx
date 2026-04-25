@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   TextInput,
@@ -204,7 +204,7 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({
               <View style={styles.emptyState}>
                 <Icon name="search-off" size={48} color="#ccc" />
                 <Text style={styles.emptyStateText}>
-                  No results found for "{query}"
+                  No results found for &quot;{query}&quot;
                 </Text>
               </View>
             ) : null

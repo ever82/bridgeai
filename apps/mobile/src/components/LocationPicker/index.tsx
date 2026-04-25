@@ -3,7 +3,7 @@
  * 省市区三级联动选择器 - 从 API 获取数据
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,14 +14,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Location } from '@bridgeai/shared';
+
 import {
   getProvinces,
   getCitiesByProvince,
   getDistrictsByCity,
-  getLocationHierarchy,
-  type Province,
-  type City,
-  type District,
 } from '../../services/location';
 
 interface LocationOption {

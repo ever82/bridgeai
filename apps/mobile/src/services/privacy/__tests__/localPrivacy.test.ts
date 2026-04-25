@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { LocalPrivacyManager, PrivacySettings } from '../localPrivacy';
+import { encryptedStorage } from '../../../utils/encryptedStorage';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -161,7 +162,6 @@ describe('LocalPrivacyManager', () => {
 
   describe('Encrypted Index Storage', () => {
     it('encrypts sensitive data before storage', async () => {
-      const { encryptedStorage } = require('../../../utils/encryptedStorage');
       await privacyManager.initialize();
 
       const sensitiveData = { tags: ['personal', 'family'] };
@@ -171,7 +171,6 @@ describe('LocalPrivacyManager', () => {
     });
 
     it('decrypts data when retrieved', async () => {
-      const { encryptedStorage } = require('../../../utils/encryptedStorage');
       const mockData = JSON.stringify({ tags: ['personal'] });
       (encryptedStorage.getItem as jest.Mock).mockResolvedValue(mockData);
 
@@ -182,7 +181,6 @@ describe('LocalPrivacyManager', () => {
     });
 
     it('handles encryption errors gracefully', async () => {
-      const { encryptedStorage } = require('../../../utils/encryptedStorage');
       (encryptedStorage.setItem as jest.Mock).mockRejectedValue(new Error('Encryption failed'));
 
       await privacyManager.initialize();
@@ -270,7 +268,6 @@ describe('LocalPrivacyManager', () => {
 
       await privacyManager.clearAllLocalData();
 
-      const { encryptedStorage } = require('../../../utils/encryptedStorage');
       expect(encryptedStorage.removeItem).toHaveBeenCalled();
     });
 

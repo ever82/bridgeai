@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   Modal,
   FlatList,
   ActivityIndicator,
-  TextInput,
 } from 'react-native';
 import { Location } from '@bridgeai/shared';
 
@@ -94,7 +93,6 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const [step, setStep] = useState<'province' | 'city' | 'district'>('province');
   const [selectedProvince, setSelectedProvince] = useState<LocationOption | null>(null);
   const [selectedCity, setSelectedCity] = useState<LocationOption | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const getDisplayText = () => {
     if (!value) return placeholder;

@@ -1,9 +1,28 @@
-import SQLite, { SQLiteDatabase, Transaction } from 'react-native-sqlite-storage';
 import { Platform } from 'react-native';
 
-import { ImageAnalysisResult } from './localImageAnalysis';
+// Lazy-load SQLite to avoid crash when native module is not installed
+let SQLite: any = null;
+try {
+  SQLite = require('react-native-sqlite-storage').default || require('react-native-sqlite-storage');
+  if (SQLite.enablePromise) SQLite.enablePromise(true);
+} catch {
+  SQLite = {
+    enablePromise() {},
+    openDatabase() { return Promise.reject(new Error('SQLite not available')); },
+    deleteDatabase() { return Promise.resolve(); },
+    databasePath: '',
+  };
+}
 
-SQLite.enablePromise(true);
+type SQLiteDatabase = {
+  executeSql(sql: string, params?: any[]): Promise<any>;
+  transaction(fn: (tx: any) => void): Promise<any>;
+  close(): void;
+};
+
+type Transaction = {
+  executeSql(sql: string, params?: any[], success?: any, error?: any): void;
+};
 
 export interface IndexedImage {
   id: string;
@@ -203,15 +222,7 @@ export class LocalSearchIndex {
       [normalizedQuery, limit],
     );
 
-    const [semanticResults] = await this.db.executeSql(
-      `SELECT id, uri, tags, embeddings
-       FROM indexed_images
-       WHERE scene_type LIKE ? OR tags LIKE ?
-       LIMIT ?`,
-      [`%${normalizedQuery}%`, `%${normalizedQuery}%`, limit],
-    );
-
-    const results: SearchResult[] = [];
+const results: SearchResult[] = [];
 
     for (let i = 0; i < ftsResults.rows.length; i++) {
       const row = ftsResults.rows.item(i);
@@ -263,7 +274,7 @@ export class LocalSearchIndex {
     return scored
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
-      .map(({ score, ...rest }) => rest);
+      .map(({ score: _score, ...rest }) => rest);
   }
 
   async getIndexStats(): Promise<IndexStats> {
@@ -313,15 +324,15 @@ export class LocalSearchIndex {
   async backup(): Promise<string> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const backupPath = `${Platform.OS === 'ios'
+    const _backupPath = `${Platform.OS === 'ios'
       ? SQLite.databasePath
       : '/data/data/com.bridgeai/databases/'}backup_${Date.now()}.db`;
 
-    await this.db.executeSql(`VACUUM INTO '${backupPath}'`);
-    return backupPath;
+    await this.db.executeSql(`VACUUM INTO '${_backupPath}'`);
+    return _backupPath;
   }
 
-  async restore(backupPath: string): Promise<void> {
+  async restore(_backupPath: string): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
 
     await this.db.close();

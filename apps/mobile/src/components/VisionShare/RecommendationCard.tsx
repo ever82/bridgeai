@@ -10,7 +10,6 @@ import {
   TaskRecommendation,
   GeoCoordinates,
   TASK_TYPE_LABELS,
-  calculateDistance,
 } from '@bridgeai/shared';
 
 interface RecommendationCardProps {
@@ -21,7 +20,7 @@ interface RecommendationCardProps {
 
 export const RecommendationCard: React.FC<RecommendationCardProps> = ({
   recommendation,
-  userLocation,
+  userLocation: _userLocation,
   onDismiss,
 }) => {
   const navigation = useNavigation();

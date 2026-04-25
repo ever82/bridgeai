@@ -4,7 +4,7 @@
  * Displays user online status with indicator dot,
  * last seen time, and multi-device support.
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 
 import { socketClient } from '../../services/socketClient';

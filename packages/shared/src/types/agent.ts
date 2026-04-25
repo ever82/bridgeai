@@ -7,6 +7,8 @@ export enum AgentType {
   AGENTDATE = 'AGENTDATE',
   AGENTJOB = 'AGENTJOB',
   AGENTAD = 'AGENTAD',
+  DEMAND = 'DEMAND',
+  SUPPLY = 'SUPPLY',
 }
 
 export enum AgentStatus {
@@ -84,6 +86,8 @@ export const AGENT_TYPE_LABELS: Record<AgentType, string> = {
   [AgentType.AGENTDATE]: 'Agent Date',
   [AgentType.AGENTJOB]: 'Agent Job',
   [AgentType.AGENTAD]: 'Agent Ad',
+  [AgentType.DEMAND]: 'Demand',
+  [AgentType.SUPPLY]: 'Supply',
 };
 
 // Agent status display names
@@ -100,6 +104,8 @@ export const AGENT_TYPE_COLORS: Record<AgentType, string> = {
   [AgentType.AGENTDATE]: '#E91E63',
   [AgentType.AGENTJOB]: '#2196F3',
   [AgentType.AGENTAD]: '#FF9800',
+  [AgentType.DEMAND]: '#9C27B0',
+  [AgentType.SUPPLY]: '#00BCD4',
 };
 
 // Agent status colors for UI

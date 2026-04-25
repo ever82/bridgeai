@@ -1,6 +1,5 @@
 import {
   Platform,
-  PermissionsAndroid,
   type PermissionStatus as AndroidPermissionStatus,
 } from 'react-native';
 import {
@@ -155,7 +154,6 @@ export class PhotoLibraryPermissionManager {
 
   private mapIOSStatus(status: IOSPermissionStatus): PhotoPermissionState {
     const isLimited = status === RESULTS.LIMITED;
-    const isGranted = status === RESULTS.GRANTED || isLimited;
 
     return {
       status:

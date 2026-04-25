@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react-native';
+import { Text } from 'react-native';
 
 import { Card } from './Card';
 
@@ -7,7 +8,7 @@ describe('Card', () => {
   it('renders correctly with default props', () => {
     render(
       <Card>
-        <span>Card content</span>
+        <Text>Card content</Text>
       </Card>
     );
     expect(screen.getByText('Card content')).toBeTruthy();
@@ -16,7 +17,7 @@ describe('Card', () => {
   it('renders with title', () => {
     render(
       <Card title="Card Title">
-        <span>Content</span>
+        <Text>Content</Text>
       </Card>
     );
     expect(screen.getByText('Card Title')).toBeTruthy();
@@ -25,7 +26,7 @@ describe('Card', () => {
   it('renders with subtitle', () => {
     render(
       <Card title="Card Title" subtitle="Card Subtitle">
-        <span>Content</span>
+        <Text>Content</Text>
       </Card>
     );
     expect(screen.getByText('Card Subtitle')).toBeTruthy();
@@ -33,8 +34,8 @@ describe('Card', () => {
 
   it('renders with custom header', () => {
     render(
-      <Card header={<span testID="custom-header">Custom Header</span>}>
-        <span>Content</span>
+      <Card header={<Text testID="custom-header">Custom Header</Text>}>
+        <Text>Content</Text>
       </Card>
     );
     expect(screen.getByTestId('custom-header')).toBeTruthy();
@@ -42,8 +43,8 @@ describe('Card', () => {
 
   it('renders with custom footer', () => {
     render(
-      <Card footer={<span testID="custom-footer">Custom Footer</span>}>
-        <span>Content</span>
+      <Card footer={<Text testID="custom-footer">Custom Footer</Text>}>
+        <Text>Content</Text>
       </Card>
     );
     expect(screen.getByTestId('custom-footer')).toBeTruthy();
@@ -53,7 +54,7 @@ describe('Card', () => {
     const mockOnPress = jest.fn();
     render(
       <Card onPress={mockOnPress}>
-        <span>Pressable Card</span>
+        <Text>Pressable Card</Text>
       </Card>
     );
     fireEvent.press(screen.getByRole('button'));
@@ -64,7 +65,7 @@ describe('Card', () => {
     const mockOnPress = jest.fn();
     render(
       <Card pressable onPress={mockOnPress}>
-        <span>Pressable Card</span>
+        <Text>Pressable Card</Text>
       </Card>
     );
     expect(screen.getByRole('button')).toBeTruthy();
@@ -73,7 +74,7 @@ describe('Card', () => {
   it('renders elevated variant', () => {
     render(
       <Card variant="elevated">
-        <span>Elevated Card</span>
+        <Text>Elevated Card</Text>
       </Card>
     );
     expect(screen.getByText('Elevated Card')).toBeTruthy();
@@ -82,7 +83,7 @@ describe('Card', () => {
   it('renders outlined variant', () => {
     render(
       <Card variant="outlined">
-        <span>Outlined Card</span>
+        <Text>Outlined Card</Text>
       </Card>
     );
     expect(screen.getByText('Outlined Card')).toBeTruthy();
@@ -91,7 +92,7 @@ describe('Card', () => {
   it('renders with small padding', () => {
     render(
       <Card padding="sm">
-        <span>Small Padding</span>
+        <Text>Small Padding</Text>
       </Card>
     );
     expect(screen.getByText('Small Padding')).toBeTruthy();
@@ -100,7 +101,7 @@ describe('Card', () => {
   it('renders with large padding', () => {
     render(
       <Card padding="lg">
-        <span>Large Padding</span>
+        <Text>Large Padding</Text>
       </Card>
     );
     expect(screen.getByText('Large Padding')).toBeTruthy();
@@ -109,7 +110,7 @@ describe('Card', () => {
   it('renders with no padding', () => {
     render(
       <Card padding="none">
-        <span>No Padding</span>
+        <Text>No Padding</Text>
       </Card>
     );
     expect(screen.getByText('No Padding')).toBeTruthy();

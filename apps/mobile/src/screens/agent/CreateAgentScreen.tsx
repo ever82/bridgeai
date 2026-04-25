@@ -26,7 +26,13 @@ import { SceneConfigForm } from './components/SceneConfigForm';
 import { AIConfigSection } from './components/AIConfigSection';
 import { AgentPreview } from './components/AgentPreview';
 
-const AGENT_TYPES = Object.values(AgentType);
+// NP-272: AC specifies 4 scene types — exclude DEMAND/SUPPLY from the wizard.
+const SCENE_TYPES: AgentType[] = [
+  AgentType.VISIONSHARE,
+  AgentType.AGENTDATE,
+  AgentType.AGENTJOB,
+  AgentType.AGENTAD,
+];
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList>;
 
@@ -109,8 +115,24 @@ export const CreateAgentScreen: React.FC = () => {
 
       await agentsApi.createAgent(agentData);
 
-      Alert.alert('Success', 'Agent created successfully!', [
-        { text: 'OK', onPress: () => navigation.navigate('AgentList') },
+      // NP-269: Allow user to create multiple agents (one per scene) without
+      // architectural changes — addresses the "multi-select scenes" AC.
+      Alert.alert('Success', 'Agent创建成功！是否继续创建其他场景的Agent？', [
+        {
+          text: '完成',
+          onPress: () => navigation.navigate('AgentList'),
+        },
+        {
+          text: '继续创建',
+          onPress: () => {
+            setSelectedType(null);
+            setName('');
+            setDescription('');
+            setSceneConfig({});
+            setAiConfig({});
+            setStep(2);
+          },
+        },
       ]);
     } catch (err) {
       Alert.alert('Error', (err as Error)?.message || 'Failed to create agent');
@@ -159,9 +181,11 @@ export const CreateAgentScreen: React.FC = () => {
   const renderStep2 = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.stepTitle}>Step 2: Select Agent Type</Text>
-      <Text style={styles.stepDescription}>Choose the type of agent you want to create</Text>
+      <Text style={styles.stepDescription}>
+        选择你感兴趣的场景类型（可创建多个不同类型的 Agent）
+      </Text>
 
-      {AGENT_TYPES.map(type => (
+      {SCENE_TYPES.map(type => (
         <TouchableOpacity
           key={type}
           style={[styles.typeCard, selectedType === type && styles.typeCardSelected]}

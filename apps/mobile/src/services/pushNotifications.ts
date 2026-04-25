@@ -222,7 +222,7 @@ class PushNotificationService {
   /**
    * 取消注册推送令牌
    */
-  async unregisterToken(authToken: string): Promise<boolean> {
+  async unregisterToken(_authToken: string): Promise<boolean> {
     if (!this.token) {
       return true;
     }
@@ -384,7 +384,7 @@ class PushNotificationService {
   async scheduleLocalNotification(
     title: string,
     body: string,
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
     trigger?: Notifications.NotificationTriggerInput
   ): Promise<string | null> {
     try {

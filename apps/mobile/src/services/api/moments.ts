@@ -3,7 +3,6 @@ import {
   User,
   UserProfile,
   PaginatedResponse,
-  ApiResponse,
 } from '../../types';
 
 import { api } from './client';

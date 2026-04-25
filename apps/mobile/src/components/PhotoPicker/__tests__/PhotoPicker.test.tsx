@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import * as ExpoImagePicker from 'expo-image-picker';
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { PhotoPicker } from '../PhotoPicker';
 
 // Mock expo-image-picker
@@ -30,7 +30,7 @@ describe('PhotoPicker', () => {
   });
 
   it('renders permission request initially', async () => {
-    jest.spyOn(require('expo-image-picker'), 'requestMediaLibraryPermissionsAsync')
+    jest.spyOn(ExpoImagePicker, 'requestMediaLibraryPermissionsAsync')
       .mockResolvedValue({ status: 'denied' });
 
     const { findByText } = render(

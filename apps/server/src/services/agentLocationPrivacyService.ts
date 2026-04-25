@@ -109,7 +109,13 @@ export async function applyPrivacyFilter(
         delete sanitized.district;
         delete sanitized.districtName;
         delete sanitized.address;
-        return { ...locationData, location: sanitized, privacyApplied: true };
+        return {
+          ...locationData,
+          location: sanitized,
+          latitude: null,
+          longitude: null,
+          privacyApplied: true,
+        };
       }
       return { latitude: null, longitude: null, privacyApplied: true };
 
@@ -118,7 +124,13 @@ export async function applyPrivacyFilter(
       if (locationData.location) {
         const sanitized = { ...locationData.location };
         delete sanitized.address;
-        return { ...locationData, location: sanitized, privacyApplied: true };
+        return {
+          ...locationData,
+          location: sanitized,
+          latitude: null,
+          longitude: null,
+          privacyApplied: true,
+        };
       }
       return { latitude: null, longitude: null, privacyApplied: true };
 

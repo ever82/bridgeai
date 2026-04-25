@@ -11,6 +11,7 @@ import { User } from '@prisma/client';
 
 import { logger } from '../utils/logger';
 import { prisma } from '../db/client';
+import { UserRole } from '../types';
 
 import { cacheGet, cacheSet, cacheDel } from './cache';
 import * as refreshTokenService from './auth/refreshToken';
@@ -153,7 +154,7 @@ export async function verifyVerificationCode(identifier: string, code: string): 
  * @returns 访问令牌
  */
 export function generateAccessToken(payload: ITokenPayload): string {
-  const tokens = generateTokens(payload.userId, payload.email || '', payload.role);
+  const tokens = generateTokens(payload.userId, payload.email || '', payload.role as UserRole);
   return tokens.accessToken;
 }
 
@@ -163,7 +164,7 @@ export function generateAccessToken(payload: ITokenPayload): string {
  * @returns 刷新令牌
  */
 export function generateRefreshToken(userId: string): string {
-  const tokens = generateTokens(userId, '', 'user');
+  const tokens = generateTokens(userId, '', 'user' as UserRole);
   return tokens.refreshToken;
 }
 

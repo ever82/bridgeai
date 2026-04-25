@@ -17,8 +17,19 @@ export interface StoredTokens {
 
 /**
  * Store authentication tokens securely
+ * Validates tokens before storage to prevent "undefined" string storage on web.
  */
 export async function storeTokens(tokens: StoredTokens): Promise<void> {
+  if (!tokens.accessToken) {
+    throw new Error('Cannot store undefined access token');
+  }
+  if (!tokens.refreshToken) {
+    throw new Error('Cannot store undefined refresh token');
+  }
+  if (typeof tokens.expiresIn !== 'number' || !isFinite(tokens.expiresIn)) {
+    throw new Error(`Cannot store invalid expiresIn value: ${tokens.expiresIn}`);
+  }
+
   await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, tokens.accessToken);
   await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, tokens.refreshToken);
   const expiryTime = Date.now() + tokens.expiresIn * 1000;
@@ -75,6 +86,13 @@ export async function updateAccessToken(
   expiresIn: number,
   refreshToken?: string
 ): Promise<void> {
+  if (!accessToken) {
+    throw new Error('Cannot update undefined access token');
+  }
+  if (typeof expiresIn !== 'number' || !isFinite(expiresIn)) {
+    throw new Error(`Cannot update with invalid expiresIn value: ${expiresIn}`);
+  }
+
   await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken);
   const expiryTime = Date.now() + expiresIn * 1000;
   await SecureStore.setItemAsync(TOKEN_EXPIRY_KEY, String(expiryTime));

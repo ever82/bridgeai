@@ -51,9 +51,10 @@ export const useMomentsStore = create<MomentsState>((set, get) => ({
         page: page + 1,
         isLoading: false,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '获取动态失败';
       set({
-        error: error.message || '获取动态失败',
+        error: message,
         isLoading: false,
       });
     }
@@ -76,9 +77,10 @@ export const useMomentsStore = create<MomentsState>((set, get) => ({
         selectedMoment: response.data,
         isLoading: false,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '获取动态详情失败';
       set({
-        error: error.message || '获取动态详情失败',
+        error: message,
         isLoading: false,
       });
     }
@@ -93,9 +95,10 @@ export const useMomentsStore = create<MomentsState>((set, get) => ({
         isLoading: false,
       });
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '创建动态失败';
       set({
-        error: error.message || '创建动态失败',
+        error: message,
         isLoading: false,
       });
       throw error;
@@ -114,9 +117,10 @@ export const useMomentsStore = create<MomentsState>((set, get) => ({
           get().selectedMoment?.id === id ? response.data : get().selectedMoment,
         isLoading: false,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '更新动态失败';
       set({
-        error: error.message || '更新动态失败',
+        error: message,
         isLoading: false,
       });
       throw error;
@@ -132,9 +136,10 @@ export const useMomentsStore = create<MomentsState>((set, get) => ({
         selectedMoment: get().selectedMoment?.id === id ? null : get().selectedMoment,
         isLoading: false,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '删除动态失败';
       set({
-        error: error.message || '删除动态失败',
+        error: message,
         isLoading: false,
       });
       throw error;
@@ -159,8 +164,9 @@ export const useMomentsStore = create<MomentsState>((set, get) => ({
               }
             : get().selectedMoment,
       });
-    } catch (error: any) {
-      set({ error: error.message || '点赞失败' });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '点赞失败';
+      set({ error: message });
     }
   },
 
@@ -182,8 +188,9 @@ export const useMomentsStore = create<MomentsState>((set, get) => ({
               }
             : get().selectedMoment,
       });
-    } catch (error: any) {
-      set({ error: error.message || '取消点赞失败' });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '取消点赞失败';
+      set({ error: message });
     }
   },
 

@@ -1,3 +1,5 @@
+import * as tflite from 'react-native-tflite';
+
 import {
   LocalImageAnalysis,
   AnalysisProgress,
@@ -56,8 +58,7 @@ describe('LocalImageAnalysis', () => {
     });
 
     it('handles initialization errors gracefully', async () => {
-      const { loadTensorflowModel } = require('react-native-tflite');
-      loadTensorflowModel.mockRejectedValueOnce(new Error('Model load failed'));
+      (tflite.loadTensorflowModel as jest.Mock).mockRejectedValueOnce(new Error('Model load failed'));
 
       await expect(analyzer.initialize()).rejects.toThrow('Model load failed');
       expect(analyzer.isModelLoaded()).toBe(false);
@@ -96,11 +97,10 @@ describe('LocalImageAnalysis', () => {
     });
 
     it('handles analysis errors', async () => {
-      const { loadTensorflowModel } = require('react-native-tflite');
       const mockModel = {
         run: jest.fn().mockRejectedValue(new Error('Analysis failed')),
       };
-      loadTensorflowModel.mockResolvedValue(mockModel);
+      (tflite.loadTensorflowModel as jest.Mock).mockResolvedValue(mockModel);
       await analyzer.initialize();
 
       await expect(analyzer.analyzeImage(mockImageUri)).rejects.toThrow('Analysis failed');
@@ -164,15 +164,14 @@ describe('LocalImageAnalysis', () => {
       }
     });
 
-    it('handles batch processing with errors', async () => {
-      const { loadTensorflowModel } = require('react-native-tflite');
+it('handles batch processing with errors', async () => {
       const mockModel = {
         run: jest.fn()
           .mockResolvedValueOnce({ output: new Float32Array(1000) })
           .mockRejectedValueOnce(new Error('Analysis error'))
           .mockResolvedValueOnce({ output: new Float32Array(1000) }),
       };
-      loadTensorflowModel.mockResolvedValue(mockModel);
+      (tflite.loadTensorflowModel as jest.Mock).mockResolvedValue(mockModel);
       await analyzer.initialize();
 
       const errors: Error[] = [];

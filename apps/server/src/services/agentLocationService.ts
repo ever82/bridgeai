@@ -37,6 +37,20 @@ export interface AgentWithLocation {
 }
 
 /**
+ * Get the primary profile from a Prisma agent fetch result.
+ * Tolerates both `profile` (singular, used in some legacy/test mocks) and
+ * `profiles` (the canonical Prisma array relation in schema.prisma).
+ */
+function getPrimaryProfile(agent: any): any | null {
+  if (!agent) return null;
+  if (agent.profile) return agent.profile;
+  if (Array.isArray(agent.profiles) && agent.profiles.length > 0) {
+    return agent.profiles[0];
+  }
+  return null;
+}
+
+/**
  * Update agent's location
  */
 export async function updateAgentLocation(
@@ -55,6 +69,12 @@ export async function updateAgentLocation(
       return false;
     }
 
+    const profile = getPrimaryProfile(agent);
+    if (!profile) {
+      logger.warn('Agent has no profile for location update', { agentId });
+      return false;
+    }
+
     const locationData = {
       ...location,
       ...(coordinates && { coordinates }),
@@ -62,10 +82,10 @@ export async function updateAgentLocation(
 
     // Update agent's profile with location data
     await prisma.agentProfile.update({
-      where: { id: agent.profiles[0]!.id },
+      where: { id: profile.id },
       data: {
         l1Data: {
-          ...(agent.profiles[0]?.l1Data as object || {}),
+          ...((profile.l1Data as object) || {}),
           location: locationData,
         } as any,
       },
@@ -102,19 +122,21 @@ export async function getAgentLocation(
       include: { profiles: true },
     });
 
-    if (!agent?.profiles[0]?.l1Data) {
+    const profile = getPrimaryProfile(agent);
+    if (!profile?.l1Data) {
       return null;
     }
 
-    const locationData = (agent.profiles[0].l1Data as any).location as Location;
+    const locationData = (profile.l1Data as any).location as Location;
 
     return {
-      agentId: agent.id,
+      agentId: agent!.id,
       location: locationData,
-      coordinates: agent.latitude && agent.longitude
-        ? { latitude: agent.latitude, longitude: agent.longitude }
-        : undefined,
-      lastUpdated: agent.updatedAt,
+      coordinates:
+        agent!.latitude && agent!.longitude
+          ? { latitude: agent!.latitude, longitude: agent!.longitude }
+          : undefined,
+      lastUpdated: agent!.updatedAt,
     };
   } catch (error) {
     logger.error('Failed to get agent location', { error, agentId });
@@ -176,7 +198,8 @@ export async function searchAgentsByLocation(
     ]);
 
     let results: AgentWithLocation[] = agents.map(agent => {
-      const locationData = (agent.profiles[0]?.l1Data as any)?.location as Location;
+      const profile = getPrimaryProfile(agent);
+      const locationData = (profile?.l1Data as any)?.location as Location;
       return {
         id: agent.id,
         name: agent.name,
@@ -268,7 +291,8 @@ export async function findAgentsNearLocation(
       const { distanceKm } = calculateDistance(center, coords);
 
       if (distanceKm <= radiusKm) {
-        const locationData = (agent.profiles[0]?.l1Data as any)?.location as Location;
+        const profile = getPrimaryProfile(agent);
+        const locationData = (profile?.l1Data as any)?.location as Location;
         results.push({
           id: agent.id,
           name: agent.name,
@@ -315,7 +339,8 @@ export async function getAgentsInGeoFence(
       const result = checkGeoFence(coords, fenceId);
 
       if (result.inside) {
-        const locationData = (agent.profiles[0]?.l1Data as any)?.location as Location;
+        const profile = getPrimaryProfile(agent);
+        const locationData = (profile?.l1Data as any)?.location as Location;
         results.push({
           id: agent.id,
           name: agent.name,

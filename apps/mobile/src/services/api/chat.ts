@@ -10,14 +10,14 @@ export interface CreateRoomRequest {
   type: ChatRoomType;
   participantIds: string[];
   sceneId?: string;
-  metadata?: Record<string, any>;
-  settings?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+  settings?: Record<string, unknown>;
 }
 
 export interface UpdateRoomRequest {
   status?: 'ACTIVE' | 'INACTIVE' | 'CLOSED';
-  metadata?: Record<string, any>;
-  settings?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+  settings?: Record<string, unknown>;
 }
 
 export interface RoomQueryParams {
@@ -47,7 +47,7 @@ export interface AddParticipantRequest {
 
 export interface UpdateParticipantRequest {
   role?: ParticipantRole;
-  permissions?: Record<string, any>;
+  permissions?: Record<string, unknown>;
 }
 
 /**
@@ -65,7 +65,7 @@ export const getUserRooms = async (params?: RoomQueryParams): Promise<RoomsRespo
   const response = await api.get<ChatRoom[]>('/v1/chat/rooms', { params });
   return {
     data: response.data.data || [],
-    meta: (response.data as any).meta || {
+    meta: (response.data as { meta?: { total: number; page: number; limit: number; totalPages: number } }).meta || {
       total: 0,
       page: 1,
       limit: 20,
@@ -86,7 +86,7 @@ export const searchRooms = async (
   });
   return {
     data: response.data.data || [],
-    meta: (response.data as any).meta || {
+    meta: (response.data as { meta?: { total: number; page: number; limit: number; totalPages: number } }).meta || {
       total: 0,
       page: 1,
       limit: 20,

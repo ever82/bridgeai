@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { ActivityIndicator } from 'react-native';
 import {
   HandoffStatus,
   SenderType,
@@ -185,7 +186,7 @@ describe('HandoffButton', () => {
 
   describe('Loading State', () => {
     it('should show loading indicator when loading', () => {
-      const { getByTestId, UNSAFE_getByType } = render(
+      const { UNSAFE_getByType } = render(
         <HandoffButton
           status={HandoffStatus.AGENT_ACTIVE}
           handlerType={SenderType.AGENT}
@@ -196,7 +197,7 @@ describe('HandoffButton', () => {
       );
 
       // ActivityIndicator should be present
-      const activityIndicator = UNSAFE_getByType(require('react-native').ActivityIndicator);
+      const activityIndicator = UNSAFE_getByType(ActivityIndicator);
       expect(activityIndicator).toBeTruthy();
     });
 

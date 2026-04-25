@@ -48,7 +48,7 @@ export interface Notification {
   type: NotificationType;
   title: string;
   content: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   imageUrl?: string;
   actionUrl?: string;
   category?: string;
@@ -299,7 +299,7 @@ export async function cleanupNotifications(
   olderThanDays?: number
 ): Promise<number> {
   try {
-    const body: any = { type };
+    const body: Record<string, unknown> = { type };
     if (olderThanDays) {
       body.olderThanDays = olderThanDays;
     }

@@ -102,6 +102,13 @@ export async function createAgent(userId: string, input: CreateAgentInput): Prom
     throw new AppError('Agent name must be less than 100 characters', 'AGENT_NAME_TOO_LONG', 400);
   }
 
+  // Generate initial personality based on agent type
+  const personality = generateAgentPersonality(input.type);
+  const initialConfig = {
+    ...(input.config || {}),
+    personality,
+  };
+
   const agent = await prisma.agent.create({
     data: {
       userId,
@@ -109,7 +116,7 @@ export async function createAgent(userId: string, input: CreateAgentInput): Prom
       name: input.name.trim(),
       description: input.description || null,
       status: AgentStatus.DRAFT,
-      config: input.config || {},
+      config: initialConfig,
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
       isActive: true,
@@ -122,7 +129,44 @@ export async function createAgent(userId: string, input: CreateAgentInput): Prom
     },
   });
 
+  // NP-270/NP-271: Create initial profile for the agent (best-effort).
+  // The profile is created empty via getOrCreateProfile and serves as the mechanism
+  // for reading the owner's L1/L2/L3 data (NP-271). NP-277: any failure here is
+  // intentionally swallowed so agent creation succeeds even with empty profile data.
+  try {
+    const { getOrCreateProfile } = await import('./agentProfileService');
+    await getOrCreateProfile(agent.id);
+  } catch {
+    // Profile creation is best-effort, don't fail agent creation
+  }
+
   return mapPrismaAgentToAgent(agent);
+}
+
+/**
+ * Generate initial personality config for an agent based on its scene type.
+ * NP-268: Adopted by agentService.createAgent to bootstrap behavior guidelines.
+ */
+export function generateAgentPersonality(type: AgentType): {
+  traits: string[];
+  communicationStyle: string;
+} {
+  switch (type) {
+    case AgentType.VISIONSHARE:
+      return { traits: ['地理敏感', '价格敏锐', '视觉导向'], communicationStyle: 'friendly' };
+    case AgentType.AGENTDATE:
+      return { traits: ['社交活跃', '情感细腻', '谨慎匹配'], communicationStyle: 'warm' };
+    case AgentType.AGENTJOB:
+      return { traits: ['技能导向', '效率优先', '职业敏感'], communicationStyle: 'professional' };
+    case AgentType.AGENTAD:
+      return { traits: ['消费敏感', '优惠追踪', '预算控制'], communicationStyle: 'direct' };
+    case AgentType.DEMAND:
+      return { traits: ['需求清晰', '匹配高效'], communicationStyle: 'direct' };
+    case AgentType.SUPPLY:
+      return { traits: ['资源丰富', '响应及时'], communicationStyle: 'professional' };
+    default:
+      return { traits: [], communicationStyle: 'neutral' };
+  }
 }
 
 /**
@@ -291,21 +335,52 @@ export async function deleteAgent(agentId: string, userId: string): Promise<void
     throw new AppError('Unauthorized to delete this agent', 'UNAUTHORIZED', 403);
   }
 
-  await prisma.agent.delete({
+  // NP-276: Check for active matches before archiving.
+  // Demand: OPEN/MATCHED considered active. Supply: AVAILABLE/BUSY considered active.
+  const activeDemands = await prisma.demand.count({
+    where: { agentId, status: { in: ['OPEN', 'MATCHED'] } },
+  });
+  const activeSupplies = await prisma.supply.count({
+    where: { agentId, status: { in: ['AVAILABLE', 'BUSY'] } },
+  });
+  if (activeDemands > 0 || activeSupplies > 0) {
+    throw new AppError(
+      `Cannot archive agent: ${activeDemands + activeSupplies} active matches found. Please resolve them first.`,
+      'AGENT_HAS_ACTIVE_MATCHES',
+      409
+    );
+  }
+
+  await prisma.agent.update({
     where: { id: agentId },
+    data: {
+      status: AgentStatus.ARCHIVED,
+      isActive: false,
+      statusHistory: {
+        create: {
+          status: AgentStatus.ARCHIVED,
+          reason: 'Agent archived (soft delete)',
+        },
+      },
+    },
   });
 }
 
 /**
  * Get agent status history
  */
-export async function getAgentStatusHistory(agentId: string): Promise<any[]> {
+export async function getAgentStatusHistory(agentId: string, userId?: string): Promise<any[]> {
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
   });
 
   if (!agent) {
     throw new AppError('Agent not found', 'AGENT_NOT_FOUND', 404);
+  }
+
+  // If userId is provided, verify ownership
+  if (userId && agent.userId !== userId) {
+    throw new AppError('Agent not found or access denied', 'AGENT_NOT_FOUND', 404);
   }
 
   const history = await prisma.agentStatusHistory.findMany({

@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import {
   HandoffStatus,
-  HANDOFF_STATUS_LABELS,
   type SenderType,
 } from '@bridgeai/shared';
 
@@ -52,7 +51,7 @@ export interface HandoffButtonProps {
  */
 export const HandoffButton: React.FC<HandoffButtonProps> = ({
   status,
-  handlerType,
+  handlerType: _handlerType,
   hasPendingRequest = false,
   canTakeover = true,
   canHandoff = true,

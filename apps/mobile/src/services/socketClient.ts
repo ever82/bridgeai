@@ -240,21 +240,21 @@ class SocketClient extends EventEmitter {
   /**
    * Join a chat room
    */
-  joinRoom(roomId: string, callback?: (result: any) => void): void {
+  joinRoom(roomId: string, callback?: (result: unknown) => void): void {
     this.socket?.emit('chat:join', { roomId }, callback);
   }
 
   /**
    * Leave a chat room
    */
-  leaveRoom(roomId: string, callback?: (result: any) => void): void {
+  leaveRoom(roomId: string, callback?: (result: unknown) => void): void {
     this.socket?.emit('chat:leave', { roomId }, callback);
   }
 
   /**
    * Send message to room
    */
-  sendMessage(roomId: string, content: string, type = 'text', callback?: (result: any) => void): void {
+  sendMessage(roomId: string, content: string, type = 'text', callback?: (result: unknown) => void): void {
     this.socket?.emit('chat:message', { roomId, content, type }, callback);
   }
 
@@ -282,13 +282,14 @@ class SocketClient extends EventEmitter {
   /**
    * Get user presence
    */
-  getPresence(userIds: string[]): Promise<any> {
+  getPresence(userIds: string[]): Promise<unknown> {
     return new Promise((resolve, reject) => {
-      this.socket?.emit('user:presence', { userIds }, (response: any) => {
-        if (response?.success) {
-          resolve(response.data);
+      this.socket?.emit('user:presence', { userIds }, (response: unknown) => {
+        const res = response as { success?: boolean; data?: unknown; error?: string };
+        if (res?.success) {
+          resolve(res.data);
         } else {
-          reject(new Error(response?.error || 'Failed to get presence'));
+          reject(new Error(res?.error || 'Failed to get presence'));
         }
       });
     });
@@ -313,11 +314,12 @@ class SocketClient extends EventEmitter {
    */
   startPrivateConversation(targetUserId: string): Promise<{ roomId: string }> {
     return new Promise((resolve, reject) => {
-      this.socket?.emit('chat:start_private', { targetUserId }, (response: any) => {
-        if (response?.success) {
-          resolve(response.data);
+      this.socket?.emit('chat:start_private', { targetUserId }, (response: unknown) => {
+        const res = response as { success?: boolean; data?: { roomId: string }; error?: string };
+        if (res?.success) {
+          resolve(res.data as { roomId: string });
         } else {
-          reject(new Error(response?.error || 'Failed to start conversation'));
+          reject(new Error(res?.error || 'Failed to start conversation'));
         }
       });
     });
@@ -347,13 +349,14 @@ class SocketClient extends EventEmitter {
   /**
    * Create a group
    */
-  createGroup(name: string, memberIds?: string[]): Promise<{ groupId: string; state: any }> {
+  createGroup(name: string, memberIds?: string[]): Promise<{ groupId: string; state: unknown }> {
     return new Promise((resolve, reject) => {
-      this.socket?.emit('group:create', { name, memberIds }, (response: any) => {
-        if (response?.success) {
-          resolve(response.data);
+      this.socket?.emit('group:create', { name, memberIds }, (response: unknown) => {
+        const res = response as { success?: boolean; data?: { groupId: string; state: unknown }; error?: string };
+        if (res?.success) {
+          resolve(res.data as { groupId: string; state: unknown });
         } else {
-          reject(new Error(response?.error || 'Failed to create group'));
+          reject(new Error(res?.error || 'Failed to create group'));
         }
       });
     });
@@ -362,13 +365,14 @@ class SocketClient extends EventEmitter {
   /**
    * Join a group
    */
-  joinGroup(groupId: string): Promise<any> {
+  joinGroup(groupId: string): Promise<unknown> {
     return new Promise((resolve, reject) => {
-      this.socket?.emit('group:join', { groupId }, (response: any) => {
-        if (response?.success) {
-          resolve(response.data);
+      this.socket?.emit('group:join', { groupId }, (response: unknown) => {
+        const res = response as { success?: boolean; data?: unknown; error?: string };
+        if (res?.success) {
+          resolve(res.data);
         } else {
-          reject(new Error(response?.error || 'Failed to join group'));
+          reject(new Error(res?.error || 'Failed to join group'));
         }
       });
     });
@@ -379,8 +383,9 @@ class SocketClient extends EventEmitter {
    */
   leaveGroup(groupId: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.socket?.emit('group:leave', { groupId }, (response: any) => {
-        if (response?.success) {
+      this.socket?.emit('group:leave', { groupId }, (response: unknown) => {
+        const res = response as { success?: boolean; error?: string };
+        if (res?.success) {
           resolve();
         } else {
           reject(new Error(response?.error || 'Failed to leave group'));
@@ -392,13 +397,14 @@ class SocketClient extends EventEmitter {
   /**
    * Sync group state
    */
-  syncGroup(groupId: string): Promise<any> {
+  syncGroup(groupId: string): Promise<unknown> {
     return new Promise((resolve, reject) => {
-      this.socket?.emit('group:sync', { groupId }, (response: any) => {
-        if (response?.success) {
-          resolve(response.data);
+      this.socket?.emit('group:sync', { groupId }, (response: unknown) => {
+        const res = response as { success?: boolean; data?: unknown; error?: string };
+        if (res?.success) {
+          resolve(res.data);
         } else {
-          reject(new Error(response?.error || 'Failed to sync group'));
+          reject(new Error(res?.error || 'Failed to sync group'));
         }
       });
     });
@@ -407,28 +413,30 @@ class SocketClient extends EventEmitter {
   /**
    * Update group settings
    */
-  updateGroupSettings(groupId: string, settings: any): Promise<any> {
+  updateGroupSettings(groupId: string, settings: unknown): Promise<unknown> {
     return new Promise((resolve, reject) => {
-      this.socket?.emit('group:update_settings', { groupId, settings }, (response: any) => {
-        if (response?.success) {
-          resolve(response.data);
+      this.socket?.emit('group:update_settings', { groupId, settings }, (response: unknown) => {
+        const res = response as { success?: boolean; data?: unknown; error?: string };
+        if (res?.success) {
+          resolve(res.data);
         } else {
-          reject(new Error(response?.error || 'Failed to update settings'));
+          reject(new Error(res?.error || 'Failed to update settings'));
         }
       });
     });
   }
 
-  /**
+    /**
    * Add member to group
    */
   addGroupMember(groupId: string, userId: string, role?: 'admin' | 'member'): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.socket?.emit('group:add_member', { groupId, userId, role }, (response: any) => {
-        if (response?.success) {
+      this.socket?.emit('group:add_member', { groupId, userId, role }, (response: unknown) => {
+        const res = response as { success?: boolean; error?: string };
+        if (res?.success) {
           resolve();
         } else {
-          reject(new Error(response?.error || 'Failed to add member'));
+          reject(new Error(res?.error || 'Failed to add member'));
         }
       });
     });
@@ -439,11 +447,12 @@ class SocketClient extends EventEmitter {
    */
   removeGroupMember(groupId: string, userId: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.socket?.emit('group:remove_member', { groupId, userId }, (response: any) => {
-        if (response?.success) {
+      this.socket?.emit('group:remove_member', { groupId, userId }, (response: unknown) => {
+        const res = response as { success?: boolean; error?: string };
+        if (res?.success) {
           resolve();
         } else {
-          reject(new Error(response?.error || 'Failed to remove member'));
+          reject(new Error(res?.error || 'Failed to remove member'));
         }
       });
     });

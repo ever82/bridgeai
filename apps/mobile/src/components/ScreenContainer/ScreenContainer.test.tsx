@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 
 import { ScreenContainer } from './ScreenContainer';
@@ -51,6 +52,3 @@ describe('ScreenContainer', () => {
     expect(screen.getByTestId('keyboard-content')).toBeTruthy();
   });
 });
-
-// Need to import Text for the test
-import { Text } from 'react-native';

@@ -1,11 +1,6 @@
 import { NativeModules, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { localSearchIndex, IndexedImage } from '../indexing/localIndexer';
-import { localImageAnalysis, AnalysisProgress } from '../ai/localImageAnalysis';
-
-const { BackgroundTaskManager } = NativeModules;
-
 export interface ThumbnailCacheConfig {
   maxSize: number; // in MB
   maxEntries: number;
@@ -182,7 +177,7 @@ export const imageCache = ImageCacheManager.getInstance();
 
 export class SearchOptimizationService {
   private static instance: SearchOptimizationService;
-  private queryCache: Map<string, { results: any[]; timestamp: Date }> = new Map();
+  private queryCache: Map<string, { results: unknown[]; timestamp: Date }> = new Map();
   private queryCacheTimeout = 5 * 60 * 1000; // 5 minutes
   private isBackgroundIndexing = false;
   private memoryUsage: number = 0;
@@ -201,10 +196,10 @@ export class SearchOptimizationService {
   }
 
   private async setupBackgroundIndexing(): Promise<void> {
-    if (!BackgroundTaskManager) return;
+    if (!NativeModules.BackgroundTaskManager) return;
 
     try {
-      await BackgroundTaskManager.defineTask('backgroundIndexing', () => {
+      await NativeModules.BackgroundTaskManager.defineTask('backgroundIndexing', () => {
         return this.performBackgroundIndexing();
       });
     } catch (error) {
@@ -240,9 +235,9 @@ export class SearchOptimizationService {
   }
 
   async startBackgroundIndexing(): Promise<void> {
-    if (!BackgroundTaskManager) return;
+    if (!NativeModules.BackgroundTaskManager) return;
 
-    await BackgroundTaskManager.scheduleTask({
+    await NativeModules.BackgroundTaskManager.scheduleTask({
       taskName: 'backgroundIndexing',
       interval: 15 * 60, // 15 minutes
       allowsExecutionInForeground: false,
@@ -250,12 +245,12 @@ export class SearchOptimizationService {
   }
 
   async stopBackgroundIndexing(): Promise<void> {
-    if (!BackgroundTaskManager) return;
+    if (!NativeModules.BackgroundTaskManager) return;
 
-    await BackgroundTaskManager.cancelTask('backgroundIndexing');
+    await NativeModules.BackgroundTaskManager.cancelTask('backgroundIndexing');
   }
 
-  getCachedQuery(query: string): any[] | null {
+  getCachedQuery(query: string): unknown[] | null {
     const cached = this.queryCache.get(query);
 
     if (cached) {
@@ -269,7 +264,7 @@ export class SearchOptimizationService {
     return null;
   }
 
-  cacheQuery(query: string, results: any[]): void {
+  cacheQuery(query: string, results: unknown[]): void {
     this.queryCache.set(query, {
       results,
       timestamp: new Date(),

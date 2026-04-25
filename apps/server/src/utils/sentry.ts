@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
 
 /**
  * Sentry configuration for backend error monitoring
@@ -16,6 +15,18 @@ export function initSentry(): void {
     return;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const integrations = (defaultIntegrations: any[]) => {
+    const result = [...defaultIntegrations];
+    // Only add profiling in production when profiling is explicitly enabled
+    if (environment === 'production' && process.env.SENTRY_PROFILES_ENABLED === 'true') {
+      // Lazy load profiling to avoid native module errors in development
+      const { ProfilingIntegration } = require('@sentry/profiling-node');
+      result.push(new ProfilingIntegration());
+    }
+    return result;
+  };
+
   Sentry.init({
     dsn,
     environment,
@@ -24,11 +35,8 @@ export function initSentry(): void {
     // Performance monitoring
     tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.1'),
 
-    // Profiling
-    profilesSampleRate: parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE || '0.1'),
-    integrations: [
-      new ProfilingIntegration(),
-    ],
+    // Profiling (lazy loaded)
+    integrations,
 
     // Error filtering
     beforeSend(event) {

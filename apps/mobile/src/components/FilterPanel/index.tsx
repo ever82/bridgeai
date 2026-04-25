@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,9 +12,7 @@ import {
   FilterCondition,
   FilterOperator,
   FilterExpression,
-  AndFilter,
   OPERATOR_METADATA,
-  FilterValue,
 } from '@bridgeai/shared';
 
 interface FilterPanelProps {
@@ -68,7 +66,6 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
   const renderValueInput = () => {
     if (!field) return null;
 
-    const operators = getOperatorsForField();
     const operator = condition.operator;
 
     // Multi-select for 'in' and 'nin' operators
@@ -376,7 +373,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         {conditions.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>暂无筛选条件</Text>
-            <Text style={styles.emptySubtext}>点击"添加条件"开始筛选</Text>
+            <Text style={styles.emptySubtext}>点击&quot;添加条件&quot;开始筛选</Text>
           </View>
         ) : (
           conditions.map((condition, index) => (

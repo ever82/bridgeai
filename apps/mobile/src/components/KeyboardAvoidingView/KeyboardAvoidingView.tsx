@@ -65,8 +65,8 @@ export const KeyboardAvoidingView: React.FC<KeyboardAvoidingViewProps> = ({
       }).start();
     };
 
-    const showSubscription = Keyboard.addListener(showEvent as any, onKeyboardShow);
-    const hideSubscription = Keyboard.addListener(hideEvent as any, onKeyboardHide);
+    const showSubscription = Keyboard.addListener(showEvent as KeyboardEvent['key'], onKeyboardShow);
+    const hideSubscription = Keyboard.addListener(hideEvent as KeyboardEvent['key'], onKeyboardHide);
 
     return () => {
       showSubscription.remove();

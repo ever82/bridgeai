@@ -486,6 +486,14 @@ export class LLMService {
   }
 
   /**
+   * 关闭服务，清理资源
+   */
+  async shutdown(): Promise<void> {
+    this.adapters.clear();
+    this.initialized = false;
+  }
+
+  /**
    * 获取健康状态
    */
   async getHealth(): Promise<{

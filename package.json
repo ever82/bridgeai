@@ -11,9 +11,11 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md}\"",
     "test": "turbo run test",
-    "test:e2e": "pnpm --filter e2e test",
-    "test:e2e:ui": "pnpm --filter e2e test:ui",
-    "test:integration": "pnpm --filter e2e test:integration",
+    "test:e2e": "cd apps/mobile && npx ts-node e2e/maestro/runner.ts --dev",
+    "test:e2e:web": "cd apps/mobile && npx ts-node e2e/flows/browser/runner.ts",
+    "test:e2e:web:check": "cd apps/mobile && npx ts-node e2e/flows/browser/runner.ts --check",
+    "test:e2e:build": "cd apps/mobile && npx ts-node e2e/maestro/runner.ts --build",
+    "test:e2e:check": "cd apps/mobile && npx ts-node e2e/maestro/runner.ts --layer 0",
     "test:coverage": "node scripts/merge-coverage.js",
     "test:coverage:server": "pnpm --filter server test -- --coverage",
     "test:coverage:mobile": "pnpm --filter mobile test -- --coverage",
@@ -48,6 +50,7 @@
     "pnpm": ">=9.0.0"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "dotenv": "^16.4.0"
   }
 }

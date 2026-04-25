@@ -164,12 +164,14 @@ export interface SenderChangeIndicatorProps {
   fromType: SenderType;
   toType: SenderType;
   style?: ViewStyle;
+  testID?: string;
 }
 
 export const SenderChangeIndicator: React.FC<SenderChangeIndicatorProps> = ({
   fromType,
   toType,
   style,
+  testID,
 }) => {
   const slideAnim = React.useRef(new Animated.Value(-20)).current;
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -200,6 +202,7 @@ export const SenderChangeIndicator: React.FC<SenderChangeIndicatorProps> = ({
         { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
         style,
       ]}
+      testID={testID}
     >
       <View style={[styles.changeDot, { backgroundColor: fromColor }]} />
       <View style={styles.changeLine} />

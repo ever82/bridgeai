@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView, Text, StyleSheet } from 'react-native';
 
-import { Icon } from '../Icon/Icon';
+import { Icon, IconName } from '../Icon/Icon';
 import { theme } from '../../theme';
 
 const IconStory = () => {
@@ -14,10 +14,10 @@ const IconStory = () => {
     theme.colors.error,
   ];
 
-  const navigationIcons = ['home', 'back', 'forward', 'menu', 'close', 'search', 'settings'];
-  const actionIcons = ['add', 'edit', 'delete', 'check', 'clear', 'refresh', 'share'];
-  const statusIcons = ['success', 'warning', 'error', 'info', 'loading'];
-  const contentIcons = ['user', 'email', 'phone', 'lock', 'star', 'heart', 'bookmark'];
+  const navigationIcons: IconName[] = ['home', 'back', 'forward', 'menu', 'close', 'search', 'settings'];
+  const actionIcons: IconName[] = ['add', 'edit', 'delete', 'check', 'clear', 'refresh', 'share'];
+  const statusIcons: IconName[] = ['success', 'warning', 'error', 'info', 'loading'];
+  const contentIcons: IconName[] = ['user', 'email', 'phone', 'lock', 'star', 'heart', 'bookmark'];
 
   return (
     <ScrollView style={styles.container}>
@@ -47,7 +47,7 @@ const IconStory = () => {
       <View style={styles.row}>
         {navigationIcons.map((name) => (
           <View key={name} style={styles.iconItem}>
-            <Icon name={name as any} size={24} />
+            <Icon name={name} size={24} />
             <Text style={styles.iconLabel}>{name}</Text>
           </View>
         ))}
@@ -57,7 +57,7 @@ const IconStory = () => {
       <View style={styles.row}>
         {actionIcons.map((name) => (
           <View key={name} style={styles.iconItem}>
-            <Icon name={name as any} size={24} />
+            <Icon name={name} size={24} />
             <Text style={styles.iconLabel}>{name}</Text>
           </View>
         ))}
@@ -67,7 +67,7 @@ const IconStory = () => {
       <View style={styles.row}>
         {statusIcons.map((name) => (
           <View key={name} style={styles.iconItem}>
-            <Icon name={name as any} size={24} color={
+            <Icon name={name} size={24} color={
               name === 'success' ? theme.colors.success :
               name === 'warning' ? theme.colors.warning :
               name === 'error' ? theme.colors.error :
@@ -83,7 +83,7 @@ const IconStory = () => {
       <View style={styles.row}>
         {contentIcons.map((name) => (
           <View key={name} style={styles.iconItem}>
-            <Icon name={name as any} size={24} />
+            <Icon name={name} size={24} />
             <Text style={styles.iconLabel}>{name}</Text>
           </View>
         ))}

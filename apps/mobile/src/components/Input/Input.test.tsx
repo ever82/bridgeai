@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native';
 import { render, fireEvent, screen } from '@testing-library/react-native';
 
 import { Input } from './Input';
@@ -78,7 +79,7 @@ describe('Input', () => {
       <Input
         value=""
         onChangeText={mockOnChangeText}
-        prefix={<span testID="prefix">@</span>}
+        prefix={<Text testID="prefix">@</Text>}
       />
     );
     expect(screen.getByTestId('prefix')).toBeTruthy();
@@ -89,7 +90,7 @@ describe('Input', () => {
       <Input
         value=""
         onChangeText={mockOnChangeText}
-        suffix={<span testID="suffix">.com</span>}
+        suffix={<Text testID="suffix">.com</Text>}
       />
     );
     expect(screen.getByTestId('suffix')).toBeTruthy();

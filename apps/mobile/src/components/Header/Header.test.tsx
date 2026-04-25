@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 
 import { Header } from './Header';
@@ -71,5 +72,3 @@ describe('Header', () => {
     expect(screen.getByTestId('left-element')).toBeTruthy();
   });
 });
-
-import { Text } from 'react-native';

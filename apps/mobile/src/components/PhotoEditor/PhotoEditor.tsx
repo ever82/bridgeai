@@ -71,7 +71,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
   const [selectedFilter, setSelectedFilter] = useState<string>('normal');
   const [brightness, setBrightness] = useState(1);
   const [annotationText, setAnnotationText] = useState('');
-  const [, setSelectedAnnotation] = useState<string | null>(null);
+  const [selectedAnnotation, _setSelectedAnnotation] = useState<string | null>(null);
 
   // Transform values
   const translateX = useSharedValue(0);
@@ -152,7 +152,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleBrightnessChange = useCallback((value: number) => {
+  const _handleBrightnessChange = useCallback((value: number) => {
     setBrightness(value);
     setEditedPhoto((prev) => ({
       ...prev,

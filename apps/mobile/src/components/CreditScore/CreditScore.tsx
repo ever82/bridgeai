@@ -103,7 +103,6 @@ export const CreditScore: React.FC<CreditScoreProps> = ({
 }) => {
   const creditColor = getCreditColor(score);
   const creditLabel = getCreditLabel(score);
-  const creditLevel = getCreditLevel(score);
   const starCount = calculateStars(score);
   const dimensions = sizeMap[size];
 

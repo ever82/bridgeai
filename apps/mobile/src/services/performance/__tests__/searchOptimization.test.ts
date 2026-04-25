@@ -1,10 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NativeModules } from 'react-native';
 
 import {
   SearchOptimizer,
   ThumbnailCacheConfig,
-  SearchPerformanceMetrics,
-  BackgroundTaskManager,
 } from '../searchOptimization';
 
 // Mock AsyncStorage
@@ -170,22 +169,18 @@ describe('SearchOptimizer', () => {
 
   describe('Background Index Updates', () => {
     it('schedules background index update task', async () => {
-      const { BackgroundTaskManager } = require('react-native').NativeModules;
-
       await optimizer.scheduleBackgroundIndexUpdate();
 
-      expect(BackgroundTaskManager.scheduleTask).toHaveBeenCalledWith(
+      expect(NativeModules.BackgroundTaskManager.scheduleTask).toHaveBeenCalledWith(
         'indexUpdate',
         expect.any(Object)
       );
     });
 
     it('cancels background tasks', async () => {
-      const { BackgroundTaskManager } = require('react-native').NativeModules;
-
       await optimizer.cancelBackgroundTasks();
 
-      expect(BackgroundTaskManager.cancelTask).toHaveBeenCalled();
+      expect(NativeModules.BackgroundTaskManager.cancelTask).toHaveBeenCalled();
     });
 
     it('performs incremental index update', async () => {

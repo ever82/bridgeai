@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import {
   Task,
-  TaskStatus,
   TASK_STATUS_COLORS,
   TASK_TYPE_LABELS,
 } from '@bridgeai/shared';
@@ -23,7 +22,7 @@ export const TaskMarker: React.FC<TaskMarkerProps> = ({
   task,
   isSelected = false,
   onPress,
-  showInfo = true,
+  showInfo: _showInfo = true,
 }) => {
   const statusColor = TASK_STATUS_COLORS[task.status] || '#8C8C8C';
   const typeLabel = TASK_TYPE_LABELS[task.type]?.zh || task.type;

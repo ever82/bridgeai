@@ -12,11 +12,9 @@ import {
   DisclosureLevel,
   DISCLOSURE_LEVEL_INFO,
   RelationshipStage,
-  DisclosurePreview as DisclosurePreviewType,
   DISCLOSABLE_FIELDS,
 } from '@bridgeai/shared/types/disclosure';
 
-import { useThemeStore } from '../../stores/themeStore';
 import { theme as themeColors } from '../../theme';
 
 interface DisclosurePreviewProps {
@@ -49,9 +47,10 @@ const maskValue = (value: string, type: string): string => {
   switch (type) {
     case 'phone':
       return value.slice(0, 3) + '****' + value.slice(-4);
-    case 'email':
+    case 'email': {
       const [local, domain] = value.split('@');
       return local.slice(0, 2) + '***@' + domain;
+    }
     case 'socialLinks':
       return value.split('/').slice(0, -1).join('/') + '/***';
     default:
@@ -60,13 +59,11 @@ const maskValue = (value: string, type: string): string => {
 };
 
 export const DisclosurePreview: React.FC<DisclosurePreviewProps> = ({
-  agentId,
+  agentId: _agentId,
   fields: propFields,
 }) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { isDarkMode } = useThemeStore();
-
   const [selectedStage, setSelectedStage] = useState<RelationshipStage>(RelationshipStage.NONE);
 
   // Use provided fields or defaults

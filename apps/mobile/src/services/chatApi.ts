@@ -108,8 +108,8 @@ export async function createRoom(input: {
   type: 'PRIVATE' | 'GROUP' | 'QUAD';
   participantIds: string[];
   sceneId?: string;
-  metadata?: Record<string, any>;
-  settings?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+  settings?: Record<string, unknown>;
 }): Promise<ChatRoom> {
   const response = await fetchWithAuth('/api/v1/chat/rooms', {
     method: 'POST',
@@ -126,8 +126,8 @@ export async function updateRoom(
   roomId: string,
   input: {
     status?: string;
-    metadata?: Record<string, any>;
-    settings?: Record<string, any>;
+    metadata?: Record<string, unknown>;
+    settings?: Record<string, unknown>;
   }
 ): Promise<ChatRoom> {
   const response = await fetchWithAuth(`/api/v1/chat/rooms/${roomId}`, {
@@ -268,7 +268,7 @@ export async function sendMessage(
       name?: string;
       size?: number;
     }>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 ): Promise<ChatMessage> {
   const response = await fetchWithAuth(`/api/v1/chat/rooms/${roomId}/messages`, {

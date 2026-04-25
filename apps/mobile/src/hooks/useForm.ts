@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
-import { z, type ZodType } from 'zod';
+import { useState, useMemo } from 'react';
+import type { ZodType } from 'zod';
 
 /**
  * Form field state

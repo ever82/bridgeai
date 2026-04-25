@@ -574,7 +574,14 @@ function runLayer0(): boolean {
     }
   }
 
-  // Environment variables
+  // Environment variables — auto-fix common locations
+  const home = process.env.HOME || '';
+  const defaultJavaHome = path.join(home, 'Library', 'Java', 'JavaVirtualMachines', 'temurin-17.jdk', 'Contents', 'Home');
+  const defaultMaestroBin = path.join(home, '.maestro', 'bin');
+
+  if (!process.env.JAVA_HOME && fs.existsSync(defaultJavaHome)) {
+    process.env.JAVA_HOME = defaultJavaHome;
+  }
   if (process.env.JAVA_HOME) {
     console.log(`   ✅ JAVA_HOME: ${process.env.JAVA_HOME}`);
   } else {
@@ -582,12 +589,14 @@ function runLayer0(): boolean {
     console.log(`      Fix: export JAVA_HOME="$(/usr/libexec/java_home)"`);
   }
 
-  const maestroBin = path.join(process.env.HOME || '', '.maestro', 'bin');
+  if (!process.env.PATH?.includes('.maestro') && fs.existsSync(defaultMaestroBin)) {
+    process.env.PATH = `${process.env.PATH}:${defaultMaestroBin}`;
+  }
   if (process.env.PATH?.includes('.maestro')) {
     console.log(`   ✅ Maestro in PATH`);
   } else {
     console.log(`   ⚠️  Maestro not in PATH`);
-    console.log(`      Fix: export PATH="$PATH:${maestroBin}"`);
+    console.log(`      Fix: export PATH="$PATH:${defaultMaestroBin}"`);
   }
 
   console.log('');

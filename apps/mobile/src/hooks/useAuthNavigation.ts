@@ -3,10 +3,9 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useAuthStore } from '../stores/authStore';
-import { RootStackParamList, MainTabParamList } from '../types/navigation';
+import { RootStackParamList } from '../types/navigation';
 
 type RootNavigationProp = NativeStackNavigationProp<RootStackParamList>;
-type MainTabNavigationProp = NativeStackNavigationProp<MainTabParamList>;
 
 interface UseAuthNavigationReturn {
   // Navigation methods

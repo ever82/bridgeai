@@ -130,7 +130,7 @@ describe('SenderIndicator', () => {
       );
 
       // Should render Animated.View wrapper
-      expect(UNSAFE_getByType(require('react-native').Animated.View)).toBeTruthy();
+      expect(UNSAFE_getByType(Animated.View)).toBeTruthy();
     });
   });
 
@@ -164,14 +164,15 @@ describe('SenderIndicator', () => {
 
 describe('SenderChangeIndicator', () => {
   it('should render change indicator', () => {
-    const { UNSAFE_getByType } = render(
+    const { getByTestId } = render(
       <SenderChangeIndicator
         fromType={SenderType.AGENT}
         toType={SenderType.HUMAN}
+        testID="sender-change-indicator"
       />
     );
 
-    expect(UNSAFE_getByType(require('react-native').Animated.View)).toBeTruthy();
+    expect(getByTestId('sender-change-indicator')).toBeTruthy();
   });
 
   it('should show arrow between sender types', () => {
@@ -187,14 +188,15 @@ describe('SenderChangeIndicator', () => {
 
   it('should apply custom style', () => {
     const customStyle = { padding: 10 };
-    const { UNSAFE_getByType } = render(
+    const { getByTestId } = render(
       <SenderChangeIndicator
         fromType={SenderType.AGENT}
         toType={SenderType.HUMAN}
         style={customStyle}
+        testID="sender-change-indicator"
       />
     );
 
-    expect(UNSAFE_getByType(require('react-native').Animated.View)).toBeTruthy();
+    expect(getByTestId('sender-change-indicator')).toBeTruthy();
   });
 });

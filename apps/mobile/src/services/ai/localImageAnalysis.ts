@@ -4,11 +4,8 @@ import {
 } from 'react-native-fast-tflite';
 import {
   VisionCameraProxy,
-  type Frame,
 } from 'react-native-vision-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { Platform } from 'react-native';
-import { Image } from 'react-native-image-crop-picker';
 
 export interface ImageAnalysisResult {
   imageId: string;
@@ -197,7 +194,7 @@ export class LocalImageAnalysisService {
     };
   }
 
-  private async extractColorFeatures(imageUri: string): Promise<{
+  private async extractColorFeatures(_imageUri: string): Promise<{
     histogram: number[];
     dominantColors: string[];
   }> {

@@ -391,7 +391,7 @@ router.get(
     }
 
     const { id } = req.params;
-    const history = await agentService.getAgentStatusHistory(id);
+    const history = await agentService.getAgentStatusHistory(id, req.user.id);
 
     res.json(ApiResponse.success(history));
   })

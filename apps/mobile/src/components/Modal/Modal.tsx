@@ -7,7 +7,6 @@ import {
   Animated,
   PanResponder,
   Dimensions,
-  GestureResponderEvent,
   PanResponderGestureState,
 } from 'react-native';
 

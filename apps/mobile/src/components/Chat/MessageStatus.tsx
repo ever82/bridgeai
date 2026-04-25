@@ -4,7 +4,7 @@
  * Displays message read status, read count, read member list,
  * and read time for group chat messages.
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet, ViewStyle } from 'react-native';
 
 import { socketClient } from '../../services/socketClient';
@@ -248,7 +248,7 @@ export interface GroupReadStatusProps {
 export const GroupReadStatus: React.FC<GroupReadStatusProps> = ({
   roomId,
   messageIds,
-  currentUserId,
+  currentUserId: _currentUserId,
   totalMembers,
   style,
 }) => {

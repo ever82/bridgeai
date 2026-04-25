@@ -1,7 +1,28 @@
-import SQLite, { SQLiteDatabase } from 'react-native-sqlite-storage';
 import { Platform } from 'react-native';
 
-SQLite.enablePromise(true);
+// Lazy-load SQLite to avoid crash when native module is not installed
+let SQLite: any = null;
+try {
+  SQLite = require('react-native-sqlite-storage').default || require('react-native-sqlite-storage');
+  if (SQLite.enablePromise) SQLite.enablePromise(true);
+} catch {
+  SQLite = {
+    enablePromise() {},
+    openDatabase() { return Promise.reject(new Error('SQLite not available')); },
+    deleteDatabase() { return Promise.resolve(); },
+    databasePath: '',
+  };
+}
+
+type SQLiteDatabase = {
+  executeSql(sql: string, params?: any[]): Promise<any>;
+  transaction(fn: (tx: any) => void): Promise<any>;
+  close(): void;
+};
+
+type Transaction = {
+  executeSql(sql: string, params?: any[], success?: any, error?: any): void;
+};
 
 export interface IndexMetadata {
   version: number;

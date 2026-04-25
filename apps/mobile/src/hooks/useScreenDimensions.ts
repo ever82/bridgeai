@@ -108,8 +108,8 @@ export const useScreenDimensions = (): ScreenInfo => {
  * Hook to detect keyboard visibility
  */
 export const useKeyboard = () => {
-  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isKeyboardVisible] = useState(false);
+  const [keyboardHeight] = useState(0);
 
   useEffect(() => {
     // This is a simplified version - in production, you'd use Keyboard.addListener

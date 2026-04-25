@@ -30,7 +30,7 @@ export interface ChatRoomMetadata {
   description?: string;
   avatarUrl?: string;
   topic?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ChatRoomSettings {
@@ -42,7 +42,7 @@ export interface ChatRoomSettings {
   requireApproval?: boolean;
   maxParticipants?: number;
   isFixed?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface LastMessage {
@@ -103,7 +103,7 @@ export interface MessageMetadata {
   isPrivateSuggestion?: boolean;
   replyTo?: string;
   editedAt?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ChatRoomListItemProps {

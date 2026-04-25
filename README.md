@@ -70,6 +70,10 @@ bridgeai/
 ├── apps/
 │   ├── server/          # Express 后端服务
 │   └── mobile/          # Expo React Native 移动端
+│       └── e2e/
+│           └── flows/
+│               ├── browser/   # 浏览器 E2E 测试 (Markdown)
+│               └── maestro/   # 移动端 E2E 测试 (Maestro YAML)
 ├── packages/
 │   ├── shared/          # 共享类型和工具
 │   └── config/          # 共享配置 (ESLint, TS)
@@ -98,6 +102,15 @@ pnpm format
 # 运行测试
 pnpm test
 
+# E2E 测试 - 浏览器 (先跑，无需编译)
+pnpm test:e2e:web        # 启动 Web 服务器，然后用 Chrome DevTools MCP 执行
+pnpm test:e2e:web:check  # 检查浏览器测试环境
+
+# E2E 测试 - 移动端 (浏览器通过后再跑)
+pnpm test:e2e:check      # 检查 Maestro 环境
+pnpm test:e2e            # 跑 Maestro (dev 模式)
+pnpm test:e2e:build      # 自动构建 app 再跑 Maestro
+
 # 数据库迁移
 pnpm db:migrate
 
@@ -114,6 +127,14 @@ pnpm db:seed
 - [架构文档](./docs/architecture/README.md)
 - [API 文档](./docs/api/README.md)
 - [数据库设计](./docs/database/README.md)
+- [E2E 测试指南](./apps/mobile/docs/e2e-testing-guide.md)
+
+## E2E 测试策略
+
+完成一个 issue 后，按以下顺序验证：
+
+1. **浏览器 E2E** (Chrome DevTools MCP) — 无需编译，秒级启动
+2. **移动端 E2E** (Maestro) — 原生模拟器验证
 
 ## 许可证
 

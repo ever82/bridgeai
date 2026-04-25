@@ -187,7 +187,7 @@ export interface UseTypingDetectorReturn {
 
 export const useTypingDetector = ({
   roomId,
-  currentUserId,
+  currentUserId: _currentUserId,
   onTypingStart,
   onTypingStop,
 }: UseTypingDetectorOptions): UseTypingDetectorReturn => {
@@ -280,7 +280,7 @@ export const TypingInput: React.FC<TypingInputProps> = ({
   roomId,
   currentUserId,
   value,
-  onChangeText,
+  onChangeText: _onChangeText,
   placeholder = '输入消息...',
   style,
   onSubmit,
@@ -290,21 +290,16 @@ export const TypingInput: React.FC<TypingInputProps> = ({
     currentUserId,
   });
 
-  const handleChange = (text: string) => {
-    onChangeText(text);
-    handleTextChange(text);
-  };
-
-  const handleSubmit = () => {
-    stopTyping();
-    onSubmit?.();
-  };
-
   return (
     <View style={[styles.inputContainer, style]}>
       <Text
         style={styles.input}
         accessibilityLabel={placeholder}
+        onPress={() => {
+          handleTextChange('');
+          stopTyping();
+          onSubmit?.();
+        }}
       >
         {value || placeholder}
       </Text>

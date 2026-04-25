@@ -70,6 +70,7 @@ export const MainTabNavigator = () => {
         name="Home"
         component={HomeStackNavigator}
         options={{
+          tabBarAccessibilityLabel: 'home-tab',
           tabBarLabel: ({ focused }: { focused: boolean }) => (
             <TabLabel label="首页" focused={focused} />
           ),
@@ -82,6 +83,7 @@ export const MainTabNavigator = () => {
         name="Messages"
         component={MessagesStackNavigator}
         options={{
+          tabBarAccessibilityLabel: 'messages-tab',
           tabBarLabel: ({ focused }: { focused: boolean }) => (
             <TabLabel label="消息" focused={focused} />
           ),
@@ -94,6 +96,7 @@ export const MainTabNavigator = () => {
         name="Discover"
         component={DiscoverStackNavigator}
         options={{
+          tabBarAccessibilityLabel: 'discover-tab',
           tabBarLabel: ({ focused }: { focused: boolean }) => (
             <TabLabel label="发现" focused={focused} />
           ),
@@ -106,6 +109,7 @@ export const MainTabNavigator = () => {
         name="Profile"
         component={ProfileStackNavigator}
         options={{
+          tabBarAccessibilityLabel: 'profile-tab',
           tabBarLabel: ({ focused }: { focused: boolean }) => (
             <TabLabel label="我的" focused={focused} />
           ),

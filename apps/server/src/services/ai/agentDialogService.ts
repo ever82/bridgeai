@@ -219,12 +219,24 @@ export class AgentDialogService {
     // Build prompt based on dialog type and context
     const prompt = this.buildDialogPrompt(session, sender, request);
 
-    // Generate response using LLM
+    // Generate response using LLM (with fallback to mock if not initialized)
     const { llmService } = await this.getLLMService();
-    const response = await llmService.generateText(prompt, {
-      temperature: request.options?.temperature ?? this.defaultTemperature,
-      maxTokens: request.options?.maxTokens ?? this.defaultMaxTokens,
-    });
+    let response: { text: string; provider?: string; model?: string };
+    try {
+      response = await llmService.generateText(prompt, {
+        temperature: request.options?.temperature ?? this.defaultTemperature,
+        maxTokens: request.options?.maxTokens ?? this.defaultMaxTokens,
+      });
+    } catch (err) {
+      logger.warn('LLM generateText failed, falling back to mock response', {
+        error: (err as Error)?.message,
+      });
+      response = {
+        text: '这是一个模拟回复。请确保LLM服务已正确配置。',
+        provider: 'mock',
+        model: 'mock-model',
+      };
+    }
 
     // Create message
     const message: DialogMessage = {

@@ -30,12 +30,12 @@ export interface MigrationPreview {
     transformations: Array<{
       field: string;
       type: string;
-      config: Record<string, any>;
+      config: Record<string, unknown>;
     }>;
     warnings: string[];
   };
-  currentData: Record<string, any>;
-  previewData: Record<string, any>;
+  currentData: Record<string, unknown>;
+  previewData: Record<string, unknown>;
   willLoseData: string[];
   needsManualInput: string[];
 }
@@ -75,16 +75,16 @@ export const sceneApi = {
   /**
    * Get scene fields
    */
-  getSceneFields: async (sceneId: SceneId): Promise<{ success: boolean; data: any[] }> => {
-    const response = await api.get<any[]>(`/scenes/${sceneId}/fields`);
+  getSceneFields: async (sceneId: SceneId): Promise<{ success: boolean; data: unknown[] }> => {
+    const response = await api.get<unknown[]>(`/scenes/${sceneId}/fields`);
     return response.data;
   },
 
   /**
    * Get scene UI configuration
    */
-  getSceneUI: async (sceneId: SceneId): Promise<{ success: boolean; data: any }> => {
-    const response = await api.get<any>(`/scenes/${sceneId}/ui`);
+  getSceneUI: async (sceneId: SceneId): Promise<{ success: boolean; data: unknown }> => {
+    const response = await api.get<unknown>(`/scenes/${sceneId}/ui`);
     return response.data;
   },
 
@@ -99,8 +99,8 @@ export const sceneApi = {
   /**
    * Get all scene capabilities (including disabled)
    */
-  getAllSceneCapabilities: async (sceneId: SceneId): Promise<{ success: boolean; data: any[] }> => {
-    const response = await api.get<any[]>(`/scenes/${sceneId}/capabilities/all`);
+  getAllSceneCapabilities: async (sceneId: SceneId): Promise<{ success: boolean; data: unknown[] }> => {
+    const response = await api.get<unknown[]>(`/scenes/${sceneId}/capabilities/all`);
     return response.data;
   },
 
@@ -110,16 +110,16 @@ export const sceneApi = {
   getCapabilityStatus: async (
     sceneId: SceneId,
     capabilityId: string
-  ): Promise<{ success: boolean; data: any }> => {
-    const response = await api.get<any>(`/scenes/${sceneId}/capabilities/${capabilityId}`);
+  ): Promise<{ success: boolean; data: unknown }> => {
+    const response = await api.get<unknown>(`/scenes/${sceneId}/capabilities/${capabilityId}`);
     return response.data;
   },
 
   /**
    * Get capabilities summary
    */
-  getCapabilitiesSummary: async (sceneId: SceneId): Promise<{ success: boolean; data: any }> => {
-    const response = await api.get<any>(`/scenes/${sceneId}/capabilities/summary`);
+  getCapabilitiesSummary: async (sceneId: SceneId): Promise<{ success: boolean; data: unknown }> => {
+    const response = await api.get<unknown>(`/scenes/${sceneId}/capabilities/summary`);
     return response.data;
   },
 
@@ -129,13 +129,13 @@ export const sceneApi = {
   getSceneTemplates: async (
     sceneId: SceneId,
     options?: { includePublic?: boolean; page?: number; limit?: number }
-  ): Promise<{ success: boolean; data: { preset: any[]; user: any[] } }> => {
+  ): Promise<{ success: boolean; data: { preset: unknown[]; user: unknown[] } }> => {
     const params = new URLSearchParams();
     if (options?.includePublic) params.append('includePublic', 'true');
     if (options?.page) params.append('page', options.page.toString());
     if (options?.limit) params.append('limit', options.limit.toString());
 
-    const response = await api.get<{ preset: any[]; user: any[] }>(
+    const response = await api.get<{ preset: unknown[]; user: unknown[] }>(
       `/scenes/${sceneId}/templates?${params.toString()}`
     );
     return response.data;
@@ -214,7 +214,7 @@ export const sceneApi = {
     fromScene: SceneId,
     toScene: SceneId,
     agentId: string,
-    manualData?: Record<string, any>
+    manualData?: Record<string, unknown>
   ): Promise<{ success: boolean; data: MigrationResult }> => {
     const response = await api.post(`/scenes/migration/execute?agentId=${agentId}`, {
       fromScene,
@@ -251,7 +251,7 @@ export const sceneApi = {
   generateMigrationPlan: async (
     fromScene: SceneId,
     toScene: SceneId
-  ): Promise<{ success: boolean; data: any }> => {
+  ): Promise<{ success: boolean; data: unknown }> => {
     const response = await api.post('/scenes/migration/plan', {
       fromScene,
       toScene,

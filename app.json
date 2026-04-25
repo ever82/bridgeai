@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "bridgeai",
+    "slug": "bridgeai",
+    "version": "0.1.0",
+    "description": "BridgeAI - AI驱动的供需匹配平台",
+    "sdkVersion": "50.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ]
+  }
+}

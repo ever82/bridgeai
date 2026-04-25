@@ -88,9 +88,10 @@ class MessageSyncService {
           roomId,
           lastSequenceId,
           limit: options.limit || 100,
-        }, (response: any) => {
-          if (response?.success) {
-            const { messages, hasMore, lastSequenceId: newSequenceId } = response.data;
+        }, (response: unknown) => {
+          const res = response as { success?: boolean; data?: { messages?: Message[]; hasMore?: boolean; lastSequenceId?: string; messageId?: string }; error?: string };
+          if (res?.success) {
+            const { messages, hasMore, lastSequenceId: newSequenceId } = res.data as { messages?: Message[]; hasMore?: boolean; lastSequenceId?: string };
 
             // Update stored sequence ID
             this.setLastSequenceId(roomId, newSequenceId);
@@ -108,7 +109,7 @@ class MessageSyncService {
               lastSequenceId: newSequenceId,
             });
           } else {
-            reject(new Error(response?.error || 'Sync failed'));
+            reject(new Error(res?.error || 'Sync failed'));
           }
         });
       });
@@ -151,14 +152,15 @@ class MessageSyncService {
         limit: options.limit || 50,
         before: options.before,
         after: options.after,
-      }, (response: any) => {
-        if (response?.success) {
+      }, (response: unknown) => {
+        const res = response as { success?: boolean; data?: { messages?: Message[] }; error?: string };
+        if (res?.success) {
           resolve({
-            messages: response.data.messages,
-            hasMore: response.data.messages.length === (options.limit || 50),
+            messages: res.data?.messages ?? [],
+            hasMore: (res.data?.messages?.length ?? 0) === (options.limit || 50),
           });
         } else {
-          reject(new Error(response?.error || 'Failed to get history'));
+          reject(new Error(res?.error || 'Failed to get history'));
         }
       });
     });
@@ -196,13 +198,14 @@ class MessageSyncService {
         content,
         type,
         attachments,
-      }, (response: any) => {
-        if (response?.success) {
-          resolve({ messageId: response.data.messageId });
+      }, (response: unknown) => {
+        const res = response as { success?: boolean; data?: { messageId?: string }; error?: string };
+        if (res?.success) {
+          resolve({ messageId: res.data?.messageId ?? '' });
         } else {
           // Queue for retry if failed
           this.queueOfflineMessage(pendingMessage);
-          reject(new Error(response?.error || 'Failed to send message'));
+          reject(new Error(res?.error || 'Failed to send message'));
         }
       });
     });
@@ -262,11 +265,12 @@ class MessageSyncService {
    */
   async markAsRead(roomId: string, messageIds: string[]): Promise<void> {
     return new Promise((resolve, reject) => {
-      socketClient.emit('chat:read', { roomId, messageIds }, (response: any) => {
-        if (response?.success) {
+      socketClient.emit('chat:read', { roomId, messageIds }, (response: unknown) => {
+        const res = response as { success?: boolean; error?: string };
+        if (res?.success) {
           resolve();
         } else {
-          reject(new Error(response?.error || 'Failed to mark as read'));
+          reject(new Error(res?.error || 'Failed to mark as read'));
         }
       });
     });
@@ -305,11 +309,12 @@ class MessageSyncService {
    */
   async editMessage(messageId: string, content: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      socketClient.emit('chat:edit', { messageId, content }, (response: any) => {
-        if (response?.success) {
+      socketClient.emit('chat:edit', { messageId, content }, (response: unknown) => {
+        const res = response as { success?: boolean; error?: string };
+        if (res?.success) {
           resolve();
         } else {
-          reject(new Error(response?.error || 'Failed to edit message'));
+          reject(new Error(res?.error || 'Failed to edit message'));
         }
       });
     });
@@ -320,11 +325,12 @@ class MessageSyncService {
    */
   async deleteMessage(messageId: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      socketClient.emit('chat:delete', { messageId }, (response: any) => {
-        if (response?.success) {
+      socketClient.emit('chat:delete', { messageId }, (response: unknown) => {
+        const res = response as { success?: boolean; error?: string };
+        if (res?.success) {
           resolve();
         } else {
-          reject(new Error(response?.error || 'Failed to delete message'));
+          reject(new Error(res?.error || 'Failed to delete message'));
         }
       });
     });

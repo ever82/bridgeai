@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import * as ExpoCamera from 'expo-camera';
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { VisionShareCamera } from '../VisionShareCamera';
 
 // Mock expo-camera
@@ -39,7 +39,7 @@ describe('VisionShareCamera', () => {
 
   it('shows permission request when permission not granted', () => {
     const mockRequestPermission = jest.fn();
-    jest.spyOn(require('expo-camera'), 'useCameraPermissions')
+    jest.spyOn(ExpoCamera, 'useCameraPermissions')
       .mockReturnValue([{ granted: false }, mockRequestPermission]);
 
     const { getByText } = render(

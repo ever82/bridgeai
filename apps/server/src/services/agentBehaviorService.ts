@@ -1,3 +1,13 @@
+/**
+ * Agent Behavior Service
+ *
+ * NP-277: This service is fully implemented (rate limiting, content moderation,
+ * violation tracking) and is designed for future integration with the agent
+ * messaging pipeline. It is exported as a singleton (`agentBehaviorService`) so
+ * that downstream message handlers can call `checkBehavior(agentId, message)`
+ * before dispatching messages. The service is intentionally not yet wired into
+ * the dispatch path — that integration is tracked separately.
+ */
 import {
   AgentMessage,
   AgentProtocolError,

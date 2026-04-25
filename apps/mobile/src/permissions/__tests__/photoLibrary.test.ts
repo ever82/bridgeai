@@ -4,7 +4,6 @@ import { PermissionsAndroid, Platform } from 'react-native';
 import {
   PhotoLibraryPermissionManager,
   PhotoPermissionState,
-  PhotoPermissionStatus,
 } from '../photoLibrary';
 
 // Mock react-native-permissions

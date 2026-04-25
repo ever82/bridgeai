@@ -13,7 +13,7 @@ interface UseAsyncReturn<T, P extends unknown[]> {
  */
 export function useAsync<T, P extends unknown[]>(
   asyncFunction: (...params: P) => Promise<T>,
-  immediate = false
+  _immediate = false
 ): UseAsyncReturn<T, P> {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);

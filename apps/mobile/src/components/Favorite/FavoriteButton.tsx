@@ -138,7 +138,7 @@ interface FavoritesListProps {
     tags: string[];
     createdAt: Date;
   }>;
-  onItemPress?: (favorite: any) => void;
+  onItemPress?: (favorite: { id: string; imageId: string; title: string; thumbnailUrl?: string; tags: string[]; createdAt: Date }) => void;
   onRemove?: (id: string) => void;
   emptyText?: string;
 }
