@@ -137,6 +137,18 @@ export async function updateL1Profile(
     }
   });
 
+  // Record change history
+  await prisma.profileHistory.create({
+    data: {
+      profileId: profile.id,
+      layer: 'L1',
+      action: 'update',
+      oldValue: profile.l1Data as any,
+      newValue: updatedL1Data as any,
+      changedBy: userId,
+    },
+  });
+
   // Update profile
   const updatedProfile = await prisma.agentProfile.update({
     where: { id: profile.id },

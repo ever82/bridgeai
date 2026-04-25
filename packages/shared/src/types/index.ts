@@ -6,6 +6,7 @@ export {
   AgeRange,
   Gender,
   EducationLevel,
+  ProfileLocation,
   L1Profile,
   L1_FIELD_WEIGHTS,
   L1_FIELD_LABELS,

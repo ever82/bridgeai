@@ -545,11 +545,30 @@ model AgentProfile {
   // Relations
   agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
   scene     Scene?   @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  history   ProfileHistory[]
 
   @@unique([agentId, sceneId])
   @@index([agentId])
   @@index([sceneId])
   @@map("agent_profiles")
+}
+
+model ProfileHistory {
+  id         String   @id @default(uuid())
+  profileId  String   @map("profile_id")
+  layer      String   // 'L1', 'L2', or 'L3'
+  action     String   // 'update', 'create', 'delete'
+  oldValue   Json?    @map("old_value")
+  newValue   Json?    @map("new_value")
+  changedBy  String   @map("changed_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  profile    AgentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([layer])
+  @@index([createdAt])
+  @@map("profile_history")
 }
 
 // ============================================
