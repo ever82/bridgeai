@@ -14,14 +14,10 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import {
-  SceneId,
-  SCENE_DISPLAY_NAMES,
-  SCENE_DESCRIPTIONS,
-} from '@bridgeai/shared';
+import { SceneId, SCENE_DISPLAY_NAMES, SCENE_DESCRIPTIONS } from '@bridgeai/shared';
 
 import { SceneSelector } from '../../components/SceneSelector';
-import { sceneApi } from '../../services/api/sceneApi';
+import { sceneApi, MigrationPreview } from '../../services/api/sceneApi';
 
 interface SceneMigrationScreenProps {
   agentId: string;
@@ -34,42 +30,45 @@ export const SceneMigrationScreen: React.FC = () => {
   const { agentId, currentScene } = route.params as SceneMigrationScreenProps;
 
   const [targetScene, setTargetScene] = useState<SceneId | undefined>();
-  const [preview, setPreview] = useState<any>(null);
+  const [preview, setPreview] = useState<MigrationPreview | null>(null);
   const [loading, setLoading] = useState(false);
   const [migrating, setMigrating] = useState(false);
-  const [estimate, setEstimate] = useState<any>(null);
+  const [estimate, setEstimate] = useState<{
+    willLoseData: boolean;
+    lossPercentage: number;
+    lostFields: string[];
+  } | null>(null);
 
-  const handleTargetSceneChange = useCallback(async (sceneId: SceneId) => {
-    if (sceneId === currentScene) {
-      Alert.alert('提示', '不能迁移到当前场景');
-      return;
-    }
-
-    setTargetScene(sceneId);
-    setPreview(null);
-    setEstimate(null);
-
-    // Load estimate
-    try {
-      const estimateResponse = await sceneApi.estimateMigration(currentScene, sceneId);
-      if (estimateResponse.success) {
-        setEstimate(estimateResponse.data);
+  const handleTargetSceneChange = useCallback(
+    async (sceneId: SceneId) => {
+      if (sceneId === currentScene) {
+        Alert.alert('提示', '不能迁移到当前场景');
+        return;
       }
-    } catch (error) {
-      console.error('Failed to estimate migration:', error);
-    }
-  }, [currentScene]);
+
+      setTargetScene(sceneId);
+      setPreview(null);
+      setEstimate(null);
+
+      // Load estimate
+      try {
+        const estimateResponse = await sceneApi.estimateMigration(currentScene, sceneId);
+        if (estimateResponse.success) {
+          setEstimate(estimateResponse.data);
+        }
+      } catch (error) {
+        console.error('Failed to estimate migration:', error);
+      }
+    },
+    [currentScene]
+  );
 
   const handlePreview = async () => {
     if (!targetScene) return;
 
     setLoading(true);
     try {
-      const response = await sceneApi.previewMigration(
-        currentScene,
-        targetScene,
-        agentId
-      );
+      const response = await sceneApi.previewMigration(currentScene, targetScene, agentId);
 
       if (response.success) {
         setPreview(response.data);
@@ -107,11 +106,7 @@ export const SceneMigrationScreen: React.FC = () => {
   const executeMigration = async () => {
     setMigrating(true);
     try {
-      const response = await sceneApi.executeMigration(
-        currentScene,
-        targetScene!,
-        agentId
-      );
+      const response = await sceneApi.executeMigration(currentScene, targetScene!, agentId);
 
       if (response.success) {
         Alert.alert(
@@ -136,22 +131,15 @@ export const SceneMigrationScreen: React.FC = () => {
   const renderCurrentScene = () => (
     <View style={styles.currentSceneCard}>
       <Text style={styles.currentSceneLabel}>当前场景</Text>
-      <Text style={styles.currentSceneName}>
-        {SCENE_DISPLAY_NAMES[currentScene].zh}
-      </Text>
-      <Text style={styles.currentSceneDescription}>
-        {SCENE_DESCRIPTIONS[currentScene].zh}
-      </Text>
+      <Text style={styles.currentSceneName}>{SCENE_DISPLAY_NAMES[currentScene].zh}</Text>
+      <Text style={styles.currentSceneDescription}>{SCENE_DESCRIPTIONS[currentScene].zh}</Text>
     </View>
   );
 
   const renderTargetSceneSelector = () => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>选择目标场景</Text>
-      <SceneSelector
-        selectedScene={targetScene}
-        onSelectScene={handleTargetSceneChange}
-      />
+      <SceneSelector selectedScene={targetScene} onSelectScene={handleTargetSceneChange} />
     </View>
   );
 
@@ -176,21 +164,15 @@ export const SceneMigrationScreen: React.FC = () => {
           <>
             <View style={styles.estimateRow}>
               <Text style={styles.estimateLabel}>丢失比例:</Text>
-              <Text style={styles.estimateValue}>
-                {estimate.lossPercentage.toFixed(1)}%
-              </Text>
+              <Text style={styles.estimateValue}>{estimate.lossPercentage.toFixed(1)}%</Text>
             </View>
             <View style={styles.estimateRow}>
               <Text style={styles.estimateLabel}>丢失字段:</Text>
-              <Text style={styles.estimateValue}>
-                {estimate.lostFields.join(', ')}
-              </Text>
+              <Text style={styles.estimateValue}>{estimate.lostFields.join(', ')}</Text>
             </View>
           </>
         )}
-        {!estimate.willLoseData && (
-          <Text style={styles.estimateSuccess}>✓ 数据可以完整迁移</Text>
-        )}
+        {!estimate.willLoseData && <Text style={styles.estimateSuccess}>✓ 数据可以完整迁移</Text>}
       </View>
     );
   };
@@ -205,13 +187,18 @@ export const SceneMigrationScreen: React.FC = () => {
         {/* Field Mappings */}
         <View style={styles.previewSection}>
           <Text style={styles.previewSectionTitle}>字段映射</Text>
-          {preview.migration.fieldMappings.map((mapping: any, index: number) => (
-            <View key={index} style={styles.mappingItem}>
-              <Text style={styles.mappingSource}>{mapping.sourceField}</Text>
-              <Text style={styles.mappingArrow}>→</Text>
-              <Text style={styles.mappingTarget}>{mapping.targetField}</Text>
-            </View>
-          ))}
+          {preview.migration.fieldMappings.map(
+            (
+              mapping: { sourceField: string; targetField: string; transform?: string },
+              index: number
+            ) => (
+              <View key={index} style={styles.mappingItem}>
+                <Text style={styles.mappingSource}>{mapping.sourceField}</Text>
+                <Text style={styles.mappingArrow}>→</Text>
+                <Text style={styles.mappingTarget}>{mapping.targetField}</Text>
+              </View>
+            )
+          )}
         </View>
 
         {/* Warnings */}
@@ -259,13 +246,14 @@ export const SceneMigrationScreen: React.FC = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>场景迁移</Text>
         <TouchableOpacity
-          style={[styles.migrateButton, (!targetScene || !preview || migrating) && styles.migrateButtonDisabled]}
+          style={[
+            styles.migrateButton,
+            (!targetScene || !preview || migrating) && styles.migrateButtonDisabled,
+          ]}
           onPress={handleMigrate}
           disabled={!targetScene || !preview || migrating}
         >
-          <Text style={styles.migrateButtonText}>
-            {migrating ? '迁移中...' : '确认迁移'}
-          </Text>
+          <Text style={styles.migrateButtonText}>{migrating ? '迁移中...' : '确认迁移'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -281,11 +269,7 @@ export const SceneMigrationScreen: React.FC = () => {
 
         {/* Preview Button */}
         {targetScene && !preview && (
-          <TouchableOpacity
-            style={styles.previewButton}
-            onPress={handlePreview}
-            disabled={loading}
-          >
+          <TouchableOpacity style={styles.previewButton} onPress={handlePreview} disabled={loading}>
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
