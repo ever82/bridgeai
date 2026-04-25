@@ -70,6 +70,11 @@ apiClient.interceptors.response.use(
           }
         } catch {
           await clearTokens();
+          // Sync auth store state so navigation reflects the cleared session
+          // Lazy import avoids circular dependency with authStore
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const { useAuthStore } = require('../../stores/authStore');
+          useAuthStore.getState().resetAuth();
         } finally {
           isRefreshing = false;
         }

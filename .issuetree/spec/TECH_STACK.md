@@ -231,37 +231,39 @@
 
 ### 概述
 
-采用 **Detox + Maestro** 双层 E2E 测试架构，兼顾生产稳定性和 AI Agent 自动化友好度：
+采用 **Chrome DevTools MCP + Maestro** 双层 E2E 测试架构，兼顾开发阶段快速验证和生产环境测试覆盖：
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    AI Agent 自动化层                      │
-│                      (Maestro)                           │
-│         快速验证 / 探索性测试 / YAML 声明式                 │
+│              Chrome DevTools MCP (浏览器)                 │
+│              快速 UI 验证 / Web 开发阶段                    │
+│         mcp__chrome-devtools__ 系列工具直接控制浏览器       │
 └─────────────────────────────────────────────────────────┘
-                           ↓ 验证通过后迁移
+                           ↑
 ┌─────────────────────────────────────────────────────────┐
-│                    生产级测试层                          │
-│                       (Detox)                           │
-│         稳定可靠 / TypeScript / CI/CD 集成               │
+│                 Maestro (iOS/Android 模拟器)              │
+│              AI Agent 验收测试 / 原生行为验证              │
+│         YAML 声明式，Claude Code 可直接生成和执行          │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### 生产层：Detox
+### 第一层：Chrome DevTools MCP（浏览器）
 
-- **定位**: 生产级 E2E 测试，稳定可靠
-- **语言**: TypeScript，类型安全
-- **React Native 支持**: 灰盒测试，可访问内部状态
+- **定位**: 开发阶段快速验证，Web 端 UI 测试
+- **工具**: `mcp__chrome-devtools__*` 系列工具（内置 Claude Code）
 - **特性**:
-  - `waitFor` 同步等待机制，无需手动 sleep
-  - Page Object Model 模式
-  - 自动截图/视频录制
-  - Flaky test 检测与监控
-  - CI/CD 完整集成
+  - `navigate_page`, `click`, `fill`, `screenshot`, `take_snapshot`
+  - `list_console_messages`, `list_network_requests`
+  - `evaluate_script`, `emulate`, `performance_start_trace`
+  - 无需安装 Playwright，直接控制 Chrome
+- **适用场景**:
+  - Expo Web 快速验证 UI 布局/主题色/交互
+  - 浏览器端登录/导航/表单测试
+  - 开发阶段频繁回归
 
-### 探索层：Maestro
+### 第二层：Maestro（iOS/Android 模拟器）
 
-- **定位**: AI Agent 快速验证，YAML 声明式
+- **定位**: AI Agent 驱动验收测试，原生行为验证
 - **语言**: YAML，纯文本易于 LLM 生成
 - **React Native 支持**: 黑盒测试，基于 UI 定位
 - **特性**:
@@ -275,27 +277,72 @@
 ```yaml
 # 1. AI Agent 读取 issue 验收标准
 # 2. 生成 Maestro YAML 测试脚本
-appId: com.bridgeai.app
+appId: com.bridgeai.mobile
 - launchApp
 - tapOn: "login-email-input"
 - inputText: "test@bridgeai.com"
 - tapOn: "login-button"
 - assertVisible: "home-tab"
 # 3. 执行验证
-maestro test e2e/maestro/auth-flow.yaml
-# 4. 验证通过后，转换为 Detox 测试加入生产套件
+cd apps/mobile
+npx ts-node e2e/maestro/runner.ts --flow auth-flow --dev
 ```
 
 ### 工具链
 
-| 层级       | 工具                   | 用途                               |
-| ---------- | ---------------------- | ---------------------------------- |
-| 生产测试   | `detox`                | Jest 集成，TypeScript Page Objects |
-| 探索测试   | `maestro`              | YAML 脚本，AI Agent 友好           |
-| 报告       | `jest-html-reporters`  | HTML 美化报告                      |
-| 报告       | `jest-junit`           | JUnit XML，CI 集成                 |
-| 稳定性监控 | `stability-monitor.ts` | Flaky rate 追踪 <2%                |
-| 数据隔离   | `test-isolation.ts`    | 独立测试用户，数据清理             |
+| 层级       | 工具                   | 用途                           |
+| ---------- | ---------------------- | ------------------------------ |
+| 浏览器测试 | Chrome DevTools MCP    | 内置 Claude Code，无需额外安装 |
+| 移动端测试 | `maestro`              | iOS/Android 模拟器，YAML 脚本  |
+| 报告       | Maestro HTML/JSON 报告 | 可视化报告 + CI 解析数据       |
+| 稳定性监控 | `runner.ts` 内置截图   | 失败自动截图，便于排查         |
+
+### 测试路径
+
+```
+apps/mobile/
+├── e2e/
+│   ├── flows/
+│   │   ├── browser/              # 浏览器 E2E 测试 (Markdown)
+│   │   │   ├── runner.ts         # Web 服务器启动器
+│   │   │   ├── README.md         # 规范说明
+│   │   │   └── auth-flow.md      # 认证流程示例
+│   │   └── maestro/             # 移动端 E2E 测试 (YAML)
+│   │       ├── runner.ts         # 统一测试执行器
+│   │       ├── config.yaml
+│   │       ├── flows/
+│   │       │   ├── auth-flow.yaml
+│   │       │   ├── chat-flow.yaml
+│   │       │   ├── matching-flow.yaml
+│   │       │   ├── agent-creation-flow.yaml
+│   │       │   └── logout-flow.yaml
+│   │       └── reports/
+│   └── e2e-web/                  # Playwright 浏览器测试（已弃用，可删除）
+```
+
+### 快速开始
+
+**浏览器测试:**
+
+```bash
+# 启动 Web 服务器
+pnpm test:e2e:web
+
+# Claude Code 使用 mcp__chrome-devtools__* 工具操作浏览器
+```
+
+**Maestro 测试:**
+
+```bash
+# 环境检查
+pnpm test:e2e:check
+
+# 运行指定 flow
+npx ts-node apps/mobile/e2e/maestro/runner.ts --flow auth-flow
+
+# 按 issue 运行关联 flows（Claude Code 自动验收用）
+npx ts-node apps/mobile/e2e/maestro/runner.ts --issue ISSUE-A001
+```
 
 ## CI/CD 与部署
 

@@ -69,6 +69,7 @@ export const RegisterScreen = () => {
         <TextInput
           style={styles.input}
           placeholder="邮箱"
+          testID="register-email-input"
           value={form.email}
           onChangeText={text => updateField('email', text)}
           keyboardType="email-address"
@@ -78,6 +79,7 @@ export const RegisterScreen = () => {
         <TextInput
           style={styles.input}
           placeholder="用户名"
+          testID="register-username-input"
           value={form.username}
           onChangeText={text => updateField('username', text)}
           autoCapitalize="none"
@@ -86,6 +88,7 @@ export const RegisterScreen = () => {
         <TextInput
           style={styles.input}
           placeholder="显示名称"
+          testID="register-displayname-input"
           value={form.displayName}
           onChangeText={text => updateField('displayName', text)}
           editable={!isLoading}
@@ -93,6 +96,7 @@ export const RegisterScreen = () => {
         <TextInput
           style={styles.input}
           placeholder="密码"
+          testID="register-password-input"
           value={form.password}
           onChangeText={text => updateField('password', text)}
           secureTextEntry
@@ -101,6 +105,7 @@ export const RegisterScreen = () => {
         <TextInput
           style={styles.input}
           placeholder="确认密码"
+          testID="register-confirm-password-input"
           value={form.confirmPassword}
           onChangeText={text => updateField('confirmPassword', text)}
           secureTextEntry
@@ -111,6 +116,7 @@ export const RegisterScreen = () => {
           style={[styles.button, isLoading && styles.buttonDisabled]}
           onPress={handleRegister}
           disabled={isLoading}
+          testID="register-submit-button"
         >
           {isLoading ? (
             <ActivityIndicator color={theme.colors.textInverse} />

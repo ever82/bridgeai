@@ -10,7 +10,7 @@ import {
   EmbeddingResponse,
   ModelInfo,
   StreamChunk,
-  RequestContext
+  RequestContext,
 } from '../types';
 
 import { BaseLLMAdapter } from './base';
@@ -32,7 +32,7 @@ export class ClaudeAdapter extends BaseLLMAdapter {
     super();
     this.config = {
       timeoutMs: 60000,
-      ...config
+      ...config,
     };
     this.baseUrl = config.apiUrl || 'https://api.anthropic.com/v1';
   }
@@ -48,14 +48,14 @@ export class ClaudeAdapter extends BaseLLMAdapter {
           embeddings: false,
           streaming: true,
           maxTokens: 200000,
-          supportedLanguages: ['zh', 'en', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ar', 'hi']
+          supportedLanguages: ['zh', 'en', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ar', 'hi'],
         },
         costPer1KTokens: {
           input: 0.015,
-          output: 0.075
+          output: 0.075,
         },
         averageLatencyMs: 1800,
-        qualityScore: 96
+        qualityScore: 96,
       },
       {
         id: 'claude-3-sonnet-20240229',
@@ -66,14 +66,14 @@ export class ClaudeAdapter extends BaseLLMAdapter {
           embeddings: false,
           streaming: true,
           maxTokens: 200000,
-          supportedLanguages: ['zh', 'en', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ar', 'hi']
+          supportedLanguages: ['zh', 'en', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ar', 'hi'],
         },
         costPer1KTokens: {
           input: 0.003,
-          output: 0.015
+          output: 0.015,
         },
         averageLatencyMs: 1200,
-        qualityScore: 90
+        qualityScore: 90,
       },
       {
         id: 'claude-3-haiku-20240307',
@@ -84,15 +84,15 @@ export class ClaudeAdapter extends BaseLLMAdapter {
           embeddings: false,
           streaming: true,
           maxTokens: 200000,
-          supportedLanguages: ['zh', 'en', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ar', 'hi']
+          supportedLanguages: ['zh', 'en', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ar', 'hi'],
         },
         costPer1KTokens: {
           input: 0.00025,
-          output: 0.00125
+          output: 0.00125,
         },
         averageLatencyMs: 600,
-        qualityScore: 82
-      }
+        qualityScore: 82,
+      },
     ];
 
     models.forEach(model => {
@@ -102,7 +102,7 @@ export class ClaudeAdapter extends BaseLLMAdapter {
 
   async chatCompletion(
     request: ChatCompletionRequest,
-    context: RequestContext
+    _context: RequestContext
   ): Promise<ChatCompletionResponse> {
     // 转换消息格式为Claude格式
     const systemMessage = request.messages.find(m => m.role === 'system');
@@ -113,34 +113,53 @@ export class ClaudeAdapter extends BaseLLMAdapter {
       system: systemMessage?.content,
       messages: conversationMessages.map(m => ({
         role: m.role === 'user' ? 'user' : 'assistant',
-        content: m.content
+        content: m.content,
       })),
       max_tokens: request.maxTokens ?? 4096,
       temperature: request.temperature ?? 0.7,
       top_p: request.topP,
-      stream: false
+      stream: false,
     });
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
+
+    // Handle different content block types (MiniMax may return 'thinking' blocks)
+    let textContent = '';
+    for (const block of data.content || []) {
+      if (block.type === 'text') {
+        textContent = block.text || '';
+        break;
+      }
+    }
+    if (!textContent) {
+      for (const block of data.content || []) {
+        if (block.type === 'thinking') {
+          textContent = block.thinking || '';
+          break;
+        }
+      }
+    }
 
     // 转换为统一响应格式
     return {
       id: data.id,
       model: data.model,
-      choices: [{
-        index: 0,
-        message: {
-          role: 'assistant',
-          content: data.content?.[0]?.text || ''
+      choices: [
+        {
+          index: 0,
+          message: {
+            role: 'assistant',
+            content: textContent,
+          },
+          finishReason: data.stop_reason || 'stop',
         },
-        finishReason: data.stop_reason || 'stop'
-      }],
+      ],
       usage: {
         promptTokens: (data as any).usage.input_tokens,
         completionTokens: (data as any).usage.output_tokens,
-        totalTokens: (data as any).usage.input_tokens + (data as any).usage.output_tokens
+        totalTokens: (data as any).usage.input_tokens + (data as any).usage.output_tokens,
       },
-      createdAt: new Date()
+      createdAt: new Date(),
     };
   }
 
@@ -157,11 +176,11 @@ export class ClaudeAdapter extends BaseLLMAdapter {
       system: systemMessage?.content,
       messages: conversationMessages.map(m => ({
         role: m.role === 'user' ? 'user' : 'assistant',
-        content: m.content
+        content: m.content,
       })),
       max_tokens: request.maxTokens ?? 4096,
       temperature: request.temperature ?? 0.7,
-      stream: true
+      stream: true,
     });
 
     const reader = response.body?.getReader();
@@ -175,6 +194,7 @@ export class ClaudeAdapter extends BaseLLMAdapter {
     let model = '';
 
     try {
+      // eslint-disable-next-line no-constant-condition
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -185,6 +205,7 @@ export class ClaudeAdapter extends BaseLLMAdapter {
 
         for (const line of lines) {
           if (line.startsWith('event: ')) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const eventType = line.slice(7);
             continue;
           }
@@ -202,24 +223,28 @@ export class ClaudeAdapter extends BaseLLMAdapter {
                 onChunk({
                   id: messageId,
                   model: model,
-                  choices: [{
-                    index: 0,
-                    delta: {
-                      role: 'assistant',
-                      content: event.delta.text
+                  choices: [
+                    {
+                      index: 0,
+                      delta: {
+                        role: 'assistant',
+                        content: event.delta.text,
+                      },
+                      finishReason: null,
                     },
-                    finishReason: null
-                  }]
+                  ],
                 });
               } else if (event.type === 'message_delta' && event.delta.stop_reason) {
                 onChunk({
                   id: messageId,
                   model: model,
-                  choices: [{
-                    index: 0,
-                    delta: {},
-                    finishReason: event.delta.stop_reason
-                  }]
+                  choices: [
+                    {
+                      index: 0,
+                      delta: {},
+                      finishReason: event.delta.stop_reason,
+                    },
+                  ],
                 });
               }
             } catch (e) {
@@ -234,8 +259,8 @@ export class ClaudeAdapter extends BaseLLMAdapter {
   }
 
   async embeddings(
-    request: EmbeddingRequest,
-    context: RequestContext
+    _request: EmbeddingRequest,
+    _context: RequestContext
   ): Promise<EmbeddingResponse> {
     throw new Error('Claude does not support embeddings API');
   }
@@ -259,10 +284,10 @@ export class ClaudeAdapter extends BaseLLMAdapter {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': this.config.apiKey,
-          'anthropic-version': '2023-06-01'
+          'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify(body),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       if (!response.ok) {

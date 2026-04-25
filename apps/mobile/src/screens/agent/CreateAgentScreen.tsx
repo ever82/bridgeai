@@ -12,6 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
+  Agent,
   AgentType,
   AGENT_TYPE_LABELS,
   AGENT_TYPE_COLORS,
@@ -109,7 +110,7 @@ export const CreateAgentScreen: React.FC = () => {
       await agentsApi.createAgent(agentData);
 
       Alert.alert('Success', 'Agent created successfully!', [
-        { text: 'OK', onPress: () => navigation.goBack() },
+        { text: 'OK', onPress: () => navigation.navigate('AgentList') },
       ]);
     } catch (err) {
       Alert.alert('Error', (err as Error)?.message || 'Failed to create agent');
@@ -127,6 +128,7 @@ export const CreateAgentScreen: React.FC = () => {
         <Text style={styles.label}>Agent Name *</Text>
         <TextInput
           style={styles.input}
+          testID="create-agent-name-input"
           value={name}
           onChangeText={setName}
           placeholder="Enter agent name"
@@ -140,6 +142,7 @@ export const CreateAgentScreen: React.FC = () => {
         <Text style={styles.label}>Description (Optional)</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
+          testID="create-agent-description-input"
           value={description}
           onChangeText={setDescription}
           placeholder="Describe what this agent does..."
@@ -163,6 +166,7 @@ export const CreateAgentScreen: React.FC = () => {
           key={type}
           style={[styles.typeCard, selectedType === type && styles.typeCardSelected]}
           onPress={() => setSelectedType(type)}
+          testID={`create-agent-type-${type}`}
         >
           <View style={[styles.typeIndicator, { backgroundColor: AGENT_TYPE_COLORS[type] }]} />
           <View style={styles.typeContent}>
@@ -263,7 +267,7 @@ export const CreateAgentScreen: React.FC = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton} testID="back-button">
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Create Agent</Text>
@@ -271,7 +275,7 @@ export const CreateAgentScreen: React.FC = () => {
       </View>
 
       {/* Progress Bar */}
-      <View style={styles.progressBarContainer}>
+      <View style={styles.progressBarContainer} testID="create-agent-step-indicator">
         <View style={[styles.progressBar, { width: getProgressWidth() }]} />
       </View>
 
@@ -291,12 +295,17 @@ export const CreateAgentScreen: React.FC = () => {
         </TouchableOpacity>
 
         {step < 5 ? (
-          <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={handleNext}>
+          <TouchableOpacity
+            style={[styles.button, styles.primaryButton]}
+            onPress={handleNext}
+            testID="create-agent-next-button"
+          >
             <Text style={styles.primaryButtonText}>Next</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
             style={[styles.button, styles.primaryButton]}
+            testID="create-agent-submit"
             onPress={handleSubmit}
             disabled={loading}
           >
@@ -313,10 +322,7 @@ export const CreateAgentScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -328,58 +334,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backButtonText: {
-    fontSize: 24,
-    color: '#007AFF',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  placeholder: {
-    width: 40,
-  },
-  progressBarContainer: {
-    height: 3,
-    backgroundColor: '#e0e0e0',
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: '#007AFF',
-  },
-  content: {
-    flex: 1,
-  },
-  stepContainer: {
-    padding: 20,
-  },
-  stepTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 8,
-  },
-  stepDescription: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 24,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
+  backButton: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+  backButtonText: { fontSize: 24, color: '#007AFF' },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: '#000' },
+  placeholder: { width: 40 },
+  progressBarContainer: { height: 3, backgroundColor: '#e0e0e0' },
+  progressBar: { height: '100%', backgroundColor: '#007AFF' },
+  content: { flex: 1 },
+  stepContainer: { padding: 20 },
+  stepTitle: { fontSize: 24, fontWeight: 'bold', color: '#000', marginBottom: 8 },
+  stepDescription: { fontSize: 16, color: '#666', marginBottom: 24 },
+  inputGroup: { marginBottom: 20 },
+  label: { fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 8 },
   input: {
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -388,16 +354,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  characterCount: {
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'right',
-    marginTop: 4,
-  },
+  textArea: { height: 100, textAlignVertical: 'top' },
+  characterCount: { fontSize: 12, color: '#999', textAlign: 'right', marginTop: 4 },
   typeCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -413,28 +371,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  typeCardSelected: {
-    borderColor: '#007AFF',
-  },
-  typeIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  typeContent: {
-    flex: 1,
-  },
-  typeName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 4,
-  },
-  typeDescription: {
-    fontSize: 14,
-    color: '#666',
-  },
+  typeCardSelected: { borderColor: '#007AFF' },
+  typeIndicator: { width: 12, height: 12, borderRadius: 6, marginRight: 12 },
+  typeContent: { flex: 1 },
+  typeName: { fontSize: 18, fontWeight: '600', color: '#000', marginBottom: 4 },
+  typeDescription: { fontSize: 14, color: '#666' },
   checkmark: {
     width: 24,
     height: 24,
@@ -443,11 +384,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  checkmarkText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
+  checkmarkText: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
   reviewCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -458,29 +395,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  reviewRow: {
-    marginBottom: 16,
-  },
-  reviewLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-  },
-  reviewValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
-  reviewTypeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  reviewTypeIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
-  },
+  reviewRow: { marginBottom: 16 },
+  reviewLabel: { fontSize: 14, color: '#666', marginBottom: 4 },
+  reviewValue: { fontSize: 16, fontWeight: '600', color: '#000' },
+  reviewTypeBadge: { flexDirection: 'row', alignItems: 'center' },
+  reviewTypeIndicator: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
   footer: {
     flexDirection: 'row',
     padding: 16,
@@ -496,20 +415,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primaryButton: {
-    backgroundColor: '#007AFF',
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    backgroundColor: '#f0f0f0',
-  },
-  secondaryButtonText: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  primaryButton: { backgroundColor: '#007AFF' },
+  primaryButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  secondaryButton: { backgroundColor: '#f0f0f0' },
+  secondaryButtonText: { color: '#333', fontSize: 16, fontWeight: '600' },
 });

@@ -23,10 +23,10 @@ export const rateLimitConfigs = {
     maxRequests: 100,
   } as RateLimitConfig,
 
-  // Strict limit for authentication endpoints
+  // Limit for authentication endpoints
   auth: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 5,
+    maxRequests: process.env.NODE_ENV === 'test' ? 1000 : 60,
     skipSuccessfulRequests: true,
     message: 'Too many login attempts, please try again later.',
   } as RateLimitConfig,

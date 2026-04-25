@@ -38,6 +38,41 @@ export const AgentPreview: React.FC<AgentPreviewProps> = ({ agent, onResetDefaul
     { id: '3', changedAt: new Date(Date.now() - 172800000), summary: '修改回复风格为友好' },
   ];
 
+  // Helper to format config objects into readable key-value pairs
+  const renderConfigEntries = (config: Record<string, unknown>) => {
+    const entries: JSX.Element[] = [];
+
+    for (const [key, value] of Object.entries(config)) {
+      if (typeof value === 'object' && value !== null) {
+        // Recursively render nested config (e.g., scene, ai)
+        entries.push(
+          <View key={key} style={styles.configSection}>
+            <Text style={styles.configSectionTitle}>{key}</Text>
+            {Object.entries(value as Record<string, unknown>).map(([subKey, subValue]) => (
+              <View key={subKey} style={styles.configItem}>
+                <Text style={styles.configLabel}>{subKey}</Text>
+                <Text style={styles.configValue}>
+                  {typeof subValue === 'object' && subValue !== null
+                    ? JSON.stringify(subValue)
+                    : String(subValue)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        );
+      } else {
+        entries.push(
+          <View key={key} style={styles.configItem}>
+            <Text style={styles.configLabel}>{key}</Text>
+            <Text style={styles.configValue}>{String(value)}</Text>
+          </View>
+        );
+      }
+    }
+
+    return entries;
+  };
+
   const handleSendMessage = () => {
     if (!chatInput.trim()) return;
 
@@ -82,13 +117,7 @@ export const AgentPreview: React.FC<AgentPreviewProps> = ({ agent, onResetDefaul
           <Text style={styles.configLabel}>状态</Text>
           <Text style={styles.configValue}>{agent.status}</Text>
         </View>
-        {agent.config &&
-          Object.entries(agent.config).map(([key, value]) => (
-            <View key={key} style={styles.configItem}>
-              <Text style={styles.configLabel}>{key}</Text>
-              <Text style={styles.configValue}>{String(value)}</Text>
-            </View>
-          ))}
+        {agent.config && renderConfigEntries(agent.config)}
       </View>
 
       {onResetDefaults && (
@@ -288,6 +317,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+  },
+  configSection: {
+    marginBottom: 8,
+  },
+  configSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#007AFF',
+    marginBottom: 8,
+    textTransform: 'capitalize',
   },
   configLabel: {
     fontSize: 14,

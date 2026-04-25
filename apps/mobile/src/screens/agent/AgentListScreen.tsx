@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -63,7 +63,11 @@ const EmptyState: React.FC<EmptyStateProps> = ({ onCreatePress }) => {
       <Text style={styles.emptyDescription}>
         Create your first agent to get started with AI-powered matching
       </Text>
-      <TouchableOpacity style={styles.createButton} onPress={onCreatePress}>
+      <TouchableOpacity
+        style={styles.createButton}
+        onPress={onCreatePress}
+        testID="agent-list-empty-create"
+      >
         <Text style={styles.createButtonText}>Create Agent</Text>
       </TouchableOpacity>
     </View>
@@ -85,13 +89,17 @@ export const AgentListScreen: React.FC = () => {
       setError(null);
 
       const response = await agentsApi.getAgents({ limit: 50 });
-      setAgents(response.data.data);
+      setAgents(response.data.data.agents);
     } catch (err) {
       setError((err as Error)?.message || 'Failed to fetch agents');
     } finally {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchAgents();
+  }, [fetchAgents]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -129,7 +137,7 @@ export const AgentListScreen: React.FC = () => {
 
   if (agents.length === 0) {
     return (
-      <View style={styles.container}>
+      <View style={styles.container} testID="agent-list-screen">
         <View style={styles.header}>
           <Text style={styles.title}>My Agents</Text>
         </View>
@@ -139,10 +147,14 @@ export const AgentListScreen: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="agent-list-screen">
       <View style={styles.header}>
         <Text style={styles.title}>My Agents</Text>
-        <TouchableOpacity style={styles.addButton} onPress={handleCreatePress}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={handleCreatePress}
+          testID="agent-list-create-button"
+        >
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
       </View>

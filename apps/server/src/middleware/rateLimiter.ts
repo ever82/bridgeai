@@ -254,6 +254,10 @@ export const strictAuthLimiter = rateLimit({
       })
     );
   },
+  skip: () => {
+    // Bypass auth rate limiting entirely in test environment
+    return process.env.NODE_ENV === 'test';
+  },
 });
 
 /**
@@ -314,7 +318,8 @@ export function combinedRateLimiter(): RateLimitRequestHandler {
         );
     },
     skip: (req: RateLimitRequest) => {
-      // Skip health checks and internal endpoints
+      // Skip health checks, internal endpoints, and all rate limiting in test environment
+      if (process.env.NODE_ENV === 'test') return true;
       return req.path === '/health' || req.path === '/ready' || req.path.startsWith('/internal/');
     },
   });

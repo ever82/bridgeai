@@ -30,7 +30,7 @@ function wrapServerResponse(data: ServerAuthResponse): AuthResponse {
 export const authApi = {
   login: async (credentials: LoginCredentials) => {
     const response = await api.post<ServerAuthResponse>('/auth/login', credentials);
-    return { ...response, data: wrapServerResponse(response.data) };
+    return { ...response, data: wrapServerResponse(response.data.data) };
   },
 
   register: async (data: RegisterData) => {
@@ -42,7 +42,7 @@ export const authApi = {
       password: data.password,
     };
     const response = await api.post<ServerAuthResponse>('/auth/register', payload);
-    return { ...response, data: wrapServerResponse(response.data) };
+    return { ...response, data: wrapServerResponse(response.data.data) };
   },
 
   logout: () => api.post<void>('/auth/logout'),

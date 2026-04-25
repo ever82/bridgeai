@@ -29,6 +29,7 @@ interface AuthState {
   logout: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
   clearError: () => void;
+  resetAuth: () => void;
   initialize: () => Promise<void>;
 }
 
@@ -142,10 +143,25 @@ export const useAuthStore = create<AuthState>()(
       },
 
       clearError: () => set({ error: null }),
-
+      resetAuth: () =>
+        set({
+          user: null,
+          tokens: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+        }),
       initialize: async () => {
         // On web, skip token loading (SecureStore not available)
         if (Platform.OS === 'web') {
+          set({ isLoading: false });
+          return;
+        }
+
+        // Prevent re-initialization if already authenticated and user is loaded
+        // This avoids state corruption during navigation between screens
+        const currentState = get();
+        if (currentState.isAuthenticated && currentState.user) {
           set({ isLoading: false });
           return;
         }

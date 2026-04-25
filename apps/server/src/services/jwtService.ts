@@ -22,7 +22,11 @@ class JwtService {
   private secret: string;
 
   constructor() {
-    this.secret = process.env.JWT_SECRET || 'your-secret-key';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error('JWT_SECRET environment variable is required');
+    }
+    this.secret = secret;
   }
 
   /**

@@ -15,15 +15,21 @@ export const ProfileScreen = () => {
     await logout();
   };
 
-  const menuItems = [
+  const menuItems: { icon: string; title: string; onPress: () => void; testID?: string }[] = [
     { icon: '📝', title: '我的动态', onPress: () => navigation.navigate('MyMoments') },
     { icon: '⭐', title: '我的评价', onPress: () => navigation.navigate('ReviewList') },
     { icon: '❤️', title: '赞过的', onPress: () => navigation.navigate('LikedMoments') },
+    {
+      icon: '🤖',
+      title: '我的 Agent',
+      onPress: () => navigation.navigate('AgentList'),
+      testID: 'profile-agent-list-button',
+    },
     { icon: '⚙️', title: '设置', onPress: () => navigation.navigate('Settings') },
   ];
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]} testID="profile-header">
       <View style={styles.header}>
         <Text style={styles.headerTitle}>我的</Text>
       </View>
@@ -66,6 +72,7 @@ export const ProfileScreen = () => {
               key={index}
               style={[styles.menuItem, index === menuItems.length - 1 && styles.menuItemLast]}
               onPress={item.onPress}
+              testID={item.testID}
             >
               <Text style={styles.menuIcon}>{item.icon}</Text>
               <Text style={styles.menuTitle}>{item.title}</Text>
@@ -74,7 +81,11 @@ export const ProfileScreen = () => {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={handleLogout}
+          testID="profile-logout-button"
+        >
           <Text style={styles.logoutButtonText}>退出登录</Text>
         </TouchableOpacity>
 
