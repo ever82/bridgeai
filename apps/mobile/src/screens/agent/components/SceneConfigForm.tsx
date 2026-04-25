@@ -13,16 +13,16 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { AgentType } from '@bridgeai/shared';
+import { SceneId } from '@bridgeai/shared';
 
 interface SceneConfigFormProps {
-  agentType: AgentType;
+  sceneId: SceneId;
   config: Record<string, string | number | boolean>;
   onConfigChange: (key: string, value: string | number | boolean) => void;
 }
 
 export const SceneConfigForm: React.FC<SceneConfigFormProps> = ({
-  agentType,
+  sceneId,
   config,
   onConfigChange,
 }) => {
@@ -256,14 +256,14 @@ export const SceneConfigForm: React.FC<SceneConfigFormProps> = ({
   );
 
   const renderConfig = () => {
-    switch (agentType) {
-      case AgentType.VISIONSHARE:
+    switch (sceneId) {
+      case 'visionshare':
         return renderVisionShareConfig();
-      case AgentType.AGENTDATE:
+      case 'agentdate':
         return renderAgentDateConfig();
-      case AgentType.AGENTJOB:
+      case 'agentjob':
         return renderAgentJobConfig();
-      case AgentType.AGENTAD:
+      case 'agentad':
         return renderAgentAdConfig();
       default:
         return null;

@@ -14,10 +14,18 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   Agent,
   AgentType,
+  SceneId,
   AGENT_TYPE_LABELS,
   AGENT_TYPE_COLORS,
   CreateAgentRequest,
 } from '@bridgeai/shared';
+
+const AGENT_TYPE_TO_SCENE_ID: Record<string, SceneId> = {
+  [AgentType.VISIONSHARE]: 'visionshare',
+  [AgentType.AGENTDATE]: 'agentdate',
+  [AgentType.AGENTJOB]: 'agentjob',
+  [AgentType.AGENTAD]: 'agentad',
+};
 
 import { agentsApi } from '../../services/api/agents';
 import { ProfileStackParamList } from '../../types/navigation';
@@ -214,7 +222,7 @@ export const CreateAgentScreen: React.FC = () => {
 
       {selectedType && (
         <SceneConfigForm
-          agentType={selectedType}
+          sceneId={AGENT_TYPE_TO_SCENE_ID[selectedType]}
           config={sceneConfig}
           onConfigChange={(key, value) => setSceneConfig(prev => ({ ...prev, [key]: value }))}
         />

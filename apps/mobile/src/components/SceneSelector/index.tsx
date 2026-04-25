@@ -1,12 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import {
   SceneConfig,
   SceneId,
@@ -81,10 +74,13 @@ export const SceneSelector: React.FC<SceneSelectorProps> = ({
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const handleSelect = useCallback((sceneId: SceneId) => {
-    onSelectScene(sceneId);
-    setModalVisible(false);
-  }, [onSelectScene]);
+  const handleSelect = useCallback(
+    (sceneId: SceneId) => {
+      onSelectScene(sceneId);
+      setModalVisible(false);
+    },
+    [onSelectScene]
+  );
 
   const getSelectedSceneInfo = () => {
     if (!selectedScene) return null;
@@ -108,12 +104,7 @@ export const SceneSelector: React.FC<SceneSelectorProps> = ({
       >
         {selectedInfo ? (
           <View style={styles.selectedContainer}>
-            <View
-              style={[
-                styles.selectedIcon,
-                { backgroundColor: selectedInfo.color },
-              ]}
-            >
+            <View style={[styles.selectedIcon, { backgroundColor: selectedInfo.color }]}>
               <Text style={styles.selectedIconText}>{selectedInfo.icon}</Text>
             </View>
             <View style={styles.selectedInfo}>
@@ -141,20 +132,15 @@ export const SceneSelector: React.FC<SceneSelectorProps> = ({
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>选择场景</Text>
-              <TouchableOpacity
-                onPress={() => setModalVisible(false)}
-                style={styles.closeButton}
-              >
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>✕</Text>
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalSubtitle}>
-              选择适合你需求的场景类型
-            </Text>
+            <Text style={styles.modalSubtitle}>选择适合你需求的场景类型</Text>
 
             <ScrollView style={styles.scenesList}>
-              {SCENE_IDS.map((sceneId) => (
+              {SCENE_IDS.map(sceneId => (
                 <SceneCard
                   key={sceneId}
                   sceneId={sceneId}
@@ -184,9 +170,7 @@ export const SceneConfigPreview: React.FC<SceneConfigPreviewProps> = ({
   const { metadata, fields, ui } = sceneConfig;
 
   const renderSection = (section: SceneSection) => {
-    const sectionFields = fields.filter((f) =>
-      section.fields.includes(f.name)
-    );
+    const sectionFields = fields.filter(f => section.fields.includes(f.id));
 
     return (
       <View key={section.id} style={styles.section}>
@@ -198,32 +182,23 @@ export const SceneConfigPreview: React.FC<SceneConfigPreviewProps> = ({
           <Text style={styles.sectionDescription}>{section.description}</Text>
         )}
         <View style={styles.fieldsList}>
-          {sectionFields.map((field) => {
+          {sectionFields.map(field => {
             const isCompleted = completedFields.includes(field.name);
             return (
               <TouchableOpacity
                 key={field.id}
-                style={[
-                  styles.fieldItem,
-                  isCompleted && styles.fieldItemCompleted,
-                ]}
+                style={[styles.fieldItem, isCompleted && styles.fieldItemCompleted]}
                 onPress={() => onFieldPress?.(field.id)}
               >
                 <View style={styles.fieldHeader}>
                   <Text style={styles.fieldLabel}>
                     {field.label}
-                    {field.required && (
-                      <Text style={styles.requiredMark}> *</Text>
-                    )}
+                    {field.required && <Text style={styles.requiredMark}> *</Text>}
                   </Text>
-                  {isCompleted && (
-                    <Text style={styles.completedMark}>✓</Text>
-                  )}
+                  {isCompleted && <Text style={styles.completedMark}>✓</Text>}
                 </View>
                 {field.description && (
-                  <Text style={styles.fieldDescription}>
-                    {field.description}
-                  </Text>
+                  <Text style={styles.fieldDescription}>{field.description}</Text>
                 )}
                 <Text style={styles.fieldType}>{getFieldTypeLabel(field.type)}</Text>
               </TouchableOpacity>
@@ -237,21 +212,14 @@ export const SceneConfigPreview: React.FC<SceneConfigPreviewProps> = ({
   return (
     <ScrollView style={styles.previewContainer}>
       {/* Scene Header */}
-      <View
-        style={[
-          styles.previewHeader,
-          { backgroundColor: metadata.color + '15' },
-        ]}
-      >
+      <View style={[styles.previewHeader, { backgroundColor: metadata.color + '15' }]}>
         <Text style={styles.previewIcon}>{metadata.icon}</Text>
         <Text style={styles.previewName}>{metadata.name}</Text>
         <Text style={styles.previewDescription}>{metadata.description}</Text>
       </View>
 
       {/* Sections */}
-      <View style={styles.sectionsContainer}>
-        {ui.sections.map(renderSection)}
-      </View>
+      <View style={styles.sectionsContainer}>{ui.sections.map(renderSection)}</View>
     </ScrollView>
   );
 };
