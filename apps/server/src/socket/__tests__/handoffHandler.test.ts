@@ -14,8 +14,8 @@ import {
   registerHandoffHandlers,
   getHandoffState,
   getHandoffRequest,
-} from '../../src/socket/handlers/handoffHandler';
-import { AuthenticatedSocket } from '../../src/socket/middleware/auth';
+} from '../handlers/handoffHandler';
+import { AuthenticatedSocket } from '../middleware/auth';
 
 // Mock socket
 const createMockSocket = (userId: string = 'user-1', roles: string[] = ['user']) => {

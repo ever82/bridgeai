@@ -323,30 +323,366 @@ export function isVersionCompatible(version: string): boolean {
   return version.startsWith('1.');
 }
 
-export function getSceneConfig(_sceneId: any): any {
-  const validSceneIds = ['visionshare', 'agentdate', 'agentjob', 'agentad'];
-  if (!_sceneId || !validSceneIds.includes(_sceneId)) {
-    return undefined;
-  }
+// Real scene configs (inlined so moduleNameMapper can find them)
+const SCENE_IDS_LIST = ['visionshare', 'agentdate', 'agentjob', 'agentad'] as const;
+
+function makeVisionShareConfig() {
   return {
-    id: _sceneId,
-    metadata: { name: 'VisionShare', description: 'VisionShare scene', isActive: true },
-    fields: [],
-    capabilities: [],
-    templates: [
-      { name: 'Preset 1', description: 'A preset template', prompt: 'Test prompt', isPreset: true },
+    id: 'visionshare' as const,
+    metadata: {
+      id: 'visionshare',
+      name: '视觉分享',
+      nameEn: 'VisionShare',
+      description: '分享视觉内容',
+      icon: '🎨',
+      color: '#9C27B0',
+      version: '1.0.0',
+      isActive: true,
+      createdAt: new Date('2026-01-01'),
+      updatedAt: new Date('2026-01-01'),
+    },
+    fields: [
+      {
+        id: 'content_type',
+        name: 'contentType',
+        label: '内容类型',
+        type: 'multiselect',
+        required: true,
+      },
+      { id: 'purpose', name: 'purpose', label: '分享目的', type: 'select', required: true },
+      { id: 'style', name: 'style', label: '风格', type: 'multiselect', required: false },
+      {
+        id: 'portfolio_url',
+        name: 'portfolioUrl',
+        label: '作品集链接',
+        type: 'url',
+        required: false,
+      },
+      { id: 'skills', name: 'skills', label: '相关技能', type: 'tags', required: false },
     ],
-    validation: {},
-    ui: {},
+    capabilities: [
+      {
+        id: 'image_upload',
+        name: '图片上传',
+        description: '图片上传',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+      {
+        id: 'video_upload',
+        name: '视频上传',
+        description: '视频上传',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+        config: { maxFileSize: 524288000, maxDuration: 300 },
+      },
+      {
+        id: 'portfolio_link',
+        name: '作品集链接',
+        description: '作品集链接',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+      {
+        id: 'collaboration',
+        name: '协作功能',
+        description: '协作',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: ['portfolio_link'],
+      },
+      {
+        id: 'marketplace',
+        name: '作品交易',
+        description: '交易',
+        enabled: false,
+        version: '0.5.0',
+        dependencies: ['image_upload'],
+      },
+      {
+        id: 'critique_system',
+        name: '作品点评',
+        description: '点评',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+    ],
+    templates: [
+      {
+        id: 'photographer',
+        name: '摄影师',
+        description: '专业摄影师模板',
+        isPreset: true,
+        isDefault: false,
+        fieldValues: { contentType: ['photography'] },
+      },
+      {
+        id: 'designer',
+        name: '设计师',
+        description: '平面设计师模板',
+        isPreset: true,
+        isDefault: false,
+        fieldValues: { contentType: ['design'] },
+      },
+    ],
+    validation: { rules: [], preventSubmitOnError: true, showWarnings: true },
+    ui: { sections: [], layout: 'tabs' as const },
   };
 }
 
-export function getAllSceneConfigs(): any[] {
-  return [getSceneConfig('visionshare')];
+function makeAgentDateConfig() {
+  return {
+    id: 'agentdate' as const,
+    metadata: {
+      id: 'agentdate',
+      name: 'Agent约会',
+      nameEn: 'AgentDate',
+      description: '约会场景',
+      icon: '💕',
+      color: '#E91E63',
+      version: '1.0.0',
+      isActive: true,
+      createdAt: new Date('2026-01-01'),
+      updatedAt: new Date('2026-01-01'),
+    },
+    fields: [
+      {
+        id: 'dating_purpose',
+        name: 'datingPurpose',
+        label: '约会目的',
+        type: 'select',
+        required: true,
+      },
+      {
+        id: 'preferred_gender',
+        name: 'preferredGender',
+        label: '期望对象性别',
+        type: 'select',
+        required: true,
+      },
+      { id: 'age_range', name: 'ageRange', label: '期望年龄范围', type: 'range', required: true },
+      {
+        id: 'interests',
+        name: 'interests',
+        label: '兴趣爱好',
+        type: 'multiselect',
+        required: false,
+      },
+    ],
+    capabilities: [
+      {
+        id: 'photo_verification',
+        name: '照片验证',
+        description: '验证',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+      {
+        id: 'video_profile',
+        name: '视频简介',
+        description: '视频',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+      {
+        id: 'ice_breakers',
+        name: '破冰话题',
+        description: '破冰',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+      {
+        id: 'date_planning',
+        name: '约会规划',
+        description: '规划',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+      {
+        id: 'safety_check',
+        name: '安全检查',
+        description: '安全',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+      {
+        id: 'compatibility_score',
+        name: '匹配度评分',
+        description: '匹配',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+    ],
+    templates: [
+      {
+        id: 'serious_dater',
+        name: '认真交往',
+        description: '寻找长期关系的模板',
+        isPreset: true,
+        isDefault: false,
+        fieldValues: { datingPurpose: 'serious_relationship' },
+      },
+      {
+        id: 'casual_dater',
+        name: '轻松约会',
+        description: '轻松交友的模板',
+        isPreset: true,
+        isDefault: true,
+        fieldValues: { datingPurpose: 'casual_dating' },
+      },
+    ],
+    validation: { rules: [], preventSubmitOnError: true, showWarnings: true },
+    ui: { sections: [], layout: 'tabs' as const },
+  };
 }
 
-// Scene IDs
-export const SCENE_IDS: string[] = ['visionshare', 'agentdate', 'agentjob', 'agentad'];
+function makeAgentJobConfig() {
+  return {
+    id: 'agentjob' as const,
+    metadata: {
+      id: 'agentjob',
+      name: 'Agent求职',
+      nameEn: 'AgentJob',
+      description: '求职场景',
+      icon: '💼',
+      color: '#2196F3',
+      version: '1.0.0',
+      isActive: true,
+      createdAt: new Date('2026-01-01'),
+      updatedAt: new Date('2026-01-01'),
+    },
+    fields: [],
+    capabilities: [
+      {
+        id: 'job_search',
+        name: '职位搜索',
+        description: '搜索',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+      {
+        id: 'resume_builder',
+        name: '简历构建',
+        description: '简历',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+      {
+        id: 'interview_prep',
+        name: '面试准备',
+        description: '面试',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+    ],
+    templates: [],
+    validation: { rules: [], preventSubmitOnError: true, showWarnings: true },
+    ui: { sections: [], layout: 'tabs' as const },
+  };
+}
+
+function makeAgentAdConfig() {
+  return {
+    id: 'agentad' as const,
+    metadata: {
+      id: 'agentad',
+      name: 'Agent广告',
+      nameEn: 'AgentAd',
+      description: '广告场景',
+      icon: '📢',
+      color: '#FF9800',
+      version: '1.0.0',
+      isActive: true,
+      createdAt: new Date('2026-01-01'),
+      updatedAt: new Date('2026-01-01'),
+    },
+    fields: [],
+    capabilities: [
+      {
+        id: 'campaign_creator',
+        name: '广告创建',
+        description: '创建',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+      {
+        id: 'audience_targeting',
+        name: '受众定向',
+        description: '定向',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+      {
+        id: 'budget_management',
+        name: '预算管理',
+        description: '预算',
+        enabled: true,
+        version: '1.0.0',
+        dependencies: [],
+      },
+    ],
+    templates: [],
+    validation: { rules: [], preventSubmitOnError: true, showWarnings: true },
+    ui: { sections: [], layout: 'tabs' as const },
+  };
+}
+
+const sceneConfigs: Record<string, ReturnType<typeof makeVisionShareConfig>> = {
+  visionshare: makeVisionShareConfig(),
+  agentdate: makeAgentDateConfig(),
+  agentjob: makeAgentJobConfig(),
+  agentad: makeAgentAdConfig(),
+};
+
+export function getSceneConfig(
+  sceneId: string
+): ReturnType<typeof makeVisionShareConfig> | undefined {
+  return sceneConfigs[sceneId];
+}
+
+export function getAllSceneConfigs() {
+  return Object.values(sceneConfigs);
+}
+
+export function getActiveSceneConfigs() {
+  return Object.values(sceneConfigs).filter(c => c.metadata.isActive);
+}
+
+export function getSceneInfo(sceneId: string) {
+  const config = sceneConfigs[sceneId];
+  if (!config) return null;
+  return {
+    id: config.id,
+    name: config.metadata.name,
+    description: config.metadata.description,
+    icon: config.metadata.icon,
+    color: config.metadata.color,
+    isActive: config.metadata.isActive,
+    fieldCount: config.fields.length,
+    capabilityCount: config.capabilities.length,
+  };
+}
+
+export function hasScene(sceneId: string): boolean {
+  return sceneId in sceneConfigs;
+}
+
+export const SCENE_IDS: readonly string[] = SCENE_IDS_LIST;
 
 export function serializeMessage(message: AgentMessage): string {
   return JSON.stringify(message);
@@ -536,13 +872,64 @@ export enum DatingPurpose {
 }
 
 // Handoff types
+export enum HandoffStatus {
+  AGENT_ACTIVE = 'AGENT_ACTIVE',
+  HUMAN_ACTIVE = 'HUMAN_ACTIVE',
+  PENDING_TAKEOVER = 'PENDING_TAKEOVER',
+  PENDING_HANDOFF = 'PENDING_HANDOFF',
+  TIMEOUT = 'TIMEOUT',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum HandoffRequestStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+  TIMEOUT = 'TIMEOUT',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum SenderType {
+  AGENT = 'AGENT',
+  HUMAN = 'HUMAN',
+  SYSTEM = 'SYSTEM',
+  TRANSITION = 'TRANSITION',
+}
+
+export enum HandoffSocketEvents {
+  REQUEST_TAKEOVER = 'handoff:request_takeover',
+  REQUEST_HANDOFF = 'handoff:request_handoff',
+  CONFIRM_HANDOFF = 'handoff:confirm',
+  REJECT_HANDOFF = 'handoff:reject',
+  CANCEL_HANDOFF = 'handoff:cancel',
+  HANDOFF_REQUESTED = 'handoff:requested',
+  HANDOFF_CONFIRMED = 'handoff:confirmed',
+  HANDOFF_REJECTED = 'handoff:rejected',
+  HANDOFF_TIMEOUT = 'handoff:timeout',
+  HANDOFF_CANCELLED = 'handoff:cancelled',
+  HANDOFF_STATUS_CHANGED = 'handoff:status_changed',
+  HANDOFF_ERROR = 'handoff:error',
+}
+
+export interface HandoffRequest {
+  id: string;
+  conversationId: string;
+  requestType: 'takeover' | 'handoff';
+  requestedBy: string;
+  requestedAt: string;
+  status: HandoffRequestStatus;
+  timeoutAt: string;
+  reason?: string;
+}
+
 export enum HandoffErrorCode {
   UNAUTHORIZED = 'UNAUTHORIZED',
-  FORBIDDEN = 'FORBIDDEN',
   RATE_LIMITED = 'RATE_LIMITED',
+  INVALID_STATUS = 'INVALID_STATUS',
+  REQUEST_NOT_FOUND = 'REQUEST_NOT_FOUND',
+  TIMEOUT = 'TIMEOUT',
+  ALREADY_PENDING = 'ALREADY_PENDING',
   FORCE_TAKEOVER_DISABLED = 'FORCE_TAKEOVER_DISABLED',
-  SELF_HANDOFF = 'SELF_HANDOFF',
-  INVALID_TARGET = 'INVALID_TARGET',
 }
 
 export interface HandoffConfig {
@@ -568,12 +955,18 @@ export const DEFAULT_HANDOFF_CONFIG: HandoffConfig = {
 export interface HandoffAuditLog {
   id: string;
   conversationId: string;
-  fromUserId: string;
-  toUserId: string;
-  action: string;
-  timestamp: string;
-  reason?: string;
-  metadata?: Record<string, unknown>;
+  action:
+    | 'REQUEST_TAKEOVER'
+    | 'REQUEST_HANDOFF'
+    | 'CONFIRM_TAKEOVER'
+    | 'CONFIRM_HANDOFF'
+    | 'REJECT'
+    | 'TIMEOUT'
+    | 'CANCEL'
+    | 'FORCE_TAKEOVER';
+  performedBy: string;
+  performedAt: string;
+  metadata?: Record<string, any>;
 }
 
 // L1 Profile Types

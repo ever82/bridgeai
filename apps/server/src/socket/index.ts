@@ -20,6 +20,7 @@ import { registerGroupHandlers } from './handlers/groupHandler';
 import { registerHandoffHandlers } from './handlers/handoffHandler';
 import { registerRoomHandlers } from './handlers/roomHandler';
 import { registerAgentNegotiationHandlers } from './handlers/agentNegotiation';
+import { registerPresenceHandlers } from './handlers/presenceHandler';
 
 /**
  * Socket.io server instance
@@ -136,6 +137,7 @@ function setupNamespaces(io: SocketServer): void {
   const presenceNsp = io.of('/presence');
   presenceNsp.on('connection', socket => {
     handleConnection(socket, 'presence');
+    registerPresenceHandlers(socket, presenceNsp);
   });
 }
 
@@ -217,6 +219,7 @@ export function emitToUser(userId: string, event: string, data: any): void {
   io.of('/').to(`user:${userId}`).emit(event, data);
   io.of('/chat').to(`user:${userId}`).emit(event, data);
   io.of('/user').to(`user:${userId}`).emit(event, data);
+  io.of('/handoff').to(`user:${userId}`).emit(event, data);
 }
 
 /**
