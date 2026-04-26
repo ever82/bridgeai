@@ -6,7 +6,7 @@
 export type ChatRoomType = 'PRIVATE' | 'GROUP' | 'QUAD';
 export type ChatRoomStatus = 'ACTIVE' | 'INACTIVE' | 'CLOSED';
 export type ParticipantRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
-export type MessageType = 'TEXT' | 'IMAGE' | 'FILE';
+export type MessageType = 'TEXT' | 'IMAGE' | 'VIDEO' | 'FILE';
 
 export interface ChatRoom {
   id: string;
@@ -91,7 +91,7 @@ export interface ChatMessage {
 
 export interface MessageAttachment {
   id: string;
-  type: 'image' | 'file' | 'audio';
+  type: 'image' | 'file' | 'audio' | 'video';
   url: string;
   name?: string;
   size?: number;

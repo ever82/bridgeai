@@ -89,6 +89,26 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           </View>
         );
 
+      case 'VIDEO':
+        return (
+          <View style={styles.fileContainer}>
+            <Text style={styles.fileIcon}>🎬</Text>
+            <View style={styles.fileInfo}>
+              <Text
+                style={[styles.fileName, own ? styles.ownText : styles.otherText]}
+                numberOfLines={1}
+              >
+                {message.attachments?.[0]?.name || '视频'}
+              </Text>
+              {message.attachments?.[0]?.size && (
+                <Text style={styles.fileSize}>
+                  {(message.attachments[0].size / 1024).toFixed(1)} KB
+                </Text>
+              )}
+            </View>
+          </View>
+        );
+
       default:
         return (
           <Text style={[styles.text, own ? styles.ownText : styles.otherText]}>
@@ -173,10 +193,10 @@ const styles = StyleSheet.create({
     ...theme.shadows.sm,
   },
   ownBubble: {
-    borderTopRightRadius: theme.borderRadius.xs,
+    borderTopRightRadius: theme.borderRadius.none,
   },
   otherBubble: {
-    borderTopLeftRadius: theme.borderRadius.xs,
+    borderTopLeftRadius: theme.borderRadius.none,
   },
   text: {
     fontSize: theme.fonts.sizes.base,

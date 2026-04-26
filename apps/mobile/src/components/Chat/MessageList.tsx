@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   FlatList,
   View,
@@ -44,10 +44,20 @@ export const MessageList: React.FC<MessageListProps> = ({
 }) => {
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
 
+  // Reverse messages so newest is first. With inverted=true, the FlatList
+  // flips rendering so the newest messages appear at the visual bottom and
+  // the oldest at the visual top. onEndReached then fires when the user
+  // scrolls toward the older messages (visual top / data end), which is the
+  // correct direction for "pull down to load history".
+  const reversedMessages = useMemo(() => [...messages].reverse(), [messages]);
+
   const scrollToBottom = useCallback(() => {
     if (messages.length > 0) {
       setTimeout(() => {
-        flatListRef.current?.scrollToEnd?.({ animated: true });
+        // With inverted=true the visual bottom is the data start (index 0),
+        // which is the newest message after reversal. scrollToEnd scrolls to
+        // the data end, so we use scrollToOffset to reach index 0 instead.
+        flatListRef.current?.scrollToOffset?.({ offset: 0, animated: true });
       }, 100);
     }
   }, [messages.length]);
@@ -63,7 +73,8 @@ export const MessageList: React.FC<MessageListProps> = ({
   };
 
   const renderItem = ({ item, index }: ListRenderItemInfo<ChatMessage>) => {
-    const prevMessage = index > 0 ? messages[index - 1] : null;
+    // In the reversed array the "previous" visual message is at index+1
+    const prevMessage = index < reversedMessages.length - 1 ? reversedMessages[index + 1] : null;
     const isConsecutive = prevMessage?.senderId === item.senderId;
     const showSenderChange = prevMessage && prevMessage.senderId !== item.senderId;
 
@@ -96,18 +107,34 @@ export const MessageList: React.FC<MessageListProps> = ({
     );
   };
 
+  const ESTIMATED_ITEM_HEIGHT = 80;
+
+  const getItemLayout = useCallback(
+    (_data: ArrayLike<ChatMessage> | null | undefined, index: number) => ({
+      length: ESTIMATED_ITEM_HEIGHT,
+      offset: ESTIMATED_ITEM_HEIGHT * index,
+      index,
+    }),
+    []
+  );
+
   return (
     <FlatList
       ref={flatListRef}
-      data={messages}
+      data={reversedMessages}
       renderItem={renderItem}
       keyExtractor={item => item.id}
+      getItemLayout={getItemLayout}
+      windowSize={10}
       contentContainerStyle={[styles.listContent, style]}
       onEndReached={hasMore ? onLoadMore : undefined}
       onEndReachedThreshold={0.5}
-      ListHeaderComponent={hasMore ? renderLoadingFooter : ListHeaderComponent}
-      ListFooterComponent={ListFooterComponent}
-      inverted={false}
+      // With inverted=true the visual layout is flipped:
+      // - ListFooterComponent renders at the visual top (where older messages load)
+      // - ListHeaderComponent renders at the visual bottom (where newest messages are)
+      ListHeaderComponent={ListHeaderComponent}
+      ListFooterComponent={hasMore ? renderLoadingFooter : ListFooterComponent}
+      inverted={true}
       maintainVisibleContentPosition={{
         minIndexForVisible: 0,
       }}

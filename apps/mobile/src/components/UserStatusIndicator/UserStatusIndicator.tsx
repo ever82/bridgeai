@@ -62,6 +62,8 @@ export interface UserStatusIndicatorProps {
   displayName?: string;
   /** Current handoff status (if in a handoff-eligible conversation) */
   handoffStatus?: HandoffStatus;
+  /** ISO timestamp of when the user was last active */
+  lastActiveAt?: string;
   /** Chat room ID for typing detection */
   roomId?: string;
   /** Visual variant */
@@ -105,6 +107,22 @@ const HANDOFF_STATUS_SHORT: Record<string, string> = {
   [_HandoffStatus.CANCELLED]: '已取消',
 };
 
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+const formatLastActive = (isoTime: string): string => {
+  const now = Date.now();
+  const then = new Date(isoTime).getTime();
+  const diffMs = now - then;
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHour = Math.floor(diffMs / 3600000);
+  const diffDay = Math.floor(diffMs / 86400000);
+  if (diffMin < 1) return '刚刚';
+  if (diffMin < 60) return `${diffMin}分钟前`;
+  if (diffHour < 24) return `${diffHour}小时前`;
+  if (diffDay < 7) return `${diffDay}天前`;
+  return new Date(isoTime).toLocaleDateString();
+};
+
 // ── Component ───────────────────────────────────────────────────────────────
 
 export const UserStatusIndicator: React.FC<UserStatusIndicatorProps> = ({
@@ -112,6 +130,7 @@ export const UserStatusIndicator: React.FC<UserStatusIndicatorProps> = ({
   senderType,
   displayName,
   handoffStatus,
+  lastActiveAt,
   roomId,
   variant = 'full',
   showPresence = true,
@@ -315,7 +334,11 @@ export const UserStatusIndicator: React.FC<UserStatusIndicatorProps> = ({
         {renderTypingText()}
         {!isTyping && renderHandoffLabel()}
         {!isTyping && !handoffStatus && showPresence && presence !== 'online' && (
-          <Text style={styles.presenceLabel}>{PRESENCE_LABELS[presence]}</Text>
+          <Text style={styles.presenceLabel}>
+            {lastActiveAt && (presence === 'offline' || presence === 'away')
+              ? `${PRESENCE_LABELS[presence]} · ${formatLastActive(lastActiveAt)}活跃`
+              : PRESENCE_LABELS[presence]}
+          </Text>
         )}
       </View>
     </View>

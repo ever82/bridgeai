@@ -12,20 +12,13 @@ import { TypingIndicator } from '../../components/TypingIndicator';
 import { getRoomMessages, sendMessage } from '../../services/chatApi';
 import { socketClient } from '../../services/socketClient';
 import { theme } from '../../theme';
+import { useAuthStore } from '../../stores/authStore';
 
 type Props = NativeStackScreenProps<MessagesStackParamList, 'Chat'>;
 
-// Mock current user ID - will be replaced with auth store
-const MOCK_USER_ID = 'current-user';
-
-const MOCK_QUICK_REPLIES: QuickReplyItem[] = [
-  { id: '1', text: '好的' },
-  { id: '2', text: '谢谢' },
-  { id: '3', text: '稍等一下' },
-  { id: '4', text: '了解更多' },
-];
-
 export const ChatScreen = ({ route }: Props) => {
+  const user = useAuthStore(state => state.user);
+  const currentUserId = user?.id ?? '';
   const { conversationId, userName } = route.params;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,10 +33,7 @@ export const ChatScreen = ({ route }: Props) => {
       const result = await getRoomMessages(conversationId);
       setMessages(result.messages);
       setHasMore(result.hasMore);
-      // Show quick replies when conversation starts or AI suggests them
-      if (result.messages.length === 0) {
-        setQuickReplies(MOCK_QUICK_REPLIES);
-      }
+      // Quick replies will be populated via socket events from the backend
     } catch {
       // Silently handle - will show empty state
     } finally {
@@ -66,7 +56,7 @@ export const ChatScreen = ({ route }: Props) => {
     };
 
     const handleTyping = (data: { roomId: string; userId: string }) => {
-      if (data.roomId === conversationId && data.userId !== MOCK_USER_ID) {
+      if (data.roomId === conversationId && data.userId !== currentUserId) {
         setIsTyping(true);
       }
     };
@@ -86,7 +76,7 @@ export const ChatScreen = ({ route }: Props) => {
       socketClient.off('chat:typing', handleTyping);
       socketClient.off('chat:stop_typing', handleStopTyping);
     };
-  }, [conversationId]);
+  }, [conversationId, currentUserId]);
 
   // Handle send message
   const handleSend = useCallback(
@@ -94,7 +84,7 @@ export const ChatScreen = ({ route }: Props) => {
       const tempMessage: ChatMessage = {
         id: `temp-${Date.now()}`,
         chatRoomId: conversationId,
-        senderId: MOCK_USER_ID,
+        senderId: currentUserId,
         senderType: 'USER',
         content: text,
         type: 'TEXT',
@@ -111,7 +101,7 @@ export const ChatScreen = ({ route }: Props) => {
         // Keep temp message showing, could add retry logic
       }
     },
-    [conversationId]
+    [conversationId, currentUserId]
   );
 
   // Handle quick reply selection
@@ -150,7 +140,7 @@ export const ChatScreen = ({ route }: Props) => {
       <View style={styles.messageListContainer}>
         <MessageList
           messages={messages}
-          currentUserId={MOCK_USER_ID}
+          currentUserId={currentUserId}
           isLoading={isLoading}
           hasMore={hasMore}
           onLoadMore={handleLoadMore}
