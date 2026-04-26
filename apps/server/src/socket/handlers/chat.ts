@@ -215,7 +215,7 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
 
       // Update ChatMessage status to READ
       const updateResult = await prisma.chatMessage.updateMany({
-        where: { id: { in: messageIds } },
+        where: { id: { in: messageIds }, chatRoomId: roomId },
         data: { status: 'READ' },
       });
 

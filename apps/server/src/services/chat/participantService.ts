@@ -72,7 +72,7 @@ export async function addParticipant(input: AddParticipantInput): Promise<RoomPa
 
     // 检查是否需要审批
     if (settings.requireApproval && role !== ParticipantRole.OWNER) {
-      // 这里可以添加审批逻辑
+      throw new Error('Joining this room requires approval from the room owner');
     }
   }
 
