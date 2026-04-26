@@ -5,12 +5,17 @@
 
 import { Prisma } from '@prisma/client';
 
-import { cacheGetOrSet, cacheGet, cacheSet } from '../cache';
+import { cacheGet, cacheSet } from '../cache';
 import { prisma } from '../../db/client';
 
 const CacheNamespaces = { MATCH: 'match', CREDIT: 'credit', AGENT: 'agent' } as const;
 
-async function getOrSet<T>(ns: string, key: string, factory: () => Promise<T>, ttl: number): Promise<T> {
+async function getOrSet<T>(
+  ns: string,
+  key: string,
+  factory: () => Promise<T>,
+  ttl: number
+): Promise<T> {
   const cacheKey = `${ns}:${key}`;
   const cached = await cacheGet<T>(cacheKey);
   if (cached !== null) return cached;
@@ -118,11 +123,8 @@ export class OptimizedMatchingService {
       where.supplyId = supplyId;
     }
 
-    // Get total count first (fast query)
-    const total = await prisma.match.count({ where });
-
     // Use optimized query with select instead of deep includes
-    const matches = await (prisma.match.findMany({
+    const matches = (await prisma.match.findMany({
       where,
       select: {
         id: true,
@@ -180,8 +182,8 @@ export class OptimizedMatchingService {
 
     if (minScore !== undefined || maxScore !== undefined || excludeLowCredit) {
       filteredMatches = matches.filter(match => {
-        const demandCredit = match.demand.agent.user.creditScore?.score ?? 0;
-        const supplyCredit = match.supply.agent.user.creditScore?.score ?? 0;
+        const demandCredit = match.demand.agent.user.creditScores?.[0]?.score ?? 0;
+        const supplyCredit = match.supply.agent.user.creditScores?.[0]?.score ?? 0;
         const minCredit = Math.min(demandCredit, supplyCredit);
 
         if (excludeLowCredit && minCredit < 600) {
@@ -199,8 +201,8 @@ export class OptimizedMatchingService {
 
     // Calculate weighted scores
     const scoredMatches: MatchResult[] = filteredMatches.map(match => {
-      const demandCredit = match.demand.agent.user.creditScore?.score ?? 0;
-      const supplyCredit = match.supply.agent.user.creditScore?.score ?? 0;
+      const demandCredit = match.demand.agent.user.creditScores?.[0]?.score ?? 0;
+      const supplyCredit = match.supply.agent.user.creditScores?.[0]?.score ?? 0;
       const avgCredit = (demandCredit + supplyCredit) / 2;
       const normalizedCredit = avgCredit / 1000;
       const baseMatchScore = parseFloat(match.score.toString());
@@ -213,7 +215,7 @@ export class OptimizedMatchingService {
         supplyId: match.supplyId,
         score: Math.round(weightedScore * 100) / 100,
         creditScore: Math.round(avgCredit),
-        creditLevel: match.demand.agent.user.creditScore?.level || 'unknown',
+        creditLevel: match.demand.agent.user.creditScores?.[0]?.level || 'unknown',
         status: match.status,
         createdAt: match.createdAt,
       };
@@ -224,7 +226,7 @@ export class OptimizedMatchingService {
 
     return {
       matches: scoredMatches.slice(0, limit),
-      total,
+      total: filteredMatches.length,
     };
   }
 
@@ -259,7 +261,7 @@ export class OptimizedMatchingService {
     }
 
     // Use OR condition for demand or supply
-    const matches = await prisma.match.findMany({
+    const matches = (await prisma.match.findMany({
       where: {
         OR: [{ demandId: { in: agentIds } }, { supplyId: { in: agentIds } }],
       },
@@ -311,12 +313,12 @@ export class OptimizedMatchingService {
       },
       take: limit * 2,
       orderBy: { score: 'desc' },
-    }) as any;
+    })) as any;
 
     // Calculate weighted scores with higher credit weight
     const scoredMatches: MatchResult[] = matches.map(match => {
-      const demandCredit = match.demand.agent.user.creditScore?.score ?? 0;
-      const supplyCredit = match.supply.agent.user.creditScore?.score ?? 0;
+      const demandCredit = match.demand.agent.user.creditScores?.[0]?.score ?? 0;
+      const supplyCredit = match.supply.agent.user.creditScores?.[0]?.score ?? 0;
       const avgCredit = (demandCredit + supplyCredit) / 2;
       const normalizedCredit = avgCredit / 1000;
       const baseMatchScore = parseFloat(match.score.toString());
@@ -328,7 +330,7 @@ export class OptimizedMatchingService {
         supplyId: match.supplyId,
         score: Math.round(weightedScore * 100) / 100,
         creditScore: Math.round(avgCredit),
-        creditLevel: match.demand.agent.user.creditScore?.level || 'unknown',
+        creditLevel: match.demand.agent.user.creditScores?.[0]?.level || 'unknown',
         status: match.status,
         createdAt: match.createdAt,
       };

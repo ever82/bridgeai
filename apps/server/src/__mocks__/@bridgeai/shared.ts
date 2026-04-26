@@ -149,6 +149,8 @@ export function createDefaultDisclosureSettings(
 export const isAndFilter = (expr: any): boolean => 'and' in expr && Array.isArray(expr.and);
 export const isOrFilter = (expr: any): boolean => 'or' in expr && Array.isArray(expr.or);
 export const isNotFilter = (expr: any): boolean => 'not' in expr && !Array.isArray(expr.not);
+export const isFilterCondition = (expr: any): boolean =>
+  'field' in expr && 'operator' in expr && 'value' in expr;
 
 // Credit level type (string literal union)
 export type CreditLevel = 'excellent' | 'good' | 'average' | 'poor';

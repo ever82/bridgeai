@@ -80,78 +80,69 @@ function buildWhereClause(expression: FilterExpression): any {
 
 /**
  * Build a single condition
+ *
+ * Multi-segment field paths (e.g. "agent.user.name") are treated as Prisma
+ * relation nesting and produce `{ agent: { user: { name: { equals: value } } } }`.
+ * For JSON column queries, use {@link buildJsonFieldFilter} instead — it emits
+ * the correct Prisma JSON `path` syntax.
  */
 function buildCondition(condition: FilterCondition): any {
   const { field, operator, value } = condition;
-  const fieldPath = buildFieldPath(field);
+  const parts = field.split('.');
+  const operatorClause = buildOperatorClause(operator, value);
 
-  switch (operator) {
-    case 'eq':
-      return { [fieldPath]: { equals: value } };
-
-    case 'ne':
-      return { [fieldPath]: { not: value } };
-
-    case 'gt':
-      return { [fieldPath]: { gt: value } };
-
-    case 'gte':
-      return { [fieldPath]: { gte: value } };
-
-    case 'lt':
-      return { [fieldPath]: { lt: value } };
-
-    case 'lte':
-      return { [fieldPath]: { lte: value } };
-
-    case 'in':
-      return { [fieldPath]: { in: Array.isArray(value) ? value : [value] } };
-
-    case 'nin':
-      return { [fieldPath]: { notIn: Array.isArray(value) ? value : [value] } };
-
-    case 'contains':
-      return { [fieldPath]: { contains: value, mode: 'insensitive' } };
-
-    case 'startsWith':
-      return { [fieldPath]: { startsWith: value, mode: 'insensitive' } };
-
-    case 'endsWith':
-      return { [fieldPath]: { endsWith: value, mode: 'insensitive' } };
-
-    case 'exists':
-      return value ? { [fieldPath]: { not: null } } : { [fieldPath]: { equals: null } };
-
-    case 'regex':
-      // Prisma doesn't support regex directly, use contains as fallback
-      return { [fieldPath]: { contains: value, mode: 'insensitive' } };
-
-    default:
-      return { [fieldPath]: { equals: value } };
-  }
+  // Build nested object structure for relation paths (Prisma convention)
+  return parts.reduceRight<any>((acc, part) => ({ [part]: acc }), operatorClause);
 }
 
 /**
- * Build field path for Prisma (handles JSON fields)
- * e.g., 'profile.l2Data.budget' -> { path: ['profile', 'l2Data'], field: 'budget' }
+ * Build the operator clause (without the field key)
  */
-function buildFieldPath(field: string): any {
-  const parts = field.split('.');
+function buildOperatorClause(operator: FilterOperator, value: FilterValue): any {
+  switch (operator) {
+    case 'eq':
+      return { equals: value };
 
-  if (parts.length === 1) {
-    return field;
+    case 'ne':
+      return { not: value };
+
+    case 'gt':
+      return { gt: value };
+
+    case 'gte':
+      return { gte: value };
+
+    case 'lt':
+      return { lt: value };
+
+    case 'lte':
+      return { lte: value };
+
+    case 'in':
+      return { in: Array.isArray(value) ? value : [value] };
+
+    case 'nin':
+      return { notIn: Array.isArray(value) ? value : [value] };
+
+    case 'contains':
+      return { contains: value, mode: 'insensitive' };
+
+    case 'startsWith':
+      return { startsWith: value, mode: 'insensitive' };
+
+    case 'endsWith':
+      return { endsWith: value, mode: 'insensitive' };
+
+    case 'exists':
+      return value ? { not: null } : { equals: null };
+
+    case 'regex':
+      // Prisma doesn't support regex directly, use contains as fallback
+      return { contains: value, mode: 'insensitive' };
+
+    default:
+      return { equals: value };
   }
-
-  // Check if this is a JSON field query
-  // Pattern: model.jsonField.nestedField
-  if (parts.length >= 2) {
-    // For JSON fields in Prisma, we use the path syntax
-    return {
-      path: parts,
-    };
-  }
-
-  return field;
 }
 
 /**
@@ -341,7 +332,9 @@ export function createQueryBuilder(): QueryBuilder {
 
 /**
  * Build JSON field filter for Prisma
- * Handles querying nested fields in JSON columns
+ *
+ * Generates the Prisma JSON path syntax for querying nested fields in JSON
+ * columns, e.g. `{ profile: { path: ['l2Data', 'budget'], equals: value } }`.
  */
 export function buildJsonFieldFilter(
   jsonField: string,
@@ -349,16 +342,14 @@ export function buildJsonFieldFilter(
   operator: FilterOperator,
   value: FilterValue
 ): any {
-  // For Prisma JSON filtering, we construct the path
-  const fullPath = [jsonField, ...path].join('.');
+  const operatorClause = buildOperatorClause(operator, value);
 
-  const condition: FilterCondition = {
-    field: fullPath,
-    operator,
-    value,
+  return {
+    [jsonField]: {
+      path,
+      ...operatorClause,
+    },
   };
-
-  return buildCondition(condition);
 }
 
 /**

@@ -55,9 +55,7 @@ function calculateSkillMatch(agent: Agent, requiredSkills: string[]): number {
   if (!requiredSkills.length) return 1;
 
   const agentSkills = agent.skills.map(s => s.toLowerCase());
-  const matches = requiredSkills.filter(skill =>
-    agentSkills.includes(skill.toLowerCase())
-  ).length;
+  const matches = requiredSkills.filter(skill => agentSkills.includes(skill.toLowerCase())).length;
 
   return matches / requiredSkills.length;
 }
@@ -224,7 +222,7 @@ export function adjustWeights(
 /**
  * Get filter suggestions based on popular criteria
  */
-export function getFilterSuggestions(agents: Agent[]): FilterCriteria[] {
+export function getFilterSuggestions(_agents: Agent[]): FilterCriteria[] {
   const suggestions: FilterCriteria[] = [
     { verified: true, minRating: 4.5 },
     { availability: true, minRating: 4.0 },
