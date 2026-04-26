@@ -48,7 +48,7 @@ describe('participantService', () => {
       const roomMock = {
         id: 'room-1',
         type: ChatRoomType.GROUP,
-        settings: { maxParticipants: 100 },
+        metadata: { settings: { maxParticipants: 100 } },
         participants: [{ isActive: true }],
         participantIds: ['user1'],
       };
@@ -126,7 +126,7 @@ describe('participantService', () => {
       const roomMock = {
         id: 'room-1',
         type: ChatRoomType.GROUP,
-        settings: { maxParticipants: 2 },
+        metadata: { settings: { maxParticipants: 2 } },
         participants: [{ isActive: true }, { isActive: true }],
       };
 
@@ -203,7 +203,7 @@ describe('participantService', () => {
       const roomMock = {
         id: 'room-1',
         participantIds: ['user1', 'user2'],
-        settings: { allowLeave: true },
+        metadata: { settings: { allowLeave: true } },
       };
 
       (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(removerMock);
@@ -230,7 +230,7 @@ describe('participantService', () => {
 
       const roomMock = {
         id: 'room-1',
-        settings: { allowLeave: false },
+        metadata: { settings: { allowLeave: false } },
       };
 
       (mockPrisma.roomParticipant.findUnique as jest.Mock).mockResolvedValue(removerMock);
@@ -290,9 +290,9 @@ describe('participantService', () => {
         .mockResolvedValueOnce(removerMock)
         .mockResolvedValueOnce(targetMock);
 
-      await expect(
-        removeParticipant('room-1', 'member2', 'member1')
-      ).rejects.toThrow('Permission denied: cannot remove this participant');
+      await expect(removeParticipant('room-1', 'member2', 'member1')).rejects.toThrow(
+        'Permission denied: cannot remove this participant'
+      );
     });
   });
 
@@ -311,7 +311,12 @@ describe('participantService', () => {
         permissions: { canPin: true },
       });
 
-      const result = await updateParticipant('room-1', 'user1', { permissions: { canPin: true } }, 'user1');
+      const result = await updateParticipant(
+        'room-1',
+        'user1',
+        { permissions: { canPin: true } },
+        'user1'
+      );
 
       expect(result.permissions).toEqual({ canPin: true });
     });
