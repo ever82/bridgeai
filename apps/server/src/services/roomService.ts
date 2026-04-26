@@ -5,8 +5,6 @@
  * Provides room-level operations for the socket room system.
  */
 
-import { connectionManager } from '../socket/connectionManager';
-
 import { presenceService } from './presenceService';
 
 /**
@@ -31,6 +29,7 @@ export interface RoomInfo {
   createdAt: Date;
   updatedAt: Date;
   isPrivate: boolean;
+  passwordHash?: string;
   maxMembers: number;
   metadata?: Record<string, any>;
 }
@@ -52,6 +51,7 @@ export interface CreateRoomOptions {
   name: string;
   description?: string;
   isPrivate?: boolean;
+  password?: string;
   maxMembers?: number;
   metadata?: Record<string, any>;
 }
@@ -69,6 +69,19 @@ export interface JoinRoomOptions {
 /**
  * Room Service class
  */
+/**
+ * Sanitize room ID/name to prevent XSS and injection
+ */
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHAR_REGEX = /[\x00-\x1f\x7f]/g;
+function sanitizeRoomInput(input: string): string {
+  return input
+    .replace(CONTROL_CHAR_REGEX, '') // Remove control characters (including null bytes)
+    .replace(/\.\./g, '') // Remove path traversal sequences
+    .replace(/[<>'"&]/g, '') // Remove HTML/XML special characters
+    .trim();
+}
+
 export class RoomService {
   private rooms: Map<string, RoomData> = new Map();
   private userRooms: Map<string, Set<string>> = new Map(); // userId -> Set of roomIds
@@ -77,6 +90,15 @@ export class RoomService {
    * Create a new room
    */
   createRoom(roomId: string, createdBy: string, options: CreateRoomOptions): RoomInfo {
+    // Sanitize inputs
+    roomId = sanitizeRoomInput(roomId);
+    options.name = sanitizeRoomInput(options.name);
+
+    // Validate maxMembers
+    if (options.maxMembers !== undefined && options.maxMembers < 1) {
+      throw new Error('maxMembers must be at least 1');
+    }
+
     // Check if room already exists
     if (this.rooms.has(roomId)) {
       throw new Error(`Room ${roomId} already exists`);
@@ -91,6 +113,7 @@ export class RoomService {
       createdAt: now,
       updatedAt: now,
       isPrivate: options.isPrivate ?? false,
+      passwordHash: options.isPrivate && options.password ? options.password : undefined,
       maxMembers: options.maxMembers ?? 100,
       metadata: options.metadata,
     };
@@ -258,7 +281,7 @@ export class RoomService {
       return [];
     }
     return Array.from(roomIds)
-      .map((id) => this.rooms.get(id)?.info)
+      .map(id => this.rooms.get(id)?.info)
       .filter(Boolean) as RoomInfo[];
   }
 
@@ -266,13 +289,16 @@ export class RoomService {
    * Get all active rooms
    */
   getAllRooms(): RoomInfo[] {
-    return Array.from(this.rooms.values()).map((room) => room.info);
+    return Array.from(this.rooms.values()).map(room => room.info);
   }
 
   /**
    * Update room info
    */
-  updateRoom(roomId: string, updates: Partial<Omit<RoomInfo, 'id' | 'createdBy' | 'createdAt'>>): RoomInfo | undefined {
+  updateRoom(
+    roomId: string,
+    updates: Partial<Omit<RoomInfo, 'id' | 'createdBy' | 'createdAt'>>
+  ): RoomInfo | undefined {
     const room = this.rooms.get(roomId);
     if (!room) {
       return undefined;
@@ -359,6 +385,12 @@ export class RoomService {
       throw new Error('Cannot ban room creator');
     }
 
+    // Admin cannot ban another admin (only owner can)
+    const targetRole = room.members.get(userId)?.role;
+    if (targetRole === 'admin' && bannerRole !== 'owner') {
+      throw new Error('Only room owner can ban an admin');
+    }
+
     // Add to banned list
     room.bannedUsers.add(userId);
 
@@ -389,6 +421,17 @@ export class RoomService {
   isUserBanned(roomId: string, userId: string): boolean {
     const room = this.rooms.get(roomId);
     return room?.bannedUsers.has(userId) ?? false;
+  }
+
+  /**
+   * Validate room password for private rooms
+   */
+  validateRoomPassword(roomId: string, password?: string): boolean {
+    const room = this.rooms.get(roomId);
+    if (!room) return false;
+    if (!room.info.isPrivate) return true;
+    if (!room.info.passwordHash) return false;
+    return room.info.passwordHash === password;
   }
 
   /**
@@ -455,7 +498,7 @@ export class RoomService {
 
     // Cannot change creator's role
     if (userId === room.info.createdBy && role !== 'owner') {
-      throw new Error('Cannot change room creator\'s role');
+      throw new Error("Cannot change room creator's role");
     }
 
     member.role = role;
@@ -465,14 +508,16 @@ export class RoomService {
   /**
    * Get room statistics
    */
-  getRoomStats(roomId: string): { memberCount: number; onlineCount: number; bannedCount: number } | undefined {
+  getRoomStats(
+    roomId: string
+  ): { memberCount: number; onlineCount: number; bannedCount: number } | undefined {
     const room = this.rooms.get(roomId);
     if (!room) {
       return undefined;
     }
 
     const members = Array.from(room.members.values());
-    const onlineCount = members.filter((m) => presenceService.isUserOnline(m.userId)).length;
+    const onlineCount = members.filter(m => presenceService.isUserOnline(m.userId)).length;
 
     return {
       memberCount: members.length,
@@ -494,12 +539,15 @@ export class RoomService {
    */
   private scheduleRoomDestruction(roomId: string): void {
     // Destroy empty rooms after 5 minutes
-    setTimeout(() => {
-      const room = this.rooms.get(roomId);
-      if (room && room.members.size === 0) {
-        this.destroyRoom(roomId);
-      }
-    }, 5 * 60 * 1000);
+    setTimeout(
+      () => {
+        const room = this.rooms.get(roomId);
+        if (room && room.members.size === 0) {
+          this.destroyRoom(roomId);
+        }
+      },
+      5 * 60 * 1000
+    );
   }
 
   /**

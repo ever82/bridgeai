@@ -14,6 +14,14 @@ import { connectionService } from './connectionService';
  */
 export type PresenceStatus = 'online' | 'offline' | 'away' | 'busy' | 'invisible';
 
+const VALID_PRESENCE_STATUSES: Set<string> = new Set([
+  'online',
+  'offline',
+  'away',
+  'busy',
+  'invisible',
+]);
+
 /**
  * User presence data
  */
@@ -42,9 +50,9 @@ export interface PresenceChangeEvent {
 }
 
 /**
- * Presence subscription
+ * Presence subscription (internal use)
  */
-interface PresenceSubscription {
+interface _PresenceSubscription {
   subscriberUserId: string;
   targetUserId: string;
 }
@@ -59,15 +67,34 @@ export class PresenceService {
   private statusCallbacks: Map<string, Set<PresenceCallback>> = new Map(); // userId -> callbacks
   private readonly AWAY_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
   private statusCheckInterval: NodeJS.Timeout | null = null;
+  private intervalStarted = false;
 
   constructor() {
-    this.startStatusCheckInterval();
+    // Lazy init: interval starts on first use, not at import time
+  }
+
+  /**
+   * Ensure the status check interval is running (lazy init)
+   */
+  private ensureIntervalStarted(): void {
+    if (!this.intervalStarted) {
+      this.intervalStarted = true;
+      this.startStatusCheckInterval();
+    }
   }
 
   /**
    * Set user presence
    */
   setPresence(userId: string, status: PresenceStatus, customStatus?: string): UserPresence {
+    if (!VALID_PRESENCE_STATUSES.has(status)) {
+      throw new Error(
+        `Invalid presence status: ${status}. Must be one of: ${Array.from(VALID_PRESENCE_STATUSES).join(', ')}`
+      );
+    }
+
+    this.ensureIntervalStarted();
+
     const previousPresence = this.presenceData.get(userId);
     const previousStatus = previousPresence?.status ?? 'offline';
 
@@ -125,7 +152,7 @@ export class PresenceService {
    * Get presence for multiple users
    */
   getPresenceForUsers(userIds: string[]): UserPresence[] {
-    return userIds.map((id) => this.getPresence(id));
+    return userIds.map(id => this.getPresence(id));
   }
 
   /**
@@ -154,7 +181,7 @@ export class PresenceService {
    */
   getOnlineUsers(): UserPresence[] {
     return Array.from(this.presenceData.values()).filter(
-      (p) => p.status === 'online' || p.status === 'away'
+      p => p.status === 'online' || p.status === 'away'
     );
   }
 
@@ -290,7 +317,7 @@ export class PresenceService {
     const callbacks = this.statusCallbacks.get(event.userId);
     if (callbacks) {
       const presence = this.getPresence(event.userId);
-      callbacks.forEach((cb) => {
+      callbacks.forEach(cb => {
         try {
           cb(presence);
         } catch (error) {

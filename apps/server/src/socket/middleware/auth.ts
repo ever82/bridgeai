@@ -75,7 +75,7 @@ function extractToken(socket: AuthenticatedSocket): string | null {
   // Try auth token first
   const authToken = socket.handshake.auth?.token;
   if (authToken) {
-    return authToken.startsWith('Bearer ') ? authToken.slice(7) : authToken;
+    return stripBearerPrefix(authToken);
   }
 
   // Try query parameter
@@ -87,10 +87,20 @@ function extractToken(socket: AuthenticatedSocket): string | null {
   // Try headers
   const headerToken = socket.handshake.headers?.authorization;
   if (headerToken) {
-    return headerToken.startsWith('Bearer ') ? headerToken.slice(7) : headerToken;
+    return stripBearerPrefix(headerToken);
   }
 
   return null;
+}
+
+/**
+ * Strip "Bearer " prefix from token string (case-insensitive)
+ */
+function stripBearerPrefix(token: string): string {
+  if (/^bearer\s+/i.test(token)) {
+    return token.slice(token.indexOf(' ') + 1).trim();
+  }
+  return token.trim();
 }
 
 /**

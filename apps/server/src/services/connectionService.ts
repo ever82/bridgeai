@@ -5,8 +5,6 @@
  * connection history, and device information storage.
  */
 
-import { connectionManager } from '../socket/connectionManager';
-
 /**
  * Device information
  */
@@ -100,6 +98,18 @@ export class ConnectionService {
     ipAddress: string,
     namespace: string = '/'
   ): ConnectionRecord {
+    // Clean up any stale registration of this socketId under a different user
+    const existing = this.connections.get(socketId);
+    if (existing) {
+      const prevUserConnections = this.userConnections.get(existing.userId);
+      if (prevUserConnections) {
+        prevUserConnections.delete(socketId);
+        if (prevUserConnections.size === 0) {
+          this.userConnections.delete(existing.userId);
+        }
+      }
+    }
+
     const connection: ConnectionRecord = {
       id: `${userId}_${socketId}_${Date.now()}`,
       userId,
@@ -180,7 +190,7 @@ export class ConnectionService {
       return [];
     }
     return Array.from(socketIds)
-      .map((id) => this.connections.get(id))
+      .map(id => this.connections.get(id))
       .filter(Boolean) as ConnectionRecord[];
   }
 
@@ -239,7 +249,7 @@ export class ConnectionService {
   removeConnectionRoom(socketId: string, roomId: string): void {
     const connection = this.connections.get(socketId);
     if (connection) {
-      connection.rooms = connection.rooms.filter((r) => r !== roomId);
+      connection.rooms = connection.rooms.filter(r => r !== roomId);
     }
   }
 
@@ -247,14 +257,14 @@ export class ConnectionService {
    * Get connections in a room
    */
   getConnectionsInRoom(roomId: string): ConnectionRecord[] {
-    return this.getAllConnections().filter((conn) => conn.rooms.includes(roomId));
+    return this.getAllConnections().filter(conn => conn.rooms.includes(roomId));
   }
 
   /**
    * Get connections by device type
    */
   getConnectionsByDeviceType(deviceType: DeviceInfo['deviceType']): ConnectionRecord[] {
-    return this.getAllConnections().filter((conn) => conn.deviceInfo.deviceType === deviceType);
+    return this.getAllConnections().filter(conn => conn.deviceInfo.deviceType === deviceType);
   }
 
   /**
@@ -299,7 +309,7 @@ export class ConnectionService {
    * Get connection history for a user
    */
   getUserConnectionHistory(userId: string): ConnectionHistoryEntry[] {
-    return this.connectionHistory.filter((entry) => entry.userId === userId);
+    return this.connectionHistory.filter(entry => entry.userId === userId);
   }
 
   /**
@@ -314,7 +324,7 @@ export class ConnectionService {
    */
   getUserActiveDevices(userId: string): DeviceInfo[] {
     const connections = this.getUserConnections(userId);
-    return connections.map((conn) => conn.deviceInfo);
+    return connections.map(conn => conn.deviceInfo);
   }
 
   /**
@@ -325,9 +335,7 @@ export class ConnectionService {
     if (connections.length === 0) {
       return undefined;
     }
-    return connections.sort(
-      (a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime()
-    )[0];
+    return connections.sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime())[0];
   }
 
   /**
@@ -501,7 +509,7 @@ export class ConnectionService {
    */
   clearAllConnections(): void {
     // Move all active to history
-    for (const [socketId, connection] of this.connections) {
+    for (const [, connection] of this.connections) {
       connection.disconnectedAt = new Date();
       connection.duration = connection.disconnectedAt.getTime() - connection.connectedAt.getTime();
       this.addToHistory(connection);

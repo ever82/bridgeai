@@ -190,8 +190,13 @@ export function validateRoomJoin(
     }
 
     // Check private room password
-    if (room.isPrivate && !password) {
-      return { valid: false, error: 'Password required for private room' };
+    if (room.isPrivate) {
+      if (!password) {
+        return { valid: false, error: 'Password required for private room' };
+      }
+      if (!roomService.validateRoomPassword(roomId, password)) {
+        return { valid: false, error: 'Incorrect room password' };
+      }
     }
   }
 
@@ -326,6 +331,7 @@ export function canBanUser(
   targetId: string
 ): { canBan: boolean; error?: string } {
   const bannerRole = roomService.getUserRole(roomId, bannerId);
+  const targetRole = roomService.getUserRole(roomId, targetId);
   const room = roomService.getRoom(roomId);
 
   if (!bannerRole || bannerRole === 'member') {
@@ -335,6 +341,11 @@ export function canBanUser(
   // Cannot ban the room creator
   if (targetId === room?.createdBy) {
     return { canBan: false, error: 'Cannot ban room creator' };
+  }
+
+  // Admin cannot ban another admin (only owner can)
+  if (targetRole === 'admin' && bannerRole !== 'owner') {
+    return { canBan: false, error: 'Only room owner can ban an admin' };
   }
 
   return { canBan: true };

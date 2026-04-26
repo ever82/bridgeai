@@ -5,6 +5,8 @@
  */
 import type { Namespace, Socket } from 'socket.io';
 
+import { connectionService } from '../../services/connectionService';
+
 /**
  * Presence state tracking (in production, use Redis)
  */
@@ -100,8 +102,13 @@ export function registerPresenceHandlers(socket: Socket, nsp: Namespace): void {
     }
   });
 
-  // Handle disconnect - mark user as offline
+  // Handle disconnect - mark user as offline only if no other active connections
   socket.on('disconnect', () => {
+    const remainingConnections = connectionService.getUserConnectionCount(userId);
+    if (remainingConnections > 0) {
+      return; // User still has other active connections
+    }
+
     const entry = presenceState.get(userId);
     if (entry) {
       const previousStatus = entry.status;

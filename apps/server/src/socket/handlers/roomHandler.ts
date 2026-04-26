@@ -106,9 +106,15 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
 
       // Check private room access
       const roomInfo = roomService.getRoom(roomId);
-      if (roomInfo?.isPrivate && !password) {
-        callback?.({ success: false, error: 'Password required for private room' });
-        return;
+      if (roomInfo?.isPrivate) {
+        if (!password) {
+          callback?.({ success: false, error: 'Password required for private room' });
+          return;
+        }
+        if (!roomService.validateRoomPassword(roomId, password)) {
+          callback?.({ success: false, error: 'Incorrect room password' });
+          return;
+        }
       }
 
       // Join room in service
@@ -294,6 +300,18 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
         return;
       }
 
+      // Private rooms require authentication and membership
+      if (room.isPrivate) {
+        if (!userId) {
+          callback?.({ success: false, error: 'Authentication required for private room info' });
+          return;
+        }
+        if (!roomService.isUserInRoom(roomId, userId)) {
+          callback?.({ success: false, error: 'Not a member of this private room' });
+          return;
+        }
+      }
+
       const members = roomService.getRoomMembers(roomId);
       const stats = roomService.getRoomStats(roomId);
 
@@ -325,6 +343,19 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
       if (!roomService.roomExists(roomId)) {
         callback?.({ success: false, error: 'Room not found' });
         return;
+      }
+
+      // Private rooms require authentication and membership
+      const room = roomService.getRoom(roomId);
+      if (room?.isPrivate) {
+        if (!userId) {
+          callback?.({ success: false, error: 'Authentication required for private room members' });
+          return;
+        }
+        if (!roomService.isUserInRoom(roomId, userId)) {
+          callback?.({ success: false, error: 'Not a member of this private room' });
+          return;
+        }
       }
 
       const members = roomService.getRoomMembers(roomId);
