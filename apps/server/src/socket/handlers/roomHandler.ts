@@ -38,46 +38,49 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
   const userId = socket.user?.id;
 
   // Create room
-  socket.on('room:create', (data: { roomId: string; options: CreateRoomOptions }, callback) => {
-    try {
-      if (!userId) {
-        callback?.({ success: false, error: 'Authentication required' });
-        return;
+  socket.on(
+    'room:create',
+    async (data: { roomId: string; options: CreateRoomOptions }, callback) => {
+      try {
+        if (!userId) {
+          callback?.({ success: false, error: 'Authentication required' });
+          return;
+        }
+
+        const { roomId, options } = data;
+
+        // Create the room
+        const room = await roomService.createRoom(roomId, userId, options);
+
+        // Join the room as owner
+        roomService.joinRoom(roomId, {
+          userId,
+          socketId: socket.id,
+          role: 'owner',
+          deviceInfo: socket.handshake.query as Record<string, any>,
+        });
+
+        // Join socket.io room
+        socket.join(roomId);
+
+        // Track in connection service
+        connectionService.addConnectionRoom(socket.id, roomId);
+
+        callback?.({
+          success: true,
+          data: { room },
+        });
+      } catch (error) {
+        callback?.({
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to create room',
+        });
       }
-
-      const { roomId, options } = data;
-
-      // Create the room
-      const room = roomService.createRoom(roomId, userId, options);
-
-      // Join the room as owner
-      roomService.joinRoom(roomId, {
-        userId,
-        socketId: socket.id,
-        role: 'owner',
-        deviceInfo: socket.handshake.query as Record<string, any>,
-      });
-
-      // Join socket.io room
-      socket.join(roomId);
-
-      // Track in connection service
-      connectionService.addConnectionRoom(socket.id, roomId);
-
-      callback?.({
-        success: true,
-        data: { room },
-      });
-    } catch (error) {
-      callback?.({
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to create room',
-      });
     }
-  });
+  );
 
   // Join room
-  socket.on('room:join', (data: { roomId: string; password?: string }, callback) => {
+  socket.on('room:join', async (data: { roomId: string; password?: string }, callback) => {
     try {
       if (!userId) {
         callback?.({ success: false, error: 'Authentication required' });
@@ -111,7 +114,7 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
           callback?.({ success: false, error: 'Password required for private room' });
           return;
         }
-        if (!roomService.validateRoomPassword(roomId, password)) {
+        if (!(await roomService.validateRoomPassword(roomId, password))) {
           callback?.({ success: false, error: 'Incorrect room password' });
           return;
         }
@@ -537,9 +540,16 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
     }
   );
 
-  // Handle disconnection - cleanup rooms
+  // Handle disconnection - cleanup rooms only if no remaining connections
   socket.on('disconnect', () => {
     if (userId) {
+      // Check if user has other active connections before removing from rooms
+      const remainingConnections = connectionService.getUserConnectionCount(userId);
+      if (remainingConnections > 0) {
+        // User still has other active connections, keep them in rooms
+        return;
+      }
+
       // Get user's rooms
       const rooms = roomService.getUserRooms(userId);
 

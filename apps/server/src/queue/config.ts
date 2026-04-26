@@ -13,6 +13,9 @@ export const QueueNames = {
   PUSH_NOTIFICATION: 'push-notification',
   DATA_EXPORT: 'data-export',
 
+  // Chat message queues
+  MESSAGE_DELIVERY: 'message-delivery',
+
   // AI processing queues
   IMAGE_ANALYSIS: 'image-analysis',
   DEMAND_EXTRACTION: 'demand-extraction',
@@ -22,7 +25,7 @@ export const QueueNames = {
   SCHEDULED_TASK: 'scheduled-task',
 } as const;
 
-export type QueueName = typeof QueueNames[keyof typeof QueueNames];
+export type QueueName = (typeof QueueNames)[keyof typeof QueueNames];
 
 // Queue configuration interface
 export interface QueueConfig {
@@ -86,10 +89,13 @@ export const defaultQueueConfig: QueueConfig = {
 };
 
 // Queue-specific configurations (merge with default config)
-export const queueConfigurations: Record<QueueName, {
-  worker?: Partial<QueueConfig['worker']>;
-  defaultJobOptions?: Partial<QueueConfig['defaultJobOptions']>;
-}> = {
+export const queueConfigurations: Record<
+  QueueName,
+  {
+    worker?: Partial<QueueConfig['worker']>;
+    defaultJobOptions?: Partial<QueueConfig['defaultJobOptions']>;
+  }
+> = {
   [QueueNames.CREDIT_UPDATE]: {
     worker: {
       concurrency: 5,
@@ -140,6 +146,22 @@ export const queueConfigurations: Record<QueueName, {
       backoff: {
         type: 'exponential',
         delay: 2000,
+      },
+    },
+  },
+  [QueueNames.MESSAGE_DELIVERY]: {
+    worker: {
+      concurrency: 20,
+      rateLimitMax: 200,
+      rateLimitWindow: 60 * 1000,
+    },
+    defaultJobOptions: {
+      removeCompletedDelay: 30 * 60 * 1000, // 30 minutes
+      removeFailedDelay: 24 * 60 * 60 * 1000, // 1 day
+      attempts: 5,
+      backoff: {
+        type: 'exponential',
+        delay: 1000,
       },
     },
   },

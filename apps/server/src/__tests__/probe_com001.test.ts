@@ -8,16 +8,16 @@
  * - Security (injection, privilege escalation, information leakage)
  * - AC inversion (inputs that seem valid but violate ACs)
  */
+/* eslint-disable @typescript-eslint/no-var-requires */
 
-import { RoomService, RoomInfo, CreateRoomOptions } from '../services/roomService';
-import { ConnectionService, ConnectionRecord } from '../services/connectionService';
-import { PresenceService, PresenceStatus } from '../services/presenceService';
+import { RoomService } from '../services/roomService';
+import { ConnectionService } from '../services/connectionService';
+import { PresenceService } from '../services/presenceService';
 import {
   checkRoomAccess,
   validateRoomJoin,
   validateRoomCreate,
   canKickUser,
-  canBanUser,
   isUserBlacklisted,
 } from '../socket/middleware/roomAuth';
 import type { AuthenticatedSocket } from '../socket/middleware/auth';
@@ -30,12 +30,15 @@ function makeSocket(overrides: Partial<AuthenticatedSocket['user']> & { id?: str
   const userId = overrides.id ?? 'user-1';
   return {
     id: `socket-${userId}-${Date.now()}`,
-    user: overrides.id === null ? undefined : {
-      id: userId,
-      email: overrides.email ?? `${userId}@test.com`,
-      roles: overrides.roles ?? ['user'],
-      permissions: overrides.permissions ?? [],
-    },
+    user:
+      overrides.id === null
+        ? undefined
+        : {
+            id: userId,
+            email: overrides.email ?? `${userId}@test.com`,
+            roles: overrides.roles ?? ['user'],
+            permissions: overrides.permissions ?? [],
+          },
     handshake: {
       auth: {},
       query: {},
@@ -69,37 +72,43 @@ describe('PROBE: RoomService boundary inputs', () => {
     service.clearAllRooms();
   });
 
-  it('should reject empty string room ID', () => {
-    expect(() => service.createRoom('', 'user-1', { name: 'Room' })).toThrow('roomId must be at least 3 characters');
+  it('should reject empty string room ID', async () => {
+    await expect(service.createRoom('', 'user-1', { name: 'Room' })).rejects.toThrow(
+      'roomId must be at least 3 characters'
+    );
     expect(service.roomExists('')).toBe(false);
   });
 
-  it('should handle extremely long room ID', () => {
+  it('should handle extremely long room ID', async () => {
     const longId = 'a'.repeat(100000);
-    expect(() => service.createRoom(longId, 'user-1', { name: 'Room' })).toThrow('roomId must not exceed 200 characters');
+    await expect(service.createRoom(longId, 'user-1', { name: 'Room' })).rejects.toThrow(
+      'roomId must not exceed 200 characters'
+    );
     expect(service.roomExists(longId)).toBe(false);
   });
 
-  it('should handle room ID with special/injection characters', () => {
+  it('should handle room ID with special/injection characters', async () => {
     // After sanitization, HTML chars are stripped, control chars removed, path traversal stripped
     // The . and / chars are kept; only .. is stripped
     const sanitizedIds = [
-      'roomscriptalert1script',                  // <>"& stripped
-      'roomnull',                                // \x00 stripped; control chars \n\r\t stripped too
-      'room/etc/passwd',                         // .. stripped, / kept
+      'roomscriptalert1script', // <>"& stripped
+      'roomnull', // \x00 stripped; control chars \n\r\t stripped too
+      'room/etc/passwd', // .. stripped, / kept
     ];
     for (const id of sanitizedIds) {
-      service.createRoom(id, 'user-1', { name: 'Room' });
+      await service.createRoom(id, 'user-1', { name: 'Room' });
       expect(service.roomExists(id)).toBe(true);
     }
 
     // A room ID with only HTML-special chars becomes too short after stripping
-    expect(() => service.createRoom('<>\'\"&', 'user-1', { name: 'Test' })).toThrow('roomId must be at least 3 characters');
+    await expect(service.createRoom('<>\'"&', 'user-1', { name: 'Test' })).rejects.toThrow(
+      'roomId must be at least 3 characters'
+    );
   });
 
-  it('should handle room name with null bytes and control chars', () => {
+  it('should handle room name with null bytes and control chars', async () => {
     // Names are sanitized (control chars stripped), descriptions are not
-    const room = service.createRoom('room-1', 'user-1', {
+    const room = await service.createRoom('room-1', 'user-1', {
       name: 'Room\x00Name\x01',
       description: 'Desc\x00ription',
     });
@@ -109,25 +118,32 @@ describe('PROBE: RoomService boundary inputs', () => {
     expect(room.description).toBe('Desc\x00ription');
   });
 
-  it('should handle maxMembers edge cases', () => {
+  it('should handle maxMembers edge cases', async () => {
     // Zero maxMembers - should be rejected
-    expect(() => service.createRoom('room-1', 'user-1', { name: 'R', maxMembers: 0 })).toThrow('maxMembers must be at least 1');
+    await expect(
+      service.createRoom('room-1', 'user-1', { name: 'R', maxMembers: 0 })
+    ).rejects.toThrow('maxMembers must be at least 1');
 
     // Negative maxMembers - should be rejected
-    expect(() => service.createRoom('room-2', 'user-1', { name: 'R', maxMembers: -1 })).toThrow('maxMembers must be at least 1');
+    await expect(
+      service.createRoom('room-2', 'user-1', { name: 'R', maxMembers: -1 })
+    ).rejects.toThrow('maxMembers must be at least 1');
 
     // Valid maxMembers
-    const room3 = service.createRoom('room-3', 'user-1', { name: 'R', maxMembers: 5 });
+    const room3 = await service.createRoom('room-3', 'user-1', { name: 'R', maxMembers: 5 });
     expect(room3.maxMembers).toBe(5);
 
     // Extremely large maxMembers - accepted but impractical
-    const room4 = service.createRoom('room-4', 'user-1', { name: 'R', maxMembers: Number.MAX_SAFE_INTEGER });
+    const room4 = await service.createRoom('room-4', 'user-1', {
+      name: 'R',
+      maxMembers: Number.MAX_SAFE_INTEGER,
+    });
     expect(room4.maxMembers).toBe(Number.MAX_SAFE_INTEGER);
   });
 
-  it('should handle duplicate join with different socket IDs (multi-device)', () => {
-    service.createRoom('room-1', 'user-1', { name: 'Room', maxMembers: 2 });
-    const m1 = service.joinRoom('room-1', { userId: 'user-2', socketId: 'socket-A' });
+  it('should handle duplicate join with different socket IDs (multi-device)', async () => {
+    await service.createRoom('room-1', 'user-1', { name: 'Room', maxMembers: 2 });
+    service.joinRoom('room-1', { userId: 'user-2', socketId: 'socket-A' });
     const m2 = service.joinRoom('room-1', { userId: 'user-2', socketId: 'socket-B' });
     // BUG: rejoining with different socketId updates the existing member but does NOT add a second slot
     // This means user with 2 devices only occupies 1 member slot, but the old socket is now orphaned
@@ -136,8 +152,8 @@ describe('PROBE: RoomService boundary inputs', () => {
     // Only 1 member counted but user may have 2 active connections
   });
 
-  it('should handle user joining after being kicked then banned', () => {
-    service.createRoom('room-1', 'user-1', { name: 'Room' });
+  it('should handle user joining after being kicked then banned', async () => {
+    await service.createRoom('room-1', 'user-1', { name: 'Room' });
     service.joinRoom('room-1', { userId: 'user-1', socketId: 's1', role: 'owner' });
     service.joinRoom('room-1', { userId: 'user-2', socketId: 's2' });
 
@@ -155,7 +171,9 @@ describe('PROBE: RoomService boundary inputs', () => {
     expect(service.isUserInRoom('room-1', 'user-2')).toBe(false);
 
     // Attempt to rejoin should throw
-    expect(() => service.joinRoom('room-1', { userId: 'user-2', socketId: 's4' })).toThrow('banned');
+    expect(() => service.joinRoom('room-1', { userId: 'user-2', socketId: 's4' })).toThrow(
+      'banned'
+    );
   });
 });
 
@@ -166,9 +184,9 @@ describe('PROBE: RoomService boundary inputs', () => {
 describe('PROBE: RoomService kick/ban security', () => {
   let service: RoomService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     service = new RoomService();
-    service.createRoom('room-1', 'creator', { name: 'Room' });
+    await service.createRoom('room-1', 'creator', { name: 'Room' });
     service.joinRoom('room-1', { userId: 'creator', socketId: 's-creator', role: 'owner' });
     service.joinRoom('room-1', { userId: 'admin-1', socketId: 's-admin', role: 'admin' });
     service.joinRoom('room-1', { userId: 'member-1', socketId: 's-member' });
@@ -180,25 +198,33 @@ describe('PROBE: RoomService kick/ban security', () => {
 
   it('should NOT allow member to kick another member', () => {
     service.joinRoom('room-1', { userId: 'member-2', socketId: 's-m2' });
-    expect(() => service.kickUser('room-1', 'member-1', 'member-2')).toThrow('Insufficient permissions');
+    expect(() => service.kickUser('room-1', 'member-1', 'member-2')).toThrow(
+      'Insufficient permissions'
+    );
   });
 
   it('should NOT allow admin to kick another admin', () => {
     service.setUserRole('room-1', 'member-1', 'admin', 'creator');
-    expect(() => service.kickUser('room-1', 'admin-1', 'member-1')).toThrow('Insufficient permissions');
+    expect(() => service.kickUser('room-1', 'admin-1', 'member-1')).toThrow(
+      'Insufficient permissions'
+    );
   });
 
   it('should NOT allow admin to ban another admin', () => {
     service.setUserRole('room-1', 'member-1', 'admin', 'creator');
     // banUser now checks: if target is admin, only owner can ban
-    expect(() => service.banUser('room-1', 'member-1', 'admin-1')).toThrow('Only room owner can ban an admin');
+    expect(() => service.banUser('room-1', 'member-1', 'admin-1')).toThrow(
+      'Only room owner can ban an admin'
+    );
     // Admin can ban member
     const result = service.banUser('room-1', 'member-2', 'admin-1');
     expect(result).toBe(true);
   });
 
   it('should NOT allow banning the room creator even by admin', () => {
-    expect(() => service.banUser('room-1', 'creator', 'admin-1')).toThrow('Cannot ban room creator');
+    expect(() => service.banUser('room-1', 'creator', 'admin-1')).toThrow(
+      'Cannot ban room creator'
+    );
   });
 
   it('should NOT allow self-kick to bypass bans', () => {
@@ -220,7 +246,9 @@ describe('PROBE: RoomService kick/ban security', () => {
 
   it('should prevent banned user from rejoining', () => {
     service.banUser('room-1', 'member-1', 'admin-1');
-    expect(() => service.joinRoom('room-1', { userId: 'member-1', socketId: 's-new' })).toThrow('banned');
+    expect(() => service.joinRoom('room-1', { userId: 'member-1', socketId: 's-new' })).toThrow(
+      'banned'
+    );
   });
 });
 
@@ -231,9 +259,9 @@ describe('PROBE: RoomService kick/ban security', () => {
 describe('PROBE: RoomService privilege escalation', () => {
   let service: RoomService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     service = new RoomService();
-    service.createRoom('room-1', 'creator', { name: 'Room' });
+    await service.createRoom('room-1', 'creator', { name: 'Room' });
     service.joinRoom('room-1', { userId: 'creator', socketId: 's-creator', role: 'owner' });
   });
 
@@ -295,7 +323,7 @@ describe('PROBE: roomAuth middleware boundary cases', () => {
 
   // We need to monkey-patch the imported roomService singleton
   // because roomAuth middleware uses the singleton
-  let originalRoomService: typeof import('../services/roomService')['roomService'];
+  let originalRoomService: (typeof import('../services/roomService'))['roomService'];
 
   beforeAll(() => {
     const mod = require('../services/roomService');
@@ -349,18 +377,18 @@ describe('PROBE: roomAuth middleware boundary cases', () => {
     expect(result.error).toContain('not found');
   });
 
-  it('canKickUser should check that both users are members', () => {
+  it('canKickUser should check that both users are members', async () => {
     patchRoomService(roomSvc);
-    roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
+    await roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
     roomSvc.joinRoom('room-1', { userId: 'creator', socketId: 's1', role: 'owner' });
 
     const result = canKickUser('room-1', 'non-member', 'creator');
     expect(result.canKick).toBe(false);
   });
 
-  it('isUserBlacklisted should delegate to roomService.isUserBanned', () => {
+  it('isUserBlacklisted should delegate to roomService.isUserBanned', async () => {
     patchRoomService(roomSvc);
-    roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
+    await roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
     roomSvc.joinRoom('room-1', { userId: 'creator', socketId: 's1', role: 'owner' });
     roomSvc.joinRoom('room-1', { userId: 'user-2', socketId: 's2' });
     roomSvc.banUser('room-1', 'user-2', 'creator');
@@ -430,10 +458,9 @@ describe('PROBE: ConnectionService boundary cases', () => {
   });
 
   it('should handle device info parsing with malicious user agent', () => {
-    const deviceInfo = service.parseDeviceInfo(
-      '<script>alert("xss")</script>',
-      { deviceId: '"; DROP TABLE--' }
-    );
+    const deviceInfo = service.parseDeviceInfo('<script>alert("xss")</script>', {
+      deviceId: '"; DROP TABLE--',
+    });
     // BUG: no sanitization of user agent or query params
     expect(deviceInfo.deviceId).toBe('"; DROP TABLE--');
   });
@@ -588,10 +615,6 @@ describe('PROBE: PresenceService boundary cases', () => {
 // ---------------------------------------------------------------------------
 
 describe('PROBE: ConnectionManager boundary cases', () => {
-  // Import connectionManager singleton
-  let cm: typeof import('../socket/connectionManager')['connectionManager'];
-  let MockServer: any;
-
   beforeEach(() => {
     jest.resetModules();
     // Re-import to get fresh instance
@@ -718,8 +741,8 @@ describe('PROBE: RoomHandler broadcast payload injection', () => {
     expect(id3).toBe(id4); // BUG: actual collision with underscore-containing IDs
   });
 
-  it('should handle room info exposure - room:info does not require auth', () => {
-    roomSvc.createRoom('room-1', 'creator', { name: 'Room', isPrivate: true });
+  it('should handle room info exposure - room:info does not require auth', async () => {
+    await roomSvc.createRoom('room-1', 'creator', { name: 'Room', isPrivate: true });
     const room = roomSvc.getRoom('room-1');
     // BUG: room:info handler does NOT check if user is authenticated or has access
     // Anyone can query private room info
@@ -728,8 +751,8 @@ describe('PROBE: RoomHandler broadcast payload injection', () => {
     // The handler at roomHandler.ts:287-318 does not check userId at all
   });
 
-  it('should handle room:members exposure - does not require membership', () => {
-    roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
+  it('should handle room:members exposure - does not require membership', async () => {
+    await roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
     roomSvc.joinRoom('room-1', { userId: 'creator', socketId: 's1', role: 'owner' });
     roomSvc.joinRoom('room-1', { userId: 'member-1', socketId: 's2' });
 
@@ -755,8 +778,8 @@ describe('PROBE: Race condition scenarios', () => {
     roomSvc.clearAllRooms();
   });
 
-  it('should handle join race when room is near capacity', () => {
-    roomSvc.createRoom('room-1', 'creator', { name: 'Room', maxMembers: 2 });
+  it('should handle join race when room is near capacity', async () => {
+    await roomSvc.createRoom('room-1', 'creator', { name: 'Room', maxMembers: 2 });
     roomSvc.joinRoom('room-1', { userId: 'creator', socketId: 's1', role: 'owner' });
 
     // First user fills to capacity
@@ -766,8 +789,8 @@ describe('PROBE: Race condition scenarios', () => {
     expect(() => roomSvc.joinRoom('room-1', { userId: 'user-3', socketId: 's3' })).toThrow('full');
   });
 
-  it('should handle destroy room while users are still members', () => {
-    roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
+  it('should handle destroy room while users are still members', async () => {
+    await roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
     roomSvc.joinRoom('room-1', { userId: 'creator', socketId: 's1', role: 'owner' });
     roomSvc.joinRoom('room-1', { userId: 'user-2', socketId: 's2' });
 
@@ -781,8 +804,8 @@ describe('PROBE: Race condition scenarios', () => {
     expect(rooms).toEqual([]);
   });
 
-  it('should handle auto-destruction of empty rooms', () => {
-    roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
+  it('should handle auto-destruction of empty rooms', async () => {
+    await roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
     roomSvc.joinRoom('room-1', { userId: 'creator', socketId: 's1' });
 
     // Creator leaves => room is empty
@@ -794,8 +817,8 @@ describe('PROBE: Race condition scenarios', () => {
     expect(roomSvc.getRoomMemberCount('room-1')).toBe(0);
   });
 
-  it('should handle rapid leave/rejoin cycle', () => {
-    roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
+  it('should handle rapid leave/rejoin cycle', async () => {
+    await roomSvc.createRoom('room-1', 'creator', { name: 'Room' });
     roomSvc.joinRoom('room-1', { userId: 'creator', socketId: 's1', role: 'owner' });
 
     for (let i = 0; i < 100; i++) {
@@ -825,7 +848,8 @@ describe('PROBE: Private room password validation', () => {
     roomSvc.clearAllRooms();
   });
 
-  function patchRoomService(svc: RoomService) {
+  // @ts-expect-error - intentionally defined for documentation purposes; not called
+  function _patchRoomService(svc: RoomService) {
     const mod = require('../services/roomService');
     mod.roomService = svc;
   }
@@ -856,8 +880,15 @@ describe('PROBE: Private room password validation', () => {
 
     // Verify RoomInfo has no password field
     const roomInfoKeys = [
-      'id', 'name', 'description', 'createdBy', 'createdAt',
-      'updatedAt', 'isPrivate', 'maxMembers', 'metadata',
+      'id',
+      'name',
+      'description',
+      'createdBy',
+      'createdAt',
+      'updatedAt',
+      'isPrivate',
+      'maxMembers',
+      'metadata',
     ];
     // If password validation existed, RoomInfo would need a password/hash field
     expect(roomInfoKeys).not.toContain('password');

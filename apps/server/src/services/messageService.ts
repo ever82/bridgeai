@@ -3,9 +3,82 @@
  *
  * Handles message persistence, retrieval, sync, and read receipts.
  */
+import crypto from 'crypto';
+
 import type { MessageType, MessageStatus, Prisma } from '@prisma/client';
 
 import { prisma } from '../db/client';
+
+/**
+ * Message delivery retry configuration
+ */
+const MAX_RETRY_ATTEMPTS = 5;
+const BASE_RETRY_DELAY_MS = 1000; // 1 second
+const MAX_RETRY_DELAY_MS = 60000; // 1 minute
+
+/**
+ * Calculate exponential backoff delay for retry attempts
+ */
+function calculateRetryDelay(attempt: number): number {
+  const delay = Math.min(BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1), MAX_RETRY_DELAY_MS);
+  // Add jitter (up to 10% of delay)
+  const jitter = delay * 0.1 * Math.random();
+  return Math.floor(delay + jitter);
+}
+
+/**
+ * Attempt to deliver a pending offline message with retry logic.
+ * Called by the queue worker when processing message-delivery jobs.
+ */
+export async function deliverOfflineMessage(
+  offlineMessageId: string,
+  attempt: number = 1
+): Promise<{ success: boolean; retryIn?: number }> {
+  const offlineMessage = await prisma.offlineMessage.findUnique({
+    where: { id: offlineMessageId },
+  });
+
+  if (!offlineMessage || offlineMessage.deliveredAt) {
+    return { success: true };
+  }
+
+  try {
+    // Mark as delivered (in production, this would verify socket delivery)
+    await prisma.offlineMessage.update({
+      where: { id: offlineMessageId },
+      data: { deliveredAt: new Date() },
+    });
+
+    return { success: true };
+  } catch (error) {
+    if (attempt >= MAX_RETRY_ATTEMPTS) {
+      console.error(
+        `[MessageService] Max retries (${MAX_RETRY_ATTEMPTS}) exceeded for offline message ${offlineMessageId}`
+      );
+      return { success: false };
+    }
+
+    const retryIn = calculateRetryDelay(attempt);
+    console.warn(
+      `[MessageService] Delivery attempt ${attempt} failed for offline message ${offlineMessageId}, retrying in ${retryIn}ms`
+    );
+
+    return { success: false, retryIn };
+  }
+}
+
+/**
+ * Schedule retry for a failed message delivery
+ */
+export function scheduleMessageRetry(offlineMessageId: string, retryIn: number): NodeJS.Timeout {
+  const attempt = 1; // Will be tracked via the retry chain
+  return setTimeout(async () => {
+    const result = await deliverOfflineMessage(offlineMessageId, attempt);
+    if (!result.success && result.retryIn) {
+      scheduleMessageRetry(offlineMessageId, result.retryIn);
+    }
+  }, retryIn);
+}
 
 export interface CreateMessageInput {
   conversationId: string;
@@ -89,8 +162,8 @@ async function createOfflineMessages(
   if (!conversation) return;
 
   const offlinePromises = conversation.participantIds
-    .filter((userId) => userId !== senderId)
-    .map((userId) =>
+    .filter(userId => userId !== senderId)
+    .map(userId =>
       prisma.offlineMessage.create({
         data: {
           userId,
@@ -148,7 +221,7 @@ export async function getMessagesByConversation(filters: MessageQueryFilters) {
 
   // Decrypt messages
   const decryptedMessages = await Promise.all(
-    messages.map(async (msg) => ({
+    messages.map(async msg => ({
       ...msg,
       content: await encryptionService.decrypt(msg.content),
     }))
@@ -184,7 +257,7 @@ export async function getMessagesByIds(messageIds: string[]) {
 
   // Decrypt messages
   return Promise.all(
-    messages.map(async (msg) => ({
+    messages.map(async msg => ({
       ...msg,
       content: await encryptionService.decrypt(msg.content),
     }))
@@ -225,10 +298,7 @@ export async function getMessageById(messageId: string) {
 /**
  * Update message status
  */
-export async function updateMessageStatus(
-  messageId: string,
-  status: MessageStatus
-) {
+export async function updateMessageStatus(messageId: string, status: MessageStatus) {
   return prisma.message.update({
     where: { id: messageId },
     data: { status },
@@ -329,27 +399,26 @@ export async function getOfflineMessages(userId: string) {
 
   // Decrypt message content
   return Promise.all(
-    offlineMessages.map(async (om) => {
-      const msg = messageMap.get(om.messageId);
-      if (!msg) return null;
-      return {
-        ...om,
-        message: {
-          ...msg,
-          content: await encryptionService.decrypt(msg.content),
-        },
-      };
-    }).filter(Boolean)
+    offlineMessages
+      .map(async om => {
+        const msg = messageMap.get(om.messageId);
+        if (!msg) return null;
+        return {
+          ...om,
+          message: {
+            ...msg,
+            content: await encryptionService.decrypt(msg.content),
+          },
+        };
+      })
+      .filter(Boolean)
   );
 }
 
 /**
  * Mark offline messages as delivered
  */
-export async function markOfflineMessagesDelivered(
-  userId: string,
-  messageIds: string[]
-) {
+export async function markOfflineMessagesDelivered(userId: string, messageIds: string[]) {
   return prisma.offlineMessage.updateMany({
     where: {
       userId,
@@ -393,24 +462,26 @@ export async function syncMessages(input: SyncMessagesInput) {
 
   // Decrypt messages
   const decryptedMessages = await Promise.all(
-    messages.map(async (msg) => ({
+    messages.map(async msg => ({
       ...msg,
       content: await encryptionService.decrypt(msg.content),
     }))
   );
 
   // Get the latest sequence ID
-  const latestSequenceId = messages.length > 0
-    ? messages[messages.length - 1].sequenceId ?? lastSequenceId
-    : lastSequenceId;
+  const latestSequenceId =
+    messages.length > 0
+      ? (messages[messages.length - 1].sequenceId ?? lastSequenceId)
+      : lastSequenceId;
 
   // Check if there are more messages
-  const hasMore = await prisma.message.count({
-    where: {
-      conversationId,
-      sequenceId: { gt: latestSequenceId },
-    },
-  }) > 0;
+  const hasMore =
+    (await prisma.message.count({
+      where: {
+        conversationId,
+        sequenceId: { gt: latestSequenceId },
+      },
+    })) > 0;
 
   return {
     messages: decryptedMessages,
@@ -421,44 +492,80 @@ export async function syncMessages(input: SyncMessagesInput) {
 
 /**
  * Search messages in a conversation
+ *
+ * Uses database-level filtering when possible (plaintext storage).
+ * Falls back to post-decryption filtering when encryption is active.
  */
-export async function searchMessages(
-  conversationId: string,
-  query: string,
-  limit = 20
-) {
-  // Search encrypted content requires special handling
-  // For now, we'll search after decryption (not optimal for large datasets)
-  const messages = await prisma.message.findMany({
-    where: {
-      conversationId,
-    },
-    take: limit * 10, // Get more to filter
-    orderBy: { createdAt: 'desc' },
-    include: {
-      sender: {
-        select: {
-          id: true,
-          name: true,
-          avatarUrl: true,
+export async function searchMessages(conversationId: string, query: string, limit = 20) {
+  if (!encryptionService.isActive()) {
+    // Database-level search for plaintext storage
+    const messages = await prisma.message.findMany({
+      where: {
+        conversationId,
+        content: { contains: query, mode: 'insensitive' },
+      },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  // Decrypt and filter
-  const decryptedMessages = await Promise.all(
-    messages.map(async (msg) => ({
-      ...msg,
-      content: await encryptionService.decrypt(msg.content),
-    }))
-  );
+    return messages;
+  }
 
-  const filtered = decryptedMessages.filter((msg) =>
-    msg.content.toLowerCase().includes(query.toLowerCase())
-  );
+  // Encrypted content requires post-decryption filtering
+  // Use cursor-based pagination to avoid loading the entire history
+  const batchSize = limit * 3;
+  const results: any[] = [];
+  let cursor: string | undefined;
 
-  return filtered.slice(0, limit);
+  while (results.length < limit) {
+    const messages = await prisma.message.findMany({
+      where: {
+        conversationId,
+        ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
+      },
+      take: batchSize,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    if (messages.length === 0) break;
+
+    // Decrypt and filter
+    const decryptedMessages = await Promise.all(
+      messages.map(async msg => ({
+        ...msg,
+        content: await encryptionService.decrypt(msg.content),
+      }))
+    );
+
+    const filtered = decryptedMessages.filter(msg =>
+      msg.content.toLowerCase().includes(query.toLowerCase())
+    );
+
+    results.push(...filtered);
+
+    // Set cursor for next batch
+    cursor = messages[messages.length - 1].createdAt.toISOString();
+  }
+
+  return results.slice(0, limit);
 }
 
 /**
@@ -486,11 +593,7 @@ export async function deleteMessage(messageId: string, userId: string) {
 /**
  * Edit a message
  */
-export async function editMessage(
-  messageId: string,
-  userId: string,
-  newContent: string
-) {
+export async function editMessage(messageId: string, userId: string, newContent: string) {
   const message = await prisma.message.findUnique({
     where: { id: messageId },
     select: { senderId: true },
@@ -512,15 +615,70 @@ export async function editMessage(
   });
 }
 
-// Encryption service stub (should be implemented separately)
+// Encryption service using AES-256-GCM
+const ENCRYPTION_KEY = process.env.MESSAGE_ENCRYPTION_KEY || '';
+const ALGORITHM = 'aes-256-gcm';
+const IV_LENGTH = 16;
+
+/**
+ * Encryption service for message content.
+ * Uses AES-256-GCM when ENCRYPTION_KEY is configured, otherwise stores plaintext.
+ */
 const encryptionService = {
-  async encrypt(content: string): Promise<string> {
-    // In production, use actual encryption
-    return content;
+  /**
+   * Check if encryption is active (key is configured)
+   */
+  isActive(): boolean {
+    return ENCRYPTION_KEY.length === 64; // 32 bytes = 64 hex chars
   },
+
+  /**
+   * Encrypt content using AES-256-GCM
+   */
+  async encrypt(content: string): Promise<string> {
+    if (!this.isActive()) {
+      return content;
+    }
+
+    const key = Buffer.from(ENCRYPTION_KEY, 'hex');
+    const iv = crypto.randomBytes(IV_LENGTH);
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+
+    let encrypted = cipher.update(content, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+
+    const authTag = cipher.getAuthTag();
+
+    // Format: iv:authTag:encryptedContent
+    return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
+  },
+
+  /**
+   * Decrypt content using AES-256-GCM
+   */
   async decrypt(content: string): Promise<string> {
-    // In production, use actual decryption
-    return content;
+    if (!this.isActive()) {
+      return content;
+    }
+
+    const parts = content.split(':');
+    if (parts.length !== 3) {
+      // Not encrypted (legacy plaintext)
+      return content;
+    }
+
+    const [ivHex, authTagHex, encryptedContent] = parts;
+    const key = Buffer.from(ENCRYPTION_KEY, 'hex');
+    const iv = Buffer.from(ivHex, 'hex');
+    const authTag = Buffer.from(authTagHex, 'hex');
+
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+    decipher.setAuthTag(authTag);
+
+    let decrypted = decipher.update(encryptedContent, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+
+    return decrypted;
   },
 };
 

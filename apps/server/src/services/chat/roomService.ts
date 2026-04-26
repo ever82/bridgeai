@@ -1,8 +1,23 @@
 /**
- * Chat Room Service
- * 聊天房间管理服务
+ * Chat Room Service (Persistent / Database-Backed)
+ *
+ * Manages persistent ChatRoom records via Prisma/DB.
+ * This service handles long-lived room CRUD, participant tracking,
+ * and room metadata that persists across server restarts.
+ *
+ * NOTE: This is separate from `services/roomService.ts` which manages
+ * ephemeral, in-memory rooms for real-time socket communication.
+ * See that file for a detailed explanation of the relationship.
+ *
+ * This service is used by REST API routes for persistent room operations.
  */
-import { ChatRoom, ChatRoomType, ChatRoomStatus, RoomParticipant, ParticipantRole } from '@prisma/client';
+import {
+  ChatRoom,
+  ChatRoomType,
+  ChatRoomStatus,
+  RoomParticipant,
+  ParticipantRole,
+} from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 import { prisma } from '../../db/client';
@@ -93,7 +108,7 @@ async function createParticipants(
   participantIds: string[],
   createdBy: string
 ): Promise<void> {
-  const participants = participantIds.map((userId) => ({
+  const participants = participantIds.map(userId => ({
     id: uuidv4(),
     roomId,
     userId,
@@ -123,11 +138,14 @@ async function findPrivateRoom(participantIds: string[]): Promise<ChatRoom | nul
   });
 
   // 找到完全匹配的房间
-  return rooms.find((room) => {
-    const roomIds = [...room.participantIds].sort();
-    return roomIds.length === sortedIds.length &&
-      roomIds.every((id, index) => id === sortedIds[index]);
-  }) || null;
+  return (
+    rooms.find(room => {
+      const roomIds = [...room.participantIds].sort();
+      return (
+        roomIds.length === sortedIds.length && roomIds.every((id, index) => id === sortedIds[index])
+      );
+    }) || null
+  );
 }
 
 /**
@@ -195,10 +213,7 @@ export async function getRoomById(roomId: string): Promise<RoomWithParticipants 
 /**
  * 更新房间
  */
-export async function updateRoom(
-  roomId: string,
-  input: UpdateRoomInput
-): Promise<ChatRoom> {
+export async function updateRoom(roomId: string, input: UpdateRoomInput): Promise<ChatRoom> {
   const updateData: any = {};
 
   if (input.status !== undefined) {
@@ -300,7 +315,7 @@ export async function getUserRooms(
 
   // 获取每个房间的未读数
   const roomsWithUnread = await Promise.all(
-    rooms.map(async (room) => {
+    rooms.map(async room => {
       const participant = await prisma.roomParticipant.findUnique({
         where: {
           roomId_userId: {

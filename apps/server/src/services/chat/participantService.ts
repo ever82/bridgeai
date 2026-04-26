@@ -2,7 +2,7 @@
  * Participant Service
  * 聊天室参与者管理服务
  */
-import { RoomParticipant, ParticipantRole, ChatRoomType, ChatRoom } from '@prisma/client';
+import { RoomParticipant, ParticipantRole, ChatRoomType } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 import { prisma } from '../../db/client';
@@ -63,7 +63,7 @@ export async function addParticipant(input: AddParticipantInput): Promise<RoomPa
   if (room.type === ChatRoomType.GROUP && (room as any).settings) {
     const settings = (room as any).settings as Record<string, any>;
     const maxParticipants = settings.maxParticipants || 500;
-    const activeCount = room.participants.filter((p) => p.isActive).length;
+    const activeCount = room.participants.filter(p => p.isActive).length;
 
     if (activeCount >= maxParticipants) {
       throw new Error('Room has reached maximum participant limit');
@@ -191,7 +191,7 @@ export async function removeParticipant(
   });
 
   if (room) {
-    const updatedIds = room.participantIds.filter((id) => id !== userId);
+    const updatedIds = room.participantIds.filter(id => id !== userId);
     await prisma.chatRoom.update({
       where: { id: roomId },
       data: { participantIds: updatedIds },
@@ -422,14 +422,8 @@ export function getRolePermissions(role: ParticipantRole): string[] {
       'message:pin',
       'settings:edit',
     ],
-    [ParticipantRole.MEMBER]: [
-      'message:send',
-      'message:edit:own',
-      'message:delete:own',
-    ],
-    [ParticipantRole.GUEST]: [
-      'message:send',
-    ],
+    [ParticipantRole.MEMBER]: ['message:send', 'message:edit:own', 'message:delete:own'],
+    [ParticipantRole.GUEST]: ['message:send'],
   };
 
   return permissions[role] || [];

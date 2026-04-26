@@ -1,4 +1,4 @@
-import { roomService, RoomService, CreateRoomOptions, JoinRoomOptions } from '../roomService';
+import { RoomService, CreateRoomOptions } from '../roomService';
 
 describe('RoomService', () => {
   let service: RoomService;
@@ -12,13 +12,13 @@ describe('RoomService', () => {
   });
 
   describe('createRoom', () => {
-    it('should create a room successfully', () => {
+    it('should create a room successfully', async () => {
       const options: CreateRoomOptions = {
         name: 'Test Room',
         description: 'A test room',
       };
 
-      const room = service.createRoom('room-1', 'user-1', options);
+      const room = await service.createRoom('room-1', 'user-1', options);
 
       expect(room.id).toBe('room-1');
       expect(room.name).toBe('Test Room');
@@ -28,16 +28,16 @@ describe('RoomService', () => {
       expect(room.maxMembers).toBe(100);
     });
 
-    it('should throw error when creating duplicate room', () => {
-      service.createRoom('room-1', 'user-1', { name: 'Room' });
+    it('should throw error when creating duplicate room', async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room' });
 
-      expect(() => {
-        service.createRoom('room-1', 'user-2', { name: 'Room 2' });
-      }).toThrow('Room room-1 already exists');
+      await expect(service.createRoom('room-1', 'user-2', { name: 'Room 2' })).rejects.toThrow(
+        'Room room-1 already exists'
+      );
     });
 
-    it('should create private room', () => {
-      const room = service.createRoom('private-room', 'user-1', {
+    it('should create private room', async () => {
+      const room = await service.createRoom('private-room', 'user-1', {
         name: 'Private Room',
         isPrivate: true,
         maxMembers: 10,
@@ -49,8 +49,8 @@ describe('RoomService', () => {
   });
 
   describe('getRoom', () => {
-    it('should return room info', () => {
-      service.createRoom('room-1', 'user-1', { name: 'Room' });
+    it('should return room info', async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room' });
 
       const room = service.getRoom('room-1');
 
@@ -65,8 +65,8 @@ describe('RoomService', () => {
   });
 
   describe('roomExists', () => {
-    it('should return true for existing room', () => {
-      service.createRoom('room-1', 'user-1', { name: 'Room' });
+    it('should return true for existing room', async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room' });
       expect(service.roomExists('room-1')).toBe(true);
     });
 
@@ -76,8 +76,8 @@ describe('RoomService', () => {
   });
 
   describe('joinRoom', () => {
-    beforeEach(() => {
-      service.createRoom('room-1', 'user-1', { name: 'Room', maxMembers: 3 });
+    beforeEach(async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room', maxMembers: 3 });
       service.joinRoom('room-1', { userId: 'user-1', socketId: 'socket-0', role: 'owner' });
     });
 
@@ -124,8 +124,8 @@ describe('RoomService', () => {
   });
 
   describe('leaveRoom', () => {
-    beforeEach(() => {
-      service.createRoom('room-1', 'user-1', { name: 'Room' });
+    beforeEach(async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room' });
       service.joinRoom('room-1', { userId: 'user-2', socketId: 'socket-1' });
     });
 
@@ -148,8 +148,8 @@ describe('RoomService', () => {
   });
 
   describe('getRoomMembers', () => {
-    beforeEach(() => {
-      service.createRoom('room-1', 'user-1', { name: 'Room' });
+    beforeEach(async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room' });
     });
 
     it('should return room members', () => {
@@ -159,8 +159,8 @@ describe('RoomService', () => {
       const members = service.getRoomMembers('room-1');
 
       expect(members).toHaveLength(2);
-      expect(members.map((m) => m.userId)).toContain('user-2');
-      expect(members.map((m) => m.userId)).toContain('user-3');
+      expect(members.map(m => m.userId)).toContain('user-2');
+      expect(members.map(m => m.userId)).toContain('user-3');
     });
 
     it('should return empty array for non-existent room', () => {
@@ -170,8 +170,8 @@ describe('RoomService', () => {
   });
 
   describe('kickUser', () => {
-    beforeEach(() => {
-      service.createRoom('room-1', 'user-1', { name: 'Room' });
+    beforeEach(async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room' });
       service.joinRoom('room-1', { userId: 'user-1', socketId: 'socket-1', role: 'owner' });
       service.joinRoom('room-1', { userId: 'user-2', socketId: 'socket-2' });
       service.joinRoom('room-1', { userId: 'user-3', socketId: 'socket-3' });
@@ -200,8 +200,8 @@ describe('RoomService', () => {
   });
 
   describe('banUser', () => {
-    beforeEach(() => {
-      service.createRoom('room-1', 'user-1', { name: 'Room' });
+    beforeEach(async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room' });
       service.joinRoom('room-1', { userId: 'user-1', socketId: 'socket-1', role: 'owner' });
       service.joinRoom('room-1', { userId: 'user-2', socketId: 'socket-2' });
     });
@@ -228,8 +228,8 @@ describe('RoomService', () => {
   });
 
   describe('unbanUser', () => {
-    beforeEach(() => {
-      service.createRoom('room-1', 'user-1', { name: 'Room' });
+    beforeEach(async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room' });
       service.joinRoom('room-1', { userId: 'user-1', socketId: 'socket-1', role: 'owner' });
       service.banUser('room-1', 'user-2', 'user-1');
     });
@@ -248,8 +248,8 @@ describe('RoomService', () => {
   });
 
   describe('setUserRole', () => {
-    beforeEach(() => {
-      service.createRoom('room-1', 'user-1', { name: 'Room' });
+    beforeEach(async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room' });
       service.joinRoom('room-1', { userId: 'user-1', socketId: 'socket-1', role: 'owner' });
       service.joinRoom('room-1', { userId: 'user-2', socketId: 'socket-2' });
     });
@@ -277,8 +277,8 @@ describe('RoomService', () => {
   });
 
   describe('muteUser / unmuteUser', () => {
-    beforeEach(() => {
-      service.createRoom('room-1', 'user-1', { name: 'Room' });
+    beforeEach(async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room' });
       service.joinRoom('room-1', { userId: 'user-1', socketId: 'socket-1' });
     });
 
@@ -295,8 +295,8 @@ describe('RoomService', () => {
   });
 
   describe('destroyRoom', () => {
-    beforeEach(() => {
-      service.createRoom('room-1', 'user-1', { name: 'Room' });
+    beforeEach(async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room' });
       service.joinRoom('room-1', { userId: 'user-2', socketId: 'socket-1' });
     });
 
@@ -314,10 +314,10 @@ describe('RoomService', () => {
   });
 
   describe('getUserRooms', () => {
-    beforeEach(() => {
-      service.createRoom('room-1', 'user-1', { name: 'Room 1' });
-      service.createRoom('room-2', 'user-1', { name: 'Room 2' });
-      service.createRoom('room-3', 'user-2', { name: 'Room 3' });
+    beforeEach(async () => {
+      await service.createRoom('room-1', 'user-1', { name: 'Room 1' });
+      await service.createRoom('room-2', 'user-1', { name: 'Room 2' });
+      await service.createRoom('room-3', 'user-2', { name: 'Room 3' });
     });
 
     it('should return rooms for user', () => {
@@ -327,8 +327,8 @@ describe('RoomService', () => {
       const rooms = service.getUserRooms('user-2');
 
       expect(rooms).toHaveLength(2);
-      expect(rooms.map((r) => r.id)).toContain('room-1');
-      expect(rooms.map((r) => r.id)).toContain('room-2');
+      expect(rooms.map(r => r.id)).toContain('room-1');
+      expect(rooms.map(r => r.id)).toContain('room-2');
     });
 
     it('should return empty array when user has no rooms', () => {

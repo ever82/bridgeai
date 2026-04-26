@@ -1,26 +1,40 @@
 /**
- * Room Service
+ * Room Service (In-Memory / Real-Time)
  *
- * Manages room lifecycle including creation, membership, and destruction.
- * Provides room-level operations for the socket room system.
+ * Manages ephemeral room lifecycle for real-time socket communication.
+ * This service handles transient, in-memory room state for WebSocket-based
+ * interactions (join/leave, broadcast, kick/ban, etc.).
+ *
+ * NOTE: This is separate from `services/chat/roomService.ts` which manages
+ * persistent ChatRoom records in the database via Prisma. The in-memory
+ * RoomService handles live socket presence and ephemeral rooms, while the
+ * chat/roomService handles long-lived room persistence, metadata, and
+ * participant records.
+ *
+ * Relationship:
+ * - Socket handlers (roomHandler) use THIS service for real-time operations
+ * - REST routes use chat/roomService for persistent room CRUD
+ * - A room may exist in both systems: DB record (persistent) + in-memory (live)
  */
 
-import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 
 import { presenceService } from './presenceService';
 
+const SALT_ROUNDS = 12;
+
 /**
- * Hash a password using SHA-256 (use bcrypt in production)
+ * Hash a password using bcrypt
  */
-function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex');
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, SALT_ROUNDS);
 }
 
 /**
  * Compare a password against a stored hash
  */
-function verifyPassword(password: string, hash: string): boolean {
-  return hashPassword(password) === hash;
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
 }
 
 /**
@@ -105,7 +119,11 @@ export class RoomService {
   /**
    * Create a new room
    */
-  createRoom(roomId: string, createdBy: string, options: CreateRoomOptions): RoomInfo {
+  async createRoom(
+    roomId: string,
+    createdBy: string,
+    options: CreateRoomOptions
+  ): Promise<RoomInfo> {
     // Sanitize inputs
     roomId = sanitizeRoomInput(roomId);
     options.name = sanitizeRoomInput(options.name);
@@ -129,6 +147,8 @@ export class RoomService {
     }
 
     const now = new Date();
+    const passwordHash =
+      options.isPrivate && options.password ? await hashPassword(options.password) : undefined;
     const roomInfo: RoomInfo = {
       id: roomId,
       name: options.name,
@@ -137,7 +157,7 @@ export class RoomService {
       createdAt: now,
       updatedAt: now,
       isPrivate: options.isPrivate ?? false,
-      passwordHash: options.isPrivate && options.password ? hashPassword(options.password) : undefined,
+      passwordHash,
       maxMembers: options.maxMembers ?? 100,
       metadata: options.metadata,
     };
@@ -466,7 +486,7 @@ export class RoomService {
   /**
    * Validate room password for private rooms
    */
-  validateRoomPassword(roomId: string, password?: string): boolean {
+  async validateRoomPassword(roomId: string, password?: string): Promise<boolean> {
     const room = this.rooms.get(roomId);
     if (!room) return false;
     if (!room.info.isPrivate) return true;
