@@ -46,7 +46,8 @@ class SocketClient extends EventEmitter {
   private authToken: string | null = null;
   private reconnectAttempts = 0;
   private isManualDisconnect = false;
-  private connectionState: 'disconnected' | 'connecting' | 'connected' | 'reconnecting' = 'disconnected';
+  private connectionState: 'disconnected' | 'connecting' | 'connected' | 'reconnecting' =
+    'disconnected';
 
   constructor() {
     super();
@@ -101,7 +102,7 @@ class SocketClient extends EventEmitter {
       this.emit('connected', { socketId: this.socket?.id });
     });
 
-    this.socket.on('disconnect', (reason) => {
+    this.socket.on('disconnect', reason => {
       console.log('[SocketClient] Disconnected:', reason);
       this.connectionState = 'disconnected';
       this.emit('disconnected', { reason, wasManual: this.isManualDisconnect });
@@ -113,26 +114,26 @@ class SocketClient extends EventEmitter {
       }
     });
 
-    this.socket.on('connect_error', (error) => {
+    this.socket.on('connect_error', error => {
       console.error('[SocketClient] Connection error:', error.message);
       this.emit('error', { type: 'connection', error });
     });
 
-    this.socket.on('reconnect', (attemptNumber) => {
+    this.socket.on('reconnect', attemptNumber => {
       console.log('[SocketClient] Reconnected after', attemptNumber, 'attempts');
       this.connectionState = 'connected';
       this.reconnectAttempts = 0;
       this.emit('reconnected', { attemptNumber });
     });
 
-    this.socket.on('reconnect_attempt', (attemptNumber) => {
+    this.socket.on('reconnect_attempt', attemptNumber => {
       console.log('[SocketClient] Reconnection attempt:', attemptNumber);
       this.reconnectAttempts = attemptNumber;
       this.connectionState = 'reconnecting';
       this.emit('reconnecting', { attempt: attemptNumber });
     });
 
-    this.socket.on('reconnect_error', (error) => {
+    this.socket.on('reconnect_error', error => {
       console.error('[SocketClient] Reconnection error:', error);
       this.emit('error', { type: 'reconnection', error });
     });
@@ -140,77 +141,80 @@ class SocketClient extends EventEmitter {
     this.socket.on('reconnect_failed', () => {
       console.error('[SocketClient] Reconnection failed after all attempts');
       this.connectionState = 'disconnected';
-      this.emit('error', { type: 'reconnection_failed', message: 'Max reconnection attempts reached' });
+      this.emit('error', {
+        type: 'reconnection_failed',
+        message: 'Max reconnection attempts reached',
+      });
     });
 
     // Server acknowledgment
-    this.socket.on('connected', (data) => {
+    this.socket.on('connected', data => {
       console.log('[SocketClient] Server acknowledged connection:', data);
     });
 
     // Ping/Pong for connection health
-    this.socket.on('pong', (data) => {
+    this.socket.on('pong', data => {
       this.emit('pong', data);
     });
 
     // Chat events
-    this.socket.on('chat:message', (data) => {
+    this.socket.on('chat:message', data => {
       this.emit('chat:message', data);
     });
 
-    this.socket.on('chat:user_joined', (data) => {
+    this.socket.on('chat:user_joined', data => {
       this.emit('chat:user_joined', data);
     });
 
-    this.socket.on('chat:user_left', (data) => {
+    this.socket.on('chat:user_left', data => {
       this.emit('chat:user_left', data);
     });
 
-    this.socket.on('chat:read_receipt', (data) => {
+    this.socket.on('chat:read_receipt', data => {
       this.emit('chat:read_receipt', data);
     });
 
     // User events
-    this.socket.on('user:status_update', (data) => {
+    this.socket.on('user:status_update', data => {
       this.emit('user:status_update', data);
     });
 
-    this.socket.on('user:typing', (data) => {
+    this.socket.on('user:typing', data => {
       this.emit('user:typing', data);
     });
 
     // Group events
-    this.socket.on('group:state_sync', (data) => {
+    this.socket.on('group:state_sync', data => {
       this.emit('group:state_sync', data);
     });
 
-    this.socket.on('group:member_online', (data) => {
+    this.socket.on('group:member_online', data => {
       this.emit('group:member_online', data);
     });
 
-    this.socket.on('group:member_offline', (data) => {
+    this.socket.on('group:member_offline', data => {
       this.emit('group:member_offline', data);
     });
 
-    this.socket.on('group:member_added', (data) => {
+    this.socket.on('group:member_added', data => {
       this.emit('group:member_added', data);
     });
 
-    this.socket.on('group:member_removed', (data) => {
+    this.socket.on('group:member_removed', data => {
       this.emit('group:member_removed', data);
     });
 
-    this.socket.on('group:settings_updated', (data) => {
+    this.socket.on('group:settings_updated', data => {
       this.emit('group:settings_updated', data);
     });
 
     // System events
-    this.socket.on('system:broadcast', (data) => {
+    this.socket.on('system:broadcast', data => {
       this.emit('system:broadcast', data);
     });
 
     // Error handling
-    this.socket.on('error', (error) => {
+    this.socket.on('error', error => {
       console.error('[SocketClient] Socket error:', error);
       this.emit('error', { type: 'socket', error });
     });
@@ -254,7 +258,12 @@ class SocketClient extends EventEmitter {
   /**
    * Send message to room
    */
-  sendMessage(roomId: string, content: string, type = 'text', callback?: (result: unknown) => void): void {
+  sendMessage(
+    roomId: string,
+    content: string,
+    type = 'text',
+    callback?: (result: unknown) => void
+  ): void {
     this.socket?.emit('chat:message', { roomId, content, type }, callback);
   }
 
@@ -352,7 +361,11 @@ class SocketClient extends EventEmitter {
   createGroup(name: string, memberIds?: string[]): Promise<{ groupId: string; state: unknown }> {
     return new Promise((resolve, reject) => {
       this.socket?.emit('group:create', { name, memberIds }, (response: unknown) => {
-        const res = response as { success?: boolean; data?: { groupId: string; state: unknown }; error?: string };
+        const res = response as {
+          success?: boolean;
+          data?: { groupId: string; state: unknown };
+          error?: string;
+        };
         if (res?.success) {
           resolve(res.data as { groupId: string; state: unknown });
         } else {
@@ -388,7 +401,7 @@ class SocketClient extends EventEmitter {
         if (res?.success) {
           resolve();
         } else {
-          reject(new Error(response?.error || 'Failed to leave group'));
+          reject(new Error(res?.error || 'Failed to leave group'));
         }
       });
     });
@@ -426,7 +439,7 @@ class SocketClient extends EventEmitter {
     });
   }
 
-    /**
+  /**
    * Add member to group
    */
   addGroupMember(groupId: string, userId: string, role?: 'admin' | 'member'): Promise<void> {

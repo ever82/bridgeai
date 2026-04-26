@@ -1,10 +1,11 @@
+const path = require('path');
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
   extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
   parserOptions: {
-    project: './tsconfig.json',
+    project: path.join(__dirname, 'tsconfig.eslint.json'),
     ecmaVersion: 2022,
     sourceType: 'module',
   },

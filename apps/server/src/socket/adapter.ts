@@ -3,8 +3,12 @@
  *
  * Configures Redis adapter for multi-node Socket.io scaling.
  */
-import { createClient } from 'redis';
-import type { RedisClientType } from 'redis';
+import { Redis } from 'ioredis';
+
+/**
+ * Redis client type alias for ioredis
+ */
+type RedisClientType = Redis;
 
 /**
  * Redis clients for adapter
@@ -28,29 +32,36 @@ export async function initializeRedisAdapter(): Promise<{
   }
 
   try {
-    // Create pub client
-    pubClient = createClient({
-      url: redisUrl,
-      socket: {
-        reconnectStrategy: (retries) => {
-          if (retries > 10) {
-            console.error('[Redis] Max reconnection attempts reached');
-            return new Error('Max reconnection attempts');
-          }
-          return Math.min(retries * 100, 3000);
-        },
+    // Create pub client (ioredis handles connection automatically)
+    pubClient = new Redis(redisUrl, {
+      reconnectStrategy: retries => {
+        if (retries > 10) {
+          console.error('[Redis] Max reconnection attempts reached');
+          return new Error('Max reconnection attempts');
+        }
+        return Math.min(retries * 100, 3000);
       },
+      lazyConnect: false,
     });
 
-    // Create sub client (duplicate pub client config)
-    subClient = await pubClient.duplicate() as RedisClientType;
+    // Create sub client (new instance with same config)
+    subClient = new Redis(redisUrl, {
+      reconnectStrategy: retries => {
+        if (retries > 10) {
+          console.error('[Redis] Max reconnection attempts reached');
+          return new Error('Max reconnection attempts');
+        }
+        return Math.min(retries * 100, 3000);
+      },
+      lazyConnect: false,
+    });
 
     // Setup error handlers
-    pubClient.on('error', (err) => {
+    pubClient.on('error', err => {
       console.error('[Redis] Pub client error:', err);
     });
 
-    subClient.on('error', (err) => {
+    subClient.on('error', err => {
       console.error('[Redis] Sub client error:', err);
     });
 
@@ -63,9 +74,8 @@ export async function initializeRedisAdapter(): Promise<{
       console.log('[Redis] Sub client reconnecting...');
     });
 
-    // Connect clients
-    await pubClient.connect();
-    await subClient.connect();
+    // Wait for both clients to be ready
+    await Promise.all([pubClient.ping(), subClient.ping()]);
 
     console.log('[Socket.io] Redis adapter connected:', redisUrl);
 
@@ -112,7 +122,7 @@ export async function closeRedisAdapter(): Promise<void> {
  * Check if Redis adapter is connected
  */
 export function isRedisAdapterConnected(): boolean {
-  return pubClient?.isOpen && subClient?.isOpen;
+  return pubClient?.status === 'ready' && subClient?.status === 'ready';
 }
 
 export { pubClient, subClient };

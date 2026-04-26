@@ -7,6 +7,12 @@ import type { Socket } from 'socket.io';
 
 import { jwtService } from '../../services/jwtService';
 import { rbacService } from '../../services/rbacService';
+import { connectionManager } from '../connectionManager';
+
+/**
+ * Maximum connections allowed per user (configurable via env)
+ */
+const MAX_CONNECTIONS_PER_USER = parseInt(process.env.MAX_SOCKET_CONNECTIONS_PER_USER || '5', 10);
 
 /**
  * Extended Socket type with user info
@@ -60,6 +66,13 @@ export async function socketAuthMiddleware(
 
     // Join user-specific room for targeted messaging
     socket.join(`user:${decoded.userId}`);
+
+    // Enforce per-user connection limit
+    const userConnections = connectionManager.getUserConnections(decoded.userId);
+    if (userConnections.length >= MAX_CONNECTIONS_PER_USER) {
+      next(new Error(`Connection limit exceeded (max ${MAX_CONNECTIONS_PER_USER})`));
+      return;
+    }
 
     next();
   } catch (error) {

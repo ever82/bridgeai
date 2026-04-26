@@ -85,6 +85,7 @@ function setupNamespaces(io: SocketServer): void {
 
   // Chat namespace for chat-specific events
   const chatNsp = io.of('/chat');
+  chatNsp.use(socketAuthMiddleware);
   chatNsp.on('connection', socket => {
     handleConnection(socket, 'chat');
     registerChatHandlers(socket, chatNsp);
