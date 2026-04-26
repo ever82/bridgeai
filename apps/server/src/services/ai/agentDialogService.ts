@@ -798,7 +798,7 @@ ${historyText || '（无历史记录）'}
   /**
    * Persist session to database
    */
-  private async persistSession(session: DialogSession): Promise<void> {
+  async persistSession(session: DialogSession): Promise<void> {
     try {
       const { prisma } = await import('../../db/client').catch(() => ({ prisma: null }));
       if (!prisma) return;
@@ -886,27 +886,29 @@ ${historyText || '（无历史记录）'}
       if (!prisma) return memSessions;
 
       const dbRecords = await prisma.dialogSessionRecord.findMany({
-        where: {
-          participants: { array_contains: participantId },
-        },
         orderBy: { updatedAt: 'desc' },
         take: options?.limit || 50,
         skip: options?.offset || 0,
       });
 
-      const dbSessions: DialogSession[] = dbRecords.map(r => ({
-        id: r.id,
-        type: r.type as DialogType,
-        participants: r.participants as DialogParticipant[],
-        scene: r.scene || undefined,
-        context: r.context as DialogContext,
-        messages: (r.messages as DialogMessage[]) || [],
-        status: r.status as DialogSession['status'],
-        dialogPhase: (r.dialogPhase as DialogSession['dialogPhase']) || 'intro',
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt,
-        metadata: (r.metadata as Record<string, any>) || undefined,
-      }));
+      const dbSessions: DialogSession[] = dbRecords
+        .filter(r => {
+          const participants = r.participants as DialogParticipant[];
+          return participants.some(p => p.id === participantId);
+        })
+        .map(r => ({
+          id: r.id,
+          type: r.type as DialogType,
+          participants: r.participants as DialogParticipant[],
+          scene: r.scene || undefined,
+          context: r.context as DialogContext,
+          messages: (r.messages as DialogMessage[]) || [],
+          status: r.status as DialogSession['status'],
+          dialogPhase: (r.dialogPhase as DialogSession['dialogPhase']) || 'intro',
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+          metadata: (r.metadata as Record<string, any>) || undefined,
+        }));
 
       // Merge, deduplicating by id
       const seen = new Set(memSessions.map(s => s.id));

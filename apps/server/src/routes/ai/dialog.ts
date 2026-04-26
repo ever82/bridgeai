@@ -12,6 +12,7 @@ const validate = _validate as any;
 import { logger } from '../../utils/logger';
 import {
   agentDialogService,
+  DialogMessage,
   DialogParticipant,
   DialogType,
 } from '../../services/ai/agentDialogService';
@@ -42,31 +43,39 @@ const createSessionSchema = z.object({
   type: z.enum(['agent_to_agent', 'agent_to_user', 'negotiation', 'matching']),
   participants: z.array(participantSchema).min(2),
   scene: z.string().optional(),
-  initialContext: z.object({
-    goals: z.array(z.string()).optional(),
-    constraints: z.array(z.string()).optional(),
-    userPreferences: z.record(z.any()).optional(),
-    negotiationState: z.object({
-      currentRound: z.number(),
-      agreedTerms: z.array(z.string()),
-      pendingIssues: z.array(z.string()),
-    }).optional(),
-    matchingCriteria: z.object({
-      requirements: z.array(z.string()),
-      preferences: z.array(z.string()),
-      dealBreakers: z.array(z.string()),
-    }).optional(),
-  }).optional(),
+  initialContext: z
+    .object({
+      goals: z.array(z.string()).optional(),
+      constraints: z.array(z.string()).optional(),
+      userPreferences: z.record(z.any()).optional(),
+      negotiationState: z
+        .object({
+          currentRound: z.number(),
+          agreedTerms: z.array(z.string()),
+          pendingIssues: z.array(z.string()),
+        })
+        .optional(),
+      matchingCriteria: z
+        .object({
+          requirements: z.array(z.string()),
+          preferences: z.array(z.string()),
+          dealBreakers: z.array(z.string()),
+        })
+        .optional(),
+    })
+    .optional(),
 });
 
 const generateMessageSchema = z.object({
   senderId: z.string(),
   senderType: z.enum(['agent', 'user']),
   content: z.string().min(1),
-  options: z.object({
-    temperature: z.number().min(0).max(2).optional(),
-    maxTokens: z.number().positive().max(4000).optional(),
-  }).optional(),
+  options: z
+    .object({
+      temperature: z.number().min(0).max(2).optional(),
+      maxTokens: z.number().positive().max(4000).optional(),
+    })
+    .optional(),
 });
 
 const agentDialogSchema = z.object({
@@ -74,10 +83,12 @@ const agentDialogSchema = z.object({
   receiverAgentId: z.string(),
   content: z.string().min(1),
   scene: z.string(),
-  context: z.object({
-    goals: z.array(z.string()).optional(),
-    constraints: z.array(z.string()).optional(),
-  }).optional(),
+  context: z
+    .object({
+      goals: z.array(z.string()).optional(),
+      constraints: z.array(z.string()).optional(),
+    })
+    .optional(),
 });
 
 const userDialogSchema = z.object({
@@ -128,34 +139,30 @@ router.post(
  * @desc    获取对话会话详情
  * @access  Private
  */
-router.get(
-  '/sessions/:sessionId',
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    try {
-      const { sessionId } = req.params;
-      const session = agentDialogService.getSession(sessionId);
+router.get('/sessions/:sessionId', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const { sessionId } = req.params;
+    const session = await agentDialogService.getSessionAsync(sessionId);
 
-      if (!session) {
-        return res.status(404).json({
-          success: false,
-          error: 'Session not found',
-        });
-      }
-
-      res.json({
-        success: true,
-        data: { session },
-      });
-    } catch (error) {
-      logger.error('Failed to get session', { error });
-      res.status(500).json({
+    if (!session) {
+      return res.status(404).json({
         success: false,
-        error: 'Failed to get session',
+        error: 'Session not found',
       });
     }
+
+    res.json({
+      success: true,
+      data: { session },
+    });
+  } catch (error) {
+    logger.error('Failed to get session', { error });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get session',
+    });
   }
-);
+});
 
 /**
  * @route   GET /api/v1/ai/dialog/sessions/:sessionId/messages
@@ -169,6 +176,9 @@ router.get(
     try {
       const { sessionId } = req.params;
       const { limit, offset } = req.query;
+
+      // Load session into memory first (handles DB-only sessions)
+      await agentDialogService.getSessionAsync(sessionId);
 
       const messages = agentDialogService.getSessionMessages(sessionId, {
         limit: limit ? parseInt(limit as string) : undefined,
@@ -273,16 +283,37 @@ router.post(
           temperature: options?.temperature ?? 0.7,
           maxTokens: options?.maxTokens ?? 500,
         },
-        (chunk) => {
+        chunk => {
           if (chunk.content) {
             fullText += chunk.content;
-            res.write(`data: ${JSON.stringify({ messageId, content: chunk.content, done: false })}\n\n`);
+            res.write(
+              `data: ${JSON.stringify({ messageId, content: chunk.content, done: false })}\n\n`
+            );
           }
         }
       );
 
       res.write(`data: ${JSON.stringify({ messageId, fullText, content: '', done: true })}\n\n`);
       res.end();
+
+      // Persist the streamed message to session history
+      const message: DialogMessage = {
+        id: messageId,
+        sessionId,
+        senderId,
+        senderType: senderType as 'agent' | 'user',
+        senderName: sender.name,
+        content: fullText,
+        timestamp: new Date(),
+        metadata: {
+          agentType: sender.agentType,
+          scene: session.scene,
+          streamed: true,
+        },
+      };
+      session.messages.push(message);
+      session.updatedAt = new Date();
+      await agentDialogService.persistSession(session);
     } catch (error) {
       logger.error('Failed to stream message', { error });
       if (!res.headersSent) {
@@ -453,26 +484,22 @@ router.post(
  * @desc    获取对话服务统计
  * @access  Private
  */
-router.get(
-  '/stats',
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    try {
-      res.json({
-        success: true,
-        data: {
-          sessionCount: agentDialogService.getSessionCount(),
-          version: agentDialogService.getVersion(),
-        },
-      });
-    } catch (error) {
-      logger.error('Failed to get stats', { error });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to get stats',
-      });
-    }
+router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    res.json({
+      success: true,
+      data: {
+        sessionCount: agentDialogService.getSessionCount(),
+        version: agentDialogService.getVersion(),
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to get stats', { error });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get stats',
+    });
   }
-);
+});
 
 export default router;
