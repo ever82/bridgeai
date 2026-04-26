@@ -4,21 +4,12 @@
  */
 
 import { calculateDistance, isWithinBoundingBox, createBoundingBox } from '@bridgeai/shared';
-import type {
-  Location,
-  GeoCoordinates,
-  LocationFilter,
-  GeoFence,
-  DistanceFilter,
-} from '@bridgeai/shared';
-import {
-  checkGeoFence,
-  findContainingGeoFences,
-  getGeoFencesWithinDistance,
-} from '@bridgeai/shared';
+import type { Location, GeoCoordinates, LocationFilter, GeoFence } from '@bridgeai/shared';
 
 import { logger } from '../utils/logger';
 import { prisma } from '../db/client';
+
+import { checkPointInFence, findContainingFences } from './geoFenceService';
 
 export interface AgentLocationData {
   agentId: string;
@@ -113,9 +104,7 @@ export async function updateAgentLocation(
 /**
  * Get agent's current location
  */
-export async function getAgentLocation(
-  agentId: string
-): Promise<AgentLocationData | null> {
+export async function getAgentLocation(agentId: string): Promise<AgentLocationData | null> {
   try {
     const agent = await prisma.agent.findUnique({
       where: { id: agentId },
@@ -155,36 +144,50 @@ export async function searchAgentsByLocation(
   try {
     const where: any = {};
 
-    // Province filter
+    // Build combined location filter using AND to avoid overwriting
+    const locationFilters: any[] = [];
+
     if (filter.province) {
-      where.profiles = {
-        l1Data: {
-          path: ['location', 'province'],
-          equals: filter.province,
+      locationFilters.push({
+        profiles: {
+          some: {
+            l1Data: {
+              path: ['location', 'province'],
+              equals: filter.province,
+            },
+          },
         },
-      };
+      });
     }
 
-    // City filter
     if (filter.city) {
-      where.profiles = {
-        ...where.profiles,
-        l1Data: {
-          path: ['location', 'city'],
-          equals: filter.city,
+      locationFilters.push({
+        profiles: {
+          some: {
+            l1Data: {
+              path: ['location', 'city'],
+              equals: filter.city,
+            },
+          },
         },
-      };
+      });
     }
 
-    // District filter
     if (filter.district) {
-      where.profiles = {
-        ...where.profiles,
-        l1Data: {
-          path: ['location', 'district'],
-          equals: filter.district,
+      locationFilters.push({
+        profiles: {
+          some: {
+            l1Data: {
+              path: ['location', 'district'],
+              equals: filter.district,
+            },
+          },
         },
-      };
+      });
+    }
+
+    if (locationFilters.length > 0) {
+      where.AND = locationFilters;
     }
 
     const [agents, total] = await Promise.all([
@@ -216,10 +219,7 @@ export async function searchAgentsByLocation(
     if (filter.withinRadius) {
       results = results.filter(item => {
         if (!item.coordinates) return false;
-        const { distanceKm } = calculateDistance(
-          item.coordinates,
-          filter.withinRadius!.center
-        );
+        const { distanceKm } = calculateDistance(item.coordinates, filter.withinRadius!.center);
         item.distanceKm = distanceKm;
         return distanceKm <= filter.withinRadius!.radiusKm;
       });
@@ -235,11 +235,14 @@ export async function searchAgentsByLocation(
 
     // Apply geo-fence filter
     if (filter.withinFence) {
-      results = results.filter(item => {
-        if (!item.coordinates) return false;
-        const result = checkGeoFence(item.coordinates, filter.withinFence!);
-        return result.inside;
-      });
+      const fenceChecks = await Promise.all(
+        results.map(async item => {
+          if (!item.coordinates) return false;
+          const result = await checkPointInFence(item.coordinates, filter.withinFence!);
+          return result.inside;
+        })
+      );
+      results = results.filter((_, i) => fenceChecks[i]);
     }
 
     return { agents: results, total };
@@ -314,9 +317,7 @@ export async function findAgentsNearLocation(
 /**
  * Get agents within geo-fences
  */
-export async function getAgentsInGeoFence(
-  fenceId: string
-): Promise<AgentWithLocation[]> {
+export async function getAgentsInGeoFence(fenceId: string): Promise<AgentWithLocation[]> {
   try {
     const agents = await prisma.agent.findMany({
       where: {
@@ -336,7 +337,7 @@ export async function getAgentsInGeoFence(
         longitude: agent.longitude,
       };
 
-      const result = checkGeoFence(coords, fenceId);
+      const result = await checkPointInFence(coords, fenceId);
 
       if (result.inside) {
         const profile = getPrimaryProfile(agent);
@@ -361,9 +362,7 @@ export async function getAgentsInGeoFence(
 /**
  * Get geo-fences containing an agent
  */
-export async function getAgentGeoFences(
-  agentId: string
-): Promise<GeoFence[]> {
+export async function getAgentGeoFences(agentId: string): Promise<GeoFence[]> {
   try {
     const agent = await prisma.agent.findUnique({
       where: { id: agentId },
@@ -378,7 +377,7 @@ export async function getAgentGeoFences(
       longitude: agent.longitude,
     };
 
-    return findContainingGeoFences(coords);
+    return findContainingFences(coords) as unknown as GeoFence[];
   } catch (error) {
     logger.error('Failed to get agent geo-fences', { error, agentId });
     return [];
@@ -424,11 +423,7 @@ export async function batchUpdateAgentLocations(
   let failed = 0;
 
   for (const update of updates) {
-    const result = await updateAgentLocation(
-      update.agentId,
-      update.location,
-      update.coordinates
-    );
+    const result = await updateAgentLocation(update.agentId, update.location, update.coordinates);
     if (result) {
       success++;
     } else {

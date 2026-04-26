@@ -1,25 +1,22 @@
 /**
  * Geo-fencing Service
- * 地理围栏服务
+ * 地理围栏服务 - 纯函数计算层
+ *
+ * Persistence is handled by the server-side geoFenceService (Prisma-backed).
+ * This module provides stateless geo computation utilities.
  */
 
-import {
-  GeoFence,
-  GeoFenceCheckResult,
-  GeoCoordinates,
-  GeoJSONPolygon,
-} from '../types/location';
-import {
-  calculateDistance,
-  isPointInPolygon,
-  calculatePolygonCentroid,
-} from '../utils/geoUtils';
+import { GeoFence, GeoFenceCheckResult, GeoCoordinates, GeoJSONPolygon } from '../types/location';
+import { calculateDistance, isPointInPolygon, calculatePolygonCentroid } from '../utils/geoUtils';
 
-// In-memory store for geo-fences (in production, use database)
+/**
+ * In-memory store — used only for tests and standalone usage.
+ * Server code should use the Prisma-backed geoFenceService instead.
+ */
 const geoFences: Map<string, GeoFence> = new Map();
 
 /**
- * Create a new geo-fence
+ * Create a new geo-fence (in-memory only — use server DB service for persistence)
  */
 export function createGeoFence(
   name: string,
@@ -40,21 +37,21 @@ export function createGeoFence(
 }
 
 /**
- * Get a geo-fence by ID
+ * Get a geo-fence by ID (in-memory)
  */
 export function getGeoFence(id: string): GeoFence | undefined {
   return geoFences.get(id);
 }
 
 /**
- * Get all geo-fences
+ * Get all geo-fences (in-memory)
  */
 export function getAllGeoFences(): GeoFence[] {
   return Array.from(geoFences.values());
 }
 
 /**
- * Update a geo-fence
+ * Update a geo-fence (in-memory)
  */
 export function updateGeoFence(
   id: string,
@@ -74,7 +71,7 @@ export function updateGeoFence(
 }
 
 /**
- * Delete a geo-fence
+ * Delete a geo-fence (in-memory)
  */
 export function deleteGeoFence(id: string): boolean {
   return geoFences.delete(id);
@@ -83,15 +80,23 @@ export function deleteGeoFence(id: string): boolean {
 /**
  * Check if a point is inside a geo-fence
  */
-export function checkGeoFence(
-  point: GeoCoordinates,
-  fenceId: string
-): GeoFenceCheckResult {
+export function checkGeoFence(point: GeoCoordinates, fenceId: string): GeoFenceCheckResult {
   const fence = geoFences.get(fenceId);
   if (!fence) {
     return { inside: false };
   }
 
+  return checkPointAgainstFence(point, fence);
+}
+
+/**
+ * Stateless: check a point against a given fence geometry.
+ * Server code should prefer this over the in-memory checkGeoFence.
+ */
+export function checkPointAgainstFence(
+  point: GeoCoordinates,
+  fence: GeoFence
+): GeoFenceCheckResult {
   const inside = isPointInPolygon(point, fence.geometry);
 
   if (inside) {
@@ -116,10 +121,7 @@ export function checkGeoFence(
  * Check point against multiple geo-fences
  * Returns array of fence IDs the point is inside
  */
-export function checkMultipleGeoFences(
-  point: GeoCoordinates,
-  fenceIds: string[]
-): string[] {
+export function checkMultipleGeoFences(point: GeoCoordinates, fenceIds: string[]): string[] {
   return fenceIds.filter(id => {
     const result = checkGeoFence(point, id);
     return result.inside;
@@ -127,12 +129,17 @@ export function checkMultipleGeoFences(
 }
 
 /**
- * Find all geo-fences containing a point
+ * Find all geo-fences containing a point (in-memory)
  */
 export function findContainingGeoFences(point: GeoCoordinates): GeoFence[] {
-  return Array.from(geoFences.values()).filter(fence =>
-    isPointInPolygon(point, fence.geometry)
-  );
+  return Array.from(geoFences.values()).filter(fence => isPointInPolygon(point, fence.geometry));
+}
+
+/**
+ * Stateless: find which fences from a given list contain the point.
+ */
+export function findContainingFromList(point: GeoCoordinates, fences: GeoFence[]): GeoFence[] {
+  return fences.filter(fence => isPointInPolygon(point, fence.geometry));
 }
 
 /**
@@ -150,17 +157,12 @@ export function createCircularGeoFence(
   for (let i = 0; i <= segments; i++) {
     const angle = (i / segments) * 2 * Math.PI;
     // Approximate: 1 degree latitude ≈ 111km
-    const latOffset =
-      (Math.cos(angle) * radiusMeters) / 111000;
+    const latOffset = (Math.cos(angle) * radiusMeters) / 111000;
     // Approximate: 1 degree longitude varies by latitude
     const lngOffset =
-      (Math.sin(angle) * radiusMeters) /
-      (111000 * Math.cos((center.latitude * Math.PI) / 180));
+      (Math.sin(angle) * radiusMeters) / (111000 * Math.cos((center.latitude * Math.PI) / 180));
 
-    coordinates.push([
-      center.longitude + lngOffset,
-      center.latitude + latOffset,
-    ]);
+    coordinates.push([center.longitude + lngOffset, center.latitude + latOffset]);
   }
 
   // Close the polygon
@@ -204,7 +206,7 @@ export function createRectangularGeoFence(
 }
 
 /**
- * Get geo-fences within a distance from a point
+ * Get geo-fences within a distance from a point (in-memory)
  */
 export function getGeoFencesWithinDistance(
   point: GeoCoordinates,
@@ -212,7 +214,29 @@ export function getGeoFencesWithinDistance(
 ): Array<{ fence: GeoFence; distanceKm: number }> {
   const results: Array<{ fence: GeoFence; distanceKm: number }> = [];
 
-  for (const fence of geoFences.values()) {
+  geoFences.forEach(fence => {
+    const centroid = calculatePolygonCentroid(fence.geometry);
+    const { distanceKm } = calculateDistance(point, centroid);
+
+    if (distanceKm <= maxDistanceKm) {
+      results.push({ fence, distanceKm });
+    }
+  });
+
+  return results.sort((a, b) => a.distanceKm - b.distanceKm);
+}
+
+/**
+ * Stateless: filter a list of fences by distance from a point.
+ */
+export function filterFencesWithinDistance(
+  point: GeoCoordinates,
+  fences: GeoFence[],
+  maxDistanceKm: number
+): Array<{ fence: GeoFence; distanceKm: number }> {
+  const results: Array<{ fence: GeoFence; distanceKm: number }> = [];
+
+  for (const fence of fences) {
     const centroid = calculatePolygonCentroid(fence.geometry);
     const { distanceKm } = calculateDistance(point, centroid);
 
@@ -227,9 +251,10 @@ export function getGeoFencesWithinDistance(
 /**
  * Validate geo-fence polygon
  */
-export function validateGeoFencePolygon(
-  polygon: GeoJSONPolygon
-): { valid: boolean; errors: string[] } {
+export function validateGeoFencePolygon(polygon: GeoJSONPolygon): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   if (!polygon.coordinates || polygon.coordinates.length === 0) {

@@ -61,7 +61,7 @@ describe('LocationSearchService', () => {
 
     it('should include Beijing and Shanghai', async () => {
       const provinces = await getProvinces();
-      const codes = provinces.map((p) => p.code);
+      const codes = provinces.map(p => p.code);
       expect(codes).toContain('110000'); // Beijing
       expect(codes).toContain('310000'); // Shanghai
     });
@@ -83,7 +83,7 @@ describe('LocationSearchService', () => {
 
     it('should return Guangzhou and Shenzhen for Guangdong', async () => {
       const cities = await getCitiesByProvince('440000');
-      const names = cities.map((c) => c.name);
+      const names = cities.map(c => c.name);
       expect(names).toContain('广州市');
       expect(names).toContain('深圳市');
     });
@@ -176,7 +176,7 @@ describe('LocationSearchService', () => {
     it('should find cities by name', async () => {
       const results = await searchLocations('广州');
       expect(results).toBeInstanceOf(Array);
-      expect(results.some((r) => r.type === 'city')).toBe(true);
+      expect(results.some(r => r.type === 'city')).toBe(true);
     });
 
     it('should find districts by name', async () => {
@@ -202,7 +202,7 @@ describe('LocationSearchService', () => {
         {
           id: 'agent-1',
           name: 'Agent 1',
-          profile: { l1Data: { location: { province: '110000', provinceName: '北京市' } } },
+          profiles: [{ l1Data: { location: { province: '110000', provinceName: '北京市' } } }],
         },
       ]);
       (prisma.agent.count as jest.Mock).mockResolvedValue(1);
@@ -239,12 +239,16 @@ describe('LocationSearchService', () => {
         {
           id: 'agent-1',
           name: 'Agent 1',
-          profile: { l1Data: { location: { coordinates: { latitude: 39.9, longitude: 116.4 } } } },
+          profiles: [
+            { l1Data: { location: { coordinates: { latitude: 39.9, longitude: 116.4 } } } },
+          ],
         },
         {
           id: 'agent-2',
           name: 'Agent 2',
-          profile: { l1Data: { location: { coordinates: { latitude: 40.0, longitude: 116.5 } } } },
+          profiles: [
+            { l1Data: { location: { coordinates: { latitude: 40.0, longitude: 116.5 } } } },
+          ],
         },
       ]);
       (prisma.agent.count as jest.Mock).mockResolvedValue(2);
@@ -298,27 +302,23 @@ describe('LocationSearchService', () => {
           type: 'SUPPLY',
           latitude: 39.9,
           longitude: 116.4,
-          profile: { l1Data: {} },
+          profiles: [{ l1Data: {} }],
         },
       ]);
 
-      const results = await findAgentsWithinRadius(
-        { latitude: 39.9, longitude: 116.4 },
-        15,
-        { excludeAgentId: 'agent-1' }
-      );
+      const results = await findAgentsWithinRadius({ latitude: 39.9, longitude: 116.4 }, 15, {
+        excludeAgentId: 'agent-1',
+      });
 
-      expect(results.every((r) => r.agent.id !== 'agent-1')).toBe(true);
+      expect(results.every(r => r.agent.id !== 'agent-1')).toBe(true);
     });
 
     it('should filter by agent type', async () => {
       (prisma.agent.findMany as jest.Mock).mockResolvedValue([]);
 
-      await findAgentsWithinRadius(
-        { latitude: 39.9, longitude: 116.4 },
-        15,
-        { agentType: 'SUPPLY' }
-      );
+      await findAgentsWithinRadius({ latitude: 39.9, longitude: 116.4 }, 15, {
+        agentType: 'SUPPLY',
+      });
 
       expect(prisma.agent.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -355,11 +355,15 @@ describe('LocationSearchService', () => {
       (prisma.agent.findUnique as jest.Mock)
         .mockResolvedValueOnce({
           id: 'agent-1',
-          profile: { l1Data: { location: { coordinates: { latitude: 39.9, longitude: 116.4 } } } },
+          profiles: [
+            { l1Data: { location: { coordinates: { latitude: 39.9, longitude: 116.4 } } } },
+          ],
         })
         .mockResolvedValueOnce({
           id: 'agent-2',
-          profile: { l1Data: { location: { coordinates: { latitude: 31.2, longitude: 121.4 } } } },
+          profiles: [
+            { l1Data: { location: { coordinates: { latitude: 31.2, longitude: 121.4 } } } },
+          ],
         });
 
       const distance = await getDistanceBetweenAgents('agent-1', 'agent-2');
@@ -380,11 +384,11 @@ describe('LocationSearchService', () => {
       (prisma.agent.findUnique as jest.Mock)
         .mockResolvedValueOnce({
           id: 'agent-1',
-          profile: { l1Data: {} },
+          profiles: [{ l1Data: {} }],
         })
         .mockResolvedValueOnce({
           id: 'agent-2',
-          profile: { l1Data: {} },
+          profiles: [{ l1Data: {} }],
         });
 
       const distance = await getDistanceBetweenAgents('agent-1', 'agent-2');
@@ -430,10 +434,7 @@ describe('Geo Utilities Integration', () => {
 
   describe('createBoundingBox', () => {
     it('should create symmetric bounding box', () => {
-      const box = createBoundingBox(
-        { latitude: 39.9, longitude: 116.4 },
-        10
-      );
+      const box = createBoundingBox({ latitude: 39.9, longitude: 116.4 }, 10);
 
       expect(box.minLat).toBeLessThan(39.9);
       expect(box.maxLat).toBeGreaterThan(39.9);
@@ -442,10 +443,7 @@ describe('Geo Utilities Integration', () => {
     });
 
     it('should handle edge of latitude range', () => {
-      const box = createBoundingBox(
-        { latitude: 89, longitude: 0 },
-        10
-      );
+      const box = createBoundingBox({ latitude: 89, longitude: 0 }, 10);
 
       // Should clamp latitude to valid range
       expect(box.maxLat).toBeLessThanOrEqual(90);
@@ -461,9 +459,7 @@ describe('Geo Utilities Integration', () => {
         maxLng: 117.0,
       };
 
-      expect(
-        isWithinBoundingBox({ latitude: 39.5, longitude: 116.5 }, box)
-      ).toBe(true);
+      expect(isWithinBoundingBox({ latitude: 39.5, longitude: 116.5 }, box)).toBe(true);
     });
 
     it('should return false for point outside box', () => {
@@ -474,9 +470,7 @@ describe('Geo Utilities Integration', () => {
         maxLng: 117.0,
       };
 
-      expect(
-        isWithinBoundingBox({ latitude: 35.0, longitude: 116.5 }, box)
-      ).toBe(false);
+      expect(isWithinBoundingBox({ latitude: 35.0, longitude: 116.5 }, box)).toBe(false);
     });
 
     it('should return true for point on boundary', () => {
@@ -487,9 +481,7 @@ describe('Geo Utilities Integration', () => {
         maxLng: 117.0,
       };
 
-      expect(
-        isWithinBoundingBox({ latitude: 39.0, longitude: 116.0 }, box)
-      ).toBe(true);
+      expect(isWithinBoundingBox({ latitude: 39.0, longitude: 116.0 }, box)).toBe(true);
     });
   });
 

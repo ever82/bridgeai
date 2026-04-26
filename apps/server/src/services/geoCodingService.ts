@@ -1,84 +1,15 @@
 /**
  * Geocoding Service
  * 地址编码服务 - 地址与坐标相互转换
+ *
+ * Uses development fallback data from locationData.ts.
+ * For production, integrate 高德/百度地图 API.
  */
 
 import { GeoCoordinates, Location } from '@bridgeai/shared';
 
 import { logger } from '../utils/logger';
-
-// Mock address database - in production, use real map API (高德/百度)
-const ADDRESS_DATABASE: Array<{
-  address: string;
-  location: Location;
-  coordinates: GeoCoordinates;
-}> = [
-  {
-    address: '北京市朝阳区建国路',
-    location: {
-      province: '110000',
-      provinceName: '北京市',
-      city: '110100',
-      cityName: '北京市',
-      district: '110105',
-      districtName: '朝阳区',
-      address: '建国路',
-    },
-    coordinates: { latitude: 39.9088, longitude: 116.3975 },
-  },
-  {
-    address: '上海市浦东新区陆家嘴',
-    location: {
-      province: '310000',
-      provinceName: '上海市',
-      city: '310100',
-      cityName: '上海市',
-      district: '310115',
-      districtName: '浦东新区',
-      address: '陆家嘴',
-    },
-    coordinates: { latitude: 31.2304, longitude: 121.4737 },
-  },
-  {
-    address: '广州市天河区珠江新城',
-    location: {
-      province: '440000',
-      provinceName: '广东省',
-      city: '440100',
-      cityName: '广州市',
-      district: '440106',
-      districtName: '天河区',
-      address: '珠江新城',
-    },
-    coordinates: { latitude: 23.1196, longitude: 113.3223 },
-  },
-  {
-    address: '深圳市南山区科技园',
-    location: {
-      province: '440000',
-      provinceName: '广东省',
-      city: '440300',
-      cityName: '深圳市',
-      district: '440305',
-      districtName: '南山区',
-      address: '科技园',
-    },
-    coordinates: { latitude: 22.5312, longitude: 113.9288 },
-  },
-  {
-    address: '杭州市西湖区武林广场',
-    location: {
-      province: '330000',
-      provinceName: '浙江省',
-      city: '330100',
-      cityName: '杭州市',
-      district: '330102',
-      districtName: '西湖区',
-      address: '武林广场',
-    },
-    coordinates: { latitude: 30.2489, longitude: 120.1655 },
-  },
-];
+import { ADDRESS_DATABASE } from '../data/locationData';
 
 export interface GeocodingResult {
   success: boolean;
@@ -109,13 +40,11 @@ export interface AddressSuggestion {
  * Convert address to coordinates (geocoding)
  * 地址转坐标
  */
-export async function geocode(
-  address: string
-): Promise<GeocodingResult> {
+export async function geocode(address: string): Promise<GeocodingResult> {
   try {
     logger.info('Geocoding address', { address });
 
-    // Exact match in mock database
+    // Exact match in address database
     const exact = ADDRESS_DATABASE.find(
       item => item.address === address || item.address.includes(address)
     );
@@ -131,8 +60,8 @@ export async function geocode(
     }
 
     // Partial match
-    const partial = ADDRESS_DATABASE.find(item =>
-      address.includes(item.address) || item.address.includes(address)
+    const partial = ADDRESS_DATABASE.find(
+      item => address.includes(item.address) || item.address.includes(address)
     );
 
     if (partial) {
@@ -164,13 +93,11 @@ export async function geocode(
  * Convert coordinates to address (reverse geocoding)
  * 坐标转地址
  */
-export async function reverseGeocode(
-  coordinates: GeoCoordinates
-): Promise<ReverseGeocodingResult> {
+export async function reverseGeocode(coordinates: GeoCoordinates): Promise<ReverseGeocodingResult> {
   try {
     logger.info('Reverse geocoding coordinates', { coordinates });
 
-    // Find nearest location in mock database
+    // Find nearest location in address database
     let nearest = ADDRESS_DATABASE[0];
     let minDistance = Number.MAX_VALUE;
 
@@ -236,9 +163,7 @@ export async function searchAddresses(
       }
     }
 
-    return results
-      .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, limit);
+    return results.sort((a, b) => b.confidence - a.confidence).slice(0, limit);
   } catch (error) {
     logger.error('Address search failed', { error, query });
     return [];
@@ -248,16 +173,8 @@ export async function searchAddresses(
 /**
  * Validate coordinates
  */
-export function isValidCoordinatePair(
-  latitude: number,
-  longitude: number
-): boolean {
-  return (
-    latitude >= -90 &&
-    latitude <= 90 &&
-    longitude >= -180 &&
-    longitude <= 180
-  );
+export function isValidCoordinatePair(latitude: number, longitude: number): boolean {
+  return latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
 }
 
 /**
@@ -268,10 +185,7 @@ export async function getDistanceBetweenAddresses(
   address2: string
 ): Promise<number | null> {
   try {
-    const [result1, result2] = await Promise.all([
-      geocode(address1),
-      geocode(address2),
-    ]);
+    const [result1, result2] = await Promise.all([geocode(address1), geocode(address2)]);
 
     if (!result1.success || !result2.success) {
       return null;
@@ -280,7 +194,8 @@ export async function getDistanceBetweenAddresses(
     const lat1Rad = (result1.coordinates!.latitude * Math.PI) / 180;
     const lat2Rad = (result2.coordinates!.latitude * Math.PI) / 180;
     const dLat = ((result2.coordinates!.latitude - result1.coordinates!.latitude) * Math.PI) / 180;
-    const dLng = ((result2.coordinates!.longitude - result1.coordinates!.longitude) * Math.PI) / 180;
+    const dLng =
+      ((result2.coordinates!.longitude - result1.coordinates!.longitude) * Math.PI) / 180;
 
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +

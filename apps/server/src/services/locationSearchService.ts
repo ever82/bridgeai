@@ -3,64 +3,12 @@
  * 位置搜索服务
  */
 
-import {
-  Location,
-  GeoCoordinates,
-  LocationFilter,
-  LocationSearchRequest,
-  LocationSearchResult,
-  DistanceFilter,
-  BoundingBox,
-} from '@bridgeai/shared';
-import {
-  calculateDistance,
-  isWithinBoundingBox,
-  createBoundingBox,
-} from '@bridgeai/shared';
+import { Location, GeoCoordinates, LocationFilter, LocationSearchResult } from '@bridgeai/shared';
+import { calculateDistance, isWithinBoundingBox } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
-
-// Mock data for provinces, cities, districts
-// In production, this would come from a database
-const PROVINCES: Array<{ code: string; name: string }> = [
-  { code: '110000', name: '北京市' },
-  { code: '310000', name: '上海市' },
-  { code: '440000', name: '广东省' },
-  { code: '320000', name: '江苏省' },
-  { code: '330000', name: '浙江省' },
-  { code: '510000', name: '四川省' },
-  { code: '420000', name: '湖北省' },
-  { code: '610000', name: '陕西省' },
-];
-
-const CITIES: Array<{ code: string; name: string; provinceCode: string }> = [
-  { code: '110100', name: '北京市', provinceCode: '110000' },
-  { code: '310100', name: '上海市', provinceCode: '310000' },
-  { code: '440100', name: '广州市', provinceCode: '440000' },
-  { code: '440300', name: '深圳市', provinceCode: '440000' },
-  { code: '320100', name: '南京市', provinceCode: '320000' },
-  { code: '320500', name: '苏州市', provinceCode: '320000' },
-  { code: '330100', name: '杭州市', provinceCode: '330000' },
-  { code: '510100', name: '成都市', provinceCode: '510000' },
-  { code: '420100', name: '武汉市', provinceCode: '420000' },
-  { code: '610100', name: '西安市', provinceCode: '610000' },
-];
-
-const DISTRICTS: Array<{
-  code: string;
-  name: string;
-  cityCode: string;
-  provinceCode: string;
-}> = [
-  { code: '110101', name: '东城区', cityCode: '110100', provinceCode: '110000' },
-  { code: '110102', name: '西城区', cityCode: '110100', provinceCode: '110000' },
-  { code: '110105', name: '朝阳区', cityCode: '110100', provinceCode: '110000' },
-  { code: '440103', name: '荔湾区', cityCode: '440100', provinceCode: '440000' },
-  { code: '440104', name: '越秀区', cityCode: '440100', provinceCode: '440000' },
-  { code: '440305', name: '南山区', cityCode: '440300', provinceCode: '440000' },
-  { code: '440306', name: '宝安区', cityCode: '440300', provinceCode: '440000' },
-];
+import { PROVINCES, CITIES, DISTRICTS } from '../data/locationData';
 
 /**
  * Search agents by location
@@ -161,9 +109,7 @@ export async function searchAgentsByLocation(
 /**
  * Get all provinces
  */
-export async function getProvinces(): Promise<
-  Array<{ code: string; name: string }>
-> {
+export async function getProvinces(): Promise<Array<{ code: string; name: string }>> {
   return PROVINCES;
 }
 
@@ -188,7 +134,10 @@ export async function getDistrictsByCity(
 /**
  * Get location hierarchy
  */
-export async function getLocationHierarchy(provinceCode?: string, cityCode?: string): Promise<{
+export async function getLocationHierarchy(
+  provinceCode?: string,
+  cityCode?: string
+): Promise<{
   provinces: Array<{ code: string; name: string }>;
   cities?: Array<{ code: string; name: string }>;
   districts?: Array<{ code: string; name: string }>;
@@ -211,9 +160,7 @@ export async function getLocationHierarchy(provinceCode?: string, cityCode?: str
 /**
  * Get location name by code
  */
-export async function getLocationNameByCode(
-  code: string
-): Promise<string | null> {
+export async function getLocationNameByCode(code: string): Promise<string | null> {
   // Check provinces
   const province = PROVINCES.find(p => p.code === code);
   if (province) return province.name;
@@ -260,9 +207,7 @@ export async function getFullLocationPath(
 /**
  * Search locations by keyword
  */
-export async function searchLocations(
-  query: string
-): Promise<
+export async function searchLocations(query: string): Promise<
   Array<{
     type: 'province' | 'city' | 'district';
     code: string;
@@ -276,8 +221,6 @@ export async function searchLocations(
     name: string;
     fullPath: string;
   }> = [];
-
-  const lowerQuery = query.toLowerCase();
 
   // Search provinces
   for (const province of PROVINCES) {
@@ -355,10 +298,7 @@ export async function getDistanceBetweenAgents(
       return null;
     }
 
-    const { distanceKm } = calculateDistance(
-      location1.coordinates,
-      location2.coordinates
-    );
+    const { distanceKm } = calculateDistance(location1.coordinates, location2.coordinates);
 
     return distanceKm;
   } catch (error) {

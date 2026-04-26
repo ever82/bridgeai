@@ -1126,3 +1126,286 @@ export interface UpdateL3ProfileRequest {
   description: string;
   mediaUrls?: string[];
 }
+
+// ============================================
+// Location / Geo Types
+// ============================================
+
+export interface Location {
+  province: string;
+  provinceName: string;
+  city: string;
+  cityName: string;
+  district?: string;
+  districtName?: string;
+  address?: string;
+  postalCode?: string;
+}
+
+export interface GeoCoordinates {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+  altitude?: number;
+}
+
+export interface BoundingBox {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+
+export interface DistanceFilter {
+  center: GeoCoordinates;
+  radiusKm: number;
+}
+
+export interface DistanceResult {
+  distanceKm: number;
+  distanceMiles: number;
+  distanceMeters: number;
+}
+
+export interface GeoJSONPolygon {
+  type: 'Polygon';
+  coordinates: Array<Array<[number, number]>>;
+}
+
+export interface GeoFence {
+  id: string;
+  name: string;
+  description?: string;
+  geometry: GeoJSONPolygon;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface GeoFenceCheckResult {
+  inside: boolean;
+  distanceMeters?: number;
+  nearestPoint?: GeoCoordinates;
+}
+
+export interface Province {
+  code: string;
+  name: string;
+  nameEn?: string;
+  shortName?: string;
+}
+
+export interface City {
+  code: string;
+  name: string;
+  provinceCode: string;
+  nameEn?: string;
+}
+
+export interface District {
+  code: string;
+  name: string;
+  cityCode: string;
+  provinceCode: string;
+}
+
+export interface LocationFilter {
+  province?: string;
+  city?: string;
+  district?: string;
+  withinRadius?: DistanceFilter;
+  withinBounds?: BoundingBox;
+  withinFence?: string;
+}
+
+export interface LocationSearchRequest {
+  query?: string;
+  filter?: LocationFilter;
+  page?: number;
+  limit?: number;
+}
+
+export interface LocationSearchResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const EARTH_RADIUS_KM = 6371;
+
+// ============================================
+// Geo Utility Functions
+// ============================================
+
+function toRad(degrees: number): number {
+  return (degrees * Math.PI) / 180;
+}
+
+export function calculateDistance(coord1: GeoCoordinates, coord2: GeoCoordinates): DistanceResult {
+  const lat1Rad = toRad(coord1.latitude);
+  const lat2Rad = toRad(coord2.latitude);
+  const deltaLatRad = toRad(coord2.latitude - coord1.latitude);
+  const deltaLngRad = toRad(coord2.longitude - coord1.longitude);
+
+  const a =
+    Math.sin(deltaLatRad / 2) ** 2 +
+    Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.sin(deltaLngRad / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distanceKm = EARTH_RADIUS_KM * c;
+
+  return {
+    distanceKm,
+    distanceMiles: distanceKm * 0.621371,
+    distanceMeters: distanceKm * 1000,
+  };
+}
+
+export function isWithinBoundingBox(point: GeoCoordinates, box: BoundingBox): boolean {
+  return (
+    point.latitude >= box.minLat &&
+    point.latitude <= box.maxLat &&
+    point.longitude >= box.minLng &&
+    point.longitude <= box.maxLng
+  );
+}
+
+export function createBoundingBox(center: GeoCoordinates, radiusKm: number): BoundingBox {
+  const latDelta = (radiusKm / EARTH_RADIUS_KM) * (180 / Math.PI);
+  const lngDelta =
+    ((radiusKm / EARTH_RADIUS_KM) * (180 / Math.PI)) / Math.cos(toRad(center.latitude));
+
+  return {
+    minLat: center.latitude - latDelta,
+    maxLat: center.latitude + latDelta,
+    minLng: center.longitude - lngDelta,
+    maxLng: center.longitude + lngDelta,
+  };
+}
+
+export function formatDistance(distanceMeters: number): string {
+  if (distanceMeters < 1000) {
+    return `${Math.round(distanceMeters)}米`;
+  }
+  const km = distanceMeters / 1000;
+  if (km < 10) {
+    return `${km.toFixed(1)}公里`;
+  }
+  return `${Math.round(km)}公里`;
+}
+
+export function isPointInPolygon(point: GeoCoordinates, polygon: GeoJSONPolygon): boolean {
+  const coordinates = polygon.coordinates[0];
+  const x = point.longitude;
+  const y = point.latitude;
+  let inside = false;
+
+  for (let i = 0, j = coordinates.length - 1; i < coordinates.length; j = i++) {
+    const xi = coordinates[i][0];
+    const yi = coordinates[i][1];
+    const xj = coordinates[j][0];
+    const yj = coordinates[j][1];
+    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+export function isWithinRadius(
+  point: GeoCoordinates,
+  center: GeoCoordinates,
+  radiusKm: number
+): boolean {
+  const { distanceKm } = calculateDistance(point, center);
+  return distanceKm <= radiusKm;
+}
+
+export function isValidCoordinates(coords: GeoCoordinates): boolean {
+  return (
+    coords.latitude >= -90 &&
+    coords.latitude <= 90 &&
+    coords.longitude >= -180 &&
+    coords.longitude <= 180
+  );
+}
+
+export function calculatePolygonCentroid(polygon: GeoJSONPolygon): GeoCoordinates {
+  const coordinates = polygon.coordinates[0];
+  let sumX = 0;
+  let sumY = 0;
+  for (const coord of coordinates) {
+    sumX += coord[0];
+    sumY += coord[1];
+  }
+  return {
+    latitude: sumY / coordinates.length,
+    longitude: sumX / coordinates.length,
+  };
+}
+
+export interface GeoJSONPoint {
+  type: 'Point';
+  coordinates: [number, number];
+}
+
+export function toGeoJSONPoint(coords: GeoCoordinates): GeoJSONPoint {
+  return { type: 'Point', coordinates: [coords.longitude, coords.latitude] };
+}
+
+export function fromGeoJSONPoint(point: GeoJSONPoint): GeoCoordinates {
+  return { latitude: point.coordinates[1], longitude: point.coordinates[0] };
+}
+
+export function getDirection(from: GeoCoordinates, to: GeoCoordinates): string {
+  const latDiff = to.latitude - from.latitude;
+  const lngDiff = to.longitude - from.longitude;
+  const directions = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
+  const angle = Math.atan2(lngDiff, latDiff);
+  const index = Math.round((angle * 8) / (2 * Math.PI) + 8) % 8;
+  return directions[index];
+}
+
+export function interpolateCoordinates(
+  coord1: GeoCoordinates,
+  coord2: GeoCoordinates,
+  fraction: number
+): GeoCoordinates {
+  return {
+    latitude: coord1.latitude + (coord2.latitude - coord1.latitude) * fraction,
+    longitude: coord1.longitude + (coord2.longitude - coord1.longitude) * fraction,
+  };
+}
+
+// ============================================
+// GeoFencing Functions (stateless — use server-side DB service for persistence)
+// ============================================
+
+export function checkGeoFence(_point: GeoCoordinates, _fenceId: string): GeoFenceCheckResult {
+  return { inside: false };
+}
+
+export function findContainingGeoFences(_point: GeoCoordinates): GeoFence[] {
+  return [];
+}
+
+export function getGeoFencesWithinDistance(
+  _point: GeoCoordinates,
+  _maxDistanceKm: number
+): Array<{ fence: GeoFence; distanceKm: number }> {
+  return [];
+}
+
+export function createGeoFence(
+  name: string,
+  polygon: GeoJSONPolygon,
+  description?: string
+): GeoFence {
+  return {
+    id: `fence-${Date.now()}-mock`,
+    name,
+    description,
+    geometry: polygon,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+}
