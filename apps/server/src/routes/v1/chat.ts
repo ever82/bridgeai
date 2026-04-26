@@ -30,16 +30,19 @@ import {
   removeParticipant,
   updateParticipant,
   getRoomParticipants,
+  getParticipant,
   transferOwnership,
 } from '../../services/chat/participantService';
-
 
 const router: Router = Router();
 
 // Validation schemas - Messages
 const getHistorySchema = z.object({
   query: z.object({
-    limit: z.string().optional().transform((val) => (val ? parseInt(val, 10) : 50)),
+    limit: z
+      .string()
+      .optional()
+      .transform(val => (val ? parseInt(val, 10) : 50)),
     before: z.string().datetime().optional(),
     after: z.string().datetime().optional(),
     cursor: z.string().optional(),
@@ -52,7 +55,10 @@ const getHistorySchema = z.object({
 const syncMessagesSchema = z.object({
   query: z.object({
     lastSequenceId: z.string().optional(),
-    limit: z.string().optional().transform((val) => (val ? parseInt(val, 10) : 100)),
+    limit: z
+      .string()
+      .optional()
+      .transform(val => (val ? parseInt(val, 10) : 100)),
   }),
   params: z.object({
     roomId: z.string().uuid(),
@@ -62,7 +68,10 @@ const syncMessagesSchema = z.object({
 const searchMessagesSchema = z.object({
   query: z.object({
     q: z.string().min(1).max(500),
-    limit: z.string().optional().transform((val) => (val ? parseInt(val, 10) : 20)),
+    limit: z
+      .string()
+      .optional()
+      .transform(val => (val ? parseInt(val, 10) : 20)),
   }),
   params: z.object({
     roomId: z.string().uuid(),
@@ -100,6 +109,10 @@ const updateParticipantSchema = z.object({
   permissions: z.record(z.any()).optional(),
 });
 
+const transferOwnershipSchema = z.object({
+  userId: z.string().uuid(),
+});
+
 // ==================== Message Routes ====================
 
 /**
@@ -134,7 +147,7 @@ router.get(
       res.json({
         success: true,
         data: {
-          messages: messages.map((msg) => ({
+          messages: messages.map(msg => ({
             id: msg.id,
             roomId: msg.conversationId,
             senderId: msg.senderId,
@@ -151,9 +164,8 @@ router.get(
           })),
           pagination: {
             hasMore: messages.length === (limit ? parseInt(limit, 10) : 50),
-            cursor: messages.length > 0
-              ? messages[messages.length - 1].sequenceId.toString()
-              : null,
+            cursor:
+              messages.length > 0 ? messages[messages.length - 1].sequenceId.toString() : null,
           },
         },
       });
@@ -191,7 +203,7 @@ router.get(
       res.json({
         success: true,
         data: {
-          messages: result.messages.map((msg) => ({
+          messages: result.messages.map(msg => ({
             id: msg.id,
             roomId: msg.conversationId,
             senderId: msg.senderId,
@@ -237,16 +249,12 @@ router.get(
         limit?: string;
       };
 
-      const messages = await searchMessages(
-        roomId,
-        q,
-        limit ? parseInt(limit, 10) : 20
-      );
+      const messages = await searchMessages(roomId, q, limit ? parseInt(limit, 10) : 20);
 
       res.json({
         success: true,
         data: {
-          messages: messages.map((msg) => ({
+          messages: messages.map(msg => ({
             id: msg.id,
             roomId: msg.conversationId,
             senderId: msg.senderId,
@@ -475,7 +483,27 @@ router.patch(
   validate({ body: updateRoomSchema }),
   async (req: AuthenticatedRequest, res, next) => {
     try {
+      const userId = req.user!.id;
       const { id } = req.params;
+
+      // Authorization check: verify user is a room member with OWNER or ADMIN role
+      const participant = await getParticipant(id, userId);
+      if (!participant || !participant.isActive) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied: not a room member',
+        });
+      }
+      if (
+        participant.role !== ParticipantRole.OWNER &&
+        participant.role !== ParticipantRole.ADMIN
+      ) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied: only owners and admins can update room settings',
+        });
+      }
+
       const room = await updateRoom(id, req.body);
 
       res.json({
@@ -494,7 +522,24 @@ router.patch(
  */
 router.delete('/rooms/:id', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
+    const userId = req.user!.id;
     const { id } = req.params;
+
+    // Authorization check: verify user is a room member with OWNER or ADMIN role
+    const participant = await getParticipant(id, userId);
+    if (!participant || !participant.isActive) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied: not a room member',
+      });
+    }
+    if (participant.role !== ParticipantRole.OWNER && participant.role !== ParticipantRole.ADMIN) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied: only owners and admins can close a room',
+      });
+    }
+
     const room = await closeRoom(id);
 
     res.json({
@@ -532,30 +577,34 @@ router.post('/rooms/:id/read', authenticate, async (req: AuthenticatedRequest, r
  * GET /api/v1/chat/rooms/:id/participants
  * 获取房间参与者列表
  */
-router.get('/rooms/:id/participants', authenticate, async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const userId = req.user!.id;
-    const { id } = req.params;
+router.get(
+  '/rooms/:id/participants',
+  authenticate,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const userId = req.user!.id;
+      const { id } = req.params;
 
-    // 检查用户是否在房间中
-    const isMember = await isUserInRoom(id, userId);
-    if (!isMember) {
-      return res.status(403).json({
-        success: false,
-        error: 'Access denied: not a room member',
+      // 检查用户是否在房间中
+      const isMember = await isUserInRoom(id, userId);
+      if (!isMember) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied: not a room member',
+        });
+      }
+
+      const participants = await getRoomParticipants(id);
+
+      res.json({
+        success: true,
+        data: participants,
       });
+    } catch (error) {
+      next(error);
     }
-
-    const participants = await getRoomParticipants(id);
-
-    res.json({
-      success: true,
-      data: participants,
-    });
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 /**
  * POST /api/v1/chat/rooms/:id/participants
@@ -617,48 +666,50 @@ router.patch(
  * DELETE /api/v1/chat/rooms/:id/participants/:userId
  * 移除参与者
  */
-router.delete('/rooms/:id/participants/:userId', authenticate, async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const currentUserId = req.user!.id;
-    const { id, userId } = req.params;
+router.delete(
+  '/rooms/:id/participants/:userId',
+  authenticate,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const currentUserId = req.user!.id;
+      const { id, userId } = req.params;
 
-    await removeParticipant(id, userId, currentUserId);
+      await removeParticipant(id, userId, currentUserId);
 
-    res.json({
-      success: true,
-      message: 'Participant removed successfully',
-    });
-  } catch (error) {
-    next(error);
+      res.json({
+        success: true,
+        message: 'Participant removed successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 /**
  * POST /api/v1/chat/rooms/:id/transfer-ownership
  * 转移房主权限
  */
-router.post('/rooms/:id/transfer-ownership', authenticate, async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const currentUserId = req.user!.id;
-    const { id } = req.params;
-    const { userId: newOwnerId } = req.body;
+router.post(
+  '/rooms/:id/transfer-ownership',
+  authenticate,
+  validate({ body: transferOwnershipSchema }),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const currentUserId = req.user!.id;
+      const { id } = req.params;
+      const { userId: newOwnerId } = req.body;
 
-    if (!newOwnerId) {
-      return res.status(400).json({
-        success: false,
-        error: 'New owner userId is required',
+      await transferOwnership(id, newOwnerId, currentUserId);
+
+      res.json({
+        success: true,
+        message: 'Ownership transferred successfully',
       });
+    } catch (error) {
+      next(error);
     }
-
-    await transferOwnership(id, newOwnerId, currentUserId);
-
-    res.json({
-      success: true,
-      message: 'Ownership transferred successfully',
-    });
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 export default router;

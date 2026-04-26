@@ -220,12 +220,23 @@ export async function updateRoom(roomId: string, input: UpdateRoomInput): Promis
     updateData.status = input.status;
   }
 
-  if (input.metadata !== undefined) {
-    updateData.metadata = input.metadata;
-  }
+  if (input.metadata !== undefined || input.settings !== undefined) {
+    // Read existing metadata first to merge settings into it
+    const existing = await prisma.chatRoom.findUnique({
+      where: { id: roomId },
+      select: { metadata: true },
+    });
+    const existingMetadata = (existing?.metadata as Record<string, any>) || {};
 
-  if (input.settings !== undefined) {
-    updateData.settings = input.settings;
+    if (input.metadata !== undefined && input.settings === undefined) {
+      updateData.metadata = input.metadata;
+    } else if (input.settings !== undefined) {
+      // Merge settings into metadata, preserving other metadata fields
+      updateData.metadata = {
+        ...(input.metadata !== undefined ? input.metadata : existingMetadata),
+        settings: input.settings,
+      };
+    }
   }
 
   return prisma.chatRoom.update({
@@ -381,11 +392,19 @@ export async function updateLastMessage(
   roomId: string,
   message: { id: string; content: string; senderId: string; createdAt: Date }
 ): Promise<void> {
+  // Read existing metadata first to preserve settings and other fields
+  const existing = await prisma.chatRoom.findUnique({
+    where: { id: roomId },
+    select: { metadata: true },
+  });
+  const existingMetadata = (existing?.metadata as Record<string, any>) || {};
+
   await prisma.chatRoom.update({
     where: { id: roomId },
     data: {
       lastMessageAt: message.createdAt,
       metadata: {
+        ...existingMetadata,
         lastMessage: {
           id: message.id,
           content: message.content,

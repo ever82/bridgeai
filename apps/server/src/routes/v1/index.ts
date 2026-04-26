@@ -20,6 +20,7 @@ import { strictAuthLimiter } from '../../middleware/rateLimiter';
 
 import healthRoutes from './health';
 import sceneRoutes from './scene';
+import chatRoutes from './chat';
 
 const router: Router = Router();
 
@@ -42,9 +43,9 @@ router.use('/offers', offerRoutes);
 router.use('/jobs', jobPostingRoutes);
 router.use('/consumer', consumerDemandRoutes);
 router.use('/reviews', reviewRoutes);
+router.use('/chat', chatRoutes);
 
 // Placeholder for future routes
-// router.use('/chats', chatRoutes);
 // router.use('/matches', matchRoutes);
 
 export default router;
