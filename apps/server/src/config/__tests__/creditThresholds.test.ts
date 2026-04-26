@@ -14,7 +14,6 @@ import {
   checkSceneCreditThreshold,
   getThresholdChangeNotification,
   getInsufficientCreditNotification,
-  ExemptionRule,
   resetSceneThresholds,
 } from '../creditThresholds';
 
@@ -37,7 +36,7 @@ describe('CreditThresholds', () => {
       expect(threshold.sceneId).toBe('visionshare');
       expect(threshold.sceneName).toBe('视觉分享');
       expect(threshold.minCreditScore).toBe(500);
-      expect(threshold.minCreditLevel).toBe('average');
+      expect(threshold.minCreditLevel).toBe('general');
       expect(threshold.isActive).toBe(true);
     });
 
@@ -55,7 +54,7 @@ describe('CreditThresholds', () => {
       expect(threshold.sceneId).toBe('agentjob');
       expect(threshold.sceneName).toBe('Agent求职');
       expect(threshold.minCreditScore).toBe(400);
-      expect(threshold.minCreditLevel).toBe('average');
+      expect(threshold.minCreditLevel).toBe('general');
       expect(threshold.isActive).toBe(true);
     });
 
@@ -64,7 +63,7 @@ describe('CreditThresholds', () => {
       expect(threshold.sceneId).toBe('agentad');
       expect(threshold.sceneName).toBe('Agent广告');
       expect(threshold.minCreditScore).toBe(500);
-      expect(threshold.minCreditLevel).toBe('average');
+      expect(threshold.minCreditLevel).toBe('general');
       expect(threshold.isActive).toBe(true);
     });
 
@@ -280,7 +279,7 @@ describe('CreditThresholds', () => {
 
       expect(result.meetsThreshold).toBe(true);
       expect(result.requiredScore).toBe(500);
-      expect(result.requiredLevel).toBe('average');
+      expect(result.requiredLevel).toBe('general');
       expect(result.exempted).toBe(false);
     });
 

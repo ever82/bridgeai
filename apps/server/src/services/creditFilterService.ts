@@ -35,7 +35,7 @@ export interface CreditFilterOptions {
 export function getCreditLevel(score: number | null | undefined): CreditLevel | null {
   if (score === null || score === undefined) return null;
 
-  for (const level of ['excellent', 'good', 'average', 'poor'] as CreditLevel[]) {
+  for (const level of ['excellent', 'good', 'general', 'poor'] as CreditLevel[]) {
     const threshold = CREDIT_LEVEL_THRESHOLDS[level];
     if (score >= threshold.min && score <= threshold.max) {
       return level;
@@ -51,7 +51,7 @@ export function getCreditLevelLabel(level: CreditLevel | null): string {
   const labels: Record<CreditLevel, string> = {
     excellent: '优秀',
     good: '良好',
-    average: '一般',
+    general: '一般',
     poor: '较差',
   };
   return level ? labels[level] : '无信用分';
@@ -64,7 +64,7 @@ export function getCreditLevelColor(level: CreditLevel | null): string {
   const colors: Record<CreditLevel, string> = {
     excellent: '#4CAF50',
     good: '#8BC34A',
-    average: '#FFC107',
+    general: '#FFC107',
     poor: '#FF5722',
   };
   return level ? colors[level] : '#9E9E9E';
@@ -278,7 +278,7 @@ export async function getCreditStatistics(): Promise<{
     const byLevel: Record<CreditLevel, number> = {
       excellent: 0,
       good: 0,
-      average: 0,
+      general: 0,
       poor: 0,
     };
 

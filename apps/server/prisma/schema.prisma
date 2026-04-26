@@ -1445,9 +1445,29 @@ model CreditScore {
 
   // Relations
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  factors     CreditFactor[]
 
   @@index([userId])
   @@map("credit_scores")
+}
+
+model CreditFactor {
+  id            String   @id @default(uuid())
+  creditScoreId String   @map("credit_score_id")
+  factorType    String   @map("factor_type")  // profile, behavior, transaction, social
+  subFactor     String   @map("sub_factor")
+  score         Int
+  weight        Float
+  weightedScore Float   @map("weighted_score")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  creditScore   CreditScore @relation(fields: [creditScoreId], references: [id], onDelete: Cascade)
+
+  @@index([creditScoreId])
+  @@index([factorType])
+  @@map("credit_factors")
 }
 
 // ============================================
@@ -1726,4 +1746,24 @@ model DisclosureAccessLog {
   @@index([agentId])
   @@index([timestamp])
   @@map("disclosure_access_logs")
+}
+
+// Agent Dialog Session (ISSUE-AI004)
+model DialogSessionRecord {
+  id            String   @id @default(uuid())
+  type          String   // agent_to_agent | agent_to_user | negotiation | matching
+  participants  Json     // Array of participant objects
+  scene         String?
+  context       Json     // DialogContext JSON
+  messages      Json     // Array of DialogMessage JSON
+  status        String   @default("active") // active | completed | archived
+  dialogPhase   String?  @map("dialog_phase") // intro | exploring | negotiating | closing
+  summary       String?  // LLM-generated conversation summary
+  metadata      Json?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("dialog_sessions")
 }

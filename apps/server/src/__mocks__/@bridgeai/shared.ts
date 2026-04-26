@@ -153,21 +153,21 @@ export const isFilterCondition = (expr: any): boolean =>
   'field' in expr && 'operator' in expr && 'value' in expr;
 
 // Credit level type (string literal union)
-export type CreditLevel = 'excellent' | 'good' | 'average' | 'poor';
+export type CreditLevel = 'excellent' | 'good' | 'general' | 'poor';
 
 // Credit level thresholds
 export const CREDIT_LEVEL_THRESHOLDS: Record<CreditLevel, { min: number; max: number }> = {
-  excellent: { min: 800, max: 1000 },
-  good: { min: 600, max: 799 },
-  average: { min: 400, max: 599 },
-  poor: { min: 0, max: 399 },
+  excellent: { min: 900, max: 1000 },
+  good: { min: 750, max: 899 },
+  general: { min: 600, max: 749 },
+  poor: { min: 0, max: 599 },
 };
 
 // Keep enum for backward compatibility
 export enum CreditLevelEnum {
   EXCELLENT = 'excellent',
   GOOD = 'good',
-  AVERAGE = 'average',
+  GENERAL = 'general',
   POOR = 'poor',
 }
 

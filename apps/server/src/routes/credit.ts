@@ -41,7 +41,8 @@ router.get('/score', authenticate, async (req, res, next) => {
         levelDescription: levelConfig.description,
         lastUpdatedAt: (creditScore as any).lastUpdatedAt ?? (creditScore as any).lastUpdated,
         nextUpdateAt: creditScore.nextUpdateAt,
-        updateCount: (creditScore as any).updateCount ?? (creditScore as any).metadata?.updateCount ?? 0,
+        updateCount:
+          (creditScore as any).updateCount ?? (creditScore as any).metadata?.updateCount ?? 0,
       },
     });
   } catch (error) {
@@ -53,43 +54,38 @@ router.get('/score', authenticate, async (req, res, next) => {
  * GET /api/v1/credit/history
  * 获取信用分历史记录
  */
-router.get(
-  '/history',
-  authenticate,
-  validate({ query: querySchema }),
-  async (req, res, next) => {
-    try {
-      const userId = req.user!.id;
-      const page = parseInt(req.query.page as string) || 1;
-      const pageSize = parseInt(req.query.pageSize as string) || 20;
+router.get('/history', authenticate, validate({ query: querySchema }), async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 20;
 
-      const history = await creditScoreService.getCreditHistory(userId, page, pageSize);
+    const history = await creditScoreService.getCreditHistory(userId, page, pageSize);
 
-      res.json({
-        success: true,
-        data: {
-          histories: history.histories.map(h => ({
-            id: h.id,
-            oldScore: (h as any).oldScore ?? h.score - h.delta,
-            newScore: (h as any).newScore ?? h.score,
-            delta: h.delta,
-            reason: h.reason,
-            sourceType: h.sourceType,
-            createdAt: h.createdAt,
-          })),
-          pagination: {
-            page: history.page,
-            pageSize: history.pageSize,
-            total: history.total,
-            totalPages: Math.ceil(history.total / history.pageSize),
-          },
+    res.json({
+      success: true,
+      data: {
+        histories: history.histories.map(h => ({
+          id: h.id,
+          oldScore: (h as any).oldScore ?? h.score - h.delta,
+          newScore: (h as any).newScore ?? h.score,
+          delta: h.delta,
+          reason: h.reason,
+          sourceType: h.sourceType,
+          createdAt: h.createdAt,
+        })),
+        pagination: {
+          page: history.page,
+          pageSize: history.pageSize,
+          total: history.total,
+          totalPages: Math.ceil(history.total / history.pageSize),
         },
-      });
-    } catch (error) {
-      next(error);
-    }
+      },
+    });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /**
  * GET /api/v1/credit/factors
@@ -175,10 +171,7 @@ router.post(
         // 重新计算指定用户
         const results = await Promise.all(
           userIds.map(async (id: string) => {
-            const result = await creditScoreService.updateCreditScore(
-              id,
-              'system' as any
-            );
+            const result = await creditScoreService.updateCreditScore(id, 'system' as any);
             return { userId: id, ...result };
           })
         );
@@ -191,13 +184,14 @@ router.post(
           },
         });
       } else {
-        // 重新计算所有用户
-        const allUsers = await creditScoreService.getOrCreateCreditScore('');
+        // 重新计算所有用户 — 使用后台任务
+        const { runCreditUpdateJob } = await import('../jobs/creditUpdateJob');
+        const result = await runCreditUpdateJob();
         res.json({
           success: true,
           data: {
-            message: 'Recalculation job started for all users',
-            note: 'This may take a while',
+            message: `Recalculation completed: ${result.processed} users processed, ${result.failed} failed`,
+            ...result,
           },
         });
       }

@@ -52,27 +52,27 @@ describe('CreditFilterService', () => {
 
   describe('getCreditLevel', () => {
     it('should return correct level for excellent score', () => {
-      expect(getCreditLevel(850)).toBe('excellent');
-      expect(getCreditLevel(800)).toBe('excellent');
+      expect(getCreditLevel(950)).toBe('excellent');
+      expect(getCreditLevel(900)).toBe('excellent');
       expect(getCreditLevel(1000)).toBe('excellent');
     });
 
     it('should return correct level for good score', () => {
-      expect(getCreditLevel(700)).toBe('good');
-      expect(getCreditLevel(600)).toBe('good');
-      expect(getCreditLevel(799)).toBe('good');
+      expect(getCreditLevel(800)).toBe('good');
+      expect(getCreditLevel(750)).toBe('good');
+      expect(getCreditLevel(899)).toBe('good');
     });
 
-    it('should return correct level for average score', () => {
-      expect(getCreditLevel(500)).toBe('average');
-      expect(getCreditLevel(400)).toBe('average');
-      expect(getCreditLevel(599)).toBe('average');
+    it('should return correct level for general score', () => {
+      expect(getCreditLevel(650)).toBe('general');
+      expect(getCreditLevel(600)).toBe('general');
+      expect(getCreditLevel(749)).toBe('general');
     });
 
     it('should return correct level for poor score', () => {
       expect(getCreditLevel(300)).toBe('poor');
       expect(getCreditLevel(0)).toBe('poor');
-      expect(getCreditLevel(399)).toBe('poor');
+      expect(getCreditLevel(599)).toBe('poor');
     });
 
     it('should return null for null or undefined score', () => {
@@ -85,7 +85,7 @@ describe('CreditFilterService', () => {
     it('should return correct labels for each level', () => {
       expect(getCreditLevelLabel('excellent')).toBe('优秀');
       expect(getCreditLevelLabel('good')).toBe('良好');
-      expect(getCreditLevelLabel('average')).toBe('一般');
+      expect(getCreditLevelLabel('general')).toBe('一般');
       expect(getCreditLevelLabel('poor')).toBe('较差');
     });
 
@@ -98,7 +98,7 @@ describe('CreditFilterService', () => {
     it('should return correct colors for each level', () => {
       expect(getCreditLevelColor('excellent')).toBe('#4CAF50');
       expect(getCreditLevelColor('good')).toBe('#8BC34A');
-      expect(getCreditLevelColor('average')).toBe('#FFC107');
+      expect(getCreditLevelColor('general')).toBe('#FFC107');
       expect(getCreditLevelColor('poor')).toBe('#FF5722');
     });
 
@@ -169,7 +169,7 @@ describe('CreditFilterService', () => {
           creditScores: {
             some: {
               score: {
-                gte: 800,
+                gte: 900,
                 lte: 1000,
               },
             },
@@ -189,7 +189,7 @@ describe('CreditFilterService', () => {
               creditScores: {
                 some: {
                   score: {
-                    gte: 800,
+                    gte: 900,
                     lte: 1000,
                   },
                 },
@@ -201,8 +201,8 @@ describe('CreditFilterService', () => {
               creditScores: {
                 some: {
                   score: {
-                    gte: 600,
-                    lte: 799,
+                    gte: 750,
+                    lte: 899,
                   },
                 },
               },
@@ -272,7 +272,7 @@ describe('CreditFilterService', () => {
           name: 'Agent 1',
           type: 'VISIONSHARE',
           user: {
-            creditScores: [{ score: 850 }],
+            creditScores: [{ score: 920 }],
           },
         },
         {
@@ -280,7 +280,7 @@ describe('CreditFilterService', () => {
           name: 'Agent 2',
           type: 'VISIONSHARE',
           user: {
-            creditScores: [{ score: 700 }],
+            creditScores: [{ score: 760 }],
           },
         },
       ];
@@ -292,9 +292,9 @@ describe('CreditFilterService', () => {
 
       expect(result.items).toHaveLength(2);
       expect(result.total).toBe(2);
-      expect(result.items[0].creditScore).toBe(850);
+      expect(result.items[0].creditScore).toBe(920);
       expect(result.items[0].creditLevel).toBe('excellent');
-      expect(result.items[1].creditScore).toBe(700);
+      expect(result.items[1].creditScore).toBe(760);
       expect(result.items[1].creditLevel).toBe('good');
     });
 
@@ -356,19 +356,19 @@ describe('CreditFilterService', () => {
       const mockAgent = {
         id: 'agent-1',
         user: {
-          creditScores: [{ score: 500 }],
+          creditScores: [{ score: 650 }],
         },
       };
 
       (prisma.agent.findUnique as jest.Mock).mockResolvedValue(mockAgent);
 
-      const result = await checkCreditThreshold('agent-1', 600);
+      const result = await checkCreditThreshold('agent-1', 700);
 
       expect(result.meetsThreshold).toBe(false);
-      expect(result.agentScore).toBe(500);
-      expect(result.agentLevel).toBe('average');
-      expect(result.requiredScore).toBe(600);
-      expect(result.gap).toBe(100);
+      expect(result.agentScore).toBe(650);
+      expect(result.agentLevel).toBe('general');
+      expect(result.requiredScore).toBe(700);
+      expect(result.gap).toBe(50);
     });
 
     it('should handle agent without credit score', async () => {
@@ -399,10 +399,10 @@ describe('CreditFilterService', () => {
   describe('getCreditStatistics', () => {
     it('should return credit statistics', async () => {
       const mockScores = [
-        { score: 900 },
-        { score: 850 },
-        { score: 700 },
-        { score: 500 },
+        { score: 950 },
+        { score: 800 },
+        { score: 650 },
+        { score: 400 },
         { score: 300 },
       ];
 
@@ -412,12 +412,12 @@ describe('CreditFilterService', () => {
       const result = await getCreditStatistics();
 
       expect(result.total).toBe(8); // 5 with score + 3 without
-      expect(result.byLevel.excellent).toBe(2);
+      expect(result.byLevel.excellent).toBe(1);
       expect(result.byLevel.good).toBe(1);
-      expect(result.byLevel.average).toBe(1);
-      expect(result.byLevel.poor).toBe(1);
+      expect(result.byLevel.general).toBe(1);
+      expect(result.byLevel.poor).toBe(2);
       expect(result.noCredit).toBe(3);
-      expect(result.average).toBe(650); // (900+850+700+500+300) / 5
+      expect(result.average).toBe(620); // (950+800+650+400+300) / 5
     });
 
     it('should handle empty scores', async () => {
@@ -501,10 +501,10 @@ describe('CreditFilterService', () => {
 
   describe('CREDIT_LEVEL_THRESHOLDS', () => {
     it('should have correct thresholds for all levels', () => {
-      expect(CREDIT_LEVEL_THRESHOLDS.excellent).toEqual({ min: 800, max: 1000 });
-      expect(CREDIT_LEVEL_THRESHOLDS.good).toEqual({ min: 600, max: 799 });
-      expect(CREDIT_LEVEL_THRESHOLDS.average).toEqual({ min: 400, max: 599 });
-      expect(CREDIT_LEVEL_THRESHOLDS.poor).toEqual({ min: 0, max: 399 });
+      expect(CREDIT_LEVEL_THRESHOLDS.excellent).toEqual({ min: 900, max: 1000 });
+      expect(CREDIT_LEVEL_THRESHOLDS.good).toEqual({ min: 750, max: 899 });
+      expect(CREDIT_LEVEL_THRESHOLDS.general).toEqual({ min: 600, max: 749 });
+      expect(CREDIT_LEVEL_THRESHOLDS.poor).toEqual({ min: 0, max: 599 });
     });
   });
 });

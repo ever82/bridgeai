@@ -146,7 +146,7 @@ export class CreditScoreService {
     subFactors.push({ name: 'completion_rate', score: completionScore });
 
     // 纠纷率 (负向指标)
-    const disputeScore = this.calculateDisputeRate(userId);
+    const disputeScore = await this.calculateDisputeRate(userId);
     subFactors.push({ name: 'dispute_rate', score: disputeScore });
 
     // 取消率 (负向指标)
@@ -251,15 +251,25 @@ export class CreditScoreService {
   }
 
   private async calculateResponseRate(userId: string): Promise<number> {
-    // 根据消息响应计算
     const conversations = await prisma.conversation.findMany({
       where: { participantIds: { has: userId } },
     });
 
     if (conversations.length === 0) return 50; // 默认值
 
-    // 简化的响应率计算
-    return 70;
+    // Count messages sent by the user vs total messages in their conversations
+    let repliedCount = 0;
+    for (const conv of conversations) {
+      const messages = await prisma.message.findMany({
+        where: { conversationId: conv.id },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      });
+      const hasUserReply = messages.some((m: any) => m.senderId === userId);
+      if (hasUserReply) repliedCount++;
+    }
+
+    return Math.round((repliedCount / conversations.length) * 100);
   }
 
   private calculateCompletionRate(matches: any[]): number {
@@ -268,9 +278,22 @@ export class CreditScoreService {
     return Math.round((completed / matches.length) * 100);
   }
 
-  private calculateDisputeRate(_userId: string): number {
-    // 简化为默认高分
-    return 90;
+  private async calculateDisputeRate(userId: string): Promise<number> {
+    // Count disputed transactions via match status
+    const disputedMatches = await prisma.match.count({
+      where: {
+        OR: [{ demand: { agent: { userId } } }, { supply: { agent: { userId } } }],
+        status: 'DISPUTED',
+      },
+    });
+    const totalMatches = await prisma.match.count({
+      where: {
+        OR: [{ demand: { agent: { userId } } }, { supply: { agent: { userId } } }],
+      },
+    });
+    if (totalMatches === 0) return 100;
+    const disputeRate = disputedMatches / totalMatches;
+    return Math.max(0, Math.round((1 - disputeRate) * 100));
   }
 
   private calculateCancelRate(matches: any[]): number {
@@ -278,6 +301,21 @@ export class CreditScoreService {
     const cancelled = matches.filter(m => m.status === 'REJECTED').length;
     const rate = (cancelled / matches.length) * 100;
     return Math.max(0, 100 - rate * 2); // 取消率越高分数越低
+  }
+
+  /**
+   * 获取用户信用分（从缓存读取，无则计算）
+   */
+  async getUserCreditScore(userId: string): Promise<number> {
+    const creditScore = await prisma.creditScore.findUnique({
+      where: { userId },
+    });
+    if (creditScore) {
+      return creditScore.score;
+    }
+    // 无缓存则计算
+    const result = await this.calculateScore(userId);
+    return result.totalScore;
   }
 
   // ==================== 公共API方法 ====================
@@ -407,20 +445,20 @@ export class CreditScoreService {
   async getCreditFactors(userId: string): Promise<CreditFactorDetail[]> {
     const creditScore = await prisma.creditScore.findUnique({
       where: { userId },
-      include: {},
+      include: { factors: true },
     });
 
     if (!creditScore) {
       return [];
     }
 
-    const factorDetails: CreditFactorDetail[] = (creditScore as any)?.factors || [];
+    const factorDetails: CreditFactorDetail[] = [];
 
     for (const factorType of Object.values(CreditFactorType)) {
-      const factors = ((creditScore as any)?.factors || []).filter(f => f.factorType === factorType);
+      const factors = creditScore.factors.filter(f => f.factorType === factorType);
       const factorConfig = FACTOR_WEIGHTS.find(f => f.type === factorType);
 
-      if (factorConfig) {
+      if (factorConfig && factors.length > 0) {
         const subFactors: SubFactorDetail[] = factors.map(f => ({
           name: f.subFactor,
           score: f.score,
@@ -435,6 +473,7 @@ export class CreditScoreService {
           type: factorType,
           score: Math.round(avgScore),
           weight: factorConfig.weight,
+          weightedScore: Math.round(avgScore * factorConfig.weight),
           subFactors,
         });
       }
@@ -472,8 +511,25 @@ export class CreditScoreService {
 
   // ==================== 私有辅助方法 ====================
 
-  private async updateCreditFactors(_creditId: string, _factors: FactorScore[]) {
-    // Credit factors are stored in metadata as the CreditFactor model doesn't exist in the schema
+  private async updateCreditFactors(creditId: string, factors: FactorScore[]) {
+    // Delete old factors
+    await prisma.creditFactor.deleteMany({
+      where: { creditScoreId: creditId },
+    });
+
+    // Insert new factors
+    if (factors.length === 0) return;
+
+    await prisma.creditFactor.createMany({
+      data: factors.map(f => ({
+        creditScoreId: creditId,
+        factorType: f.type,
+        subFactor: f.subFactor,
+        score: Math.round(f.score),
+        weight: f.weight,
+        weightedScore: f.weightedScore,
+      })),
+    });
   }
 
   private calculateNextUpdateTime(): Date {
@@ -590,23 +646,42 @@ export function calculateReplyRateBonus(totalReviews: number, repliedReviews: nu
 }
 
 /**
- * Get current credit score for a user (from CreditScoreService)
+ * Get current credit score for a user (reads cached value from DB)
  * @param userId - User ID
  * @returns Current credit score
  */
 export async function getUserCreditScore(userId: string): Promise<number> {
+  const creditScore = await prisma.creditScore.findUnique({
+    where: { userId },
+  });
+  if (creditScore) {
+    return creditScore.score;
+  }
+  // No cached score — compute and cache via the service
   const result = await creditScoreService.calculateScore(userId);
+  await prisma.creditScore.upsert({
+    where: { userId },
+    create: {
+      userId,
+      score: result.totalScore,
+      level: result.level,
+    },
+    update: {
+      score: result.totalScore,
+      level: result.level,
+    },
+  });
   return result.totalScore;
 }
 
 /**
- * Update user's credit score
+ * Update user's credit score by applying a delta
  * @param payload - Update payload
  * @returns Updated credit record
  */
 export async function updateCreditScore(
   payload: CreditScoreUpdatePayload
-): Promise<ReturnType<typeof prisma.creditRecord.create>> {
+): Promise<ReturnType<typeof prisma.creditHistory.create>> {
   const { userId, delta, reason, sourceType, sourceId, metadata } = payload;
 
   const currentScore = await getUserCreditScore(userId);
@@ -615,7 +690,16 @@ export async function updateCreditScore(
     Math.min(REVIEW_CREDIT_CONFIG.MAX_SCORE, currentScore + delta)
   );
 
-  const record = await prisma.creditRecord.create({
+  // Upsert the CreditScore row
+  const level = getCreditLevel(newScore);
+  await prisma.creditScore.upsert({
+    where: { userId },
+    create: { userId, score: newScore, level },
+    update: { score: newScore, level, lastUpdated: new Date() },
+  });
+
+  // Create history record
+  const record = await prisma.creditHistory.create({
     data: {
       userId,
       score: newScore,
@@ -647,6 +731,8 @@ export async function updateCreditScore(
  * @returns Updated credit score
  */
 export async function recalculateCreditScore(userId: string): Promise<number> {
+  const currentScore = await getUserCreditScore(userId);
+
   // Get all ratings received by the user
   const ratings = await prisma.rating.findMany({
     where: { rateeId: userId },
@@ -670,7 +756,10 @@ export async function recalculateCreditScore(userId: string): Promise<number> {
 
   // Add review count bonus
   const reviewCountBonus = calculateReviewCountBonus(ratings.length);
-  const replyRateBonus = 0; // TODO: Implement reply tracking
+
+  // Reply rate bonus based on actual review reply data
+  const reviewsWithReplies = ratings.filter((r: any) => r.reply).length;
+  const replyRateBonus = calculateReplyRateBonus(ratings.length, reviewsWithReplies);
 
   // Calculate final score
   const finalScore = Math.max(
@@ -678,8 +767,16 @@ export async function recalculateCreditScore(userId: string): Promise<number> {
     Math.min(REVIEW_CREDIT_CONFIG.MAX_SCORE, baseScore + reviewCountBonus + replyRateBonus)
   );
 
-  // Create credit record for recalculation
-  await prisma.creditRecord.create({
+  // Upsert the CreditScore row
+  const level = getCreditLevel(finalScore);
+  await prisma.creditScore.upsert({
+    where: { userId },
+    create: { userId, score: finalScore, level },
+    update: { score: finalScore, level, lastUpdated: new Date() },
+  });
+
+  // Create history record for recalculation
+  await prisma.creditHistory.create({
     data: {
       userId,
       score: finalScore,
@@ -698,8 +795,6 @@ export async function recalculateCreditScore(userId: string): Promise<number> {
 
   return finalScore;
 }
-
-let currentScore: number; // Helper variable
 
 /**
  * Handle new rating submission and update credit score
@@ -720,7 +815,6 @@ export async function handleNewRating(ratingId: string): Promise<void> {
   const delta = calculateRatingCreditDelta(rating.score);
 
   if (delta !== 0) {
-    currentScore = await getUserCreditScore(rating.rateeId);
     await updateCreditScore({
       userId: rating.rateeId,
       delta,
