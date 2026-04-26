@@ -6,10 +6,7 @@
 import {
   FilterDSL,
   FilterCondition,
-  FilterExpression,
   isAndFilter,
-  isOrFilter,
-  isNotFilter,
   CreditLevel,
   CREDIT_LEVEL_THRESHOLDS,
 } from '@bridgeai/shared';
@@ -76,9 +73,7 @@ export function getCreditLevelColor(level: CreditLevel | null): string {
 /**
  * Build credit filter condition for Prisma
  */
-export function buildCreditFilterCondition(
-  options: CreditFilterOptions
-): any {
+export function buildCreditFilterCondition(options: CreditFilterOptions): any {
   const conditions: any[] = [];
 
   // Min/max credit score
@@ -92,8 +87,10 @@ export function buildCreditFilterCondition(
     }
     conditions.push({
       user: {
-        creditScore: {
-          score: scoreCondition,
+        creditScores: {
+          some: {
+            score: scoreCondition,
+          },
         },
       },
     });
@@ -101,17 +98,17 @@ export function buildCreditFilterCondition(
 
   // Credit level filter
   if (options.creditLevel) {
-    const levels = Array.isArray(options.creditLevel)
-      ? options.creditLevel
-      : [options.creditLevel];
+    const levels = Array.isArray(options.creditLevel) ? options.creditLevel : [options.creditLevel];
 
     const levelRanges = levels.map(level => CREDIT_LEVEL_THRESHOLDS[level]);
     const levelConditions = levelRanges.map(range => ({
       user: {
-        creditScore: {
-          score: {
-            gte: range.min,
-            lte: range.max,
+        creditScores: {
+          some: {
+            score: {
+              gte: range.min,
+              lte: range.max,
+            },
           },
         },
       },
@@ -166,10 +163,7 @@ export async function filterAgentsByCredit(
     const creditCondition = buildCreditFilterCondition(options);
 
     const where = {
-      AND: [
-        { status: 'ACTIVE' },
-        creditCondition,
-      ],
+      AND: [{ status: 'ACTIVE' }, creditCondition],
     };
 
     const [agents, total] = await Promise.all([
@@ -248,7 +242,7 @@ export async function checkCreditThreshold(
       throw new Error('Agent not found');
     }
 
-    const score = ((agent.user as any)?.[0]?.score ?? null);
+    const score = agent.user?.creditScores?.[0]?.score ?? null;
     const level = getCreditLevel(score);
     const meetsThreshold = score !== null && score >= minCreditScore;
 
@@ -257,7 +251,7 @@ export async function checkCreditThreshold(
       agentScore: score,
       agentLevel: level,
       requiredScore: minCreditScore,
-      gap: meetsThreshold ? 0 : (minCreditScore - (score || 0)),
+      gap: meetsThreshold ? 0 : minCreditScore - (score || 0),
     };
   } catch (error) {
     logger.error('Failed to check credit threshold', { error, agentId, minCreditScore });
@@ -324,10 +318,7 @@ export async function getCreditStatistics(): Promise<{
 /**
  * Add credit filter to existing FilterDSL
  */
-export function addCreditFilterToDSL(
-  dsl: FilterDSL,
-  options: CreditFilterOptions
-): FilterDSL {
+export function addCreditFilterToDSL(dsl: FilterDSL, options: CreditFilterOptions): FilterDSL {
   const creditCondition: FilterCondition = {
     field: 'user.creditScore.score',
     operator: 'gte',

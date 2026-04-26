@@ -3,10 +3,7 @@
  * 信用分过滤服务测试
  */
 
-import {
-  CreditLevel,
-  CREDIT_LEVEL_THRESHOLDS,
-} from '@bridgeai/shared';
+import { CREDIT_LEVEL_THRESHOLDS } from '@bridgeai/shared';
 
 import {
   CreditFilterOptions,
@@ -117,9 +114,11 @@ describe('CreditFilterService', () => {
 
       expect(condition).toEqual({
         user: {
-          creditScore: {
-            score: {
-              gte: 600,
+          creditScores: {
+            some: {
+              score: {
+                gte: 600,
+              },
             },
           },
         },
@@ -132,9 +131,11 @@ describe('CreditFilterService', () => {
 
       expect(condition).toEqual({
         user: {
-          creditScore: {
-            score: {
-              lte: 800,
+          creditScores: {
+            some: {
+              score: {
+                lte: 800,
+              },
             },
           },
         },
@@ -147,10 +148,12 @@ describe('CreditFilterService', () => {
 
       expect(condition).toEqual({
         user: {
-          creditScore: {
-            score: {
-              gte: 600,
-              lte: 800,
+          creditScores: {
+            some: {
+              score: {
+                gte: 600,
+                lte: 800,
+              },
             },
           },
         },
@@ -163,10 +166,12 @@ describe('CreditFilterService', () => {
 
       expect(condition).toEqual({
         user: {
-          creditScore: {
-            score: {
-              gte: 800,
-              lte: 1000,
+          creditScores: {
+            some: {
+              score: {
+                gte: 800,
+                lte: 1000,
+              },
             },
           },
         },
@@ -181,20 +186,24 @@ describe('CreditFilterService', () => {
         OR: [
           {
             user: {
-              creditScore: {
-                score: {
-                  gte: 800,
-                  lte: 1000,
+              creditScores: {
+                some: {
+                  score: {
+                    gte: 800,
+                    lte: 1000,
+                  },
                 },
               },
             },
           },
           {
             user: {
-              creditScore: {
-                score: {
-                  gte: 600,
-                  lte: 799,
+              creditScores: {
+                some: {
+                  score: {
+                    gte: 600,
+                    lte: 799,
+                  },
                 },
               },
             },
@@ -209,8 +218,8 @@ describe('CreditFilterService', () => {
 
       expect(condition).toEqual({
         user: {
-          creditScore: {
-            is: null,
+          creditScores: {
+            none: {},
           },
         },
       });
@@ -234,17 +243,19 @@ describe('CreditFilterService', () => {
         OR: [
           {
             user: {
-              creditScore: {
-                score: {
-                  gte: 600,
+              creditScores: {
+                some: {
+                  score: {
+                    gte: 600,
+                  },
                 },
               },
             },
           },
           {
             user: {
-              creditScore: {
-                is: null,
+              creditScores: {
+                none: {},
               },
             },
           },
@@ -261,7 +272,7 @@ describe('CreditFilterService', () => {
           name: 'Agent 1',
           type: 'VISIONSHARE',
           user: {
-            creditScore: { score: 850 },
+            creditScores: [{ score: 850 }],
           },
         },
         {
@@ -269,7 +280,7 @@ describe('CreditFilterService', () => {
           name: 'Agent 2',
           type: 'VISIONSHARE',
           user: {
-            creditScore: { score: 700 },
+            creditScores: [{ score: 700 }],
           },
         },
       ];
@@ -277,10 +288,7 @@ describe('CreditFilterService', () => {
       (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
       (prisma.agent.count as jest.Mock).mockResolvedValue(2);
 
-      const result = await filterAgentsByCredit(
-        { minCreditScore: 600 },
-        { page: 1, limit: 20 }
-      );
+      const result = await filterAgentsByCredit({ minCreditScore: 600 }, { page: 1, limit: 20 });
 
       expect(result.items).toHaveLength(2);
       expect(result.total).toBe(2);
@@ -297,7 +305,7 @@ describe('CreditFilterService', () => {
           name: 'Agent 1',
           type: 'VISIONSHARE',
           user: {
-            creditScore: null,
+            creditScores: [],
           },
         },
       ];
@@ -329,7 +337,7 @@ describe('CreditFilterService', () => {
       const mockAgent = {
         id: 'agent-1',
         user: {
-          creditScore: { score: 750 },
+          creditScores: [{ score: 750 }],
         },
       };
 
@@ -348,7 +356,7 @@ describe('CreditFilterService', () => {
       const mockAgent = {
         id: 'agent-1',
         user: {
-          creditScore: { score: 500 },
+          creditScores: [{ score: 500 }],
         },
       };
 
@@ -367,7 +375,7 @@ describe('CreditFilterService', () => {
       const mockAgent = {
         id: 'agent-1',
         user: {
-          creditScore: null,
+          creditScores: [],
         },
       };
 
@@ -438,9 +446,7 @@ describe('CreditFilterService', () => {
     it('should add credit filter to existing AND filter', () => {
       const dsl: any = {
         where: {
-          and: [
-            { field: 'status', operator: 'eq', value: 'ACTIVE' },
-          ],
+          and: [{ field: 'status', operator: 'eq', value: 'ACTIVE' }],
         },
       };
 
