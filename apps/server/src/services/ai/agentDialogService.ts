@@ -71,6 +71,7 @@ export interface DialogSession {
   context: DialogContext;
   messages: DialogMessage[];
   status: 'active' | 'completed' | 'archived';
+  dialogPhase: 'intro' | 'exploring' | 'negotiating' | 'closing';
   createdAt: Date;
   updatedAt: Date;
   metadata?: Record<string, any>;
@@ -182,11 +183,15 @@ export class AgentDialogService {
       },
       messages: [],
       status: 'active',
+      dialogPhase: 'intro',
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     this.sessions.set(sessionId, session);
+
+    // Persist to database
+    await this.persistSession(session);
 
     logger.info('Dialog session created', {
       sessionId,
@@ -201,9 +206,7 @@ export class AgentDialogService {
   /**
    * Generate a dialog message (agent-to-agent or agent-to-user)
    */
-  async generateMessage(
-    request: GenerateDialogRequest
-  ): Promise<DialogMessage> {
+  async generateMessage(request: GenerateDialogRequest): Promise<DialogMessage> {
     const session = this.sessions.get(request.sessionId);
     if (!session) {
       throw new Error(`Session ${request.sessionId} not found`);
@@ -221,7 +224,8 @@ export class AgentDialogService {
 
     // Generate response using LLM (with fallback to mock if not initialized)
     const { llmService } = await this.getLLMService();
-    let response: { text: string; provider?: string; model?: string };
+    let response: { text: string; provider?: string; model?: string; isMock?: boolean };
+    let isMockResponse = false;
     try {
       response = await llmService.generateText(prompt, {
         temperature: request.options?.temperature ?? this.defaultTemperature,
@@ -231,10 +235,12 @@ export class AgentDialogService {
       logger.warn('LLM generateText failed, falling back to mock response', {
         error: (err as Error)?.message,
       });
+      isMockResponse = true;
       response = {
         text: '这是一个模拟回复。请确保LLM服务已正确配置。',
         provider: 'mock',
         model: 'mock-model',
+        isMock: true,
       };
     }
 
@@ -250,9 +256,14 @@ export class AgentDialogService {
       metadata: {
         agentType: sender.agentType,
         scene: session.scene,
-        confidence: 0.85,
+        confidence: isMockResponse ? 0 : 0.85,
+        isMock: isMockResponse,
+        intent: await this.recognizeIntent(request.content, session),
       },
     };
+
+    // Update dialog phase based on conversation progress
+    this.updateDialogPhase(session, message);
 
     // Add to session
     session.messages.push(message);
@@ -260,6 +271,9 @@ export class AgentDialogService {
 
     // Prune old messages if needed
     this.pruneHistory(session);
+
+    // Persist session to database
+    await this.persistSession(session);
 
     logger.info('Dialog message generated', {
       sessionId: request.sessionId,
@@ -326,6 +340,12 @@ export class AgentDialogService {
       throw new Error('Agent not found');
     }
 
+    // Resolve real user name
+    const { getUserById } = await import('../../services/userService').catch(() => ({
+      getUserById: null as (() => Promise<{ name?: string; displayName?: string } | null>) | null,
+    }));
+    const user = getUserById ? await getUserById(request.userId) : null;
+
     // Create or get existing session
     let session = this.findExistingSession(request.userId, request.agentId);
 
@@ -335,7 +355,7 @@ export class AgentDialogService {
         [
           {
             id: request.userId,
-            name: 'User',
+            name: user?.name || user?.displayName || 'User',
             type: 'user',
           },
           {
@@ -353,7 +373,7 @@ export class AgentDialogService {
     return this.generateMessage({
       sessionId: session.id,
       senderId: request.agentId,
-      senderType: 'user',
+      senderType: 'agent',
       content: request.content,
     });
   }
@@ -378,30 +398,40 @@ export class AgentDialogService {
   }
 
   /**
-   * Get session by ID
+   * Get session by ID (checks memory cache then database)
    */
   getSession(sessionId: string): DialogSession | null {
     return this.sessions.get(sessionId) || null;
   }
 
   /**
+   * Get or load session by ID
+   */
+  async getSessionAsync(sessionId: string): Promise<DialogSession | null> {
+    const cached = this.sessions.get(sessionId);
+    if (cached) return cached;
+    return this.loadSession(sessionId);
+  }
+
+  /**
    * Get all sessions for a participant
    */
   getSessionsForParticipant(participantId: string): DialogSession[] {
-    return Array.from(this.sessions.values()).filter(session =>
-      session.participants.some(p => p.id === participantId) &&
-      session.status === 'active'
+    return Array.from(this.sessions.values()).filter(
+      session =>
+        session.participants.some(p => p.id === participantId) && session.status === 'active'
     );
   }
 
   /**
    * Archive session
    */
-  archiveSession(sessionId: string): void {
+  async archiveSession(sessionId: string): Promise<void> {
     const session = this.sessions.get(sessionId);
     if (session) {
       session.status = 'archived';
       session.updatedAt = new Date();
+      await this.persistSession(session);
       logger.info('Dialog session archived', { sessionId });
     }
   }
@@ -409,10 +439,7 @@ export class AgentDialogService {
   /**
    * Update session context
    */
-  updateSessionContext(
-    sessionId: string,
-    updates: Partial<DialogContext>
-  ): DialogSession {
+  updateSessionContext(sessionId: string, updates: Partial<DialogContext>): DialogSession {
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new Error(`Session ${sessionId} not found`);
@@ -428,9 +455,9 @@ export class AgentDialogService {
   }
 
   /**
-   * Build dialog prompt
+   * Build dialog prompt (exposed for streaming endpoint)
    */
-  private buildDialogPrompt(
+  buildDialogPrompt(
     session: DialogSession,
     sender: DialogParticipant,
     request: GenerateDialogRequest
@@ -475,9 +502,13 @@ export class AgentDialogService {
 你的角色信息：
 - 名称：${sender.name}
 - 类型：${sender.agentType || 'general'}
-${persona ? `- 角色：${persona.role}
+${
+  persona
+    ? `- 角色：${persona.role}
 - 个性：${persona.personality.join('、')}
-- 沟通风格：${persona.communicationStyle}` : ''}
+- 沟通风格：${persona.communicationStyle}`
+    : ''
+}
 
 你的目标：
 ${session.context.goals.map((g, _idx) => `${_idx + 1}. ${g}`).join('\n')}
@@ -485,10 +516,14 @@ ${session.context.goals.map((g, _idx) => `${_idx + 1}. ${g}`).join('\n')}
 约束条件：
 ${session.context.constraints.map((c, _idx) => `- ${c}`).join('\n')}
 
-${otherAgent ? `对方Agent信息：
+${
+  otherAgent
+    ? `对方Agent信息：
 - 名称：${otherAgent.name}
 - 类型：${otherAgent.agentType || 'general'}
-${otherAgent.persona ? `- 角色：${otherAgent.persona.role}` : ''}` : ''}
+${otherAgent.persona ? `- 角色：${otherAgent.persona.role}` : ''}`
+    : ''
+}
 
 对话场景：${session.scene || 'general'}
 
@@ -520,16 +555,24 @@ ${historyText || '（无历史记录）'}
 你的信息：
 - 名称：${agent.name}
 - 类型：${agent.agentType || 'assistant'}
-${persona ? `- 角色：${persona.role}
+${
+  persona
+    ? `- 角色：${persona.role}
 - 个性：${persona.personality.join('、')}
 - 沟通风格：${persona.communicationStyle}
-- 专长：${persona.specializations?.join('、') || '通用'}` : ''}
+- 专长：${persona.specializations?.join('、') || '通用'}`
+    : ''
+}
 
 你的服务目标：
 ${session.context.goals.map((g, i) => `${i + 1}. ${g}`).join('\n')}
 
 用户偏好：
-${Object.entries(session.context.userPreferences || {}).map(([k, v]) => `- ${k}: ${v}`).join('\n') || '（未设置）'}
+${
+  Object.entries(session.context.userPreferences || {})
+    .map(([k, v]) => `- ${k}: ${v}`)
+    .join('\n') || '（未设置）'
+}
 
 场景：${session.scene || 'general'}
 
@@ -570,8 +613,12 @@ ${session.context.goals.map((g, _idx) => `${_idx + 1}. ${g}`).join('\n')}
 约束：
 ${session.context.constraints.map((c, _idx) => `- ${c}`).join('\n')}
 
-${otherParticipants.length > 0 ? `对方：
-${otherParticipants.map(p => `- ${p.name} (${p.agentType})`).join('\n')}` : ''}
+${
+  otherParticipants.length > 0
+    ? `对方：
+${otherParticipants.map(p => `- ${p.name} (${p.agentType})`).join('\n')}`
+    : ''
+}
 
 对话历史：
 ${historyText || '（无历史记录）'}
@@ -625,35 +672,268 @@ ${historyText || '（无历史记录）'}
   /**
    * Build agent persona from agent data
    */
-  private buildPersona(agent: { name: string; type: string; config?: Record<string, unknown> }): AgentPersona {
+  private buildPersona(agent: {
+    name: string;
+    type: string;
+    config?: Record<string, unknown>;
+  }): AgentPersona {
+    const cfg = agent.config || {};
     return {
       name: agent.name,
       role: agent.type || 'general',
-      personality: ['helpful', 'professional', 'efficient'],
-      goals: ['assist users', 'provide value'],
-      communicationStyle: 'professional',
-      specializations: (agent.config?.specializations as string[]) || [],
+      personality: (cfg.personality as string[]) || ['helpful', 'professional', 'efficient'],
+      goals: (cfg.goals as string[]) || ['assist users', 'provide value'],
+      communicationStyle:
+        (cfg.communicationStyle as AgentPersona['communicationStyle']) || 'professional',
+      specializations: (cfg.specializations as string[]) || [],
     };
   }
 
   /**
    * Prune message history to prevent memory bloat
+   * Generates LLM summary of pruned messages for long-term context
    */
-  private pruneHistory(session: DialogSession): void {
+  private async pruneHistory(session: DialogSession): Promise<void> {
     if (session.messages.length > this.defaultMaxHistory) {
       const pruneCount = session.messages.length - this.defaultMaxHistory;
-      session.context.relevantHistory = session.messages.slice(0, pruneCount);
+      const prunedMessages = session.messages.slice(0, pruneCount);
+
+      // Generate summary of pruned messages using LLM
+      const summary = await this.summarizeMessages(prunedMessages, session.context.relevantHistory);
+      if (summary) {
+        session.context.relevantHistory = [];
+        session.metadata = {
+          ...session.metadata,
+          conversationSummary: summary,
+        };
+      } else {
+        session.context.relevantHistory = prunedMessages;
+      }
+
       session.messages = session.messages.slice(pruneCount);
+    }
+  }
+
+  /**
+   * Summarize messages using LLM for long-term memory
+   */
+  private async summarizeMessages(
+    messages: DialogMessage[],
+    existingHistory: DialogMessage[]
+  ): Promise<string | null> {
+    try {
+      const { llmService } = await this.getLLMService();
+      const messageTexts = messages.map(m => `[${m.senderName}]: ${m.content}`).join('\n');
+      const existingSummary =
+        existingHistory.length > 0
+          ? `\nPrevious summary: ${JSON.stringify(existingHistory.map(m => ({ from: m.senderName, content: m.content })))}`
+          : '';
+
+      const prompt = `请用2-3句话总结以下对话的关键信息，包括重要决策、达成的共识和未解决的问题：\n\n${messageTexts}${existingSummary}`;
+
+      const result = await llmService.generateText(prompt, {
+        temperature: 0.3,
+        maxTokens: 200,
+      });
+      return result.text.trim();
+    } catch (err) {
+      logger.warn('Failed to summarize messages', { error: (err as Error)?.message });
+      return null;
+    }
+  }
+
+  /**
+   * Recognize intent from user message
+   */
+  private async recognizeIntent(content: string, session: DialogSession): Promise<string> {
+    try {
+      const { llmService } = await this.getLLMService();
+      const prompt = `根据以下对话内容和场景，识别用户意图。只返回一个意图标签（如：greeting, inquiry, negotiation, complaint, feedback, request_info, make_offer, accept, reject, closing）。\n\n场景：${session.scene || 'general'}\n消息：${content}\n\n意图：`;
+
+      const result = await llmService.generateText(prompt, {
+        temperature: 0.1,
+        maxTokens: 20,
+      });
+      return result.text.trim().toLowerCase();
+    } catch (err) {
+      logger.warn('Intent recognition failed', { error: (err as Error)?.message });
+      return 'unknown';
+    }
+  }
+
+  /**
+   * Update dialog phase based on conversation progress
+   */
+  private updateDialogPhase(session: DialogSession, _message: DialogMessage): void {
+    const messageCount = session.messages.length;
+    const previousPhase = session.dialogPhase;
+
+    // Simple state machine based on message count and type
+    if (messageCount <= 2) {
+      session.dialogPhase = 'intro';
+    } else if (session.type === 'negotiation') {
+      // Negotiation: intro -> exploring -> negotiating -> closing
+      if (
+        session.context.negotiationState?.pendingIssues &&
+        session.context.negotiationState.pendingIssues.length > 0
+      ) {
+        session.dialogPhase =
+          session.context.negotiationState.agreedTerms.length > 0 ? 'closing' : 'negotiating';
+      } else if (messageCount > 6) {
+        session.dialogPhase = 'negotiating';
+      } else {
+        session.dialogPhase = 'exploring';
+      }
+    } else {
+      // General: intro -> exploring -> closing
+      if (messageCount > 8) {
+        session.dialogPhase = 'closing';
+      } else {
+        session.dialogPhase = 'exploring';
+      }
+    }
+
+    if (previousPhase !== session.dialogPhase) {
+      logger.info('Dialog phase updated', {
+        sessionId: session.id,
+        from: previousPhase,
+        to: session.dialogPhase,
+      });
+    }
+  }
+
+  /**
+   * Persist session to database
+   */
+  private async persistSession(session: DialogSession): Promise<void> {
+    try {
+      const { prisma } = await import('../../db/client').catch(() => ({ prisma: null }));
+      if (!prisma) return;
+
+      const data = {
+        type: session.type,
+        participants: session.participants as any,
+        scene: session.scene,
+        context: session.context as any,
+        messages: session.messages as any,
+        status: session.status,
+        dialogPhase: session.dialogPhase,
+        summary: session.metadata?.conversationSummary || null,
+        metadata: (session.metadata as any) || null,
+        updatedAt: new Date(),
+      };
+
+      await prisma.dialogSessionRecord.upsert({
+        where: { id: session.id },
+        update: data,
+        create: { id: session.id, ...data },
+      });
+    } catch (err) {
+      logger.warn('Failed to persist dialog session', {
+        sessionId: session.id,
+        error: (err as Error)?.message,
+      });
+    }
+  }
+
+  /**
+   * Load session from database into memory
+   */
+  async loadSession(sessionId: string): Promise<DialogSession | null> {
+    // Check memory cache first
+    const cached = this.sessions.get(sessionId);
+    if (cached) return cached;
+
+    try {
+      const { prisma } = await import('../../db/client').catch(() => ({ prisma: null }));
+      if (!prisma) return null;
+
+      const record = await prisma.dialogSessionRecord.findUnique({
+        where: { id: sessionId },
+      });
+      if (!record) return null;
+
+      const session: DialogSession = {
+        id: record.id,
+        type: record.type as DialogType,
+        participants: record.participants as DialogParticipant[],
+        scene: record.scene || undefined,
+        context: record.context as DialogContext,
+        messages: (record.messages as DialogMessage[]) || [],
+        status: record.status as DialogSession['status'],
+        dialogPhase: (record.dialogPhase as DialogSession['dialogPhase']) || 'intro',
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
+        metadata: (record.metadata as Record<string, any>) || undefined,
+      };
+
+      this.sessions.set(sessionId, session);
+      return session;
+    } catch (err) {
+      logger.warn('Failed to load dialog session', {
+        sessionId,
+        error: (err as Error)?.message,
+      });
+      return null;
+    }
+  }
+
+  /**
+   * Get sessions for a participant from database (long-term memory)
+   */
+  async getParticipantHistory(
+    participantId: string,
+    options?: { limit?: number; offset?: number }
+  ): Promise<DialogSession[]> {
+    // Combine in-memory and database sessions
+    const memSessions = this.getSessionsForParticipant(participantId);
+
+    try {
+      const { prisma } = await import('../../db/client').catch(() => ({ prisma: null }));
+      if (!prisma) return memSessions;
+
+      const dbRecords = await prisma.dialogSessionRecord.findMany({
+        where: {
+          participants: { array_contains: participantId },
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: options?.limit || 50,
+        skip: options?.offset || 0,
+      });
+
+      const dbSessions: DialogSession[] = dbRecords.map(r => ({
+        id: r.id,
+        type: r.type as DialogType,
+        participants: r.participants as DialogParticipant[],
+        scene: r.scene || undefined,
+        context: r.context as DialogContext,
+        messages: (r.messages as DialogMessage[]) || [],
+        status: r.status as DialogSession['status'],
+        dialogPhase: (r.dialogPhase as DialogSession['dialogPhase']) || 'intro',
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        metadata: (r.metadata as Record<string, any>) || undefined,
+      }));
+
+      // Merge, deduplicating by id
+      const seen = new Set(memSessions.map(s => s.id));
+      const allSessions = [...memSessions];
+      for (const s of dbSessions) {
+        if (!seen.has(s.id)) {
+          allSessions.push(s);
+          seen.add(s.id);
+        }
+      }
+      return allSessions;
+    } catch {
+      return memSessions;
     }
   }
 
   /**
    * Find existing session between two participants
    */
-  private findExistingSession(
-    participantA: string,
-    participantB: string
-  ): DialogSession | null {
+  private findExistingSession(participantA: string, participantB: string): DialogSession | null {
     for (const session of this.sessions.values()) {
       if (session.status !== 'active') continue;
 
@@ -668,16 +948,33 @@ ${historyText || '（无历史记录）'}
   }
 
   /**
-   * Get agent by ID (placeholder - would integrate with actual agent service)
+   * Get agent by ID - delegates to real agentService
    */
-  private async getAgentById(agentId: string): Promise<{ id: string; name: string; type: string; config: Record<string, unknown> } | null> {
-    // In a real implementation, this would call the agent service
-    // For now, return a mock agent
+  private async getAgentById(
+    agentId: string
+  ): Promise<{ id: string; name: string; type: string; config: Record<string, unknown> } | null> {
+    const { getAgentById } = await import('../../services/agentService').catch(() => {
+      return { getAgentById: null };
+    });
+
+    if (!getAgentById) {
+      logger.warn('agentService not available, using mock agent');
+      return {
+        id: agentId,
+        name: `Agent_${agentId.slice(0, 8)}`,
+        type: 'general',
+        config: {},
+      };
+    }
+
+    const agent = await getAgentById(agentId);
+    if (!agent) return null;
+
     return {
-      id: agentId,
-      name: `Agent_${agentId.slice(0, 8)}`,
-      type: 'general',
-      config: {},
+      id: agent.id,
+      name: agent.name,
+      type: agent.type,
+      config: agent.config || {},
     };
   }
 
@@ -690,18 +987,7 @@ ${historyText || '（无历史记录）'}
     const { llmService } = await import('./llmService').catch(() => ({ llmService: null }));
 
     if (!llmService) {
-      // Fallback to a simple mock if LLM service is not available
-      logger.warn('LLM service not available, using mock response');
-      return {
-        llmService: {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          generateText: async (_prompt: string, _options?: Record<string, unknown>) => ({
-            text: '这是一个模拟回复。请确保LLM服务已正确配置。',
-            provider: 'mock',
-            model: 'mock-model',
-          }),
-        },
-      };
+      throw new Error('LLM service not available');
     }
 
     return { llmService };
