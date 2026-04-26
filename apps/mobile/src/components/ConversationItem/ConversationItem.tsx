@@ -1,14 +1,10 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { SenderType } from '@bridgeai/shared';
 
 import { theme } from '../../theme';
 import { UserAvatar } from '../UserAvatar/UserAvatar';
+import { UserStatusIndicator } from '../UserStatusIndicator';
 import { formatRelativeTime } from '../LastSeen/LastSeen';
 
 export type ConversationPriority = 'normal' | 'high' | 'urgent';
@@ -74,11 +70,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
 
   return (
     <TouchableOpacity
-      style={[
-        styles.container,
-        isPinned && styles.pinnedContainer,
-        style,
-      ]}
+      style={[styles.container, isPinned && styles.pinnedContainer, style]}
       onPress={handlePress}
       onLongPress={handleLongPress}
       activeOpacity={0.7}
@@ -99,9 +91,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
         />
         {unreadCount > 0 && (
           <View style={styles.unreadBadge} testID={`${testID}-unread`}>
-            <Text style={styles.unreadText}>
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </Text>
+            <Text style={styles.unreadText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
           </View>
         )}
       </View>
@@ -114,6 +104,16 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
             {name}
             {isMuted && ' 🔇'}
           </Text>
+          <UserStatusIndicator
+            userId={id}
+            senderType={userType === 'agent' ? SenderType.AGENT : SenderType.HUMAN}
+            displayName={name}
+            variant="minimal"
+            showPresence
+            showIdentity
+            showTyping={false}
+            testID={`${testID}-status`}
+          />
           <Text style={[styles.time, { color: getPriorityColor() }]}>
             {formatRelativeTime(lastMessageTime)}
           </Text>

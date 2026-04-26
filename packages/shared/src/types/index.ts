@@ -35,5 +35,6 @@ export * from './scene';
 export * from './agentAdConsumer';
 export * from './disclosure';
 export * from './visionShare';
+export * from './handoff';
 export * from '../schemas/l2';
 export * from '../schemas/sceneFields';

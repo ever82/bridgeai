@@ -9,9 +9,11 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { SenderType } from '@bridgeai/shared';
 
 import { ChatRoom, ChatRoomListProps, ChatRoomListItemProps } from '../../types/chat';
 import { formatDistanceToNow } from '../../utils/date';
+import { UserStatusIndicator } from '../UserStatusIndicator';
 
 /**
  * ChatRoomListItem Component
@@ -29,9 +31,7 @@ const ChatRoomListItem: React.FC<ChatRoomListItemProps> = ({
       return room.metadata.name;
     }
     if (room.type === 'PRIVATE' && room.participants) {
-      const otherParticipant = room.participants.find(
-        (p) => p.userId !== room.participantIds[0]
-      );
+      const otherParticipant = room.participants.find(p => p.userId !== room.participantIds[0]);
       return otherParticipant?.user?.displayName || otherParticipant?.user?.name || '私聊';
     }
     return '群聊';
@@ -43,9 +43,7 @@ const ChatRoomListItem: React.FC<ChatRoomListItemProps> = ({
       return room.metadata.avatarUrl;
     }
     if (room.type === 'PRIVATE' && room.participants) {
-      const otherParticipant = room.participants.find(
-        (p) => p.userId !== room.participantIds[0]
-      );
+      const otherParticipant = room.participants.find(p => p.userId !== room.participantIds[0]);
       return otherParticipant?.user?.avatarUrl;
     }
     return undefined;
@@ -86,13 +84,21 @@ const ChatRoomListItem: React.FC<ChatRoomListItemProps> = ({
           <Image source={{ uri: avatarUrl }} style={styles.avatar} />
         ) : (
           <View style={[styles.avatar, styles.defaultAvatar]}>
-            <Text style={styles.avatarText}>
-              {room.type === 'PRIVATE' ? '私' : '群'}
-            </Text>
+            <Text style={styles.avatarText}>{room.type === 'PRIVATE' ? '私' : '群'}</Text>
           </View>
         )}
-        {/* 在线状态指示器（可以扩展） */}
-        {room.type === 'PRIVATE' && <View style={styles.onlineIndicator} />}
+        {/* Agent/Human status indicator for private chats */}
+        {room.type === 'PRIVATE' && room.participantIds && room.participantIds.length > 0 && (
+          <UserStatusIndicator
+            userId={room.participantIds[room.participantIds.length - 1]}
+            senderType={SenderType.AGENT}
+            variant="minimal"
+            showPresence
+            showIdentity={false}
+            showTyping={false}
+            testID={`room-${room.id}-status`}
+          />
+        )}
       </View>
 
       {/* 房间信息 */}
@@ -101,22 +107,15 @@ const ChatRoomListItem: React.FC<ChatRoomListItemProps> = ({
           <Text style={styles.roomName} numberOfLines={1}>
             {roomName}
           </Text>
-          {lastMessageTime && (
-            <Text style={styles.timeText}>{lastMessageTime}</Text>
-          )}
+          {lastMessageTime && <Text style={styles.timeText}>{lastMessageTime}</Text>}
         </View>
 
         <View style={styles.messageRow}>
-          <Text
-            style={[styles.lastMessage, hasUnread && styles.unreadMessage]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.lastMessage, hasUnread && styles.unreadMessage]} numberOfLines={1}>
             {room.lastMessage ? (
               <>
                 {room.lastMessage.senderName && (
-                  <Text style={styles.senderName}>
-                    {room.lastMessage.senderName}:{' '}
-                  </Text>
+                  <Text style={styles.senderName}>{room.lastMessage.senderName}: </Text>
                 )}
                 {truncateMessage(room.lastMessage.content)}
               </>
@@ -191,9 +190,7 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({
       keyExtractor={keyExtractor}
       contentContainerStyle={styles.listContent}
       refreshControl={
-        onRefresh ? (
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        ) : undefined
+        onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> : undefined
       }
       onEndReached={onLoadMore}
       onEndReachedThreshold={0.5}
@@ -234,17 +231,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#FFFFFF',
-  },
-  onlineIndicator: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#34C759',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
   },
   content: {
     flex: 1,
