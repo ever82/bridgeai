@@ -15,11 +15,7 @@ import {
 } from 'react-native';
 import { Location } from '@bridgeai/shared';
 
-import {
-  getProvinces,
-  getCitiesByProvince,
-  getDistrictsByCity,
-} from '../../services/location';
+import { getProvinces, getCitiesByProvince, getDistrictsByCity } from '../../services/location';
 
 interface LocationOption {
   code: string;
@@ -59,7 +55,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     setError(null);
     try {
       const provinces = await getProvinces();
-      setData(provinces.map((p) => ({ code: p.code, name: p.name })));
+      setData(provinces.map(p => ({ code: p.code, name: p.name })));
     } catch (e) {
       setError('加载省份失败');
     } finally {
@@ -72,9 +68,15 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     setError(null);
     try {
       const cities = await getCitiesByProvince(provinceCode);
-      setData(cities.map((c) => ({ code: c.code, name: c.name })));
+      setData(cities.map(c => ({ code: c.code, name: c.name })));
     } catch (e) {
-      setError('加载城市失败');
+      // Fallback to mock data for offline support
+      const mock = CITIES_MOCK[provinceCode] || [];
+      if (mock.length > 0) {
+        setData(mock);
+      } else {
+        setError('加载城市失败');
+      }
     } finally {
       setLoading(false);
     }
@@ -85,9 +87,15 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     setError(null);
     try {
       const districts = await getDistrictsByCity(cityCode);
-      setData(districts.map((d) => ({ code: d.code, name: d.name })));
+      setData(districts.map(d => ({ code: d.code, name: d.name })));
     } catch (e) {
-      setError('加载区县失败');
+      // Fallback to mock data for offline support
+      const mock = DISTRICTS_MOCK[cityCode] || [];
+      if (mock.length > 0) {
+        setData(mock);
+      } else {
+        setError('加载区县失败');
+      }
     } finally {
       setLoading(false);
     }
@@ -114,26 +122,12 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
   const handleSelectProvince = (province: LocationOption) => {
     setSelectedProvince(province);
-    const cities = CITIES_MOCK[province.code];
-    if (cities && cities.length > 0) {
-      setStep('city');
-      setData(cities);
-    } else {
-      // Fetch from API
-      loadCities(province.code).then(() => setStep('city'));
-    }
+    loadCities(province.code).then(() => setStep('city'));
   };
 
   const handleSelectCity = (city: LocationOption) => {
     setSelectedCity(city);
-    const districts = DISTRICTS_MOCK[city.code];
-    if (districts && districts.length > 0) {
-      setStep('district');
-      setData(districts);
-    } else {
-      // Fetch from API
-      loadDistricts(city.code).then(() => setStep('district'));
-    }
+    loadDistricts(city.code).then(() => setStep('district'));
   };
 
   const handleSelectDistrict = (district: LocationOption) => {
@@ -152,21 +146,12 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     setError(null);
     if (step === 'district') {
       setStep('city');
-      const districts = DISTRICTS_MOCK[selectedCity!.code];
-      if (districts) {
-        setData(districts);
-      } else {
-        loadDistricts(selectedCity!.code);
+      if (selectedCity) {
+        loadDistricts(selectedCity.code);
       }
     } else if (step === 'city') {
       setStep('province');
       setSelectedProvince(null);
-      const cities = CITIES_MOCK[selectedProvince!.code];
-      if (cities) {
-        setData(cities);
-      } else {
-        loadCities(selectedProvince!.code);
-      }
     }
   };
 
@@ -201,18 +186,11 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         onPress={handleOpen}
         disabled={disabled}
       >
-        <Text style={[styles.text, !value && styles.placeholder]}>
-          {getDisplayText()}
-        </Text>
+        <Text style={[styles.text, !value && styles.placeholder]}>{getDisplayText()}</Text>
         <Text style={styles.arrow}>▼</Text>
       </TouchableOpacity>
 
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={handleClose}
-      >
+      <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={handleClose}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             {/* Header */}
@@ -231,26 +209,14 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             {/* Progress indicator */}
             <View style={styles.progressBar}>
               <View style={[styles.progressStep, styles.progressActive]} />
-              <View
-                style={[
-                  styles.progressStep,
-                  step !== 'province' && styles.progressActive,
-                ]}
-              />
-              <View
-                style={[
-                  styles.progressStep,
-                  step === 'district' && styles.progressActive,
-                ]}
-              />
+              <View style={[styles.progressStep, step !== 'province' && styles.progressActive]} />
+              <View style={[styles.progressStep, step === 'district' && styles.progressActive]} />
             </View>
 
             {/* Selection path */}
             {(selectedProvince || selectedCity) && (
               <View style={styles.pathContainer}>
-                {selectedProvince && (
-                  <Text style={styles.pathText}>{selectedProvince.name}</Text>
-                )}
+                {selectedProvince && <Text style={styles.pathText}>{selectedProvince.name}</Text>}
                 {selectedCity && (
                   <>
                     <Text style={styles.pathSeparator}>→</Text>
@@ -270,10 +236,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                   style={styles.retryButton}
                   onPress={() => {
                     if (step === 'province') loadProvinces();
-                    else if (step === 'city' && selectedProvince)
-                      loadCities(selectedProvince.code);
-                    else if (step === 'district' && selectedCity)
-                      loadDistricts(selectedCity.code);
+                    else if (step === 'city' && selectedProvince) loadCities(selectedProvince.code);
+                    else if (step === 'district' && selectedCity) loadDistricts(selectedCity.code);
                   }}
                 >
                   <Text style={styles.retryButtonText}>重试</Text>
@@ -282,12 +246,10 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             ) : (
               <FlatList
                 data={data}
-                keyExtractor={(item) => item.code}
+                keyExtractor={item => item.code}
                 renderItem={renderItem}
                 ItemSeparatorComponent={() => <View style={styles.separator} />}
-                ListEmptyComponent={
-                  <Text style={styles.emptyText}>暂无数据</Text>
-                }
+                ListEmptyComponent={<Text style={styles.emptyText}>暂无数据</Text>}
               />
             )}
           </View>

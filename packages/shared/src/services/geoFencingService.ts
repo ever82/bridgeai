@@ -288,3 +288,99 @@ export function validateGeoFencePolygon(polygon: GeoJSONPolygon): {
 
   return { valid: errors.length === 0, errors };
 }
+
+/**
+ * Check if two edges intersect. Returns intersection point or null.
+ * Edge: from (ax1,ay1) to (ax2,ay2) and from (bx1,by1) to (bx2,by2)
+ */
+function edgeIntersection(
+  ax1: number,
+  ay1: number,
+  ax2: number,
+  ay2: number,
+  bx1: number,
+  by1: number,
+  bx2: number,
+  by2: number
+): [number, number] | null {
+  const d = (ax2 - ax1) * (by2 - by1) - (ay2 - ay1) * (bx2 - bx1);
+  if (Math.abs(d) < 1e-12) return null; // parallel
+
+  const t = ((bx1 - ax1) * (by2 - by1) - (by1 - ay1) * (bx2 - bx1)) / d;
+  const u = ((bx1 - ax1) * (ay2 - ay1) - (by1 - ay1) * (ax2 - ax1)) / d;
+
+  if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+    return [ax1 + t * (ax2 - ax1), ay1 + t * (ay2 - ay1)];
+  }
+  return null;
+}
+
+/**
+ * Check if two geo-fence polygons intersect (have overlapping area).
+ * Uses edge intersection + point-in-polygon checks.
+ */
+export function doFencesIntersect(fence1: GeoFence, fence2: GeoFence): boolean {
+  const ring1 = fence1.geometry.coordinates[0];
+  const ring2 = fence2.geometry.coordinates[0];
+
+  // Check if any edge of ring1 intersects any edge of ring2
+  for (let i = 0; i < ring1.length - 1; i++) {
+    for (let j = 0; j < ring2.length - 1; j++) {
+      const hit = edgeIntersection(
+        ring1[i][0],
+        ring1[i][1],
+        ring1[i + 1][0],
+        ring1[i + 1][1],
+        ring2[j][0],
+        ring2[j][1],
+        ring2[j + 1][0],
+        ring2[j + 1][1]
+      );
+      if (hit) return true;
+    }
+  }
+
+  // Check if one polygon is entirely inside the other
+  // Test first non-closing point of ring1 against ring2
+  const testPoint: GeoCoordinates = { latitude: ring1[0][1], longitude: ring1[0][0] };
+  if (isPointInPolygon(testPoint, fence2.geometry)) return true;
+
+  // Test first non-closing point of ring2 against ring1
+  const testPoint2: GeoCoordinates = { latitude: ring2[0][1], longitude: ring2[0][0] };
+  if (isPointInPolygon(testPoint2, fence1.geometry)) return true;
+
+  return false;
+}
+
+/**
+ * Find all intersecting pairs from a list of geo-fences.
+ */
+export function findIntersectingFences(fences: GeoFence[]): Array<[GeoFence, GeoFence]> {
+  const pairs: Array<[GeoFence, GeoFence]> = [];
+
+  for (let i = 0; i < fences.length; i++) {
+    for (let j = i + 1; j < fences.length; j++) {
+      if (doFencesIntersect(fences[i], fences[j])) {
+        pairs.push([fences[i], fences[j]]);
+      }
+    }
+  }
+
+  return pairs;
+}
+
+/**
+ * Find all geo-fences that intersect with a given fence (in-memory).
+ */
+export function findIntersectingWith(fence: GeoFence): GeoFence[] {
+  return Array.from(geoFences.values()).filter(
+    other => other.id !== fence.id && doFencesIntersect(fence, other)
+  );
+}
+
+/**
+ * Stateless: find all fences from a list that intersect with a given fence.
+ */
+export function findIntersectingFromList(fence: GeoFence, fences: GeoFence[]): GeoFence[] {
+  return fences.filter(other => other.id !== fence.id && doFencesIntersect(fence, other));
+}
