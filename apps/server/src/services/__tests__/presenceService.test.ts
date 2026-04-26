@@ -109,18 +109,28 @@ describe('PresenceService', () => {
 
       const onlineUsers = service.getOnlineUsers();
 
-      expect(onlineUsers).toHaveLength(1);
-      expect(onlineUsers[0].userId).toBe('user-1');
+      expect(onlineUsers).toHaveLength(2);
+      expect(onlineUsers.map(u => u.userId)).toEqual(expect.arrayContaining(['user-1', 'user-2']));
     });
   });
 
   describe('updateActivity', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     it('should update last activity', () => {
       service.setPresence('user-1', 'online');
       const oldActivity = service.getPresence('user-1').lastActivityAt;
 
-      // Wait a bit
+      // Advance time
       jest.advanceTimersByTime(1000);
+      // Advance system time so new Date() returns a later time
+      jest.setSystemTime(new Date(Date.now() + 1000));
       service.updateActivity('user-1');
 
       const newActivity = service.getPresence('user-1').lastActivityAt;

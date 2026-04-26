@@ -78,6 +78,7 @@ describe('RoomService', () => {
   describe('joinRoom', () => {
     beforeEach(() => {
       service.createRoom('room-1', 'user-1', { name: 'Room', maxMembers: 3 });
+      service.joinRoom('room-1', { userId: 'user-1', socketId: 'socket-0', role: 'owner' });
     });
 
     it('should allow user to join room', () => {

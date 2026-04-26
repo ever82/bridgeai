@@ -5,7 +5,23 @@
  * Provides room-level operations for the socket room system.
  */
 
+import crypto from 'crypto';
+
 import { presenceService } from './presenceService';
+
+/**
+ * Hash a password using SHA-256 (use bcrypt in production)
+ */
+function hashPassword(password: string): string {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
+
+/**
+ * Compare a password against a stored hash
+ */
+function verifyPassword(password: string, hash: string): boolean {
+  return hashPassword(password) === hash;
+}
 
 /**
  * Room member information
@@ -94,6 +110,14 @@ export class RoomService {
     roomId = sanitizeRoomInput(roomId);
     options.name = sanitizeRoomInput(options.name);
 
+    // Validate roomId length
+    if (roomId.length < 3) {
+      throw new Error('roomId must be at least 3 characters');
+    }
+    if (roomId.length > 200) {
+      throw new Error('roomId must not exceed 200 characters');
+    }
+
     // Validate maxMembers
     if (options.maxMembers !== undefined && options.maxMembers < 1) {
       throw new Error('maxMembers must be at least 1');
@@ -113,7 +137,7 @@ export class RoomService {
       createdAt: now,
       updatedAt: now,
       isPrivate: options.isPrivate ?? false,
-      passwordHash: options.isPrivate && options.password ? options.password : undefined,
+      passwordHash: options.isPrivate && options.password ? hashPassword(options.password) : undefined,
       maxMembers: options.maxMembers ?? 100,
       metadata: options.metadata,
     };
@@ -162,18 +186,18 @@ export class RoomService {
       throw new Error('User is banned from this room');
     }
 
-    // Check room capacity
-    if (room.members.size >= room.info.maxMembers) {
-      throw new Error('Room is full');
-    }
-
-    // Check if user is already in room
+    // Check if user is already in room (allow existing member to reconnect even when full)
     const existingMember = room.members.get(userId);
     if (existingMember) {
       // Update socket ID if rejoining with different connection
       existingMember.socketId = socketId;
       existingMember.deviceInfo = deviceInfo;
       return existingMember;
+    }
+
+    // Check room capacity for new members
+    if (room.members.size >= room.info.maxMembers) {
+      throw new Error('Room is full');
     }
 
     const member: RoomMember = {
@@ -311,10 +335,18 @@ export class RoomService {
   /**
    * Destroy a room
    */
-  destroyRoom(roomId: string): boolean {
+  destroyRoom(roomId: string, destroyedBy?: string): boolean {
     const room = this.rooms.get(roomId);
     if (!room) {
       return false;
+    }
+
+    // Permission check: only owner/admin can destroy room
+    if (destroyedBy) {
+      const callerRole = room.members.get(destroyedBy)?.role;
+      if (!callerRole || callerRole === 'member') {
+        throw new Error('Insufficient permissions to destroy room');
+      }
     }
 
     // Remove room from all users' room lists
@@ -406,10 +438,18 @@ export class RoomService {
   /**
    * Unban a user from a room
    */
-  unbanUser(roomId: string, userId: string): boolean {
+  unbanUser(roomId: string, userId: string, calledBy?: string): boolean {
     const room = this.rooms.get(roomId);
     if (!room) {
       return false;
+    }
+
+    // Permission check: only owner/admin can unban
+    if (calledBy) {
+      const callerRole = room.members.get(calledBy)?.role;
+      if (!callerRole || callerRole === 'member') {
+        throw new Error('Insufficient permissions to unban user');
+      }
     }
 
     return room.bannedUsers.delete(userId);
@@ -431,13 +471,13 @@ export class RoomService {
     if (!room) return false;
     if (!room.info.isPrivate) return true;
     if (!room.info.passwordHash) return false;
-    return room.info.passwordHash === password;
+    return verifyPassword(password ?? '', room.info.passwordHash);
   }
 
   /**
    * Mute a user in a room
    */
-  muteUser(roomId: string, userId: string): boolean {
+  muteUser(roomId: string, userId: string, mutedBy?: string): boolean {
     const room = this.rooms.get(roomId);
     if (!room) {
       return false;
@@ -445,6 +485,14 @@ export class RoomService {
 
     if (!room.members.has(userId)) {
       return false;
+    }
+
+    // Permission check: only owner/admin can mute
+    if (mutedBy) {
+      const callerRole = room.members.get(mutedBy)?.role;
+      if (!callerRole || callerRole === 'member') {
+        throw new Error('Insufficient permissions to mute user');
+      }
     }
 
     room.mutedUsers.add(userId);
@@ -494,6 +542,11 @@ export class RoomService {
     // Only owner can set admin, owner/admin can set member
     if (role === 'admin' && setterRole !== 'owner') {
       throw new Error('Only room owner can set admin role');
+    }
+
+    // Only the room owner can set another owner (single-owner model)
+    if (role === 'owner') {
+      throw new Error('Cannot set owner role; room owner role cannot be transferred');
     }
 
     // Cannot change creator's role
