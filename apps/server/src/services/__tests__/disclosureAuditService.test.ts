@@ -1,15 +1,68 @@
 /**
  * Disclosure Audit Service Tests
  */
-import { DisclosureLevel, DisclosureAuditEntry, DisclosureChangeRecord } from '@bridgeai/shared';
+import { DisclosureLevel } from '@bridgeai/shared';
 
-import { disclosureAuditService, DisclosureAuditService } from '../disclosureAuditService';
+import { DisclosureAuditService } from '../disclosureAuditService';
 import { auditService } from '../auditService';
 
-// Mock auditService
 jest.mock('../auditService', () => ({
   auditService: {
     log: jest.fn().mockResolvedValue(undefined),
+  },
+}));
+
+jest.mock('../../db/client', () => ({
+  prisma: {
+    disclosureChange: {
+      create: jest
+        .fn()
+        .mockImplementation(({ data }) =>
+          Promise.resolve({ ...data, id: data.id || 'change-1', changedAt: new Date() })
+        ),
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+      update: jest.fn().mockResolvedValue({}),
+      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+    },
+    disclosureAccessLog: {
+      create: jest
+        .fn()
+        .mockImplementation(({ data }) =>
+          Promise.resolve({ ...data, id: data.id || 'access-1', timestamp: new Date() })
+        ),
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+      groupBy: jest.fn().mockResolvedValue([]),
+    },
+    disclosureSettings: {
+      findUnique: jest.fn().mockResolvedValue(null),
+      upsert: jest.fn().mockResolvedValue({}),
+    },
+    match: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
+    demand: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
+    supply: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
+  },
+}));
+
+jest.mock('../disclosureService', () => ({
+  disclosureService: {
+    getDisclosureSettings: jest.fn().mockResolvedValue({
+      agentId: 'agent-1',
+      userId: 'user-1',
+      fieldDisclosures: [
+        { fieldName: 'email', level: 'PUBLIC', isDisclosable: true, defaultLevel: 'PUBLIC' },
+      ],
+      defaultLevel: 'AFTER_MATCH',
+      strictMode: false,
+    }),
   },
 }));
 
@@ -204,7 +257,7 @@ describe('DisclosureAuditService', () => {
       expect(record.agentId).toBe('agent-1');
       expect(record.fieldName).toBe('email');
       expect(record.previousLevel).toBe(DisclosureLevel.PUBLIC);
-      expect(record.newLevel).toBe(DisclosureLevel.AFTER_REFERRAL);
+      expect(record.newLevel).toBe(DisclosureLevel.AFTER_MATCH);
     });
 
     it('should log withdrawal to audit', async () => {

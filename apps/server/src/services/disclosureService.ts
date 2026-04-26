@@ -15,6 +15,7 @@ import {
 } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
+import { logger } from '../utils/logger';
 
 import { auditService } from './auditService';
 import { disclosureAuditService } from './disclosureAuditService';
@@ -233,41 +234,44 @@ export class DisclosureService {
    * Get user relationship information
    */
   async getUserRelationship(userId: string, otherUserId: string): Promise<UserRelationship> {
-    // Check for matches
+    // Find matches where one user's agent has a demand and the other has a supply (or vice versa)
     const match = await prisma.match.findFirst({
       where: {
+        status: { in: ['ACCEPTED', 'COMPLETED'] },
         OR: [
-          { userId, matchedUserId: otherUserId },
-          { userId: otherUserId, matchedUserId: userId },
-        ],
-        status: 'ACTIVE' as any,
-      } as any,
-    });
-
-    // Check for chats
-    const chat = await (prisma as any).chat?.findFirst({
-      where: {
-        OR: [
-          { senderId: userId, receiverId: otherUserId },
-          { senderId: otherUserId, receiverId: userId },
+          {
+            demand: { agent: { userId } },
+            supply: { agent: { userId: otherUserId } },
+          },
+          {
+            demand: { agent: { userId: otherUserId } },
+            supply: { agent: { userId } },
+          },
         ],
       },
     });
 
-    // Check for referrals
-    const referral = await (prisma as any).referral?.findFirst({
-      where: {
-        OR: [
-          { referrerId: userId, referredId: otherUserId },
-          { referrerId: otherUserId, referredId: userId },
-        ],
-      },
-    });
+    let hasChatted = false;
+    if (match) {
+      // Check if a conversation exists for this match with messages from both users
+      const conversation = await prisma.conversation.findUnique({
+        where: { matchId: match.id },
+      });
+      if (conversation) {
+        const messageCount = await prisma.message.count({
+          where: {
+            conversationId: conversation.id,
+            senderId: { in: [userId, otherUserId] },
+          },
+        });
+        hasChatted = messageCount > 0;
+      }
+    }
 
     return {
       hasMatched: !!match,
-      hasChatted: !!chat,
-      hasReferred: !!referral,
+      hasChatted,
+      hasReferred: false, // No referral model exists yet
       matchId: match?.id,
     };
   }
@@ -422,7 +426,7 @@ export class DisclosureService {
     // 1. Find all users who can view this agent
     // 2. Send push notifications or in-app notifications
     // 3. Create notification records in the database
-    console.log('[DisclosureService] Notifying affected users for agent:', agentId, changes);
+    logger.info('Notifying affected users for disclosure changes', { agentId, changes });
   }
 }
 

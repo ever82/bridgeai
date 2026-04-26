@@ -4,6 +4,8 @@
  * Provides audit logging and change tracking for disclosure settings.
  * Tracks disclosure changes, access attempts, and manages notifications.
  */
+import { randomUUID } from 'crypto';
+
 import {
   DisclosureLevel,
   DisclosureAuditEntry,
@@ -12,6 +14,7 @@ import {
 } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
+import { logger } from '../utils/logger';
 
 import { auditService } from './auditService';
 import { disclosureService } from './disclosureService';
@@ -214,18 +217,36 @@ export class DisclosureAuditService {
     userId: string,
     limit: number = 20
   ): Promise<DisclosureChangeRecord[]> {
-    const accessibleAgents =
-      (await (prisma as any).match?.findMany({
-        where: {
-          OR: [{ userId }, { matchedUserId: userId }],
-          status: 'ACTIVE',
-        },
-        select: { agentId: true },
-      })) ?? [];
+    // Find agent IDs associated with the user through demands and supplies
+    const [demands, supplies] = await Promise.all([
+      prisma.demand.findMany({
+        where: { agent: { userId }, status: 'OPEN' },
+        select: { id: true },
+      }),
+      prisma.supply.findMany({
+        where: { agent: { userId }, status: 'AVAILABLE' },
+        select: { id: true },
+      }),
+    ]);
 
-    const agentIds = (accessibleAgents as Array<{ agentId: string }>)
-      .map(m => m.agentId)
-      .filter(Boolean);
+    const demandIds = demands.map(d => d.id);
+    const supplyIds = supplies.map(s => s.id);
+
+    if (demandIds.length === 0 && supplyIds.length === 0) return [];
+
+    // Find matched agents through those demands/supplies
+    const matches = await prisma.match.findMany({
+      where: {
+        status: 'ACCEPTED',
+        OR: [{ demandId: { in: demandIds } }, { supplyId: { in: supplyIds } }],
+      },
+      select: {
+        demand: { select: { agentId: true } },
+        supply: { select: { agentId: true } },
+      },
+    });
+
+    const agentIds = matches.flatMap(m => [m.demand.agentId, m.supply.agentId]).filter(Boolean);
     if (agentIds.length === 0) return [];
 
     const changes = await prisma.disclosureChange.findMany({
@@ -349,7 +370,7 @@ export class DisclosureAuditService {
     // 2. Send notifications about the change
     // 3. Update the record to mark notification as sent
 
-    console.log('[DisclosureAuditService] Notifying affected users for change:', record);
+    logger.info('Notifying affected users for disclosure change', { record });
 
     // Update record to mark notification sent
     await this.markNotificationSent(record.id);
@@ -366,7 +387,7 @@ export class DisclosureAuditService {
     // In a full implementation, this would send notifications to users
     // who previously had access to this field
 
-    console.log('[DisclosureAuditService] Notifying withdrawal:', {
+    logger.info('Notifying disclosure withdrawal', {
       agentId,
       fieldName,
       withdrawnBy,
@@ -423,7 +444,7 @@ export class DisclosureAuditService {
    * Generate a unique ID
    */
   private generateId(): string {
-    return `disclosure_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return randomUUID();
   }
 }
 

@@ -7,7 +7,7 @@ import {
   createDefaultDisclosureSettings,
 } from '@bridgeai/shared';
 
-import { disclosureService, DisclosureService } from '../disclosureService';
+import { DisclosureService } from '../disclosureService';
 import { disclosureAuditService } from '../disclosureAuditService';
 import { prisma } from '../../db/client';
 
@@ -20,11 +20,29 @@ jest.mock('../../db/client', () => ({
     match: {
       findFirst: jest.fn(),
     },
-    chat: {
-      findFirst: jest.fn(),
+    conversation: {
+      findUnique: jest.fn().mockResolvedValue(null),
     },
-    referral: {
-      findFirst: jest.fn(),
+    message: {
+      count: jest.fn().mockResolvedValue(0),
+    },
+    disclosureSettings: {
+      findUnique: jest.fn().mockResolvedValue(null),
+      upsert: jest.fn().mockResolvedValue({}),
+    },
+    disclosureChange: {
+      create: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+      update: jest.fn(),
+      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+    },
+    disclosureAccessLog: {
+      create: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+      groupBy: jest.fn().mockResolvedValue([]),
     },
   },
 }));
@@ -59,7 +77,9 @@ describe('DisclosureService', () => {
     it('should throw error if agent not found', async () => {
       (prisma.agent.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.getDisclosureSettings('non-existent')).rejects.toThrow('Agent not found');
+      await expect(service.getDisclosureSettings('non-existent')).rejects.toThrow(
+        'Agent not found'
+      );
     });
   });
 
@@ -80,10 +100,15 @@ describe('DisclosureService', () => {
       // Mock settings with non-disclosable field
       const mockSettings = createDefaultDisclosureSettings('agent-1', 'owner-1');
       mockSettings.fieldDisclosures = [
-        { fieldName: 'secret', level: DisclosureLevel.PUBLIC, isDisclosable: false, defaultLevel: DisclosureLevel.PUBLIC },
+        {
+          fieldName: 'secret',
+          level: DisclosureLevel.PUBLIC,
+          isDisclosable: false,
+          defaultLevel: DisclosureLevel.PUBLIC,
+        },
       ];
 
-      // @ts-ignore - accessing private method for testing
+      // @ts-expect-error - accessing private method for testing
       jest.spyOn(service, 'loadSettingsFromDB').mockResolvedValue(mockSettings);
 
       const result = await service.canViewField('agent-1', 'secret', 'viewer-1');
@@ -97,7 +122,7 @@ describe('DisclosureService', () => {
       mockSettings.strictMode = true;
       mockSettings.fieldDisclosures = [];
 
-      // @ts-ignore - accessing private method for testing
+      // @ts-expect-error - accessing private method for testing
       jest.spyOn(service, 'loadSettingsFromDB').mockResolvedValue(mockSettings);
 
       const result = await service.canViewField('agent-1', 'unknown', 'viewer-1');
@@ -115,8 +140,6 @@ describe('DisclosureService', () => {
 
     it('should return NONE if no relationship exists', async () => {
       (prisma.match.findFirst as jest.Mock).mockResolvedValue(null);
-      (prisma.chat.findFirst as jest.Mock).mockResolvedValue(null);
-      (prisma.referral.findFirst as jest.Mock).mockResolvedValue(null);
 
       const stage = await service.getRelationshipStage('user-1', 'user-2');
       expect(stage).toBe(RelationshipStage.NONE);
@@ -124,8 +147,7 @@ describe('DisclosureService', () => {
 
     it('should return MATCHED if users have matched', async () => {
       (prisma.match.findFirst as jest.Mock).mockResolvedValue({ id: 'match-1' });
-      (prisma.chat.findFirst as jest.Mock).mockResolvedValue(null);
-      (prisma.referral.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.conversation.findUnique as jest.Mock).mockResolvedValue(null);
 
       const stage = await service.getRelationshipStage('user-1', 'user-2');
       expect(stage).toBe(RelationshipStage.MATCHED);
@@ -133,20 +155,11 @@ describe('DisclosureService', () => {
 
     it('should return CHATTED if users have chatted', async () => {
       (prisma.match.findFirst as jest.Mock).mockResolvedValue({ id: 'match-1' });
-      (prisma.chat.findFirst as jest.Mock).mockResolvedValue({ id: 'chat-1' });
-      (prisma.referral.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({ id: 'conv-1' });
+      (prisma.message.count as jest.Mock).mockResolvedValue(2);
 
       const stage = await service.getRelationshipStage('user-1', 'user-2');
       expect(stage).toBe(RelationshipStage.CHATTED);
-    });
-
-    it('should return REFERRED if users have referral', async () => {
-      (prisma.match.findFirst as jest.Mock).mockResolvedValue({ id: 'match-1' });
-      (prisma.chat.findFirst as jest.Mock).mockResolvedValue({ id: 'chat-1' });
-      (prisma.referral.findFirst as jest.Mock).mockResolvedValue({ id: 'referral-1' });
-
-      const stage = await service.getRelationshipStage('user-1', 'user-2');
-      expect(stage).toBe(RelationshipStage.REFERRED);
     });
   });
 
@@ -183,17 +196,19 @@ describe('DisclosureService', () => {
 
       const settings = await service.bulkUpdateDisclosure('agent-1', updates, 'owner-1');
 
-      const nameField = settings.fieldDisclosures.find((f: { fieldName: string }) => f.fieldName === 'name');
-      const emailField = settings.fieldDisclosures.find((f: { fieldName: string }) => f.fieldName === 'email');
+      const nameField = settings.fieldDisclosures.find(
+        (f: { fieldName: string }) => f.fieldName === 'name'
+      );
+      const emailField = settings.fieldDisclosures.find(
+        (f: { fieldName: string }) => f.fieldName === 'email'
+      );
 
       expect(nameField?.level).toBe(DisclosureLevel.AFTER_MATCH);
       expect(emailField?.level).toBe(DisclosureLevel.AFTER_CHAT);
     });
 
     it('should log changes for audit', async () => {
-      const updates = [
-        { fieldName: 'name', level: DisclosureLevel.AFTER_MATCH },
-      ];
+      const updates = [{ fieldName: 'name', level: DisclosureLevel.AFTER_MATCH }];
 
       await service.bulkUpdateDisclosure('agent-1', updates, 'owner-1');
 
@@ -218,7 +233,9 @@ describe('DisclosureService', () => {
     it('should throw error if agent not found', async () => {
       (prisma.agent.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.resetToDefaults('non-existent', 'owner-1')).rejects.toThrow('Agent not found');
+      await expect(service.resetToDefaults('non-existent', 'owner-1')).rejects.toThrow(
+        'Agent not found'
+      );
     });
   });
 });
