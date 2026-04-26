@@ -788,4 +788,20 @@ export function getHandoffAuditLogs(conversationId: string): HandoffAuditLog[] {
   return handoffAuditLogs.filter(log => log.conversationId === conversationId);
 }
 
-export default { registerHandoffHandlers, getHandoffState, getHandoffRequest, getHandoffAuditLogs };
+/**
+ * Reset all in-memory handoff state (for testing)
+ */
+export function resetHandoffState(): void {
+  handoffStates.clear();
+  handoffRequests.clear();
+  handoffAuditLogs.length = 0;
+  userHandoffTimestamps.clear();
+}
+
+export default {
+  registerHandoffHandlers,
+  getHandoffState,
+  getHandoffRequest,
+  getHandoffAuditLogs,
+  resetHandoffState,
+};

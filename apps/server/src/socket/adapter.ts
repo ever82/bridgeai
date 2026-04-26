@@ -34,7 +34,7 @@ export async function initializeRedisAdapter(): Promise<{
   try {
     // Create pub client (ioredis handles connection automatically)
     pubClient = new Redis(redisUrl, {
-      reconnectStrategy: retries => {
+      retryStrategy: retries => {
         if (retries > 10) {
           console.error('[Redis] Max reconnection attempts reached');
           return new Error('Max reconnection attempts');
@@ -46,7 +46,7 @@ export async function initializeRedisAdapter(): Promise<{
 
     // Create sub client (new instance with same config)
     subClient = new Redis(redisUrl, {
-      reconnectStrategy: retries => {
+      retryStrategy: retries => {
         if (retries > 10) {
           console.error('[Redis] Max reconnection attempts reached');
           return new Error('Max reconnection attempts');

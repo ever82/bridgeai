@@ -14,6 +14,7 @@ import {
   registerHandoffHandlers,
   getHandoffState,
   getHandoffRequest,
+  resetHandoffState,
 } from '../handlers/handoffHandler';
 import { AuthenticatedSocket } from '../middleware/auth';
 
@@ -73,6 +74,7 @@ describe('Handoff Socket Handler', () => {
   afterEach(() => {
     jest.useRealTimers();
     jest.clearAllMocks();
+    resetHandoffState();
   });
 
   describe('registerHandoffHandlers', () => {
