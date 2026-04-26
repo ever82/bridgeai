@@ -705,56 +705,6 @@ describe('PROBE: ISSUE-COM001a Socket.io Infrastructure', () => {
   });
 
   // ================================================================
-  // PROBE GROUP 9: Private Chat Room ID Collision
-  // ================================================================
-  describe('Private Chat Room ID Collision Probes', () => {
-    probe('should generate collision-free room ID for private chat', done => {
-      // chat:start_private uses sorted IDs joined by '::'
-      // Test: [userA, userB].sort().join('::') === [userB, userA].sort().join('::')
-      mockUser('user-a');
-      const client = makeClient('/chat', { token: VALID_TOKEN });
-      client.on('connected', () => {
-        client.emit('chat:start_private', { targetUserId: 'user-b' }, (response: any) => {
-          expect(response.success).toBe(true);
-          // Room ID should be 'user-a::user-b' (sorted)
-          const roomId = response.data.roomId;
-          const parts = roomId.split('::');
-          expect(parts).toHaveLength(2);
-          // Should be sorted alphabetically
-          expect(parts[0] < parts[1]).toBe(true);
-          client.disconnect();
-          done();
-        });
-      });
-    });
-
-    probe('should handle chat:start_private with self as target', done => {
-      mockUser('user-self');
-      const client = makeClient('/chat', { token: VALID_TOKEN });
-      client.on('connected', () => {
-        client.emit('chat:start_private', { targetUserId: 'user-self' }, (response: any) => {
-          // Should handle self-chat gracefully
-          expect(response).toBeDefined();
-          client.disconnect();
-          done();
-        });
-      });
-    });
-
-    probe('should handle chat:start_private with empty targetUserId', done => {
-      mockUser('user-empty-target');
-      const client = makeClient('/chat', { token: VALID_TOKEN });
-      client.on('connected', () => {
-        client.emit('chat:start_private', { targetUserId: '' }, (response: any) => {
-          expect(response).toBeDefined();
-          client.disconnect();
-          done();
-        });
-      });
-    });
-  });
-
-  // ================================================================
   // PROBE GROUP 10: Connection Manager - Memory & Race Conditions
   // ================================================================
   describe('Connection Manager Memory & Race Condition Probes', () => {

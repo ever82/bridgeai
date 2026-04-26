@@ -319,22 +319,6 @@ class SocketClient extends EventEmitter {
   }
 
   /**
-   * Start private conversation
-   */
-  startPrivateConversation(targetUserId: string): Promise<{ roomId: string }> {
-    return new Promise((resolve, reject) => {
-      this.socket?.emit('chat:start_private', { targetUserId }, (response: unknown) => {
-        const res = response as { success?: boolean; data?: { roomId: string }; error?: string };
-        if (res?.success) {
-          resolve(res.data as { roomId: string });
-        } else {
-          reject(new Error(res?.error || 'Failed to start conversation'));
-        }
-      });
-    });
-  }
-
-  /**
    * Disconnect socket
    */
   disconnect(): void {

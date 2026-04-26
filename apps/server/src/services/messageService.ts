@@ -644,7 +644,7 @@ export async function deleteMessage(messageId: string, userId: string) {
 export async function editMessage(messageId: string, userId: string, newContent: string) {
   const message = await prisma.message.findUnique({
     where: { id: messageId },
-    select: { senderId: true },
+    select: { senderId: true, metadata: true },
   });
 
   if (!message || message.senderId !== userId) {
@@ -658,7 +658,7 @@ export async function editMessage(messageId: string, userId: string, newContent:
     data: {
       content: encryptedContent,
       editedAt: new Date(),
-      metadata: { edited: true },
+      metadata: { ...((message.metadata as Record<string, any>) || {}), edited: true },
     },
   });
 }
@@ -934,7 +934,7 @@ export async function syncChatRoomMessages(input: {
 export async function editChatRoomMessage(messageId: string, userId: string, newContent: string) {
   const message = await prisma.chatMessage.findUnique({
     where: { id: messageId },
-    select: { senderId: true, chatRoomId: true },
+    select: { senderId: true, chatRoomId: true, metadata: true },
   });
 
   if (!message || message.senderId !== userId) {
@@ -947,7 +947,7 @@ export async function editChatRoomMessage(messageId: string, userId: string, new
     where: { id: messageId },
     data: {
       content: encryptedContent,
-      metadata: { edited: true },
+      metadata: { ...((message.metadata as Record<string, any>) || {}), edited: true },
     },
   });
 

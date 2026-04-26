@@ -312,8 +312,9 @@ router.get(
   validate({
     params: getMessageSchema.shape.params,
   }),
-  async (req, res, next) => {
+  async (req: AuthenticatedRequest, res, next) => {
     try {
+      const userId = req.user!.id;
       const { messageId } = req.params;
 
       const message = await getChatMessageById(messageId);
@@ -322,6 +323,15 @@ router.get(
         return res.status(404).json({
           success: false,
           error: 'Message not found',
+        });
+      }
+
+      // Verify room membership
+      const isMember = await isUserInRoom(message.conversationId, userId);
+      if (!isMember) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied: not a room member',
         });
       }
 
@@ -580,6 +590,14 @@ router.post('/rooms/:id/read', authenticate, async (req: AuthenticatedRequest, r
   try {
     const userId = req.user!.id;
     const { id } = req.params;
+
+    const isMember = await isUserInRoom(id, userId);
+    if (!isMember) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied: not a room member',
+      });
+    }
 
     await resetUnreadCount(id, userId);
 

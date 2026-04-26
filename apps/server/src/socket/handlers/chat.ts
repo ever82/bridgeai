@@ -6,12 +6,12 @@
 import type { Namespace } from 'socket.io';
 import type { Prisma } from '@prisma/client';
 
+import { prisma } from '../../db/client';
 import type { AuthenticatedSocket } from '../middleware/auth';
 import { isUserInRoom } from '../../services/chat/roomService';
 import {
   createChatRoomMessage,
   getChatRoomMessages,
-  createReadReceipt,
   getOfflineMessages,
   markOfflineMessagesDelivered,
   syncChatRoomMessages,
@@ -169,6 +169,12 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
 
       const { roomId, messageIds } = data;
 
+      // Validate user is in the room
+      if (!socket.rooms.has(roomId)) {
+        callback?.({ success: false, error: 'Not in room' });
+        return;
+      }
+
       // Broadcast delivery acknowledgment to room
       socket.to(roomId).emit('chat:delivered', {
         userId: socket.user.id,
@@ -194,6 +200,12 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
 
       const { roomId, messageIds } = data;
 
+      // Validate user is in the room
+      if (!socket.rooms.has(roomId)) {
+        callback?.({ success: false, error: 'Not in room' });
+        return;
+      }
+
       // Limit batch size to prevent database overload
       const MAX_BATCH_SIZE = 500;
       if (messageIds.length > MAX_BATCH_SIZE) {
@@ -201,9 +213,16 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
         return;
       }
 
-      // Create read receipts
-      const receipts = await Promise.all(
-        messageIds.map(messageId => createReadReceipt(messageId, socket.user!.id))
+      // Update ChatMessage status to READ
+      const updateResults = await Promise.all(
+        messageIds.map(messageId =>
+          prisma.chatMessage
+            .update({
+              where: { id: messageId },
+              data: { status: 'READ' },
+            })
+            .catch(() => null)
+        )
       );
 
       // Broadcast read receipt to room
@@ -214,7 +233,7 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
         readAt: new Date().toISOString(),
       });
 
-      callback?.({ success: true, data: { receipts } });
+      callback?.({ success: true, data: { updated: updateResults.filter(Boolean).length } });
     } catch (error) {
       console.error('[Chat] Read error:', error);
       callback?.({ success: false, error: 'Failed to mark as read' });
@@ -240,6 +259,12 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
         }
 
         const { roomId, limit = 50, before, after } = data;
+
+        // Validate user is in the room
+        if (!socket.rooms.has(roomId)) {
+          callback?.({ success: false, error: 'Not in room' });
+          return;
+        }
 
         const messages = await getChatRoomMessages({
           chatRoomId: roomId,
@@ -290,6 +315,12 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
         }
 
         const { roomId, lastMessageCreatedAt, limit = 100 } = data;
+
+        // Validate user is in the room
+        if (!socket.rooms.has(roomId)) {
+          callback?.({ success: false, error: 'Not in room' });
+          return;
+        }
 
         const result = await syncChatRoomMessages({
           chatRoomId: roomId,
@@ -390,42 +421,6 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
       }
     }
   );
-
-  // Start private conversation
-  socket.on('chat:start_private', (data: { targetUserId: string }, callback) => {
-    try {
-      if (!socket.user?.id) {
-        callback?.({ success: false, error: 'Authentication required' });
-        return;
-      }
-
-      // Validate targetUserId is non-empty
-      if (!data.targetUserId || data.targetUserId.trim().length === 0) {
-        callback?.({ success: false, error: 'Target user ID is required' });
-        return;
-      }
-
-      // Prevent starting private chat with self
-      if (data.targetUserId === socket.user.id) {
-        callback?.({ success: false, error: 'Cannot start private chat with yourself' });
-        return;
-      }
-
-      // Generate room ID using double-colon separator to avoid collisions
-      // (colon is safe and avoids the collision issue of underscores in user IDs)
-      const roomId = [socket.user.id, data.targetUserId].sort().join('::');
-
-      socket.join(roomId);
-
-      callback?.({
-        success: true,
-        data: { roomId },
-      });
-    } catch (error) {
-      console.error('[Chat] Start private error:', error);
-      callback?.({ success: false, error: 'Failed to start conversation' });
-    }
-  });
 
   // User came online - deliver offline messages
   socket.on('user:online', async callback => {
