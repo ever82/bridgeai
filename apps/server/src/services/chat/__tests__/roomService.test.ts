@@ -225,6 +225,7 @@ describe('roomService', () => {
 
       (mockPrisma.chatRoom.findMany as jest.Mock).mockResolvedValue(mockRooms);
       (mockPrisma.chatRoom.count as jest.Mock).mockResolvedValue(2);
+      (mockPrisma.roomParticipant.findMany as jest.Mock).mockResolvedValue([]);
 
       const result = await getUserRooms('user1', { page: 1, limit: 20 });
 
@@ -237,6 +238,7 @@ describe('roomService', () => {
 
       (mockPrisma.chatRoom.findMany as jest.Mock).mockResolvedValue(mockRooms);
       (mockPrisma.chatRoom.count as jest.Mock).mockResolvedValue(1);
+      (mockPrisma.roomParticipant.findMany as jest.Mock).mockResolvedValue([]);
 
       const result = await getUserRooms('user1', { type: ChatRoomType.PRIVATE });
 
@@ -251,6 +253,7 @@ describe('roomService', () => {
 
       (mockPrisma.chatRoom.findMany as jest.Mock).mockResolvedValue(mockRooms);
       (mockPrisma.chatRoom.count as jest.Mock).mockResolvedValue(1);
+      (mockPrisma.roomParticipant.findMany as jest.Mock).mockResolvedValue([]);
 
       const result = await searchRooms('user1', 'test');
 

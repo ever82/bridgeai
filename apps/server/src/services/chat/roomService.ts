@@ -228,15 +228,12 @@ export async function updateRoom(roomId: string, input: UpdateRoomInput): Promis
     });
     const existingMetadata = (existing?.metadata as Record<string, any>) || {};
 
-    if (input.metadata !== undefined && input.settings === undefined) {
-      updateData.metadata = input.metadata;
-    } else if (input.settings !== undefined) {
-      // Merge settings into metadata, preserving other metadata fields
-      updateData.metadata = {
-        ...(input.metadata !== undefined ? input.metadata : existingMetadata),
-        settings: input.settings,
-      };
-    }
+    // Always merge with existingMetadata as base to preserve all existing fields
+    updateData.metadata = {
+      ...existingMetadata,
+      ...(input.metadata !== undefined ? input.metadata : {}),
+      ...(input.settings !== undefined ? { settings: input.settings } : {}),
+    };
   }
 
   return prisma.chatRoom.update({

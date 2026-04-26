@@ -207,7 +207,7 @@ describe('Chat Routes Integration', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(response.body.data.settings).toHaveProperty('notifications', false);
+      expect(response.body.data.metadata.settings).toHaveProperty('notifications', false);
     });
 
     it('should update room status', async () => {
@@ -226,13 +226,17 @@ describe('Chat Routes Integration', () => {
 
   describe('DELETE /api/v1/chat/rooms/:id', () => {
     it('should close room', async () => {
-      // Create a room to close
+      // Create a room to close (PRIVATE room requires 2 participants)
+      const otherUser = await createTestUser({
+        email: 'close-room@example.com',
+        password: 'password123',
+      });
       const createResponse = await request(app)
         .post('/api/v1/chat/rooms')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           type: 'PRIVATE',
-          participantIds: [userId],
+          participantIds: [userId, otherUser.id],
         });
 
       const roomId = createResponse.body.data.id;
@@ -274,13 +278,17 @@ describe('Chat Routes Integration', () => {
 
   describe('POST /api/v1/chat/rooms/:id/participants', () => {
     it('should add participant to room', async () => {
-      // Create a group room first
+      // Create a group room first (GROUP room requires >=2 participants)
+      const groupMember = await createTestUser({
+        email: 'group-member@example.com',
+        password: 'password123',
+      });
       const createResponse = await request(app)
         .post('/api/v1/chat/rooms')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           type: 'GROUP',
-          participantIds: [userId],
+          participantIds: [userId, groupMember.id],
         });
 
       const roomId = createResponse.body.data.id;
@@ -401,7 +409,7 @@ describe('Chat Routes Integration', () => {
         .send({});
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain('required');
+      expect(response.body.message).toContain('Required');
     });
   });
 });

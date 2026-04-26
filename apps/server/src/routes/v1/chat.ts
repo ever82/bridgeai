@@ -446,21 +446,21 @@ router.get('/rooms/:id', authenticate, async (req: AuthenticatedRequest, res, ne
     const userId = req.user!.id;
     const { id } = req.params;
 
-    // 检查用户是否在房间中
-    const isMember = await isUserInRoom(id, userId);
-    if (!isMember) {
-      return res.status(403).json({
-        success: false,
-        error: 'Access denied: not a room member',
-      });
-    }
-
     const room = await getRoomById(id);
 
     if (!room) {
       return res.status(404).json({
         success: false,
         error: 'Room not found',
+      });
+    }
+
+    // 检查用户是否在房间中
+    const isMember = await isUserInRoom(id, userId);
+    if (!isMember) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied: not a room member',
       });
     }
 
