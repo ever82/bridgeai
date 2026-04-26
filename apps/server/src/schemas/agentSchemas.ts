@@ -101,13 +101,6 @@ export const createAgentSchema = z.object({
   config: z.record(z.unknown()).optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  model: agentModelSchema,
-  temperature: temperatureSchema,
-  maxTokens: maxTokensSchema,
-  systemPrompt: systemPromptSchema,
-  isPublic: z.boolean().default(false),
-  allowedTools: z.array(z.string()).max(20).default([]),
-  metadata: z.record(z.unknown()).optional(),
 });
 
 export type CreateAgentInput = z.infer<typeof createAgentSchema>;

@@ -61,13 +61,11 @@ describe('Agent Routes', () => {
 
       mockedAgentService.createAgent.mockResolvedValue(mockAgent);
 
-      const response = await request(app)
-        .post('/api/v1/agents')
-        .send({
-          type: 'VISIONSHARE',
-          name: 'Test Agent',
-          description: 'Test Description',
-        });
+      const response = await request(app).post('/api/v1/agents').send({
+        type: 'VISIONSHARE',
+        name: 'Test Agent',
+        description: 'Test Description',
+      });
 
       expect(response.status).toBe(201);
       expect(response.body.success).toBe(true);
@@ -77,16 +75,14 @@ describe('Agent Routes', () => {
 
     it('should return 401 without authentication', async () => {
       // Reset mock to simulate no auth
-      (authenticate as jest.Mock).mockImplementationOnce((req, res, next) => {
+      (authenticate as jest.Mock).mockImplementationOnce((req, res, _next) => {
         res.status(401).json({ success: false, error: 'Unauthorized' });
       });
 
-      const response = await request(app)
-        .post('/api/v1/agents')
-        .send({
-          type: 'VISIONSHARE',
-          name: 'Test Agent',
-        });
+      const response = await request(app).post('/api/v1/agents').send({
+        type: 'VISIONSHARE',
+        name: 'Test Agent',
+      });
 
       expect(response.status).toBe(401);
     });
@@ -146,8 +142,7 @@ describe('Agent Routes', () => {
 
       mockedAgentService.getAgentsByUserId.mockResolvedValue(mockResult);
 
-      const response = await request(app)
-        .get('/api/v1/agents?type=VISIONSHARE');
+      const response = await request(app).get('/api/v1/agents?type=VISIONSHARE');
 
       expect(response.status).toBe(200);
       expect(mockedAgentService.getAgentsByUserId).toHaveBeenCalledWith(
@@ -171,8 +166,7 @@ describe('Agent Routes', () => {
 
       mockedAgentService.getAgentsByUserId.mockResolvedValue(mockResult);
 
-      const response = await request(app)
-        .get('/api/v1/agents?status=ACTIVE');
+      const response = await request(app).get('/api/v1/agents?status=ACTIVE');
 
       expect(response.status).toBe(200);
       expect(mockedAgentService.getAgentsByUserId).toHaveBeenCalledWith(
@@ -218,7 +212,7 @@ describe('Agent Routes', () => {
     });
   });
 
-  describe('PUT /api/v1/agents/:id', () => {
+  describe('PATCH /api/v1/agents/:id', () => {
     it('should update agent', async () => {
       const mockAgent = {
         id: 'agent-123',
@@ -237,12 +231,10 @@ describe('Agent Routes', () => {
 
       mockedAgentService.updateAgent.mockResolvedValue(mockAgent);
 
-      const response = await request(app)
-        .put('/api/v1/agents/agent-123')
-        .send({
-          name: 'Updated Agent',
-          description: 'Updated Description',
-        });
+      const response = await request(app).patch('/api/v1/agents/agent-123').send({
+        name: 'Updated Agent',
+        description: 'Updated Description',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -300,10 +292,7 @@ describe('Agent Routes', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(mockedAgentService.deleteAgent).toHaveBeenCalledWith(
-        'agent-123',
-        'user-123'
-      );
+      expect(mockedAgentService.deleteAgent).toHaveBeenCalledWith('agent-123', 'user-123');
     });
   });
 
