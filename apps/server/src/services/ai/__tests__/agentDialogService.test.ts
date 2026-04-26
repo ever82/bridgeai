@@ -2,15 +2,51 @@
  * Agent Dialog Service Tests
  */
 
-import {
-  AgentDialogService,
-  DialogParticipant,
-} from '../agentDialogService';
+import { AgentDialogService, DialogParticipant } from '../agentDialogService';
+
+// Mock the LLM service module (relative to test file: ../ = services/ai/)
+jest.mock('../llmService', () => ({
+  llmService: {
+    generateText: jest.fn().mockResolvedValue({ text: '这是一个测试回复' }),
+    initialize: jest.fn().mockResolvedValue(undefined),
+  },
+}));
+
+// Mock agentService (relative to test file: ../../ = services/)
+jest.mock('../../agentService', () => ({
+  getAgentById: jest.fn().mockResolvedValue({
+    id: 'agent-1',
+    name: 'Test Agent',
+    type: 'general',
+    config: {},
+  }),
+}));
+
+// Mock userService (relative to test file: ../../ = services/)
+jest.mock('../../userService', () => ({
+  getUserById: jest.fn().mockResolvedValue({
+    id: 'user-1',
+    name: 'Test User',
+    displayName: 'Test User',
+  }),
+}));
+
+// Mock db client (relative to test file: ../../../db/)
+jest.mock('../../../db/client', () => ({
+  prisma: {
+    dialogSessionRecord: {
+      upsert: jest.fn().mockResolvedValue({}),
+      findUnique: jest.fn().mockResolvedValue(null),
+      findMany: jest.fn().mockResolvedValue([]),
+    },
+  },
+}));
 
 describe('AgentDialogService', () => {
   let service: AgentDialogService;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     service = new AgentDialogService();
   });
 
@@ -111,7 +147,7 @@ describe('AgentDialogService', () => {
       ];
 
       const session = await service.createSession('agent_to_agent', participants);
-      service.archiveSession(session.id);
+      await service.archiveSession(session.id);
 
       const sessions = service.getSessionsForParticipant(agentId);
       expect(sessions).toHaveLength(0);
@@ -126,7 +162,7 @@ describe('AgentDialogService', () => {
       ];
 
       const session = await service.createSession('agent_to_agent', participants);
-      service.archiveSession(session.id);
+      await service.archiveSession(session.id);
 
       const found = service.getSession(session.id);
       expect(found?.status).toBe('archived');
