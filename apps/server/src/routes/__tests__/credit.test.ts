@@ -2,7 +2,6 @@ import request from 'supertest';
 import express from 'express';
 
 import creditRoutes from '../credit';
-import { CreditScoreService } from '../../services/creditScoreService';
 
 // Mock the credit score service
 jest.mock('../../services/creditScoreService', () => ({
@@ -34,7 +33,7 @@ jest.mock('../../middleware/auth', () => ({
 }));
 
 jest.mock('../../middleware/validation', () => ({
-  validateRequest: (schemas: any) => (req: any, res: any, next: any) => next(),
+  validate: (_schemas: any) => (req: any, _res: any, next: any) => next(),
 }));
 
 jest.mock('../../config/creditLevels', () => ({
@@ -50,7 +49,6 @@ jest.mock('../../config/creditLevels', () => ({
 
 describe('Credit Routes', () => {
   let app: express.Application;
-  const mockCreditScoreService = CreditScoreService as jest.MockedClass<typeof CreditScoreService>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -71,12 +69,11 @@ describe('Credit Routes', () => {
         updateCount: 5,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { creditScoreService } = require('../../services/creditScoreService');
       creditScoreService.getOrCreateCreditScore.mockResolvedValue(mockCreditScore);
 
-      const response = await request(app)
-        .get('/credit/score')
-        .expect(200);
+      const response = await request(app).get('/credit/score').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.score).toBe(800);
@@ -103,12 +100,11 @@ describe('Credit Routes', () => {
         pageSize: 20,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { creditScoreService } = require('../../services/creditScoreService');
       creditScoreService.getCreditHistory.mockResolvedValue(mockHistory);
 
-      const response = await request(app)
-        .get('/credit/history?page=1&pageSize=20')
-        .expect(200);
+      const response = await request(app).get('/credit/history?page=1&pageSize=20').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.histories).toHaveLength(1);
@@ -131,14 +127,13 @@ describe('Credit Routes', () => {
       const mockRank = { rank: 10, total: 100, percentile: 90 };
       const mockCreditScore = { score: 800 };
 
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { creditScoreService } = require('../../services/creditScoreService');
       creditScoreService.getCreditFactors.mockResolvedValue(mockFactors);
       creditScoreService.getCreditRank.mockResolvedValue(mockRank);
       creditScoreService.getOrCreateCreditScore.mockResolvedValue(mockCreditScore);
 
-      const response = await request(app)
-        .get('/credit/factors')
-        .expect(200);
+      const response = await request(app).get('/credit/factors').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.factors).toHaveLength(1);
@@ -155,12 +150,11 @@ describe('Credit Routes', () => {
         level: 'GOOD',
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { creditScoreService } = require('../../services/creditScoreService');
       creditScoreService.getOrCreateCreditScore.mockResolvedValue(mockCreditScore);
 
-      const response = await request(app)
-        .get('/credit/level')
-        .expect(200);
+      const response = await request(app).get('/credit/level').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.level).toBe('GOOD');
@@ -177,12 +171,11 @@ describe('Credit Routes', () => {
         level: 'GOOD',
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { creditScoreService } = require('../../services/creditScoreService');
       creditScoreService.getOrCreateCreditScore.mockResolvedValue(mockCreditScore);
 
-      const response = await request(app)
-        .get('/credit/user/user-456')
-        .expect(200);
+      const response = await request(app).get('/credit/user/user-456').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.level).toBe('GOOD');
@@ -192,9 +185,7 @@ describe('Credit Routes', () => {
     });
 
     it('should return error for self query', async () => {
-      const response = await request(app)
-        .get('/credit/user/user-123')
-        .expect(400);
+      const response = await request(app).get('/credit/user/user-123').expect(400);
 
       expect(response.body.success).toBe(false);
     });
