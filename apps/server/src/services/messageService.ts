@@ -5,7 +5,7 @@
  */
 import crypto from 'crypto';
 
-import type { MessageType, MessageStatus, Prisma } from '@prisma/client';
+import type { MessageType, MessageStatus, Prisma, SenderType } from '@prisma/client';
 
 import { prisma } from '../db/client';
 
@@ -70,12 +70,16 @@ export async function deliverOfflineMessage(
 /**
  * Schedule retry for a failed message delivery
  */
-export function scheduleMessageRetry(offlineMessageId: string, retryIn: number): NodeJS.Timeout {
-  const attempt = 1; // Will be tracked via the retry chain
+export function scheduleMessageRetry(
+  offlineMessageId: string,
+  retryIn: number,
+  attempt: number = 1
+): NodeJS.Timeout {
+  const nextAttempt = attempt + 1;
   return setTimeout(async () => {
-    const result = await deliverOfflineMessage(offlineMessageId, attempt);
+    const result = await deliverOfflineMessage(offlineMessageId, nextAttempt);
     if (!result.success && result.retryIn) {
-      scheduleMessageRetry(offlineMessageId, result.retryIn);
+      scheduleMessageRetry(offlineMessageId, result.retryIn, nextAttempt);
     }
   }, retryIn);
 }
@@ -131,10 +135,15 @@ export async function createMessage(input: CreateMessageInput) {
     },
   });
 
-  // Update conversation lastMessageAt
-  await prisma.conversation.update({
+  // Update conversation lastMessageAt (upsert to handle case where Conversation doesn't exist yet)
+  await prisma.conversation.upsert({
     where: { id: input.conversationId },
-    data: { lastMessageAt: new Date() },
+    update: { lastMessageAt: new Date() },
+    create: {
+      id: input.conversationId,
+      participantIds: [input.senderId],
+      lastMessageAt: new Date(),
+    },
   });
 
   // Create offline messages for users not currently online
@@ -199,7 +208,10 @@ export async function getMessagesByConversation(filters: MessageQueryFilters) {
   }
 
   const messages = await prisma.message.findMany({
-    where,
+    where: {
+      ...where,
+      NOT: { metadata: { path: ['deleted'], equals: true } },
+    },
     take: limit,
     orderBy: { sequenceId: 'desc' },
     include: {
@@ -237,6 +249,7 @@ export async function getMessagesByIds(messageIds: string[]) {
   const messages = await prisma.message.findMany({
     where: {
       id: { in: messageIds },
+      NOT: { metadata: { path: ['deleted'], equals: true } },
     },
     include: {
       sender: {
@@ -268,8 +281,11 @@ export async function getMessagesByIds(messageIds: string[]) {
  * Get a single message by ID
  */
 export async function getMessageById(messageId: string) {
-  const message = await prisma.message.findUnique({
-    where: { id: messageId },
+  const message = await prisma.message.findFirst({
+    where: {
+      id: messageId,
+      NOT: { metadata: { path: ['deleted'], equals: true } },
+    },
     include: {
       sender: {
         select: {
@@ -440,6 +456,7 @@ export async function syncMessages(input: SyncMessagesInput) {
     where: {
       conversationId,
       sequenceId: { gt: lastSequenceId },
+      NOT: { metadata: { path: ['deleted'], equals: true } },
     },
     take: limit,
     orderBy: { sequenceId: 'asc' },
@@ -480,6 +497,7 @@ export async function syncMessages(input: SyncMessagesInput) {
       where: {
         conversationId,
         sequenceId: { gt: latestSequenceId },
+        NOT: { metadata: { path: ['deleted'], equals: true } },
       },
     })) > 0;
 
@@ -503,6 +521,7 @@ export async function searchMessages(conversationId: string, query: string, limi
       where: {
         conversationId,
         content: { contains: query, mode: 'insensitive' },
+        NOT: { metadata: { path: ['deleted'], equals: true } },
       },
       take: limit,
       orderBy: { createdAt: 'desc' },
@@ -531,6 +550,7 @@ export async function searchMessages(conversationId: string, query: string, limi
       where: {
         conversationId,
         ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
+        NOT: { metadata: { path: ['deleted'], equals: true } },
       },
       take: batchSize,
       orderBy: { createdAt: 'desc' },
@@ -682,6 +702,341 @@ const encryptionService = {
   },
 };
 
+// ============================================
+// Chat Room Message Functions
+//
+// These functions use the ChatMessage model (linked to ChatRoom)
+// instead of the Message model (linked to Conversation).
+// Used by socket chat handlers for persistent chat room messaging.
+// ============================================
+
+export interface CreateChatRoomMessageInput {
+  chatRoomId: string;
+  senderId: string;
+  content: string;
+  type?: MessageType;
+  attachments?: Prisma.InputJsonValue;
+  metadata?: Prisma.InputJsonValue;
+}
+
+/**
+ * Create a message in a chat room (uses ChatMessage model)
+ */
+export async function createChatRoomMessage(input: CreateChatRoomMessageInput) {
+  const encryptedContent = await encryptionService.encrypt(input.content);
+
+  const chatMessage = await prisma.chatMessage.create({
+    data: {
+      chatRoomId: input.chatRoomId,
+      senderId: input.senderId,
+      senderType: 'USER' as SenderType,
+      content: encryptedContent,
+      type: input.type || 'TEXT',
+      attachments: input.attachments || null,
+      metadata: input.metadata || null,
+      status: 'SENT',
+    },
+  });
+
+  // Fetch sender info separately since ChatMessage doesn't have sender relation
+  const sender = await prisma.user.findUnique({
+    where: { id: input.senderId },
+    select: { id: true, name: true, avatarUrl: true },
+  });
+
+  // Update ChatRoom lastMessageAt
+  await prisma.chatRoom.update({
+    where: { id: input.chatRoomId },
+    data: { lastMessageAt: new Date() },
+  });
+
+  return {
+    ...chatMessage,
+    content: input.content, // Return decrypted content for sender
+    sender,
+    conversationId: input.chatRoomId, // Alias for compatibility with chat handler
+  };
+}
+
+/**
+ * Get a single message by chat room ID (most recent)
+ * Alias for getChatRoomMessages with limit=1 for AC compatibility
+ */
+export async function findByRoomId(roomId: string) {
+  const messages = await getChatRoomMessages({
+    chatRoomId: roomId,
+    limit: 1,
+  });
+  return messages[0] || null;
+}
+
+/**
+ * Get messages by chat room with pagination
+ */
+export async function getChatRoomMessages(filters: {
+  chatRoomId: string;
+  before?: Date;
+  after?: Date;
+  limit?: number;
+}) {
+  const { chatRoomId, before, after, limit = 50 } = filters;
+
+  const where: Prisma.ChatMessageWhereInput = {
+    chatRoomId,
+  };
+
+  if (before) {
+    where.createdAt = { lt: before };
+  }
+
+  if (after) {
+    where.createdAt = { ...((where.createdAt as Prisma.DateTimeFilter) || {}), gt: after };
+  }
+
+  const messages = await prisma.chatMessage.findMany({
+    where,
+    take: limit,
+    orderBy: { createdAt: 'desc' },
+  });
+
+  // Get unique sender IDs and batch-fetch sender info
+  const senderIds = [...new Set(messages.map(m => m.senderId))];
+  const senders = await prisma.user.findMany({
+    where: { id: { in: senderIds } },
+    select: { id: true, name: true, avatarUrl: true },
+  });
+  const senderMap = new Map(senders.map(s => [s.id, s]));
+
+  // Decrypt messages and add sender info
+  const decryptedMessages = await Promise.all(
+    messages.map(async msg => ({
+      ...msg,
+      content: await encryptionService.decrypt(msg.content),
+      sender: senderMap.get(msg.senderId) || null,
+      conversationId: msg.chatRoomId, // Alias for compatibility
+    }))
+  );
+
+  return decryptedMessages.reverse(); // Return in chronological order
+}
+
+/**
+ * Sync chat room messages (incremental sync)
+ */
+export async function syncChatRoomMessages(input: {
+  chatRoomId: string;
+  lastMessageCreatedAt?: Date;
+  limit?: number;
+}) {
+  const { chatRoomId, lastMessageCreatedAt, limit = 100 } = input;
+
+  const where: Prisma.ChatMessageWhereInput = {
+    chatRoomId,
+    ...(lastMessageCreatedAt ? { createdAt: { gt: lastMessageCreatedAt } } : {}),
+  };
+
+  const messages = await prisma.chatMessage.findMany({
+    where,
+    take: limit,
+    orderBy: { createdAt: 'asc' },
+  });
+
+  // Get unique sender IDs and batch-fetch sender info
+  const senderIds = [...new Set(messages.map(m => m.senderId))];
+  const senders = await prisma.user.findMany({
+    where: { id: { in: senderIds } },
+    select: { id: true, name: true, avatarUrl: true },
+  });
+  const senderMap = new Map(senders.map(s => [s.id, s]));
+
+  // Decrypt messages
+  const decryptedMessages = await Promise.all(
+    messages.map(async msg => ({
+      ...msg,
+      content: await encryptionService.decrypt(msg.content),
+      sender: senderMap.get(msg.senderId) || null,
+      conversationId: msg.chatRoomId, // Alias for compatibility
+    }))
+  );
+
+  const lastCreatedAt =
+    messages.length > 0 ? messages[messages.length - 1].createdAt : lastMessageCreatedAt;
+
+  // Check if there are more messages
+  const hasMore =
+    lastCreatedAt != null
+      ? (await prisma.chatMessage.count({
+          where: {
+            chatRoomId,
+            createdAt: { gt: lastCreatedAt },
+          },
+        })) > 0
+      : false;
+
+  return {
+    messages: decryptedMessages,
+    lastMessageCreatedAt: lastCreatedAt,
+    hasMore,
+  };
+}
+
+/**
+ * Edit a chat room message
+ */
+export async function editChatRoomMessage(messageId: string, userId: string, newContent: string) {
+  const message = await prisma.chatMessage.findUnique({
+    where: { id: messageId },
+    select: { senderId: true, chatRoomId: true },
+  });
+
+  if (!message || message.senderId !== userId) {
+    throw new Error('Not authorized to edit this message');
+  }
+
+  const encryptedContent = await encryptionService.encrypt(newContent);
+
+  const updated = await prisma.chatMessage.update({
+    where: { id: messageId },
+    data: {
+      content: encryptedContent,
+      metadata: { edited: true },
+    },
+  });
+
+  return {
+    ...updated,
+    content: newContent,
+    conversationId: message.chatRoomId, // Alias for compatibility
+  };
+}
+
+/**
+ * Delete a chat room message (soft delete)
+ */
+export async function deleteChatRoomMessage(messageId: string, userId: string) {
+  const message = await prisma.chatMessage.findUnique({
+    where: { id: messageId },
+    select: { senderId: true, chatRoomId: true },
+  });
+
+  if (!message || message.senderId !== userId) {
+    throw new Error('Not authorized to delete this message');
+  }
+
+  const updated = await prisma.chatMessage.update({
+    where: { id: messageId },
+    data: {
+      content: '[deleted]',
+      metadata: { deleted: true, deletedAt: new Date().toISOString() },
+    },
+  });
+
+  return {
+    ...updated,
+    conversationId: message.chatRoomId, // Alias for compatibility
+  };
+}
+
+/**
+ * Search messages in a chat room (uses ChatMessage model)
+ */
+export async function searchChatRoomMessages(chatRoomId: string, query: string, limit = 20) {
+  if (!encryptionService.isActive()) {
+    const messages = await prisma.chatMessage.findMany({
+      where: {
+        chatRoomId,
+        content: { contains: query, mode: 'insensitive' },
+      },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Batch-fetch sender info
+    const senderIds = [...new Set(messages.map(m => m.senderId))];
+    const senders = await prisma.user.findMany({
+      where: { id: { in: senderIds } },
+      select: { id: true, name: true, avatarUrl: true },
+    });
+    const senderMap = new Map(senders.map(s => [s.id, s]));
+
+    return messages.map(msg => ({
+      ...msg,
+      sender: senderMap.get(msg.senderId) || null,
+      conversationId: msg.chatRoomId,
+    }));
+  }
+
+  // Encrypted content requires post-decryption filtering
+  const batchSize = limit * 3;
+  const results: any[] = [];
+  let cursor: string | undefined;
+
+  while (results.length < limit) {
+    const messages = await prisma.chatMessage.findMany({
+      where: {
+        chatRoomId,
+        ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
+      },
+      take: batchSize,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (messages.length === 0) break;
+
+    const decryptedMessages = await Promise.all(
+      messages.map(async msg => ({
+        ...msg,
+        content: await encryptionService.decrypt(msg.content),
+      }))
+    );
+
+    const filtered = decryptedMessages.filter(msg =>
+      msg.content.toLowerCase().includes(query.toLowerCase())
+    );
+
+    results.push(...filtered);
+    cursor = messages[messages.length - 1].createdAt.toISOString();
+  }
+
+  // Batch-fetch sender info for results
+  const senderIds = [...new Set(results.map(m => m.senderId))];
+  const senders = await prisma.user.findMany({
+    where: { id: { in: senderIds } },
+    select: { id: true, name: true, avatarUrl: true },
+  });
+  const senderMap = new Map(senders.map(s => [s.id, s]));
+
+  return results.slice(0, limit).map(msg => ({
+    ...msg,
+    sender: senderMap.get(msg.senderId) || null,
+    conversationId: msg.chatRoomId,
+  }));
+}
+
+/**
+ * Get a single chat message by ID (uses ChatMessage model)
+ */
+export async function getChatMessageById(messageId: string) {
+  const message = await prisma.chatMessage.findUnique({
+    where: { id: messageId },
+  });
+
+  if (!message) return null;
+
+  // Fetch sender info
+  const sender = await prisma.user.findUnique({
+    where: { id: message.senderId },
+    select: { id: true, name: true, avatarUrl: true },
+  });
+
+  return {
+    ...message,
+    content: await encryptionService.decrypt(message.content),
+    sender,
+    conversationId: message.chatRoomId,
+  };
+}
+
 export default {
   createMessage,
   getMessagesByConversation,
@@ -695,4 +1050,12 @@ export default {
   searchMessages,
   deleteMessage,
   editMessage,
+  createChatRoomMessage,
+  findByRoomId,
+  getChatRoomMessages,
+  syncChatRoomMessages,
+  editChatRoomMessage,
+  deleteChatRoomMessage,
+  searchChatRoomMessages,
+  getChatMessageById,
 };

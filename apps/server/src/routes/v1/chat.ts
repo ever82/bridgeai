@@ -10,10 +10,10 @@ import { ChatRoomType, ParticipantRole } from '@prisma/client';
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
 import { validate } from '../../middleware/validation';
 import {
-  getMessagesByConversation,
-  searchMessages,
-  syncMessages,
-  getMessageById,
+  getChatRoomMessages,
+  searchChatRoomMessages,
+  syncChatRoomMessages,
+  getChatMessageById,
 } from '../../services/messageService';
 import {
   createRoom,
@@ -54,7 +54,7 @@ const getHistorySchema = z.object({
 
 const syncMessagesSchema = z.object({
   query: z.object({
-    lastSequenceId: z.string().optional(),
+    lastMessageCreatedAt: z.string().datetime().optional(),
     limit: z
       .string()
       .optional()
@@ -123,27 +123,27 @@ router.get(
   '/rooms/:roomId/messages',
   authenticate,
   validate({
-    query: (getHistorySchema as any).query,
-    params: (getHistorySchema as any).params,
+    query: getHistorySchema.shape.query,
+    params: getHistorySchema.shape.params,
   }),
   async (req, res, next) => {
     try {
       const { roomId } = req.params;
-      const { limit, before, after, cursor } = req.query as {
+      const { limit, before, after } = req.query as {
         limit?: string;
         before?: string;
         after?: string;
         cursor?: string;
       };
 
-      const messages = await getMessagesByConversation({
-        conversationId: roomId,
+      const messages = await getChatRoomMessages({
+        chatRoomId: roomId,
         limit: limit ? parseInt(limit, 10) : 50,
         before: before ? new Date(before) : undefined,
         after: after ? new Date(after) : undefined,
-        cursor: cursor || undefined,
       });
 
+      const limitNum = limit ? parseInt(limit, 10) : 50;
       res.json({
         success: true,
         data: {
@@ -157,15 +157,11 @@ router.get(
             attachments: msg.attachments,
             metadata: msg.metadata,
             status: msg.status,
-            sequenceId: msg.sequenceId.toString(),
-            readReceipts: msg.readReceipts,
-            editedAt: msg.editedAt?.toISOString(),
             createdAt: msg.createdAt.toISOString(),
           })),
           pagination: {
-            hasMore: messages.length === (limit ? parseInt(limit, 10) : 50),
-            cursor:
-              messages.length > 0 ? messages[messages.length - 1].sequenceId.toString() : null,
+            hasMore: messages.length === limitNum,
+            cursor: messages.length > 0 ? messages[messages.length - 1].id : null,
           },
         },
       });
@@ -183,20 +179,20 @@ router.get(
   '/rooms/:roomId/sync',
   authenticate,
   validate({
-    query: (syncMessagesSchema as any).query,
-    params: (syncMessagesSchema as any).params,
+    query: syncMessagesSchema.shape.query,
+    params: syncMessagesSchema.shape.params,
   }),
   async (req, res, next) => {
     try {
       const { roomId } = req.params;
-      const { lastSequenceId, limit } = req.query as {
-        lastSequenceId?: string;
+      const { lastMessageCreatedAt, limit } = req.query as {
+        lastMessageCreatedAt?: string;
         limit?: string;
       };
 
-      const result = await syncMessages({
-        conversationId: roomId,
-        lastSequenceId: lastSequenceId ? Number(lastSequenceId) : 0,
+      const result = await syncChatRoomMessages({
+        chatRoomId: roomId,
+        lastMessageCreatedAt: lastMessageCreatedAt ? new Date(lastMessageCreatedAt) : undefined,
         limit: limit ? parseInt(limit, 10) : 100,
       });
 
@@ -213,13 +209,10 @@ router.get(
             attachments: msg.attachments,
             metadata: msg.metadata,
             status: msg.status,
-            sequenceId: msg.sequenceId.toString(),
-            readReceipts: msg.readReceipts,
-            editedAt: msg.editedAt?.toISOString(),
             createdAt: msg.createdAt.toISOString(),
           })),
           sync: {
-            lastSequenceId: result.lastSequenceId.toString(),
+            lastMessageCreatedAt: result.lastMessageCreatedAt?.toISOString(),
             hasMore: result.hasMore,
           },
         },
@@ -238,8 +231,8 @@ router.get(
   '/rooms/:roomId/search',
   authenticate,
   validate({
-    query: (searchMessagesSchema as any).query,
-    params: (searchMessagesSchema as any).params,
+    query: searchMessagesSchema.shape.query,
+    params: searchMessagesSchema.shape.params,
   }),
   async (req, res, next) => {
     try {
@@ -249,7 +242,7 @@ router.get(
         limit?: string;
       };
 
-      const messages = await searchMessages(roomId, q, limit ? parseInt(limit, 10) : 20);
+      const messages = await searchChatRoomMessages(roomId, q, limit ? parseInt(limit, 10) : 20);
 
       res.json({
         success: true,
@@ -264,8 +257,6 @@ router.get(
             attachments: msg.attachments,
             metadata: msg.metadata,
             status: msg.status,
-            sequenceId: msg.sequenceId.toString(),
-            editedAt: msg.editedAt?.toISOString(),
             createdAt: msg.createdAt.toISOString(),
           })),
           query: q,
@@ -286,13 +277,13 @@ router.get(
   '/messages/:messageId',
   authenticate,
   validate({
-    params: (getMessageSchema as any).params,
+    params: getMessageSchema.shape.params,
   }),
   async (req, res, next) => {
     try {
       const { messageId } = req.params;
 
-      const message = await getMessageById(messageId);
+      const message = await getChatMessageById(messageId);
 
       if (!message) {
         return res.status(404).json({
@@ -314,9 +305,6 @@ router.get(
             attachments: message.attachments,
             metadata: message.metadata,
             status: message.status,
-            sequenceId: message.sequenceId.toString(),
-            readReceipts: message.readReceipts,
-            editedAt: message.editedAt?.toISOString(),
             createdAt: message.createdAt.toISOString(),
           },
         },

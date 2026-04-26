@@ -9,14 +9,14 @@ import type { Prisma } from '@prisma/client';
 import type { AuthenticatedSocket } from '../middleware/auth';
 import { isUserInRoom } from '../../services/chat/roomService';
 import {
-  createMessage,
-  getMessagesByConversation,
+  createChatRoomMessage,
+  getChatRoomMessages,
   createReadReceipt,
   getOfflineMessages,
   markOfflineMessagesDelivered,
-  syncMessages,
-  editMessage,
-  deleteMessage,
+  syncChatRoomMessages,
+  editChatRoomMessage,
+  deleteChatRoomMessage,
 } from '../../services/messageService';
 
 /**
@@ -128,8 +128,8 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
         }
 
         // Create message in database
-        const message = await createMessage({
-          conversationId: roomId,
+        const message = await createChatRoomMessage({
+          chatRoomId: roomId,
           senderId: socket.user.id,
           content,
           type: (type || 'TEXT').toUpperCase() as 'TEXT' | 'IMAGE' | 'FILE',
@@ -148,7 +148,6 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
           attachments: message.attachments,
           metadata: message.metadata,
           status: message.status,
-          sequenceId: message.sequenceId.toString(),
           createdAt: message.createdAt.toISOString(),
         });
 
@@ -159,6 +158,31 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
       }
     }
   );
+
+  // Acknowledge message delivery
+  socket.on('chat:ack', (data: { roomId: string; messageIds: string[] }, callback) => {
+    try {
+      if (!socket.user?.id) {
+        callback?.({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      const { roomId, messageIds } = data;
+
+      // Broadcast delivery acknowledgment to room
+      socket.to(roomId).emit('chat:delivered', {
+        userId: socket.user.id,
+        roomId,
+        messageIds,
+        deliveredAt: new Date().toISOString(),
+      });
+
+      callback?.({ success: true });
+    } catch (error) {
+      console.error('[Chat] Ack error:', error);
+      callback?.({ success: false, error: 'Failed to acknowledge message' });
+    }
+  });
 
   // Mark messages as read
   socket.on('chat:read', async (data: { roomId: string; messageIds: string[] }, callback) => {
@@ -217,8 +241,8 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
 
         const { roomId, limit = 50, before, after } = data;
 
-        const messages = await getMessagesByConversation({
-          conversationId: roomId,
+        const messages = await getChatRoomMessages({
+          chatRoomId: roomId,
           limit,
           before: before ? new Date(before) : undefined,
           after: after ? new Date(after) : undefined,
@@ -237,9 +261,6 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
               attachments: msg.attachments,
               metadata: msg.metadata,
               status: msg.status,
-              sequenceId: msg.sequenceId.toString(),
-              readReceipts: msg.readReceipts,
-              editedAt: msg.editedAt?.toISOString(),
               createdAt: msg.createdAt.toISOString(),
             })),
           },
@@ -257,7 +278,7 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
     async (
       data: {
         roomId: string;
-        lastSequenceId?: string;
+        lastMessageCreatedAt?: string;
         limit?: number;
       },
       callback
@@ -268,11 +289,11 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
           return;
         }
 
-        const { roomId, lastSequenceId = '0', limit = 100 } = data;
+        const { roomId, lastMessageCreatedAt, limit = 100 } = data;
 
-        const result = await syncMessages({
-          conversationId: roomId,
-          lastSequenceId: BigInt(lastSequenceId) as unknown as number,
+        const result = await syncChatRoomMessages({
+          chatRoomId: roomId,
+          lastMessageCreatedAt: lastMessageCreatedAt ? new Date(lastMessageCreatedAt) : undefined,
           limit,
         });
 
@@ -289,12 +310,9 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
               attachments: msg.attachments,
               metadata: msg.metadata,
               status: msg.status,
-              sequenceId: msg.sequenceId.toString(),
-              readReceipts: msg.readReceipts,
-              editedAt: msg.editedAt?.toISOString(),
               createdAt: msg.createdAt.toISOString(),
             })),
-            lastSequenceId: result.lastSequenceId.toString(),
+            lastMessageCreatedAt: result.lastMessageCreatedAt?.toISOString(),
             hasMore: result.hasMore,
           },
         });
@@ -323,13 +341,13 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
 
         const { messageId, content } = data;
 
-        const message = await editMessage(messageId, socket.user.id, content);
+        const message = await editChatRoomMessage(messageId, socket.user.id, content);
 
         // Broadcast edit to room
         nsp.to(message.conversationId).emit('chat:message_edited', {
           messageId: message.id,
           content: message.content,
-          editedAt: message.editedAt?.toISOString(),
+          editedAt: new Date().toISOString(),
         });
 
         callback?.({ success: true, data: { message } });
@@ -357,7 +375,7 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
 
         const { messageId } = data;
 
-        const message = await deleteMessage(messageId, socket.user.id);
+        const message = await deleteChatRoomMessage(messageId, socket.user.id);
 
         // Broadcast delete to room
         nsp.to(message.conversationId).emit('chat:message_deleted', {

@@ -7,6 +7,7 @@ import request from 'supertest';
 
 import app from '../../../app';
 import { createTestUser, cleanupTestUsers, generateAccessToken } from '../../../tests/helpers';
+import { createChatRoomMessage } from '../../../services/messageService';
 
 describe('Chat Routes Integration', () => {
   let authToken: string;
@@ -410,6 +411,216 @@ describe('Chat Routes Integration', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.message).toContain('Required');
+    });
+  });
+
+  describe('Message Operations', () => {
+    let messageRoomId: string;
+    let messageRoomAuth: string;
+    let _messageRoomUserId: string;
+    let testMessageId: string;
+
+    beforeAll(async () => {
+      // Create a dedicated room for message tests
+      const msgUser = await createTestUser({
+        email: 'msg-test@example.com',
+        password: 'password123',
+        name: 'Message Test User',
+      });
+      const msgOtherUser = await createTestUser({
+        email: 'msg-other@example.com',
+        password: 'password123',
+        name: 'Message Other User',
+      });
+      _messageRoomUserId = msgUser.id;
+      messageRoomAuth = generateAccessToken(msgUser);
+
+      const roomRes = await request(app)
+        .post('/api/v1/chat/rooms')
+        .set('Authorization', `Bearer ${messageRoomAuth}`)
+        .send({
+          type: 'PRIVATE',
+          participantIds: [msgUser.id, msgOtherUser.id],
+        });
+      messageRoomId = roomRes.body.data.id;
+
+      // Seed messages via service (no POST endpoint exists for messages)
+      const msg1 = await createChatRoomMessage({
+        chatRoomId: messageRoomId,
+        senderId: msgUser.id,
+        content: 'Hello from message test',
+      });
+      testMessageId = msg1.id;
+
+      await createChatRoomMessage({
+        chatRoomId: messageRoomId,
+        senderId: msgOtherUser.id,
+        content: 'Reply from other user',
+      });
+
+      await createChatRoomMessage({
+        chatRoomId: messageRoomId,
+        senderId: msgUser.id,
+        content: 'Another hello message',
+      });
+    });
+
+    describe('GET /api/v1/chat/rooms/:roomId/messages', () => {
+      it('should get message history for a room', async () => {
+        const response = await request(app)
+          .get(`/api/v1/chat/rooms/${messageRoomId}/messages`)
+          .set('Authorization', `Bearer ${messageRoomAuth}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.data).toHaveProperty('messages');
+        expect(Array.isArray(response.body.data.messages)).toBe(true);
+        expect(response.body.data.messages.length).toBeGreaterThanOrEqual(3);
+        expect(response.body.data).toHaveProperty('pagination');
+        expect(response.body.data.pagination).toHaveProperty('hasMore');
+      });
+
+      it('should paginate message history with limit', async () => {
+        const response = await request(app)
+          .get(`/api/v1/chat/rooms/${messageRoomId}/messages`)
+          .set('Authorization', `Bearer ${messageRoomAuth}`)
+          .query({ limit: 2 });
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.messages.length).toBeLessThanOrEqual(2);
+        expect(response.body.data.pagination.hasMore).toBe(true);
+      });
+
+      it('should return 401 without auth token', async () => {
+        const response = await request(app).get(`/api/v1/chat/rooms/${messageRoomId}/messages`);
+
+        expect(response.status).toBe(401);
+      });
+
+      it('should return validation error for invalid roomId', async () => {
+        const response = await request(app)
+          .get('/api/v1/chat/rooms/not-a-uuid/messages')
+          .set('Authorization', `Bearer ${messageRoomAuth}`);
+
+        expect(response.status).toBe(400);
+      });
+    });
+
+    describe('GET /api/v1/chat/rooms/:roomId/sync', () => {
+      it('should sync messages since a given timestamp', async () => {
+        const pastDate = new Date(Date.now() - 3600000).toISOString();
+        const response = await request(app)
+          .get(`/api/v1/chat/rooms/${messageRoomId}/sync`)
+          .set('Authorization', `Bearer ${messageRoomAuth}`)
+          .query({ lastMessageCreatedAt: pastDate });
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.data).toHaveProperty('messages');
+        expect(Array.isArray(response.body.data.messages)).toBe(true);
+        expect(response.body.data).toHaveProperty('sync');
+        expect(response.body.data.sync).toHaveProperty('hasMore');
+      });
+
+      it('should return empty messages when syncing from future', async () => {
+        const futureDate = new Date(Date.now() + 3600000).toISOString();
+        const response = await request(app)
+          .get(`/api/v1/chat/rooms/${messageRoomId}/sync`)
+          .set('Authorization', `Bearer ${messageRoomAuth}`)
+          .query({ lastMessageCreatedAt: futureDate });
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.messages.length).toBe(0);
+      });
+
+      it('should return 401 without auth token', async () => {
+        const response = await request(app).get(`/api/v1/chat/rooms/${messageRoomId}/sync`);
+
+        expect(response.status).toBe(401);
+      });
+    });
+
+    describe('GET /api/v1/chat/rooms/:roomId/search', () => {
+      it('should search messages by query', async () => {
+        const response = await request(app)
+          .get(`/api/v1/chat/rooms/${messageRoomId}/search`)
+          .set('Authorization', `Bearer ${messageRoomAuth}`)
+          .query({ q: 'hello' });
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.data).toHaveProperty('messages');
+        expect(Array.isArray(response.body.data.messages)).toBe(true);
+        expect(response.body.data.messages.length).toBeGreaterThanOrEqual(2);
+        expect(response.body.data).toHaveProperty('query', 'hello');
+        expect(response.body.data).toHaveProperty('total');
+      });
+
+      it('should return empty results for non-matching query', async () => {
+        const response = await request(app)
+          .get(`/api/v1/chat/rooms/${messageRoomId}/search`)
+          .set('Authorization', `Bearer ${messageRoomAuth}`)
+          .query({ q: 'zzznonexistent' });
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.messages.length).toBe(0);
+        expect(response.body.data.total).toBe(0);
+      });
+
+      it('should return 400 without search query', async () => {
+        const response = await request(app)
+          .get(`/api/v1/chat/rooms/${messageRoomId}/search`)
+          .set('Authorization', `Bearer ${messageRoomAuth}`);
+
+        expect(response.status).toBe(400);
+      });
+
+      it('should return 401 without auth token', async () => {
+        const response = await request(app)
+          .get(`/api/v1/chat/rooms/${messageRoomId}/search`)
+          .query({ q: 'hello' });
+
+        expect(response.status).toBe(401);
+      });
+    });
+
+    describe('GET /api/v1/chat/messages/:messageId', () => {
+      it('should get a specific message by ID', async () => {
+        const response = await request(app)
+          .get(`/api/v1/chat/messages/${testMessageId}`)
+          .set('Authorization', `Bearer ${messageRoomAuth}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.data).toHaveProperty('message');
+        expect(response.body.data.message).toHaveProperty('id', testMessageId);
+        expect(response.body.data.message).toHaveProperty('content');
+        expect(response.body.data.message).toHaveProperty('senderId');
+        expect(response.body.data.message).toHaveProperty('createdAt');
+      });
+
+      it('should return 404 for non-existent message', async () => {
+        const response = await request(app)
+          .get('/api/v1/chat/messages/00000000-0000-0000-0000-000000000000')
+          .set('Authorization', `Bearer ${messageRoomAuth}`);
+
+        expect(response.status).toBe(404);
+        expect(response.body.success).toBe(false);
+      });
+
+      it('should return validation error for invalid messageId', async () => {
+        const response = await request(app)
+          .get('/api/v1/chat/messages/not-a-uuid')
+          .set('Authorization', `Bearer ${messageRoomAuth}`);
+
+        expect(response.status).toBe(400);
+      });
+
+      it('should return 401 without auth token', async () => {
+        const response = await request(app).get(`/api/v1/chat/messages/${testMessageId}`);
+
+        expect(response.status).toBe(401);
+      });
     });
   });
 });
