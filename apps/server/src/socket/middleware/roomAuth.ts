@@ -154,11 +154,11 @@ export function checkRoomAccess(
 /**
  * Validate room join request
  */
-export function validateRoomJoin(
+export async function validateRoomJoin(
   socket: AuthenticatedSocket,
   roomId: string,
   password?: string
-): { valid: boolean; error?: string } {
+): Promise<{ valid: boolean; error?: string }> {
   const userId = socket.user?.id;
 
   // Check authentication
@@ -194,7 +194,7 @@ export function validateRoomJoin(
       if (!password) {
         return { valid: false, error: 'Password required for private room' };
       }
-      if (!roomService.validateRoomPassword(roomId, password)) {
+      if (!(await roomService.validateRoomPassword(roomId, password))) {
         return { valid: false, error: 'Incorrect room password' };
       }
     }

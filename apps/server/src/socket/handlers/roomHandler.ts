@@ -488,7 +488,7 @@ export function registerRoomHandlers(socket: AuthenticatedSocket, nsp: Namespace
 
       const { roomId, targetUserId } = data;
 
-      roomService.unbanUser(roomId, targetUserId);
+      roomService.unbanUser(roomId, targetUserId, userId);
 
       callback?.({ success: true });
     } catch (error) {

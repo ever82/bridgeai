@@ -9,6 +9,8 @@ import { Server as SocketServer } from 'socket.io';
 import type { Application } from 'express';
 import { createAdapter } from '@socket.io/redis-adapter';
 
+import { connectionService } from '../services/connectionService';
+
 import { socketAuthMiddleware } from './middleware/auth';
 import { connectionManager } from './connectionManager';
 import { pubClient, subClient } from './adapter';
@@ -165,6 +167,7 @@ function handleConnection(socket: any, namespace: string): void {
   socket.on('disconnect', (reason: string) => {
     console.log(`[Socket.io] Disconnected: ${socketId} (reason: ${reason})`);
     connectionManager.removeConnection(socketId);
+    connectionService.unregisterConnection(socketId);
   });
 
   // Handle errors
