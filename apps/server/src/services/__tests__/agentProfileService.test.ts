@@ -295,6 +295,127 @@ describe('AgentProfileService - L2 Operations', () => {
       ).rejects.toMatchObject({ code: 'AGENT_NOT_FOUND', statusCode: 404 });
     });
   });
+
+  describe('updateL2Profile', () => {
+    const validL2Data = {
+      description: 'A helpful agent',
+      requirements: ['req1', 'req2'],
+      capabilities: ['cap1'],
+      preferences: ['pref1'],
+      constraints: ['con1'],
+    };
+
+    it('should update L2 profile with valid data', async () => {
+      mockAgentFindUnique.mockResolvedValue({ id: mockAgentId, userId: mockUserId });
+      mockAgentProfileFindFirst.mockResolvedValue({
+        id: 'profile-1',
+        agentId: mockAgentId,
+        l1Data: null,
+        l2Data: {},
+        l3Description: null,
+      });
+      mockAgentProfileUpdate.mockResolvedValue({
+        id: 'profile-1',
+        l2Data: validL2Data,
+      });
+      mockProfileHistoryCreate.mockResolvedValue({ id: 'history-1' });
+
+      const result = await agentProfileService.updateL2Profile(
+        mockAgentId,
+        mockUserId,
+        validL2Data
+      );
+
+      expect(result).toEqual(validL2Data);
+      expect(mockProfileHistoryCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ layer: 'L2', action: 'update' }),
+        })
+      );
+    });
+
+    it('should throw VALIDATION_ERROR for description > 2000 chars', async () => {
+      mockAgentFindUnique.mockResolvedValue({ id: mockAgentId, userId: mockUserId });
+
+      await expect(
+        agentProfileService.updateL2Profile(mockAgentId, mockUserId, {
+          description: 'x'.repeat(2001),
+        })
+      ).rejects.toMatchObject({ code: 'VALIDATION_ERROR', statusCode: 400 });
+    });
+
+    it('should throw VALIDATION_ERROR for requirement item > 200 chars', async () => {
+      mockAgentFindUnique.mockResolvedValue({ id: mockAgentId, userId: mockUserId });
+
+      await expect(
+        agentProfileService.updateL2Profile(mockAgentId, mockUserId, {
+          requirements: ['x'.repeat(201)],
+        })
+      ).rejects.toMatchObject({ code: 'VALIDATION_ERROR', statusCode: 400 });
+    });
+
+    it('should throw VALIDATION_ERROR for constraints item > 200 chars', async () => {
+      mockAgentFindUnique.mockResolvedValue({ id: mockAgentId, userId: mockUserId });
+
+      await expect(
+        agentProfileService.updateL2Profile(mockAgentId, mockUserId, {
+          constraints: ['x'.repeat(201)],
+        })
+      ).rejects.toMatchObject({ code: 'VALIDATION_ERROR', statusCode: 400 });
+    });
+
+    it('should throw VALIDATION_ERROR for > 20 requirements', async () => {
+      mockAgentFindUnique.mockResolvedValue({ id: mockAgentId, userId: mockUserId });
+
+      await expect(
+        agentProfileService.updateL2Profile(mockAgentId, mockUserId, {
+          requirements: Array(21).fill('req'),
+        })
+      ).rejects.toMatchObject({ code: 'VALIDATION_ERROR', statusCode: 400 });
+    });
+
+    it('should throw AGENT_NOT_FOUND for non-existent agent', async () => {
+      mockAgentFindUnique.mockResolvedValue(null);
+
+      await expect(
+        agentProfileService.updateL2Profile('nonexistent', mockUserId, validL2Data)
+      ).rejects.toMatchObject({ code: 'AGENT_NOT_FOUND', statusCode: 404 });
+    });
+
+    it('should throw UNAUTHORIZED for wrong user', async () => {
+      mockAgentFindUnique.mockResolvedValue({ id: mockAgentId, userId: 'different-user' });
+
+      await expect(
+        agentProfileService.updateL2Profile(mockAgentId, mockUserId, validL2Data)
+      ).rejects.toMatchObject({ code: 'UNAUTHORIZED', statusCode: 403 });
+    });
+
+    it('should merge with existing L2 data', async () => {
+      mockAgentFindUnique.mockResolvedValue({ id: mockAgentId, userId: mockUserId });
+      mockAgentProfileFindFirst.mockResolvedValue({
+        id: 'profile-1',
+        agentId: mockAgentId,
+        l1Data: null,
+        l2Data: { description: 'old', capabilities: ['old-cap'] },
+        l3Description: null,
+      });
+      mockAgentProfileUpdate.mockResolvedValue({
+        id: 'profile-1',
+        l2Data: { description: 'old', capabilities: ['old-cap'], requirements: ['new-req'] },
+      });
+      mockProfileHistoryCreate.mockResolvedValue({ id: 'history-1' });
+
+      const result = await agentProfileService.updateL2Profile(mockAgentId, mockUserId, {
+        requirements: ['new-req'],
+      });
+
+      expect(result).toEqual({
+        description: 'old',
+        capabilities: ['old-cap'],
+        requirements: ['new-req'],
+      });
+    });
+  });
 });
 
 describe('AgentProfileService - L3 Operations', () => {
@@ -325,6 +446,92 @@ describe('AgentProfileService - L3 Operations', () => {
       await expect(
         agentProfileService.getL3Profile('nonexistent', mockUserId)
       ).rejects.toMatchObject({ code: 'AGENT_NOT_FOUND', statusCode: 404 });
+    });
+  });
+
+  describe('updateL3Profile', () => {
+    it('should update L3 description and record history', async () => {
+      mockAgentFindUnique.mockResolvedValue({ id: mockAgentId, userId: mockUserId });
+      mockAgentProfileFindFirst.mockResolvedValue({
+        id: 'profile-1',
+        agentId: mockAgentId,
+        l1Data: null,
+        l2Data: null,
+        l3Description: 'old desc',
+        l3MediaUrls: null,
+      });
+      mockAgentProfileUpdate.mockResolvedValue({
+        id: 'profile-1',
+        l3Description: 'new desc',
+        l3MediaUrls: null,
+      });
+      mockProfileHistoryCreate.mockResolvedValue({ id: 'history-1' });
+
+      const result = await agentProfileService.updateL3Profile(mockAgentId, mockUserId, {
+        description: 'new desc',
+      });
+
+      expect(result).toBe('new desc');
+      expect(mockProfileHistoryCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ layer: 'L3', action: 'update' }),
+        })
+      );
+    });
+
+    it('should update L3 with mediaUrls', async () => {
+      mockAgentFindUnique.mockResolvedValue({ id: mockAgentId, userId: mockUserId });
+      mockAgentProfileFindFirst.mockResolvedValue({
+        id: 'profile-1',
+        agentId: mockAgentId,
+        l1Data: null,
+        l2Data: null,
+        l3Description: null,
+        l3MediaUrls: null,
+      });
+      mockAgentProfileUpdate.mockResolvedValue({
+        id: 'profile-1',
+        l3Description: 'desc',
+        l3MediaUrls: ['https://example.com/img.png'],
+      });
+      mockProfileHistoryCreate.mockResolvedValue({ id: 'history-1' });
+
+      const result = await agentProfileService.updateL3Profile(mockAgentId, mockUserId, {
+        description: 'desc',
+        mediaUrls: ['https://example.com/img.png'],
+      });
+
+      expect(result).toBe('desc');
+    });
+
+    it('should throw VALIDATION_ERROR for description > 10000 chars', async () => {
+      mockAgentFindUnique.mockResolvedValue({ id: mockAgentId, userId: mockUserId });
+
+      await expect(
+        agentProfileService.updateL3Profile(mockAgentId, mockUserId, {
+          description: 'x'.repeat(10001),
+        })
+      ).rejects.toMatchObject({ code: 'VALIDATION_ERROR', statusCode: 400 });
+    });
+
+    it('should throw AGENT_NOT_FOUND for non-existent agent', async () => {
+      mockAgentFindUnique.mockResolvedValue(null);
+
+      await expect(
+        agentProfileService.updateL3Profile('nonexistent', mockUserId, {
+          description: 'desc',
+        })
+      ).rejects.toMatchObject({ code: 'AGENT_NOT_FOUND', statusCode: 404 });
+    });
+
+    it('should throw UNAUTHORIZED for wrong user', async () => {
+      mockAgentFindUnique.mockResolvedValue({ id: mockAgentId, userId: 'different-user' });
+
+      await expect(
+        agentProfileService.updateL3Profile(mockAgentId, mockUserId, {
+          description: 'desc',
+        })
+      ).rejects.toMatchObject({ code: 'UNAUTHORIZED', statusCode: 403 });
     });
   });
 });

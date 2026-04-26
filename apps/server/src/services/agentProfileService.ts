@@ -430,6 +430,31 @@ function validateL2Data(data: UpdateL2ProfileRequest): {
     }
   }
 
+  // Validate constraints array
+  if (data.constraints !== undefined) {
+    if (!Array.isArray(data.constraints)) {
+      errors.push({
+        field: 'constraints',
+        message: 'Constraints must be an array',
+      });
+    } else {
+      for (let i = 0; i < data.constraints.length; i++) {
+        if (typeof data.constraints[i] !== 'string' || data.constraints[i].length > 200) {
+          errors.push({
+            field: `constraints[${i}]`,
+            message: 'Each constraint must be a string under 200 characters',
+          });
+        }
+      }
+      if (data.constraints.length > 20) {
+        errors.push({
+          field: 'constraints',
+          message: 'Constraints must have at most 20 items',
+        });
+      }
+    }
+  }
+
   return {
     valid: errors.length === 0,
     errors,
