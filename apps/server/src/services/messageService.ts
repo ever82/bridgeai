@@ -186,6 +186,34 @@ async function createOfflineMessages(
 }
 
 /**
+ * Create offline message entries for ChatRoom participants not currently online
+ */
+async function createChatRoomOfflineMessages(
+  chatRoomId: string,
+  messageId: string,
+  senderId: string
+): Promise<void> {
+  const participants = await prisma.roomParticipant.findMany({
+    where: { roomId: chatRoomId, isActive: true },
+    select: { userId: true },
+  });
+
+  const offlinePromises = participants
+    .filter(p => p.userId !== senderId)
+    .map(p =>
+      prisma.offlineMessage.create({
+        data: {
+          userId: p.userId,
+          messageId,
+          conversationId: chatRoomId,
+        },
+      })
+    );
+
+  await Promise.all(offlinePromises);
+}
+
+/**
  * Get messages by conversation with pagination
  */
 export async function getMessagesByConversation(filters: MessageQueryFilters) {
@@ -750,6 +778,21 @@ export async function createChatRoomMessage(input: CreateChatRoomMessageInput) {
     data: { lastMessageAt: new Date() },
   });
 
+  // Increment unread count for other participants
+  await prisma.roomParticipant.updateMany({
+    where: {
+      roomId: input.chatRoomId,
+      userId: { not: input.senderId },
+      isActive: true,
+    },
+    data: {
+      unreadCount: { increment: 1 },
+    },
+  });
+
+  // Create offline message entries for offline participants
+  await createChatRoomOfflineMessages(input.chatRoomId, chatMessage.id, input.senderId);
+
   return {
     ...chatMessage,
     content: input.content, // Return decrypted content for sender
@@ -793,6 +836,9 @@ export async function getChatRoomMessages(filters: {
     where.createdAt = { ...((where.createdAt as Prisma.DateTimeFilter) || {}), gt: after };
   }
 
+  // Exclude soft-deleted messages
+  where.NOT = { metadata: { path: ['deleted'], equals: true } } as any;
+
   const messages = await prisma.chatMessage.findMany({
     where,
     take: limit,
@@ -833,6 +879,7 @@ export async function syncChatRoomMessages(input: {
   const where: Prisma.ChatMessageWhereInput = {
     chatRoomId,
     ...(lastMessageCreatedAt ? { createdAt: { gt: lastMessageCreatedAt } } : {}),
+    NOT: { metadata: { path: ['deleted'], equals: true } } as any,
   };
 
   const messages = await prisma.chatMessage.findMany({
@@ -869,6 +916,7 @@ export async function syncChatRoomMessages(input: {
           where: {
             chatRoomId,
             createdAt: { gt: lastCreatedAt },
+            NOT: { metadata: { path: ['deleted'], equals: true } } as any,
           },
         })) > 0
       : false;
@@ -946,6 +994,7 @@ export async function searchChatRoomMessages(chatRoomId: string, query: string, 
       where: {
         chatRoomId,
         content: { contains: query, mode: 'insensitive' },
+        NOT: { metadata: { path: ['deleted'], equals: true } } as any,
       },
       take: limit,
       orderBy: { createdAt: 'desc' },
@@ -976,6 +1025,7 @@ export async function searchChatRoomMessages(chatRoomId: string, query: string, 
       where: {
         chatRoomId,
         ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
+        NOT: { metadata: { path: ['deleted'], equals: true } } as any,
       },
       take: batchSize,
       orderBy: { createdAt: 'desc' },
