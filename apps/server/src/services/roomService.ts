@@ -115,6 +115,7 @@ function sanitizeRoomInput(input: string): string {
 export class RoomService {
   private rooms: Map<string, RoomData> = new Map();
   private userRooms: Map<string, Set<string>> = new Map(); // userId -> Set of roomIds
+  private destructionTimers: Map<string, NodeJS.Timeout> = new Map(); // roomId -> pending destruction timer
 
   /**
    * Create a new room
@@ -205,6 +206,9 @@ export class RoomService {
     if (room.bannedUsers.has(userId)) {
       throw new Error('User is banned from this room');
     }
+
+    // Cancel any pending destruction timer for this room
+    this.cancelRoomDestruction(roomId);
 
     // Check if user is already in room (allow existing member to reconnect even when full)
     const existingMember = room.members.get(userId);
@@ -379,6 +383,9 @@ export class RoomService {
         }
       }
     }
+
+    // Cancel any pending destruction timer
+    this.cancelRoomDestruction(roomId);
 
     this.rooms.delete(roomId);
     console.log(`[RoomService] Destroyed room: ${roomId}`);
@@ -611,9 +618,13 @@ export class RoomService {
    * Schedule room destruction after a delay
    */
   private scheduleRoomDestruction(roomId: string): void {
+    // Cancel any existing timer for this room
+    this.cancelRoomDestruction(roomId);
+
     // Destroy empty rooms after 5 minutes
-    setTimeout(
+    const timer = setTimeout(
       () => {
+        this.destructionTimers.delete(roomId);
         const room = this.rooms.get(roomId);
         if (room && room.members.size === 0) {
           this.destroyRoom(roomId);
@@ -621,12 +632,29 @@ export class RoomService {
       },
       5 * 60 * 1000
     );
+    this.destructionTimers.set(roomId, timer);
+  }
+
+  /**
+   * Cancel a pending room destruction timer
+   */
+  private cancelRoomDestruction(roomId: string): void {
+    const timer = this.destructionTimers.get(roomId);
+    if (timer) {
+      clearTimeout(timer);
+      this.destructionTimers.delete(roomId);
+    }
   }
 
   /**
    * Clean up all rooms (for testing/shutdown)
    */
   clearAllRooms(): void {
+    // Clear all pending destruction timers
+    for (const timer of this.destructionTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.destructionTimers.clear();
     this.rooms.clear();
     this.userRooms.clear();
     console.log('[RoomService] All rooms cleared');
