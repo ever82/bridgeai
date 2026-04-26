@@ -6,7 +6,7 @@
 import { Server as HttpServer } from 'http';
 
 import { Server as SocketServer } from 'socket.io';
-import type { Express } from 'express';
+import type { Application } from 'express';
 import { createAdapter } from '@socket.io/redis-adapter';
 
 import { socketAuthMiddleware } from './middleware/auth';
@@ -31,7 +31,7 @@ let io: SocketServer | null = null;
  */
 export async function initializeSocketServer(
   httpServer: HttpServer,
-  _app: Express
+  _app: Application
 ): Promise<SocketServer> {
   // Create Socket.io server with CORS configuration
   io = new SocketServer(httpServer, {
@@ -130,6 +130,12 @@ function setupNamespaces(io: SocketServer): void {
   negotiationNsp.on('connection', socket => {
     handleConnection(socket, 'negotiation');
     registerAgentNegotiationHandlers(socket, negotiationNsp);
+  });
+
+  // Presence namespace for user presence tracking
+  const presenceNsp = io.of('/presence');
+  presenceNsp.on('connection', socket => {
+    handleConnection(socket, 'presence');
   });
 }
 

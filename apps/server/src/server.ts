@@ -1,7 +1,11 @@
 import 'dotenv/config';
+import { createServer } from 'http';
+
 import app from './app';
 import { logger } from './utils/logger';
 import { llmService } from './services/ai/llmService';
+import { initializeSocketServer, closeSocketServer } from './socket';
+import { initializeRedisAdapter, closeRedisAdapter } from './socket/adapter';
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -15,7 +19,16 @@ async function start() {
     logger.warn('⚠️ LLM Service initialization failed, AI features may be unavailable:', err);
   }
 
-  const server = app.listen(PORT, HOST, () => {
+  // Create HTTP server and initialize Socket.io
+  const httpServer = createServer(app);
+
+  // Initialize Redis adapter for Socket.io
+  await initializeRedisAdapter();
+
+  // Initialize Socket.io
+  await initializeSocketServer(httpServer, app);
+
+  httpServer.listen(PORT, HOST, () => {
     logger.info(`🚀 Server running on http://${HOST}:${PORT}`);
     logger.info(`📋 Environment: ${process.env.NODE_ENV || 'development'}`);
     logger.info(`💚 Health check: http://${HOST}:${PORT}/health`);
@@ -29,7 +42,13 @@ async function start() {
     } catch (err) {
       logger.warn('Error shutting down LLM service:', err);
     }
-    server.close(() => {
+    try {
+      await closeSocketServer();
+      await closeRedisAdapter();
+    } catch (err) {
+      logger.warn('Error shutting down Socket.io:', err);
+    }
+    httpServer.close(() => {
       logger.info('Server closed. Exiting process.');
       process.exit(0);
     });
