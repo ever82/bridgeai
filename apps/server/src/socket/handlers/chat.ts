@@ -7,6 +7,7 @@ import type { Namespace } from 'socket.io';
 import type { Prisma } from '@prisma/client';
 
 import type { AuthenticatedSocket } from '../middleware/auth';
+import { isUserInRoom } from '../../services/chat/roomService';
 import {
   createMessage,
   getMessagesByConversation,
@@ -35,6 +36,13 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
       // Validate roomId is non-empty
       if (!roomId || roomId.trim().length === 0) {
         callback?.({ success: false, error: 'Room ID is required' });
+        return;
+      }
+
+      // Verify database room membership before allowing socket join
+      const isMember = await isUserInRoom(roomId, socket.user.id);
+      if (!isMember) {
+        callback?.({ success: false, error: 'Not a member of this room' });
         return;
       }
 

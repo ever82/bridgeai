@@ -91,7 +91,7 @@ export async function addParticipant(input: AddParticipantInput): Promise<RoomPa
       throw new Error('User is already a participant in this room');
     }
     // 重新激活
-    return prisma.roomParticipant.update({
+    const reactivated = await prisma.roomParticipant.update({
       where: { id: existing.id },
       data: {
         isActive: true,
@@ -99,6 +99,18 @@ export async function addParticipant(input: AddParticipantInput): Promise<RoomPa
         joinedAt: new Date(),
       },
     });
+
+    // Re-add userId to participantIds array (was removed on deactivation)
+    await prisma.chatRoom.update({
+      where: { id: roomId },
+      data: {
+        participantIds: {
+          push: userId,
+        },
+      },
+    });
+
+    return reactivated;
   }
 
   // 创建新参与者
