@@ -19,6 +19,7 @@ import authRoutes from '../auth';
 import disclosureRoutes from '../disclosure';
 import userPrivacyRoutes from '../userPrivacy';
 import { strictAuthLimiter } from '../../middleware/rateLimiter';
+import pointsRoutes from '../points';
 
 import healthRoutes from './health';
 import sceneRoutes from './scene';
@@ -35,6 +36,7 @@ router.use('/users', userRoutes);
 router.use('/users', userPrivacyRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/credit', creditRoutes);
+router.use('/points', pointsRoutes);
 router.use('/agents', agentRoutes);
 router.use('/agents', agentProfileRoutes);
 router.use('/location', locationRoutes);

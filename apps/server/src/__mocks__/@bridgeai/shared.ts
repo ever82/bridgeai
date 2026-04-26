@@ -788,7 +788,6 @@ export interface CreatePointsTransactionRequest {
   referenceId?: string;
   metadata?: Record<string, unknown>;
 }
-
 export interface CreatePointsFreezeRequest {
   amount: number;
   reason: string;
@@ -803,7 +802,6 @@ export interface PointsOperationResult {
   freeze?: PointsFreeze;
   error?: string;
 }
-
 export interface PointsRuleConfig {
   code: string;
   name: string;
@@ -1129,19 +1127,22 @@ export interface UpdateL3ProfileRequest {
   mediaUrls?: string[];
 }
 
-// ============================================
-// Location / Geo Types
-// ============================================
-
-export interface Location {
-  province: string;
-  provinceName: string;
-  city: string;
-  cityName: string;
-  district?: string;
-  districtName?: string;
-  address?: string;
-  postalCode?: string;
+// Dating types for AgentDate extractor
+export enum PersonalityTrait {
+  INTROVERTED = 'INTROVERTED',
+  EXTROVERTED = 'EXTROVERTED',
+  AMBIVERT = 'AMBIVERT',
+  OPTIMISTIC = 'OPTIMISTIC',
+  RATIONAL = 'RATIONAL',
+  EMOTIONAL = 'EMOTIONAL',
+  PRACTICAL = 'PRACTICAL',
+  CREATIVE = 'CREATIVE',
+  ADVENTUROUS = 'ADVENTUROUS',
+  STABLE = 'STABLE',
+  HUMOROUS = 'HUMOROUS',
+  GENTLE = 'GENTLE',
+  INDEPENDENT = 'INDEPENDENT',
+  DEPENDABLE = 'DEPENDABLE',
 }
 
 export interface GeoCoordinates {
