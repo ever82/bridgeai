@@ -408,7 +408,7 @@ export class ConnectionService {
    * Add connection to history
    */
   private addToHistory(connection: ConnectionRecord): void {
-    if (!connection.disconnectedAt || !connection.duration) {
+    if (!connection.disconnectedAt || connection.duration === undefined) {
       return;
     }
 

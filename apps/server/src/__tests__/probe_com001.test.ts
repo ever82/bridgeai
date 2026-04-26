@@ -360,10 +360,10 @@ describe('PROBE: roomAuth middleware boundary cases', () => {
     expect(result.error).toContain('Authentication');
   });
 
-  it('validateRoomJoin should handle non-existent room', () => {
+  it('validateRoomJoin should handle non-existent room', async () => {
     patchRoomService(roomSvc);
     const socket = makeSocket();
-    const result = validateRoomJoin(socket, 'non-existent');
+    const result = await validateRoomJoin(socket, 'non-existent');
     expect(result.valid).toBe(false);
     expect(result.error).toContain('does not exist');
   });
