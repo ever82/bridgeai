@@ -2,9 +2,8 @@ import { EventEmitter } from 'events';
 
 import { prisma } from '../db/client';
 import {
-  handleNewRating,
   creditScoreEvents,
-  updateCreditScore,
+  creditScoreService,
   calculateRatingCreditDelta,
   recalculateCreditScore,
 } from '../services/creditScoreService';
@@ -64,9 +63,7 @@ export const reviewEvents = new EventEmitter();
  * Updates credit score and sends notifications
  * @param payload - Rating submitted payload
  */
-export async function handleRatingSubmitted(
-  payload: RatingSubmittedPayload
-): Promise<void> {
+export async function handleRatingSubmitted(payload: RatingSubmittedPayload): Promise<void> {
   const { ratingId, raterId, rateeId, score } = payload;
 
   try {
@@ -75,16 +72,11 @@ export async function handleRatingSubmitted(
       where: { id: raterId },
     });
 
-    // 1. Update credit score for the ratee
-    await handleNewRating(ratingId);
+    // 1. Update credit score for the ratee — use class method for unified system
+    await creditScoreService.updateCreditScore(rateeId, 'RATING', ratingId);
 
     // 2. Send new review notification to ratee
-    await sendNewReviewNotification(
-      rateeId,
-      rater?.name || '匿名用户',
-      score,
-      ratingId
-    );
+    await sendNewReviewNotification(rateeId, rater?.name || '匿名用户', score, ratingId);
 
     // 3. If it's a bad review (<= 2 stars), send warning
     if (score <= 2) {
@@ -110,9 +102,7 @@ export async function handleRatingSubmitted(
  * Recalculates credit score
  * @param payload - Rating deleted payload
  */
-export async function handleRatingDeleted(
-  payload: RatingDeletedPayload
-): Promise<void> {
+export async function handleRatingDeleted(payload: RatingDeletedPayload): Promise<void> {
   const { ratingId, rateeId, score: _score } = payload;
 
   try {
@@ -126,14 +116,9 @@ export async function handleRatingDeleted(
       processed: true,
     });
 
-    console.log(
-      `[REVIEW_EVENT] Rating ${ratingId} deletion processed, new score: ${newScore}`
-    );
+    console.log(`[REVIEW_EVENT] Rating ${ratingId} deletion processed, new score: ${newScore}`);
   } catch (error) {
-    console.error(
-      `[REVIEW_EVENT] Error processing rating deletion ${ratingId}:`,
-      error
-    );
+    console.error(`[REVIEW_EVENT] Error processing rating deletion ${ratingId}:`, error);
     throw error;
   }
 }
@@ -143,9 +128,7 @@ export async function handleRatingDeleted(
  * Adjusts credit score based on score change
  * @param payload - Rating updated payload
  */
-export async function handleRatingUpdated(
-  payload: RatingUpdatedPayload
-): Promise<void> {
+export async function handleRatingUpdated(payload: RatingUpdatedPayload): Promise<void> {
   const { ratingId, rateeId, oldScore, newScore } = payload;
 
   try {
@@ -155,19 +138,8 @@ export async function handleRatingUpdated(
     const adjustment = newDelta - oldDelta;
 
     if (adjustment !== 0) {
-      // Update credit score with the adjustment
-      await updateCreditScore({
-        userId: rateeId,
-        delta: adjustment,
-        reason: `Rating updated from ${oldScore} to ${newScore} stars`,
-        sourceType: 'RATING_UPDATE',
-        sourceId: ratingId,
-        metadata: {
-          oldScore,
-          newScore,
-          ratingId,
-        },
-      });
+      // Update credit score with the adjustment — use class method for unified system
+      await creditScoreService.updateCreditScore(rateeId, 'RATING_UPDATE', ratingId);
     }
 
     // Emit event
@@ -177,14 +149,9 @@ export async function handleRatingUpdated(
       processed: true,
     });
 
-    console.log(
-      `[REVIEW_EVENT] Rating ${ratingId} update processed, adjustment: ${adjustment}`
-    );
+    console.log(`[REVIEW_EVENT] Rating ${ratingId} update processed, adjustment: ${adjustment}`);
   } catch (error) {
-    console.error(
-      `[REVIEW_EVENT] Error processing rating update ${ratingId}:`,
-      error
-    );
+    console.error(`[REVIEW_EVENT] Error processing rating update ${ratingId}:`, error);
     throw error;
   }
 }
@@ -194,9 +161,7 @@ export async function handleRatingUpdated(
  * Schedules review reminders
  * @param payload - Match completed payload
  */
-export async function handleMatchCompleted(
-  payload: MatchCompletedPayload
-): Promise<void> {
+export async function handleMatchCompleted(payload: MatchCompletedPayload): Promise<void> {
   const { matchId, completedAt } = payload;
 
   try {
@@ -209,14 +174,9 @@ export async function handleMatchCompleted(
       remindersScheduled: true,
     });
 
-    console.log(
-      `[REVIEW_EVENT] Match ${matchId} completed, reminders scheduled`
-    );
+    console.log(`[REVIEW_EVENT] Match ${matchId} completed, reminders scheduled`);
   } catch (error) {
-    console.error(
-      `[REVIEW_EVENT] Error processing match completion ${matchId}:`,
-      error
-    );
+    console.error(`[REVIEW_EVENT] Error processing match completion ${matchId}:`, error);
     throw error;
   }
 }
@@ -264,9 +224,7 @@ export function setupCreditScoreListeners(): void {
       score: number;
       delta: number;
     }) => {
-      console.log(
-        `[CREDIT_EVENT] Rating ${data.ratingId} submitted, delta: ${data.delta}`
-      );
+      console.log(`[CREDIT_EVENT] Rating ${data.ratingId} submitted, delta: ${data.delta}`);
     }
   );
 }
@@ -280,33 +238,21 @@ export function initializeReviewEventHandlers(): void {
   setupCreditScoreListeners();
 
   // Setup review event listeners
-  reviewEvents.on(
-    ReviewEventType.RATING_SUBMITTED,
-    (payload: RatingSubmittedPayload) => {
-      console.log(`[EVENT] Rating submitted: ${payload.ratingId}`);
-    }
-  );
+  reviewEvents.on(ReviewEventType.RATING_SUBMITTED, (payload: RatingSubmittedPayload) => {
+    console.log(`[EVENT] Rating submitted: ${payload.ratingId}`);
+  });
 
-  reviewEvents.on(
-    ReviewEventType.RATING_DELETED,
-    (payload: RatingDeletedPayload) => {
-      console.log(`[EVENT] Rating deleted: ${payload.ratingId}`);
-    }
-  );
+  reviewEvents.on(ReviewEventType.RATING_DELETED, (payload: RatingDeletedPayload) => {
+    console.log(`[EVENT] Rating deleted: ${payload.ratingId}`);
+  });
 
-  reviewEvents.on(
-    ReviewEventType.RATING_UPDATED,
-    (payload: RatingUpdatedPayload) => {
-      console.log(`[EVENT] Rating updated: ${payload.ratingId}`);
-    }
-  );
+  reviewEvents.on(ReviewEventType.RATING_UPDATED, (payload: RatingUpdatedPayload) => {
+    console.log(`[EVENT] Rating updated: ${payload.ratingId}`);
+  });
 
-  reviewEvents.on(
-    ReviewEventType.MATCH_COMPLETED,
-    (payload: MatchCompletedPayload) => {
-      console.log(`[EVENT] Match completed: ${payload.matchId}`);
-    }
-  );
+  reviewEvents.on(ReviewEventType.MATCH_COMPLETED, (payload: MatchCompletedPayload) => {
+    console.log(`[EVENT] Match completed: ${payload.matchId}`);
+  });
 
   console.log('[REVIEW_EVENT] Review event handlers initialized');
 }
@@ -315,9 +261,7 @@ export function initializeReviewEventHandlers(): void {
  * Trigger rating submitted event programmatically
  * @param payload - Rating submitted payload
  */
-export async function triggerRatingSubmitted(
-  payload: RatingSubmittedPayload
-): Promise<void> {
+export async function triggerRatingSubmitted(payload: RatingSubmittedPayload): Promise<void> {
   await handleRatingSubmitted(payload);
 }
 
@@ -325,9 +269,7 @@ export async function triggerRatingSubmitted(
  * Trigger rating deleted event programmatically
  * @param payload - Rating deleted payload
  */
-export async function triggerRatingDeleted(
-  payload: RatingDeletedPayload
-): Promise<void> {
+export async function triggerRatingDeleted(payload: RatingDeletedPayload): Promise<void> {
   await handleRatingDeleted(payload);
 }
 
@@ -335,9 +277,7 @@ export async function triggerRatingDeleted(
  * Trigger rating updated event programmatically
  * @param payload - Rating updated payload
  */
-export async function triggerRatingUpdated(
-  payload: RatingUpdatedPayload
-): Promise<void> {
+export async function triggerRatingUpdated(payload: RatingUpdatedPayload): Promise<void> {
   await handleRatingUpdated(payload);
 }
 
@@ -345,8 +285,6 @@ export async function triggerRatingUpdated(
  * Trigger match completed event programmatically
  * @param payload - Match completed payload
  */
-export async function triggerMatchCompleted(
-  payload: MatchCompletedPayload
-): Promise<void> {
+export async function triggerMatchCompleted(payload: MatchCompletedPayload): Promise<void> {
   await handleMatchCompleted(payload);
 }

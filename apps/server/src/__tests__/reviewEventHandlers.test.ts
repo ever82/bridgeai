@@ -8,10 +8,9 @@ import {
   ReviewEventType,
 } from '../events/reviewEventHandlers';
 import {
-  handleNewRating,
   creditScoreEvents,
+  creditScoreService,
   recalculateCreditScore,
-  updateCreditScore,
   calculateRatingCreditDelta,
 } from '../services/creditScoreService';
 import { prisma } from '../db/client';
@@ -38,18 +37,22 @@ jest.mock('../db/client', () => ({
   },
 }));
 
-jest.mock('../services/creditScoreService', () => ({
-  ...jest.requireActual('../services/creditScoreService'),
-  handleNewRating: jest.fn(),
-  getUserCreditScore: jest.fn(),
-  recalculateCreditScore: jest.fn(),
-  updateCreditScore: jest.fn(),
-  calculateRatingCreditDelta: jest.fn(),
-  creditScoreEvents: {
-    on: jest.fn(),
-    emit: jest.fn(),
-  },
-}));
+jest.mock('../services/creditScoreService', () => {
+  const actual = jest.requireActual('../services/creditScoreService');
+  return {
+    ...actual,
+    creditScoreService: {
+      ...actual.creditScoreService,
+      updateCreditScore: jest.fn().mockResolvedValue({ success: true, score: 100 }),
+    },
+    recalculateCreditScore: jest.fn(),
+    calculateRatingCreditDelta: jest.fn(),
+    creditScoreEvents: {
+      on: jest.fn(),
+      emit: jest.fn(),
+    },
+  };
+});
 
 // Mock notificationService
 jest.mock('../services/notificationService', () => ({
@@ -79,19 +82,13 @@ describe('Review Event Handlers', () => {
 
   describe('handleRatingSubmitted', () => {
     it('should handle good rating submission', async () => {
-      const mockRating = {
-        id: 'rating-1',
-        raterId: 'user-1',
-        rateeId: 'user-2',
-        score: 5,
-        match: { id: 'match-1' },
-      };
-
       const mockRater = { id: 'user-1', name: 'Test User' };
 
-      (prisma.rating.findUnique as jest.Mock).mockResolvedValue(mockRating);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockRater);
-      (handleNewRating as jest.Mock).mockResolvedValue(undefined);
+      (creditScoreService.updateCreditScore as jest.Mock).mockResolvedValue({
+        success: true,
+        score: 100,
+      });
 
       const eventListener = jest.fn();
       reviewEvents.once(ReviewEventType.RATING_SUBMITTED, eventListener);
@@ -104,23 +101,21 @@ describe('Review Event Handlers', () => {
         score: 5,
       });
 
-      expect(handleNewRating).toHaveBeenCalledWith('rating-1');
+      expect(creditScoreService.updateCreditScore).toHaveBeenCalledWith(
+        'user-2',
+        'RATING',
+        'rating-1'
+      );
     });
 
     it('should handle bad rating submission with warning', async () => {
-      const mockRating = {
-        id: 'rating-1',
-        raterId: 'user-1',
-        rateeId: 'user-2',
-        score: 1,
-        match: { id: 'match-1' },
-      };
-
       const mockRater = { id: 'user-1', name: 'Test User' };
 
-      (prisma.rating.findUnique as jest.Mock).mockResolvedValue(mockRating);
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockRater);
-      (handleNewRating as jest.Mock).mockResolvedValue(undefined);
+      (creditScoreService.updateCreditScore as jest.Mock).mockResolvedValue({
+        success: true,
+        score: 100,
+      });
 
       await handleRatingSubmitted({
         ratingId: 'rating-1',
@@ -130,12 +125,19 @@ describe('Review Event Handlers', () => {
         score: 1,
       });
 
-      expect(handleNewRating).toHaveBeenCalledWith('rating-1');
+      expect(creditScoreService.updateCreditScore).toHaveBeenCalledWith(
+        'user-2',
+        'RATING',
+        'rating-1'
+      );
     });
 
     it('should handle missing rater gracefully', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-      (handleNewRating as jest.Mock).mockResolvedValue(undefined);
+      (creditScoreService.updateCreditScore as jest.Mock).mockResolvedValue({
+        success: true,
+        score: 100,
+      });
 
       // Should not throw, just use anonymous name
       await handleRatingSubmitted({
@@ -146,7 +148,11 @@ describe('Review Event Handlers', () => {
         score: 5,
       });
 
-      expect(handleNewRating).toHaveBeenCalledWith('rating-1');
+      expect(creditScoreService.updateCreditScore).toHaveBeenCalledWith(
+        'user-2',
+        'RATING',
+        'rating-1'
+      );
     });
   });
 
@@ -171,8 +177,10 @@ describe('Review Event Handlers', () => {
 
   describe('handleRatingUpdated', () => {
     it('should adjust credit score when rating changes', async () => {
-      (calculateRatingCreditDelta as jest.Mock).mockReturnValueOnce(5).mockReturnValueOnce(-10);
-      (updateCreditScore as jest.Mock).mockResolvedValue({ id: 'record-1' });
+      (creditScoreService.updateCreditScore as jest.Mock).mockResolvedValue({
+        success: true,
+        score: 100,
+      });
 
       await handleRatingUpdated({
         ratingId: 'rating-1',
@@ -183,12 +191,10 @@ describe('Review Event Handlers', () => {
         newScore: 1,
       });
 
-      expect(updateCreditScore).toHaveBeenCalledWith(
-        expect.objectContaining({
-          userId: 'user-2',
-          delta: -15,
-          reason: expect.stringContaining('updated'),
-        })
+      expect(creditScoreService.updateCreditScore).toHaveBeenCalledWith(
+        'user-2',
+        'RATING_UPDATE',
+        'rating-1'
       );
     });
 
@@ -204,7 +210,7 @@ describe('Review Event Handlers', () => {
         newScore: 4,
       });
 
-      expect(updateCreditScore).not.toHaveBeenCalled();
+      expect(creditScoreService.updateCreditScore).not.toHaveBeenCalled();
     });
   });
 
@@ -228,10 +234,7 @@ describe('Review Event Handlers', () => {
     it('should setup all event listeners', () => {
       initializeReviewEventHandlers();
 
-      expect(creditScoreEvents.on).toHaveBeenCalledWith(
-        'creditScoreUpdated',
-        expect.any(Function)
-      );
+      expect(creditScoreEvents.on).toHaveBeenCalledWith('creditScoreUpdated', expect.any(Function));
     });
   });
 });

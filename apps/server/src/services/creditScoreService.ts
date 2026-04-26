@@ -347,14 +347,9 @@ export class CreditScoreService {
    * 更新用户信用分
    */
   async updateCreditScore(userId: string, sourceType: CreditSourceType, sourceId?: string) {
-    // 检查更新频率限制
     const existing = await prisma.creditScore.findUnique({
       where: { userId },
     });
-
-    if (existing?.nextUpdateAt && existing.nextUpdateAt > new Date()) {
-      return { success: false, reason: 'Update frequency limit' };
-    }
 
     // 计算新分数
     const result = await this.calculateScore(userId);
@@ -375,14 +370,12 @@ export class CreditScoreService {
         score: result.totalScore,
         level: result.level,
         metadata: { updateCount: 1 } as any,
-        nextUpdateAt: this.calculateNextUpdateTime(),
       },
       update: {
         score: result.totalScore,
         level: result.level,
         lastUpdated: new Date(),
         metadata: { updateCount: { increment: 1 } } as any,
-        nextUpdateAt: this.calculateNextUpdateTime(),
       },
     });
 
@@ -532,12 +525,6 @@ export class CreditScoreService {
     });
   }
 
-  private calculateNextUpdateTime(): Date {
-    const nextUpdate = new Date();
-    nextUpdate.setMinutes(nextUpdate.getMinutes() + CREDIT_SCORE_CONFIG.updateIntervalMinutes);
-    return nextUpdate;
-  }
-
   private getFactorDescription(type: string, subFactor: string): string {
     const descriptions: Record<string, Record<string, string>> = {
       profile: {
@@ -647,31 +634,12 @@ export function calculateReplyRateBonus(totalReviews: number, repliedReviews: nu
 
 /**
  * Get current credit score for a user (reads cached value from DB)
+ * Delegates to CreditScoreService class for unified credit score system.
  * @param userId - User ID
  * @returns Current credit score
  */
 export async function getUserCreditScore(userId: string): Promise<number> {
-  const creditScore = await prisma.creditScore.findUnique({
-    where: { userId },
-  });
-  if (creditScore) {
-    return creditScore.score;
-  }
-  // No cached score — compute and cache via the service
-  const result = await creditScoreService.calculateScore(userId);
-  await prisma.creditScore.upsert({
-    where: { userId },
-    create: {
-      userId,
-      score: result.totalScore,
-      level: result.level,
-    },
-    update: {
-      score: result.totalScore,
-      level: result.level,
-    },
-  });
-  return result.totalScore;
+  return creditScoreService.getUserCreditScore(userId);
 }
 
 /**
@@ -727,73 +695,13 @@ export async function updateCreditScore(
 
 /**
  * Recalculate user's credit score based on all ratings
+ * Delegates to CreditScoreService class for unified credit score system.
  * @param userId - User ID
  * @returns Updated credit score
  */
 export async function recalculateCreditScore(userId: string): Promise<number> {
-  const currentScore = await getUserCreditScore(userId);
-
-  // Get all ratings received by the user
-  const ratings = await prisma.rating.findMany({
-    where: { rateeId: userId },
-  });
-
-  // Calculate base score from ratings
-  let baseScore = REVIEW_CREDIT_CONFIG.DEFAULT_SCORE;
-  let goodReviewCount = 0;
-  let badReviewCount = 0;
-
-  for (const rating of ratings) {
-    const delta = calculateRatingCreditDelta(rating.score);
-    baseScore += delta;
-
-    if (rating.score >= 4) {
-      goodReviewCount++;
-    } else if (rating.score <= 2) {
-      badReviewCount++;
-    }
-  }
-
-  // Add review count bonus
-  const reviewCountBonus = calculateReviewCountBonus(ratings.length);
-
-  // Reply rate bonus based on actual review reply data
-  const reviewsWithReplies = ratings.filter((r: any) => r.reply).length;
-  const replyRateBonus = calculateReplyRateBonus(ratings.length, reviewsWithReplies);
-
-  // Calculate final score
-  const finalScore = Math.max(
-    REVIEW_CREDIT_CONFIG.MIN_SCORE,
-    Math.min(REVIEW_CREDIT_CONFIG.MAX_SCORE, baseScore + reviewCountBonus + replyRateBonus)
-  );
-
-  // Upsert the CreditScore row
-  const level = getCreditLevel(finalScore);
-  await prisma.creditScore.upsert({
-    where: { userId },
-    create: { userId, score: finalScore, level },
-    update: { score: finalScore, level, lastUpdated: new Date() },
-  });
-
-  // Create history record for recalculation
-  await prisma.creditHistory.create({
-    data: {
-      userId,
-      score: finalScore,
-      delta: finalScore - currentScore,
-      reason: `Credit score recalculated: ${ratings.length} reviews, ${goodReviewCount} good, ${badReviewCount} bad`,
-      sourceType: 'RECALCULATION',
-      metadata: {
-        totalReviews: ratings.length,
-        goodReviewCount,
-        badReviewCount,
-        reviewCountBonus,
-        replyRateBonus,
-      },
-    },
-  });
-
-  return finalScore;
+  const result = await creditScoreService.updateCreditScore(userId, 'RECALCULATION');
+  return result.score;
 }
 
 /**
@@ -812,25 +720,8 @@ export async function handleNewRating(ratingId: string): Promise<void> {
     throw new Error(`Rating not found: ${ratingId}`);
   }
 
-  const delta = calculateRatingCreditDelta(rating.score);
-
-  if (delta !== 0) {
-    await updateCreditScore({
-      userId: rating.rateeId,
-      delta,
-      reason:
-        delta > 0
-          ? `Received a good review (${rating.score} stars)`
-          : `Received a bad review (${rating.score} stars)`,
-      sourceType: 'RATING',
-      sourceId: ratingId,
-      metadata: {
-        ratingScore: rating.score,
-        matchId: rating.matchId,
-        comment: rating.comment,
-      },
-    });
-  }
+  // Use class method for unified credit score system
+  await creditScoreService.updateCreditScore(rating.rateeId, 'RATING', ratingId);
 
   // Emit event for notification
   creditScoreEvents.emit('ratingSubmitted', {
