@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -43,7 +43,7 @@ export const DisclosureSettings: React.FC<DisclosureSettingsProps> = ({ agentId:
   const routeAgentId = route.params?.agentId;
   const effectiveAgentId = propAgentId || routeAgentId || '';
 
-  // Mock state - in real implementation, this would come from API
+  // Initialize with defaults; useEffect will load from API if available
   const [fields, setFields] = useState<FieldSetting[]>(
     DISCLOSABLE_FIELDS.map(fieldName => {
       const defaultConfig = DEFAULT_FIELD_DISCLOSURES.find(f => f.fieldName === fieldName);
@@ -60,6 +60,50 @@ export const DisclosureSettings: React.FC<DisclosureSettingsProps> = ({ agentId:
   const [defaultLevel, setDefaultLevel] = useState<DisclosureLevel>(DisclosureLevel.AFTER_MATCH);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load existing settings from API
+  useEffect(() => {
+    if (!effectiveAgentId) {
+      setIsLoading(false);
+      return;
+    }
+    (async () => {
+      try {
+        const response = await apiClient.get(`/api/v1/disclosure/${effectiveAgentId}/settings`);
+        if (response.data?.success && response.data?.data) {
+          const settings = response.data.data;
+          if (settings.fieldDisclosures) {
+            setFields(
+              settings.fieldDisclosures.map(
+                (f: {
+                  fieldName: string;
+                  level: DisclosureLevel;
+                  defaultLevel?: DisclosureLevel;
+                  isDisclosable?: boolean;
+                }) => ({
+                  fieldName: f.fieldName,
+                  currentLevel: f.level,
+                  defaultLevel: f.defaultLevel ?? f.level,
+                  isDisclosable: f.isDisclosable ?? true,
+                })
+              )
+            );
+          }
+          if (settings.strictMode !== undefined) {
+            setStrictMode(settings.strictMode);
+          }
+          if (settings.defaultLevel) {
+            setDefaultLevel(settings.defaultLevel);
+          }
+        }
+      } catch {
+        // Use defaults if API fails (e.g., first time setup)
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, [effectiveAgentId]);
 
   const fieldLabels: Record<string, string> = {
     name: '姓名',
@@ -182,6 +226,11 @@ export const DisclosureSettings: React.FC<DisclosureSettingsProps> = ({ agentId:
       </View>
 
       <ScrollView style={styles.content}>
+        {isLoading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={themeColors.colors.primary} />
+          </View>
+        )}
         {/* Description */}
         <View style={styles.descriptionCard}>
           <Text style={styles.descriptionTitle}>什么是信息披露控制？</Text>
@@ -370,6 +419,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  loadingContainer: {
+    paddingVertical: themeColors.spacing.xl,
+    alignItems: 'center',
   },
   descriptionCard: {
     backgroundColor: `${themeColors.colors.primary}10`,

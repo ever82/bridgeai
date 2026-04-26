@@ -11,10 +11,7 @@ import {
   AgentDisclosureSettings,
   DisclosureCheckResult,
   canDiscloseAtStage,
-  getRequiredStage,
   createDefaultDisclosureSettings,
-  DEFAULT_FIELD_DISCLOSURES,
-  DISCLOSABLE_FIELDS,
 } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
@@ -74,7 +71,8 @@ export class DisclosureService {
     const currentSettings = await this.getDisclosureSettings(agentId);
 
     // Track changes for audit
-    const changes: { fieldName: string; oldLevel: DisclosureLevel; newLevel: DisclosureLevel }[] = [];
+    const changes: { fieldName: string; oldLevel: DisclosureLevel; newLevel: DisclosureLevel }[] =
+      [];
 
     // Update field disclosures
     if (updates.fieldDisclosures) {
@@ -142,7 +140,9 @@ export class DisclosureService {
     const settings = await this.getDisclosureSettings(agentId);
 
     // Find field disclosure config
-    const fieldConfig = settings.fieldDisclosures.find((f: FieldDisclosure) => f.fieldName === fieldName);
+    const fieldConfig = settings.fieldDisclosures.find(
+      (f: FieldDisclosure) => f.fieldName === fieldName
+    );
 
     // If field is not disclosable, deny access
     if (fieldConfig && !fieldConfig.isDisclosable) {
@@ -201,7 +201,9 @@ export class DisclosureService {
       canView,
       fieldLevel: requiredLevel,
       relationshipStage,
-      denialReason: canView ? undefined : `Requires ${requiredLevel} level, current: ${relationshipStage}`,
+      denialReason: canView
+        ? undefined
+        : `Requires ${requiredLevel} level, current: ${relationshipStage}`,
     };
   }
 
@@ -303,7 +305,9 @@ export class DisclosureService {
     const settings = await this.getDisclosureSettings(agentId);
 
     for (const update of fieldUpdates) {
-      const existingField = settings.fieldDisclosures.find((f: FieldDisclosure) => f.fieldName === update.fieldName);
+      const existingField = settings.fieldDisclosures.find(
+        (f: FieldDisclosure) => f.fieldName === update.fieldName
+      );
 
       if (existingField) {
         // Log the change
@@ -368,10 +372,6 @@ export class DisclosureService {
    * Load disclosure settings from database
    */
   private async loadSettingsFromDB(agentId: string): Promise<AgentDisclosureSettings | null> {
-    // This would typically query a disclosure_settings table
-    // For now, we'll return null to trigger default creation
-    // In a full implementation, this would be:
-    /*
     const record = await prisma.disclosureSettings.findUnique({
       where: { agentId },
     });
@@ -386,7 +386,6 @@ export class DisclosureService {
         createdAt: record.createdAt.toISOString(),
       };
     }
-    */
     return null;
   }
 
@@ -394,27 +393,21 @@ export class DisclosureService {
    * Save disclosure settings to database
    */
   private async saveSettingsToDB(settings: AgentDisclosureSettings): Promise<void> {
-    // This would typically upsert to a disclosure_settings table
-    // In a full implementation, this would be:
-    /*
     await prisma.disclosureSettings.upsert({
       where: { agentId: settings.agentId },
       update: {
-        fieldDisclosures: settings.fieldDisclosures,
+        fieldDisclosures: settings.fieldDisclosures as any,
         defaultLevel: settings.defaultLevel,
         strictMode: settings.strictMode,
-        updatedAt: new Date(),
       },
       create: {
         agentId: settings.agentId,
         userId: settings.userId,
-        fieldDisclosures: settings.fieldDisclosures,
+        fieldDisclosures: settings.fieldDisclosures as any,
         defaultLevel: settings.defaultLevel,
         strictMode: settings.strictMode,
       },
     });
-    */
-    console.log('[DisclosureService] Settings saved for agent:', settings.agentId);
   }
 
   /**

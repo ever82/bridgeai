@@ -103,6 +103,7 @@ model Agent {
   profiles    AgentProfile[]
   merchant    Merchant?
   statusHistory AgentStatusHistory[]
+  disclosureSettings DisclosureSettings?
 
   @@index([userId])
   @@index([type])
@@ -1679,4 +1680,50 @@ model AgentLocationPrivacy {
 
   @@index([agentId])
   @@map("agent_location_privacy")
+}
+
+model DisclosureSettings {
+  id                String   @id @default(uuid())
+  agentId           String   @unique @map("agent_id")
+  userId            String   @map("user_id")
+  fieldDisclosures  Json     @map("field_disclosures")
+  defaultLevel      String   @map("default_level")
+  strictMode        Boolean  @default(false) @map("strict_mode")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@map("disclosure_settings")
+}
+
+model DisclosureChange {
+  id                String   @id @default(uuid())
+  agentId           String   @map("agent_id")
+  fieldName         String   @map("field_name")
+  previousLevel     String   @map("previous_level")
+  newLevel          String   @map("new_level")
+  changedBy         String   @map("changed_by")
+  changedAt         DateTime @default(now()) @map("changed_at")
+  notificationSent  Boolean  @default(false) @map("notification_sent")
+
+  @@index([agentId])
+  @@index([changedAt])
+  @@map("disclosure_changes")
+}
+
+model DisclosureAccessLog {
+  id            String   @id @default(uuid())
+  agentId       String   @map("agent_id")
+  fieldName     String   @map("field_name")
+  accessedBy    String   @map("accessed_by")
+  ownerId       String   @map("owner_id")
+  accessGranted Boolean  @map("access_granted")
+  timestamp     DateTime @default(now())
+  context       Json?
+
+  @@index([agentId])
+  @@index([timestamp])
+  @@map("disclosure_access_logs")
 }

@@ -11,6 +11,7 @@ import { disclosureService } from '../services/disclosureService';
 import { disclosureAuditService } from '../services/disclosureAuditService';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { prisma } from '../db/client';
 
 const router: Router = Router();
 
@@ -53,6 +54,18 @@ const previewSchema = z.object({
 });
 
 // ============================================
+// Ownership verification
+// ============================================
+
+async function requireAgentOwner(agentId: string, userId: string): Promise<boolean> {
+  const agent = await prisma.agent.findUnique({
+    where: { id: agentId },
+    select: { userId: true },
+  });
+  return agent?.userId === userId;
+}
+
+// ============================================
 // Disclosure Settings Routes
 // ============================================
 
@@ -84,7 +97,17 @@ router.put('/:agentId/settings', authenticate, async (req: AuthenticatedRequest,
     const { agentId } = agentIdSchema.parse(req.params);
     const updates = updateSettingsSchema.parse(req.body);
     const userId = req.user?.id || '';
-    const settings = await disclosureService.updateDisclosureSettings(agentId, updates as any, userId);
+    if (!(await requireAgentOwner(agentId, userId))) {
+      res
+        .status(403)
+        .json({ success: false, error: "Not authorized to modify this agent's settings" });
+      return;
+    }
+    const settings = await disclosureService.updateDisclosureSettings(
+      agentId,
+      updates as any,
+      userId
+    );
     res.json({ success: true, data: settings });
   } catch (error) {
     logger.error('Failed to update disclosure settings', { error });
@@ -101,6 +124,12 @@ router.post('/:agentId/bulk', authenticate, async (req: AuthenticatedRequest, re
     const { agentId } = agentIdSchema.parse(req.params);
     const { fieldUpdates, notifyAffectedUsers } = bulkUpdateSchema.parse(req.body);
     const userId = req.user?.id || '';
+    if (!(await requireAgentOwner(agentId, userId))) {
+      res
+        .status(403)
+        .json({ success: false, error: "Not authorized to modify this agent's settings" });
+      return;
+    }
     const settings = await disclosureService.bulkUpdateDisclosure(
       agentId,
       fieldUpdates as any,
@@ -122,6 +151,12 @@ router.post('/:agentId/reset', authenticate, async (req: AuthenticatedRequest, r
   try {
     const { agentId } = agentIdSchema.parse(req.params);
     const userId = req.user?.id || '';
+    if (!(await requireAgentOwner(agentId, userId))) {
+      res
+        .status(403)
+        .json({ success: false, error: "Not authorized to modify this agent's settings" });
+      return;
+    }
     const settings = await disclosureService.resetToDefaults(agentId, userId);
     res.json({ success: true, data: settings });
   } catch (error) {
