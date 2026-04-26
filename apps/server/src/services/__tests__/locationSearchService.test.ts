@@ -19,10 +19,9 @@ import {
   getLocationNameByCode,
   getFullLocationPath,
   searchLocations,
-  searchAgentsByLocation,
   findAgentsWithinRadius,
-  getDistanceBetweenAgents,
 } from '../locationSearchService';
+import { searchAgentsByLocation, getDistanceBetweenAgents } from '../agentLocationService';
 import { prisma } from '../../db/client';
 
 // Mock Prisma
@@ -202,6 +201,7 @@ describe('LocationSearchService', () => {
         {
           id: 'agent-1',
           name: 'Agent 1',
+          type: 'SUPPLY',
           profiles: [{ l1Data: { location: { province: '110000', provinceName: '北京市' } } }],
         },
       ]);
@@ -211,7 +211,7 @@ describe('LocationSearchService', () => {
       const result = await searchAgentsByLocation(filter, 1, 20);
 
       expect(result.total).toBe(1);
-      expect(result.items[0].location.province).toBe('110000');
+      expect(result.agents[0].location.province).toBe('110000');
     });
 
     it('should search agents by city', async () => {
@@ -239,6 +239,9 @@ describe('LocationSearchService', () => {
         {
           id: 'agent-1',
           name: 'Agent 1',
+          type: 'SUPPLY',
+          latitude: 39.9,
+          longitude: 116.4,
           profiles: [
             { l1Data: { location: { coordinates: { latitude: 39.9, longitude: 116.4 } } } },
           ],
@@ -246,6 +249,9 @@ describe('LocationSearchService', () => {
         {
           id: 'agent-2',
           name: 'Agent 2',
+          type: 'SUPPLY',
+          latitude: 40.0,
+          longitude: 116.5,
           profiles: [
             { l1Data: { location: { coordinates: { latitude: 40.0, longitude: 116.5 } } } },
           ],
@@ -263,7 +269,7 @@ describe('LocationSearchService', () => {
 
       // First agent should be within radius (same location)
       // Second agent is about 14km away, outside 10km radius
-      expect(result.items.length).toBeLessThanOrEqual(2);
+      expect(result.agents.length).toBeLessThanOrEqual(2);
     });
 
     it('should handle pagination', async () => {
@@ -355,15 +361,17 @@ describe('LocationSearchService', () => {
       (prisma.agent.findUnique as jest.Mock)
         .mockResolvedValueOnce({
           id: 'agent-1',
-          profiles: [
-            { l1Data: { location: { coordinates: { latitude: 39.9, longitude: 116.4 } } } },
-          ],
+          latitude: 39.9,
+          longitude: 116.4,
+          updatedAt: new Date(),
+          profiles: [{ l1Data: { location: { province: 'BJ' } } }],
         })
         .mockResolvedValueOnce({
           id: 'agent-2',
-          profiles: [
-            { l1Data: { location: { coordinates: { latitude: 31.2, longitude: 121.4 } } } },
-          ],
+          latitude: 31.2,
+          longitude: 121.4,
+          updatedAt: new Date(),
+          profiles: [{ l1Data: { location: { province: 'SH' } } }],
         });
 
       const distance = await getDistanceBetweenAgents('agent-1', 'agent-2');
@@ -384,10 +392,16 @@ describe('LocationSearchService', () => {
       (prisma.agent.findUnique as jest.Mock)
         .mockResolvedValueOnce({
           id: 'agent-1',
+          latitude: null,
+          longitude: null,
+          updatedAt: new Date(),
           profiles: [{ l1Data: {} }],
         })
         .mockResolvedValueOnce({
           id: 'agent-2',
+          latitude: null,
+          longitude: null,
+          updatedAt: new Date(),
           profiles: [{ l1Data: {} }],
         });
 

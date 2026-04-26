@@ -3,132 +3,12 @@
  * 位置搜索服务
  */
 
-import { Location, GeoCoordinates, LocationFilter, LocationSearchResult } from '@bridgeai/shared';
-import { calculateDistance, isWithinBoundingBox } from '@bridgeai/shared';
+import { Location, GeoCoordinates } from '@bridgeai/shared';
+import { calculateDistance } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
 import { PROVINCES, CITIES, DISTRICTS } from '../data/locationData';
-
-/**
- * Search agents by location
- */
-export async function searchAgentsByLocation(
-  filter: LocationFilter,
-  page: number = 1,
-  limit: number = 20
-): Promise<LocationSearchResult<{ id: string; name: string; location: Location }>> {
-  try {
-    const where: any = {};
-
-    // Build combined location filter using JSON path queries on l1Data
-    const locationFilters: any[] = [];
-
-    if (filter.province) {
-      locationFilters.push({
-        profiles: {
-          some: {
-            l1Data: {
-              path: ['location', 'province'],
-              equals: filter.province,
-            },
-          },
-        },
-      });
-    }
-
-    if (filter.city) {
-      locationFilters.push({
-        profiles: {
-          some: {
-            l1Data: {
-              path: ['location', 'city'],
-              equals: filter.city,
-            },
-          },
-        },
-      });
-    }
-
-    if (filter.district) {
-      locationFilters.push({
-        profiles: {
-          some: {
-            l1Data: {
-              path: ['location', 'district'],
-              equals: filter.district,
-            },
-          },
-        },
-      });
-    }
-
-    if (locationFilters.length > 0) {
-      where.AND = locationFilters;
-    }
-
-    // Handle geo-fence filter
-    if (filter.withinFence) {
-      // In production, this would query agents whose coordinates are within the fence
-      logger.info('Geo-fence filter applied', { fenceId: filter.withinFence });
-    }
-
-    const agents = await prisma.agent.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        profiles: {
-          select: {
-            l1Data: true,
-          },
-        },
-      },
-    });
-
-    // Transform and filter by distance if needed
-    let results = agents.map(agent => ({
-      id: agent.id,
-      name: agent.name,
-      location: (agent.profiles[0]?.l1Data as any)?.location as Location,
-    }));
-
-    // Filter by radius if specified
-    if (filter.withinRadius && filter.withinRadius.center) {
-      results = results.filter(item => {
-        if (!item.location) return false;
-        const coords = (item.location as any).coordinates as GeoCoordinates;
-        if (!coords) return false;
-
-        const { distanceKm } = calculateDistance(coords, filter.withinRadius!.center);
-        return distanceKm <= filter.withinRadius!.radiusKm;
-      });
-    }
-
-    // Filter by bounding box if specified
-    if (filter.withinBounds) {
-      results = results.filter(item => {
-        if (!item.location) return false;
-        const coords = (item.location as any).coordinates as GeoCoordinates;
-        if (!coords) return false;
-
-        return isWithinBoundingBox(coords, filter.withinBounds!);
-      });
-    }
-
-    const total = await prisma.agent.count({ where });
-
-    return {
-      items: results,
-      total,
-      page,
-      limit,
-    };
-  } catch (error) {
-    logger.error('Failed to search agents by location', { error, filter });
-    throw error;
-  }
-}
 
 /**
  * Get all provinces
@@ -286,53 +166,6 @@ export async function searchLocations(query: string): Promise<
   }
 
   return results.slice(0, 20); // Limit results
-}
-
-/**
- * Calculate distance between two agents
- */
-export async function getDistanceBetweenAgents(
-  agentId1: string,
-  agentId2: string
-): Promise<number | null> {
-  try {
-    const [agent1, agent2] = await Promise.all([
-      prisma.agent.findUnique({
-        where: { id: agentId1 },
-        include: { profiles: { select: { l1Data: true } } },
-      }),
-      prisma.agent.findUnique({
-        where: { id: agentId2 },
-        include: { profiles: { select: { l1Data: true } } },
-      }),
-    ]);
-
-    if (!agent1?.profiles[0]?.l1Data || !agent2?.profiles[0]?.l1Data) {
-      return null;
-    }
-
-    const location1 = (agent1.profiles[0].l1Data as any).location as Location & {
-      coordinates?: GeoCoordinates;
-    };
-    const location2 = (agent2.profiles[0].l1Data as any).location as Location & {
-      coordinates?: GeoCoordinates;
-    };
-
-    if (!location1?.coordinates || !location2?.coordinates) {
-      return null;
-    }
-
-    const { distanceKm } = calculateDistance(location1.coordinates, location2.coordinates);
-
-    return distanceKm;
-  } catch (error) {
-    logger.error('Failed to calculate distance between agents', {
-      error,
-      agentId1,
-      agentId2,
-    });
-    return null;
-  }
 }
 
 /**

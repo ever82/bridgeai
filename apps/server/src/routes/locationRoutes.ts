@@ -15,11 +15,9 @@ import {
   getLocationHierarchy,
   getLocationNameByCode,
   searchLocations,
-  searchAgentsByLocation,
   findAgentsWithinRadius,
-  getDistanceBetweenAgents,
 } from '../services/locationSearchService';
-import { logger } from '../utils/logger';
+import { searchAgentsByLocation, getDistanceBetweenAgents } from '../services/agentLocationService';
 
 const router: Router = Router();
 
@@ -106,10 +104,7 @@ router.get('/districts/:cityCode', async (req, res, next) => {
 router.get('/hierarchy', async (req, res, next) => {
   try {
     const { provinceCode, cityCode } = req.query;
-    const hierarchy = await getLocationHierarchy(
-      provinceCode as string,
-      cityCode as string
-    );
+    const hierarchy = await getLocationHierarchy(provinceCode as string, cityCode as string);
     res.json({
       success: true,
       data: hierarchy,
@@ -179,39 +174,44 @@ router.get('/name/:code', async (req, res, next) => {
  * GET /api/location/agents
  * Search agents by location
  */
-router.get('/agents', authenticate, validate({ query: locationFilterSchema }), async (req, res, next) => {
-  try {
-    const { province, city, district, lat, lng, radius, page, limit } = req.query;
+router.get(
+  '/agents',
+  authenticate,
+  validate({ query: locationFilterSchema }),
+  async (req, res, next) => {
+    try {
+      const { province, city, district, lat, lng, radius, page, limit } = req.query;
 
-    const filter: any = {};
-    if (province) filter.province = province;
-    if (city) filter.city = city;
-    if (district) filter.district = district;
+      const filter: any = {};
+      if (province) filter.province = province;
+      if (city) filter.city = city;
+      if (district) filter.district = district;
 
-    if (lat && lng && radius) {
-      filter.withinRadius = {
-        center: {
-          latitude: parseFloat(lat as string),
-          longitude: parseFloat(lng as string),
-        },
-        radiusKm: parseFloat(radius as string),
-      };
+      if (lat && lng && radius) {
+        filter.withinRadius = {
+          center: {
+            latitude: parseFloat(lat as string),
+            longitude: parseFloat(lng as string),
+          },
+          radiusKm: parseFloat(radius as string),
+        };
+      }
+
+      const results = await searchAgentsByLocation(
+        filter,
+        parseInt(page as string) || 1,
+        parseInt(limit as string) || 20
+      );
+
+      res.json({
+        success: true,
+        data: results,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    const results = await searchAgentsByLocation(
-      filter,
-      parseInt(page as string) || 1,
-      parseInt(limit as string) || 20
-    );
-
-    res.json({
-      success: true,
-      data: results,
-    });
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 /**
  * GET /api/location/agents/nearby
@@ -259,10 +259,7 @@ router.get(
     try {
       const { agentId1, agentId2 } = req.query;
 
-      const distance = await getDistanceBetweenAgents(
-        agentId1 as string,
-        agentId2 as string
-      );
+      const distance = await getDistanceBetweenAgents(agentId1 as string, agentId2 as string);
 
       if (distance === null) {
         return res.status(404).json({
