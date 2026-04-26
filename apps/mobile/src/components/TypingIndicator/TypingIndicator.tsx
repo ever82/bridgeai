@@ -1,11 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  ViewStyle,
-} from 'react-native';
+import { View, Text, StyleSheet, Animated, ViewStyle } from 'react-native';
 
 import { theme } from '../../theme';
 
@@ -34,8 +28,11 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
   const dot2Anim = useRef(new Animated.Value(0)).current;
   const dot3Anim = useRef(new Animated.Value(0)).current;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
+
     if (!visible) {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -46,6 +43,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
 
     // Start animation
     const animate = () => {
+      if (!mountedRef.current) return;
       const duration = 400;
       const delay = 150;
 
@@ -88,7 +86,11 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
             useNativeDriver: true,
           }),
         ]),
-      ]).start(() => animate());
+      ]).start(result => {
+        if (mountedRef.current && result.finished) {
+          requestAnimationFrame(() => animate());
+        }
+      });
     };
 
     animate();
@@ -101,6 +103,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
     }
 
     return () => {
+      mountedRef.current = false;
       dot1Anim.stopAnimation();
       dot2Anim.stopAnimation();
       dot3Anim.stopAnimation();
@@ -114,9 +117,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
 
   const getLabel = () => {
     if (userName) {
-      return type === 'thinking'
-        ? `${userName} 正在思考...`
-        : `${userName} 正在输入...`;
+      return type === 'thinking' ? `${userName} 正在思考...` : `${userName} 正在输入...`;
     }
     return type === 'thinking' ? '正在思考...' : '正在输入...';
   };

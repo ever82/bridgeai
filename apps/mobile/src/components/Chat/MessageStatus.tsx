@@ -198,38 +198,40 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({
       </TouchableOpacity>
 
       {/* Read List Modal */}
-      <Modal
-        visible={showModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>已读成员</Text>
-              <TouchableOpacity onPress={() => setShowModal(false)}>
-                <Text style={styles.closeButton}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <FlatList
-              data={readUsers}
-              renderItem={renderReadUser}
-              keyExtractor={(item) => item.userId}
-              contentContainerStyle={styles.readUsersList}
-            />
-
-            {totalMembers && (
-              <View style={styles.summary}>
-                <Text style={styles.summaryText}>
-                  {readCount} / {totalMembers - 1} 已读
-                </Text>
+      {showModal && (
+        <Modal
+          visible={showModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>已读成员</Text>
+                <TouchableOpacity onPress={() => setShowModal(false)}>
+                  <Text style={styles.closeButton}>✕</Text>
+                </TouchableOpacity>
               </View>
-            )}
+
+              <FlatList
+                data={readUsers}
+                renderItem={renderReadUser}
+                keyExtractor={item => item.userId}
+                contentContainerStyle={styles.readUsersList}
+              />
+
+              {totalMembers && (
+                <View style={styles.summary}>
+                  <Text style={styles.summaryText}>
+                    {readCount} / {totalMembers - 1} 已读
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+      )}
     </>
   );
 };
@@ -289,9 +291,7 @@ export const GroupReadStatus: React.FC<GroupReadStatusProps> = ({
 
   return (
     <View style={[styles.groupContainer, style]}>
-      <Text style={styles.groupText}>
-        阅读率: {readRate.toFixed(1)}%
-      </Text>
+      <Text style={styles.groupText}>阅读率: {readRate.toFixed(1)}%</Text>
     </View>
   );
 };
@@ -305,11 +305,7 @@ export interface ReadReceiptBadgeProps {
   style?: ViewStyle;
 }
 
-export const ReadReceiptBadge: React.FC<ReadReceiptBadgeProps> = ({
-  count,
-  total,
-  style,
-}) => {
+export const ReadReceiptBadge: React.FC<ReadReceiptBadgeProps> = ({ count, total, style }) => {
   const allRead = count >= total;
 
   return (

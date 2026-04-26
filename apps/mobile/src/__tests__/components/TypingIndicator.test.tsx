@@ -3,8 +3,9 @@
  */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { TouchableOpacity, Text } from 'react-native';
 
-import { TypingIndicator, useTypingDetector } from '../../components/TypingIndicator';
+import { TypingStatusIndicator, useTypingDetector } from '../../components/TypingIndicator';
 import { socketClient } from '../../services/socketClient';
 
 // Mock socket client
@@ -16,7 +17,7 @@ jest.mock('../../services/socketClient', () => ({
   },
 }));
 
-describe('TypingIndicator', () => {
+describe('TypingStatusIndicator', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -27,21 +28,23 @@ describe('TypingIndicator', () => {
   });
 
   it('renders null when no one is typing', () => {
-    const { container } = render(<TypingIndicator roomId="room123" currentUserId="user123" />);
-    expect(container.children).toHaveLength(0);
+    const { toJSON } = render(<TypingStatusIndicator roomId="room123" currentUserId="user123" />);
+    expect(toJSON()).toBeNull();
   });
 
   it('shows typing indicator when other user is typing', () => {
     const mockOn = socketClient.on as jest.Mock;
-    let typingHandler: (() => void) | null = null;
+    let typingHandler: ((...args: unknown[]) => void) | null = null;
 
-    mockOn.mockImplementation((event, handler) => {
+    mockOn.mockImplementation((event: string, handler: (...args: unknown[]) => void) => {
       if (event === 'user:typing') {
         typingHandler = handler;
       }
     });
 
-    const { getByText } = render(<TypingIndicator roomId="room123" currentUserId="user123" />);
+    const { getByText } = render(
+      <TypingStatusIndicator roomId="room123" currentUserId="user123" />
+    );
 
     // Simulate another user typing
     if (typingHandler) {
@@ -58,15 +61,15 @@ describe('TypingIndicator', () => {
 
   it('does not show current user typing', () => {
     const mockOn = socketClient.on as jest.Mock;
-    let typingHandler: (() => void) | null = null;
+    let typingHandler: ((...args: unknown[]) => void) | null = null;
 
-    mockOn.mockImplementation((event, handler) => {
+    mockOn.mockImplementation((event: string, handler: (...args: unknown[]) => void) => {
       if (event === 'user:typing') {
         typingHandler = handler;
       }
     });
 
-    const { container } = render(<TypingIndicator roomId="room123" currentUserId="user123" />);
+    const { toJSON } = render(<TypingStatusIndicator roomId="room123" currentUserId="user123" />);
 
     // Simulate current user typing
     if (typingHandler) {
@@ -78,20 +81,22 @@ describe('TypingIndicator', () => {
       });
     }
 
-    expect(container.children).toHaveLength(0);
+    expect(toJSON()).toBeNull();
   });
 
   it('shows multiple users typing', () => {
     const mockOn = socketClient.on as jest.Mock;
-    let typingHandler: (() => void) | null = null;
+    let typingHandler: ((...args: unknown[]) => void) | null = null;
 
-    mockOn.mockImplementation((event, handler) => {
+    mockOn.mockImplementation((event: string, handler: (...args: unknown[]) => void) => {
       if (event === 'user:typing') {
         typingHandler = handler;
       }
     });
 
-    const { getByText } = render(<TypingIndicator roomId="room123" currentUserId="user123" />);
+    const { getByText } = render(
+      <TypingStatusIndicator roomId="room123" currentUserId="user123" />
+    );
 
     // Simulate two users typing
     if (typingHandler) {
@@ -114,16 +119,16 @@ describe('TypingIndicator', () => {
 
   it('removes typing indicator after timeout', () => {
     const mockOn = socketClient.on as jest.Mock;
-    let typingHandler: (() => void) | null = null;
+    let typingHandler: ((...args: unknown[]) => void) | null = null;
 
-    mockOn.mockImplementation((event, handler) => {
+    mockOn.mockImplementation((event: string, handler: (...args: unknown[]) => void) => {
       if (event === 'user:typing') {
         typingHandler = handler;
       }
     });
 
     const { getByText, queryByText } = render(
-      <TypingIndicator roomId="room123" currentUserId="user123" />
+      <TypingStatusIndicator roomId="room123" currentUserId="user123" />
     );
 
     // Simulate user typing
@@ -161,7 +166,7 @@ describe('useTypingDetector', () => {
         roomId: 'room123',
         currentUserId: 'user123',
       });
-      return <>{isTyping ? 'Typing' : 'Not Typing'}</>;
+      return <Text testID="status">{isTyping ? 'Typing' : 'Not Typing'}</Text>;
     };
 
     const { getByText } = render(<TestComponent />);
@@ -176,14 +181,16 @@ describe('useTypingDetector', () => {
       });
       return (
         <>
-          <>{isTyping ? 'Typing' : 'Not Typing'}</>
-          <button onClick={() => handleTextChange('Hello')}>Type</button>
+          <Text testID="status">{isTyping ? 'Typing' : 'Not Typing'}</Text>
+          <TouchableOpacity testID="type-btn" onPress={() => handleTextChange('Hello')}>
+            <Text>Type</Text>
+          </TouchableOpacity>
         </>
       );
     };
 
     const { getByText } = render(<TestComponent />);
-    fireEvent.click(getByText('Type'));
+    fireEvent.press(getByText('Type'));
     expect(socketClient.setTyping).toHaveBeenCalledWith('room123', true);
   });
 
@@ -196,11 +203,15 @@ describe('useTypingDetector', () => {
         currentUserId: 'user123',
         onTypingStart,
       });
-      return <button onClick={() => handleTextChange('Hello')}>Type</button>;
+      return (
+        <TouchableOpacity testID="type-btn" onPress={() => handleTextChange('Hello')}>
+          <Text>Type</Text>
+        </TouchableOpacity>
+      );
     };
 
     const { getByText } = render(<TestComponent />);
-    fireEvent.click(getByText('Type'));
+    fireEvent.press(getByText('Type'));
     expect(onTypingStart).toHaveBeenCalled();
   });
 
@@ -215,15 +226,19 @@ describe('useTypingDetector', () => {
       });
       return (
         <>
-          <button onClick={() => handleTextChange('Hello')}>Type</button>
-          <button onClick={stopTyping}>Stop</button>
+          <TouchableOpacity testID="type-btn" onPress={() => handleTextChange('Hello')}>
+            <Text>Type</Text>
+          </TouchableOpacity>
+          <TouchableOpacity testID="stop-btn" onPress={stopTyping}>
+            <Text>Stop</Text>
+          </TouchableOpacity>
         </>
       );
     };
 
     const { getByText } = render(<TestComponent />);
-    fireEvent.click(getByText('Type'));
-    fireEvent.click(getByText('Stop'));
+    fireEvent.press(getByText('Type'));
+    fireEvent.press(getByText('Stop'));
 
     expect(socketClient.setTyping).toHaveBeenCalledWith('room123', false);
     expect(onTypingStop).toHaveBeenCalled();

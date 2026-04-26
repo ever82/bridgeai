@@ -36,9 +36,12 @@ const TYPING_DEBOUNCE_MS = 500;
  */
 const AnimatedDot: React.FC<{ delay: number; color: string }> = ({ delay, color }) => {
   const animation = useRef(new Animated.Value(0)).current;
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     const animate = () => {
+      if (!mountedRef.current) return;
       Animated.sequence([
         Animated.timing(animation, {
           toValue: 1,
@@ -51,27 +54,27 @@ const AnimatedDot: React.FC<{ delay: number; color: string }> = ({ delay, color 
           duration: 400,
           useNativeDriver: true,
         }),
-      ]).start(() => animate());
+      ]).start(result => {
+        if (mountedRef.current && result.finished) {
+          requestAnimationFrame(() => animate());
+        }
+      });
     };
 
     animate();
+    return () => {
+      mountedRef.current = false;
+      animation.stopAnimation();
+    };
   }, [animation, delay]);
 
-  return (
-    <Animated.View
-      style={[
-        styles.dot,
-        { backgroundColor: color },
-        { opacity: animation },
-      ]}
-    />
-  );
+  return <Animated.View style={[styles.dot, { backgroundColor: color }, { opacity: animation }]} />;
 };
 
 /**
- * Typing Indicator - Shows when others are typing
+ * Typing Status Indicator - Shows when others are typing (socket-integrated)
  */
-export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
+export const TypingStatusIndicator: React.FC<TypingIndicatorProps> = ({
   roomId,
   currentUserId,
   style,
@@ -162,9 +165,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
         <AnimatedDot delay={200} color={dotColor} />
         <AnimatedDot delay={400} color={dotColor} />
       </View>
-      <Text style={[styles.text, { color: textColor }]}>
-        {getTypingText()}
-      </Text>
+      <Text style={[styles.text, { color: textColor }]}>{getTypingText()}</Text>
     </View>
   );
 };
@@ -208,41 +209,44 @@ export const useTypingDetector = ({
     }
   }, [roomId, isTyping, onTypingStop]);
 
-  const handleTextChange = useCallback((text: string) => {
-    const now = Date.now();
+  const handleTextChange = useCallback(
+    (text: string) => {
+      const now = Date.now();
 
-    // Debounce typing events
-    if (now - lastTypingTimeRef.current < TYPING_DEBOUNCE_MS) {
-      return;
-    }
-
-    lastTypingTimeRef.current = now;
-
-    if (!isTyping && text.length > 0) {
-      setIsTyping(true);
-      socketClient.setTyping(roomId, true);
-      onTypingStart?.();
-    }
-
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Set new timeout to stop typing
-    typingTimeoutRef.current = setTimeout(() => {
-      if (text.length === 0) {
-        stopTyping();
-      } else {
-        // Send typing indicator again to keep it active
-        socketClient.setTyping(roomId, true);
-        // Reset timeout
-        typingTimeoutRef.current = setTimeout(() => {
-          stopTyping();
-        }, TYPING_TIMEOUT_MS);
+      // Debounce typing events
+      if (now - lastTypingTimeRef.current < TYPING_DEBOUNCE_MS) {
+        return;
       }
-    }, TYPING_TIMEOUT_MS);
-  }, [roomId, isTyping, onTypingStart, stopTyping]);
+
+      lastTypingTimeRef.current = now;
+
+      if (!isTyping && text.length > 0) {
+        setIsTyping(true);
+        socketClient.setTyping(roomId, true);
+        onTypingStart?.();
+      }
+
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Set new timeout to stop typing
+      typingTimeoutRef.current = setTimeout(() => {
+        if (text.length === 0) {
+          stopTyping();
+        } else {
+          // Send typing indicator again to keep it active
+          socketClient.setTyping(roomId, true);
+          // Reset timeout
+          typingTimeoutRef.current = setTimeout(() => {
+            stopTyping();
+          }, TYPING_TIMEOUT_MS);
+        }
+      }, TYPING_TIMEOUT_MS);
+    },
+    [roomId, isTyping, onTypingStart, stopTyping]
+  );
 
   // Clean up on unmount
   useEffect(() => {
@@ -338,4 +342,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TypingIndicator;
+export default TypingStatusIndicator;
+
+// Re-export pure UI TypingIndicator for convenience
+export { TypingIndicator } from './TypingIndicator';
