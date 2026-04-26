@@ -39,7 +39,6 @@ export function registerUserHandlers(socket: AuthenticatedSocket, _nsp: Namespac
     // Only allow users to subscribe to their own user room
     if (!socket.user?.id || data.userId !== socket.user.id) {
       socket.emit('user:subscribed', {
-        userId: data.userId,
         error: 'Cannot subscribe to another user',
       });
       return;
@@ -51,6 +50,13 @@ export function registerUserHandlers(socket: AuthenticatedSocket, _nsp: Namespac
 
   // Unsubscribe from user events
   socket.on('user:unsubscribe', (data: { userId: string }) => {
+    // Only allow users to unsubscribe from their own user room
+    if (!socket.user?.id || data.userId !== socket.user.id) {
+      socket.emit('user:unsubscribed', {
+        error: 'Cannot unsubscribe another user',
+      });
+      return;
+    }
     const room = `user:${data.userId}`;
     socket.leave(room);
     socket.emit('user:unsubscribed', { userId: data.userId });

@@ -32,6 +32,12 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
 
       const { roomId } = data;
 
+      // Validate roomId is non-empty
+      if (!roomId || roomId.trim().length === 0) {
+        callback?.({ success: false, error: 'Room ID is required' });
+        return;
+      }
+
       // Join the room
       socket.join(roomId);
 
@@ -155,6 +161,13 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
       }
 
       const { roomId, messageIds } = data;
+
+      // Limit batch size to prevent database overload
+      const MAX_BATCH_SIZE = 500;
+      if (messageIds.length > MAX_BATCH_SIZE) {
+        callback?.({ success: false, error: `Too many message IDs (max ${MAX_BATCH_SIZE})` });
+        return;
+      }
 
       // Create read receipts
       const receipts = await Promise.all(
@@ -357,6 +370,18 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
     try {
       if (!socket.user?.id) {
         callback?.({ success: false, error: 'Authentication required' });
+        return;
+      }
+
+      // Validate targetUserId is non-empty
+      if (!data.targetUserId || data.targetUserId.trim().length === 0) {
+        callback?.({ success: false, error: 'Target user ID is required' });
+        return;
+      }
+
+      // Prevent starting private chat with self
+      if (data.targetUserId === socket.user.id) {
+        callback?.({ success: false, error: 'Cannot start private chat with yourself' });
         return;
       }
 
