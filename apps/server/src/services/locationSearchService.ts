@@ -21,26 +21,50 @@ export async function searchAgentsByLocation(
   try {
     const where: any = {};
 
-    // Build location filter
+    // Build combined location filter using JSON path queries on l1Data
+    const locationFilters: any[] = [];
+
     if (filter.province) {
-      where.location = {
-        ...(where.location || {}),
-        province: filter.province,
-      };
+      locationFilters.push({
+        profiles: {
+          some: {
+            l1Data: {
+              path: ['location', 'province'],
+              equals: filter.province,
+            },
+          },
+        },
+      });
     }
 
     if (filter.city) {
-      where.location = {
-        ...(where.location || {}),
-        city: filter.city,
-      };
+      locationFilters.push({
+        profiles: {
+          some: {
+            l1Data: {
+              path: ['location', 'city'],
+              equals: filter.city,
+            },
+          },
+        },
+      });
     }
 
     if (filter.district) {
-      where.location = {
-        ...(where.location || {}),
-        district: filter.district,
-      };
+      locationFilters.push({
+        profiles: {
+          some: {
+            l1Data: {
+              path: ['location', 'district'],
+              equals: filter.district,
+            },
+          },
+        },
+      });
+    }
+
+    if (locationFilters.length > 0) {
+      where.AND = locationFilters;
     }
 
     // Handle geo-fence filter

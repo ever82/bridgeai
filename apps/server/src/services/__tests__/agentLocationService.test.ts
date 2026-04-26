@@ -3,16 +3,11 @@
  * Agent位置服务测试
  */
 
-import {
-  calculateDistance,
-  isWithinBoundingBox,
-  createBoundingBox,
-  checkGeoFence,
-  findContainingGeoFences,
-} from '@bridgeai/shared';
+import { calculateDistance, isWithinBoundingBox, createBoundingBox } from '@bridgeai/shared';
 import type { Location, GeoCoordinates, LocationFilter } from '@bridgeai/shared';
 
 import { prisma } from '../../db/client';
+import { checkPointInFence, findContainingFences } from '../geoFenceService';
 import {
   updateAgentLocation,
   getAgentLocation,
@@ -36,9 +31,6 @@ jest.mock('../../db/client', () => ({
     agentProfile: {
       update: jest.fn(),
     },
-    geoFence: {
-      findMany: jest.fn(),
-    },
   },
 }));
 
@@ -51,15 +43,18 @@ jest.mock('../../utils/logger', () => ({
   },
 }));
 
-// Mock shared geo-fencing service
+// Mock shared utilities
 jest.mock('@bridgeai/shared', () => ({
   ...jest.requireActual('@bridgeai/shared'),
   calculateDistance: jest.fn(),
   isWithinBoundingBox: jest.fn(),
   createBoundingBox: jest.fn(),
-  checkGeoFence: jest.fn(),
-  findContainingGeoFences: jest.fn(),
-  getGeoFencesWithinDistance: jest.fn(),
+}));
+
+// Mock geoFenceService (Prisma-backed, used by agentLocationService)
+jest.mock('../geoFenceService', () => ({
+  checkPointInFence: jest.fn(),
+  findContainingFences: jest.fn(),
 }));
 
 describe('AgentLocationService', () => {
@@ -332,12 +327,12 @@ describe('AgentLocationService', () => {
       ]);
       (prisma.agent.count as jest.Mock).mockResolvedValue(1);
 
-      (checkGeoFence as jest.Mock).mockReturnValueOnce({ inside: true });
+      (checkPointInFence as jest.Mock).mockResolvedValueOnce({ inside: true });
 
       const filter: LocationFilter = { withinFence: 'fence-123' };
       await searchAgentsByLocation(filter);
 
-      expect(checkGeoFence).toHaveBeenCalled();
+      expect(checkPointInFence).toHaveBeenCalled();
     });
 
     it('should handle pagination', async () => {
@@ -374,10 +369,7 @@ describe('AgentLocationService', () => {
 
       (calculateDistance as jest.Mock).mockReturnValue({ distanceKm: 0 });
 
-      const result = await findAgentsNearLocation(
-        { latitude: 39.9, longitude: 116.4 },
-        10
-      );
+      const result = await findAgentsNearLocation({ latitude: 39.9, longitude: 116.4 }, 10);
 
       expect(result.length).toBe(1);
       expect(result[0].id).toBe('agent-1');
@@ -388,11 +380,9 @@ describe('AgentLocationService', () => {
       (prisma.agent.findMany as jest.Mock).mockResolvedValue([]);
       (createBoundingBox as jest.Mock).mockReturnValue({});
 
-      await findAgentsNearLocation(
-        { latitude: 39.9, longitude: 116.4 },
-        10,
-        { agentType: 'DEMAND' }
-      );
+      await findAgentsNearLocation({ latitude: 39.9, longitude: 116.4 }, 10, {
+        agentType: 'DEMAND',
+      });
 
       expect(prisma.agent.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -405,11 +395,9 @@ describe('AgentLocationService', () => {
       (prisma.agent.findMany as jest.Mock).mockResolvedValue([]);
       (createBoundingBox as jest.Mock).mockReturnValue({});
 
-      await findAgentsNearLocation(
-        { latitude: 39.9, longitude: 116.4 },
-        10,
-        { excludeAgentId: 'agent-1' }
-      );
+      await findAgentsNearLocation({ latitude: 39.9, longitude: 116.4 }, 10, {
+        excludeAgentId: 'agent-1',
+      });
 
       expect(prisma.agent.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -445,10 +433,7 @@ describe('AgentLocationService', () => {
         .mockReturnValueOnce({ distanceKm: 20 }) // far-agent
         .mockReturnValueOnce({ distanceKm: 2 }); // near-agent
 
-      const result = await findAgentsNearLocation(
-        { latitude: 39.9, longitude: 116.4 },
-        30
-      );
+      const result = await findAgentsNearLocation({ latitude: 39.9, longitude: 116.4 }, 30);
 
       expect(result[0].id).toBe('near-agent');
     });
@@ -466,10 +451,7 @@ describe('AgentLocationService', () => {
       ]);
       (createBoundingBox as jest.Mock).mockReturnValue({});
 
-      const result = await findAgentsNearLocation(
-        { latitude: 39.9, longitude: 116.4 },
-        10
-      );
+      const result = await findAgentsNearLocation({ latitude: 39.9, longitude: 116.4 }, 10);
 
       expect(result.length).toBe(0);
     });
@@ -488,7 +470,7 @@ describe('AgentLocationService', () => {
         },
       ]);
 
-      (checkGeoFence as jest.Mock).mockReturnValueOnce({ inside: true });
+      (checkPointInFence as jest.Mock).mockResolvedValueOnce({ inside: true });
 
       const result = await getAgentsInGeoFence('fence-123');
 
@@ -516,9 +498,9 @@ describe('AgentLocationService', () => {
         },
       ]);
 
-      (checkGeoFence as jest.Mock)
-        .mockReturnValueOnce({ inside: true })
-        .mockReturnValueOnce({ inside: false });
+      (checkPointInFence as jest.Mock)
+        .mockResolvedValueOnce({ inside: true })
+        .mockResolvedValueOnce({ inside: false });
 
       const result = await getAgentsInGeoFence('fence-123');
 
@@ -535,7 +517,7 @@ describe('AgentLocationService', () => {
         longitude: 116.4,
       });
 
-      (findContainingGeoFences as jest.Mock).mockReturnValue([
+      (findContainingFences as jest.Mock).mockResolvedValue([
         {
           id: 'fence-1',
           name: 'Beijing Area',
@@ -561,7 +543,7 @@ describe('AgentLocationService', () => {
       const result = await getAgentGeoFences('agent-1');
 
       expect(result).toEqual([]);
-      expect(findContainingGeoFences).not.toHaveBeenCalled();
+      expect(findContainingFences).not.toHaveBeenCalled();
     });
   });
 

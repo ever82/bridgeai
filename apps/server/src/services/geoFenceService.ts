@@ -7,13 +7,12 @@ import { isPointInPolygon, calculateDistance } from '@bridgeai/shared';
 import type { GeoCoordinates, GeoJSONPolygon, GeoFenceCheckResult } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
-import { logger } from '../utils/logger';
 
 export interface CreateGeoFenceInput {
   name: string;
   description?: string;
   type?: 'POLYGON' | 'CIRCLE' | 'RECTANGLE';
-  coordinates: number[][][];  // GeoJSON Polygon coordinates
+  coordinates: number[][][]; // GeoJSON Polygon coordinates
   centerLat?: number;
   centerLng?: number;
   radiusMeters?: number;
@@ -117,7 +116,7 @@ export async function checkPointInFence(
   if (fence.type === 'CIRCLE' && fence.centerLat && fence.centerLng && fence.radiusMeters) {
     const center: GeoCoordinates = { latitude: fence.centerLat, longitude: fence.centerLng };
     const { distanceMeters } = calculateDistance(point, center);
-    const distM = distanceMeters || (calculateDistance(point, center).distanceKm * 1000);
+    const distM = distanceMeters || calculateDistance(point, center).distanceKm * 1000;
     const inside = distM <= fence.radiusMeters;
     return {
       inside,
@@ -131,7 +130,10 @@ export async function checkPointInFence(
     return { inside: false };
   }
 
-  const polygon = coords[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng })) as unknown as GeoJSONPolygon;
+  const polygon = coords[0].map(([lng, lat]) => ({
+    latitude: lat,
+    longitude: lng,
+  })) as unknown as GeoJSONPolygon;
   const inside = isPointInPolygon(point, polygon);
 
   return { inside };
@@ -146,7 +148,7 @@ export async function checkMultipleFences(
 ): Promise<Record<string, GeoFenceCheckResult>> {
   const results: Record<string, GeoFenceCheckResult> = {};
   await Promise.all(
-    fenceIds.map(async (id) => {
+    fenceIds.map(async id => {
       results[id] = await checkPointInFence(point, id);
     })
   );
@@ -170,7 +172,10 @@ export async function findContainingFences(point: GeoCoordinates) {
     } else {
       const coords = fence.coordinates as number[][][];
       if (coords && coords.length > 0 && coords[0].length >= 3) {
-        const polygon = coords[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng })) as unknown as GeoJSONPolygon;
+        const polygon = coords[0].map(([lng, lat]) => ({
+          latitude: lat,
+          longitude: lng,
+        })) as unknown as GeoJSONPolygon;
         if (isPointInPolygon(point, polygon)) {
           containing.push(fence);
         }
@@ -195,10 +200,10 @@ export async function createCircularFence(
 
   for (let i = 0; i <= segments; i++) {
     const angle = (2 * Math.PI * i) / segments;
-    const dLng = (radiusMeters / 111320) * Math.cos(angle);
-    const dLat = (radiusMeters / 110540) * Math.cos(angle);
-    const lng = center.longitude + dLng * Math.cos(angle);
-    const lat = center.latitude + dLat * Math.sin(angle);
+    const lat = center.latitude + (radiusMeters / 110540) * Math.cos(angle);
+    const lng =
+      center.longitude +
+      (radiusMeters / (111320 * Math.cos((center.latitude * Math.PI) / 180))) * Math.sin(angle);
     coordinates.push([lng, lat]);
   }
 
