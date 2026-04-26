@@ -13,14 +13,12 @@ import {
   getAgentLocation,
   searchAgentsByLocation,
   findAgentsNearLocation,
-  batchUpdateAgentLocations,
 } from '../services/agentLocationService';
 import {
   getAgentLocationPrivacy,
   setAgentLocationPrivacy,
-  applyPrivacyFilter,
 } from '../services/agentLocationPrivacyService';
-import { logger } from '../utils/logger';
+import { prisma } from '../db/client';
 
 const router: Router = Router();
 
@@ -55,46 +53,42 @@ const privacySchema = z.object({
  * PUT /api/v1/location/agents/update
  * Update current agent's location
  */
-router.put(
-  '/agents/update',
-  authenticate,
-  async (req, res, next) => {
-    try {
-      const parsed = updateLocationSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return res.status(400).json({
-          success: false,
-          error: { code: 'VALIDATION_ERROR', message: parsed.error.message },
-        });
-      }
-
-      const agentId = (req as any).user?.agentId;
-      if (!agentId) {
-        return res.status(403).json({
-          success: false,
-          error: { code: 'NO_AGENT', message: 'User does not have an agent' },
-        });
-      }
-
-      const success = await updateAgentLocation(
-        agentId,
-        parsed.data.location as Location,
-        parsed.data.coordinates as GeoCoordinates | undefined
-      );
-
-      if (!success) {
-        return res.status(404).json({
-          success: false,
-          error: { code: 'UPDATE_FAILED', message: 'Failed to update agent location' },
-        });
-      }
-
-      res.json({ success: true });
-    } catch (error) {
-      next(error);
+router.put('/agents/update', authenticate, async (req, res, next) => {
+  try {
+    const parsed = updateLocationSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: parsed.error.message },
+      });
     }
+
+    const agentId = (req as any).user?.agentId;
+    if (!agentId) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'NO_AGENT', message: 'User does not have an agent' },
+      });
+    }
+
+    const success = await updateAgentLocation(
+      agentId,
+      parsed.data.location as Location,
+      parsed.data.coordinates as GeoCoordinates | undefined
+    );
+
+    if (!success) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'UPDATE_FAILED', message: 'Failed to update agent location' },
+      });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /**
  * GET /api/v1/location/agents/:agentId
@@ -149,8 +143,17 @@ router.put('/agents/:agentId/privacy', authenticate, async (req, res, next) => {
     const { agentId } = req.params;
     const requestingUserId = (req as any).user?.id;
 
-    // Check ownership - verify the agent belongs to the requesting user
-    // (simplified check - in production, verify via DB)
+    // Verify ownership - the agent must belong to the requesting user
+    const agent = await prisma.agent.findFirst({
+      where: { id: agentId, userId: requestingUserId },
+    });
+    if (!agent) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'You do not own this agent' },
+      });
+    }
+
     const parsed = privacySchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({
