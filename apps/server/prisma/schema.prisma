@@ -534,6 +534,7 @@ model AgentProfile {
 
   // L3 - 自然语言描述（完整描述）
   l3Description String? @map("l3_description")
+  l3MediaUrls   Json?    @map("l3_media_urls")
 
   // 场景专属配置
   sceneConfig   Json?    @map("scene_config")
@@ -1385,6 +1386,9 @@ model RoomParticipant {
   joinedAt    DateTime       @default(now()) @map("joined_at")
   addedBy     String?        @map("added_by")
   lastActiveAt DateTime?     @map("last_active_at")
+  unreadCount Int            @default(0) @map("unread_count")
+  lastReadAt  DateTime?      @map("last_read_at")
+  leftAt      DateTime?      @map("left_at")
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
 

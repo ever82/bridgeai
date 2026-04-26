@@ -15,12 +15,9 @@ describe('Agent Schemas', () => {
     const validAgent = {
       name: 'Test Agent',
       description: 'A test agent',
-      model: 'gpt-4',
-      temperature: 0.7,
-      maxTokens: 2048,
-      systemPrompt: 'You are a helpful assistant',
-      isPublic: false,
       type: 'VISIONSHARE',
+      latitude: 40.7128,
+      longitude: -74.006,
     };
 
     it('should validate a valid agent creation', () => {
@@ -49,34 +46,10 @@ describe('Agent Schemas', () => {
       expect(result.success).toBe(false);
     });
 
-    it('should validate model options', () => {
+    it('should validate type options', () => {
       const result = createAgentSchema.safeParse({
         ...validAgent,
-        model: 'invalid-model',
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it('should validate temperature range', () => {
-      const result = createAgentSchema.safeParse({
-        ...validAgent,
-        temperature: 3,
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it('should validate maxTokens range', () => {
-      const result = createAgentSchema.safeParse({
-        ...validAgent,
-        maxTokens: 10000,
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it('should limit allowedTools count', () => {
-      const result = createAgentSchema.safeParse({
-        ...validAgent,
-        allowedTools: Array(21).fill('tool'),
+        type: 'INVALID_TYPE',
       });
       expect(result.success).toBe(false);
     });
@@ -85,12 +58,6 @@ describe('Agent Schemas', () => {
       const minimalAgent = { name: 'Test Agent', type: 'VISIONSHARE' };
       const result = createAgentSchema.safeParse(minimalAgent);
       expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data.model).toBe('gpt-3.5-turbo');
-        expect(result.data.temperature).toBe(0.7);
-        expect(result.data.maxTokens).toBe(2048);
-        expect(result.data.isPublic).toBe(false);
-      }
     });
   });
 

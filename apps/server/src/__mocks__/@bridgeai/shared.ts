@@ -970,6 +970,12 @@ export interface HandoffAuditLog {
 }
 
 // L1 Profile Types
+export enum VisibilityLevel {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+  MATCHED = 'MATCHED',
+}
+
 export enum AgeRange {
   UNDER_18 = 'UNDER_18',
   AGE_18_25 = 'AGE_18_25',
@@ -1072,6 +1078,7 @@ export interface L2Profile {
 
 export interface L3Profile {
   description: string;
+  mediaUrls?: string[];
 }
 
 export interface AgentProfileData {
@@ -1117,4 +1124,5 @@ export interface UpdateL2ProfileRequest {
 
 export interface UpdateL3ProfileRequest {
   description: string;
+  mediaUrls?: string[];
 }

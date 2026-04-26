@@ -21,6 +21,7 @@ export interface AgentProfile {
   l1Data: L1Profile | null;
   l2Data: L2Profile | null;
   l3Description: string | null;
+  l3MediaUrls: string[] | null;
   sceneConfig: Record<string, any> | null;
   isActive: boolean;
   createdAt: Date;
@@ -62,6 +63,7 @@ export async function getOrCreateProfile(agentId: string, sceneId?: string): Pro
         l1Data: {},
         l2Data: {},
         l3Description: null,
+        l3MediaUrls: null,
         sceneConfig: sceneId ? {} : null,
         isActive: true,
       },
@@ -205,6 +207,16 @@ export async function updateL2Profile(
     throw new AppError('Unauthorized to update this agent', 'UNAUTHORIZED', 403);
   }
 
+  // Validate data
+  const validation = validateL2Data(data);
+  if (!validation.valid) {
+    throw new AppError(
+      `Validation failed: ${validation.errors.map(e => e.message).join(', ')}`,
+      'VALIDATION_ERROR',
+      400
+    );
+  }
+
   // Get or create profile
   const profile = await getOrCreateProfile(agentId);
 
@@ -221,12 +233,25 @@ export async function updateL2Profile(
     }
   });
 
-  // Update profile
-  const updatedProfile = await prisma.agentProfile.update({
-    where: { id: profile.id },
-    data: {
-      l2Data: updatedL2Data as any,
-    },
+  // Update profile and record change history atomically
+  const updatedProfile = await prisma.$transaction(async tx => {
+    const updated = await tx.agentProfile.update({
+      where: { id: profile.id },
+      data: {
+        l2Data: updatedL2Data as any,
+      },
+    });
+    await tx.profileHistory.create({
+      data: {
+        profileId: profile.id,
+        layer: 'L2',
+        action: 'update',
+        oldValue: profile.l2Data as any,
+        newValue: updatedL2Data as any,
+        changedBy: userId,
+      },
+    });
+    return updated;
   });
 
   return (updatedProfile.l2Data as L2Profile) || {};
@@ -286,15 +311,129 @@ export async function updateL3Profile(
   // Get or create profile
   const profile = await getOrCreateProfile(agentId);
 
-  // Update profile
-  const updatedProfile = await prisma.agentProfile.update({
-    where: { id: profile.id },
-    data: {
-      l3Description: data.description,
-    },
+  // Update profile and record change history atomically
+  const updatedProfile = await prisma.$transaction(async tx => {
+    const updated = await tx.agentProfile.update({
+      where: { id: profile.id },
+      data: {
+        l3Description: data.description,
+        l3MediaUrls: data.mediaUrls ?? null,
+      },
+    });
+    await tx.profileHistory.create({
+      data: {
+        profileId: profile.id,
+        layer: 'L3',
+        action: 'update',
+        oldValue: { description: profile.l3Description, mediaUrls: profile.l3MediaUrls },
+        newValue: { description: data.description, mediaUrls: data.mediaUrls ?? null },
+        changedBy: userId,
+      },
+    });
+    return updated;
   });
 
   return updatedProfile.l3Description || '';
+}
+
+/**
+ * Validate L2 data
+ */
+function validateL2Data(data: UpdateL2ProfileRequest): {
+  valid: boolean;
+  errors: Array<{ field: string; message: string }>;
+} {
+  const errors: Array<{ field: string; message: string }> = [];
+
+  // Validate description length
+  if (data.description !== undefined) {
+    if (data.description.length > 2000) {
+      errors.push({
+        field: 'description',
+        message: 'Description must be less than 2000 characters',
+      });
+    }
+  }
+
+  // Validate requirements array
+  if (data.requirements !== undefined) {
+    if (!Array.isArray(data.requirements)) {
+      errors.push({
+        field: 'requirements',
+        message: 'Requirements must be an array',
+      });
+    } else {
+      for (let i = 0; i < data.requirements.length; i++) {
+        if (typeof data.requirements[i] !== 'string' || data.requirements[i].length > 200) {
+          errors.push({
+            field: `requirements[${i}]`,
+            message: 'Each requirement must be a string under 200 characters',
+          });
+        }
+      }
+      if (data.requirements.length > 20) {
+        errors.push({
+          field: 'requirements',
+          message: 'Requirements must have at most 20 items',
+        });
+      }
+    }
+  }
+
+  // Validate capabilities array
+  if (data.capabilities !== undefined) {
+    if (!Array.isArray(data.capabilities)) {
+      errors.push({
+        field: 'capabilities',
+        message: 'Capabilities must be an array',
+      });
+    } else {
+      for (let i = 0; i < data.capabilities.length; i++) {
+        if (typeof data.capabilities[i] !== 'string' || data.capabilities[i].length > 200) {
+          errors.push({
+            field: `capabilities[${i}]`,
+            message: 'Each capability must be a string under 200 characters',
+          });
+        }
+      }
+      if (data.capabilities.length > 20) {
+        errors.push({
+          field: 'capabilities',
+          message: 'Capabilities must have at most 20 items',
+        });
+      }
+    }
+  }
+
+  // Validate preferences array
+  if (data.preferences !== undefined) {
+    if (!Array.isArray(data.preferences)) {
+      errors.push({
+        field: 'preferences',
+        message: 'Preferences must be an array',
+      });
+    } else {
+      for (let i = 0; i < data.preferences.length; i++) {
+        if (typeof data.preferences[i] !== 'string' || data.preferences[i].length > 200) {
+          errors.push({
+            field: `preferences[${i}]`,
+            message: 'Each preference must be a string under 200 characters',
+          });
+        }
+      }
+      if (data.preferences.length > 20) {
+        errors.push({
+          field: 'preferences',
+          message: 'Preferences must have at most 20 items',
+        });
+      }
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
 }
 
 /**
@@ -373,6 +512,7 @@ function mapPrismaProfileToProfile(prismaProfile: any): AgentProfile {
     l1Data: prismaProfile.l1Data as L1Profile | null,
     l2Data: prismaProfile.l2Data as L2Profile | null,
     l3Description: prismaProfile.l3Description,
+    l3MediaUrls: prismaProfile.l3MediaUrls as string[] | null,
     sceneConfig: prismaProfile.sceneConfig as Record<string, any> | null,
     isActive: prismaProfile.isActive,
     createdAt: prismaProfile.createdAt,

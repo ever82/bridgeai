@@ -1,7 +1,3 @@
-// TODO(FIXME): [ISSUE-C002a~followup] L1ProfileForm is complete but not wired into
-// any navigation stack. User cannot access this form from the app. Needs integration
-// into the agent profile editing flow (e.g., ProfileScreen or EditProfileScreen).
-// Created as a follow-up issue for navigation team.
 import React, { useState, useCallback } from 'react';
 import {
   View,

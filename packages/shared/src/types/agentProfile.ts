@@ -125,6 +125,7 @@ export interface L2Profile {
 
 export interface L3Profile {
   description: string;
+  mediaUrls?: string[];
 }
 
 // ============================================
@@ -183,4 +184,5 @@ export interface UpdateL2ProfileRequest {
 
 export interface UpdateL3ProfileRequest {
   description: string;
+  mediaUrls?: string[];
 }

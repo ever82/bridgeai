@@ -182,13 +182,16 @@ router.put(
     }
 
     const { id } = req.params;
-    const { description } = req.body;
+    const { description, mediaUrls } = req.body;
 
     if (!description || typeof description !== 'string') {
       throw new AppError('Description is required', 'DESCRIPTION_REQUIRED', 400);
     }
 
-    const l3Profile = await agentProfileService.updateL3Profile(id, req.user.id, { description });
+    const l3Profile = await agentProfileService.updateL3Profile(id, req.user.id, {
+      description,
+      mediaUrls,
+    });
 
     res.json(ApiResponse.success({ description: l3Profile }, 'L3 profile updated successfully'));
   })
