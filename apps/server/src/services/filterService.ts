@@ -5,15 +5,11 @@
  * 提供统一的 Agent 过滤接口，支持信用分范围筛选、信用等级过滤等功能
  */
 
-import { FilterDSL, FilterCondition, FilterOperator } from '@bridgeai/shared';
+import { FilterDSL, FilterCondition } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
-import {
-  getSceneThreshold,
-  checkSceneCreditThreshold,
-  isUserExempted,
-} from '../config/creditThresholds';
+import { getSceneThreshold, checkSceneCreditThreshold } from '../config/creditThresholds';
 
 import {
   CreditLevel,
@@ -61,9 +57,7 @@ export interface FilterResult<T> {
  * 构建完整的 Agent 过滤查询条件
  * Build complete agent filter query conditions
  */
-export function buildAgentFilterWhere(
-  options: AgentFilterOptions
-): any {
+export function buildAgentFilterWhere(options: AgentFilterOptions): any {
   const conditions: any[] = [];
 
   // 基础过滤条件
@@ -130,9 +124,7 @@ export function buildAgentFilterWhere(
  * 过滤 Agents（支持信用分过滤）
  * Filter agents with credit score support
  */
-export async function filterAgents(
-  options: AgentFilterOptions
-): Promise<FilterResult<any>> {
+export async function filterAgents(options: AgentFilterOptions): Promise<FilterResult<any>> {
   const page = options.page || 1;
   const limit = options.limit || 20;
   const skip = (page - 1) * limit;
@@ -248,12 +240,7 @@ export async function checkAgentCredit(
       };
     }
 
-    const result = checkSceneCreditThreshold(
-      sceneId,
-      currentScore,
-      agent.userId,
-      agentId
-    );
+    const result = checkSceneCreditThreshold(sceneId, currentScore, agent.userId, agentId);
 
     const gap = Math.max(0, result.requiredScore - (currentScore || 0));
 
@@ -275,9 +262,7 @@ export async function checkAgentCredit(
  * 从 FilterDSL 中提取信用分过滤条件
  * Extract credit filter conditions from FilterDSL
  */
-export function extractCreditFilterFromDSL(
-  dsl: FilterDSL
-): CreditFilterOptions | null {
+export function extractCreditFilterFromDSL(dsl: FilterDSL): CreditFilterOptions | null {
   const options: CreditFilterOptions = {};
   let hasCreditFilter = false;
 
@@ -338,10 +323,7 @@ export function addCreditFilterToDSL(
   const newDSL: any = {
     ...dsl,
     filter: {
-      AND: [
-        (dsl as any).filter || {},
-        convertPrismaConditionToDSL(creditCondition),
-      ],
+      AND: [(dsl as any).filter || {}, convertPrismaConditionToDSL(creditCondition)],
     },
   };
 
@@ -464,9 +446,10 @@ export async function getCreditFilterStatistics(): Promise<{
  * 验证信用分过滤参数
  * Validate credit filter parameters
  */
-export function validateCreditFilterParams(
-  options: CreditFilterOptions
-): { valid: boolean; errors: string[] } {
+export function validateCreditFilterParams(options: CreditFilterOptions): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   if (options.minCreditScore !== undefined) {
@@ -491,9 +474,7 @@ export function validateCreditFilterParams(
 
   if (options.creditLevel) {
     const validLevels: CreditLevel[] = ['excellent', 'good', 'average', 'poor'];
-    const levels = Array.isArray(options.creditLevel)
-      ? options.creditLevel
-      : [options.creditLevel];
+    const levels = Array.isArray(options.creditLevel) ? options.creditLevel : [options.creditLevel];
 
     for (const level of levels) {
       if (!validLevels.includes(level)) {

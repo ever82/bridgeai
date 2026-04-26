@@ -166,7 +166,7 @@ export function addExemptionRule(
 
   const newRule: ExemptionRule = {
     ...rule,
-    id: `exemption-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: `exemption-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
   };
 
   threshold.exemptions.push(newRule);
@@ -266,9 +266,8 @@ export function checkSceneCreditThreshold(
   }
 
   // Check credit score
-  const meetsThreshold = creditScore !== null &&
-    creditScore !== undefined &&
-    creditScore >= threshold.minCreditScore;
+  const meetsThreshold =
+    creditScore !== null && creditScore !== undefined && creditScore >= threshold.minCreditScore;
 
   return {
     meetsThreshold,

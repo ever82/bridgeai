@@ -1,12 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Slider,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { CreditLevel, CREDIT_LEVEL_THRESHOLDS } from '@bridgeai/shared';
 
 interface CreditFilterProps {
@@ -42,45 +36,57 @@ export const CreditFilter: React.FC<CreditFilterProps> = ({
   const [localLevels, setLocalLevels] = useState<CreditLevel[]>(selectedLevels);
   const [localIncludeNoCredit, setLocalIncludeNoCredit] = useState(includeNoCredit);
 
-  const handleMinScoreChange = useCallback((value: number) => {
-    const newValue = Math.min(value, localMaxScore - 50);
-    setLocalMinScore(newValue);
-    onMinScoreChange?.(newValue);
-  }, [localMaxScore, onMinScoreChange]);
+  const handleMinScoreChange = useCallback(
+    (value: number) => {
+      const newValue = Math.min(value, localMaxScore - 50);
+      setLocalMinScore(newValue);
+      onMinScoreChange?.(newValue);
+    },
+    [localMaxScore, onMinScoreChange]
+  );
 
-  const handleMaxScoreChange = useCallback((value: number) => {
-    const newValue = Math.max(value, localMinScore + 50);
-    setLocalMaxScore(newValue);
-    onMaxScoreChange?.(newValue);
-  }, [localMinScore, onMaxScoreChange]);
+  const handleMaxScoreChange = useCallback(
+    (value: number) => {
+      const newValue = Math.max(value, localMinScore + 50);
+      setLocalMaxScore(newValue);
+      onMaxScoreChange?.(newValue);
+    },
+    [localMinScore, onMaxScoreChange]
+  );
 
-  const handleLevelToggle = useCallback((level: CreditLevel) => {
-    const newLevels = localLevels.includes(level)
-      ? localLevels.filter(l => l !== level)
-      : [...localLevels, level];
-    setLocalLevels(newLevels);
-    onLevelChange?.(newLevels);
+  const handleLevelToggle = useCallback(
+    (level: CreditLevel) => {
+      const newLevels = localLevels.includes(level)
+        ? localLevels.filter(l => l !== level)
+        : [...localLevels, level];
+      setLocalLevels(newLevels);
+      onLevelChange?.(newLevels);
 
-    // Auto-adjust score range based on selected levels
-    if (newLevels.length > 0) {
-      const ranges = newLevels.map(l => CREDIT_LEVEL_THRESHOLDS[l]);
-      const minScore = Math.min(...ranges.map(r => r.min));
-      const maxScore = Math.max(...ranges.map(r => r.max));
-      setLocalMinScore(minScore);
-      setLocalMaxScore(maxScore);
-      onMinScoreChange?.(minScore);
-      onMaxScoreChange?.(maxScore);
-    }
-  }, [localLevels, onLevelChange, onMinScoreChange, onMaxScoreChange]);
+      // Auto-adjust score range based on selected levels
+      if (newLevels.length > 0) {
+        const ranges = newLevels.map(l => CREDIT_LEVEL_THRESHOLDS[l]);
+        const minScore = Math.min(...ranges.map(r => r.min));
+        const maxScore = Math.max(...ranges.map(r => r.max));
+        setLocalMinScore(minScore);
+        setLocalMaxScore(maxScore);
+        onMinScoreChange?.(minScore);
+        onMaxScoreChange?.(maxScore);
+      }
+    },
+    [localLevels, onLevelChange, onMinScoreChange, onMaxScoreChange]
+  );
 
-  const handleQuickSelect = useCallback((min: number, max: number, levels: CreditLevel[]) => {
-    setLocalMinScore(min);
-    setLocalMaxScore(max);
-    setLocalLevels(levels);
-    onMinScoreChange?.(min);
-    onMaxScoreChange?.(max);
-    onLevelChange?.(levels);
-  }, [onMinScoreChange, onMaxScoreChange, onLevelChange]);
+  const handleQuickSelect = useCallback(
+    (min: number, max: number, levels: CreditLevel[]) => {
+      setLocalMinScore(min);
+      setLocalMaxScore(max);
+      setLocalLevels(levels);
+      onMinScoreChange?.(min);
+      onMaxScoreChange?.(max);
+      onLevelChange?.(levels);
+    },
+    [onMinScoreChange, onMaxScoreChange, onLevelChange]
+  );
 
   const getCreditLevelFromScore = (score: number): CreditLevel | null => {
     for (const level of CREDIT_LEVELS) {
