@@ -36,6 +36,14 @@ export function registerUserHandlers(socket: AuthenticatedSocket, _nsp: Namespac
 
   // Subscribe to user events
   socket.on('user:subscribe', (data: { userId: string }) => {
+    // Only allow users to subscribe to their own user room
+    if (!socket.user?.id || data.userId !== socket.user.id) {
+      socket.emit('user:subscribed', {
+        userId: data.userId,
+        error: 'Cannot subscribe to another user',
+      });
+      return;
+    }
     const room = `user:${data.userId}`;
     socket.join(room);
     socket.emit('user:subscribed', { userId: data.userId });

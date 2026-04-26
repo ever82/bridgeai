@@ -7,6 +7,7 @@ import { Server as SocketServer } from 'socket.io';
 import { io as Client } from 'socket.io-client';
 
 import { initializeSocketServer, emitToUser, broadcast } from '../../src/socket';
+import { connectionManager } from '../../src/socket/connectionManager';
 import { jwtService } from '../../src/services/jwtService';
 
 // Mock services
@@ -83,6 +84,7 @@ describe('Socket Server', () => {
   });
 
   afterAll(async () => {
+    connectionManager.destroy();
     await io.close();
     httpServer.close();
   });

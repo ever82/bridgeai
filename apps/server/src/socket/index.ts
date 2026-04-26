@@ -93,6 +93,7 @@ function setupNamespaces(io: SocketServer): void {
 
   // User namespace for user-specific events
   const userNsp = io.of('/user');
+  userNsp.use(socketAuthMiddleware);
   userNsp.on('connection', socket => {
     handleConnection(socket, 'user');
     registerUserHandlers(socket, userNsp);
@@ -100,6 +101,7 @@ function setupNamespaces(io: SocketServer): void {
 
   // Handoff namespace for human-agent switching
   const handoffNsp = io.of('/handoff');
+  handoffNsp.use(socketAuthMiddleware);
   handoffNsp.on('connection', socket => {
     handleConnection(socket, 'handoff');
     registerHandoffHandlers(socket, handoffNsp);
@@ -107,6 +109,7 @@ function setupNamespaces(io: SocketServer): void {
 
   // System namespace for admin/monitoring
   const systemNsp = io.of('/system');
+  systemNsp.use(socketAuthMiddleware);
   systemNsp.use(requireAdminAuth);
   systemNsp.on('connection', socket => {
     handleConnection(socket, 'system');
@@ -115,6 +118,7 @@ function setupNamespaces(io: SocketServer): void {
 
   // Group namespace for group chat events
   const groupNsp = io.of('/group');
+  groupNsp.use(socketAuthMiddleware);
   groupNsp.on('connection', socket => {
     handleConnection(socket, 'group');
     registerGroupHandlers(socket, groupNsp);
@@ -122,6 +126,7 @@ function setupNamespaces(io: SocketServer): void {
 
   // Room namespace for room management
   const roomNsp = io.of('/room');
+  roomNsp.use(socketAuthMiddleware);
   roomNsp.on('connection', socket => {
     handleConnection(socket, 'room');
     registerRoomHandlers(socket, roomNsp);
@@ -129,6 +134,7 @@ function setupNamespaces(io: SocketServer): void {
 
   // Negotiation namespace for Agent negotiation (AD003)
   const negotiationNsp = io.of('/negotiation');
+  negotiationNsp.use(socketAuthMiddleware);
   negotiationNsp.on('connection', socket => {
     handleConnection(socket, 'negotiation');
     registerAgentNegotiationHandlers(socket, negotiationNsp);
@@ -136,6 +142,7 @@ function setupNamespaces(io: SocketServer): void {
 
   // Presence namespace for user presence tracking
   const presenceNsp = io.of('/presence');
+  presenceNsp.use(socketAuthMiddleware);
   presenceNsp.on('connection', socket => {
     handleConnection(socket, 'presence');
     registerPresenceHandlers(socket, presenceNsp);
@@ -216,11 +223,11 @@ export function getIO(): SocketServer {
 export function emitToUser(userId: string, event: string, data: any): void {
   if (!io) return;
 
-  // Emit to all sockets of the user across all namespaces
-  io.of('/').to(`user:${userId}`).emit(event, data);
-  io.of('/chat').to(`user:${userId}`).emit(event, data);
-  io.of('/user').to(`user:${userId}`).emit(event, data);
-  io.of('/handoff').to(`user:${userId}`).emit(event, data);
+  // Emit to all sockets of the user across all namespaces dynamically
+  const room = `user:${userId}`;
+  for (const nsp of io._nsps.values()) {
+    nsp.to(room).emit(event, data);
+  }
 }
 
 /**
