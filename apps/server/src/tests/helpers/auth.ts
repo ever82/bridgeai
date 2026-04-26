@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+
 import * as jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
@@ -52,6 +54,8 @@ export function generateAccessToken(user: TestUser): string {
       userId: user.id,
       email: user.email,
       role: user.role,
+      type: 'access',
+      jti: `test-${user.id}-${Date.now()}`,
     },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
@@ -132,11 +136,9 @@ export function generateWrongSecretToken(user: TestUser): string {
 /**
  * Create a test user in the database
  */
-export async function createTestUser(
-  overrides: Partial<TestUser> = {}
-): Promise<TestUser> {
+export async function createTestUser(overrides: Partial<TestUser> = {}): Promise<TestUser> {
   const defaultUser: TestUser = {
-    id: `test-user-${Date.now()}`,
+    id: randomUUID(),
     email: `test-${Date.now()}@example.com`,
     name: 'Test User',
     role: TestUserRole.USER,

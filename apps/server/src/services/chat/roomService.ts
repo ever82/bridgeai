@@ -324,24 +324,24 @@ export async function getUserRooms(
     prisma.chatRoom.count({ where }),
   ]);
 
-  // 获取每个房间的未读数
-  const roomsWithUnread = await Promise.all(
-    rooms.map(async room => {
-      const participant = await prisma.roomParticipant.findUnique({
-        where: {
-          roomId_userId: {
-            roomId: room.id,
-            userId,
-          },
-        },
-      });
+  // 获取每个房间的未读数 - 批量查询避免 N+1
+  const roomIds = rooms.map(r => r.id);
+  const participants = await prisma.roomParticipant.findMany({
+    where: {
+      roomId: { in: roomIds },
+      userId,
+    },
+    select: {
+      roomId: true,
+      unreadCount: true,
+    },
+  });
+  const unreadMap = new Map(participants.map(p => [p.roomId, p.unreadCount || 0]));
 
-      return {
-        ...room,
-        unreadCount: participant?.unreadCount || 0,
-      };
-    })
-  );
+  const roomsWithUnread = rooms.map(room => ({
+    ...room,
+    unreadCount: unreadMap.get(room.id) || 0,
+  }));
 
   return { rooms: roomsWithUnread as RoomWithParticipants[], total };
 }

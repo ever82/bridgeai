@@ -6,7 +6,7 @@ import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 
 import app from '../../../app';
-import { createTestUser, cleanupTestUsers } from '../../../tests/helpers';
+import { createTestUser, cleanupTestUsers, generateAccessToken } from '../../../tests/helpers';
 
 describe('Chat Routes Integration', () => {
   let authToken: string;
@@ -21,7 +21,7 @@ describe('Chat Routes Integration', () => {
       name: 'Chat Test User',
     });
     userId = testUser.id;
-    authToken = testUser.token;
+    authToken = generateAccessToken(testUser);
   });
 
   afterAll(async () => {
@@ -93,10 +93,12 @@ describe('Chat Routes Integration', () => {
     });
 
     it('should return 401 without auth token', async () => {
-      const response = await request(app).post('/api/v1/chat/rooms').send({
-        type: 'PRIVATE',
-        participantIds: [userId],
-      });
+      const response = await request(app)
+        .post('/api/v1/chat/rooms')
+        .send({
+          type: 'PRIVATE',
+          participantIds: [userId],
+        });
 
       expect(response.status).toBe(401);
     });
@@ -188,7 +190,7 @@ describe('Chat Routes Integration', () => {
 
       const response = await request(app)
         .get(`/api/v1/chat/rooms/${testRoomId}`)
-        .set('Authorization', `Bearer ${otherUser.token}`);
+        .set('Authorization', `Bearer ${generateAccessToken(otherUser)}`);
 
       expect(response.status).toBe(403);
     });
