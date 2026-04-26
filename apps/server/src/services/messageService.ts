@@ -121,7 +121,7 @@ export async function createMessage(input: CreateMessageInput) {
       content: encryptedContent,
       type: input.type || 'TEXT',
       attachments: input.attachments || null,
-      metadata: input.metadata || null,
+      metadata: input.metadata || { deleted: false },
       status: 'SENT',
     },
     include: {
@@ -761,7 +761,7 @@ export async function createChatRoomMessage(input: CreateChatRoomMessageInput) {
       content: encryptedContent,
       type: input.type || 'TEXT',
       attachments: input.attachments || null,
-      metadata: input.metadata || null,
+      metadata: input.metadata || { deleted: false },
       status: 'SENT',
     },
   });

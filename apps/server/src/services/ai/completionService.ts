@@ -10,9 +10,7 @@
  * - 补全确认流程
  */
 
-import { logger } from '../../utils/logger';
-
-import { Supply, PricingInfo, Capability, LocationInfo, ExperienceInfo, AvailabilityInfo } from './supplyExtractionService';
+import { Supply, Capability } from './supplyExtractionService';
 
 /**
  * Completion suggestion for a single field
@@ -49,17 +47,6 @@ export interface ExternalDataQuery {
   status: 'pending' | 'success' | 'failed';
   result?: any;
 }
-
-/**
- * Required fields per scene
- */
-const SCENE_REQUIRED_FIELDS: Record<string, string[]> = {
-  default: ['title', 'description', 'serviceType', 'pricing', 'capabilities'],
-  photography: ['title', 'description', 'serviceType', 'pricing', 'capabilities', 'location', 'experience'],
-  design: ['title', 'description', 'serviceType', 'pricing', 'capabilities', 'skills'],
-  development: ['title', 'description', 'serviceType', 'pricing', 'capabilities', 'skills', 'experience'],
-  consulting: ['title', 'description', 'serviceType', 'pricing', 'capabilities', 'experience', 'availability'],
-};
 
 /**
  * Common defaults by service type

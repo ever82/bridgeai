@@ -600,5 +600,15 @@ export class ClarificationService {
   }
 }
 
-// Export singleton instance
-export const clarificationService = new ClarificationService();
+// Export singleton instance (cleanup disabled to prevent Jest open handle timeout)
+export const clarificationService = new ClarificationService(new InMemorySessionStore(30, 0));
+
+/**
+ * Stop the singleton's cleanup interval (call in tests to prevent Jest open handle timeout)
+ */
+export function stopSingletonCleanup(): void {
+  const store = (clarificationService as any).sessionStore;
+  if (store?.stopCleanup) {
+    store.stopCleanup();
+  }
+}

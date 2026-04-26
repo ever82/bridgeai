@@ -11,6 +11,7 @@ import extractionRoutes from './extraction';
 import negotiationRoutes from './negotiation';
 import supplyRoutes from './supply';
 import visionRoutes from './vision';
+import dialogRoutes from './dialog';
 
 const router: Router = Router();
 
@@ -28,5 +29,8 @@ router.use('/supply', supplyRoutes);
 
 // 协商路由
 router.use('/negotiation', negotiationRoutes);
+
+// Agent对话路由
+router.use('/dialog', dialogRoutes);
 
 export default router;

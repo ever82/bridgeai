@@ -15,6 +15,13 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // Shared types
-__exportStar(require("./types/points"), exports);
+__exportStar(require("./types/agent"), exports);
+__exportStar(require("./types/agentProfile"), exports);
+__exportStar(require("./types/location"), exports);
 __exportStar(require("./types/filter"), exports);
+__exportStar(require("./types/scene"), exports);
+__exportStar(require("./types/points"), exports);
+__exportStar(require("./types/task"), exports);
+__exportStar(require("./schemas/l2"), exports);
+__exportStar(require("./schemas/sceneFields"), exports);
 //# sourceMappingURL=types.js.map

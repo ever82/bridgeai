@@ -15,6 +15,7 @@ import {
   DialogParticipant,
   DialogType,
 } from '../../services/ai/agentDialogService';
+import { llmService } from '../../services/ai/llmService';
 
 const router: Router = Router();
 
@@ -220,6 +221,75 @@ router.post(
         success: false,
         error: 'Failed to generate message',
       });
+    }
+  }
+);
+
+/**
+ * @route   POST /api/v1/ai/dialog/sessions/:sessionId/messages/stream
+ * @desc    流式生成对话消息 (SSE)
+ * @access  Private
+ */
+router.post(
+  '/sessions/:sessionId/messages/stream',
+  authenticateToken,
+  validate(generateMessageSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const { sessionId } = req.params;
+      const { senderId, senderType, content, options } = req.body;
+
+      const session = agentDialogService.getSession(sessionId);
+      if (!session) {
+        res.status(404).json({ success: false, error: 'Session not found' });
+        return;
+      }
+      const sender = session.participants.find(p => p.id === senderId);
+      if (!sender) {
+        res.status(404).json({ success: false, error: 'Sender not found in session' });
+        return;
+      }
+
+      const prompt = agentDialogService.buildDialogPrompt(session, sender, {
+        sessionId,
+        senderId,
+        senderType: senderType as 'agent' | 'user',
+        content,
+        options,
+      });
+
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+
+      let fullText = '';
+      const messageId = `msg-${Date.now()}`;
+
+      await llmService.streamChatCompletion(
+        {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: options?.temperature ?? 0.7,
+          maxTokens: options?.maxTokens ?? 500,
+        },
+        (chunk) => {
+          if (chunk.content) {
+            fullText += chunk.content;
+            res.write(`data: ${JSON.stringify({ messageId, content: chunk.content, done: false })}\n\n`);
+          }
+        }
+      );
+
+      res.write(`data: ${JSON.stringify({ messageId, fullText, content: '', done: true })}\n\n`);
+      res.end();
+    } catch (error) {
+      logger.error('Failed to stream message', { error });
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, error: 'Failed to stream message' });
+      } else {
+        res.end();
+      }
     }
   }
 );

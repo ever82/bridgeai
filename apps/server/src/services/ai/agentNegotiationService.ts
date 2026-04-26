@@ -823,7 +823,7 @@ ${recommendation.savingsEstimate ? `💰 预计节省：${recommendation.savings
    */
   private buildIntroductionPrompt(
     room: NegotiationRoom,
-    consumerProfile?: ConsumerProfile
+    _consumerProfile?: ConsumerProfile
   ): string {
     const demand = room.context.consumerDemand;
 
@@ -1129,16 +1129,54 @@ ${comparisonResult.summary ? `分析总结：${comparisonResult.summary}` : ''}
       };
     } catch (error) {
       logger.error('Failed to parse comparison result', { error, text });
-      // Return a basic fallback result
+      // Return a basic fallback result with programmatic heuristic scores
+      const maxDiscount = Math.max(...allOffers.map(o => o.offer.discountValue), 1);
+      const demand = room.context.consumerDemand;
+
       return {
         offers: allOffers.map(({ merchantId, offer }) => {
           const merchant = room.merchantAgents.find(m => m.id === merchantId);
+
+          // Value score: normalize discount value (percentage gets slight bonus)
+          let valueScore = Math.round((offer.discountValue / maxDiscount) * 80);
+          if (offer.discountType === 'percentage') {
+            valueScore = Math.min(100, valueScore + 10);
+          }
+
+          // Match score: check category/brand alignment
+          let matchScore = 60;
+          if (demand.category && offer.applicableProducts?.some(p =>
+            p.toLowerCase().includes(demand.category!.toLowerCase()) ||
+            demand.category!.toLowerCase().includes(p.toLowerCase())
+          )) {
+            matchScore = 85;
+          }
+          if (demand.brandPreferences?.length && offer.applicableProducts?.some(p =>
+            demand.brandPreferences!.some(bp => p.toLowerCase().includes(bp.toLowerCase()))
+          )) {
+            matchScore = Math.min(100, matchScore + 10);
+          }
+
+          // Convenience score: fewer restrictions = better
+          let convenienceScore = 85;
+          if (offer.minPurchase) convenienceScore -= 10;
+          if (offer.terms?.length) convenienceScore -= offer.terms.length * 5;
+          if (offer.exclusions?.length) convenienceScore -= 5;
+          convenienceScore = Math.max(40, convenienceScore);
+
+          const overall = Math.round((valueScore + matchScore + convenienceScore) / 3);
+
           return {
             offerId: offer.id,
             merchantId,
             merchantName: merchant?.name || 'Unknown',
             offer,
-            scores: { value: 70, match: 70, convenience: 70, overall: 70 },
+            scores: {
+              value: Math.min(100, valueScore),
+              match: Math.min(100, matchScore),
+              convenience: Math.min(100, convenienceScore),
+              overall: Math.min(100, overall),
+            },
             pros: ['优惠可用'],
             cons: ['需要更多信息'],
           };

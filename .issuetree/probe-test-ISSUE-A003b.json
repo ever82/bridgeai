@@ -1,0 +1,142 @@
+[
+  {
+    "category": "token_refresh",
+    "severity": "critical",
+    "description": "Token refresh has a race condition when multiple concurrent requests fail with 401. The _retry flag is per-request-config, so all concurrent requests simultaneously attempt token refresh. With token rotation, only the first refresh succeeds; the rest fail because the old refresh token was consumed, causing cascading authentication failures.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/services/api/client.ts",
+    "evidence": "Line 39: `if (error.response?.status === 401 && !originalRequest._retry)`. Three parallel requests all receive 401 -> all pass the !_retry check -> all call getRefreshToken() concurrently. No request queue, mutex, or deduplication exists."
+  },
+  {
+    "category": "request_response_transform",
+    "severity": "critical",
+    "description": "Avatar file upload uses wrong multipart field name. The client sends field name 'file' but the backend multer middleware expects 'avatar' (avatarUpload.single('avatar')). This causes req.file to be undefined on the server, resulting in a NO_FILE error even when a file is provided.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/index.ts",
+    "evidence": "Client line 68: `formData.append('file', {...})` vs Backend apps/server/src/routes/users.ts line 123: `avatarUpload.single('avatar')`."
+  },
+  {
+    "category": "request_response_transform",
+    "severity": "critical",
+    "description": "Manual Content-Type header for multipart/form-data breaks FormData parsing in React Native. When Content-Type is set manually without a boundary parameter, the server receives 'multipart/form-data' without the boundary and cannot parse the file upload body.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/index.ts",
+    "evidence": "Lines 78-81: `headers: { 'Content-Type': 'multipart/form-data' }`. In React Native, axios with FormData requires the native layer to inject the boundary. Manual override strips it."
+  },
+  {
+    "category": "type_safety",
+    "severity": "critical",
+    "description": "isServerError() will never match actual backend server errors. The function checks for 'INTERNAL_SERVER_ERROR', but the backend AppError class defaults to 'INTERNAL_ERROR' and the ErrorCode constant also defines INTERNAL_ERROR.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/types.ts",
+    "evidence": "types.ts line 235 checks 'INTERNAL_SERVER_ERROR' vs server/src/errors/AppError.ts line 13 defaults to 'INTERNAL_ERROR'."
+  },
+  {
+    "category": "error_handling",
+    "severity": "critical",
+    "description": "isNetworkError() will never return true for actual network errors. The function checks for 'ECONNABORTED', but the response interceptor maps all network errors (including ECONNABORTED) to 'UNKNOWN_ERROR' because error.response is undefined for network failures.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/types.ts",
+    "evidence": "types.ts line 215 checks 'ECONNABORTED' vs client.ts line 73: `code: error.response?.data?.code || 'UNKNOWN_ERROR'`. For timeouts, error.response is undefined."
+  },
+  {
+    "category": "export_completeness",
+    "severity": "critical",
+    "description": "ApiErrorCode enum is missing multiple error codes that the backend actively returns. This causes handleUserApiError() to classify legitimate backend errors as UNKNOWN_ERROR, preventing consumers from handling specific error cases.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/types.ts",
+    "evidence": "Missing: INVALID_AVATAR_URL (users.ts:54,56,60), VALIDATION_ERROR (AppError.ts:46), RESOURCE_NOT_FOUND (AppError.ts:37), FORBIDDEN (AppError.ts:58), RATE_LIMIT_EXCEEDED (AppError.ts:88), PHONE_REQUIRED (users.ts:285), EMAIL_REQUIRED (users.ts:316), TOKEN_EXPIRED, TOKEN_INVALID."
+  },
+  {
+    "category": "error_handling",
+    "severity": "critical",
+    "description": "When the server returns a non-JSON error response (e.g., nginx 502/504 HTML error page), error.response.data is a string. The interceptor blindly accesses .code, .message, .details on this string, all returning undefined. The resulting ApiError has code 'UNKNOWN_ERROR' and generic message, hiding all diagnostic information.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/services/api/client.ts",
+    "evidence": "Lines 72-76: `code: error.response?.data?.code || 'UNKNOWN_ERROR'` - if data is an HTML string like '<html>502 Bad Gateway</html>', data.code is undefined."
+  },
+  {
+    "category": "edge_cases",
+    "severity": "critical",
+    "description": "removeDevice() directly interpolates deviceId into the URL path without URL encoding. If deviceId contains special characters such as '/', '#', '?', '&', or spaces, the resulting URL is malformed.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/index.ts",
+    "evidence": "Line 244: `/api/v1/users/devices/${deviceId}`. No encodeURIComponent(deviceId) is applied. A deviceId like 'abc/def' produces path '/api/v1/users/devices/abc/def'."
+  },
+  {
+    "category": "type_safety",
+    "severity": "critical",
+    "description": "The global ApiResponse<T> type in types/index.ts does not match the actual server response format. The global type has { data: T; message?: string } with no 'success' field, but the server always wraps responses as { success: boolean; data: T; message?: string }.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/services/api/client.ts",
+    "evidence": "client.ts line 4 imports global ApiResponse from types/index.ts line 109-112 which lacks the 'success' field. Server always returns with success field (response.ts line 28)."
+  },
+  {
+    "category": "type_safety",
+    "severity": "critical",
+    "description": "The User type in api/user/types.ts uses 'avatarUrl' for the avatar field, but the global User type in types/index.ts uses 'avatar'. Components importing from different locations will access different property names for the same data.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/types.ts",
+    "evidence": "api/user/types.ts line 19: `avatarUrl?: string;` vs types/index.ts line 10: `avatar?: string;`. Same entity, different field names."
+  },
+  {
+    "category": "edge_cases",
+    "severity": "warning",
+    "description": "uploadAvatar() allows both parameters to be undefined. Calling uploadAvatar() with no arguments sends { avatarUrl: undefined } to the backend, which will always fail with NO_FILE error.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/index.ts",
+    "evidence": "Lines 62-65: both params optional. Line 87: sends `{ avatarUrl }` which is `{ avatarUrl: undefined }` when neither param is provided."
+  },
+  {
+    "category": "edge_cases",
+    "severity": "warning",
+    "description": "Token refresh response is parsed as untyped `any` without validating required fields. If expiresIn is missing, updateAccessToken() receives undefined for a number parameter, causing Date.now() + undefined * 1000 = NaN. The token expiry is stored as 'NaN', making all subsequent validity checks unpredictable.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/services/api/client.ts",
+    "evidence": "Line 46: axios.post() with no generic type. Lines 49-52: `const authData = response.data?.data || response.data;` - authData is any. Line 52: `const expiresIn = authData.expiresIn;` - no validation."
+  },
+  {
+    "category": "error_handling",
+    "severity": "warning",
+    "description": "The response interceptor creates a plain ApiError object and rejects with it, completely discarding the original AxiosError. This loses the original stack trace, error.config, error.request, and the original axios error code, making debugging production issues impossible.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/services/api/client.ts",
+    "evidence": "Lines 72-78: Creates new plain object `apiError` and returns `Promise.reject(apiError)`. The original `error` (AxiosError) is thrown away."
+  },
+  {
+    "category": "type_safety",
+    "severity": "warning",
+    "description": "isNotFoundError() only checks for USER_NOT_FOUND, but the backend uses RESOURCE_NOT_FOUND (via NotFoundError class) for generic not-found errors. If a user endpoint returns RESOURCE_NOT_FOUND, isNotFoundError() returns false.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/types.ts",
+    "evidence": "types.ts line 231 checks USER_NOT_FOUND vs server/src/errors/AppError.ts line 35-39: NotFoundError uses code 'RESOURCE_NOT_FOUND'."
+  },
+  {
+    "category": "type_safety",
+    "severity": "warning",
+    "description": "isValidationError() only covers MISSING_FIELDS, WEAK_PASSWORD, PASSWORD_REQUIRED. It misses many backend validation error codes including VALIDATION_ERROR, INVALID_PASSWORD, EMAIL_EXISTS, PHONE_EXISTS, SAME_PASSWORD, USER_ID_REQUIRED, INVALID_AVATAR_URL.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/types.ts",
+    "evidence": "types.ts lines 222-228: Only checks MISSING_FIELDS, WEAK_PASSWORD, PASSWORD_REQUIRED. Backend returns VALIDATION_ERROR (AppError.ts:46), INVALID_PASSWORD (userPrivacy.ts:216), EMAIL_EXISTS (userPrivacy.ts:372), etc."
+  },
+  {
+    "category": "export_completeness",
+    "severity": "info",
+    "description": "The SendCodeRequest type is defined and exported but never used internally. The sendPhoneVerificationCode and sendEmailVerificationCode functions construct request bodies using inline object types instead.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/types.ts",
+    "evidence": "types.ts lines 110-113 defines SendCodeRequest. user/index.ts lines 173-181 and 203-211 construct inline object types instead of using SendCodeRequest."
+  },
+  {
+    "category": "error_handling",
+    "severity": "warning",
+    "description": "handleUserApiError() receives errors already transformed by the response interceptor into ApiError objects. It then wraps them again in UserApiError. For network errors, the interceptor already mapped them to generic UNKNOWN_ERROR with '请求失败，请稍后重试'; handleUserApiError wraps this again with '操作失败，请稍后重试'.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/index.ts",
+    "evidence": "user/index.ts lines 305-318: Transforms any error with a 'code' property into UserApiError. client.ts lines 72-78: Already transformed AxiosError into plain ApiError before rejection."
+  },
+  {
+    "category": "token_refresh",
+    "severity": "info",
+    "description": "The token refresh request uses raw axios.post() instead of the configured apiClient instance. This bypasses the baseURL setting (requiring manual concatenation), skips the request interceptor, and uses separate error handling.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/services/api/client.ts",
+    "evidence": "Line 46: `const response = await axios.post(API_BASE_URL + '/auth/refresh', { refreshToken });` uses raw axios instead of `apiClient.post()`."
+  },
+  {
+    "category": "error_handling",
+    "severity": "warning",
+    "description": "The response interceptor only handles 401 Unauthorized for token refresh. It does not handle 403 Forbidden, which can occur when a token is blacklisted or the user lacks permissions. A 403 is treated as a generic error without clearing tokens.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/services/api/client.ts",
+    "evidence": "Line 39: `if (error.response?.status === 401 && !originalRequest._retry)`. No handling for status 403. Backend AppError.ts line 66-71 defines ForbiddenError with status 403."
+  },
+  {
+    "category": "type_safety",
+    "severity": "warning",
+    "description": "uploadAvatar() uses `as unknown as Blob` to cast a plain { uri, name, type } object to Blob. This is a complete TypeScript type safety bypass. While React Native's FormData accepts this shape at runtime, the type assertion lies about the actual value being a Blob.",
+    "file_path": "/Users/z/projects/bridgeai/apps/mobile/src/api/user/index.ts",
+    "evidence": "Lines 68-72: `formData.append('file', { uri: file.uri, name: file.name, type: file.type } as unknown as Blob);`"
+  }
+]

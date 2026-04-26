@@ -126,9 +126,20 @@ router.get(
     query: getHistorySchema.shape.query,
     params: getHistorySchema.shape.params,
   }),
-  async (req, res, next) => {
+  async (req: AuthenticatedRequest, res, next) => {
     try {
+      const userId = req.user!.id;
       const { roomId } = req.params;
+
+      // Verify room membership
+      const isMember = await isUserInRoom(roomId, userId);
+      if (!isMember) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied: not a room member',
+        });
+      }
+
       const { limit, before, after } = req.query as {
         limit?: string;
         before?: string;
@@ -182,9 +193,20 @@ router.get(
     query: syncMessagesSchema.shape.query,
     params: syncMessagesSchema.shape.params,
   }),
-  async (req, res, next) => {
+  async (req: AuthenticatedRequest, res, next) => {
     try {
+      const userId = req.user!.id;
       const { roomId } = req.params;
+
+      // Verify room membership
+      const isMember = await isUserInRoom(roomId, userId);
+      if (!isMember) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied: not a room member',
+        });
+      }
+
       const { lastMessageCreatedAt, limit } = req.query as {
         lastMessageCreatedAt?: string;
         limit?: string;
@@ -234,9 +256,20 @@ router.get(
     query: searchMessagesSchema.shape.query,
     params: searchMessagesSchema.shape.params,
   }),
-  async (req, res, next) => {
+  async (req: AuthenticatedRequest, res, next) => {
     try {
+      const userId = req.user!.id;
       const { roomId } = req.params;
+
+      // Verify room membership
+      const isMember = await isUserInRoom(roomId, userId);
+      if (!isMember) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied: not a room member',
+        });
+      }
+
       const { q, limit } = req.query as {
         q: string;
         limit?: string;

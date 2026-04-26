@@ -20,14 +20,10 @@ describe('ClarificationService', () => {
     }
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     // Stop singleton's cleanup interval to prevent open handle warnings
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { clarificationService: _singleton } = require('../clarificationService');
-    const store = (_singleton as any).sessionStore;
-    if (store?.stopCleanup) {
-      store.stopCleanup();
-    }
+    const { stopSingletonCleanup } = await import('../clarificationService');
+    stopSingletonCleanup();
   });
 
   const createMockDemand = (overrides?: Partial<Demand>): Demand => ({

@@ -23,6 +23,7 @@ import { registerHandoffHandlers } from './handlers/handoffHandler';
 import { registerRoomHandlers } from './handlers/roomHandler';
 import { registerAgentNegotiationHandlers } from './handlers/agentNegotiation';
 import { registerPresenceHandlers } from './handlers/presenceHandler';
+import { registerDialogHandlers } from './handlers/dialogHandler';
 
 /**
  * Socket.io server instance
@@ -148,6 +149,14 @@ function setupNamespaces(io: SocketServer): void {
   presenceNsp.on('connection', socket => {
     handleConnection(socket, 'presence');
     registerPresenceHandlers(socket, presenceNsp);
+  });
+
+  // Dialog namespace for agent dialog events (ISSUE-AI004)
+  const dialogNsp = io.of('/dialog');
+  dialogNsp.use(socketAuthMiddleware);
+  dialogNsp.on('connection', socket => {
+    handleConnection(socket, 'dialog');
+    registerDialogHandlers(socket, dialogNsp);
   });
 }
 

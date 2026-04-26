@@ -1,0 +1,3 @@
+export * from './utils/geoUtils';
+export declare function formatDate(date: Date): string;
+//# sourceMappingURL=utils.d.ts.map

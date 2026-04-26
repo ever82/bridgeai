@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-04-24T11:37:35.434Z",
+  "layer": 2,
+  "platform": "ios",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "duration": 53000,
+  "results": [
+    {
+      "flow": "auth-flow",
+      "passed": false,
+      "duration": 53000,
+      "output": "\nWaiting for flows to complete...\n[Failed] auth-flow (39s) (Assertion is false: id: login-email-input is visible)\n\n1/1 Flow Failed\n\n",
+      "error": "Command failed: \"/Users/z/.maestro/bin/maestro\" test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/auth-flow.yaml\" --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/auth-flow-1777030602434.html\""
+    }
+  ],
+  "summary": "0/1 passed"
+}

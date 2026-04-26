@@ -1,0 +1,74 @@
+[
+  {
+    "category": "consistency",
+    "severity": "critical",
+    "description": "Duplicate CreditLevel enums in server and shared packages causing type inconsistency",
+    "evidence": "packages/shared/src/types/credit.ts defines enum CreditLevelEnum { EXCELLENT=excellent, GOOD=good, GENERAL=general, POOR=poor }. apps/server/src/types/credit.ts defines enum CreditLevel { EXCELLENT=excellent, GOOD=good, GENERAL=general, POOR=poor }. server/src/config/creditLevels.ts imports CreditLevel from @bridgeai/shared, but server/src/services/creditScoreService.ts imports CreditLevel from local types/credit.ts. Two different enum types with same values creates TS type incompatibility.",
+    "recommendation": "Unify: keep CreditLevel only in shared package, import from shared everywhere. Remove duplicate enum from server/src/types/credit.ts.",
+    "file_path": "packages/shared/src/types/credit.ts:7, apps/server/src/types/credit.ts:6"
+  },
+  {
+    "category": "consistency",
+    "severity": "warning",
+    "description": "Credit level thresholds mismatch between shared and server configs",
+    "evidence": "packages/shared/src/types/credit.ts:18-23 defines thresholds: excellent(900-1000), good(750-899), general(600-749), poor(0-599). apps/server/src/config/creditLevels.ts:8-13 defines: excellent(900-1000), good(750-899), general(600-749), poor(0-599). They match now but server also has CREDIT_LEVEL_BENEFITS config with richer metadata. Risk: two sources of truth for the same boundary values.",
+    "recommendation": "Server creditLevels.ts should import and re-export thresholds from shared, not define them locally. Or clearly document that server/config is the source and shared is read-only.",
+    "file_path": "packages/shared/src/types/credit.ts:18, apps/server/src/config/creditLevels.ts:8"
+  },
+  {
+    "category": "test_coverage",
+    "severity": "critical",
+    "description": "Integration test uses mocked Prisma, violating integration test requirements",
+    "evidence": "apps/server/src/__tests__/creditIntegration.test.ts:34-49 mocks Prisma entirely with jest.mock. Lines 37-48 define prisma mock with agent.findMany, creditScore.findMany etc. This is a cross-module integration test (C005~c1, C005~c2) that should test real database behavior, not mocked behavior.",
+    "recommendation": "Replace Prisma mock with a test database (e.g., SQLite in-memory via Prisma) or use real Prisma client pointed at a test database. Remove all jest.mock calls from this integration test file.",
+    "file_path": "apps/server/src/__tests__/creditIntegration.test.ts:34-49"
+  },
+  {
+    "category": "runtime_behavior",
+    "severity": "critical",
+    "description": "Placeholder implementations in reviewNotificationHandlers.ts will silently fail in production",
+    "evidence": "apps/server/src/events/reviewNotificationHandlers.ts lines 350 (handleReviewReportedNotification), 499 (getUserNotificationStats returns hardcoded {unreadCount:0, lastNotificationAt:null}), 516 (markNotificationsAsRead logs only), 540 (getNotificationHistory returns []). All four functions are exported public API that callers expect to work but they return empty/hardcoded data.",
+    "recommendation": "Implement real Notification table and database queries, or remove these functions from the export/public API if not needed.",
+    "file_path": "apps/server/src/events/reviewNotificationHandlers.ts:350,499,516,540"
+  },
+  {
+    "category": "consistency",
+    "severity": "warning",
+    "description": "VisionShare publisherCreditScore uses 0-100 scale vs rest of system uses 0-1000",
+    "evidence": "apps/server/src/services/visionShare/taskRecommendation.ts:123 divides publisherCreditScore by 10 to get max 10 points out of 100. publisherCreditScore values in taskFilter.ts are 85, 92, 78, 88, 95 - these look like 0-100 percentages, not 0-1000 credit scores. The recommendation scoring uses them as-is without normalization to the 0-1000 scale. taskFilter.ts mock data has these hardcoded integers.",
+    "recommendation": "Confirm whether VisionShare publisherCreditScore should be 0-100 or 0-1000. If 0-100, normalize in taskRecommendation.ts scoring (multiply by 10). If it is meant to be consistent with the main credit score system, update taskFilter.ts mock data and add publisherCreditScore to the shared Task type definition.",
+    "file_path": "apps/server/src/services/visionShare/taskRecommendation.ts:123, apps/server/src/services/visionShare/taskFilter.ts:39,73,107,141,175"
+  },
+  {
+    "category": "consistency",
+    "severity": "warning",
+    "description": "VisionShare publisherCreditScore field not defined in shared Task type",
+    "evidence": "packages/shared/src/types/visionShare.ts and packages/shared/src/types/task.ts do not contain publisherCreditScore or any credit-related field definition. apps/server/src/services/visionShare/taskRecommendation.ts and taskFilter.ts use publisherCreditScore on Task objects without a shared type definition.",
+    "recommendation": "Add publisherCreditScore?: number to the shared Task type in packages/shared/src/types/visionShare.ts or packages/shared/src/types/task.ts to establish a shared contract.",
+    "file_path": "packages/shared/src/types/visionShare.ts, packages/shared/src/types/task.ts"
+  },
+  {
+    "category": "runtime_behavior",
+    "severity": "warning",
+    "description": "Test suite failures in creditScoreService.test.ts and credit.test.ts prevent runtime verification",
+    "evidence": "npm test --testPathPattern=credit shows: creditScoreService.test.ts fails with TypeError: client.$extends is not a function (src/db/client.ts:46). credit.test.ts fails with TypeError: validate is not a function (src/routes/credit.ts:57). These are test environment setup issues - Prisma $extends API and validation middleware not available in test context. 29 tests total failing across 4 test suites.",
+    "recommendation": "Fix test setup: mock or configure Prisma client extension in test environment, add proper validation middleware mock to test setup. These failures prevent verifying AC-4 (credit API endpoints) and AC-2 (credit calculation) via automated tests.",
+    "file_path": "apps/server/src/__tests__/creditScoreService.test.ts, apps/server/src/routes/__tests__/credit.test.ts"
+  },
+  {
+    "category": "verification",
+    "severity": "info",
+    "description": "Credit event handlers not wired to event system - handlers exist but are not connected",
+    "evidence": "apps/server/src/events/creditEventHandlers.ts:117-127 exports creditEventHandlers map with functions (profileUpdate, transactionComplete, ratingSubmitted, etc.). apps/server/src/events/reviewEventHandlers.ts:228-272 defines setupCreditScoreListeners() listening to creditScoreEvents. However, there is no initialization call that wires creditEventHandlers to actual Prisma events or message queue events. No call to creditEventHandlers.on() or similar to trigger these handlers.",
+    "recommendation": "Verify if creditEventHandlers are triggered via queue consumers, event bus, or middleware. If they exist but are never called, they are dead code.",
+    "file_path": "apps/server/src/events/creditEventHandlers.ts:117"
+  },
+  {
+    "category": "code_quality",
+    "severity": "info",
+    "description": "Unused import in matchingService.ts",
+    "evidence": "apps/server/src/services/matchingService.ts:7 imports CreditFilterOptions from types/credit but the service actually uses minScore/maxScore/creditLevel fields directly without using the CreditFilterOptions interface. The import is declared but never used as a typed parameter.",
+    "recommendation": "Remove unused import if CreditFilterOptions is not used, or use it as the parameter type for the credit filtering methods.",
+    "file_path": "apps/server/src/services/matchingService.ts:7"
+  }
+]

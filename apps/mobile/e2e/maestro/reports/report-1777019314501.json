@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-04-24T08:28:34.500Z",
+  "layer": 2,
+  "platform": "ios",
+  "total": 5,
+  "passed": 0,
+  "failed": 5,
+  "duration": 186220,
+  "results": [
+    {
+      "flow": "agent-creation-flow",
+      "passed": false,
+      "duration": 47474,
+      "output": "\nWaiting for flows to complete...\n[Failed] agent-creation-flow (22s) (Assertion is false: id: login-email-input is visible)\n\n1/1 Flow Failed\n\n╭────────────────────────────────────────────────────────────────────────────────────────────────╮\n│                                                                                                │\n│   Debug tests faster by easy access to test recordings, maestro logs, screenshots, and more.   │\n│                                                                                                │\n│   Run your flows on Maestro Cloud:                                                             │\n│   maestro cloud app_file flows_folder/                                                         │\n│                                                                                                │\n╰────────────────────────────────────────────────────────────────────────────────────────────────╯\n\n",
+      "error": "Command failed: \"/Users/z/.maestro/bin/maestro\" test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/agent-creation-flow.yaml\" --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/agent-creation-flow-1777019128280.html\""
+    },
+    {
+      "flow": "auth-flow",
+      "passed": false,
+      "duration": 35665,
+      "output": "\nWaiting for flows to complete...\n[Failed] auth-flow (20s) (Assertion is false: id: login-email-input is visible)\n\n1/1 Flow Failed\n\n",
+      "error": "Command failed: \"/Users/z/.maestro/bin/maestro\" test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/auth-flow.yaml\" --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/auth-flow-1777019175755.html\""
+    },
+    {
+      "flow": "chat-flow",
+      "passed": false,
+      "duration": 35151,
+      "output": "\nWaiting for flows to complete...\n[Failed] chat-flow (20s) (Assertion is false: id: login-email-input is visible)\n\n1/1 Flow Failed\n\n",
+      "error": "Command failed: \"/Users/z/.maestro/bin/maestro\" test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/chat-flow.yaml\" --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/chat-flow-1777019211420.html\""
+    },
+    {
+      "flow": "logout-flow",
+      "passed": false,
+      "duration": 33497,
+      "output": "\nWaiting for flows to complete...\n[Failed] logout-flow (19s) (Assertion is false: id: login-email-input is visible)\n\n1/1 Flow Failed\n\n",
+      "error": "Command failed: \"/Users/z/.maestro/bin/maestro\" test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/logout-flow.yaml\" --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/logout-flow-1777019246571.html\""
+    },
+    {
+      "flow": "matching-flow",
+      "passed": false,
+      "duration": 34431,
+      "output": "\nWaiting for flows to complete...\n[Failed] matching-flow (19s) (Assertion is false: id: login-email-input is visible)\n\n1/1 Flow Failed\n\n",
+      "error": "Command failed: \"/Users/z/.maestro/bin/maestro\" test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/matching-flow.yaml\" --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/matching-flow-1777019280068.html\""
+    }
+  ],
+  "summary": "0/5 passed"
+}

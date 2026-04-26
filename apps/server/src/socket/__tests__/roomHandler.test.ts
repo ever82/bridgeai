@@ -45,7 +45,7 @@ describe('registerRoomHandlers', () => {
     };
 
     // Reset mock implementations
-    roomService.createRoom.mockReturnValue({
+    roomService.createRoom.mockResolvedValue({
       id: 'room-1',
       name: 'Test Room',
     });
@@ -76,13 +76,13 @@ describe('registerRoomHandlers', () => {
   });
 
   describe('room:create', () => {
-    it('should create room and join as owner', () => {
+    it('should create room and join as owner', async () => {
       registerRoomHandlers(mockSocket, mockNamespace);
 
       const createHandler = mockSocket.on.mock.calls.find((call) => call[0] === 'room:create')[1];
       const callback = jest.fn();
 
-      createHandler({ roomId: 'room-1', options: { name: 'Test Room' } }, callback);
+      await createHandler({ roomId: 'room-1', options: { name: 'Test Room' } }, callback);
 
       expect(roomService.createRoom).toHaveBeenCalledWith('room-1', 'user-1', { name: 'Test Room' });
       expect(roomService.joinRoom).toHaveBeenCalled();
@@ -108,17 +108,15 @@ describe('registerRoomHandlers', () => {
       });
     });
 
-    it('should handle errors', () => {
-      roomService.createRoom.mockImplementation(() => {
-        throw new Error('Room already exists');
-      });
+    it('should handle errors', async () => {
+      roomService.createRoom.mockRejectedValue(new Error('Room already exists'));
 
       registerRoomHandlers(mockSocket, mockNamespace);
 
       const createHandler = mockSocket.on.mock.calls.find((call) => call[0] === 'room:create')[1];
       const callback = jest.fn();
 
-      createHandler({ roomId: 'room-1', options: { name: 'Test Room' } }, callback);
+      await createHandler({ roomId: 'room-1', options: { name: 'Test Room' } }, callback);
 
       expect(callback).toHaveBeenCalledWith({
         success: false,

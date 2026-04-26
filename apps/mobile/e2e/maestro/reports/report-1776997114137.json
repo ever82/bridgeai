@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-04-24T02:18:34.135Z",
+  "platform": "ios",
+  "total": 5,
+  "passed": 0,
+  "failed": 5,
+  "duration": 104,
+  "results": [
+    {
+      "flow": "agent-creation-flow",
+      "passed": false,
+      "duration": 21,
+      "output": "",
+      "error": "Command failed: maestro test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/agent-creation-flow.yaml\" --platform ios --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/agent-creation-flow-1776997114031.html\"\n/bin/sh: maestro: command not found\n"
+    },
+    {
+      "flow": "auth-flow",
+      "passed": false,
+      "duration": 21,
+      "output": "",
+      "error": "Command failed: maestro test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/auth-flow.yaml\" --platform ios --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/auth-flow-1776997114052.html\"\n/bin/sh: maestro: command not found\n"
+    },
+    {
+      "flow": "chat-flow",
+      "passed": false,
+      "duration": 21,
+      "output": "",
+      "error": "Command failed: maestro test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/chat-flow.yaml\" --platform ios --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/chat-flow-1776997114073.html\"\n/bin/sh: maestro: command not found\n"
+    },
+    {
+      "flow": "logout-flow",
+      "passed": false,
+      "duration": 21,
+      "output": "",
+      "error": "Command failed: maestro test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/logout-flow.yaml\" --platform ios --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/logout-flow-1776997114094.html\"\n/bin/sh: maestro: command not found\n"
+    },
+    {
+      "flow": "matching-flow",
+      "passed": false,
+      "duration": 20,
+      "output": "",
+      "error": "Command failed: maestro test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/matching-flow.yaml\" --platform ios --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/matching-flow-1776997114115.html\"\n/bin/sh: maestro: command not found\n"
+    }
+  ],
+  "summary": "0/5 passed"
+}

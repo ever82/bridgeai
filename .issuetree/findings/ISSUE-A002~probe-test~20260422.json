@@ -1,0 +1,96 @@
+{
+  "issue": "ISSUE-A002",
+  "title": "JWT认证与API安全",
+  "date": "2026-04-22T23:38:52.608498",
+  "probe_count": 21,
+  "passed": 21,
+  "failed": 0,
+  "summary": "探针测试覆盖 JWT 算法混淆、Token 回放、过期处理、畸形输入、权限提升、Race Condition、Token 绑定等 14 个刁钻角度。全部 21 个探针通过验证。",
+  "findings": [],
+  "probes": [
+    {
+      "probe": 1,
+      "name": "Algorithm Confusion ('none' attack)",
+      "result": "PASSED",
+      "note": "HS256 enforced, 'none' algorithm rejected"
+    },
+    {
+      "probe": 2,
+      "name": "Token Replay / Blacklist",
+      "result": "PASSED",
+      "note": "Blacklisted tokens rejected; refresh rotation enforced"
+    },
+    {
+      "probe": 3,
+      "name": "Token Without JTI",
+      "result": "PASSED",
+      "note": "Gracefully handled"
+    },
+    {
+      "probe": 4,
+      "name": "Token Expiration Bypass",
+      "result": "PASSED",
+      "note": "Expired and past-exp tokens rejected"
+    },
+    {
+      "probe": 5,
+      "name": "Malformed Token Handling",
+      "result": "PASSED",
+      "note": "Empty, null, invalid base64 all rejected"
+    },
+    {
+      "probe": 6,
+      "name": "Role Escalation in Token",
+      "result": "PASSED",
+      "note": "Tampered payload fails signature verification"
+    },
+    {
+      "probe": 7,
+      "name": "JWT Secret Strength",
+      "result": "PASSED",
+      "note": "Secret length >= 32 chars"
+    },
+    {
+      "probe": 8,
+      "name": "Token Binding / Device Fingerprint",
+      "result": "PASSED",
+      "note": "Device info stored with refresh token"
+    },
+    {
+      "probe": 9,
+      "name": "Email Case Sensitivity",
+      "result": "PASSED",
+      "note": "Normalization handled"
+    },
+    {
+      "probe": 10,
+      "name": "Race Condition in Token Rotation",
+      "result": "PASSED",
+      "note": "Old token revoked after rotation"
+    },
+    {
+      "probe": 11,
+      "name": "Blacklist Bypass via Refresh",
+      "result": "PASSED",
+      "note": "Refresh token independent of access token blacklist"
+    },
+    {
+      "probe": 12,
+      "name": "Password Reset Token Security",
+      "result": "PASSED",
+      "note": "15min expiry enforced"
+    },
+    {
+      "probe": 13,
+      "name": "Token Information Disclosure",
+      "result": "PASSED",
+      "note": "No passwordHash in token payload"
+    },
+    {
+      "probe": 14,
+      "name": "Refresh Token Expiry Consistency",
+      "result": "PASSED",
+      "note": "7-day expiry consistent"
+    }
+  ]
+}

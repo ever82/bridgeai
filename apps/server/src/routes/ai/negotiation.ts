@@ -456,6 +456,7 @@ router.get(
             senderType: msg.senderType,
             content: msg.content,
             messageType: msg.messageType,
+            creditScore: msg.creditScore,
             timestamp: msg.timestamp,
             metadata: msg.metadata,
           })),

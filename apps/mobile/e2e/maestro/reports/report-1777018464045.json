@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-04-24T08:14:24.043Z",
+  "layer": 2,
+  "platform": "ios",
+  "total": 5,
+  "passed": 0,
+  "failed": 5,
+  "duration": 42548,
+  "results": [
+    {
+      "flow": "agent-creation-flow",
+      "passed": false,
+      "duration": 8549,
+      "output": "\n",
+      "error": "Command failed: \"/Users/z/.maestro/bin/maestro\" test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/agent-creation-flow.yaml\" --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/agent-creation-flow-1777018421495.html\"\n> Unknown Property: accessibilityLabel\n\n/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/agent-creation-flow.yaml:-1\n╭──────────────────────────────╮\n│ 1 | # issue: ISSUE-AGENT-001 │\n╰──────────────────────────────╯\n"
+    },
+    {
+      "flow": "auth-flow",
+      "passed": false,
+      "duration": 8362,
+      "output": "\n",
+      "error": "Command failed: \"/Users/z/.maestro/bin/maestro\" test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/auth-flow.yaml\" --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/auth-flow-1777018430045.html\"\n> Invalid Command: terminateApp\n\n/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/auth-flow.yaml:47\n╭───────────────────────────────────────────────────────╮\n│ 45 |                                                  │\n│ 46 | # Flow: Invalid Credentials (重启 app 清除登录状态)      │\n│ 47 | - terminateApp                                   │\n│                   ^                                   │\n│ ╭───────────────────────────────────────────────────╮ │\n│ │ `terminateApp` is not a valid command.            │ │\n│ │                                                   │ │\n│ │ > https://docs.maestro.dev/api-reference/commands │ │\n│ ╰───────────────────────────────────────────────────╯ │\n│ 48 | - clearKeychain                                  │\n│ 49 | - clearAppData                                   │\n╰───────────────────────────────────────────────────────╯\n"
+    },
+    {
+      "flow": "chat-flow",
+      "passed": false,
+      "duration": 8432,
+      "output": "\n",
+      "error": "Command failed: \"/Users/z/.maestro/bin/maestro\" test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/chat-flow.yaml\" --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/chat-flow-1777018438407.html\"\n> Unknown Property: accessibilityLabel\n\n/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/chat-flow.yaml:-1\n╭─────────────────────────────╮\n│ 1 | # issue: ISSUE-CHAT-001 │\n╰─────────────────────────────╯\n"
+    },
+    {
+      "flow": "logout-flow",
+      "passed": false,
+      "duration": 8833,
+      "output": "\n",
+      "error": "Command failed: \"/Users/z/.maestro/bin/maestro\" test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/logout-flow.yaml\" --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/logout-flow-1777018446840.html\"\n> Unknown Property: accessibilityLabel\n\n/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/logout-flow.yaml:-1\n╭─────────────────────────────╮\n│ 1 | # issue: ISSUE-AUTH-002 │\n╰─────────────────────────────╯\n"
+    },
+    {
+      "flow": "matching-flow",
+      "passed": false,
+      "duration": 8370,
+      "output": "\n",
+      "error": "Command failed: \"/Users/z/.maestro/bin/maestro\" test \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/matching-flow.yaml\" --format HTML --output \"/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/reports/matching-flow-1777018455673.html\"\n> Unknown Property: accessibilityLabel\n\n/Users/z/projects/bridgeai/apps/mobile/e2e/maestro/flows/matching-flow.yaml:-1\n╭─────────────────────────────╮\n│ 1 | # issue: ISSUE-HOME-001 │\n╰─────────────────────────────╯\n"
+    }
+  ],
+  "summary": "0/5 passed"
+}

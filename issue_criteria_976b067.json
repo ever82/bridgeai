@@ -1,0 +1,3414 @@
+{
+  "ISSUE-A001": [
+    {
+      "id": "ISSUE-A001~c1",
+      "name": "用户注册 API",
+      "description": "实现注册接口:\n- 手机号/邮箱注册\n- 密码强度验证\n- 验证码发送和校验\n- 用户唯一性检查\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A001~c2",
+      "name": "用户登录 API",
+      "description": "实现登录接口:\n- 密码登录\n- 验证码登录\n- 登录失败处理(限制重试)\n- 登录日志记录\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A001~c3",
+      "name": "第三方登录集成",
+      "description": "第三方登录:\n- 微信 OAuth 登录\n- Google OAuth 登录\n- OAuth 回调处理\n- 账号绑定和解绑\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A001~c4",
+      "name": "密码重置功能",
+      "description": "密码重置:\n- 忘记密码申请\n- 重置验证码发送\n- 密码重置确认\n- 重置令牌有效期\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A001~c5",
+      "name": "移动端登录界面",
+      "description": "移动端登录 UI:\n- 登录表单(手机号/密码)\n- 验证码输入界面\n- 第三方登录按钮\n- 注册入口\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A001~c6",
+      "name": "注册界面和安全",
+      "description": "注册流程:\n- 注册表单验证\n- 密码确认\n- 服务条款同意\n- 密码加密存储(bcrypt)\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-A002": [
+    {
+      "id": "ISSUE-A002~c1",
+      "name": "JWT Token 生成和验证",
+      "description": "JWT 基础功能:\n- Access Token 生成\n- Token 签名和验证\n- Token 过期时间配置\n- JWT Payload 结构设计\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-A002~c2",
+      "name": "Refresh Token 机制",
+      "description": "刷新令牌:\n- Refresh Token 生成\n- Token 刷新接口\n- Refresh Token 存储\n- 刷新限制和轮换\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-A002~c3",
+      "name": "认证中间件",
+      "description": "API 认证中间件:\n- Token 提取(Header/Cookie)\n- Token 验证\n- 用户信息注入\n- 401/403 错误处理\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-A002~c4",
+      "name": "Token 黑名单和撤销",
+      "description": "Token 管理:\n- 登出时 Token 撤销\n- Token 黑名单(Redis)\n- 用户密码修改时撤销所有 Token\n- 黑名单定期清理\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-A002~c5",
+      "name": "移动端 Token 管理",
+      "description": "移动端认证:\n- Token 本地存储(安全存储)\n- 请求自动附加 Token\n- Token 过期自动刷新\n- 刷新失败重新登录\n",
+      "status": "completed"
+    }
+  ],
+  "ISSUE-A003": [
+    {
+      "id": "ISSUE-A003~c1",
+      "name": "用户信息 API",
+      "description": "用户信息接口:\n- 获取当前用户信息\n- 更新用户信息\n- 上传用户头像\n- 删除账号\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A003~c2",
+      "name": "头像上传和存储",
+      "description": "头像管理:\n- 头像上传接口\n- 图片压缩和裁剪\n- 云存储集成(OSS/S3)\n- 默认头像处理\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A003~c3",
+      "name": "用户资料界面",
+      "description": "移动端资料 UI:\n- 个人资料展示页面\n- 编辑资料表单\n- 头像选择和上传\n- 资料预览\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A003~c4",
+      "name": "隐私设置",
+      "description": "隐私控制:\n- 资料可见性设置\n- 在线状态可见性\n- 手机号/邮箱隐私\n- 阻止列表管理\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A003~c5",
+      "name": "账号安全设置",
+      "description": "安全功能:\n- 修改密码\n- 绑定/换绑手机号\n- 绑定/换绑邮箱\n- 登录设备管理\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-A003a": [
+    {
+      "id": "ISSUE-A003a~c1",
+      "name": "用户信息 API",
+      "description": "用户信息接口:\n- 获取当前用户信息 GET /api/v1/users/me\n- 更新用户信息 PUT /api/v1/users/me\n- 删除账号 DELETE /api/v1/users/me\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A003a~c2",
+      "name": "头像上传和存储",
+      "description": "头像管理:\n- 头像上传接口 POST /api/v1/users/avatar\n- 图片压缩和裁剪\n- 云存储集成(OSS/S3)\n- 默认头像处理\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-A004": [
+    {
+      "id": "ISSUE-A004~c1",
+      "name": "请求验证中间件",
+      "description": "验证中间件:\n- 集成 Zod/Joi/Yup 验证库\n- body/params/query 验证\n- 验证错误处理\n- 自定义验证规则\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A004~c2",
+      "name": "API 请求 Schema 定义",
+      "description": "数据 Schema:\n- 用户相关 Schema\n- Agent 相关 Schema\n- 消息相关 Schema\n- 通用字段验证规则\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A004~c3",
+      "name": "XSS 和注入防护",
+      "description": "安全防护:\n- XSS 过滤中间件\n- SQL 注入防护(参数化查询)\n- NoSQL 注入防护\n- HTML 转义处理\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A004~c4",
+      "name": "移动端表单验证",
+      "description": "前端验证:\n- 表单字段验证\n- 实时验证反馈\n- 错误提示国际化\n- 验证规则复用\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-A004~c5",
+      "name": "文件上传验证",
+      "description": "上传安全:\n- 文件类型限制\n- 文件大小限制\n- 图片内容验证\n- 恶意文件检测\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-AD001": [
+    {
+      "id": "AD001-CR01",
+      "name": "\\u6D88\\u8D39\\u573A\\u666FAgent\\u521B\\u5EFA",
+      "description": "",
+      "status": ""
+    },
+    {
+      "id": "AD001-CR02",
+      "name": "\\u6D88\\u8D39\\u54C1\\u7C7B\\u914D\\u7F6E",
+      "description": "",
+      "status": "accepted"
+    },
+    {
+      "id": "AD001-CR03",
+      "name": "\\u9884\\u7B97\\u8303\\u56F4\\u8BBE\\u7F6E",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "AD001-CR04",
+      "name": "\\u54C1\\u724C\\u4E0E\\u5546\\u5BB6\\u504F\\u597D",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "AD001-CR05",
+      "name": "AI\\u9700\\u6C42\\u63D0\\u70BC\\u96C6\\u6210",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "AD001-CR06",
+      "name": "\\u6D88\\u8D39\\u9700\\u6C42\\u9884\\u89C8\\u4E0E\\u53D1\\u5E03",
+      "description": "",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-AD002": [
+    {
+      "id": "AD002-CR01",
+      "name": "商家场景Agent创建",
+      "description": "",
+      "status": "passed"
+    },
+    {
+      "id": "AD002-CR02",
+      "name": "优惠方案基础配置",
+      "description": "",
+      "status": "completed"
+    },
+    {
+      "id": "AD002-CR03",
+      "name": "优惠适用范围设置",
+      "description": "",
+      "status": "completed"
+    },
+    {
+      "id": "AD002-CR04",
+      "name": "优惠有效期与库存管理",
+      "description": "",
+      "status": "completed"
+    },
+    {
+      "id": "AD002-CR05",
+      "name": "AI供给提炼集成",
+      "description": "",
+      "status": "completed"
+    },
+    {
+      "id": "AD002-CR06",
+      "name": "优惠上下架与状态管理",
+      "description": "",
+      "status": "completed"
+    }
+  ],
+  "ISSUE-AD003": [
+    {
+      "id": "AD003-CR01",
+      "name": "\\u5339\\u914D\\u5546\\u5BB6\\u7FA4\\u804A\\u521B\\u5EFA",
+      "description": "",
+      "status": ""
+    },
+    {
+      "id": "AD003-CR02",
+      "name": "Agent\\u81EA\\u52A8\\u4ECB\\u7ECD\\u4E0E\\u9700\\u6C42\\u8868\\u8FBE",
+      "description": "",
+      "status": "accepted"
+    },
+    {
+      "id": "AD003-CR03",
+      "name": "\\u5546\\u5BB6Agent\\u4F18\\u60E0\\u65B9\\u6848\\u5C55\\u793A",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "AD003-CR04",
+      "name": "\\u667A\\u80FD\\u6761\\u4EF6\\u534F\\u5546\\u4E0E\\u8FFD\\u95EE",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "AD003-CR05",
+      "name": "\\u591A\\u65B9\\u6848\\u5BF9\\u6BD4\\u5206\\u6790",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "AD003-CR06",
+      "name": "\\u6700\\u4F18\\u65B9\\u6848\\u63A8\\u8350\\u4E0E\\u4EBA\\u5DE5\\u786E\\u8BA4",
+      "description": "",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-AD004": [
+    {
+      "id": "AD004-CR01",
+      "name": "\\u4E13\\u5C5E\\u4F18\\u60E0\\u7801\\u751F\\u6210",
+      "description": "",
+      "status": ""
+    },
+    {
+      "id": "AD004-CR02",
+      "name": "\\u4E00\\u952E\\u8D2D\\u4E70\\u754C\\u9762",
+      "description": "",
+      "status": "accepted"
+    },
+    {
+      "id": "AD004-CR03",
+      "name": "\\u7EBF\\u4E0B\\u6838\\u9500\\u6D41\\u7A0B",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "AD004-CR04",
+      "name": "\\u7EBF\\u4E0A\\u8DF3\\u8F6C\\u8D2D\\u4E70",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "AD004-CR05",
+      "name": "\\u4F7F\\u7528\\u72B6\\u6001\\u8FFD\\u8E2A\\u4E0E\\u63D0\\u9192",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "AD004-CR06",
+      "name": "\\u4EA4\\u6613\\u8BB0\\u5F55\\u4E0E\\u8BC4\\u4EF7",
+      "description": "",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-AI001": [
+    {
+      "id": "ISSUE-AI001~c1",
+      "name": "LLM提供商适配器",
+      "description": "适配器实现:\n- OpenAI GPT系列适配器\n- Anthropic Claude适配器\n- 文心一言适配器\n- 统一接口抽象层\n- 模型能力注册表\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-AI001~c2",
+      "name": "熔断器机制",
+      "description": "熔断器实现:\n- 失败率监控\n- 熔断状态管理(关闭/半开/打开)\n- 自动恢复探测\n- 熔断事件通知\n- 多维度熔断策略\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-AI001~c3",
+      "name": "智能路由与负载均衡",
+      "description": "路由策略:\n- 基于成本的智能路由\n- 延迟优先路由\n- 质量优先路由\n- 轮询/权重负载均衡\n- 模型能力匹配\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-AI001~c4",
+      "name": "降级与容错策略",
+      "description": "降级策略:\n- 模型降级(cheap模型替代)\n- 提供商降级(备用提供商)\n- 功能降级(简化输出)\n- 缓存响应回退\n- 异步队列兜底\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-AI001~c5",
+      "name": "API与配置管理",
+      "description": "API配置:\n- LLM服务统一API\n- 提供商配置管理\n- API密钥安全存储\n- 模型参数配置\n- 流式响应支持\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-AI001~c6",
+      "name": "监控与指标",
+      "description": "监控系统:\n- 请求延迟指标\n- 成功率/失败率统计\n- Token使用量监控\n- 成本追踪\n- 熔断事件日志\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-AI002": [
+    {
+      "id": "ISSUE-AI002~c1",
+      "name": "需求解析引擎",
+      "description": "解析引擎:\n- 自然语言理解\n- 实体识别(时间/地点/人物)\n- 意图分类\n- 需求结构化输出\n- 置信度评分\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-AI002~c2",
+      "name": "场景特定提取器",
+      "description": "场景适配:\n- VisionShare需求提取(拍照时间、类型、预算)\n- AgentDate需求提取(择偶标准、兴趣、时间)\n- AgentJob需求提取(技能、经验、薪资期望)\n- AgentAd需求提取(商品、预算、品牌偏好)\n- 场景检测自动路由\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-AI002~c3",
+      "name": "需求结构化映射",
+      "description": "映射系统:\n- 提取字段到L2模型映射\n- 属性标准化(价格/时间格式)\n- 枚举值匹配\n- 缺失字段推断\n- 冲突检测与提示\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-AI002~c4",
+      "name": "需求澄清对话",
+      "description": "澄清机制:\n- 缺失信息识别\n- 澄清问题生成\n- 多轮对话管理\n- 用户意图确认\n- 澄清历史记录\n",
+      "status": "split"
+    }
+  ],
+  "ISSUE-AI002a": [
+    {
+      "id": "ISSUE-AI002a~c1",
+      "name": "需求解析引擎",
+      "description": "解析引擎:\n- 自然语言理解\n- 实体识别(时间/地点/人物)\n- 意图分类\n- 需求结构化输出\n- 置信度评分\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-AI002a~c3",
+      "name": "需求结构化映射",
+      "description": "映射系统:\n- 提取字段到L2模型映射\n- 属性标准化(价格/时间格式)\n- 枚举值匹配\n- 缺失字段推断\n- 冲突检测与提示\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-AI002a~c5",
+      "name": "提取结果验证",
+      "description": "验证系统:\n- 字段完整性检查\n- 业务规则验证\n- 合理性检查(预算范围等)\n- 用户确认流程\n- 提取结果修正\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-AI002a~c6",
+      "name": "API与集成",
+      "description": "API实现:\n- 需求提取API端点\n- 批量提取支持\n- 提取结果缓存\n- WebSocket实时反馈\n- 场景配置API\n",
+      "status": "implemented"
+    }
+  ],
+  "ISSUE-AI002b": [
+    {
+      "id": "ISSUE-AI002b~c2",
+      "name": "场景特定提取器",
+      "description": "场景适配:\n- VisionShare需求提取(拍照时间、类型、预算)\n- AgentDate需求提取(择偶标准、兴趣、时间)\n- AgentJob需求提取(技能、经验、薪资期望)\n- AgentAd需求提取(商品、预算、品牌偏好)\n- 场景检测自动路由\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-AI002b~c4",
+      "name": "需求澄清对话",
+      "description": "澄清机制:\n- 缺失信息检测\n- 澄清问题生成\n- 多轮对话管理\n- 用户输入重解析\n- 澄清历史记录\n",
+      "status": "completed"
+    }
+  ],
+  "ISSUE-AI003": [
+    {
+      "id": "ISSUE-AI003~c1",
+      "name": "供给解析引擎",
+      "description": "解析引擎:\n- 服务描述理解\n- 供给实体识别\n- 服务类型分类\n- 供给结构化输出\n- 能力评估评分\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-AI003~c2",
+      "name": "供给场景提取器",
+      "description": "场景适配:\n- VisionShare摄影师供给(设备、经验、风格)\n- AgentJob求职者供给(技能、经历、期望)\n- AgentAd商家供给(商品、优惠、库存)\n- 供给方资质提取\n- 场景自动识别\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-AI003~c3",
+      "name": "供给结构化映射",
+      "description": "映射系统:\n- 供给字段到L2模型映射\n- 价格/时间标准化\n- 服务能力量化\n- 资质等级映射\n- 标签自动生成\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-AI003~c4",
+      "name": "供给信息补全",
+      "description": "补全机制:\n- 信息缺失检测\n- 智能补全建议\n- 外部数据增强\n- 默认值推断\n- 补全确认流程\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-AI003~c5",
+      "name": "供给质量评估",
+      "description": "评估系统:\n- 描述完整性评分\n- 信息可信度评估\n- 竞争力分析\n- 优化建议生成\n- 质量等级划分\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-AI003~c6",
+      "name": "供给API与集成",
+      "description": "API实现:\n- 供给提取API端点\n- 批量供给导入\n- 提取结果存储\n- 质量报告生成\n- 供给更新同步\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-AI003a": [
+    {
+      "id": "ISSUE-AI003a~c1",
+      "name": "供给解析引擎",
+      "description": "解析引擎:\n- 服务描述理解\n- 供给实体识别\n- 服务类型分类\n- 供给结构化输出\n- 能力评估评分\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-AI003a~c2",
+      "name": "供给API与集成",
+      "description": "API实现:\n- 供给提取API端点\n- 批量供给导入\n- 提取结果存储\n- 质量报告生成\n- 供给更新同步\n",
+      "status": "checking"
+    }
+  ],
+  "ISSUE-AI003b": [
+    {
+      "id": "ISSUE-AI003b~c1",
+      "name": "供给场景提取器",
+      "description": "场景适配:\n- VisionShare摄影师供给(设备、经验、风格)\n- AgentJob求职者供给(技能、经历、期望)\n- AgentAd商家供给(商品、优惠、库存)\n- 供给方资质提取\n- 场景自动识别\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-AI003c": [
+    {
+      "id": "ISSUE-AI003c~c1",
+      "name": "供给结构化映射",
+      "description": "映射系统:\n- 供给字段到L2模型映射\n- 价格/时间标准化\n- 服务能力量化\n- 资质等级映射\n- 标签自动生成\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-AI003c~c2",
+      "name": "供给信息补全",
+      "description": "补全机制:\n- 信息缺失检测\n- 智能补全建议\n- 外部数据增强\n- 默认值推断\n- 补全确认流程\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-AI003c~c3",
+      "name": "供给质量评估",
+      "description": "评估系统:\n- 描述完整性评分\n- 信息可信度评估\n- 竞争力分析\n- 优化建议生成\n- 质量等级划分\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-AI004": [
+    {
+      "id": "ISSUE-AI004~c1",
+      "name": "对话生成引擎",
+      "description": "引擎实现:\n- 上下文管理\n- 意图识别\n- 回复生成\n- 对话状态跟踪\n- 多轮对话支持\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-AI004~c2",
+      "name": "Agent人格模拟",
+      "description": "人格系统:\n- Agent人格定义\n- 语气风格适配\n- 行为特征模拟\n- 场景角色扮演\n- 人格一致性维护\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-AI004~c3",
+      "name": "Agent间协商对话",
+      "description": "协商机制:\n- 双向Agent对话\n- 条件协商流程\n- 匹配意愿确认\n- 分歧处理策略\n- 共识达成检测\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-AI004~c4",
+      "name": "上下文记忆管理",
+      "description": "记忆系统:\n- 短期对话记忆\n- 长期Agent记忆\n- 关键信息提取\n- 记忆摘要生成\n- 记忆检索增强\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-AI004~c5",
+      "name": "人机切换处理",
+      "description": "切换机制:\n- 人工介入检测\n- 切换请求处理\n- 对话上下文移交\n- 接管状态同步\n- 恢复AI代理\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-AI004~c6",
+      "name": "对话API与流式输出",
+      "description": "API实现:\n- 对话生成API\n- 流式响应支持\n- WebSocket实时对话\n- 对话历史查询\n- 生成参数配置\n",
+      "status": "checking"
+    }
+  ],
+  "ISSUE-AI005": [
+    {
+      "id": "ISSUE-AI005~c1",
+      "name": "多模态模型适配",
+      "description": "适配层:\n- GPT-4 Vision适配器\n- Claude Vision适配器\n- 其他Vision模型支持\n- 图像编码处理\n- 多模态请求封装\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-AI005~c2",
+      "name": "图像内容分析",
+      "description": "分析能力:\n- 场景识别\n- 物体检测与描述\n- 活动理解\n- 图像分类标签\n- 视觉特征提取\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-AI005~c3",
+      "name": "图像安全审核",
+      "description": "审核系统:\n- 敏感内容检测\n- 涉黄/暴力识别\n- 隐私信息检测\n- 违规图片标记\n- 审核置信度评分\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-AI005~c4",
+      "name": "OCR文字识别",
+      "description": "OCR功能:\n- 图像文字提取\n- 多语言支持\n- 手写体识别\n- 文字位置定位\n- 结构化输出\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-AI005~c5",
+      "name": "AI相册检索",
+      "description": "检索系统:\n- 自然语言图片搜索\n- 相似图片匹配\n- 语义标签检索\n- 图像嵌入生成\n- 向量索引支持\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-AI005~c6",
+      "name": "Vision API端点",
+      "description": "API实现:\n- 图像分析API\n- 批量图像处理\n- 流式上传支持\n- 结果缓存机制\n- 异步处理队列\n",
+      "status": "implemented"
+    }
+  ],
+  "ISSUE-AI006": [
+    {
+      "id": "ISSUE-AI006~c1",
+      "name": "多级降级策略",
+      "description": "降级层级:\n- L1: 主模型降级到备用模型\n- L2: 高质量降级到低成本模型\n- L3: AI生成降级到模板回复\n- L4: 实时降级到异步队列\n- L5: 服务完全不可用提示\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-AI006~c2",
+      "name": "智能降级决策器",
+      "description": "决策系统:\n- 服务健康状态监控\n- 降级级别自动判断\n- 用户影响评估\n- 渐进式降级/恢复\n- 降级原因记录\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-AI006~c3",
+      "name": "模板回复系统",
+      "description": "模板机制:\n- 场景模板库\n- 变量替换支持\n- 模板匹配算法\n- 个性化模板选择\n- 模板动态更新\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-AI006~c4",
+      "name": "响应缓存回退",
+      "description": "缓存机制:\n- 相似请求缓存\n- 缓存命中策略\n- 缓存过期管理\n- 降级时优先使用\n- 缓存预热\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-AI006~c5",
+      "name": "异步处理队列",
+      "description": "队列系统:\n- 延迟任务队列\n- 优先级管理\n- 失败重试机制\n- 队列状态查询\n- 结果回调通知\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-AI006~c6",
+      "name": "降级监控与告警",
+      "description": "监控告警:\n- 降级事件统计\n- 降级持续时间\n- 用户影响评估\n- 自动告警触发\n- 恢复通知\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-API001": [
+    {
+      "id": "ISSUE-API001~c1",
+      "name": "OpenAPI基础配置",
+      "description": "配置OpenAPI规范和文档生成:\n- 安装swagger-jsdoc和swagger-ui-express\n- 配置OpenAPI 3.0基础信息(标题、版本、描述)\n- 设置API服务器配置(开发/测试/生产环境)\n- 配置安全方案(JWT Bearer认证)\n- 文档路由配置(/api-docs)\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-API001~c2",
+      "name": "认证相关API文档",
+      "description": "为认证模块编写OpenAPI文档:\n- POST /api/v1/auth/register - 用户注册\n- POST /api/v1/auth/login - 用户登录\n- POST /api/v1/auth/refresh - 刷新Token\n- POST /api/v1/auth/logout - 用户登出\n- POST /api/v1/auth/forgot-password - 忘记密码\n- POST /api/v1/auth/reset-password - 重置密码\n- 每个端点包含: 请求体、响应示例、错误码、安全要求\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-API001~c3",
+      "name": "用户资料API文档",
+      "description": "为用户资料模块编写OpenAPI文档:\n- GET /api/v1/users/me - 获取当前用户\n- PUT /api/v1/users/me - 更新用户信息\n- GET /api/v1/users/:id - 获取用户详情\n- PUT /api/v1/users/me/avatar - 更新头像\n- 包含数据模型定义(User, UserProfile)\n- 字段类型和验证规则文档化\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-API001~c4",
+      "name": "Agent管理API文档",
+      "description": "为Agent模块编写OpenAPI文档:\n- POST /api/v1/agents - 创建Agent\n- GET /api/v1/agents - 获取Agent列表\n- GET /api/v1/agents/:id - 获取Agent详情\n- PUT /api/v1/agents/:id - 更新Agent\n- DELETE /api/v1/agents/:id - 删除Agent\n- 三层信息模型文档(L1/L2/L3)\n- 场景配置字段说明\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-API001~c5",
+      "name": "匹配和推荐API文档",
+      "description": "为匹配引擎编写OpenAPI文档:\n- GET /api/v1/matches - 获取推荐列表\n- POST /api/v1/matches/:id/like - 喜欢/匹配\n- POST /api/v1/matches/:id/pass - 跳过\n- GET /api/v1/matches/mutual - 双向匹配列表\n- 匹配算法参数说明\n- 筛选条件文档化\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-API001~c6",
+      "name": "聊天通信API文档",
+      "description": "为聊天模块编写OpenAPI文档:\n- GET /api/v1/chats - 获取聊天列表\n- GET /api/v1/chats/:id/messages - 获取消息历史\n- POST /api/v1/chats/:id/messages - 发送消息(REST备用)\n- WebSocket事件文档\n- 消息类型和格式定义\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-API001~c7",
+      "name": "API文档自动化和集成",
+      "description": "API文档自动化流程:\n- 文档自动生成脚本(npm run docs:generate)\n- 文档静态站点导出\n- CI/CD集成(自动部署文档站点)\n- 文档版本管理(与API版本同步)\n- 变更日志自动生成\n- E2E测试集成(基于文档生成测试数据)\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-C001": [
+    {
+      "id": "ISSUE-C001~c1",
+      "name": "Agent 创建 API",
+      "description": "Agent 创建接口:\n- 创建 Agent 端点\n- Agent 类型选择(VisionShare, AgentDate, AgentJob, AgentAd)\n- 基础信息设置(名称、描述)\n- 用户关联和权限\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C001~c2",
+      "name": "Agent 类型系统",
+      "description": "Agent 类型定义:\n- 四种场景类型枚举\n- 场景特定配置 Schema\n- 类型验证和转换\n- 场景能力声明\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C001~c3",
+      "name": "Agent 状态管理",
+      "description": "Agent 生命周期:\n- 状态枚举: draft, active, paused, archived\n- 状态转换规则\n- 状态变更 API\n- 状态历史记录\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C001~c4",
+      "name": "Agent 列表和查询",
+      "description": "Agent 查询接口:\n- 获取用户所有 Agent\n- 按类型筛选\n- 按状态筛选\n- 分页和排序\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C001~c5",
+      "name": "移动端 Agent 管理界面",
+      "description": "Agent 管理 UI:\n- Agent 列表页面\n- 创建 Agent 向导\n- Agent 卡片组件\n- 空状态设计\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-C002": [
+    {
+      "id": "ISSUE-C002~c1",
+      "name": "L1基础信息模型",
+      "description": "Agent L1层 - 可编辑的基础信息:\n- 年龄、性别、地域、职业等基础字段\n- 字段验证和约束规则\n- 用户资料编辑界面\n- L1数据库存储\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-C002~c2",
+      "name": "L2结构化信息模型",
+      "description": "Agent L2层 - 场景特定结构化属性:\n- VisionShare: 拍照类型、设备、风格\n- AgentDate: 择偶标准、兴趣爱好\n- AgentJob: 技能、经验、期望薪资\n- AgentAd: 消费偏好、品牌倾向\n- L1到L2的映射关系\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-C002~c3",
+      "name": "L3自然语言信息模型",
+      "description": "Agent L3层 - 非结构化表达:\n- 自由文本自我介绍\n- 多媒体内容(照片、视频)\n- AI提炼的自然语言描述\n- L3与L1/L2的关联\n",
+      "status": "split"
+    }
+  ],
+  "ISSUE-C002a": [
+    {
+      "id": "ISSUE-C002a~c1",
+      "name": "L1 字段定义",
+      "description": "基础信息 Schema:\n- age: 年龄段枚举\n- gender: 性别\n- location: 地理位置(省市区)\n- occupation: 职业\n- education: 教育水平\n- 字段验证规则\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002a~c2",
+      "name": "L1 数据存储",
+      "description": "数据库模型:\n- Prisma AgentProfile 模型 L1 字段\n- JSON 字段存储灵活数据\n- 索引优化\n- 数据迁移\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002a~c3",
+      "name": "L1 编辑 API",
+      "description": "L1 信息接口:\n- 获取 L1 信息\n- 更新 L1 信息\n- 字段级验证\n- 变更历史\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002a~c4",
+      "name": "L1 编辑界面",
+      "description": "L1 配置 UI:\n- 表单字段组件\n- 地理位置选择器\n- 职业/教育选择器\n- 实时验证\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002a~c5",
+      "name": "L1 完成度计算",
+      "description": "完成度系统:\n- 字段权重定义\n- 完成度百分比计算\n- 缺失字段提示\n- 完成度展示\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-C002b": [
+    {
+      "id": "ISSUE-C002b~c1",
+      "name": "L2 Schema 系统",
+      "description": "结构化信息定义:\n- 场景特定的 L2 Schema\n- 字段类型: enum, range, boolean, multi_select\n- 条件字段(dependent fields)\n- Schema 版本管理\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002b~c2",
+      "name": "L2 动态表单生成",
+      "description": "表单渲染:\n- 根据 Schema 动态生成表单\n- 条件字段显示逻辑\n- 字段联动\n- 移动端适配\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002b~c3",
+      "name": "L2 数据存储和查询",
+      "description": "L2 存储:\n- JSON 字段存储\n- GIN 索引支持复杂查询\n- 数据验证 middleware\n- 历史版本存储\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002b~c4",
+      "name": "L2 编辑和预览",
+      "description": "L2 配置界面:\n- 分步骤表单\n- 实时预览\n- 自动保存草稿\n- 完成度展示\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002b~c5",
+      "name": "L2 验证和约束",
+      "description": "数据验证:\n- Schema 验证\n- 必填字段检查\n- 选项值白名单验证\n- 验证错误提示\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-C002c": [
+    {
+      "id": "ISSUE-C002c~c1",
+      "name": "L3 文本输入和存储",
+      "description": "L3 文本管理:\n- 多段文本输入支持\n- 富文本/纯文本选项\n- 字符数限制和提示\n- 草稿自动保存\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002c~c2",
+      "name": "AI 文本提炼服务",
+      "description": "文本提炼:\n- LLM 提炼 L3 到 L2\n- 提炼结果置信度评分\n- 可编辑的提炼结果\n- 提炼历史记录\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002c~c3",
+      "name": "提炼结果确认界面",
+      "description": "提炼确认 UI:\n- 提炼结果展示\n- 编辑和确认流程\n- 拒绝和重新提炼\n- 置信度可视化\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002c~c4",
+      "name": "L3 数据存储",
+      "description": "L3 存储:\n- 原始文本存储\n- 提炼历史存储\n- 文本向量化(可选)\n- 全文搜索索引\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C002c~c5",
+      "name": "AI 提炼优化和反馈",
+      "description": "提炼优化:\n- 用户修正反馈收集\n- Few-shot 示例学习\n- 提炼质量监控\n- 模型调优\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-C003": [
+    {
+      "id": "ISSUE-C003~c1",
+      "name": "地理位置数据模型",
+      "description": "地理数据:\n- 省市区编码标准\n- 经纬度坐标存储\n- GeoJSON 支持\n- 地址解析服务\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-C003~c2",
+      "name": "地理位置选择组件",
+      "description": "位置选择 UI:\n- 三级联动选择器\n- 地图选点功能\n- 定位权限处理\n- 常用地址管理\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-C003~c3",
+      "name": "距离计算和筛选",
+      "description": "距离筛选:\n- 基于经纬度的距离计算\n- 距离范围筛选(1km, 5km, 10km等)\n- PostGIS 空间查询优化\n- 近似距离估算\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-C003~c4",
+      "name": "地理围栏支持",
+      "description": "围栏功能:\n- 多边形围栏定义\n- 点是否在围栏内判断\n- 围栏交集计算\n- 围栏可视化\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-C003~c5",
+      "name": "位置服务集成",
+      "description": "位置服务:\n- 高德/百度地图 API 集成\n- 地理编码(地址转坐标)\n- 逆地理编码(坐标转地址)\n- 地址联想搜索\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-C003~c6",
+      "name": "Agent地理位置筛选集成",
+      "description": "Agent位置筛选:\n- Agent位置数据存储和更新\n- 基于位置的Agent搜索API\n- 实时位置更新机制\n- 位置隐私设置管理\n",
+      "status": "checking"
+    }
+  ],
+  "ISSUE-C004": [
+    {
+      "id": "ISSUE-C004~c1",
+      "name": "过滤 DSL 设计",
+      "description": "查询 DSL:\n- 条件表达式定义\n- 操作符: eq, ne, gt, lt, in, contains\n- 逻辑组合: AND, OR, NOT\n- 嵌套条件支持\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C004~c2",
+      "name": "查询构建器",
+      "description": "查询构建:\n- DSL 到 SQL/Prisma 转换\n- JSON 字段查询支持\n- 类型安全查询构建\n- 查询优化\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C004~c3",
+      "name": "过滤界面组件",
+      "description": "过滤 UI:\n- 筛选器面板\n- 条件添加/删除\n- 范围选择器\n- 多选组件\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C004~c4",
+      "name": "过滤 API",
+      "description": "过滤接口:\n- 按属性筛选 Agent\n- 分页和排序\n- 结果计数\n- 筛选建议\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C004~c5",
+      "name": "过滤性能优化",
+      "description": "性能优化:\n- 复合索引设计\n- 查询计划分析\n- 缓存常用筛选结果\n- 大数据量分页优化\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C004~c6",
+      "name": "保存和复用筛选条件",
+      "description": "筛选器保存:\n- 保存筛选条件\n- 命名和分类\n- 快速应用已保存条件\n- 筛选条件分享\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-C005": [
+    {
+      "id": "ISSUE-C005~c1",
+      "name": "信用分范围筛选",
+      "description": "信用筛选:\n- 最低信用分设置\n- 信用分范围筛选\n- 信用等级筛选(优秀/良好/一般)\n- 无信用分处理\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C005~c2",
+      "name": "信用门槛配置",
+      "description": "门槛设置:\n- 场景特定的信用门槛\n- 动态门槛调整\n- 门槛豁免机制\n- 门槛变更通知\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C005~c3",
+      "name": "信用筛选界面",
+      "description": "信用筛选 UI:\n- 信用分滑块选择器\n- 信用等级快速选择\n- 筛选结果信用展示\n- 信用解释说明\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-C005~c4",
+      "name": "信用不足提示",
+      "description": "不足处理:\n- 信用不足原因说明\n- 提升信用建议\n- 临时准入申请\n- 替代推荐\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-C006": [
+    {
+      "id": "ISSUE-C006~c1",
+      "name": "场景配置 Schema",
+      "description": "场景配置:\n- VisionShare 场景配置\n- AgentDate 场景配置\n- AgentJob 场景配置\n- AgentAd 场景配置\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-C006~c2",
+      "name": "场景字段定义",
+      "description": "字段系统:\n- 场景特定字段\n- 字段验证规则\n- 字段依赖关系\n- 字段国际化\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-C006~c3",
+      "name": "场景模板系统",
+      "description": "场景模板:\n- 预设场景模板\n- 模板应用和复制\n- 用户自定义模板\n- 模板分享\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-C006~c4",
+      "name": "场景能力声明",
+      "description": "能力系统:\n- 场景支持的功能列表\n- 能力启用/禁用\n- 能力依赖检查\n- 能力版本管理\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-C006~c5",
+      "name": "场景切换和迁移",
+      "description": "场景切换:\n- 场景间数据迁移\n- 配置转换规则\n- 迁移预览\n- 迁移确认\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-C006~c6",
+      "name": "场景配置管理UI",
+      "description": "提供场景配置的可视化管理界面，支持场景切换和配置预览",
+      "status": ""
+    }
+  ],
+  "ISSUE-C007": [
+    {
+      "id": "ISSUE-C007~c1",
+      "name": "披露级别定义",
+      "description": "披露控制:\n- 公开信息(任何人可见)\n- 匹配后可见信息\n- 私聊后可见信息\n- 引荐后可见信息\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-C007~c2",
+      "name": "字段级披露设置",
+      "description": "字段控制:\n- 每个字段的披露级别\n- 默认披露策略\n- 批量设置\n- 预览效果\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-C007~c3",
+      "name": "披露权限检查",
+      "description": "权限控制:\n- 披露级别计算\n- 访问权限验证\n- 自动披露升级\n- 披露历史记录\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-C007~c4",
+      "name": "信息披露预览",
+      "description": "预览功能:\n- 不同角色视角预览\n- 信息脱敏展示\n- 披露状态可视化\n- 对方可见信息提示\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-C007~c5",
+      "name": "披露变更通知",
+      "description": "变更处理:\n- 披露设置变更记录\n- 已披露信息撤回\n- 对方变更通知\n- 披露审计日志\n",
+      "status": "implemented"
+    }
+  ],
+  "ISSUE-COM001": [
+    {
+      "id": "ISSUE-COM001~c1",
+      "name": "Socket.io服务器",
+      "description": "服务器搭建:\n- Socket.io与Express集成\n- 命名空间设计(/chat, /presence)\n- 适配器配置(支持多实例)\n- 传输方式配置\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-COM001~c2",
+      "name": "认证中间件",
+      "description": "连接认证:\n- JWT token验证\n- 连接权限检查\n- 用户身份绑定\n- 认证失败处理\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-COM001~c3",
+      "name": "连接管理",
+      "description": "连接生命周期:\n- 连接建立处理\n- 断开连接清理\n- 心跳检测\n- 重连机制\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-COM001~c4",
+      "name": "房间系统",
+      "description": "房间管理:\n- 房间创建和销毁\n- 加入/离开房间\n- 房间广播\n- 房间成员查询\n",
+      "status": "split"
+    }
+  ],
+  "ISSUE-COM001a": [
+    {
+      "id": "ISSUE-COM001a~c1",
+      "name": "Socket.io 服务器",
+      "description": "服务端配置:\n- Socket.io 集成到 Express\n- CORS 配置\n- 认证中间件\n- 命名空间设置\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-COM001a~c2",
+      "name": "Socket.io 客户端",
+      "description": "客户端配置:\n- 移动端 Socket.io 客户端\n- 连接配置和重连\n- 事件监听管理\n- 连接状态管理\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-COM001a~c3",
+      "name": "连接认证",
+      "description": "Socket 认证:\n- JWT Token 认证\n- 连接权限验证\n- 用户关联\n- 连接限制\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-COM001a~c4",
+      "name": "心跳和连接管理",
+      "description": "连接管理:\n- 心跳机制\n- 断线检测\n- 连接池管理\n- 连接统计\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-COM001a~c5",
+      "name": "适配器配置",
+      "description": "多服务器支持:\n- Redis 适配器\n- 多节点消息广播\n- 水平扩展支持\n- 负载均衡\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-COM001b": [
+    {
+      "id": "ISSUE-COM001b~c1",
+      "name": "房间管理",
+      "description": "房间系统:\n- 创建房间\n- 加入/离开房间\n- 房间成员管理\n- 房间销毁\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-COM001b~c2",
+      "name": "用户连接追踪",
+      "description": "连接追踪:\n- 用户连接状态\n- 多设备连接管理\n- 连接历史记录\n- 设备信息存储\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-COM001b~c3",
+      "name": "房间广播",
+      "description": "广播机制:\n- 房间内广播\n- 用户特定推送\n- 多房间广播\n- 离线用户处理\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-COM001b~c4",
+      "name": "在线状态管理",
+      "description": "状态管理:\n- 在线/离线状态\n- 最后活跃时间\n- 状态变更通知\n- 状态订阅\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-COM001b~c5",
+      "name": "连接安全",
+      "description": "安全控制:\n- 房间访问权限\n- 加入房间验证\n- 踢出房间功能\n- 房间黑名单\n",
+      "status": "checking"
+    }
+  ],
+  "ISSUE-COM002": [
+    {
+      "id": "ISSUE-COM002~c1",
+      "name": "聊天房间架构",
+      "description": "房间系统:\n- 私聊房间创建\n- 群聊房间管理\n- 房间成员权限\n- 消息路由机制\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-COM002~c2",
+      "name": "消息持久化",
+      "description": "消息存储:\n- 消息数据模型\n- 消息存储和查询\n- 历史记录分页\n- 消息软删除\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-COM002~c3",
+      "name": "实时消息投递",
+      "description": "消息投递:\n- 实时消息推送\n- 离线消息队列\n- 消息确认机制\n- 消息重试策略\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-COM002~c4",
+      "name": "状态同步",
+      "description": "状态管理:\n- 已读回执\n- 在线/离线状态\n- 打字指示器\n- 最后活跃时间\n",
+      "status": "split"
+    }
+  ],
+  "ISSUE-COM002a": [
+    {
+      "id": "ISSUE-COM002a~c1",
+      "name": "聊天房间模型",
+      "description": "房间数据:\n- ChatRoom 数据库模型\n- 房间类型: private, group\n- 房间元数据\n- 房间设置\nstatus: \"completed\"\ncoverage:\nunit: required\nintegration: required\ne2e: not_needed\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查聊天房间模型，验证 ChatRoom 模型包含 type, participants, settings 字段\"\ncontext_files: [\"prisma/schema.prisma\"]",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-COM002a~c2",
+      "name": "房间创建 API",
+      "description": "创建接口:\n- 创建私聊房间\n- 创建群聊房间\n- 房间创建验证\n- 初始化房间设置\nstatus: \"completed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查房间创建 API，验证有 /api/v1/chat/rooms POST 端点\"\ncontext_files: [\"apps/server/src/routes/chat.ts\"]",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-COM002a~c3",
+      "name": "参与者管理",
+      "description": "成员管理:\n- 添加参与者\n- 移除参与者\n- 参与者角色\n- 参与者权限\nstatus: \"completed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查参与者管理，验证有 RoomParticipant 模型和相关 API\"\ncontext_files: [\"apps/server/src/services/participantService.ts\"]",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-COM002a~c4",
+      "name": "房间列表和查询",
+      "description": "房间查询:\n- 获取用户房间列表\n- 房间搜索\n- 房间排序\n- 房间筛选\nstatus: \"completed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查房间查询，验证有 /api/v1/chat/rooms GET 端点返回用户房间列表\"\ncontext_files: [\"apps/server/src/routes/chat.ts\"]",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-COM002a~c5",
+      "name": "移动端房间列表界面",
+      "description": "房间列表 UI:\n- 房间列表组件\n- 最后消息预览\n- 未读数显示\n- 房间头像\nstatus: \"completed\"\ncoverage:\nunit: not_needed\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查房间列表界面，验证有 ChatRoomList 组件展示房间和最后消息\"\ncontext_files: [\"apps/mobile/src/components/Chat/ChatRoomList.tsx\"]",
+      "status": "completed"
+    }
+  ],
+  "ISSUE-COM002b": [
+    {
+      "id": "ISSUE-COM002b~c1",
+      "name": "消息模型设计",
+      "description": "数据模型:\n- Message 数据库模型\n- 消息类型: text, image, file, system\n- 消息状态: sent, delivered, read\n- 消息元数据\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-COM002b~c2",
+      "name": "消息发送和存储",
+      "description": "消息处理:\n- 消息验证和过滤\n- 消息存储\n- 消息广播\n- 发送确认\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-COM002b~c3",
+      "name": "历史记录查询",
+      "description": "查询接口:\n- 分页查询历史消息\n- 消息搜索\n- 按时间范围查询\n- 消息过滤\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-COM002b~c4",
+      "name": "消息同步机制",
+      "description": "同步系统:\n- 消息 ID 序列\n- 增量同步\n- 消息去重\n- 同步状态管理\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-COM002b~c5",
+      "name": "离线消息处理",
+      "description": "离线处理:\n- 离线消息存储\n- 上线推送\n- 消息队列\n- 推送通知\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-COM002b~c6",
+      "name": "消息已读回执",
+      "description": "回执系统:\n- 已读状态追踪\n- 已读回执发送\n- 已读时间记录\n- 批量已读标记\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-COM002b~c7",
+      "name": "数据一致性保证",
+      "description": "消息持久化系统保证事务处理、错误回滚机制完善",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-COM002b~c8",
+      "name": "性能基准",
+      "description": "消息查询响应时间小于200ms，支持10万条消息分页",
+      "status": "completed"
+    }
+  ],
+  "ISSUE-COM003": [
+    {
+      "id": "ISSUE-COM003~c1",
+      "name": "\\u5207\\u6362\\u72B6\\u6001\\u7BA1\\u7406",
+      "description": "",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-COM003~c2",
+      "name": "\\u5207\\u6362\\u8BF7\\u6C42\\u548C\\u54CD\\u5E94",
+      "description": "",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-COM003~c3",
+      "name": "\\u5207\\u6362\\u754C\\u9762\\u7EC4\\u4EF6",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-COM003~c4",
+      "name": "\\u6D88\\u606F\\u53D1\\u9001\\u8005\\u6807\\u8BC6",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-COM003~c5",
+      "name": "\\u5207\\u6362\\u6743\\u9650\\u63A7\\u5236",
+      "description": "",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-COM004": [
+    {
+      "id": "ISSUE-COM004~c1",
+      "name": "\\u6D88\\u606F\\u534F\\u8BAE\\u5B9A\\u4E49",
+      "description": "",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-COM004~c2",
+      "name": "Agent \\u8EAB\\u4EFD\\u6807\\u8BC6",
+      "description": "",
+      "status": ""
+    }
+  ],
+  "ISSUE-COM005": [
+    {
+      "id": "ISSUE-COM005~c1",
+      "name": "\\u5EFA\\u8BAE\\u751F\\u6210\\u670D\\u52A1",
+      "description": "",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-COM005~c2",
+      "name": "\\u5EFA\\u8BAE\\u5C55\\u793A\\u754C\\u9762",
+      "description": "",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-COM005~c3",
+      "name": "\\u5EFA\\u8BAE API",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-COM005~c4",
+      "name": "\\u5EFA\\u8BAE\\u53CD\\u9988\\u6536\\u96C6",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-COM005~c5",
+      "name": "\\u5EFA\\u8BAE\\u504F\\u597D\\u8BBE\\u7F6E",
+      "description": "",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-CR001": [
+    {
+      "id": "ISSUE-CR001~c1",
+      "name": "信用分数据模型",
+      "description": "信用分数据库设计:\n- CreditScore 表设计(用户ID、当前分数、等级、更新时间)\n- CreditHistory 表设计(分数变更历史记录)\n- CreditFactor 表设计(各维度评分因子存储)\n- 数据库索引优化(按用户ID和日期查询)\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-CR001~c2",
+      "name": "多维度信用评分算法",
+      "description": "信用分计算核心算法:\n- 基础信息完整性评分(资料完善度)\n- 行为信用评分(活跃度、响应率)\n- 交易信用评分(完成率、纠纷记录)\n- 社交信用评分(评价、举报记录)\n- 加权综合算法实现\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-CR001~c3",
+      "name": "信用等级系统",
+      "description": "信用等级划分机制:\n- 等级定义(例如: 优秀900-1000、良好750-899、一般600-749、较差<600)\n- 等级权益配置(不同等级的权限差异)\n- 等级升降级规则\n- 等级徽章和视觉展示\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-CR001~c4",
+      "name": "信用分API接口",
+      "description": "信用分对外接口:\n- GET /api/v1/credit/score - 获取当前用户信用分\n- GET /api/v1/credit/history - 获取信用分历史记录\n- GET /api/v1/credit/factors - 获取各维度评分详情\n- POST /api/v1/credit/recalculate - 触发重新计算(管理员)\n- 其他用户信用分查询(脱敏)\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-CR001~c5",
+      "name": "信用分实时更新机制",
+      "description": "信用分动态更新:\n- 事件驱动更新(交易完成、评价提交等)\n- 定时任务全量计算(每日/每周)\n- 更新频率限制(防止刷分)\n- 异常波动检测和告警\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-CR001~c6",
+      "name": "信用分过滤与匹配集成",
+      "description": "信用分在匹配中的应用:\n- 信用分筛选接口(最低分数要求)\n- 信用分排序权重\n- 信用不达标用户过滤\n- 匹配结果中的信用分展示\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-CR002a": [
+    {
+      "id": "ISSUE-CR002a~c1",
+      "name": "评价数据模型",
+      "description": "评价系统数据库设计:\n- Review 表设计(评价ID、评价者、被评价者、评分、内容、场景类型)\n- ReviewReply 表设计(评价回复)\n- ReviewReport 表设计(评价举报)\n- ReviewStats 表设计(评价统计缓存)\n- 索引优化(按用户ID和场景类型查询)\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-CR002a~c2",
+      "name": "双向评分API",
+      "description": "评分提交和查询接口:\n- POST /api/v1/reviews - 提交评价\n- GET /api/v1/reviews/received - 获取收到的评价\n- GET /api/v1/reviews/given - 获取发出的评价\n- PUT /api/v1/reviews/:id/reply - 回复评价\n- DELETE /api/v1/reviews/:id - 删除评价(管理员)\n- 评价权限验证(交易完成后才可评价)\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-CR002a~c3",
+      "name": "评价审核与反作弊",
+      "description": "评价内容审核机制:\n- 敏感词过滤和AI内容审核\n- 恶意刷评价检测(同一用户多次评价)\n- 评价真实性验证(需有实际交互)\n- 申诉和举报处理流程\n- 异常评价自动标记\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-CR002b": [
+    {
+      "id": "ISSUE-CR002b~c1",
+      "name": "评价展示组件",
+      "description": "移动端评价UI:\n- 评价列表页面(收到的/发出的)\n- 评价卡片组件(评分、内容、时间)\n- 评分输入组件(星级评分+文字评价)\n- 评价详情页(含回复)\n- 评价统计展示(平均分、分布图)\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-CR002c": [
+    {
+      "id": "ISSUE-CR002c~c1",
+      "name": "评价与信用分联动",
+      "description": "评价对信用分的影响:\n- 收到好评增加信用分\n- 收到差评扣除信用分\n- 评价数量对信用的影响\n- 评价回复率计入信用\n- 触发信用分重算事件\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-CR002c~c2",
+      "name": "评价通知与提醒",
+      "description": "评价相关通知:\n- 收到新评价推送通知\n- 待评价提醒(交易完成后24小时)\n- 评价回复通知\n- 差评预警通知(信用分下降时)\n- 通知偏好设置\n",
+      "status": "completed"
+    }
+  ],
+  "ISSUE-CR003a": [
+    {
+      "id": "ISSUE-CR003a~c1",
+      "name": "积分账户数据模型",
+      "description": "积分系统数据库设计:\n- PointsAccount 表设计(用户ID、当前余额、总获取、总消耗、冻结金额)\n- PointsTransaction 表设计(交易ID、类型、金额、描述、关联场景)\n- PointsFreeze 表设计(冻结记录用于交易担保)\n- 账户唯一性约束和用户关联\n- 余额非负约束\n",
+      "status": "checking"
+    }
+  ],
+  "ISSUE-CR003b": [
+    {
+      "id": "ISSUE-CR003b~c1",
+      "name": "积分交易核心服务",
+      "description": "积分操作原子性实现:\n- 积分获取接口(任务奖励、签到等)\n- 积分消耗接口(购买服务、打赏等)\n- 积分冻结/解冻(交易担保)\n- 积分转账(用户间转移)\n- 事务安全(防止超卖和并发问题)\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-CR003b~c2",
+      "name": "积分规则配置",
+      "description": "积分获取和消耗规则:\n- 获取规则配置(签到、分享、完成任务等)\n- 消耗规则配置(查看照片、发起匹配等)\n- 每日/每周获取上限\n- 积分价值换算(人民币->积分)\n- 规则动态调整接口(管理员)\n",
+      "status": "passed"
+    }
+  ],
+  "ISSUE-CR003c": [
+    {
+      "id": "ISSUE-CR003c~c1",
+      "name": "积分交易记录API",
+      "description": "积分记录查询接口:\n- GET /api/v1/points/balance - 获取当前余额\n- GET /api/v1/points/transactions - 获取交易记录(支持筛选和分页)\n- GET /api/v1/points/transactions/:id - 获取交易详情\n- GET /api/v1/points/stats - 获取积分统计(收入/支出分类)\n- 交易记录导出功能\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-CR003d": [
+    {
+      "id": "ISSUE-CR003d~c1",
+      "name": "积分钱包UI",
+      "description": "移动端积分界面:\n- 积分钱包首页(余额、收支概览)\n- 交易记录列表(时间轴展示)\n- 交易详情页(含关联场景)\n- 积分获取任务列表\n- 积分充值入口(预留)\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-CR003d~c2",
+      "name": "VisionShare场景积分支付",
+      "description": "积分在VisionShare场景的应用:\n- 照片查看积分支付接口\n- 支付前余额检查\n- 积分支付给供给方(平台抽成)\n- 支付成功后的照片解锁\n- 支付失败和退款处理\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-DATE001": [
+    {
+      "id": "ISSUE-DATE001-1~c1",
+      "name": "交友画像数据模型",
+      "description": "数据模型:\n- DatingProfile 模型定义\n- 基础条件字段（年龄范围、地域、身高范围、学历等）\n- 性格偏好字段（MBTI、性格特质等）\n- 兴趣爱好字段（多选+自定义）\n- 生活方式字段（作息、烟酒、宠物等）\n- 关系期望字段（交友目的、发展节奏等）\n- 与 Agent L2/L3 模型的关联\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-DATE001-1~c3",
+      "name": "交友画像配置API",
+      "description": "后端API:\n- 创建/更新交友画像\n- 获取画像详情\n- 画像完整性检查\n- 必填项验证\n- 选项值范围验证\n- 与场景配置的集成\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-DATE001-2~c2",
+      "name": "AI智能提炼交友需求",
+      "description": "AI提炼功能:\n- 自然语言描述转结构化数据\n- 从用户自我介绍提取关键信息\n- 识别隐性偏好（通过否定词、强调词）\n- 智能补全建议（基于已有信息推断其他偏好）\n- 提炼结果的可编辑确认\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-DATE001-3~c4",
+      "name": "隐私与信息披露控制",
+      "description": "隐私控制:\n- 字段级可见性设置（公开/仅匹配成功/保密）\n- 敏感信息保护（收入、详细住址等）\n- 信息披露等级配置\n- 不同阶段的披露策略\n- 用户完全控制展示内容\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE001-4~c5",
+      "name": "交友画像移动端界面",
+      "description": "移动端UI:\n- 交友画像配置向导\n- 分步骤表单（基础条件→性格偏好→兴趣爱好→生活方式）\n- 自然语言输入框带AI提炼按钮\n- 选项选择器（单选/多选/滑块）\n- 画像预览功能\n- 隐私设置界面\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE001-4~c6",
+      "name": "画像质量评估与优化建议",
+      "description": "质量评估:\n- 画像完整度评分\n- 信息丰富度分析\n- 匹配潜力评估\n- 优化建议生成\n- 缺失关键信息提醒\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE001~c1",
+      "name": "交友画像数据模型",
+      "description": "数据模型:\n- DatingProfile 模型定义\n- 基础条件字段（年龄范围、地域、身高范围、学历等）\n- 性格偏好字段（MBTI、性格特质等）\n- 兴趣爱好字段（多选+自定义）\n- 生活方式字段（作息、烟酒、宠物等）\n- 关系期望字段（交友目的、发展节奏等）\n- 与 Agent L2/L3 模型的关联\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE001~c2",
+      "name": "AI智能提炼交友需求",
+      "description": "AI提炼功能:\n- 自然语言描述转结构化数据\n- 从用户自我介绍提取关键信息\n- 识别隐性偏好（通过否定词、强调词）\n- 智能补全建议（基于已有信息推断其他偏好）\n- 提炼结果的可编辑确认\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE001~c3",
+      "name": "交友画像配置API",
+      "description": "后端API:\n- 创建/更新交友画像\n- 获取画像详情\n- 画像完整性检查\n- 必填项验证\n- 选项值范围验证\n- 与场景配置的集成\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE001~c4",
+      "name": "隐私与信息披露控制",
+      "description": "隐私控制:\n- 字段级可见性设置（公开/仅匹配成功/保密）\n- 敏感信息保护（收入、详细住址等）\n- 信息披露等级配置\n- 不同阶段的披露策略\n- 用户完全控制展示内容\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE001~c5",
+      "name": "交友画像移动端界面",
+      "description": "移动端UI:\n- 交友画像配置向导\n- 分步骤表单（基础条件→性格偏好→兴趣爱好→生活方式）\n- 自然语言输入框带AI提炼按钮\n- 选项选择器（单选/多选/滑块）\n- 画像预览功能\n- 隐私设置界面\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE001~c6",
+      "name": "画像质量评估与优化建议",
+      "description": "质量评估:\n- 画像完整度评分\n- 信息丰富度分析\n- 匹配潜力评估\n- 优化建议生成\n- 缺失关键信息提醒\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-DATE002": [
+    {
+      "id": "ISSUE-DATE002~c1",
+      "name": "交友匹配度算法",
+      "description": "匹配算法:\n- 多维度相似度计算（基础条件、性格、兴趣、生活方式）\n- 权重配置（硬条件vs软偏好）\n- 互补性评分（性格互补、技能互补）\n- 地理位置接近度计算\n- 综合匹配度分数（0-100）\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-DATE002~c2",
+      "name": "Agent主动推荐逻辑",
+      "description": "推荐逻辑:\n- 每日匹配候选池生成\n- Agent自动筛选高匹配度对象\n- 批量匹配候选人的排序算法\n- 过滤已匹配/已拒绝/黑名单用户\n- 推荐多样性保证（避免同质化）\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE002~c3",
+      "name": "匹配结果推送通知",
+      "description": "推送系统:\n- 每日推荐推送（新匹配对象提醒）\n- 推送内容个性化（展示匹配亮点）\n- 推送频率控制（避免打扰）\n- 用户偏好学习时间设置\n- 推送点击跳转匹配详情\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE002~c4",
+      "name": "Agent发起对话匹配",
+      "description": "对话启动:\n- Agent自动发起对话流程\n- 个性化开场白生成（基于匹配点）\n- 对方Agent的自动响应\n- 对话目标设定（了解特定信息）\n- 对话轮次控制（初步交流后暂停等待用户）\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE002~c5",
+      "name": "匹配结果展示界面",
+      "description": "移动端UI:\n- 每日推荐列表（卡片式展示）\n- 匹配详情页（照片、基本信息、匹配度、共同兴趣）\n- 匹配亮点高亮展示\n- 快速操作（喜欢/跳过/查看详情）\n- 匹配历史记录\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-DATE002~c6",
+      "name": "用户反馈与推荐优化",
+      "description": "反馈系统:\n- 喜欢/跳过快捷反馈\n- 不感兴趣原因收集（可选）\n- 推荐准确性评分\n- 反馈数据用于算法优化\n- 用户偏好学习\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-DATE003": [
+    {
+      "id": "ISSUE-DATE003~c1",
+      "name": "Agent对话房间隔离机制",
+      "description": "隔离机制:\n- 双人Agent对话房间创建\n- 对话状态管理（进行中/已完成/中断）\n- 对话超时控制（单轮和总时长）\n- 对话轮次限制配置\n- 用户不可见隔离层（防止提前暴露）\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-DATE003~c2",
+      "name": "Agent对话生成与管理",
+      "description": "对话生成:\n- 基于交友画像的对话策略\n- 话题选择与引导（从浅入深）\n- 人设一致性维护（与L3模型一致）\n- 信息获取与验证\n- 对话上下文记忆（多轮连贯性）\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-DATE003~c3",
+      "name": "对话质量实时评估",
+      "description": "质量评估:\n- 对话流畅度监测\n- 话题深度评估\n- 双方参与度分析\n- 信息获取有效性\n- 实时质量分数（低质量时调整策略）\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-DATE003~c4",
+      "name": "对话摘要与评估报告生成",
+      "description": "报告生成:\n- 对话内容摘要（关键信息提取）\n- 匹配度重新评估（基于对话）\n- 共同话题亮点提炼\n- 潜在问题提示（价值观冲突等）\n- 建议是否继续交流\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-DATE003~c5",
+      "name": "用户介入与决策界面",
+      "description": "移动端UI:\n- Agent对话进行中状态提示\n- 对话完成通知\n- 对话摘要查看界面\n- 匹配评估报告展示\n- 用户决策操作（同意/拒绝/再聊一轮）\n- 决策理由收集（可选）\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-DATE003~c6",
+      "name": "异常处理与安全机制",
+      "description": "安全机制:\n- 敏感话题检测与回避\n- 不当内容拦截\n- 对话异常中断处理\n- 用户紧急终止对话\n- 争议上报机制\n",
+      "status": "completed"
+    }
+  ],
+  "ISSUE-DATE004": [
+    {
+      "id": "ISSUE-DATE004~c1",
+      "name": "双向同意状态管理",
+      "description": "状态管理:\n- 同意状态数据模型（pending/accepted/rejected/expired）\n- 双方独立决策存储\n- 决策时效控制（超时自动过期）\n- 决策变更规则（有效期内可改）\n- 最终结果计算（双方都同意才成功）\nstatus: \"completed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查双向同意状态管理，验证有完整状态模型、独立决策存储、时效控制、变更规则和最终结果计算逻辑\"\ncontext_files: [\"apps/server/src/models/MutualConsent.ts\", \"apps/server/src/services/dating/consentStateManager.ts\"]",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-DATE004~c2",
+      "name": "引荐结果处理流程",
+      "description": "结果处理:\n- 双方同意：交换联系方式、创建真人聊天房间、发送匹配成功通知\n- 单方同意：保持匿名、提示对方未同意、提供再次推荐选项\n- 双方/单方拒绝：记录原因、更新推荐算法、避免重复推荐\n- 超时处理：自动取消、提醒决策\nstatus: \"completed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查引荐结果处理流程，验证双方同意时交换联系方式创建聊天房间，单方同意保持匿名，拒绝时更新算法，超时自动处理\"\ncontext_files: [\"apps/server/src/services/dating/referralService.ts\", \"apps/server/src/services/dating/consentProcessor.ts\"]",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-DATE004~c3",
+      "name": "真人聊天房间创建",
+      "description": "房间创建:\n- 双方同意后自动创建1v1聊天房间\n- 继承Agent对话上下文（可选）\n- 身份标识切换（从Agent切换到真人）\n- 初始欢迎消息生成\n- 人机切换标记（用户接管提示）\nstatus: \"completed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查真人聊天房间创建功能，验证双方同意后自动创建1v1房间，支持继承Agent上下文，身份切换到真人，并生成欢迎消息\"\ncontext_files: [\"apps/server/src/services/dating/humanChatRoomService.ts\"]",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-DATE004~c4",
+      "name": "引荐结果通知系统",
+      "description": "通知系统:\n- 对方已决策提醒（不透露具体选择）\n- 双方同意成功通知\n- 引荐失败通知（婉转化表达）\n- 新真人消息提醒\n- 决策即将超时提醒\nstatus: \"completed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: required\nverification:\nai:\nprompt: \"检查引荐结果通知系统，验证有决策状态提醒、成功/失败通知、新消息提醒和超时提醒功能，且失败通知表达婉转化\"\ncontext_files: [\"apps/server/src/services/dating/referralNotificationService.ts\"]",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-DATE004~c5",
+      "name": "引荐记录与管理",
+      "description": "记录管理:\n- 引荐历史记录存储\n- 引荐状态追踪（待处理/成功/失败）\n- 引荐统计（成功率、偏好分析）\n- 黑名单管理（拒绝后不再推荐）\n- 引荐报告导出（可选）\nstatus: \"completed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查引荐记录与管理功能，验证有历史记录存储、状态追踪、统计分析、黑名单管理和报告导出功能\"\ncontext_files: [\"apps/server/src/services/dating/referralHistoryService.ts\", \"apps/server/src/models/ReferralRecord.ts\"]",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-DATE004~c6",
+      "name": "移动端引荐交互界面",
+      "description": "移动端UI:\n- 决策等待界面（显示对方决策中）\n- 匹配成功庆祝界面\n- 真人聊天入口\n- 引荐历史列表\n- 引荐详情查看（摘要、决策时间线）\n- 重新匹配入口\nstatus: \"completed\"\ncoverage:\nunit: not_needed\nintegration: required\ne2e: required\nai: sufficient\nmanual: required\nverification:\nai:\nprompt: \"检查移动端引荐交互界面，验证有决策等待、成功庆祝、聊天入口、历史列表、详情查看和重新匹配功能\"\ncontext_files: [\"apps/mobile/src/screens/dating/ReferralScreen.tsx\", \"apps/mobile/src/screens/dating/MatchSuccessScreen.tsx\", \"apps/mobile/src/screens/dating/ReferralHistoryScreen.tsx\"]",
+      "status": "completed"
+    }
+  ],
+  "ISSUE-DESIGN-1": [
+    {
+      "id": "ISSUE-DESIGN-1~c1",
+      "name": "CONCEPTS.md 已创建",
+      "description": "核心概念定义文档，包含 5+ 个概念定义",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-1~c2",
+      "name": "PROJECT.md 已创建",
+      "description": "项目介绍文档，包含项目名称、描述、核心价值",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-1~c3",
+      "name": "TECH_STACK.md 已创建",
+      "description": "技术栈文档，包含编程语言、运行时、核心依赖",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-1~c4",
+      "name": "ARCHITECTURE.md 已创建",
+      "description": "架构文档，包含目录结构、模块设计",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-1~c5",
+      "name": "USER_STORIES.md 已创建",
+      "description": "用户故事文档，包含 3+ 个用户故事，ID 格式为 US-XXX-{slug}",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-DESIGN-2": [
+    {
+      "id": "ISSUE-DESIGN-2~c1",
+      "name": "IssueTree.md 已完善",
+      "description": "IssueTree.md 包含所有 feature/component issues 及依赖关系",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-DESIGN-3": [
+    {
+      "id": "ISSUE-DESIGN-3~c1",
+      "name": "所有 Issues 已生成",
+      "description": "IssueTree.md 中每个 issue 都有对应的 YAML 文件",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-3~c2",
+      "name": "YAML格式验证",
+      "description": "所有生成的YAML文件语法正确",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-3~c3",
+      "name": "字段完整性",
+      "description": "每个YAML包含必需字段 (id, title, status, description, criteria等)",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-3~c4",
+      "name": "ID唯一性",
+      "description": "所有Issue ID不重复",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-3~c5",
+      "name": "依赖关系验证",
+      "description": "prerequisites引用的Issue真实存在",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-3~c2",
+      "name": "YAML格式验证",
+      "description": "所有生成的YAML文件语法正确",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-3~c3",
+      "name": "字段完整性",
+      "description": "每个YAML包含必需字段 (id, title, status, description, criteria等)",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-3~c4",
+      "name": "ID唯一性",
+      "description": "所有Issue ID不重复",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-DESIGN-3~c5",
+      "name": "依赖关系验证",
+      "description": "prerequisites引用的Issue真实存在",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-F001": [
+    {
+      "id": "ISSUE-F001~c1",
+      "name": "Monorepo 结构初始化",
+      "description": "使用 pnpm workspaces 设置 monorepo 结构，包含以下目录:\n- apps/server: Express 后端服务\n- apps/mobile: Expo React Native 移动端\n- packages/shared: 共享类型定义和工具函数\n- packages/config: 共享配置文件(ESLint, TypeScript等)\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F001~c2",
+      "name": "TypeScript 配置完成",
+      "description": "为每个 workspace 配置 TypeScript:\n- 根目录 tsconfig.json 作为基础配置\n- 每个子项目继承并扩展配置\n- 配置严格的类型检查选项\n- 设置路径别名和模块解析\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F001~c3",
+      "name": "代码规范工具配置",
+      "description": "配置代码质量工具链:\n- ESLint 配置(使用 @typescript-eslint)\n- Prettier 配置(统一代码格式)\n- Husky + lint-staged (Git 钩子)\n- commitlint (提交信息规范)\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F001~c4",
+      "name": "环境变量配置管理",
+      "description": "建立环境变量管理方案:\n- 创建 .env.example 模板文件\n- 配置 dotenv 加载环境变量\n- 设置不同环境的配置文件(.env.development, .env.production)\n- 环境变量类型定义和验证\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F001~c5",
+      "name": "开发文档和 README",
+      "description": "创建项目基础文档:\n- 根目录 README.md (项目介绍、快速开始)\n- CONTRIBUTING.md (贡献指南)\n- docs/ 目录下的架构文档\n- API 文档结构模板\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F001~c6",
+      "name": "Git 工作流和分支策略",
+      "description": "配置 Git 工作流:\n- 设置 GitHub/GitLab 仓库\n- 配置分支保护规则(main, develop)\n- PR 模板和 Code Review 流程\n- CI/CD 基础工作流配置\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F001~c7",
+      "name": "数据库和PostGIS安装",
+      "description": "安装并配置开发数据库:\n- PostgreSQL 数据库创建 (visionshare_dev)\n- PostGIS 扩展安装和启用\n- 数据库连接配置 (.env.dev)\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-F002": [
+    {
+      "id": "ISSUE-F002~c1",
+      "name": "Prisma 初始化和配置",
+      "description": "配置 Prisma ORM:\n- 安装 @prisma/client 和 prisma CLI\n- 配置 schema.prisma 基础设置(数据源、生成器)\n- 设置数据库连接字符串管理\n- 配置 Prisma Client 单例模式\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F002~c2",
+      "name": "核心数据模型定义",
+      "description": "定义核心实体模型:\n- User (用户): id, email, phone, password, profile, createdAt, updatedAt\n- Agent (智能体): id, userId, name, type, config, status, creditScore\n- AgentProfile (Agent资料): L1基础信息, L2结构化信息, L3自然语言描述\n- Scene (场景): VisionShare, AgentDate, AgentJob, AgentAd\n- 关系定义和索引优化\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F002~c3",
+      "name": "消息和通信模型",
+      "description": "定义通信相关模型:\n- ChatRoom (聊天室): id, type, sceneId, participants, metadata\n- Message (消息): id, roomId, senderId, content, type, status, createdAt\n- Connection (连接): socket连接管理、在线状态\n- 消息已读状态追踪\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F002~c4",
+      "name": "匹配和信用模型",
+      "description": "定义匹配和信用相关模型:\n- Match (匹配记录): matcherId, matcheeId, score, status, scene\n- CreditRecord (信用记录): userId, score, reason, delta\n- Transaction (积分交易): userId, amount, type, description\n- Rating (评分): fromUserId, toUserId, score, comment\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F002~c5",
+      "name": "数据库迁移系统",
+      "description": "建立数据库迁移流程:\n- 创建初始迁移文件\n- 配置迁移脚本命令\n- 设置迁移回滚机制\n- 开发环境和生产环境迁移策略\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F002~c6",
+      "name": "种子数据和数据库工具",
+      "description": "创建种子数据和工具:\n- seed.ts 种子数据脚本\n- 开发环境测试数据生成\n- Prisma Studio 配置\n- 数据库查询工具和辅助函数\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F002~c7",
+      "name": "数据库索引和性能优化",
+      "description": "优化数据库性能:\n- 为常用查询字段添加索引\n- 配置复合索引\n- 设置适当的外键约束\n- 文档记录查询优化策略\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-F003": [
+    {
+      "id": "ISSUE-F003~c1",
+      "name": "Express 应用初始化",
+      "description": "配置 Express 应用:\n- 安装 Express 和相关中间件\n- 配置 body-parser, cors, helmet\n- 设置应用入口文件 (app.ts, server.ts)\n- 配置开发热重载\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F003~c2",
+      "name": "路由结构设计和实现",
+      "description": "建立模块化路由结构:\n- routes/ 目录结构\n- API 版本控制 (v1, v2)\n- 路由模块化组织 (auth, user, agent, chat, match等)\n- 路由前缀和命名规范\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F003~c3",
+      "name": "全局中间件配置",
+      "description": "配置全局中间件:\n- 请求日志中间件\n- 错误处理中间件\n- 请求超时处理\n- 请求 ID 注入\n- 压缩和静态文件服务\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F003~c4",
+      "name": "统一响应格式和错误处理",
+      "description": "建立标准化响应:\n- ApiResponse 统一响应类\n- 错误类和错误码定义\n- HTTP 状态码映射\n- 异常捕获和转换\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F003~c5",
+      "name": "环境配置和启动脚本",
+      "description": "配置运行环境:\n- 不同环境的配置加载\n- 开发服务器启动脚本\n- 生产环境 PM2/Docker 配置\n- 端口和主机配置\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F003~c6",
+      "name": "健康检查和监控端点",
+      "description": "实现系统健康检查:\n- /health 健康检查端点\n- /ready 就绪探针\n- /metrics 指标端点(基础)\n- 数据库连接状态检查\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-F004": [
+    {
+      "id": "ISSUE-F004~c1",
+      "name": "Expo 项目初始化",
+      "description": "配置 Expo 项目:\n- 使用 create-expo-app 初始化项目\n- 配置 Expo SDK 和依赖\n- 设置 TypeScript 支持\n- 配置 metro bundler\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F004~c2",
+      "name": "导航结构配置",
+      "description": "设置导航系统:\n- 配置 React Navigation\n- 设置底部 Tab 导航\n- 配置 Stack 导航器\n- 实现深层链接配置\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F004~c3",
+      "name": "全局状态管理",
+      "description": "配置状态管理:\n- 集成 Zustand/Redux Toolkit\n- 设置用户状态存储\n- 配置持久化存储(AsyncStorage)\n- 状态类型定义\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F004~c4",
+      "name": "网络请求和 API 客户端",
+      "description": "配置 API 通信:\n- 集成 Axios/Fetch\n- 配置请求/响应拦截器\n- 设置 API 基础 URL\n- 请求错误处理和重试机制\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F004~c5",
+      "name": "UI 组件库和主题",
+      "description": "设置 UI 基础设施:\n- 配置 NativeWind/Tamagui/原生样式\n- 设置主题和颜色系统\n- 创建基础组件库(Button, Input, Card等)\n- 响应式布局适配\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-F004~c6",
+      "name": "权限和原生模块配置",
+      "description": "配置原生权限:\n- 相机权限配置\n- 位置权限配置\n- 通知权限配置\n- 存储权限配置\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-F005": [
+    {
+      "id": "ISSUE-F005~c1",
+      "name": "日志库集成和配置",
+      "description": "配置日志库:\n- 集成 Pino/Winston 日志库\n- 配置日志级别 (DEBUG, INFO, WARN, ERROR)\n- 设置结构化日志格式(JSON)\n- 配置日志轮转和清理\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F005~c2",
+      "name": "请求上下文追踪",
+      "description": "实现请求上下文:\n- 请求 ID 生成和传播\n- 用户上下文注入\n- 异步上下文存储 (AsyncLocalStorage)\n- 链路追踪支持\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F005~c3",
+      "name": "多输出目标配置",
+      "description": "配置日志输出:\n- 控制台输出(开发环境)\n- 文件输出(按日期/大小轮转)\n- 错误日志单独输出\n- 可选: 远程日志服务集成\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F005~c4",
+      "name": "敏感信息脱敏",
+      "description": "实现日志脱敏:\n- 密码、Token 自动脱敏\n- 手机号、邮箱部分隐藏\n- 可配置的脱敏字段列表\n- 脱敏规则测试\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F005~c5",
+      "name": "移动端日志集成",
+      "description": "移动端日志系统:\n- 移动端日志库集成\n- 日志本地存储\n- 崩溃日志收集\n- 日志上传机制\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-F006": [
+    {
+      "id": "ISSUE-F006~c1",
+      "name": "Sentry 后端集成",
+      "description": "后端错误追踪:\n- Sentry SDK 集成\n- 错误自动捕获\n- 用户信息关联\n- 环境配置 (DSN)\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F006~c2",
+      "name": "Sentry 移动端集成",
+      "description": "移动端错误追踪:\n- Sentry React Native SDK\n- 崩溃报告捕获\n- 面包屑导航\n- 发布版本关联\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F006~c3",
+      "name": "性能监控配置",
+      "description": "性能监控:\n- API 响应时间追踪\n- 数据库查询性能\n- 内存使用情况\n- 关键事务性能指标\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F006~c4",
+      "name": "告警规则配置",
+      "description": "错误告警:\n- 错误率阈值告警\n- P0/P1 错误即时通知\n- 告警渠道配置(邮件/Slack)\n- 告警去重和抑制\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-F006~c5",
+      "name": "用户反馈收集",
+      "description": "用户反馈:\n- 应用内反馈表单\n- 截图和日志附件\n- 反馈分类和标签\n- 反馈处理工作流\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-INF001": [
+    {
+      "id": "CRIT-INF001-1",
+      "name": "路由配置",
+      "description": "支持基于路径、方法、Header 的路由规则配置。\n支持动态路由更新，无需重启网关。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF001-2",
+      "name": "负载均衡",
+      "description": "实现轮询、权重、最少连接等负载均衡算法。\n支持健康检查和自动剔除故障节点。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF001-3",
+      "name": "认证集成",
+      "description": "集成 JWT 认证，支持 Token 解析和验证。\n支持黑白名单和 Token 刷新机制。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF001-4",
+      "name": "限流熔断",
+      "description": "实现基于令牌桶的限流算法。\n集成熔断器模式，防止级联故障。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF001-5",
+      "name": "日志聚合",
+      "description": "统一收集和输出请求/响应日志。\n支持分布式追踪 ID 传递。\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-INF002": [
+    {
+      "id": "CRIT-INF002-1",
+      "name": "缓存客户端封装",
+      "description": "封装 Redis 客户端，支持连接池管理。\n支持主从模式和哨兵模式的高可用配置。\n实现连接健康检查和自动重连。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF002-2",
+      "name": "缓存策略实现",
+      "description": "实现 Cache-Aside 策略（应用层控制）。\n实现 Write-Through 策略（写时更新缓存）。\n实现 Read-Through 策略（读时填充缓存）。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF002-3",
+      "name": "缓存注解/装饰器",
+      "description": "提供装饰器/API 简化缓存使用。\n支持按 key 模式清除缓存。\n支持缓存版本管理和批量操作。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF002-4",
+      "name": "缓存监控与统计",
+      "description": "实现缓存命中率、失效率监控。\n提供缓存使用统计和慢查询日志。\n支持缓存容量预警。\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-INF003": [
+    {
+      "id": "CRIT-INF003-1",
+      "name": "队列基础设施",
+      "description": "集成 Bull/BullMQ 队列库。\n支持多队列配置和队列隔离。\n实现队列连接管理和优雅关闭。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF003-2",
+      "name": "任务生产者API",
+      "description": "提供统一的任务投递接口。\n支持延时任务（指定时间执行）。\n支持定时任务（Cron 表达式）。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF003-3",
+      "name": "任务消费者Worker",
+      "description": "实现 Worker 进程管理。\n支持并发控制和速率限制。\n实现任务超时处理和优雅退出。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF003-4",
+      "name": "重试与死信机制",
+      "description": "实现指数退避重试策略。\n支持最大重试次数配置。\n实现死信队列收集失败任务。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF003-5",
+      "name": "队列监控面板",
+      "description": "提供队列状态查看接口。\n支持任务进度查询。\n实现失败任务人工处理接口。\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-INF004": [
+    {
+      "id": "CRIT-INF004-1",
+      "name": "迁移工作流",
+      "description": "建立 migration 创建、审查、执行的标准流程。\n支持迁移脚本自动生成和手动编辑。\n实现迁移脚本命名规范检查。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF004-2",
+      "name": "多环境管理",
+      "description": "支持开发/测试/生产环境隔离。\n实现环境特定的迁移配置。\n支持环境状态同步和差异检测。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF004-3",
+      "name": "迁移安全机制",
+      "description": "生产环境迁移前自动备份。\n支持迁移失败自动回滚。\n实现破坏性变更检测和警告。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF004-4",
+      "name": "迁移历史记录",
+      "description": "记录每次迁移的元数据（执行人、时间、耗时）。\n支持迁移历史查询和审计。\n实现迁移回滚到指定版本。\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-INF005": [
+    {
+      "id": "CRIT-INF005-1",
+      "name": "多平台适配器",
+      "description": "实现 APNs (iOS) 推送适配器。\n实现 FCM (Android) 推送适配器。\n实现 Web Push 适配器。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF005-2",
+      "name": "统一推送API",
+      "description": "提供统一的推送发送接口。\n支持设备Token管理和绑定。\n实现批量推送和个性化内容。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF005-3",
+      "name": "富媒体通知",
+      "description": "支持图片、视频、Action Button。\n实现通知分类和优先级。\n支持深度链接跳转。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF005-4",
+      "name": "用户偏好管理",
+      "description": "支持用户设置通知偏好。\n实现通知频率控制（防打扰）。\n支持免打扰时段设置。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF005-5",
+      "name": "推送统计与追踪",
+      "description": "记录推送送达、打开、转化数据。\n支持推送效果分析报表。\n实现失败重推机制。\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-INF006": [
+    {
+      "id": "CRIT-INF006-1",
+      "name": "邮件发送适配器",
+      "description": "实现 SMTP 发送适配器。\n集成 SendGrid API 适配器。\n集成 AWS SES 适配器。\n支持发送渠道故障切换。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF006-2",
+      "name": "模板管理系统",
+      "description": "支持 HTML/文本邮件模板。\n实现模板变量注入和多语言支持。\n提供模板版本管理和预览功能。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF006-3",
+      "name": "事务邮件支持",
+      "description": "支持注册验证邮件。\n支持密码重置邮件。\n支持系统通知邮件。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF006-4",
+      "name": "批量邮件发送",
+      "description": "支持批量邮件队列发送。\n实现发送速率控制。\n支持发送任务暂停/恢复。\n",
+      "status": ""
+    },
+    {
+      "id": "CRIT-INF006-5",
+      "name": "邮件追踪与退信",
+      "description": "实现邮件打开/点击追踪。\n处理退信和投诉反馈。\n维护邮箱信誉列表。\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-INT001a": [
+    {
+      "id": "ISSUE-INT001a~c1",
+      "name": "VisionShare场景完整流程测试",
+      "description": "VisionShare端到端测试:\n- 需求发布到接单完整流程\n- 相机拍照上传与AI脱敏处理\n- 照片查看与积分支付流程\n- AI相册智能检索功能验证\n- 移动端与后端API集成验证\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-INT001a~c2",
+      "name": "AgentDate场景完整流程测试",
+      "description": "AgentDate端到端测试:\n- 交友画像配置完整流程\n- Agent主动匹配推荐机制\n- Agent间对话匹配流程\n- 双向同意引荐机制验证\n- 人机切换场景测试\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-INT001b": [
+    {
+      "id": "ISSUE-INT001b~c3",
+      "name": "AgentJob场景完整流程测试",
+      "description": "AgentJob端到端测试:\n- 求职者画像与简历配置\n- 招聘方职位发布流程\n- 简历智能匹配筛选验证\n- 薪资协商与面试安排流程\n- 招聘场景人机切换测试\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-INT001b~c4",
+      "name": "AgentAd场景完整流程测试",
+      "description": "AgentAd端到端测试:\n- 消费需求画像配置\n- 商家优惠配置发布\n- Agent优惠协商谈判流程\n- 一键购买与优惠码验证\n- 多商家比价场景测试\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-INT001c": [
+    {
+      "id": "ISSUE-INT001c~c5",
+      "name": "跨模块集成测试与契约验证",
+      "description": "跨模块集成验证:\n- Auth-Core-Matching层间API契约测试\n- AI服务与核心业务模块集成验证\n- 通信层与各场景模块消息流转测试\n- 信用积分系统全链路验证\n- Socket.io实时通信集成测试\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-INT001c~c6",
+      "name": "测试框架与覆盖率报告",
+      "description": "测试框架集成验证:\n- Jest单元测试覆盖率达标(>80%)\n- API集成测试通过率100%\n- E2E端到端测试稳定性验证\n- 移动端测试框架集成\n- 测试报告自动生成与展示\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-INT002a": [
+    {
+      "id": "ISSUE-INT002a~c1",
+      "name": "API性能基准测试与优化",
+      "description": "API性能测试与优化:\n- 核心API响应时间基准测试(目标P95<200ms)\n- 高并发场景API吞吐量测试\n- 数据库查询性能分析与优化\n- 缓存策略实施与验证(Redis)\n- API限流与熔断机制压力测试\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-INT002a~c2",
+      "name": "数据库性能优化与测试",
+      "description": "数据库性能优化:\n- 慢查询分析与索引优化\n- 高并发读写性能测试\n- Prisma连接池配置优化\n- 复杂查询(匹配算法)性能优化\n- 数据库分表分库策略评估\n",
+      "status": "checking"
+    }
+  ],
+  "ISSUE-INT002b": [
+    {
+      "id": "ISSUE-INT002b~c1",
+      "name": "WebSocket实时通信性能测试",
+      "description": "WebSocket性能测试:\n- Socket.io连接数压力测试(目标1000+并发)\n- 消息广播延迟测试(目标<100ms)\n- 房间系统并发性能验证\n- 在线状态同步性能测试\n- 连接断开重连稳定性测试\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-INT002b~c2",
+      "name": "AI服务性能与熔断策略验证",
+      "description": "AI服务性能测试:\n- LLM API响应时间优化与测试\n- AI服务熔断器触发与恢复验证\n- 多LLM降级策略压力测试\n- 图像分析Vision API性能测试\n- AI服务队列与并发控制验证\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-INT002c": [
+    {
+      "id": "ISSUE-INT002c~c1",
+      "name": "移动端性能测试与优化",
+      "description": "移动端性能优化:\n- 应用启动时间测试与优化(目标<3s)\n- 列表滚动性能测试(目标60fps)\n- 内存占用分析与优化\n- 图片加载与缓存性能优化\n- 电池消耗与网络流量优化\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-INT002c~c2",
+      "name": "全链路压力测试与报告",
+      "description": "全链路压力测试:\n- 端到端场景压测(模拟真实用户行为)\n- 峰值流量承载能力测试\n- 系统瓶颈识别与优化报告\n- 监控告警阈值配置验证\n- 性能测试报告与优化建议文档\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-INT003": [
+    {
+      "id": "ISSUE-INT003~c1",
+      "name": "演示环境部署与配置",
+      "description": "演示环境准备:\n- 独立演示环境服务器部署(Demo环境)\n- 演示环境数据库初始化与数据隔离\n- 域名与SSL证书配置(demo.bridgeai.com)\n- CDN加速与静态资源优化\n- 演示环境监控与日志配置\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-INT003~c2",
+      "name": "演示数据准备与种子脚本",
+      "description": "演示数据准备:\n- 演示用户账号数据(5个预设账号)\n- VisionShare演示任务数据(10个示例任务)\n- AgentDate演示用户画像数据\n- AgentJob演示职位与简历数据\n- AgentAd演示商家优惠与消费需求数据\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-INT003~c3",
+      "name": "演示脚本与流程设计",
+      "description": "演示脚本编写:\n- VisionShare场景演示脚本(3分钟)\n- AgentDate场景演示脚本(4分钟)\n- AgentJob场景演示脚本(4分钟)\n- AgentAd场景演示脚本(4分钟)\n- 演示流程时间控制与转场设计\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-INT003~c4",
+      "name": "演示故障回退与应急预案",
+      "description": "演示应急预案:\n- 网络延迟/断网场景应对策略\n- AI服务故障回退方案(预设回复)\n- 演示数据重置脚本(快速恢复)\n- 热备份演示环境配置\n- 常见问题FAQ与应对方案\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-INT003~c5",
+      "name": "演示视频录制与备份",
+      "description": "演示录制准备:\n- 核心场景演示视频录制(带旁白)\n- 移动端操作演示录屏\n- Web端与移动端双屏演示方案\n- 演示视频剪辑与字幕添加\n- 备用演示视频离线存储\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-INT003~c6",
+      "name": "演示检查清单与Go-Live准备",
+      "description": "Demo Go-Live准备:\n- 演示前检查清单(Pre-demo Checklist)\n- 演示设备与环境测试\n- 演示者培训与彩排记录\n- 演示反馈收集表单\n- 演示后数据清理与报告\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-JOB001": [
+    {
+      "id": "ISSUE-JOB001~c1",
+      "name": "求职画像数据模型",
+      "description": "模型设计:\n- 求职者Agent类型定义(JobSeekerAgent)\n- 基本信息字段(姓名、联系方式、所在地)\n- 专业技能标签体系\n- 工作经历结构化存储\n- 教育背景信息\n- 期望薪资范围与职位类型\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-JOB001~c2",
+      "name": "AI简历提炼服务",
+      "description": "AI提炼:\n- 自然语言简历解析\n- 关键信息自动提取(技能/经验/学历)\n- 技能标签智能匹配与标准化\n- 工作经历时间线生成\n- 简历质量评分与优化建议\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-JOB001~c3",
+      "name": "简历隐私控制",
+      "description": "隐私管理:\n- 简历可见性设置(公开/仅投递/隐藏)\n- 敏感信息脱敏处理(手机号/邮箱)\n- 联系方式访问权限控制\n- 投递记录追踪\n- 简历撤回功能\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-JOB001~c4",
+      "name": "简历创建与编辑API",
+      "description": "CRUD接口:\n- 创建/更新简历API\n- 简历版本管理\n- 多简历支持(针对不同职位)\n- 简历预览功能\n- 简历导出(PDF/Markdown)\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-JOB001~c5",
+      "name": "移动端简历编辑界面",
+      "description": "UI实现:\n- 简历表单组件(分步骤填写)\n- 技能标签选择器\n- 工作经历时间线编辑\n- 简历预览页面\n- 隐私设置界面\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-JOB001~c6",
+      "name": "简历投递与状态追踪",
+      "description": "投递系统:\n- 向职位投递简历功能\n- 投递状态追踪(已投递/已查看/感兴趣/不合适)\n- 投递历史记录\n- 投递反馈通知\n- 批量投递限制管理\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-JOB002": [
+    {
+      "id": "ISSUE-JOB002~c1",
+      "name": "招聘方画像数据模型",
+      "description": "模型设计:\n- 招聘方Agent类型定义(EmployerAgent)\n- 公司信息字段(名称/规模/行业/地址)\n- 招聘者身份信息\n- 公司认证状态\n- 在招职位列表关联\n- 公司品牌展示设置\nstatus: \"passed\"\ncoverage:\nunit: required\nintegration: required\ne2e: not_needed\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查招聘方画像模型，验证有EmployerProfile类型定义，包含公司信息、认证状态、在招职位等字段\"\ncontext_files: [\"packages/shared/src/types/employer.ts\", \"packages/shared/src/schemas/employerSchema.ts\"]",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-JOB002~c2",
+      "name": "职位信息数据模型",
+      "description": "职位模型:\n- 职位基础信息(标题/部门/人数)\n- 职位描述与要求\n- 技能要求标签\n- 学历与经验要求\n- 薪资范围与福利\n- 工作地点与工作方式(远程/现场/混合)\n- 职位有效期与状态\nstatus: \"passed\"\ncoverage:\nunit: required\nintegration: required\ne2e: not_needed\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查职位数据模型，验证有JobPosting类型定义，包含完整职位信息字段和要求，支持工作方式选择\"\ncontext_files: [\"packages/shared/src/types/jobPosting.ts\", \"packages/shared/src/schemas/jobPostingSchema.ts\"]",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-JOB002~c3",
+      "name": "AI职位需求提炼服务",
+      "description": "AI提炼:\n- 自然语言职位描述解析\n- 关键要求自动提取(技能/经验/学历)\n- 技能标签智能匹配\n- 薪资范围合理性评估\n- 职位描述质量评分与优化建议\n- 竞争力分析(与同类职位对比)\nstatus: \"passed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查AI职位提炼服务，验证有JobExtractionService，能将自然语言职位描述转换为结构化数据，包含技能提取和竞争力分析\"\ncontext_files: [\"apps/server/src/services/job/jobExtraction.ts\", \"apps/server/src/ai/prompts/jobExtraction.ts\"]",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-JOB002~c4",
+      "name": "职位发布与管理API",
+      "description": "CRUD接口:\n- 发布/更新职位API\n- 职位状态管理(草稿/发布/暂停/关闭)\n- 职位刷新与置顶功能\n- 简历筛选与管理\n- 职位数据统计(浏览/投递/感兴趣)\nstatus: \"passed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查职位API，验证有完整的RESTful端点(/api/job/postings)，支持职位发布、状态管理和数据统计功能\"\ncontext_files: [\"apps/server/src/routes/job/jobPostingRoutes.ts\", \"apps/server/src/controllers/job/jobPostingController.ts\"]",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-JOB002~c5",
+      "name": "移动端职位管理界面",
+      "description": "UI实现:\n- 职位发布表单(分步骤填写)\n- 公司信息设置页面\n- 职位列表与管理页面\n- 收到的简历列表\n- 简历筛选与标记功能\nstatus: \"passed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查移动端职位管理界面，验证有JobPostingScreen和ReceivedResumesScreen组件，支持职位发布和简历管理\"\ncontext_files: [\"apps/mobile/src/screens/Job/JobPostingScreen.tsx\", \"apps/mobile/src/screens/Job/ReceivedResumesScreen.tsx\"]",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-JOB002~c6",
+      "name": "公司认证与信誉系统",
+      "description": "认证系统:\n- 公司资质认证流程\n- 企业邮箱验证\n- 营业执照上传与审核\n- 认证标识展示\n- 公司信誉评分\nstatus: \"passed\"\ncoverage:\nunit: required\nintegration: required\ne2e: required\nai: sufficient\nmanual: not_needed\nverification:\nai:\nprompt: \"检查公司认证系统，验证有CompanyVerification流程，包含企业邮箱验证和营业执照审核功能\"\ncontext_files: [\"apps/server/src/services/job/companyVerification.ts\", \"apps/mobile/src/screens/Job/CompanyVerificationScreen.tsx\"]",
+      "status": "passed"
+    }
+  ],
+  "ISSUE-JOB003a": [
+    {
+      "id": "ISSUE-JOB003a~c1",
+      "name": "职位匹配度算法",
+      "description": "匹配算法:\n- 技能匹配度计算(关键词匹配+语义相似度)\n- 经验匹配评估(年限/行业/职级)\n- 薪资期望匹配度计算\n- 地域与工作方式兼容性评估\n- 综合匹配度评分(0-100分)\n- 匹配度权重可配置\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-JOB003b": [
+    {
+      "id": "ISSUE-JOB003b~c1",
+      "name": "简历智能筛选服务",
+      "description": "AI筛选:\n- 基于LLM的简历深度分析\n- 隐含技能推断\n- 经验相关性评估\n- 文化匹配度预测\n- 筛选建议生成\n- 排序与排名算法\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-JOB003b~c2",
+      "name": "双向推荐引擎",
+      "description": "推荐系统:\n- 为求职者推荐合适职位\n- 为招聘方推荐合适候选人\n- 推荐结果排序与分页\n- 推荐解释(为什么匹配)\n- 推荐反馈学习(喜欢/不喜欢)\n- 推荐去重与刷新\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-JOB003c": [
+    {
+      "id": "ISSUE-JOB003c~c1",
+      "name": "匹配查询API",
+      "description": "查询接口:\n- 职位搜索API(多条件筛选)\n- 候选人搜索API(招聘方视角)\n- 匹配结果获取API\n- 搜索结果排序与过滤\n- 搜索历史记录\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-JOB003c~c2",
+      "name": "匹配通知与推送",
+      "description": "通知系统:\n- 新匹配结果通知\n- 高匹配度职位推送\n- 简历被查看通知\n- 匹配状态变更通知\n- 通知偏好设置\n",
+      "status": "completed"
+    }
+  ],
+  "ISSUE-JOB003d": [
+    {
+      "id": "ISSUE-JOB003d~c1",
+      "name": "移动端匹配展示界面",
+      "description": "UI实现:\n- 职位推荐列表页面\n- 候选人推荐列表页面(招聘方)\n- 匹配详情页面\n- 匹配度可视化展示\n- 快速操作(感兴趣/跳过)\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-JOB004": [
+    {
+      "id": "ISSUE-JOB004~c1",
+      "name": "协商对话房间",
+      "description": "协商房间:\n- 创建薪资协商专用房间\n- 求职者Agent与招聘方Agent对话\n- 协商话题管理(薪资/福利/工作时间)\n- 协商进度追踪\n- 历史协商记录\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-JOB004~c2",
+      "name": "Agent薪资协商服务",
+      "description": "AI协商:\n- 基于市场数据的薪资建议\n- 双方利益分析与平衡点寻找\n- 协商策略生成\n- 条件让步建议\n- 协商结果总结\n- 多轮协商支持\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-JOB004~c3",
+      "name": "面试安排系统",
+      "description": "面试安排:\n- 面试时间协调(双方可用时间匹配)\n- 面试方式选择(视频/电话/现场)\n- 日历集成与提醒\n- 面试确认与取消\n- 面试反馈收集\n- 多轮面试管理\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-JOB004~c4",
+      "name": "协商结果与人机切换",
+      "description": "结果处理:\n- 协商结果确认机制\n- 双方同意检测\n- 人机切换触发(进入真人面试)\n- 协商记录导出\n- 拒绝原因记录\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-JOB004~c5",
+      "name": "薪资协商与面试API",
+      "description": "API接口:\n- 创建协商房间API\n- 发送协商消息API\n- 面试时间提议/确认API\n- 协商状态查询API\n- 面试列表管理API\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-JOB004~c6",
+      "name": "移动端协商与面试界面",
+      "description": "UI实现:\n- 协商对话界面(类似聊天)\n- 薪资调整提议组件\n- 面试时间选择器\n- 面试列表与详情页面\n- 协商结果确认页面\n",
+      "status": "passed"
+    }
+  ],
+  "ISSUE-M001": [
+    {
+      "id": "ISSUE-M001~c1",
+      "name": "查询DSL设计",
+      "description": "领域特定语言:\n- JSON格式查询语法\n- 条件操作符(等于、范围、包含)\n- 嵌套和组合表达式\n- 类型安全验证\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-M001~c2",
+      "name": "查询构建器",
+      "description": "构建器实现:\n- 流畅API设计\n- 类型安全的构建接口\n- 常见查询模式封装\n- 查询验证和优化提示\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-M001~c3",
+      "name": "查询执行引擎",
+      "description": "执行引擎:\n- 查询编译和执行计划\n- 执行计划优化\n- 并行查询支持\n- 资源管理和限流\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-M001~c4",
+      "name": "实时查询更新",
+      "description": "实时更新:\n- WebSocket推送\n- 查询结果缓存\n- 增量更新机制\n- 订阅管理\n",
+      "status": "split"
+    }
+  ],
+  "ISSUE-M001a": [
+    {
+      "id": "ISSUE-M001a~c1",
+      "name": "DSL 语法设计",
+      "description": "查询 DSL:\n- JSON 格式查询语法\n- 支持的条件操作符\n- 嵌套和组合表达式\n- 类型安全验证\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-M001a~c2",
+      "name": "查询解析器",
+      "description": "解析实现:\n- DSL 解析器\n- 语法验证\n- 错误报告\n- 查询优化建议\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-M001a~c3",
+      "name": "可视化查询构建器",
+      "description": "可视化构建:\n- 拖拽式条件添加\n- 条件组管理\n- 实时预览 DSL\n- 查询验证反馈\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-M001a~c4",
+      "name": "DSL 到 SQL 转换",
+      "description": "查询转换:\n- DSL 到 Prisma 查询转换\n- JSON 字段查询支持\n- 复杂 JOIN 处理\n- 子查询支持\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-M001a~c5",
+      "name": "查询保存和分享",
+      "description": "查询管理:\n- 保存查询条件\n- 命名和描述\n- 查询分享\n- 查询导入/导出\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-M001b": [
+    {
+      "id": "ISSUE-M001b~c1",
+      "name": "查询执行引擎",
+      "description": "执行引擎:\n- 查询编译和执行\n- 执行计划优化\n- 并行查询支持\n- 资源管理\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-M001b~c2",
+      "name": "查询缓存",
+      "description": "缓存系统:\n- 查询结果缓存\n- 缓存失效策略\n- 智能缓存预热\n- 缓存命中率监控\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-M001b~c3",
+      "name": "实时结果更新",
+      "description": "实时更新:\n- WebSocket 推送更新\n- 订阅查询结果\n- 增量更新\n- 连接管理\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-M001b~c4",
+      "name": "查询性能监控",
+      "description": "性能监控:\n- 查询执行时间\n- 慢查询检测\n- 性能瓶颈分析\n- 查询优化建议\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-M001b~c5",
+      "name": "查询限流和配额",
+      "description": "限流系统:\n- 用户查询配额\n- 频率限制\n- 复杂查询限制\n- 配额管理界面\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-M003": [
+    {
+      "id": "ISSUE-M003~c1",
+      "name": "\\u5339\\u914D\\u5EA6\\u8BA1\\u7B97\\u6A21\\u578B",
+      "description": "",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-M003~c2",
+      "name": "L1/L2/L3 \\u5339\\u914D\\u8BA1\\u7B97",
+      "description": "",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-M003~c3",
+      "name": "\\u5339\\u914D\\u5EA6 API",
+      "description": "",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-M003~c4",
+      "name": "\\u5339\\u914D\\u5EA6\\u53EF\\u89C6\\u5316",
+      "description": "",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-M003~c5",
+      "name": "\\u5339\\u914D\\u7B97\\u6CD5 A/B \\u6D4B\\u8BD5",
+      "description": "",
+      "status": "completed"
+    }
+  ],
+  "ISSUE-SEC001": [
+    {
+      "id": "ISSUE-SEC001~c1",
+      "name": "角色定义与管理",
+      "description": "角色模型设计:\n- 定义系统基础角色(user, admin, moderator)\n- 角色数据库存储结构\n- 角色CRUD管理接口\n- 用户角色分配机制\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-SEC001~c2",
+      "name": "权限粒度定义",
+      "description": "权限控制系统:\n- 定义权限列表(资源+操作)\n- 权限与角色关联\n- 支持细粒度权限(resource:action)\n- 权限验证中间件\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-SEC001~c3",
+      "name": "资源访问控制",
+      "description": "资源级权限控制:\n- API端点权限保护\n- 数据访问范围控制\n- 资源所有权验证\n- 跨用户数据隔离\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-SEC001~c4",
+      "name": "角色权限中间件",
+      "description": "RBAC中间件实现:\n- requireRole()角色检查\n- requirePermission()权限检查\n- 角色层级检查(继承)\n- 403禁止访问错误处理\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-SEC001~c5",
+      "name": "动态权限管理",
+      "description": "权限动态管理:\n- 运行时权限变更\n- 权限缓存刷新机制\n- 权限变更审计日志\n- 角色权限版本控制\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-SEC001~c6",
+      "name": "API权限文档",
+      "description": "权限文档与测试:\n- API权限矩阵文档\n- 角色权限对照表\n- 权限测试用例覆盖\n- 权限错误响应规范\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-SEC002": [
+    {
+      "id": "ISSUE-SEC002~c1",
+      "name": "数据加密策略",
+      "description": "加密方案设计:\n- 静态数据加密(AES-256)\n- 传输数据加密(TLS 1.3)\n- 敏感字段识别与标记\n- 加密算法选择与配置\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-SEC002~c2",
+      "name": "密钥管理系统",
+      "description": "密钥管理:\n- 主密钥安全存储\n- 数据加密密钥(DEK)管理\n- 密钥轮换机制\n- 密钥访问审计\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-SEC002~c3",
+      "name": "数据库字段加密",
+      "description": "字段级加密:\n- 手机号加密存储\n- 身份证/证件信息加密\n- 聊天记录内容加密\n- 加密字段自动编解码\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-SEC002~c4",
+      "name": "数据脱敏处理",
+      "description": "数据脱敏:\n- 日志中敏感信息脱敏\n- API响应数据脱敏\n- 手机号/邮箱部分隐藏\n- 脱敏规则配置\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-SEC002~c5",
+      "name": "PII数据保护合规",
+      "description": "个人信息保护:\n- PII数据识别标记\n- 数据访问权限控制\n- 数据导出加密\n- 数据删除安全处理\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-SEC002~c6",
+      "name": "加密性能优化",
+      "description": "性能与监控:\n- 加密操作性能优化\n- 加密服务健康检查\n- 密钥操作审计日志\n- 加密异常告警\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-SEC003": [
+    {
+      "id": "ISSUE-SEC003~c1",
+      "name": "请求限流机制",
+      "description": "API限流:\n- 基于IP的限流\n- 基于用户的限流\n- 不同端点差异化限流\n- 限流响应头(X-RateLimit-*)\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-SEC003~c2",
+      "name": "DDoS防护",
+      "description": "DDoS攻击防护:\n- 异常流量检测\n- 自动IP封禁机制\n- 请求频率异常告警\n- 慢速攻击防护\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-SEC003~c3",
+      "name": "IP黑白名单",
+      "description": "IP访问控制:\n- IP白名单机制\n- IP黑名单机制\n- 地理位置限制\n- IP信誉检查\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-SEC003~c4",
+      "name": "请求安全校验",
+      "description": "请求安全:\n- 请求体大小限制\n- Content-Type校验\n- 恶意Payload检测\n- SQL注入/XSS防护\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-SEC003~c5",
+      "name": "CORS与安全头",
+      "description": "跨域与安全头:\n- CORS白名单配置\n- 安全响应头设置\n- CSP内容安全策略\n- HSTS严格传输安全\n",
+      "status": "checking"
+    },
+    {
+      "id": "ISSUE-SEC003~c6",
+      "name": "安全事件监控",
+      "description": "安全监控:\n- 攻击行为日志记录\n- 异常请求统计分析\n- 安全事件告警通知\n- 封禁IP管理界面\n",
+      "status": "checking"
+    }
+  ],
+  "ISSUE-SEC004": [
+    {
+      "id": "ISSUE-SEC004~c1",
+      "name": "文件类型与大小验证",
+      "description": "基础上传验证:\n- 允许的图片格式(白名单)\n- 文件大小限制\n- 文件头Magic Number校验\n- 双重扩展名检查\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-SEC004~c2",
+      "name": "图片内容安全检测",
+      "description": "内容安全:\n- 色情图片检测\n- 暴力恐怖图片识别\n- 敏感政治内容检测\n- 图片分类与标签\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-SEC004~c3",
+      "name": "病毒与恶意代码扫描",
+      "description": "安全扫描:\n- 文件病毒扫描\n- 嵌入式恶意代码检测\n- 可执行文件伪装检查\n- 扫描结果缓存\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-SEC004~c4",
+      "name": "图片元数据处理",
+      "description": "元数据安全:\n- EXIF数据清理\n- GPS位置信息移除\n- 拍摄设备信息清除\n- 缩略图重建\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-SEC004~c5",
+      "name": "存储与访问安全",
+      "description": "安全存储:\n- 文件名随机化重命名\n- 分离存储目录结构\n- 存储路径不直接暴露\n- CDN访问控制\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-SEC004~c6",
+      "name": "上传审计与违规处理",
+      "description": "审计与管理:\n- 上传记录审计日志\n- 违规图片自动标记\n- 用户上传历史追踪\n- 违规用户限制上传\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-SEC005": [
+    {
+      "id": "ISSUE-SEC005~c1",
+      "name": "举报提交与管理",
+      "description": "举报功能:\n- 多类型举报(消息/用户/内容)\n- 举报原因选择\n- 证据截图上传\n- 举报记录管理\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-SEC005~c2",
+      "name": "内容审核工作流",
+      "description": "审核流程:\n- 待审核队列管理\n- 人工审核界面\n- AI预审核辅助\n- 审核状态流转\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-SEC005~c3",
+      "name": "违规处理机制",
+      "description": "违规处置:\n- 内容删除/隐藏\n- 用户警告通知\n- 临时禁言/封禁\n- 信用分扣减\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-SEC005~c4",
+      "name": "申诉与复核",
+      "description": "申诉流程:\n- 用户申诉提交\n- 申诉审核流程\n- 处罚撤销机制\n- 信用分恢复\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-SEC005~c5",
+      "name": "敏感词过滤",
+      "description": "内容过滤:\n- 敏感词库管理\n- 实时消息过滤\n- 正则匹配支持\n- 分级屏蔽策略\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-SEC005~c6",
+      "name": "审核数据统计",
+      "description": "数据与报表:\n- 审核量统计\n- 违规类型分析\n- 审核效率指标\n- 举报准确率计算\n",
+      "status": "passed"
+    }
+  ],
+  "ISSUE-T001": [
+    {
+      "id": "ISSUE-T001~c1",
+      "name": "Jest基础配置",
+      "description": "配置Jest测试运行器:\n- 根目录jest.config.js配置\n- 各workspace的jest配置继承和扩展\n- TypeScript支持(ts-jest配置)\n- 测试文件匹配规则\n- 测试超时和并发配置\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T001~c2",
+      "name": "测试环境隔离",
+      "description": "配置测试环境隔离:\n- 独立的测试数据库配置\n- 测试环境变量(.env.test)\n- 测试数据库自动创建和销毁\n- 测试数据清理机制\n- 并行测试安全隔离\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T001~c3",
+      "name": "Mock和Stub工具集",
+      "description": "建立Mock工具集:\n- Jest Mock函数配置\n- Prisma Client自动Mock\n- 外部API Mock工具\n- Redis/缓存Mock\n- 文件系统Mock\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T001~c4",
+      "name": "测试数据工厂",
+      "description": "实现测试数据工厂:\n- 使用faker.js生成测试数据\n- 用户数据工厂\n- Agent数据工厂\n- 消息/聊天数据工厂\n- 数据工厂组合和关联\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T001~c5",
+      "name": "覆盖率报告配置",
+      "description": "配置代码覆盖率:\n- Jest覆盖率收集配置\n- 覆盖率阈值设置(行/分支/函数)\n- 覆盖率报告格式(html/text/lcov)\n- 排除文件配置\n- CI集成\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T001~c6",
+      "name": "示例单元测试套件",
+      "description": "编写示例单元测试:\n- 服务层单元测试示例\n- 工具函数单元测试示例\n- Middleware单元测试示例\n- 测试最佳实践文档\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-T002": [
+    {
+      "id": "ISSUE-T002~c1",
+      "name": "Supertest配置和HTTP测试基类",
+      "description": "配置Supertest测试框架:\n- Supertest库集成\n- Express应用实例化辅助\n- HTTP请求基类封装\n- 全局请求默认值配置\n- 错误处理测试支持\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T002~c2",
+      "name": "测试数据库生命周期管理",
+      "description": "管理测试数据库:\n- 测试前数据库迁移\n- 每个测试用例事务回滚\n- 测试数据种子(seed)\n- 测试数据库清理策略\n- 并发测试隔离\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T002~c3",
+      "name": "认证和授权测试辅助",
+      "description": "创建认证测试工具:\n- JWT Token生成辅助\n- 测试用户登录辅助\n- 权限验证测试用例模板\n- 认证中间件测试\n- 角色权限测试数据\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T002~c4",
+      "name": "API响应验证工具",
+      "description": "响应验证工具:\n- JSON Schema验证\n- 响应时间断言\n- HTTP状态码验证\n- 响应头验证\n- 错误响应格式验证\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T002~c5",
+      "name": "集成测试示例套件",
+      "description": "编写集成测试示例:\n- 认证API集成测试\n- 用户API集成测试\n- Agent API集成测试\n- 错误场景测试\n- 边界条件测试\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T002~c6",
+      "name": "API契约测试",
+      "description": "API契约测试:\n- OpenAPI/Swagger契约验证 (使用Zod替代)\n- 请求参数验证\n- 响应字段类型检查\n- API版本兼容性测试\n- 破坏性变更检测\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-T003": [
+    {
+      "id": "ISSUE-T003~c1",
+      "name": "React Native Jest配置",
+      "description": "配置React Native测试环境:\n- React Native Jest预设配置\n- Expo Jest配置集成\n- Metro配置用于测试\n- 静态资源Mock配置\n- Native模块自动Mock\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T003~c2",
+      "name": "React Native Testing Library配置",
+      "description": "配置Testing Library:\n- @testing-library/react-native安装和配置\n- render、screen工具导入\n- fireEvent事件模拟\n- waitFor异步处理\n- 测试工具函数封装\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T003~c3",
+      "name": "Native模块Mock",
+      "description": "Mock React Native原生模块:\n- Expo模块Mock(相机、存储、通知等)\n- React Native内置API Mock\n- 第三方库Native代码Mock\n- 平台特定代码Mock(iOS/Android)\n- 传感器和硬件Mock\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T003~c4",
+      "name": "组件测试示例",
+      "description": "组件测试套件:\n- 基础UI组件测试\n- 表单组件测试\n- 列表组件测试\n- 导航组件测试\n- 状态交互测试\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T003~c5",
+      "name": "Hook测试配置",
+      "description": "React Hook测试:\n- @testing-library/react-hooks配置\n- 自定义Hook测试示例\n- API调用Hook测试\n- 状态管理Hook测试\n- 副作用Hook测试\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T003~c6",
+      "name": "快照测试配置",
+      "description": "快照测试:\n- Jest快照测试配置\n- 组件快照测试示例\n- 快照更新策略\n- 平台特定快照(iOS/Android)\n- 快照失效检测\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T003~c7",
+      "name": "测试运行验证",
+      "description": "验证测试框架能正常工作:\n- 运行 npm test 命令无错误\n- 至少一个测试用例通过\n- 生成测试覆盖率报告\n- CI集成验证通过\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-T004": [
+    {
+      "id": "ISSUE-T004~c1",
+      "name": "Detox E2E测试配置",
+      "description": "配置Detox E2E测试:\n- Detox安装和配置(detox@>=20.x)\n- iOS模拟器测试配置(iPhone 14+, iOS 16+)\n- Android模拟器测试配置(Pixel 6 API 33+)\n- 测试构建配置(debug/release双模式)\n- 设备管理和启动配置\n- **测试超时配置(单测试≤2分钟)**\n- **测试重试机制(失败自动重试最多2次)**\n- **测试并发数限制(iOS≤3, Android≤2)**\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T004~c2",
+      "name": "E2E测试数据管理",
+      "description": "E2E测试数据准备:\n- 测试数据种子脚本(seeds/目录)\n- API辅助数据创建(封装数据工厂)\n- 测试用户自动注册(带唯一标识)\n- 测试数据清理策略(afterEach/afterAll)\n- 数据状态重置(测试间隔离)\n- **性能要求**: 数据创建≤3秒/实体\n- **隔离要求**: 测试用户ID格式 test-${timestamp}-${random}\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T004~c3",
+      "name": "页面对象模式(POM)",
+      "description": "实现页面对象模式，支持复用和可维护:\n- **基础Page类封装**\n  * 通用等待方法(waitForElement, waitForVisible)\n  * 元素交互封装(tap, typeText, swipe)\n  * 断言辅助方法(assertElementVisible)\n- **登录页面对象(LoginPage)**\n  * 元素定位: testID('login-email-input'), testID('login-button')\n  * 方法: login(email, password), assertLoginSuccess()\n- **首页页面对象(HomePage)**\n  * 元素定位: testID('home-tab'), testID('agent-list')\n  * 方法: navigateToAgent(), assertHomeLoaded()\n- **聊天页面对象(ChatPage)**\n  * 元素定位: testID('chat-input'), testID('send-button')\n  * 方法: sendMessage(text), assertMessageSent(text)\n- **Agent详情页面对象(AgentDetailPage)**\n  * 元素定位: testID('agent-name'), testID('edit-button')\n- **页面元素定位策略**\n  * 优先使用testID，其次accessibilityLabel\n  * 禁止直接使用文字定位(国际化问题)\n- **复用要求**: 每个页面方法可被≥3个测试复用\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T004~c4",
+      "name": "用户流程E2E测试",
+      "description": "编写核心用户流程测试，每个流程包含完整断言验证:\n- **用户注册登录流程**\n  * 断言: 注册成功后跳转首页\n  * 断言: 登录状态持久化(testID: user-avatar显示)\n  * 断言: token存储成功(AsyncStorage验证)\n- **Agent创建配置流程**\n  * 断言: 表单验证错误显示(testID: error-message)\n  * 断言: 创建成功后跳转Agent详情页\n  * 断言: API响应200且数据正确\n- **匹配和推荐流程**\n  * 断言: 推荐列表加载完成(testID: recommendation-list)\n  * 断言: 匹配按钮可点击并触发API\n  * 断言: 匹配成功状态更新UI\n- **聊天通信流程**\n  * 断言: 消息发送成功(testID: message-sent)\n  * 断言: 消息接收显示在列表\n  * 断言: 未读消息角标更新\n- **任务发布和接单流程**\n  * 断言: 任务创建表单提交成功\n  * 断言: 任务状态流转正确\n  * 断言: 接单后双方通知到达\n- **覆盖率要求: 核心流程≥90%，关键断言≥5个/流程**\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T004~c5",
+      "name": "E2E测试报告和截图",
+      "description": "E2E测试报告与诊断:\n- **测试报告生成配置**\n  * HTML报告: 美观的可视化报告\n  * JUnit XML: CI集成格式\n  * JSON报告: 程序化分析\n  * 报告包含: 通过率、执行时间、错误详情\n- **失败截图自动捕获**\n  * 失败时自动截图\n  * 截图命名: {test-name}-{timestamp}.png\n  * 截图路径: artifacts/screenshots/\n  * 关联报告: 截图嵌入HTML报告\n- **测试视频录制(可选)**\n  * CI失败时录制视频\n  * 视频长度: 失败前30秒\n  * 存储策略: 仅保留失败视频\n- **测试时间统计**\n  * 单测试执行时间\n  * 套件总执行时间\n  * 历史趋势对比\n- **CI集成和报告上传**\n  * GitHub Actions artifacts上传\n  * 测试失败PR评论\n  * 覆盖率报告(如适用)\n- **质量指标**\n  * 截图成功率: 100%失败用例\n  * 报告生成时间: ≤5秒\n  * 附件大小: 截图≤500KB/张\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T004~c6",
+      "name": "并行测试和CI集成",
+      "description": "E2E并行测试与CI集成:\n- **测试隔离要求**\n  * 每个测试独立数据(testID: test-user-${timestamp})\n  * 测试后数据清理(无论通过/失败)\n  * 测试间无状态依赖\n  * 并发测试用户隔离(不同testUserId)\n- **多设备并行测试配置**\n  * iOS模拟器并发数: ≤3\n  * Android模拟器并发数: ≤2\n  * 设备池管理和分配\n- **测试分片策略**\n  * 按测试文件分片(shard)\n  * 按执行时间均衡分配\n- **CI/CD流水线集成**\n  * GitHub Actions工作流配置\n  * 定时触发(nightly builds)\n  * PR触发(e2e-required标签)\n- **测试环境自动搭建**\n  * 模拟器自动启动/关闭\n  * 测试服务器自动部署\n- **测试结果通知**\n  * Slack通知集成\n  * PR状态检查更新\n  * 失败测试自动重跑\n- **性能指标**\n  * 单测试执行时间≤2分钟\n  * 完整套件≤15分钟(并行后)\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-T004~c7",
+      "name": "E2E测试稳定性保障",
+      "description": "确保测试长期稳定运行，控制Flaky Test:\n- **Flaky Test检测与处理**\n  * 检测标准: 同一测试在相同代码下失败率>5%\n  * 自动标记: CI中自动标记不稳定测试\n  * 隔离机制: flaky测试移至单独套件\n  * 修复SLA: 标记后3个工作日内修复\n- **测试重试策略**\n  * 自动重试: 失败自动重试2次\n  * 最终判定: 3次中1次通过即算通过\n  * 重试记录: 记录重试次数用于分析\n- **等待策略优化**\n  * 智能等待: 使用waitFor而非固定sleep\n  * 超时阈值: 元素等待≤10秒\n  * 轮询间隔: 200ms自适应轮询\n- **测试执行时间监控**\n  * 单测试时间上限: 2分钟\n  * 平均执行时间追踪\n  * 超时测试自动告警\n- **稳定性指标**\n  * 目标: Flaky rate < 2%\n  * 监控: 每周生成稳定性报告\n  * 告警: flaky rate>5%时Slack通知\n- **诊断工具**\n  * 失败截图自动保存\n  * 测试日志完整保留\n  * 设备状态快照\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-UI001": [
+    {
+      "id": "ISSUE-UI001~c1",
+      "name": "设计令牌（Design Tokens）定义",
+      "description": "建立完整的设计令牌体系:\n- 色彩系统：主色、辅色、功能色（成功、警告、错误、信息）\n- 字体规范：字号层级（标题/正文/辅助文字）、字重、行高\n- 间距系统：基础单位、内边距、外边距层级\n- 圆角、阴影、边框等视觉属性\n- 支持亮色/暗色主题切换\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-UI001~c2",
+      "name": "基础组件 - Button 按钮",
+      "description": "实现多功能 Button 组件:\n- 变体：实心(primary)、轮廓(outline)、幽灵(ghost)、文字(text)\n- 尺寸：大、中、小\n- 状态：正常、禁用、加载中\n- 图标支持：前置图标、后置图标\n- 颜色主题适配\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-UI001~c3",
+      "name": "基础组件 - Input 输入框",
+      "description": "实现 Input 输入组件:\n- 类型：文本、密码、数字、邮箱、手机号\n- 状态：正常、错误、禁用、只读\n- 前缀/后缀支持：图标、文字\n- 清除按钮功能\n- 错误提示和字符计数\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-UI001~c4",
+      "name": "基础组件 - Card 卡片与 Modal 弹窗",
+      "description": "实现 Card 和 Modal 组件:\n- Card：可点击、带阴影、圆角、支持头部/内容/底部结构\n- Modal：遮罩层、动画过渡、点击遮罩关闭、手势滑动关闭\n- 支持自定义内容和操作按钮\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-UI001~c5",
+      "name": "图标系统与资源管理",
+      "description": "建立图标系统:\n- 使用统一的图标库（如 react-native-vector-icons 或自定义 SVG）\n- 图标分类：导航、操作、状态、场景\n- 支持尺寸和颜色自定义\n- 图片资源优化和缓存策略\n",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-UI001~c6",
+      "name": "组件文档与 Storybook",
+      "description": "建立组件文档体系:\n- 配置 Storybook 或等效工具展示组件\n- 每个组件包含用法示例、Props 说明\n- 视觉回归测试基础\n- 设计系统文档网站\n",
+      "status": "accepted"
+    }
+  ],
+  "ISSUE-UI002": [
+    {
+      "id": "ISSUE-UI002~c1",
+      "name": "底部 Tab 导航",
+      "description": "实现底部 Tab 导航栏:\n- Tab 项：首页、消息、发现、我的\n- 激活/未激活状态图标切换\n- 未读消息红点/角标显示\n- Tab 切换动画效果\n- 适配 iOS 底部安全区域\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-UI002~c2",
+      "name": "导航结构与路由配置",
+      "description": "配置完整的路由系统:\n- 使用 React Navigation 配置导航栈\n- 认证栈与主应用栈分离\n- 嵌套导航结构（Tab + Stack）\n- 路由参数类型定义\n- 深链接（Deep Link）配置\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-UI002~c3",
+      "name": "页面布局容器",
+      "description": "实现通用页面布局组件:\n- SafeAreaView 安全区域适配\n- 顶部导航栏（标题、返回按钮、操作按钮）\n- 内容滚动容器（ScrollView/FlatList）\n- 加载状态占位（Skeleton）\n- 空状态和错误状态页面\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-UI002~c4",
+      "name": "侧边抽屉导航",
+      "description": "实现侧边抽屉菜单:\n- 从左侧滑出的抽屉导航\n- 用户头像和昵称展示\n- 菜单项列表（设置、帮助、反馈等）\n- 手势滑动打开/关闭\n- 遮罩层点击关闭\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-UI002~c5",
+      "name": "导航状态与权限控制",
+      "description": "实现导航状态管理:\n- 基于认证状态的条件导航\n- 路由守卫（需要登录的页面）\n- 导航状态持久化\n- 返回按钮行为控制\n- 页面跳转动画配置\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-UI002~c6",
+      "name": "响应式布局适配",
+      "description": "实现响应式布局:\n- 不同屏幕尺寸适配（手机/平板）\n- 横竖屏切换处理\n- 键盘弹出时布局调整\n- 底部 Tab 栏与输入法协调\n- 刘海屏/灵动岛适配\n",
+      "status": "passed"
+    }
+  ],
+  "ISSUE-UI003": [
+    {
+      "id": "ISSUE-UI003~c1",
+      "name": "Agent 状态概览卡片",
+      "description": "实现 Agent 状态展示:\n- 当前激活的 Agent 列表\n- Agent 状态显示（在线/忙碌/离线）\n- 快速切换 Agent 选择器\n- Agent 场景类型图标标识\n- Agent 活动统计（今日匹配数、对话数）\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-UI003~c2",
+      "name": "匹配结果展示",
+      "description": "实现匹配结果展示模块:\n- 最新匹配结果列表\n- 匹配用户/Agent 头像和名称\n- 匹配度评分显示\n- 匹配时间戳\n- 点击进入聊天或详情\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI003~c3",
+      "name": "快捷操作入口",
+      "description": "实现首页快捷操作区:\n- 创建新 Agent 快捷入口\n- 发布需求（VisionShare）\n- 开始匹配（AgentDate）\n- 查看附近任务（AgentJob/AgentAd）\n- 快捷按钮网格布局\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI003~c4",
+      "name": "通知与提醒区域",
+      "description": "实现通知提醒展示:\n- 未读消息预览\n- 系统通知横幅\n- Agent 活动提醒\n- 可滑动删除单条通知\n- 一键清除全部\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI003~c5",
+      "name": "首页数据加载与刷新",
+      "description": "实现首页数据管理:\n- 下拉刷新功能\n- 首次加载骨架屏\n- 数据缓存策略\n- 错误重试机制\n- 自动刷新间隔配置\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI003~c6",
+      "name": "个性化推荐展示",
+      "description": "实现个性化内容展示:\n- 推荐用户/Agent 卡片轮播\n- 基于场景的推荐内容\n- 热门活动或话题\n- 个性化问候语\n- 场景切换提示\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-UI004": [
+    {
+      "id": "ISSUE-UI004~c1",
+      "name": "消息组件",
+      "description": "消息UI:\n- 消息气泡组件\n- 文本/图片/视频消息\n- 消息状态显示(发送中/已发送/已读)\n- 消息操作菜单\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-UI004~c2",
+      "name": "输入组件",
+      "description": "输入UI:\n- 文本输入框\n- 表情选择器\n- 图片/文件选择\n- 发送按钮状态\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-UI004~c3",
+      "name": "用户状态指示器",
+      "description": "状态显示:\n- 用户头像组件\n- 在线/离线状态点\n- Agent/人类标识\n- 最后活跃时间\n",
+      "status": "split"
+    },
+    {
+      "id": "ISSUE-UI004~c4",
+      "name": "聊天列表优化",
+      "description": "列表性能:\n- FlatList优化\n- 下拉加载历史\n- 无限滚动\n- 内存管理\n",
+      "status": "split"
+    }
+  ],
+  "ISSUE-UI004a": [
+    {
+      "id": "ISSUE-UI004a~c1",
+      "name": "消息气泡组件",
+      "description": "实现消息气泡 MessageBubble 组件:\n- 发送/接收消息样式区分\n- 文本、图片、文件消息类型支持\n- 消息状态指示（发送中、已发送、已读）\n- 时间戳显示\n- 长按菜单（复制、删除、举报）\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-UI004a~c2",
+      "name": "消息输入框",
+      "description": "实现聊天输入框 ChatInput 组件:\n- 多行文本输入\n- 输入高度自适应\n- 发送按钮状态（有内容时可发送）\n- 语音输入切换\n- 提及(@)用户功能\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI004a~c3",
+      "name": "附件与媒体选择",
+      "description": "实现附件发送功能:\n- 图片选择（相册/相机）\n- 文件选择器\n- 附件预览\n- 发送进度指示\n- 取消发送功能\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI004a~c4",
+      "name": "快捷回复与建议",
+      "description": "实现快捷回复功能（依赖 COM005）:\n- Agent 建议的回复选项\n- 快捷回复横向滚动列表\n- 点击快速填入输入框或直接发送\n- 基于对话上下文的智能建议\n- 用户可自定义快捷回复\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI004a~c5",
+      "name": "人机切换指示器",
+      "description": "实现人机切换界面元素（依赖 COM003）:\n- 当前对话者身份标识（Agent/真人）\n- 切换按钮/指示器\n- 切换确认对话框\n- 切换过渡动画\n- 身份标识持久显示\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI004a~c6",
+      "name": "表情与贴纸选择器",
+      "description": "实现表情选择器:\n- Emoji 表情面板\n- 表情分类和搜索\n- 最近使用表情\n- 自定义贴纸支持\n- 面板展开/收起动画\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-UI004b": [
+    {
+      "id": "ISSUE-UI004b~c1",
+      "name": "用户头像与状态指示",
+      "description": "实现带状态的头像组件:\n- 用户头像显示（圆形/圆角矩形）\n- 在线/离线/忙碌状态点\n- 状态点颜色区分\n- 头像边框样式（Agent/真人区分）\n- 头像点击展开详情\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-UI004b~c2",
+      "name": "输入状态指示器",
+      "description": "实现输入中状态显示:\n- \"正在输入...\" 动画提示\n- 对方 Agent 正在思考/生成回复\n- 输入状态实时同步\n- 动画效果（三个点跳动）\n- 状态超时自动隐藏\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-UI004b~c3",
+      "name": "身份标识徽章",
+      "description": "实现身份标识组件:\n- Agent 标识徽章（机器人图标）\n- 真人用户标识\n- 认证标识（已验证用户）\n- 场景类型标识（VisionShare/Date/Job/Ad）\n- 徽章位置配置（头像右下角/名称旁边）\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-UI004b~c4",
+      "name": "最后在线时间显示",
+      "description": "实现在线时间显示:\n- 最后在线时间格式化（刚刚、几分钟前、几小时前）\n- 相对时间自动更新\n- 在线状态实时更新\n- 时间格式本地化\n- 悬停/长按显示精确时间\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-UI004b~c5",
+      "name": "聊天列表状态预览",
+      "description": "实现会话列表状态显示:\n- 会话列表项显示最后消息预览\n- 未读消息数角标\n- 会话优先级标识\n- 置顶会话标记\n- 静音会话标识\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-UI004b~c6",
+      "name": "信用分与评分展示",
+      "description": "实现用户信用展示组件:\n- 信用分星级/数字显示\n- 评分等级颜色区分\n- 信用徽章（高信用用户）\n- 点击查看信用详情\n- 实时更新信用分数\n",
+      "status": "passed"
+    }
+  ],
+  "ISSUE-UI004c": [
+    {
+      "id": "ISSUE-UI004c~c1",
+      "name": "反向无限滚动加载",
+      "description": "实现历史消息加载:\n- 下拉/上拉加载更多历史消息（根据滚动方向）\n- 加载状态指示器\n- 分页请求管理\n- 加载失败重试\n- 到达最早消息提示\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-UI004c~c2",
+      "name": "滚动位置管理",
+      "description": "实现滚动位置保持:\n- 加载历史消息后保持当前视图位置\n- 跳转到指定消息\n- 搜索高亮消息滚动定位\n- 首次进入滚动到底部\n- 滚动位置记忆（返回后恢复）\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI004c~c3",
+      "name": "新消息提示",
+      "description": "实现新消息通知:\n- 底部\"新消息\"悬浮按钮\n- 未读消息数显示\n- 点击滚动到最新消息\n- 自动滚动控制（用户滚动浏览时暂停自动滚动）\n- 消息发送成功提示\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI004c~c4",
+      "name": "消息虚拟化与性能优化",
+      "description": "实现长列表性能优化:\n- 使用 FlatList 虚拟化渲染\n- 消息项高度预估\n- 图片懒加载\n- 内存管理（离开页面释放资源）\n- 大数据量流畅滚动\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI004c~c5",
+      "name": "日期分隔与时间戳",
+      "description": "实现消息时间显示:\n- 日期分隔线（今天、昨天、星期X、具体日期）\n- 消息时间戳（气泡内/外显示）\n- 相对时间（几分钟前）\n- 时间戳显示策略（连续消息只显示第一条时间）\n- 点击展开/收起详细时间\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI004c~c6",
+      "name": "消息搜索与高亮",
+      "description": "实现消息搜索功能:\n- 聊天内搜索输入框\n- 搜索结果高亮显示\n- 搜索结果导航（上一条/下一条）\n- 搜索结果数量显示\n- 点击结果跳转到对应消息\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-UI005": [
+    {
+      "id": "ISSUE-UI005~c1",
+      "name": "Agent 创建向导",
+      "description": "实现分步创建向导:\n- 步骤导航条（选择场景、基础配置、详细信息、确认）\n- 场景类型选择（VisionShare/AgentDate/AgentJob/AgentAd）\n- 每步数据验证\n- 上一步/下一步导航\n- 可保存草稿\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-UI005~c2",
+      "name": "基础信息配置表单",
+      "description": "实现基础信息配置:\n- Agent 名称输入\n- 头像上传/选择\n- 描述/简介文本域\n- 可见性设置（公开/私有）\n- 表单验证和错误提示\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI005~c3",
+      "name": "场景配置界面",
+      "description": "实现场景特定配置（依赖 C006）:\n- VisionShare: 需求范围、价格设置\n- AgentDate: 交友偏好、匹配条件\n- AgentJob: 求职意向/招聘要求\n- AgentAd: 消费偏好/优惠类型\n- 动态表单根据场景变化\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI005~c4",
+      "name": "AI 模型与行为配置",
+      "description": "实现 AI 行为设置:\n- 选择 LLM 模型（GPT/Claude/本地模型）\n- 温度/创造性参数调节滑块\n- 回复风格选择（正式/友好/幽默）\n- 自动回复开关\n- 人机切换触发条件\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI005~c5",
+      "name": "Agent 列表与管理",
+      "description": "实现 Agent 管理界面:\n- Agent 卡片列表（网格/列表视图）\n- Agent 状态切换（激活/暂停）\n- 编辑/删除操作\n- Agent 排序和筛选\n- 空状态提示\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI005~c6",
+      "name": "配置预览与测试",
+      "description": "实现配置预览功能:\n- Agent 资料预览\n- 对话风格测试窗口\n- 模拟对话测试\n- 配置变更历史\n- 一键恢复默认设置\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-UI006": [
+    {
+      "id": "ISSUE-UI006~c1",
+      "name": "会话列表界面",
+      "description": "实现聊天会话列表:\n- 会话列表展示（头像、名称、最后消息、时间）\n- 未读消息数角标\n- 会话分组（置顶、普通）\n- 左滑操作（删除、置顶、标记已读）\n- 下拉刷新\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-UI006~c2",
+      "name": "系统通知中心",
+      "description": "实现系统通知界面:\n- 通知分类（系统、活动、匹配、安全）\n- 通知列表（图标、标题、内容、时间）\n- 通知详情查看\n- 一键标记全部已读\n- 通知设置入口\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI006~c3",
+      "name": "消息搜索功能",
+      "description": "实现消息搜索:\n- 全局搜索入口\n- 搜索建议和历史\n- 搜索结果分类（联系人、消息内容）\n- 结果高亮显示\n- 点击跳转到对应会话\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI006~c4",
+      "name": "会话管理功能",
+      "description": "实现会话管理:\n- 批量选择会话\n- 批量删除会话\n- 会话归档\n- 会话静音/取消静音\n- 清空聊天记录\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI006~c5",
+      "name": "消息设置",
+      "description": "实现消息通知设置:\n- 消息通知开关\n- 声音/振动设置\n- 免打扰模式\n- 通知预览开关\n- 按会话类型设置\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI006~c6",
+      "name": "新联系人/群聊入口",
+      "description": "实现新建会话功能:\n- 新建聊天按钮\n- 联系人选择器\n- 搜索用户\n- 创建群聊选项\n- 最近联系人快捷选择\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-UI007": [
+    {
+      "id": "ISSUE-UI007~c1",
+      "name": "个人资料展示",
+      "description": "实现个人资料界面:\n- 用户头像和昵称展示\n- 用户信息卡片（ID、注册时间）\n- 个人简介/签名\n- 认证状态显示\n- 编辑资料入口\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-UI007~c2",
+      "name": "信用分展示模块",
+      "description": "实现信用分展示（依赖 CR001）:\n- 信用分大数字显示\n- 信用等级标识（优秀/良好/一般）\n- 信用分变化趋势图\n- 信用详情入口\n- 信用提升建议\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI007~c3",
+      "name": "积分账户与交易",
+      "description": "实现积分账户界面:\n- 当前积分余额显示\n- 积分收支明细列表\n- 交易类型筛选\n- 积分充值入口\n- 积分使用记录\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI007~c4",
+      "name": "活动历史与统计",
+      "description": "实现用户活动展示:\n- 活动概览统计（对话数、匹配数、发布数）\n- 近期活动列表\n- 活动日历视图\n- 成就徽章展示\n- 分享活动统计\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI007~c5",
+      "name": "个人设置菜单",
+      "description": "实现设置菜单:\n- 账号与安全设置\n- 隐私设置\n- 通知设置\n- 通用设置（语言、主题）\n- 关于与帮助\n- 退出登录\n",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-UI007~c6",
+      "name": "资料编辑功能",
+      "description": "实现资料编辑界面（依赖 A003）:\n- 头像更换（拍照/相册选择）\n- 昵称修改\n- 简介编辑\n- 联系信息更新\n- 保存/取消操作\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-VS002": [
+    {
+      "id": "ISSUE-VS002~c1",
+      "name": "附近任务地图展示",
+      "description": "地图界面:\n- 基于地图的任务分布展示\n- 当前位置定位和显示\n- 任务标记和信息气泡\n- 地图缩放和区域筛选\n- 列表/地图视图切换\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-VS002~c2",
+      "name": "任务筛选与排序",
+      "description": "筛选功能:\n- 距离范围筛选(1km/5km/10km/全城)\n- 预算范围筛选\n- 任务类型筛选\n- 发布时间筛选\n- 排序方式(距离/时间/预算)\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-VS002~c3",
+      "name": "任务详情查看",
+      "description": "详情展示:\n- 任务完整信息展示\n- 发布者信用分显示\n- 距离和预计到达时间\n- 任务图片预览(如有)\n- 历史评价查看\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-VS002~c4",
+      "name": "接单操作与确认",
+      "description": "接单流程:\n- 接单按钮和确认弹窗\n- 接单资格检查(信用分/积分/位置)\n- 接单成功状态变更\n- 任务状态实时同步\n- 接单后导航入口\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-VS002~c5",
+      "name": "任务推荐推送",
+      "description": "推荐系统:\n- 基于位置的实时推送\n- 匹配度评分展示\n- 推送通知处理\n- 推荐任务快捷入口\n- 推荐偏好设置\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-VS002~c6",
+      "name": "任务状态追踪",
+      "description": "状态管理:\n- 已接任务列表\n- 进行中的任务状态\n- 任务完成确认\n- 历史接单记录\n- 任务取消和申诉\n",
+      "status": "passed"
+    }
+  ],
+  "ISSUE-VS003": [
+    {
+      "id": "ISSUE-VS003~c1",
+      "name": "相机功能集成",
+      "description": "相机界面:\n- 原生相机调用(Expo Camera)\n- 拍照按钮和连拍功能\n- 闪光灯和焦距控制\n- 照片预览和重拍\n- 相机权限处理\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-VS003~c2",
+      "name": "照片预览与编辑",
+      "description": "编辑功能:\n- 照片预览界面\n- 裁剪和旋转\n- 滤镜和亮度调整\n- 标记和注释\n- 照片选择/取消\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-VS003~c3",
+      "name": "图片安全检查",
+      "description": "安全检测:\n- 敏感内容识别\n- 违规图片拦截\n- 人脸识别和隐私检测\n- 图片质量检查\n- 检查结果反馈\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-VS003~c4",
+      "name": "照片上传服务",
+      "description": "上传功能:\n- 多图批量上传\n- 上传进度显示\n- 断点续传\n- 图片压缩和优化\n- 上传队列管理\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-VS003~c5",
+      "name": "照片存储与管理",
+      "description": "存储管理:\n- 照片元数据记录\n- 云存储集成(S3/OSS)\n- 缩略图生成\n- 照片关联任务\n- 存储生命周期管理\n",
+      "status": "passed"
+    },
+    {
+      "id": "ISSUE-VS003~c6",
+      "name": "相册选择和导入",
+      "description": "导入功能:\n- 本地相册访问\n- 多选照片导入\n- 导入照片预览\n- 导入安全检查\n- 照片来源标记\n",
+      "status": "passed"
+    }
+  ],
+  "ISSUE-VS004": [
+    {
+      "id": "ISSUE-VS004~c1",
+      "name": "AI敏感内容识别",
+      "description": "识别引擎:\n- 人脸识别和定位\n- 车牌号码检测\n- 文字和地址标识识别\n- 敏感物体检测\n- 置信度评分\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-VS004~c2",
+      "name": "脱敏处理算法",
+      "description": "处理算法:\n- 高斯模糊处理\n- 马赛克效果\n- 区域像素化\n- 智能背景替换\n- 边缘羽化处理\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-VS004~c3",
+      "name": "脱敏预览和编辑",
+      "description": "编辑界面:\n- 检测区域可视化标记\n- 脱敏效果实时预览\n- 手动调整脱敏区域\n- 脱敏强度调节\n- 撤销和重做功能\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-VS004~c4",
+      "name": "脱敏策略配置",
+      "description": "策略系统:\n- 预设脱敏模板(严格/标准/宽松)\n- 自定义脱敏规则\n- 自动脱敏开关\n- 白名单设置\n- 场景化策略推荐\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-VS004~c5",
+      "name": "隐私报告生成",
+      "description": "报告功能:\n- 检测到的敏感项列表\n- 脱敏处理日志\n- 隐私风险评级\n- 处理前后对比\n- 报告导出和分享\n",
+      "status": "completed"
+    },
+    {
+      "id": "ISSUE-VS004~c6",
+      "name": "AI辅助脱敏建议",
+      "description": "智能建议:\n- 基于场景的建议生成\n- 一键应用推荐设置\n- 隐私保护等级建议\n- 敏感区域高亮提示\n- 批量处理建议\n",
+      "status": "completed"
+    }
+  ],
+  "ISSUE-VS005a": [
+    {
+      "id": "ISSUE-VS005a~c1",
+      "name": "照片浏览界面",
+      "description": "浏览功能:\n- 缩略图网格展示\n- 大图预览和缩放\n- 左右滑动切换\n- 图片信息展示(拍摄时间/地点)\n- 下载和收藏按钮(未解锁时显示锁定状态)\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-VS005b": [
+    {
+      "id": "ISSUE-VS005b~c1",
+      "name": "积分支付系统",
+      "description": "支付功能:\n- 单图/多图支付选项\n- 积分余额显示\n- 支付确认弹窗\n- 支付密码验证\n- 支付结果通知\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-VS005b~c2",
+      "name": "高清原图解锁",
+      "description": "解锁机制:\n- 支付后自动解锁\n- 原图下载链接生成\n- 下载次数限制\n- 有效期管理\n- 水印移除\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-VS005c": [
+    {
+      "id": "ISSUE-VS005c~c1",
+      "name": "交易记录管理",
+      "description": "记录功能:\n- 支付历史列表\n- 交易详情查看\n- 收支明细统计\n- 交易状态追踪\n- 交易记录导出\n",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-VS005c~c2",
+      "name": "退款和申诉",
+      "description": "售后功能:\n- 退款申请入口\n- 退款原因选择\n- 退款审核流程\n- 积分退回处理\n- 申诉状态查询\n",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-VS005d": [
+    {
+      "id": "ISSUE-VS005d~c1",
+      "name": "支付安全与风控",
+      "description": "安全功能:\n- 支付行为风控检测\n- 异常交易预警\n- 支付限额控制\n- 设备指纹识别\n- 支付日志审计\n",
+      "status": ""
+    }
+  ],
+  "ISSUE-VS006": [
+    {
+      "id": "ISSUE-VS006~c1",
+      "name": "\\u81EA\\u7136\\u8BED\\u8A00\\u56FE\\u50CF\\u641C\\u7D22",
+      "description": "",
+      "status": ""
+    },
+    {
+      "id": "ISSUE-VS006~c2",
+      "name": "\\u56FE\\u50CF\\u6807\\u7B7E\\u548C\\u7D22\\u5F15",
+      "description": "",
+      "status": "accepted"
+    },
+    {
+      "id": "ISSUE-VS006~c3",
+      "name": "\\u5386\\u53F2\\u4EFB\\u52A1\\u65F6\\u95F4\\u7EBF",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-VS006~c4",
+      "name": "\\u667A\\u80FD\\u76F8\\u518C\\u5206\\u7C7B",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-VS006~c5",
+      "name": "\\u6536\\u85CF\\u548C\\u6807\\u8BB0\\u7CFB\\u7EDF",
+      "description": "",
+      "status": "pending"
+    },
+    {
+      "id": "ISSUE-VS006~c6",
+      "name": "\\u641C\\u7D22\\u63A8\\u8350\\u548C\\u53D1\\u73B0",
+      "description": "",
+      "status": "pending"
+    }
+  ],
+  "ISSUE-VS007": [
+    {
+      "id": "ISSUE-VS007~c1",
+      "name": "本地相册访问权限",
+      "description": "权限系统:\n- 相册读取权限申请\n- 权限状态管理\n- 部分访问支持(iOS14+)\n- 权限被拒绝处理\n- 权限引导说明\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-VS007~c2",
+      "name": "本地照片AI分析",
+      "description": "分析引擎:\n- 本地照片批量处理\n- 端侧AI模型推理\n- 图像特征提取\n- 标签生成和索引\n- 处理进度显示\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-VS007~c3",
+      "name": "本地搜索索引",
+      "description": "索引系统:\n- 本地SQLite索引存储\n- 增量更新机制\n- 索引压缩优化\n- 索引备份和恢复\n- 索引版本管理\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-VS007~c4",
+      "name": "统一搜索界面",
+      "description": "搜索功能:\n- 云端/本地数据源切换\n- 统一搜索结果展示\n- 数据来源标识\n- 混合结果排序\n- 搜索范围选择\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-VS007~c5",
+      "name": "本地照片隐私保护",
+      "description": "隐私功能:\n- 端侧处理不上传\n- 敏感照片排除\n- 加密索引存储\n- 隐私模式切换\n- 数据处理说明\n",
+      "status": "implemented"
+    },
+    {
+      "id": "ISSUE-VS007~c6",
+      "name": "性能优化和缓存",
+      "description": "优化功能:\n- 后台索引更新\n- 缩略图缓存管理\n- 搜索响应优化\n- 内存使用优化\n- 电池消耗优化\n",
+      "status": "implemented"
+    }
+  ]
+}
