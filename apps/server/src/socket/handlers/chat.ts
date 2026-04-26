@@ -214,16 +214,10 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
       }
 
       // Update ChatMessage status to READ
-      const updateResults = await Promise.all(
-        messageIds.map(messageId =>
-          prisma.chatMessage
-            .update({
-              where: { id: messageId },
-              data: { status: 'READ' },
-            })
-            .catch(() => null)
-        )
-      );
+      const updateResult = await prisma.chatMessage.updateMany({
+        where: { id: { in: messageIds } },
+        data: { status: 'READ' },
+      });
 
       // Broadcast read receipt to room
       socket.to(roomId).emit('chat:read_receipt', {
@@ -233,7 +227,7 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
         readAt: new Date().toISOString(),
       });
 
-      callback?.({ success: true, data: { updated: updateResults.filter(Boolean).length } });
+      callback?.({ success: true, data: { updated: updateResult.count } });
     } catch (error) {
       console.error('[Chat] Read error:', error);
       callback?.({ success: false, error: 'Failed to mark as read' });
