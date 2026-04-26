@@ -222,26 +222,20 @@ export class AgentDialogService {
     // Build prompt based on dialog type and context
     const prompt = this.buildDialogPrompt(session, sender, request);
 
-    // Generate response using LLM (with fallback to mock if not initialized)
+    // Generate response using LLM
     const { llmService } = await this.getLLMService();
-    let response: { text: string; provider?: string; model?: string; isMock?: boolean };
-    let isMockResponse = false;
+    let response: { text: string; provider?: string; model?: string };
     try {
       response = await llmService.generateText(prompt, {
         temperature: request.options?.temperature ?? this.defaultTemperature,
         maxTokens: request.options?.maxTokens ?? this.defaultMaxTokens,
       });
     } catch (err) {
-      logger.warn('LLM generateText failed, falling back to mock response', {
+      logger.error('LLM generateText failed', {
+        sessionId: request.sessionId,
         error: (err as Error)?.message,
       });
-      isMockResponse = true;
-      response = {
-        text: '这是一个模拟回复。请确保LLM服务已正确配置。',
-        provider: 'mock',
-        model: 'mock-model',
-        isMock: true,
-      };
+      throw new Error(`LLM service unavailable: ${(err as Error)?.message}`);
     }
 
     // Create message
@@ -256,8 +250,7 @@ export class AgentDialogService {
       metadata: {
         agentType: sender.agentType,
         scene: session.scene,
-        confidence: isMockResponse ? 0 : 0.85,
-        isMock: isMockResponse,
+        confidence: 0.85,
         intent: await this.recognizeIntent(request.content, session),
       },
     };
@@ -954,17 +947,11 @@ ${historyText || '（无历史记录）'}
     agentId: string
   ): Promise<{ id: string; name: string; type: string; config: Record<string, unknown> } | null> {
     const { getAgentById } = await import('../../services/agentService').catch(() => {
-      return { getAgentById: null };
+      return { getAgentById: null as any };
     });
 
     if (!getAgentById) {
-      logger.warn('agentService not available, using mock agent');
-      return {
-        id: agentId,
-        name: `Agent_${agentId.slice(0, 8)}`,
-        type: 'general',
-        config: {},
-      };
+      throw new Error('agentService not available - cannot resolve agent identity');
     }
 
     const agent = await getAgentById(agentId);
