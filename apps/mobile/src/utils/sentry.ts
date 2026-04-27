@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react-native';
+import Constants from 'expo-constants';
 
 /**
  * Sentry configuration for React Native mobile error monitoring
@@ -6,8 +7,9 @@ import * as Sentry from '@sentry/react-native';
 
 // Initialize Sentry
 export function initSentry(): void {
-  const dsn = process.env.SENTRY_DSN;
+  const dsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
   const environment = process.env.NODE_ENV || 'development';
+  const release = process.env.EXPO_PUBLIC_SENTRY_RELEASE || Constants.expoConfig?.version;
 
   if (!dsn) {
     console.warn('[Sentry] DSN not configured, error tracking disabled');
@@ -17,6 +19,7 @@ export function initSentry(): void {
   Sentry.init({
     dsn,
     environment,
+    release,
 
     // Native options
     enableNative: true,
@@ -26,7 +29,7 @@ export function initSentry(): void {
     sessionTrackingIntervalMillis: 30000,
 
     // Performance monitoring
-    tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.1'),
+    tracesSampleRate: parseFloat(process.env.EXPO_PUBLIC_SENTRY_TRACES_SAMPLE_RATE || '0.1'),
 
     // Enable auto performance tracking
     enableAutoPerformanceTracking: true,

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-import { captureMessage, addBreadcrumb, Sentry } from '../../utils/sentry';
+import { addBreadcrumb, Sentry } from '../../utils/sentry';
 
 export type FeedbackCategory = 'bug' | 'feature' | 'improvement' | 'other';
 
@@ -128,25 +128,20 @@ export function FeedbackForm({
         hasEmail: !!email,
       });
 
-      // Capture as Sentry message with feedback
-      const eventId = captureMessage(
-        `User Feedback: ${category} - ${message.slice(0, 100)}`,
-        'info'
-      );
-
-      // If screenshot is provided, attach it to the event
-      if (screenshot && eventId) {
-        // Note: Sentry React Native handles screenshot attachments automatically
-        // when attachScreenshot is enabled in init config
-        Sentry.withScope(scope => {
-          scope.setExtra('feedback_category', category);
-          scope.setExtra('feedback_message', message);
+      // Capture as Sentry message with feedback context
+      Sentry.withScope(scope => {
+        scope.setExtra('feedback_category', category);
+        scope.setExtra('feedback_message', message);
+        if (email) {
           scope.setExtra('feedback_email', email);
-          scope.setTag('feedback_type', category);
+        }
+        scope.setTag('feedback_type', category);
+        if (screenshot) {
           scope.setTag('has_screenshot', 'true');
-          Sentry.captureMessage('User Feedback with Screenshot');
-        });
-      }
+        }
+        Sentry.captureMessage(`User Feedback: ${category} - ${message.slice(0, 100)}`, 'info');
+      });
+      const _eventId = Sentry.lastEventId() || '';
 
       // Call custom submit handler
       if (onSubmit) {
