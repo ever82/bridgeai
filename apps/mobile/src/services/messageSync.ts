@@ -9,14 +9,14 @@ import { storage } from './storage';
 
 // Storage keys
 const SYNC_KEYS = {
-  LAST_SEQUENCE_ID: (roomId: string) => `sync:seq:${roomId}`,
+  LAST_MESSAGE_CREATED_AT: (roomId: string) => `sync:createdAt:${roomId}`,
   PENDING_MESSAGES: 'sync:pending',
   OFFLINE_QUEUE: 'sync:offline',
   SYNC_STATE: (roomId: string) => `sync:state:${roomId}`,
 };
 
 export interface SyncState {
-  lastSequenceId: string;
+  lastMessageCreatedAt: string;
   lastSyncAt: string;
   hasMore: boolean;
 }
@@ -52,27 +52,30 @@ class MessageSyncService {
   private syncInProgress: Set<string> = new Set();
 
   /**
-   * Get last sequence ID for a room
+   * Get last message createdAt for a room
    */
-  async getLastSequenceId(roomId: string): Promise<string> {
-    const stored = await storage.getItem(SYNC_KEYS.LAST_SEQUENCE_ID(roomId));
-    return stored || '0';
+  async getLastMessageCreatedAt(roomId: string): Promise<string | null> {
+    const stored = await storage.getItem(SYNC_KEYS.LAST_MESSAGE_CREATED_AT(roomId));
+    return stored || null;
   }
 
   /**
-   * Set last sequence ID for a room
+   * Set last message createdAt for a room
    */
-  async setLastSequenceId(roomId: string, sequenceId: string): Promise<void> {
-    await storage.setItem(SYNC_KEYS.LAST_SEQUENCE_ID(roomId), sequenceId);
+  async setLastMessageCreatedAt(roomId: string, createdAt: string): Promise<void> {
+    await storage.setItem(SYNC_KEYS.LAST_MESSAGE_CREATED_AT(roomId), createdAt);
   }
 
   /**
    * Sync messages for a room (incremental sync)
    */
-  async syncMessages(roomId: string, options: { limit?: number } = {}): Promise<{
+  async syncMessages(
+    roomId: string,
+    options: { limit?: number } = {}
+  ): Promise<{
     messages: Message[];
     hasMore: boolean;
-    lastSequenceId: string;
+    lastMessageCreatedAt: string;
   }> {
     if (this.syncInProgress.has(roomId)) {
       throw new Error('Sync already in progress for this room');
@@ -81,37 +84,61 @@ class MessageSyncService {
     this.syncInProgress.add(roomId);
 
     try {
-      const lastSequenceId = await this.getLastSequenceId(roomId);
+      const lastMessageCreatedAt = await this.getLastMessageCreatedAt(roomId);
 
       return new Promise((resolve, reject) => {
-        socketClient.emit('chat:sync', {
-          roomId,
-          lastSequenceId,
-          limit: options.limit || 100,
-        }, (response: unknown) => {
-          const res = response as { success?: boolean; data?: { messages?: Message[]; hasMore?: boolean; lastSequenceId?: string; messageId?: string }; error?: string };
-          if (res?.success) {
-            const { messages, hasMore, lastSequenceId: newSequenceId } = res.data as { messages?: Message[]; hasMore?: boolean; lastSequenceId?: string };
+        socketClient.emit(
+          'chat:sync',
+          {
+            roomId,
+            lastMessageCreatedAt,
+            limit: options.limit || 100,
+          },
+          (response: unknown) => {
+            const res = response as {
+              success?: boolean;
+              data?: {
+                messages?: Message[];
+                hasMore?: boolean;
+                lastMessageCreatedAt?: string;
+                messageId?: string;
+              };
+              error?: string;
+            };
+            if (res?.success) {
+              const {
+                messages,
+                hasMore,
+                lastMessageCreatedAt: newCreatedAt,
+              } = res.data as {
+                messages?: Message[];
+                hasMore?: boolean;
+                lastMessageCreatedAt?: string;
+              };
 
-            // Update stored sequence ID
-            this.setLastSequenceId(roomId, newSequenceId);
+              // Update stored createdAt
+              if (newCreatedAt) {
+                this.setLastMessageCreatedAt(roomId, newCreatedAt);
+              }
 
-            // Save sync state
-            this.saveSyncState(roomId, {
-              lastSequenceId: newSequenceId,
-              lastSyncAt: new Date().toISOString(),
-              hasMore,
-            });
+              // Save sync state
+              this.saveSyncState(roomId, {
+                lastMessageCreatedAt:
+                  newCreatedAt || lastMessageCreatedAt || new Date().toISOString(),
+                lastSyncAt: new Date().toISOString(),
+                hasMore,
+              });
 
-            resolve({
-              messages,
-              hasMore,
-              lastSequenceId: newSequenceId,
-            });
-          } else {
-            reject(new Error(res?.error || 'Sync failed'));
+              resolve({
+                messages,
+                hasMore,
+                lastMessageCreatedAt: newCreatedAt || lastMessageCreatedAt || '',
+              });
+            } else {
+              reject(new Error(res?.error || 'Sync failed'));
+            }
           }
-        });
+        );
       });
     } finally {
       this.syncInProgress.delete(roomId);
@@ -132,7 +159,7 @@ class MessageSyncService {
 
       // Small delay to prevent overwhelming the server
       if (hasMore) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
 
@@ -147,22 +174,30 @@ class MessageSyncService {
     options: { limit?: number; before?: string; after?: string } = {}
   ): Promise<{ messages: Message[]; hasMore: boolean }> {
     return new Promise((resolve, reject) => {
-      socketClient.emit('chat:history', {
-        roomId,
-        limit: options.limit || 50,
-        before: options.before,
-        after: options.after,
-      }, (response: unknown) => {
-        const res = response as { success?: boolean; data?: { messages?: Message[] }; error?: string };
-        if (res?.success) {
-          resolve({
-            messages: res.data?.messages ?? [],
-            hasMore: (res.data?.messages?.length ?? 0) === (options.limit || 50),
-          });
-        } else {
-          reject(new Error(res?.error || 'Failed to get history'));
+      socketClient.emit(
+        'chat:history',
+        {
+          roomId,
+          limit: options.limit || 50,
+          before: options.before,
+          after: options.after,
+        },
+        (response: unknown) => {
+          const res = response as {
+            success?: boolean;
+            data?: { messages?: Message[] };
+            error?: string;
+          };
+          if (res?.success) {
+            resolve({
+              messages: res.data?.messages ?? [],
+              hasMore: (res.data?.messages?.length ?? 0) === (options.limit || 50),
+            });
+          } else {
+            reject(new Error(res?.error || 'Failed to get history'));
+          }
         }
-      });
+      );
     });
   }
 
@@ -193,21 +228,29 @@ class MessageSyncService {
 
     // Send immediately
     return new Promise((resolve, reject) => {
-      socketClient.emit('chat:message', {
-        roomId,
-        content,
-        type,
-        attachments,
-      }, (response: unknown) => {
-        const res = response as { success?: boolean; data?: { messageId?: string }; error?: string };
-        if (res?.success) {
-          resolve({ messageId: res.data?.messageId ?? '' });
-        } else {
-          // Queue for retry if failed
-          this.queueOfflineMessage(pendingMessage);
-          reject(new Error(res?.error || 'Failed to send message'));
+      socketClient.emit(
+        'chat:message',
+        {
+          roomId,
+          content,
+          type,
+          attachments,
+        },
+        (response: unknown) => {
+          const res = response as {
+            success?: boolean;
+            data?: { messageId?: string };
+            error?: string;
+          };
+          if (res?.success) {
+            resolve({ messageId: res.data?.messageId ?? '' });
+          } else {
+            // Queue for retry if failed
+            this.queueOfflineMessage(pendingMessage);
+            reject(new Error(res?.error || 'Failed to send message'));
+          }
         }
-      });
+      );
     });
   }
 
@@ -239,12 +282,7 @@ class MessageSyncService {
 
     for (const message of queue) {
       try {
-        await this.sendMessage(
-          message.roomId,
-          message.content,
-          message.type,
-          message.attachments
-        );
+        await this.sendMessage(message.roomId, message.content, message.type, message.attachments);
       } catch (error) {
         // Retry up to 3 times
         if (message.retryCount < 3) {
@@ -289,16 +327,21 @@ class MessageSyncService {
       callback(messages);
     }
 
-    // Update last sequence ID if needed
+    // Update last message createdAt if needed
     if (messages.length > 0) {
-      const maxSequenceId = messages.reduce((max, msg) => {
-        const seqId = BigInt(msg.sequenceId);
-        return seqId > max ? seqId : max;
-      }, BigInt(0));
+      const maxCreatedAt = messages.reduce((max, msg) => {
+        const createdAt = new Date(msg.createdAt).getTime();
+        return createdAt > max ? createdAt : max;
+      }, 0);
 
-      this.getLastSequenceId(roomId).then((storedId) => {
-        if (maxSequenceId > BigInt(storedId)) {
-          this.setLastSequenceId(roomId, maxSequenceId.toString());
+      this.getLastMessageCreatedAt(roomId).then(storedAt => {
+        if (storedAt) {
+          const storedTime = new Date(storedAt).getTime();
+          if (maxCreatedAt > storedTime) {
+            this.setLastMessageCreatedAt(roomId, new Date(maxCreatedAt).toISOString());
+          }
+        } else {
+          this.setLastMessageCreatedAt(roomId, new Date(maxCreatedAt).toISOString());
         }
       });
     }
@@ -355,7 +398,7 @@ class MessageSyncService {
    * Clear sync state for a room
    */
   async clearSyncState(roomId: string): Promise<void> {
-    await storage.removeItem(SYNC_KEYS.LAST_SEQUENCE_ID(roomId));
+    await storage.removeItem(SYNC_KEYS.LAST_MESSAGE_CREATED_AT(roomId));
     await storage.removeItem(SYNC_KEYS.SYNC_STATE(roomId));
   }
 
@@ -364,10 +407,8 @@ class MessageSyncService {
    */
   async clearAllSyncData(): Promise<void> {
     const keys = await storage.getAllKeys();
-    const syncKeys = keys.filter((key) =>
-      key.startsWith('sync:')
-    );
-    await Promise.all(syncKeys.map((key) => storage.removeItem(key)));
+    const syncKeys = keys.filter(key => key.startsWith('sync:'));
+    await Promise.all(syncKeys.map(key => storage.removeItem(key)));
   }
 }
 

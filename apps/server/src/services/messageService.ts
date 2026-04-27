@@ -9,6 +9,9 @@ import type { MessageType, MessageStatus, Prisma, SenderType } from '@prisma/cli
 
 import { prisma } from '../db/client';
 
+import { pushNotificationService } from './pushNotification';
+import { presenceService } from './presenceService';
+
 /**
  * Message delivery retry configuration
  */
@@ -187,30 +190,82 @@ async function createOfflineMessages(
 
 /**
  * Create offline message entries for ChatRoom participants not currently online
+ * Returns the list of offline participants (user IDs) so we can send push notifications.
  */
 async function createChatRoomOfflineMessages(
   chatRoomId: string,
   messageId: string,
-  senderId: string
-): Promise<void> {
-  const participants = await prisma.roomParticipant.findMany({
+  senderId: string,
+  tx?: Prisma.TransactionClient
+): Promise<{ userId: string }[]> {
+  const client = tx || prisma;
+  const participants = await client.roomParticipant.findMany({
     where: { roomId: chatRoomId, isActive: true },
     select: { userId: true },
   });
 
-  const offlinePromises = participants
-    .filter(p => p.userId !== senderId)
-    .map(p =>
-      prisma.offlineMessage.create({
-        data: {
-          userId: p.userId,
-          messageId,
-          conversationId: chatRoomId,
-        },
-      })
-    );
+  const offlineParticipants = participants.filter(p => p.userId !== senderId);
+
+  const offlinePromises = offlineParticipants.map(p =>
+    client.offlineMessage.create({
+      data: {
+        userId: p.userId,
+        messageId,
+        conversationId: chatRoomId,
+      },
+    })
+  );
 
   await Promise.all(offlinePromises);
+
+  return offlineParticipants;
+}
+
+/**
+ * Send push notifications to offline users for a new chat room message.
+ * Only sends to users who are offline (presenceService.isUserOnline returns false).
+ * Online users receive messages via socket.io, so push is redundant.
+ */
+async function sendOfflinePushNotifications(
+  offlineParticipants: { userId: string }[],
+  sender: { id: string; name: string | null; avatarUrl: string | null } | null,
+  messageContent: string,
+  chatRoomId: string
+): Promise<void> {
+  if (!sender || offlineParticipants.length === 0) {
+    return;
+  }
+
+  // Preview content (first 100 chars for push notification body)
+  const contentPreview =
+    messageContent.length > 100 ? messageContent.substring(0, 100) + '...' : messageContent;
+  const senderName = sender.name || 'Someone';
+
+  // Send push notifications to all offline users in parallel
+  await Promise.all(
+    offlineParticipants.map(async participant => {
+      try {
+        // Check if user is still offline - double-check to avoid duplicate delivery
+        if (presenceService.isUserOnline(participant.userId)) {
+          // User came online via socket, socket delivery handles it
+          return;
+        }
+
+        await pushNotificationService.sendMessageNotification(
+          participant.userId,
+          chatRoomId,
+          senderName,
+          contentPreview
+        );
+      } catch (error) {
+        // Log but don't fail the whole operation - push is best-effort
+        console.error(
+          `[MessageService] Failed to send push notification to user ${participant.userId}:`,
+          error
+        );
+      }
+    })
+  );
 }
 
 /**
@@ -753,52 +808,67 @@ export interface CreateChatRoomMessageInput {
 export async function createChatRoomMessage(input: CreateChatRoomMessageInput) {
   const encryptedContent = await encryptionService.encrypt(input.content);
 
-  const chatMessage = await prisma.chatMessage.create({
-    data: {
-      chatRoomId: input.chatRoomId,
-      senderId: input.senderId,
-      senderType: 'USER' as SenderType,
-      content: encryptedContent,
-      type: input.type || 'TEXT',
-      attachments: input.attachments || null,
-      metadata: input.metadata || { deleted: false },
-      status: 'SENT',
-    },
+  const result = await prisma.$transaction(async tx => {
+    const chatMessage = await tx.chatMessage.create({
+      data: {
+        chatRoomId: input.chatRoomId,
+        senderId: input.senderId,
+        senderType: 'USER' as SenderType,
+        content: encryptedContent,
+        type: input.type || 'TEXT',
+        attachments: input.attachments || null,
+        metadata: input.metadata || { deleted: false },
+        status: 'SENT',
+      },
+    });
+
+    // Fetch sender info separately since ChatMessage doesn't have sender relation
+    const sender = await tx.user.findUnique({
+      where: { id: input.senderId },
+      select: { id: true, name: true, avatarUrl: true },
+    });
+
+    // Update ChatRoom lastMessageAt
+    await tx.chatRoom.update({
+      where: { id: input.chatRoomId },
+      data: { lastMessageAt: new Date() },
+    });
+
+    // Increment unread count for other participants
+    await tx.roomParticipant.updateMany({
+      where: {
+        roomId: input.chatRoomId,
+        userId: { not: input.senderId },
+        isActive: true,
+      },
+      data: {
+        unreadCount: { increment: 1 },
+      },
+    });
+
+    // Create offline message entries for offline participants
+    const offlineParticipants = await createChatRoomOfflineMessages(
+      input.chatRoomId,
+      chatMessage.id,
+      input.senderId,
+      tx
+    );
+
+    return {
+      ...chatMessage,
+      content: input.content, // Return decrypted content for sender
+      sender,
+      conversationId: input.chatRoomId, // Alias for compatibility with chat handler
+      offlineParticipants,
+    };
   });
 
-  // Fetch sender info separately since ChatMessage doesn't have sender relation
-  const sender = await prisma.user.findUnique({
-    where: { id: input.senderId },
-    select: { id: true, name: true, avatarUrl: true },
-  });
+  // Send push notifications to offline users (outside transaction, after commit)
+  // This ensures push failures don't affect message creation and socket delivery handles online users
+  const { offlineParticipants, sender, ...chatMessage } = result;
+  await sendOfflinePushNotifications(offlineParticipants, sender, input.content, input.chatRoomId);
 
-  // Update ChatRoom lastMessageAt
-  await prisma.chatRoom.update({
-    where: { id: input.chatRoomId },
-    data: { lastMessageAt: new Date() },
-  });
-
-  // Increment unread count for other participants
-  await prisma.roomParticipant.updateMany({
-    where: {
-      roomId: input.chatRoomId,
-      userId: { not: input.senderId },
-      isActive: true,
-    },
-    data: {
-      unreadCount: { increment: 1 },
-    },
-  });
-
-  // Create offline message entries for offline participants
-  await createChatRoomOfflineMessages(input.chatRoomId, chatMessage.id, input.senderId);
-
-  return {
-    ...chatMessage,
-    content: input.content, // Return decrypted content for sender
-    sender,
-    conversationId: input.chatRoomId, // Alias for compatibility with chat handler
-  };
+  return { ...chatMessage, sender };
 }
 
 /**

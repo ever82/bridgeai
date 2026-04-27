@@ -311,6 +311,7 @@ enum MessageType {
   TEXT
   IMAGE
   FILE
+  SYSTEM
 }
 
 enum MessageStatus {
@@ -633,12 +634,30 @@ model ChatMessage {
   createdAt    DateTime     @default(now()) @map("created_at")
 
   // Relations
-  chatRoom     ChatRoom     @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  chatRoom     ChatRoom         @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  readReceipts ChatReadReceipt[]
 
   @@index([chatRoomId])
   @@index([senderId])
   @@index([createdAt])
   @@map("chat_messages")
+}
+
+// Read Receipt for ChatMessages
+model ChatReadReceipt {
+  id           String   @id @default(uuid())
+  chatMessageId String  @map("chat_message_id")
+  userId       String   @map("user_id")
+  readAt       DateTime @default(now()) @map("read_at")
+
+  // Relations
+  chatMessage  ChatMessage @relation(fields: [chatMessageId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatMessageId, userId])
+  @@index([chatMessageId])
+  @@index([userId])
+  @@map("chat_read_receipts")
 }
 
 enum SenderType {

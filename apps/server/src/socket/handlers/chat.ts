@@ -225,10 +225,22 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
         return;
       }
 
-      // Update ChatMessage status to READ
+      // Update ChatMessage status to READ and create read receipts
       const updateResult = await prisma.chatMessage.updateMany({
         where: { id: { in: messageIds }, chatRoomId: roomId },
         data: { status: 'READ' },
+      });
+
+      // Create read receipts for each message (upsert to handle re-reads)
+      const readReceiptData = messageIds.map((msgId: string) => ({
+        chatMessageId: msgId,
+        userId: socket.user.id,
+        readAt: new Date(),
+      }));
+
+      await prisma.chatReadReceipt.createMany({
+        data: readReceiptData,
+        skipDuplicates: true,
       });
 
       // Broadcast read receipt to room
