@@ -10,12 +10,7 @@ import { agentDateConfig } from './agentDate';
 import { agentJobConfig } from './agentJob';
 import { agentAdConfig } from './agentAd';
 
-export {
-  visionShareConfig,
-  agentDateConfig,
-  agentJobConfig,
-  agentAdConfig,
-};
+export { visionShareConfig, agentDateConfig, agentJobConfig, agentAdConfig };
 
 export const sceneRegistry: Map<SceneId, SceneConfig> = new Map([
   ['visionshare', visionShareConfig],

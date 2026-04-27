@@ -61,7 +61,9 @@ describe('Disclosure Types', () => {
       expect(canDiscloseAtStage(DisclosureLevel.AFTER_MATCH, RelationshipStage.NONE)).toBe(false);
       expect(canDiscloseAtStage(DisclosureLevel.AFTER_MATCH, RelationshipStage.MATCHED)).toBe(true);
       expect(canDiscloseAtStage(DisclosureLevel.AFTER_MATCH, RelationshipStage.CHATTED)).toBe(true);
-      expect(canDiscloseAtStage(DisclosureLevel.AFTER_MATCH, RelationshipStage.REFERRED)).toBe(true);
+      expect(canDiscloseAtStage(DisclosureLevel.AFTER_MATCH, RelationshipStage.REFERRED)).toBe(
+        true
+      );
     });
 
     it('should allow AFTER_CHAT only at CHATTED or higher', () => {
@@ -72,10 +74,18 @@ describe('Disclosure Types', () => {
     });
 
     it('should allow AFTER_REFERRAL only at REFERRED', () => {
-      expect(canDiscloseAtStage(DisclosureLevel.AFTER_REFERRAL, RelationshipStage.NONE)).toBe(false);
-      expect(canDiscloseAtStage(DisclosureLevel.AFTER_REFERRAL, RelationshipStage.MATCHED)).toBe(false);
-      expect(canDiscloseAtStage(DisclosureLevel.AFTER_REFERRAL, RelationshipStage.CHATTED)).toBe(false);
-      expect(canDiscloseAtStage(DisclosureLevel.AFTER_REFERRAL, RelationshipStage.REFERRED)).toBe(true);
+      expect(canDiscloseAtStage(DisclosureLevel.AFTER_REFERRAL, RelationshipStage.NONE)).toBe(
+        false
+      );
+      expect(canDiscloseAtStage(DisclosureLevel.AFTER_REFERRAL, RelationshipStage.MATCHED)).toBe(
+        false
+      );
+      expect(canDiscloseAtStage(DisclosureLevel.AFTER_REFERRAL, RelationshipStage.CHATTED)).toBe(
+        false
+      );
+      expect(canDiscloseAtStage(DisclosureLevel.AFTER_REFERRAL, RelationshipStage.REFERRED)).toBe(
+        true
+      );
     });
   });
 

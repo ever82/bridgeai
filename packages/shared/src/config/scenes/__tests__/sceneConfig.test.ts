@@ -3,42 +3,7 @@
  * 场景配置测试
  */
 
-// Minimal type stubs (these match the actual exported types from scene.ts)
-// tsconfig in this package excludes __tests__, so we use stubs to enable compilation.
-type SceneId = string;
-
-interface SceneMetadata {
-  id: string;
-  name: string;
-  nameEn: string;
-  description?: { zh: string; en?: string };
-  icon?: string;
-  color?: string;
-  isActive: boolean;
-}
-
-interface SceneFieldDefinition {
-  id: string;
-  name: string;
-  type: string;
-}
-
-interface SceneCapability {
-  id: string;
-}
-
-interface SceneTemplate {
-  id: string;
-}
-
-interface SceneConfig {
-  id: string;
-  metadata: SceneMetadata;
-  fields: SceneFieldDefinition[];
-  capabilities: SceneCapability[];
-  templates: SceneTemplate[];
-  ui: { sections: unknown[]; layout: unknown };
-}
+import { SceneId, SceneConfig, SceneFieldDefinition } from '../../types/scene';
 
 import {
   visionShareConfig,

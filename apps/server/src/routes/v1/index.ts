@@ -22,6 +22,8 @@ import { strictAuthLimiter } from '../../middleware/rateLimiter';
 import pointsRoutes from '../points';
 import matchQueryRoutes from '../matchQuery';
 import datingRoutes from '../dating';
+import visionSharePublishRoutes from '../visionShare/publish';
+import visionSharePaymentRoutes from '../visionShare/payment';
 
 import healthRoutes from './health';
 import sceneRoutes from './scene';
@@ -54,5 +56,7 @@ router.use('/reviews', reviewRoutes);
 router.use('/chat', chatRoutes);
 router.use('/matches', matchQueryRoutes);
 router.use('/dating', datingRoutes);
+router.use('/visionshare', visionSharePublishRoutes);
+router.use('/visionshare/payment', visionSharePaymentRoutes);
 
 export default router;

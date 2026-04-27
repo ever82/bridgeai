@@ -17,6 +17,28 @@ export enum RelationshipStage {
   REFERRED = 'REFERRED',
 }
 
+export enum SceneCode {
+  VISION_SHARE = 'vision_share',
+  AGENT_DATE = 'agent_date',
+  AGENT_JOB = 'agent_job',
+  AGENT_AD = 'agent_ad',
+}
+
+export enum PointsTransactionType {
+  EARN = 'EARN',
+  SPEND = 'SPEND',
+  FROZEN = 'FROZEN',
+  UNFROZEN = 'UNFROZEN',
+  TRANSFER_IN = 'TRANSFER_IN',
+  TRANSFER_OUT = 'TRANSFER_OUT',
+}
+
+export enum FreezeStatus {
+  FROZEN = 'FROZEN',
+  RELEASED = 'RELEASED',
+  USED = 'USED',
+}
+
 export interface FieldDisclosure {
   fieldName: string;
   level: DisclosureLevel;

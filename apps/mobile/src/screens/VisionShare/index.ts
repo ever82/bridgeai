@@ -16,3 +16,8 @@ export { NaturalLanguagePublishScreen } from './NaturalLanguagePublish';
 
 // Photo Gallery Screen (ISSUE-VS005a)
 export { PhotoGalleryScreen } from './PhotoGallery';
+
+// Payment and HD Download Screens
+export { PhotoPaymentScreen } from './PhotoPayment';
+export { TransactionHistoryScreen } from './TransactionHistory';
+export { HDDownloadScreen } from './HDDownload';
