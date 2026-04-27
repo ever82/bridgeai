@@ -126,11 +126,7 @@ export function createRequestContext(req: Request): IRequestContext {
  * @param userRole 用户角色
  * @param sessionId 会话ID
  */
-export function setUserContext(
-  userId: string,
-  userRole?: string,
-  sessionId?: string
-): void {
+export function setUserContext(userId: string, userRole?: string, sessionId?: string): void {
   const context = asyncLocalStorage.getStore();
   if (context) {
     context.userId = userId;
@@ -169,8 +165,8 @@ export function requestContextMiddleware(req: Request, res: Response, next: Next
   runWithContext(context, () => {
     // 响应完成时记录
     res.on('finish', () => {
-      const duration = Date.now() - context.startTime;
-      // 可以在这里添加日志记录
+      const _duration = Date.now() - context.startTime;
+      // Duration available via getRequestDuration() for logging
     });
 
     next();

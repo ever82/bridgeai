@@ -111,6 +111,7 @@ export type RoutingStrategy =
   | 'quality'
   | 'round-robin'
   | 'weighted'
+  | 'least-connections'
   | 'direct'
   | 'fallback';
 
@@ -121,6 +122,7 @@ export interface RoutingConfig {
   fallbackEnabled: boolean;
   maxRetries: number;
   timeoutMs: number;
+  healthCheckIntervalMs?: number;
 }
 
 // 熔断器状态

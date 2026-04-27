@@ -95,17 +95,17 @@ describe('Rate Limiter Middleware', () => {
   });
 
   describe('getRateLimitHeaders', () => {
-    it('should return correct headers for new window', () => {
+    it('should return correct headers for a new bucket', () => {
       const headers = getRateLimitHeaders('test-key', {
-        windowMs: 60000,
-        maxRequests: 100,
+        maxTokens: 10,
+        refillRate: 0.5,
       });
 
       expect(headers).toHaveProperty('X-RateLimit-Limit');
       expect(headers).toHaveProperty('X-RateLimit-Remaining');
       expect(headers).toHaveProperty('X-RateLimit-Reset');
-      expect(headers['X-RateLimit-Limit']).toBe('100');
-      expect(headers['X-RateLimit-Remaining']).toBe('99');
+      expect(headers['X-RateLimit-Limit']).toBe('10');
+      expect(headers['X-RateLimit-Remaining']).toBe('9');
     });
   });
 
@@ -127,8 +127,8 @@ describe('Rate Limiter Middleware', () => {
     });
 
     it('should apply stricter limits for anonymous users', () => {
-      // Make multiple requests to exceed limit
-      for (let i = 0; i < 35; i++) {
+      // Anonymous burst limit is 10 — exceed it in one burst
+      for (let i = 0; i < 12; i++) {
         userRateLimiter(mockReq as Request, mockRes as Response, mockNext);
       }
 
@@ -144,24 +144,24 @@ describe('Rate Limiter Middleware', () => {
     it('should allow more requests for premium users', () => {
       mockReq.user = { id: 'user-123', role: 'user', isPremium: true };
 
-      // Make requests that would exceed anonymous limit
+      // Make requests that would exceed anonymous burst limit
       for (let i = 0; i < 35; i++) {
         userRateLimiter(mockReq as Request, mockRes as Response, mockNext);
       }
 
-      // Should still be allowed (premium limit is 120)
+      // Should still be allowed (premium burst limit is 40)
       expect(mockRes.status).not.toHaveBeenCalledWith(429);
     });
 
     it('should allow most requests for admin users', () => {
       mockReq.user = { id: 'user-123', role: 'admin' };
 
-      // Make many requests
-      for (let i = 0; i < 120; i++) {
+      // Make many requests (admin burst limit is 100)
+      for (let i = 0; i < 99; i++) {
         userRateLimiter(mockReq as Request, mockRes as Response, mockNext);
       }
 
-      // Should still be allowed (admin limit is 300)
+      // Should still be allowed (admin burst limit is 100)
       expect(mockRes.status).not.toHaveBeenCalledWith(429);
     });
   });

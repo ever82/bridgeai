@@ -3,17 +3,13 @@
  * 智能路由与负载均衡
  */
 
-import {
-  LLMProvider,
-  ModelInfo,
-  RoutingConfig,
-  ChatCompletionRequest,
-} from './types';
+import { LLMProvider, ModelInfo, RoutingConfig, ChatCompletionRequest } from './types';
 
 interface ProviderHealth {
   provider: LLMProvider;
   healthy: boolean;
   latencyMs: number;
+  averageLatencyMs: number;
   successRate: number;
   lastChecked: Date;
 }
@@ -34,6 +30,10 @@ export class LLMRouter {
   private providerHealth: Map<LLMProvider, ProviderHealth> = new Map();
   private roundRobinIndex: number = 0;
   private providerWeights: Map<LLMProvider, number> = new Map();
+  private activeConnections: Map<LLMProvider, number> = new Map();
+  private healthCheckInterval: ReturnType<typeof setInterval> | null = null;
+  private healthCheckIntervalMs: number = 30000;
+  private providerLatencies: Map<LLMProvider, number[]> = new Map();
 
   constructor(config: Partial<RoutingConfig> = {}) {
     this.config = {
@@ -41,8 +41,13 @@ export class LLMRouter {
       fallbackEnabled: true,
       maxRetries: 3,
       timeoutMs: 60000,
-      ...config
+      healthCheckIntervalMs: 30000,
+      ...config,
     };
+
+    if (this.config.healthCheckIntervalMs) {
+      this.healthCheckIntervalMs = this.config.healthCheckIntervalMs;
+    }
 
     // 初始化默认权重
     this.providerWeights.set('openai', 40);
@@ -74,10 +79,7 @@ export class LLMRouter {
   /**
    * 路由决策
    */
-  route(
-    request: ChatCompletionRequest,
-    availableProviders: LLMProvider[]
-  ): RoutingDecision {
+  route(request: ChatCompletionRequest, availableProviders: LLMProvider[]): RoutingDecision {
     const strategy = this.config.strategy;
 
     switch (strategy) {
@@ -91,6 +93,8 @@ export class LLMRouter {
         return this.routeByRoundRobin(availableProviders);
       case 'weighted':
         return this.routeByWeighted(availableProviders);
+      case 'least-connections':
+        return this.routeByLeastConnections(availableProviders);
       default:
         return this.routeByRoundRobin(availableProviders);
     }
@@ -124,7 +128,7 @@ export class LLMRouter {
     return {
       provider: selected.provider,
       model: request.model || selected.id,
-      reason: `Lowest cost: $${(selected.costPer1KTokens.input + selected.costPer1KTokens.output).toFixed(4)}/1K tokens`
+      reason: `Lowest cost: $${(selected.costPer1KTokens.input + selected.costPer1KTokens.output).toFixed(4)}/1K tokens`,
     };
   }
 
@@ -152,7 +156,7 @@ export class LLMRouter {
     return {
       provider: selected.provider,
       model: request.model || selected.id,
-      reason: `Lowest latency: ${selected.averageLatencyMs}ms average`
+      reason: `Lowest latency: ${selected.averageLatencyMs}ms average`,
     };
   }
 
@@ -180,16 +184,14 @@ export class LLMRouter {
     return {
       provider: selected.provider,
       model: request.model || selected.id,
-      reason: `Highest quality: ${selected.qualityScore}/100 score`
+      reason: `Highest quality: ${selected.qualityScore}/100 score`,
     };
   }
 
   /**
    * 轮询路由
    */
-  private routeByRoundRobin(
-    availableProviders: LLMProvider[]
-  ): RoutingDecision {
+  private routeByRoundRobin(availableProviders: LLMProvider[]): RoutingDecision {
     const healthyProviders = this.getHealthyProviders(availableProviders);
 
     if (healthyProviders.length === 0) {
@@ -205,16 +207,14 @@ export class LLMRouter {
     return {
       provider,
       model: models[0]?.id || '',
-      reason: `Round-robin selection (${this.roundRobinIndex}/${healthyProviders.length})`
+      reason: `Round-robin selection (${this.roundRobinIndex}/${healthyProviders.length})`,
     };
   }
 
   /**
    * 加权路由
    */
-  private routeByWeighted(
-    availableProviders: LLMProvider[]
-  ): RoutingDecision {
+  private routeByWeighted(availableProviders: LLMProvider[]): RoutingDecision {
     const healthyProviders = this.getHealthyProviders(availableProviders);
 
     if (healthyProviders.length === 0) {
@@ -238,7 +238,7 @@ export class LLMRouter {
         return {
           provider,
           model: models[0]?.id || '',
-          reason: `Weighted selection (weight: ${weight}/${totalWeight})`
+          reason: `Weighted selection (weight: ${weight}/${totalWeight})`,
         };
       }
     }
@@ -249,8 +249,53 @@ export class LLMRouter {
     return {
       provider: lastProvider,
       model: models[0]?.id || '',
-      reason: 'Weighted fallback'
+      reason: 'Weighted fallback',
     };
+  }
+
+  /**
+   * 最小连接数路由
+   * 选择活跃连接数最少的提供商
+   */
+  private routeByLeastConnections(availableProviders: LLMProvider[]): RoutingDecision {
+    const healthyProviders = this.getHealthyProviders(availableProviders);
+
+    if (healthyProviders.length === 0) {
+      throw new Error('No healthy providers available');
+    }
+
+    // 查找连接数最少的提供商
+    let minConnections = Infinity;
+    let selectedProvider = healthyProviders[0];
+
+    for (const provider of healthyProviders) {
+      const connections = this.activeConnections.get(provider) || 0;
+      if (connections < minConnections) {
+        minConnections = connections;
+        selectedProvider = provider;
+      }
+    }
+
+    // 增加该提供商的活跃连接数
+    this.activeConnections.set(selectedProvider, minConnections + 1);
+    const models = this.getModelsForProviders([selectedProvider]);
+
+    return {
+      provider: selectedProvider,
+      model: models[0]?.id || '',
+      reason: `Least connections: ${minConnections} active (now ${minConnections + 1})`,
+    };
+  }
+
+  /**
+   * 释放连接
+   * 当请求完成时调用
+   */
+  releaseConnection(provider: LLMProvider): void {
+    const current = this.activeConnections.get(provider) || 0;
+    if (current > 0) {
+      this.activeConnections.set(provider, current - 1);
+    }
   }
 
   /**
@@ -283,17 +328,14 @@ export class LLMRouter {
     return matches.map(model => ({
       provider: model.provider,
       model: model.id,
-      reason: `Matches required capabilities: ${Object.keys(requiredCapabilities).join(', ')}`
+      reason: `Matches required capabilities: ${Object.keys(requiredCapabilities).join(', ')}`,
     }));
   }
 
   /**
    * 根据语言支持路由
    */
-  routeByLanguage(
-    language: string,
-    availableProviders: LLMProvider[]
-  ): RoutingDecision[] {
+  routeByLanguage(language: string, availableProviders: LLMProvider[]): RoutingDecision[] {
     const models = this.getModelsForProviders(availableProviders);
 
     const matches = models.filter(model =>
@@ -303,7 +345,7 @@ export class LLMRouter {
     return matches.map(model => ({
       provider: model.provider,
       model: model.id,
-      reason: `Supports language: ${language}`
+      reason: `Supports language: ${language}`,
     }));
   }
 
@@ -337,8 +379,99 @@ export class LLMRouter {
       total: details.length,
       healthy,
       unhealthy: details.length - healthy,
-      details
+      details,
     };
+  }
+
+  /**
+   * 启动健康检查
+   * 定期探测提供商健康状态
+   * @param providers 要检查的提供商列表
+   * @param probeFn 探测函数，返回延迟(ms)，失败时抛出异常
+   */
+  startHealthCheck(
+    providers: LLMProvider[],
+    probeFn: (provider: LLMProvider) => Promise<number>
+  ): void {
+    if (this.healthCheckInterval) {
+      this.stopHealthCheck();
+    }
+
+    const checkProvider = async (provider: LLMProvider) => {
+      const timeout = 10000; // 10秒超时
+
+      try {
+        const latency = await Promise.race([
+          probeFn(provider),
+          new Promise<number>((_, reject) =>
+            setTimeout(() => reject(new Error('Health check timeout')), timeout)
+          ),
+        ]);
+
+        // 更新延迟记录
+        const latencies = this.providerLatencies.get(provider) || [];
+        latencies.push(latency);
+        // 保留最近10个延迟记录
+        if (latencies.length > 10) {
+          latencies.shift();
+        }
+        this.providerLatencies.set(provider, latencies);
+
+        const avgLatency = this.getAverageLatency(provider);
+
+        // 更新健康状态
+        this.providerHealth.set(provider, {
+          provider,
+          healthy: true,
+          latencyMs: latency,
+          averageLatencyMs: avgLatency,
+          successRate: this.providerHealth.get(provider)?.successRate ?? 1.0,
+          lastChecked: new Date(),
+        });
+      } catch (error) {
+        // 提供商不健康
+        this.providerHealth.set(provider, {
+          provider,
+          healthy: false,
+          latencyMs: this.providerHealth.get(provider)?.latencyMs ?? 0,
+          averageLatencyMs: this.getAverageLatency(provider),
+          successRate: this.providerHealth.get(provider)?.successRate ?? 0,
+          lastChecked: new Date(),
+        });
+      }
+    };
+
+    // 立即执行一次检查
+    providers.forEach(checkProvider);
+
+    // 启动定期检查
+    this.healthCheckInterval = setInterval(() => {
+      providers.forEach(checkProvider);
+    }, this.healthCheckIntervalMs);
+  }
+
+  /**
+   * 停止健康检查
+   */
+  stopHealthCheck(): void {
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = null;
+    }
+  }
+
+  /**
+   * 获取提供商的平均延迟
+   * @param provider 提供商
+   * @returns 平均延迟(ms)，无数据时返回0
+   */
+  getAverageLatency(provider: LLMProvider): number {
+    const latencies = this.providerLatencies.get(provider);
+    if (!latencies || latencies.length === 0) {
+      return 0;
+    }
+    const sum = latencies.reduce((acc, val) => acc + val, 0);
+    return Math.round(sum / latencies.length);
   }
 
   /**
@@ -349,8 +482,7 @@ export class LLMRouter {
   }
 
   private getModelsForProviders(providers: LLMProvider[]): ModelInfo[] {
-    return Array.from(this.models.values())
-      .filter(m => providers.includes(m.provider));
+    return Array.from(this.models.values()).filter(m => providers.includes(m.provider));
   }
 
   private getHealthyProviders(providers: LLMProvider[]): LLMProvider[] {

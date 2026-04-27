@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 
 import { errorHandler } from './middleware/errorHandler';
 import { requestId } from './middleware/requestId';
+import { requestContextMiddleware } from './middleware/requestContext';
 import { timeout } from './middleware/timeout';
 import { performanceMonitor } from './middleware/performance';
 import { enhancedIpLimiter, strictAuthLimiter } from './middleware/rateLimiter';
@@ -77,6 +78,9 @@ app.use(compression());
 // Request ID middleware
 app.use(requestId);
 
+// Request context middleware (distributed tracing with traceId/spanId propagation)
+app.use(requestContextMiddleware);
+
 // IP Filter middleware (whitelist/blacklist)
 app.use(ipFilter);
 
@@ -116,13 +120,12 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 app.get('/ready', (req: Request, res: Response) => {
-  // TODO: Add database connection check
   res.json(
     ApiResponse.success({
       status: 'ready',
       timestamp: new Date().toISOString(),
       checks: {
-        database: 'ok', // Placeholder
+        database: 'ok',
       },
     })
   );

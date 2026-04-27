@@ -22,28 +22,18 @@ export { rateLimitConfigs, getRateLimitConfig };
 // Use any-typed request for rate limiting
 type RateLimitRequest = Request & { user?: any; token?: string };
 
-// In-memory store for user-based rate limiting.
+// In-memory store for user-based rate limiting using token bucket algorithm.
 // For distributed deployments (multi-node), set RATE_LIMIT_USE_REDIS=true
 // and configure RATE_LIMIT_REDIS_URL. The Redis-based implementation
-// will use a Redis SETEX-based sliding window counter.
+// will use a Redis-based token bucket.
 interface UserRequestRecord {
-  count: number;
-  resetTime: number;
+  tokens: number;
+  maxTokens: number;
+  refillRate: number; // tokens added per second
+  lastRefill: number; // timestamp (ms) of last refill
 }
 
 const userRequestStore = new Map<string, UserRequestRecord>();
-
-// Redis-based rate limit functions (used when RATE_LIMIT_USE_REDIS=true)
-// TODO(NP-207): Implement Redis-backed rate limiting for distributed deployments
-async function _redisRateLimit(
-  _identifier: string,
-  _maxRequests: number,
-  _windowMs: number
-): Promise<boolean> {
-  // Placeholder: would use Redis INCR + EXPIRE for sliding window counter
-  // When implemented, set RATE_LIMIT_USE_REDIS=true and configure RATE_LIMIT_REDIS_URL
-  return false; // Falls back to in-memory store
-}
 
 // Get client identifier (user ID if authenticated, IP otherwise)
 function getClientIdentifier(req: RateLimitRequest): string {
@@ -63,11 +53,15 @@ function getUserTier(req: RateLimitRequest): keyof typeof userTierLimits {
   return 'anonymous';
 }
 
-// Clean up expired entries from the store (called periodically)
+// Clean up stale entries from the store (called periodically).
+// Remove buckets that have been idle long enough to have fully refilled
+// (i.e. no activity for at least maxTokens / refillRate seconds).
 function cleanupExpiredEntries(): void {
   const now = Date.now();
   for (const [key, record] of userRequestStore.entries()) {
-    if (record.resetTime <= now) {
+    const secondsToFull = record.maxTokens / record.refillRate;
+    const staleMs = secondsToFull * 1000;
+    if (record.lastRefill + staleMs <= now) {
       userRequestStore.delete(key);
     }
   }
@@ -85,68 +79,94 @@ function startCleanupInterval(): void {
 startCleanupInterval();
 
 /**
- * Get rate limit headers for response
+ * Get rate limit headers for response based on token bucket state.
  */
 export function getRateLimitHeaders(
   identifier: string,
-  config: typeof rateLimitConfigs.default
+  config: { maxTokens: number; refillRate: number }
 ): Record<string, string> {
   const record = userRequestStore.get(identifier);
   const now = Date.now();
 
-  if (!record || record.resetTime <= now) {
-    // New window
+  if (!record) {
+    // No bucket yet — treat as full
     return {
-      'X-RateLimit-Limit': config.maxRequests.toString(),
-      'X-RateLimit-Remaining': (config.maxRequests - 1).toString(),
-      'X-RateLimit-Reset': Math.ceil((now + config.windowMs) / 1000).toString(),
+      'X-RateLimit-Limit': config.maxTokens.toString(),
+      'X-RateLimit-Remaining': (config.maxTokens - 1).toString(),
+      'X-RateLimit-Reset': Math.ceil(now / 1000).toString(),
     };
   }
 
-  const remaining = Math.max(0, config.maxRequests - record.count);
+  // Compute current token count (without consuming)
+  const elapsed = (now - record.lastRefill) / 1000;
+  const currentTokens = Math.min(record.maxTokens, record.tokens + record.refillRate * elapsed);
+
+  // Estimate when the next token will be available (if currently empty)
+  let resetSeconds: number;
+  if (currentTokens >= 1) {
+    resetSeconds = Math.ceil(now / 1000);
+  } else {
+    const secondsToNextToken = (1 - currentTokens) / record.refillRate;
+    resetSeconds = Math.ceil((now + secondsToNextToken * 1000) / 1000);
+  }
+
   return {
-    'X-RateLimit-Limit': config.maxRequests.toString(),
-    'X-RateLimit-Remaining': remaining.toString(),
-    'X-RateLimit-Reset': Math.ceil(record.resetTime / 1000).toString(),
+    'X-RateLimit-Limit': config.maxTokens.toString(),
+    'X-RateLimit-Remaining': Math.floor(currentTokens).toString(),
+    'X-RateLimit-Reset': resetSeconds.toString(),
   };
 }
 
 /**
- * User-based rate limiter middleware
- * Checks and updates rate limit for authenticated users
+ * User-based rate limiter middleware using token bucket algorithm.
+ * Each user/IP gets a bucket that refills tokens over time.
+ * burstLimit is the bucket capacity; requestsPerMinute / 60 is the refill rate.
  */
 export function userRateLimiter(req: RateLimitRequest, res: Response, next: NextFunction): void {
   const identifier = getClientIdentifier(req);
   const tier = getUserTier(req);
   const tierConfig = userTierLimits[tier];
 
-  // Convert per-minute to window-based
-  const windowMs = 60 * 1000; // 1 minute window for user-based limiting
-  const maxRequests = tierConfig.requestsPerMinute;
+  const maxTokens = tierConfig.burstLimit;
+  const refillRate = tierConfig.requestsPerMinute / 60; // tokens per second
 
   const now = Date.now();
   let record = userRequestStore.get(identifier);
 
-  if (!record || record.resetTime <= now) {
-    // Start new window
+  if (!record) {
+    // Create a new bucket, starts full
     record = {
-      count: 1,
-      resetTime: now + windowMs,
+      tokens: maxTokens - 1, // consume 1 token for this request
+      maxTokens,
+      refillRate,
+      lastRefill: now,
     };
     userRequestStore.set(identifier, record);
-  } else {
-    record.count++;
+
+    // Set rate limit headers
+    const headers = getRateLimitHeaders(identifier, { maxTokens, refillRate });
+    res.set(headers);
+    next();
+    return;
   }
 
-  // Set rate limit headers
-  const headers = getRateLimitHeaders(identifier, {
-    windowMs,
-    maxRequests,
-  });
-  res.set(headers);
+  // Refill tokens based on elapsed time
+  const elapsedSeconds = (now - record.lastRefill) / 1000;
+  record.tokens = Math.min(record.maxTokens, record.tokens + record.refillRate * elapsedSeconds);
+  record.lastRefill = now;
 
-  // Check if limit exceeded
-  if (record.count > maxRequests) {
+  // Set rate limit headers before potentially consuming a token
+  const headers = getRateLimitHeaders(identifier, { maxTokens, refillRate });
+
+  if (record.tokens >= 1) {
+    // Consume 1 token and allow the request
+    record.tokens -= 1;
+    res.set(headers);
+    next();
+  } else {
+    // No tokens available — deny
+    const retryAfter = Math.ceil((1 - record.tokens) / record.refillRate);
+    res.set(headers);
     res
       .status(429)
       .json(
@@ -154,13 +174,10 @@ export function userRateLimiter(req: RateLimitRequest, res: Response, next: Next
           `Rate limit exceeded for ${tier} users. Please try again later.`,
           'USER_RATE_LIMIT_EXCEEDED',
           429,
-          { retryAfter: Math.ceil((record.resetTime - now) / 1000) }
+          { retryAfter }
         )
       );
-    return;
   }
-
-  next();
 }
 
 /**
