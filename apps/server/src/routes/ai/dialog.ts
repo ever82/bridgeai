@@ -177,10 +177,7 @@ router.get(
       const { sessionId } = req.params;
       const { limit, offset } = req.query;
 
-      // Load session into memory first (handles DB-only sessions)
-      await agentDialogService.getSessionAsync(sessionId);
-
-      const messages = agentDialogService.getSessionMessages(sessionId, {
+      const messages = await agentDialogService.getSessionMessages(sessionId, {
         limit: limit ? parseInt(limit as string) : undefined,
         offset: offset ? parseInt(offset as string) : undefined,
       });
@@ -249,7 +246,7 @@ router.post(
       const { sessionId } = req.params;
       const { senderId, senderType, content, options } = req.body;
 
-      const session = agentDialogService.getSession(sessionId);
+      const session = await agentDialogService.getSessionAsync(sessionId);
       if (!session) {
         res.status(404).json({ success: false, error: 'Session not found' });
         return;
@@ -435,7 +432,7 @@ router.put(
       const { sessionId } = req.params;
       const contextUpdates = req.body;
 
-      const session = agentDialogService.updateSessionContext(sessionId, contextUpdates);
+      const session = await agentDialogService.updateSessionContext(sessionId, contextUpdates);
 
       res.json({
         success: true,

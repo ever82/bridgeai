@@ -263,7 +263,7 @@ export class AgentDialogService {
     session.updatedAt = new Date();
 
     // Prune old messages if needed
-    this.pruneHistory(session);
+    await this.pruneHistory(session);
 
     // Persist session to database
     await this.persistSession(session);
@@ -374,11 +374,11 @@ export class AgentDialogService {
   /**
    * Get session messages
    */
-  getSessionMessages(
+  async getSessionMessages(
     sessionId: string,
     options?: { limit?: number; offset?: number }
-  ): DialogMessage[] {
-    const session = this.sessions.get(sessionId);
+  ): Promise<DialogMessage[]> {
+    const session = await this.getSessionAsync(sessionId);
     if (!session) {
       throw new Error(`Session ${sessionId} not found`);
     }
@@ -432,7 +432,10 @@ export class AgentDialogService {
   /**
    * Update session context
    */
-  updateSessionContext(sessionId: string, updates: Partial<DialogContext>): DialogSession {
+  async updateSessionContext(
+    sessionId: string,
+    updates: Partial<DialogContext>
+  ): Promise<DialogSession> {
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new Error(`Session ${sessionId} not found`);
@@ -443,6 +446,8 @@ export class AgentDialogService {
       ...updates,
     };
     session.updatedAt = new Date();
+
+    await this.persistSession(session);
 
     return session;
   }

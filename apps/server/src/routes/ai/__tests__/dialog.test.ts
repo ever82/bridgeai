@@ -11,6 +11,7 @@ jest.mock('../../../services/ai/agentDialogService', () => ({
   agentDialogService: {
     createSession: jest.fn(),
     getSession: jest.fn(),
+    getSessionAsync: jest.fn(),
     getSessionMessages: jest.fn(),
     generateMessage: jest.fn(),
     agentToAgentDialog: jest.fn(),
@@ -119,10 +120,9 @@ describe('Dialog Routes', () => {
 
   describe('GET /api/v1/ai/dialog/sessions/:sessionId', () => {
     it('should get session by ID', async () => {
-      (agentDialogService.getSession as jest.Mock).mockReturnValue(mockSession);
+      (agentDialogService.getSessionAsync as jest.Mock).mockResolvedValue(mockSession);
 
-      const response = await request(app)
-        .get('/api/v1/ai/dialog/sessions/dialog-123');
+      const response = await request(app).get('/api/v1/ai/dialog/sessions/dialog-123');
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -130,10 +130,9 @@ describe('Dialog Routes', () => {
     });
 
     it('should return 404 when session not found', async () => {
-      (agentDialogService.getSession as jest.Mock).mockReturnValue(null);
+      (agentDialogService.getSessionAsync as jest.Mock).mockResolvedValue(null);
 
-      const response = await request(app)
-        .get('/api/v1/ai/dialog/sessions/not-found');
+      const response = await request(app).get('/api/v1/ai/dialog/sessions/not-found');
 
       expect(response.status).toBe(404);
       expect(response.body.success).toBe(false);
@@ -142,10 +141,10 @@ describe('Dialog Routes', () => {
 
   describe('GET /api/v1/ai/dialog/sessions/:sessionId/messages', () => {
     it('should get session messages', async () => {
-      (agentDialogService.getSessionMessages as jest.Mock).mockReturnValue([mockMessage]);
+      (agentDialogService.getSessionAsync as jest.Mock).mockResolvedValue(mockSession);
+      (agentDialogService.getSessionMessages as jest.Mock).mockResolvedValue([mockMessage]);
 
-      const response = await request(app)
-        .get('/api/v1/ai/dialog/sessions/dialog-123/messages');
+      const response = await request(app).get('/api/v1/ai/dialog/sessions/dialog-123/messages');
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -175,14 +174,12 @@ describe('Dialog Routes', () => {
     it('should handle agent-to-agent dialog', async () => {
       (agentDialogService.agentToAgentDialog as jest.Mock).mockResolvedValue(mockMessage);
 
-      const response = await request(app)
-        .post('/api/v1/ai/dialog/agent-to-agent')
-        .send({
-          senderAgentId: 'agent-1',
-          receiverAgentId: 'agent-2',
-          content: 'Hello',
-          scene: 'test',
-        });
+      const response = await request(app).post('/api/v1/ai/dialog/agent-to-agent').send({
+        senderAgentId: 'agent-1',
+        receiverAgentId: 'agent-2',
+        content: 'Hello',
+        scene: 'test',
+      });
 
       expect(response.status).toBe(201);
       expect(response.body.success).toBe(true);
@@ -193,14 +190,12 @@ describe('Dialog Routes', () => {
     it('should handle user-to-agent dialog', async () => {
       (agentDialogService.userToAgentDialog as jest.Mock).mockResolvedValue(mockMessage);
 
-      const response = await request(app)
-        .post('/api/v1/ai/dialog/user-to-agent')
-        .send({
-          userId: 'user-1',
-          agentId: 'agent-1',
-          content: 'Hello',
-          scene: 'test',
-        });
+      const response = await request(app).post('/api/v1/ai/dialog/user-to-agent').send({
+        userId: 'user-1',
+        agentId: 'agent-1',
+        content: 'Hello',
+        scene: 'test',
+      });
 
       expect(response.status).toBe(201);
       expect(response.body.success).toBe(true);
@@ -211,8 +206,7 @@ describe('Dialog Routes', () => {
     it('should get participant sessions', async () => {
       (agentDialogService.getSessionsForParticipant as jest.Mock).mockReturnValue([mockSession]);
 
-      const response = await request(app)
-        .get('/api/v1/ai/dialog/participants/user-1/sessions');
+      const response = await request(app).get('/api/v1/ai/dialog/participants/user-1/sessions');
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -222,7 +216,7 @@ describe('Dialog Routes', () => {
 
   describe('PUT /api/v1/ai/dialog/sessions/:sessionId/context', () => {
     it('should update session context', async () => {
-      (agentDialogService.updateSessionContext as jest.Mock).mockReturnValue(mockSession);
+      (agentDialogService.updateSessionContext as jest.Mock).mockResolvedValue(mockSession);
 
       const response = await request(app)
         .put('/api/v1/ai/dialog/sessions/dialog-123/context')
@@ -237,8 +231,7 @@ describe('Dialog Routes', () => {
     it('should archive session', async () => {
       (agentDialogService.archiveSession as jest.Mock).mockResolvedValue(undefined);
 
-      const response = await request(app)
-        .post('/api/v1/ai/dialog/sessions/dialog-123/archive');
+      const response = await request(app).post('/api/v1/ai/dialog/sessions/dialog-123/archive');
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -247,8 +240,7 @@ describe('Dialog Routes', () => {
 
   describe('GET /api/v1/ai/dialog/stats', () => {
     it('should return dialog service stats', async () => {
-      const response = await request(app)
-        .get('/api/v1/ai/dialog/stats');
+      const response = await request(app).get('/api/v1/ai/dialog/stats');
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);

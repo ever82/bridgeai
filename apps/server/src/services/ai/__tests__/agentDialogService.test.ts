@@ -178,7 +178,7 @@ describe('AgentDialogService', () => {
 
       const session = await service.createSession('agent_to_agent', participants);
 
-      const updated = service.updateSessionContext(session.id, {
+      const updated = await service.updateSessionContext(session.id, {
         goals: ['new goal'],
         constraints: ['new constraint'],
       });
@@ -187,10 +187,10 @@ describe('AgentDialogService', () => {
       expect(updated.context.constraints).toContain('new constraint');
     });
 
-    it('should throw for non-existent session', () => {
-      expect(() => {
-        service.updateSessionContext('non-existent', { goals: ['test'] });
-      }).toThrow('Session non-existent not found');
+    it('should throw for non-existent session', async () => {
+      await expect(
+        service.updateSessionContext('non-existent', { goals: ['test'] })
+      ).rejects.toThrow('Session non-existent not found');
     });
   });
 
@@ -283,18 +283,18 @@ describe('AgentDialogService', () => {
         content: 'Hello from Agent B',
       });
 
-      const messages = service.getSessionMessages(session.id);
+      const messages = await service.getSessionMessages(session.id);
       expect(messages).toHaveLength(2);
 
       // With limit
-      const limited = service.getSessionMessages(session.id, { limit: 1 });
+      const limited = await service.getSessionMessages(session.id, { limit: 1 });
       expect(limited).toHaveLength(1);
     });
 
-    it('should throw for non-existent session', () => {
-      expect(() => {
-        service.getSessionMessages('non-existent');
-      }).toThrow('Session non-existent not found');
+    it('should throw for non-existent session', async () => {
+      await expect(service.getSessionMessages('non-existent')).rejects.toThrow(
+        'Session non-existent not found'
+      );
     });
   });
 
