@@ -216,7 +216,7 @@ export class OptimizedMatchingService {
         supplyId: match.supplyId,
         score: Math.round(weightedScore * 100) / 100,
         creditScore: Math.round(avgCredit),
-        creditLevel: getCreditLevel(demandCredit) || 'unknown',
+        creditLevel: getCreditLevel(demandCredit),
         status: match.status,
         createdAt: match.createdAt,
       };
@@ -331,7 +331,7 @@ export class OptimizedMatchingService {
         supplyId: match.supplyId,
         score: Math.round(weightedScore * 100) / 100,
         creditScore: Math.round(avgCredit),
-        creditLevel: getCreditLevel(demandCredit) || 'unknown',
+        creditLevel: getCreditLevel(demandCredit),
         status: match.status,
         createdAt: match.createdAt,
       };

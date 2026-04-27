@@ -193,7 +193,7 @@ export class MatchingService {
     });
 
     const score = creditScore?.score ?? 0;
-    const level = creditScore?.score ? getCreditLevel(creditScore.score) : 'unknown';
+    const level = getCreditLevel(creditScore?.score);
 
     if (score < minScore) {
       return {
