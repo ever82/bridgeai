@@ -19,6 +19,25 @@ export {
   MatchQueryValidationError,
 } from './matchQueryService';
 
+// Resume matching algorithm
+export {
+  matchResumeToJob,
+  calculateSkillScore,
+  calculateExperienceScore,
+  calculateSalaryScore,
+  calculateEducationScore,
+  calculateLocationScore,
+  DEFAULT_WEIGHTS,
+} from './resumeMatcher';
+
+export type {
+  ResumeProfile,
+  JobCriteria,
+  ResumeMatchResult,
+  DimensionScore,
+  WeightConfig,
+} from './resumeMatcher';
+
 // Re-export legacy service for backwards compatibility
 export { MatchingService, matchingService } from '../matchingService';
 
