@@ -141,6 +141,47 @@ describe('calculateExperienceScore', () => {
     // years gap = 10, penalty = 50; level diff = 4, penalty = 60 → total base 100 - 50 - 60 = -10 → clamped 0
     expect(score).toBe(0);
   });
+
+  it('adds 5 for matching industry', () => {
+    const score = calculateExperienceScore(
+      5,
+      undefined,
+      3,
+      undefined,
+      undefined,
+      'Technology',
+      'Technology'
+    );
+    // base 100, industry match +5 → 105 → clamped to 100
+    expect(score).toBe(100);
+  });
+
+  it('deducts 10 for mismatched industry', () => {
+    const score = calculateExperienceScore(
+      5,
+      undefined,
+      3,
+      undefined,
+      undefined,
+      'Healthcare',
+      'Technology'
+    );
+    // base 100, industry mismatch -10 → 90
+    expect(score).toBe(90);
+  });
+
+  it('industry match is case-insensitive', () => {
+    const score = calculateExperienceScore(
+      5,
+      undefined,
+      3,
+      undefined,
+      undefined,
+      'technology',
+      'TECHNOLOGY'
+    );
+    expect(score).toBe(100);
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -15,6 +15,7 @@ export interface ResumeProfile {
   experienceYears: number;
   experienceLevel?: string;
   educationLevel?: string;
+  industry?: string;
   expectedSalary?: {
     min?: number;
     max?: number;
@@ -42,6 +43,7 @@ export interface JobCriteria {
   minExperienceYears?: number;
   maxExperienceYears?: number;
   educationLevel?: string;
+  industry?: string;
   salary: {
     min: number;
     max: number;
@@ -175,7 +177,9 @@ export function calculateExperienceScore(
   jobLevel?: string,
   jobMinYears?: number,
   jobMaxYears?: number,
-  resumeLevel?: string
+  resumeLevel?: string,
+  resumeIndustry?: string,
+  jobIndustry?: string
 ): number {
   // If no requirements at all, give neutral score
   if (jobLevel === undefined && jobMinYears === undefined) {
@@ -208,6 +212,15 @@ export function calculateExperienceScore(
     } else if (resumeIdx > jobIdx) {
       // Over-qualified — small penalty
       score -= diff * 5;
+    }
+  }
+
+  // Industry-based evaluation
+  if (resumeIndustry && jobIndustry) {
+    if (resumeIndustry.toLowerCase() === jobIndustry.toLowerCase()) {
+      score += 5; // bonus for matching industry
+    } else {
+      score -= 10; // penalty for mismatched industry
     }
   }
 
@@ -443,7 +456,9 @@ export function matchResumeToJob(
     job.experienceLevel,
     job.minExperienceYears,
     job.maxExperienceYears,
-    resume.experienceLevel
+    resume.experienceLevel,
+    resume.industry,
+    job.industry
   );
   const experienceScore: DimensionScore = {
     score: expScore,
@@ -452,7 +467,9 @@ export function matchResumeToJob(
     details: formatExperienceDetails(
       resume.experienceYears,
       job.experienceLevel,
-      job.minExperienceYears
+      job.minExperienceYears,
+      resume.industry,
+      job.industry
     ),
   };
 
@@ -517,10 +534,23 @@ function formatSkillDetails(matched: number, missing: number, total: number): st
   return `Matched ${matched}/${total} skills, ${missing} missing`;
 }
 
-function formatExperienceDetails(years: number, jobLevel?: string, minYears?: number): string {
+function formatExperienceDetails(
+  years: number,
+  jobLevel?: string,
+  minYears?: number,
+  resumeIndustry?: string,
+  jobIndustry?: string
+): string {
   const parts: string[] = [`${years} years experience`];
   if (jobLevel) parts.push(`job requires ${jobLevel}`);
   if (minYears) parts.push(`min ${minYears} years`);
+  if (resumeIndustry && jobIndustry) {
+    if (resumeIndustry.toLowerCase() === jobIndustry.toLowerCase()) {
+      parts.push(`industry: ${resumeIndustry}`);
+    } else {
+      parts.push(`industry mismatch (resume: ${resumeIndustry}, job: ${jobIndustry})`);
+    }
+  }
   return parts.join(', ');
 }
 
