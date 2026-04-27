@@ -6,6 +6,7 @@
 import { Prisma } from '@prisma/client';
 
 import { cacheGet, cacheSet } from '../cache';
+import { getCreditLevel } from '../creditFilterService';
 import { prisma } from '../../db/client';
 
 const CacheNamespaces = { MATCH: 'match', CREDIT: 'credit', AGENT: 'agent' } as const;
@@ -215,7 +216,7 @@ export class OptimizedMatchingService {
         supplyId: match.supplyId,
         score: Math.round(weightedScore * 100) / 100,
         creditScore: Math.round(avgCredit),
-        creditLevel: match.demand.agent.user.creditScores?.[0]?.level || 'unknown',
+        creditLevel: getCreditLevel(demandCredit) || 'unknown',
         status: match.status,
         createdAt: match.createdAt,
       };
@@ -330,7 +331,7 @@ export class OptimizedMatchingService {
         supplyId: match.supplyId,
         score: Math.round(weightedScore * 100) / 100,
         creditScore: Math.round(avgCredit),
-        creditLevel: match.demand.agent.user.creditScores?.[0]?.level || 'unknown',
+        creditLevel: getCreditLevel(demandCredit) || 'unknown',
         status: match.status,
         createdAt: match.createdAt,
       };

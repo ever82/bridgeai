@@ -6,6 +6,8 @@
 import { prisma } from '../db/client';
 import { CreditFilterOptions } from '../types/credit';
 
+import { getCreditLevel } from './creditFilterService';
+
 export interface MatchQueryOptions {
   demandId?: string;
   supplyId?: string;
@@ -131,7 +133,7 @@ export class MatchingService {
         supplyId: match.supplyId,
         score: Math.round(weightedScore * 100) / 100,
         creditScore: Math.round(avgCredit),
-        creditLevel: 'unknown',
+        creditLevel: getCreditLevel(Math.round(avgCredit)),
         status: match.status,
         createdAt: match.createdAt,
       };

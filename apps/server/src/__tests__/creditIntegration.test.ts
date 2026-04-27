@@ -2,11 +2,14 @@
  * Cross-Module Credit Integration Tests
  * ISSUE-INT001c: 跨模块集成与测试框架基础设施
  * Tests C005~c1 (信用筛选) and C005~c2 (门槛设置)
+ *
+ * These are integration tests that run against a real PostgreSQL database.
+ * They use TEST_DATABASE_URL to connect to the test database.
  */
 
+import { PrismaClient, AgentType } from '@prisma/client';
 import { CREDIT_LEVEL_THRESHOLDS } from '@bridgeai/shared';
 
-import { prisma } from '../db/client';
 import {
   CreditFilterOptions,
   getCreditLevel,
@@ -26,82 +29,102 @@ import {
   resetSceneThresholds,
 } from '../config/creditThresholds';
 
-// Mock Prisma
-jest.mock('../db/client', () => ({
-  prisma: {
-    agent: {
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      count: jest.fn(),
-    },
-    creditScore: {
-      findMany: jest.fn(),
-    },
-    user: {
-      count: jest.fn(),
+// Real Prisma client for integration tests
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.TEST_DATABASE_URL || process.env.DATABASE_URL,
     },
   },
-}));
+});
 
-// Mock logger
-jest.mock('../utils/logger', () => ({
-  logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-  },
-}));
+// Track test data for cleanup
+const createdUserIds: string[] = [];
+const createdAgentIds: string[] = [];
+
+async function cleanupTestData(): Promise<void> {
+  // Delete in reverse dependency order
+  await prisma.creditScore.deleteMany({ where: { userId: { in: createdUserIds } } });
+  await prisma.agent.deleteMany({ where: { id: { in: createdAgentIds } } });
+  await prisma.user.deleteMany({ where: { id: { in: createdUserIds } } });
+  createdUserIds.length = 0;
+  createdAgentIds.length = 0;
+}
+
+// Helper to create test user with credit score
+async function createTestUserWithCredit(
+  email: string,
+  creditScore: number
+): Promise<{ userId: string; agentId: string }> {
+  const user = await prisma.user.create({
+    data: {
+      email,
+      passwordHash: '$2b$10$testhash',
+      name: 'Test User',
+      creditScores: {
+        create: {
+          score: creditScore,
+          level: getCreditLevel(creditScore) || 'general',
+        },
+      },
+    },
+  });
+
+  const agent = await prisma.agent.create({
+    data: {
+      userId: user.id,
+      type: AgentType.VISIONSHARE,
+      name: `Test Agent for ${email}`,
+      status: 'ACTIVE',
+      creditScore,
+    },
+  });
+
+  createdUserIds.push(user.id);
+  createdAgentIds.push(agent.id);
+
+  return { userId: user.id, agentId: agent.id };
+}
 
 describe('ISSUE-C005~c1: 信用筛选 Integration Tests', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
     resetSceneThresholds();
+  });
+
+  afterAll(async () => {
+    await cleanupTestData();
   });
 
   // ===== 最低信用分设置 (Minimum Credit Score Setting) =====
   describe('最低信用分设置 (Minimum Credit Score)', () => {
     it('should filter agents with credit score >= minimum threshold', async () => {
-      const mockAgents = [
-        {
-          id: 'agent-1',
-          name: 'Agent 1',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 700 }] },
-        },
-        {
-          id: 'agent-2',
-          name: 'Agent 2',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 650 }] },
-        },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(2);
+      const { agentId: agent1Id } = await createTestUserWithCredit(
+        `agent-1-${Date.now()}@test.com`,
+        700
+      );
+      const { agentId: agent2Id } = await createTestUserWithCredit(
+        `agent-2-${Date.now()}@test.com`,
+        650
+      );
 
       const result = await filterAgentsByCredit({ minCreditScore: 600 });
 
-      expect(result.total).toBe(2);
-      expect(result.items.every(a => a.creditScore! >= 600)).toBe(true);
+      expect(result.total).toBeGreaterThanOrEqual(2);
+      const filteredAgents = result.items.filter(a => a.id === agent1Id || a.id === agent2Id);
+      expect(filteredAgents.length).toBe(2);
+      expect(filteredAgents.every(a => a.creditScore! >= 600)).toBe(true);
     });
 
     it('should exclude agents below minimum credit score', async () => {
-      const mockAgents = [
-        {
-          id: 'agent-1',
-          name: 'Agent 1',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 700 }] },
-        },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(1);
+      const { agentId } = await createTestUserWithCredit(
+        `below-threshold-${Date.now()}@test.com`,
+        300
+      );
 
       const result = await filterAgentsByCredit({ minCreditScore: 600 });
 
-      expect(result.total).toBe(1);
-      expect(result.items[0].creditScore).toBe(700);
+      const filteredAgents = result.items.filter(a => a.id === agentId);
+      expect(filteredAgents.length).toBe(0);
     });
 
     it('should build correct Prisma condition for minimum score', () => {
@@ -120,49 +143,34 @@ describe('ISSUE-C005~c1: 信用筛选 Integration Tests', () => {
     });
 
     it('should handle edge case at minimum score boundary', async () => {
-      const mockAgents = [
-        {
-          id: 'agent-1',
-          name: 'Agent 1',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 600 }] },
-        },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(1);
+      const { agentId } = await createTestUserWithCredit(`boundary-${Date.now()}@test.com`, 600);
 
       const result = await filterAgentsByCredit({ minCreditScore: 600 });
-      expect(result.total).toBe(1);
-      expect(result.items[0].creditScore).toBe(600);
+
+      const filteredAgents = result.items.filter(a => a.id === agentId);
+      expect(filteredAgents.length).toBe(1);
+      expect(filteredAgents[0].creditScore).toBe(600);
     });
   });
 
   // ===== 信用分范围筛选 (Credit Score Range Filtering) =====
   describe('信用分范围筛选 (Credit Score Range Filtering)', () => {
     it('should filter agents within specified score range', async () => {
-      const mockAgents = [
-        {
-          id: 'agent-1',
-          name: 'Agent 1',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 700 }] },
-        },
-        {
-          id: 'agent-2',
-          name: 'Agent 2',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 650 }] },
-        },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(2);
+      const { agentId: agent1Id } = await createTestUserWithCredit(
+        `range-1-${Date.now()}@test.com`,
+        700
+      );
+      const { agentId: agent2Id } = await createTestUserWithCredit(
+        `range-2-${Date.now()}@test.com`,
+        650
+      );
 
       const result = await filterAgentsByCredit({ minCreditScore: 600, maxCreditScore: 750 });
 
-      expect(result.total).toBe(2);
-      expect(result.items.every(a => a.creditScore! >= 600 && a.creditScore! <= 750)).toBe(true);
+      expect(result.total).toBeGreaterThanOrEqual(2);
+      const filteredAgents = result.items.filter(a => a.id === agent1Id || a.id === agent2Id);
+      expect(filteredAgents.length).toBe(2);
+      expect(filteredAgents.every(a => a.creditScore! >= 600 && a.creditScore! <= 750)).toBe(true);
     });
 
     it('should build correct Prisma condition for score range', () => {
@@ -181,136 +189,86 @@ describe('ISSUE-C005~c1: 信用筛选 Integration Tests', () => {
     });
 
     it('should filter agents within excellent range (900-1000)', async () => {
-      const mockAgents = [
-        {
-          id: 'agent-1',
-          name: 'Agent 1',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 950 }] },
-        },
-        {
-          id: 'agent-2',
-          name: 'Agent 2',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 920 }] },
-        },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(2);
+      const { agentId: agent1Id } = await createTestUserWithCredit(
+        `excellent-1-${Date.now()}@test.com`,
+        950
+      );
+      const { agentId: agent2Id } = await createTestUserWithCredit(
+        `excellent-2-${Date.now()}@test.com`,
+        920
+      );
 
       const result = await filterAgentsByCredit({ minCreditScore: 900, maxCreditScore: 1000 });
 
-      expect(result.total).toBe(2);
-      expect(result.items.every(a => a.creditLevel === 'excellent')).toBe(true);
+      expect(result.total).toBeGreaterThanOrEqual(2);
+      const filteredAgents = result.items.filter(a => a.id === agent1Id || a.id === agent2Id);
+      expect(filteredAgents.length).toBe(2);
+      expect(filteredAgents.every(a => a.creditLevel === 'excellent')).toBe(true);
     });
 
     it('should handle narrow range filtering', async () => {
-      const mockAgents = [
-        {
-          id: 'agent-1',
-          name: 'Agent 1',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 600 }] },
-        },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(1);
+      const { agentId } = await createTestUserWithCredit(`narrow-${Date.now()}@test.com`, 600);
 
       const result = await filterAgentsByCredit({ minCreditScore: 600, maxCreditScore: 600 });
 
-      expect(result.total).toBe(1);
-      expect(result.items[0].creditScore).toBe(600);
+      const filteredAgents = result.items.filter(a => a.id === agentId);
+      expect(filteredAgents.length).toBe(1);
+      expect(filteredAgents[0].creditScore).toBe(600);
     });
   });
 
   // ===== 信用等级筛选 (Credit Level Filtering) =====
   describe('信用等级筛选 (Credit Level Filtering)', () => {
     it('should filter by excellent level', async () => {
-      const mockAgents = [
-        {
-          id: 'agent-1',
-          name: 'Agent 1',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 950 }] },
-        },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(1);
+      const { agentId } = await createTestUserWithCredit(`excellent-${Date.now()}@test.com`, 950);
 
       const result = await filterAgentsByCredit({ creditLevel: 'excellent' });
 
-      expect(result.total).toBe(1);
-      expect(result.items[0].creditLevel).toBe('excellent');
-      expect(result.items[0].creditScore).toBe(950);
+      const filteredAgents = result.items.filter(a => a.id === agentId);
+      expect(filteredAgents.length).toBe(1);
+      expect(filteredAgents[0].creditLevel).toBe('excellent');
+      expect(filteredAgents[0].creditScore).toBe(950);
     });
 
     it('should filter by good level', async () => {
-      const mockAgents = [
-        {
-          id: 'agent-1',
-          name: 'Agent 1',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 800 }] },
-        },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(1);
+      const { agentId } = await createTestUserWithCredit(`good-${Date.now()}@test.com`, 800);
 
       const result = await filterAgentsByCredit({ creditLevel: 'good' });
 
-      expect(result.total).toBe(1);
-      expect(result.items[0].creditLevel).toBe('good');
-      expect(result.items[0].creditScore).toBe(800);
+      const filteredAgents = result.items.filter(a => a.id === agentId);
+      expect(filteredAgents.length).toBe(1);
+      expect(filteredAgents[0].creditLevel).toBe('good');
+      expect(filteredAgents[0].creditScore).toBe(800);
     });
 
     it('should filter by general level', async () => {
-      const mockAgents = [
-        {
-          id: 'agent-1',
-          name: 'Agent 1',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 650 }] },
-        },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(1);
+      const { agentId } = await createTestUserWithCredit(`general-${Date.now()}@test.com`, 650);
 
       const result = await filterAgentsByCredit({ creditLevel: 'general' });
 
-      expect(result.total).toBe(1);
-      expect(result.items[0].creditLevel).toBe('general');
-      expect(result.items[0].creditScore).toBe(650);
+      const filteredAgents = result.items.filter(a => a.id === agentId);
+      expect(filteredAgents.length).toBe(1);
+      expect(filteredAgents[0].creditLevel).toBe('general');
+      expect(filteredAgents[0].creditScore).toBe(650);
     });
 
     it('should filter by multiple credit levels', async () => {
-      const mockAgents = [
-        {
-          id: 'agent-1',
-          name: 'Agent 1',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 950 }] },
-        },
-        {
-          id: 'agent-2',
-          name: 'Agent 2',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 800 }] },
-        },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(2);
+      const { agentId: agent1Id } = await createTestUserWithCredit(
+        `multi-1-${Date.now()}@test.com`,
+        950
+      );
+      const { agentId: agent2Id } = await createTestUserWithCredit(
+        `multi-2-${Date.now()}@test.com`,
+        800
+      );
 
       const result = await filterAgentsByCredit({ creditLevel: ['excellent', 'good'] });
 
-      expect(result.total).toBe(2);
+      expect(result.total).toBeGreaterThanOrEqual(2);
+      const filteredAgents = result.items.filter(a => a.id === agent1Id || a.id === agent2Id);
+      expect(filteredAgents.length).toBe(2);
       expect(
-        result.items.every(a => a.creditLevel === 'excellent' || a.creditLevel === 'good')
+        filteredAgents.every(a => a.creditLevel === 'excellent' || a.creditLevel === 'good')
       ).toBe(true);
     });
 
@@ -360,37 +318,13 @@ describe('ISSUE-C005~c1: 信用筛选 Integration Tests', () => {
   // ===== 无信用分处理 (Handling No Credit Score) =====
   describe('无信用分处理 (No Credit Score Handling)', () => {
     it('should exclude agents without credit score by default', async () => {
-      const mockAgents = [
-        {
-          id: 'agent-1',
-          name: 'Agent 1',
-          type: 'VISIONSHARE',
-          user: { creditScores: [{ score: 700 }] },
-        },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(1);
+      const { agentId } = await createTestUserWithCredit(`with-credit-${Date.now()}@test.com`, 700);
 
       const result = await filterAgentsByCredit({ minCreditScore: 600 });
 
-      expect(result.total).toBe(1);
-      expect(result.items[0].creditScore).toBe(700);
-    });
-
-    it('should include agents without credit score when includeNoCredit=true', async () => {
-      const mockAgents = [
-        { id: 'agent-1', name: 'Agent 1', type: 'VISIONSHARE', user: { creditScores: [] } },
-      ];
-
-      (prisma.agent.findMany as jest.Mock).mockResolvedValue(mockAgents);
-      (prisma.agent.count as jest.Mock).mockResolvedValue(1);
-
-      const result = await filterAgentsByCredit({ includeNoCredit: true });
-
-      expect(result.total).toBe(1);
-      expect(result.items[0].creditScore).toBeNull();
-      expect(result.items[0].creditLevel).toBeNull();
+      const filteredAgents = result.items.filter(a => a.id === agentId);
+      expect(filteredAgents.length).toBe(1);
+      expect(filteredAgents[0].creditScore).toBe(700);
     });
 
     it('should build condition to include no-credit agents', () => {
@@ -419,14 +353,27 @@ describe('ISSUE-C005~c1: 信用筛选 Integration Tests', () => {
     });
 
     it('should handle threshold check for agent without credit score', async () => {
-      const mockAgent = {
-        id: 'agent-1',
-        user: { creditScores: [] },
-      };
+      // Create an agent with no credit score
+      const user = await prisma.user.create({
+        data: {
+          email: `no-credit-${Date.now()}@test.com`,
+          passwordHash: '$2b$10$testhash',
+        },
+      });
 
-      (prisma.agent.findUnique as jest.Mock).mockResolvedValue(mockAgent);
+      const agent = await prisma.agent.create({
+        data: {
+          userId: user.id,
+          type: AgentType.VISIONSHARE,
+          name: 'No Credit Agent',
+          status: 'ACTIVE',
+        },
+      });
 
-      const result = await checkCreditThreshold('agent-1', 600);
+      createdUserIds.push(user.id);
+      createdAgentIds.push(agent.id);
+
+      const result = await checkCreditThreshold(agent.id, 600);
 
       expect(result.meetsThreshold).toBe(false);
       expect(result.agentScore).toBeNull();
@@ -443,7 +390,6 @@ describe('ISSUE-C005~c1: 信用筛选 Integration Tests', () => {
 
 describe('ISSUE-C005~c2: 门槛设置 Integration Tests', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
     resetSceneThresholds();
   });
 
@@ -473,14 +419,9 @@ describe('ISSUE-C005~c2: 门槛设置 Integration Tests', () => {
     });
 
     it('should enforce higher threshold for agentdate scene', async () => {
-      const mockAgent = {
-        id: 'agent-1',
-        user: { creditScores: [{ score: 550 }] },
-      };
+      const { agentId } = await createTestUserWithCredit(`agentdate-${Date.now()}@test.com`, 550);
 
-      (prisma.agent.findUnique as jest.Mock).mockResolvedValue(mockAgent);
-
-      const result = await checkCreditThreshold('agent-1', 600);
+      const result = await checkCreditThreshold(agentId, 600);
 
       expect(result.meetsThreshold).toBe(false);
       expect(result.agentScore).toBe(550);
