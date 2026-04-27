@@ -1,3 +1,83 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+jest.mock('react-native', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const React = require('react');
+  const mockComponent = (name: string) =>
+    jest.fn((props: any) => {
+      const { children, ...rest } = props;
+      return React.createElement(name, rest, children);
+    });
+
+  const Animated = {
+    View: mockComponent('Animated.View'),
+    Text: mockComponent('Animated.Text'),
+    Value: jest.fn((value: number) => ({
+      setValue: jest.fn(),
+      interpolate: jest.fn(() => ({})),
+      value,
+    })),
+    timing: jest.fn(() => ({
+      start: jest.fn((cb?: (r: { finished: boolean }) => void) => {
+        if (cb) cb({ finished: true });
+      }),
+      stop: jest.fn(),
+      reset: jest.fn(),
+    })),
+    spring: jest.fn(() => ({
+      start: jest.fn((cb?: (r: { finished: boolean }) => void) => {
+        if (cb) cb({ finished: true });
+      }),
+      stop: jest.fn(),
+      reset: jest.fn(),
+    })),
+    sequence: jest.fn(() => ({
+      start: jest.fn((cb?: (r: { finished: boolean }) => void) => {
+        if (cb) cb({ finished: true });
+      }),
+      stop: jest.fn(),
+      reset: jest.fn(),
+    })),
+    parallel: jest.fn(() => ({
+      start: jest.fn((cb?: (r: { finished: boolean }) => void) => {
+        if (cb) cb({ finished: true });
+      }),
+      stop: jest.fn(),
+      reset: jest.fn(),
+    })),
+    createAnimatedComponent: jest.fn((c: any) => c),
+  };
+
+  return {
+    Animated,
+    View: mockComponent('View'),
+    Text: mockComponent('Text'),
+    Image: mockComponent('Image'),
+    ScrollView: mockComponent('ScrollView'),
+    FlatList: jest.fn((props: any) => {
+      const { children, testID, ...rest } = props;
+      return React.createElement('FlatList', { testID, ...rest }, children);
+    }),
+    TouchableOpacity: mockComponent('TouchableOpacity'),
+    StyleSheet: { create: (s: any) => s, flatten: (s: any) => s },
+    Platform: { OS: 'ios', select: (obj: any) => obj.ios || obj.default, Version: '16.0' },
+    Dimensions: { get: () => ({ width: 390, height: 844, scale: 2, fontScale: 1 }) },
+    PixelRatio: { get: () => 2, getFontScale: () => 1 },
+    default: {
+      Animated,
+      View: mockComponent('View'),
+      Text: mockComponent('Text'),
+      Image: mockComponent('Image'),
+      ScrollView: mockComponent('ScrollView'),
+      FlatList: jest.fn((props: any) => React.createElement('FlatList', props)),
+      TouchableOpacity: mockComponent('TouchableOpacity'),
+      StyleSheet: { create: (s: any) => s },
+      Platform: { OS: 'ios' },
+      Dimensions: { get: () => ({ width: 390, height: 844 }) },
+      PixelRatio: { get: () => 2 },
+    },
+  };
+});
+
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Animated } from 'react-native';

@@ -57,13 +57,12 @@ export const FlatList = jest.fn((props: any) => {
       );
     });
     return React.createElement(
-      View,
-      { testID },
+      FlatList,
+      { testID, ...renderedProps, ...rest },
       header,
       ...items,
       empty,
-      footer,
-      React.createElement('FlatList', renderedProps)
+      footer
     );
   }
   return React.createElement('FlatList', { testID, ...renderedProps, ...rest });

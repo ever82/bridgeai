@@ -13,6 +13,8 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 
+import { getAccessToken } from '../../services/authToken';
+import { API_BASE_URL } from '../../constants/config';
 import { theme } from '../../theme';
 
 export interface AttachmentData {
@@ -131,8 +133,11 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({ visible, onC
     setUploadProgress(0);
     setError(null);
 
-    // Upload endpoint — replace with your actual API endpoint.
-    const uploadUrl = 'https://api.example.com/api/upload';
+    // Upload endpoint
+    const uploadUrl = `${API_BASE_URL}/upload/image`;
+
+    // Get auth token
+    const accessToken = await getAccessToken();
 
     return new Promise<void>((resolve, _reject) => {
       const xhr = new XMLHttpRequest();
@@ -172,9 +177,12 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({ visible, onC
 
       xhr.open('POST', uploadUrl);
       xhr.setRequestHeader('Accept', 'application/json');
+      if (accessToken) {
+        xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+      }
 
       const formData = new FormData();
-      formData.append('file', {
+      formData.append('image', {
         uri: attachment.uri,
         name: attachment.name,
         type: attachment.mimeType || 'application/octet-stream',
