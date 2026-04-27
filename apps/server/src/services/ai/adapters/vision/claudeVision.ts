@@ -3,10 +3,7 @@
  * Anthropic Claude Vision模型适配器
  */
 
-import {
-  ImageInput,
-  VisionModelConfig
-} from '../../vision/types';
+import { ImageInput, VisionModelConfig } from '../../vision/types';
 
 import { BaseVisionAdapter } from './base';
 
@@ -30,11 +27,11 @@ export class ClaudeVisionAdapter extends BaseVisionAdapter {
       model: 'claude-3-opus-20240229',
       maxTokens: 4096,
       temperature: 0.7,
-      ...modelConfig
+      ...modelConfig,
     });
     this.apiConfig = {
       timeoutMs: 60000,
-      ...apiConfig
+      ...apiConfig,
     };
     this.baseUrl = apiConfig.apiUrl || 'https://api.anthropic.com/v1';
   }
@@ -55,13 +52,13 @@ export class ClaudeVisionAdapter extends BaseVisionAdapter {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': this.apiConfig.apiKey,
-          'anthropic-version': '2023-06-01'
+          'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
           model: 'claude-3-haiku-20240307',
           max_tokens: 1,
-          messages: [{ role: 'user', content: 'Hi' }]
-        })
+          messages: [{ role: 'user', content: 'Hi' }],
+        }),
       });
       return response.ok || response.status === 400; // 400 means API is up but request was bad
     } catch {
@@ -86,15 +83,12 @@ export class ClaudeVisionAdapter extends BaseVisionAdapter {
       messages: [
         {
           role: 'user',
-          content: [
-            { type: 'text', text: prompt },
-            imageContent
-          ]
-        }
-      ]
+          content: [{ type: 'text', text: prompt }, imageContent],
+        },
+      ],
     });
 
-    const data = await response.json() as { content?: Array<{ text: string }> };
+    const data = (await response.json()) as { content?: Array<{ text: string }> };
 
     if (!data.content || data.content.length === 0) {
       throw new Error('No response from Claude Vision');
@@ -122,7 +116,7 @@ export class ClaudeVisionAdapter extends BaseVisionAdapter {
 
     // 构建包含多张图像的消息内容
     const content: Array<{ type: string; [key: string]: unknown }> = [
-      { type: 'text', text: prompt }
+      { type: 'text', text: prompt },
     ];
 
     images.forEach(image => {
@@ -136,12 +130,12 @@ export class ClaudeVisionAdapter extends BaseVisionAdapter {
       messages: [
         {
           role: 'user',
-          content
-        }
-      ]
+          content,
+        },
+      ],
     });
 
-    const data = await response.json() as { content?: Array<{ text: string }> };
+    const data = (await response.json()) as { content?: Array<{ text: string }> };
 
     if (!data.content || data.content.length === 0) {
       throw new Error('No response from Claude Vision');
@@ -151,39 +145,49 @@ export class ClaudeVisionAdapter extends BaseVisionAdapter {
   }
 
   /**
-   * Claude不支持直接的图像嵌入，使用图像描述生成文本嵌入
+   * Claude不支持直接的图像嵌入，使用图像描述调用OpenAI嵌入API生成文本嵌入
    */
   async generateEmbedding(
     image: ImageInput,
-    config?: Partial<VisionModelConfig>
+    _config?: Partial<VisionModelConfig>
   ): Promise<number[]> {
-    // Claude没有嵌入API，返回描述文本，需要外部服务生成嵌入
     const description = await this.analyzeImage(
       image,
       'Describe this image in detail for semantic search. Be concise but comprehensive.',
       { maxTokens: 512 }
     );
 
-    // 返回一个基于描述的哈希模拟嵌入（实际应用中使用外部嵌入服务）
-    // 这里生成一个固定维度的向量用于测试
-    const dimension = 1536;
-    const embedding = new Array(dimension).fill(0);
+    const apiUrl = process.env.OPENAI_API_URL || 'https://api.openai.com/v1';
+    const apiKey = process.env.OPENAI_API_KEY;
 
-    // 使用描述的哈希值填充向量
-    let hash = 0;
-    for (let i = 0; i < description.length; i++) {
-      const char = description.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY environment variable is required for image embeddings');
     }
 
-    for (let i = 0; i < dimension; i++) {
-      embedding[i] = Math.sin(hash + i) * 0.5;
+    const response = await fetch(`${apiUrl}/embeddings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'text-embedding-3-large',
+        input: description,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`OpenAI embeddings API error: ${response.status} - ${error}`);
     }
 
-    // 归一化
-    const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-    return embedding.map(val => val / magnitude);
+    const data = (await response.json()) as { data?: Array<{ embedding: number[] }> };
+
+    if (!data.data || data.data.length === 0) {
+      throw new Error('Failed to generate embedding: empty response from OpenAI');
+    }
+
+    return data.data[0].embedding;
   }
 
   /**
@@ -195,8 +199,8 @@ export class ClaudeVisionAdapter extends BaseVisionAdapter {
         type: 'image',
         source: {
           type: 'url',
-          url: image.data
-        }
+          url: image.data,
+        },
       };
     } else {
       // base64
@@ -206,8 +210,8 @@ export class ClaudeVisionAdapter extends BaseVisionAdapter {
         source: {
           type: 'base64',
           media_type: mimeType,
-          data: image.data
-        }
+          data: image.data,
+        },
       };
     }
   }
@@ -222,10 +226,10 @@ export class ClaudeVisionAdapter extends BaseVisionAdapter {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': this.apiConfig.apiKey,
-          'anthropic-version': '2023-06-01'
+          'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify(body),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       if (!response.ok) {

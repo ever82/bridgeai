@@ -8,12 +8,15 @@ import {
   ImageSearchResult,
   ImageEmbedding,
   SemanticTags,
-  IVisionModelAdapter
+  IVisionModelAdapter,
 } from './vision/types';
 
 // 向量数据库接口（模拟，实际项目中使用真实的向量数据库）
 interface VectorDatabase {
-  search(embedding: number[], topK: number): Promise<Array<{ id: string; score: number; metadata?: Record<string, unknown> }>>;
+  search(
+    embedding: number[],
+    topK: number
+  ): Promise<Array<{ id: string; score: number; metadata?: Record<string, unknown> }>>;
   store(id: string, embedding: number[], metadata?: Record<string, unknown>): Promise<void>;
   delete(id: string): Promise<void>;
 }
@@ -32,7 +35,8 @@ export class ImageSearchService {
   private config: ImageSearchServiceConfig;
 
   // 内存中的索引（当没有外部向量数据库时使用）
-  private memoryIndex: Map<string, { embedding: number[]; metadata: Record<string, unknown> }> = new Map();
+  private memoryIndex: Map<string, { embedding: number[]; metadata: Record<string, unknown> }> =
+    new Map();
 
   constructor(config: ImageSearchServiceConfig) {
     this.adapter = config.adapter;
@@ -41,7 +45,7 @@ export class ImageSearchService {
       embeddingDimension: 1536,
       defaultTopK: 10,
       similarityThreshold: 0.7,
-      ...config
+      ...config,
     };
   }
 
@@ -61,8 +65,6 @@ export class ImageSearchService {
       throw new Error('Search query cannot be empty');
     }
 
-    const startTime = Date.now();
-
     try {
       // 将查询文本转换为嵌入向量
       // 注意：这里使用图像适配器生成文本嵌入（或者使用外部文本嵌入服务）
@@ -71,7 +73,9 @@ export class ImageSearchService {
       // 搜索相似图像
       return this.searchByEmbedding(queryEmbedding, options);
     } catch (error) {
-      throw new Error(`Text search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Text search failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -93,7 +97,9 @@ export class ImageSearchService {
       // 搜索相似图像
       return this.searchByEmbedding(embedding, options);
     } catch (error) {
-      throw new Error(`Image search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Image search failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -120,7 +126,7 @@ export class ImageSearchService {
         imageId: r.id,
         url: String(r.metadata?.url || ''),
         similarity: r.score,
-        metadata: r.metadata
+        metadata: r.metadata,
       }));
     } else {
       // 使用内存索引
@@ -160,9 +166,7 @@ export class ImageSearchService {
   /**
    * 为图像生成嵌入向量
    */
-  async generateImageEmbedding(
-    image: ImageInput
-  ): Promise<number[]> {
+  async generateImageEmbedding(image: ImageInput): Promise<number[]> {
     if (this.adapter.generateEmbedding) {
       return this.adapter.generateEmbedding(image);
     }
@@ -174,7 +178,7 @@ Keep the description concise but comprehensive.`;
 
     const description = await this.adapter.analyzeImage(image, descriptionPrompt, {
       maxTokens: 512,
-      temperature: 0.3
+      temperature: 0.3,
     });
 
     return this.textToEmbedding(description);
@@ -203,7 +207,7 @@ Keep the description concise but comprehensive.`;
       ...metadata,
       tags: [...(metadata?.tags || []), ...semanticTags.tags],
       categories: semanticTags.categories,
-      attributes: semanticTags.attributes
+      attributes: semanticTags.attributes,
     };
 
     if (this.vectorDB) {
@@ -217,7 +221,7 @@ Keep the description concise but comprehensive.`;
     return {
       embedding,
       dimension: embedding.length,
-      model: this.adapter.id
+      model: this.adapter.id,
     };
   }
 
@@ -282,7 +286,7 @@ Return as JSON:
 
     const response = await this.adapter.analyzeImage(image, tagsPrompt, {
       maxTokens: 1024,
-      temperature: 0.3
+      temperature: 0.3,
     });
 
     return this.parseSemanticTags(response);
@@ -305,7 +309,7 @@ Return as JSON:
       'images with',
       'pictures of',
       'scenes with',
-      'photos showing'
+      'photos showing',
     ];
 
     commonPrefixes.forEach(prefix => {
@@ -317,46 +321,58 @@ Return as JSON:
 
   /**
    * 将文本转换为嵌入向量
-   * 注意：实际项目中应该使用文本嵌入服务
+   * 使用 OpenAI text-embedding-3-large API
    */
   private async textToEmbedding(text: string): Promise<number[]> {
-    // 这里使用简单的哈希模拟文本嵌入
-    // 实际项目中应该调用文本嵌入API（如OpenAI text-embedding-3-large）
-    const dimension = this.config.embeddingDimension || 1536;
-    const embedding = new Array(dimension).fill(0);
+    const apiUrl = process.env.OPENAI_API_URL || 'https://api.openai.com/v1';
+    const apiKey = process.env.OPENAI_API_KEY;
 
-    // 使用文本内容生成伪随机但确定的向量
-    let hash = 0;
-    for (let i = 0; i < text.length; i++) {
-      const char = text.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY environment variable is required for text embeddings');
     }
 
-    for (let i = 0; i < dimension; i++) {
-      embedding[i] = Math.sin(hash + i * 0.1) * 0.5;
+    const response = await fetch(`${apiUrl}/embeddings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'text-embedding-3-large',
+        input: text,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`OpenAI embeddings API error: ${response.status} - ${error}`);
     }
 
-    // 归一化
-    const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-    return embedding.map(val => val / magnitude);
+    const data = (await response.json()) as { data?: Array<{ embedding: number[] }> };
+
+    if (!data.data || data.data.length === 0) {
+      throw new Error('Failed to generate embedding: empty response from OpenAI');
+    }
+
+    return data.data[0].embedding;
   }
 
   /**
    * 在内存索引中搜索
    */
-  private searchInMemory(
-    queryEmbedding: number[],
-    topK: number
-  ): ImageSearchResult[] {
-    const similarities: Array<{ imageId: string; similarity: number; metadata: Record<string, unknown> }> = [];
+  private searchInMemory(queryEmbedding: number[], topK: number): ImageSearchResult[] {
+    const similarities: Array<{
+      imageId: string;
+      similarity: number;
+      metadata: Record<string, unknown>;
+    }> = [];
 
     for (const [imageId, data] of this.memoryIndex.entries()) {
       const similarity = this.calculateCosineSimilarity(queryEmbedding, data.embedding);
       similarities.push({
         imageId,
         similarity,
-        metadata: data.metadata
+        metadata: data.metadata,
       });
     }
 
@@ -368,7 +384,7 @@ Return as JSON:
         imageId: s.imageId,
         url: String(s.metadata.url || ''),
         similarity: s.similarity,
-        metadata: s.metadata
+        metadata: s.metadata,
       }));
   }
 
@@ -422,7 +438,7 @@ Return as JSON:
     const defaultTags: SemanticTags = {
       tags: [],
       categories: [],
-      attributes: {}
+      attributes: {},
     };
 
     try {
@@ -436,9 +452,8 @@ Return as JSON:
       return {
         tags: Array.isArray(data.tags) ? data.tags.slice(0, 20) : [],
         categories: Array.isArray(data.categories) ? data.categories : [],
-        attributes: typeof data.attributes === 'object' && data.attributes !== null
-          ? data.attributes
-          : {}
+        attributes:
+          typeof data.attributes === 'object' && data.attributes !== null ? data.attributes : {},
       };
     } catch {
       return defaultTags;

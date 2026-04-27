@@ -3,7 +3,14 @@
  * Provides comprehensive image analysis using AI vision APIs
  */
 
-import { detectSensitiveContent, DetectionResult, VisionAnalysisResult, SensitiveType } from './sensitiveContentDetection';
+import {
+  detectSensitiveContent,
+  DetectionResult,
+  VisionAnalysisResult,
+  SensitiveType,
+} from './sensitiveContentDetection';
+import { IVisionModelAdapter, ImageInput } from './vision/types';
+import { OCRService } from './ocrService';
 
 export interface VisionAnalysisOptions {
   detectSensitiveContent: boolean;
@@ -11,6 +18,14 @@ export interface VisionAnalysisOptions {
   detectScenes: boolean;
   detectText: boolean;
   minConfidence: number;
+}
+
+function bufferToImageInput(imageBuffer: Buffer): ImageInput {
+  return {
+    type: 'base64',
+    data: imageBuffer.toString('base64'),
+    mimeType: 'image/jpeg',
+  };
 }
 
 export interface SceneAnalysis {
@@ -58,7 +73,8 @@ export async function analyzeImage(
     detectScenes: true,
     detectText: true,
     minConfidence: 0.7,
-  }
+  },
+  adapter?: IVisionModelAdapter
 ): Promise<ComprehensiveVisionResult> {
   const startTime = Date.now();
 
@@ -66,13 +82,25 @@ export async function analyzeImage(
   const [sensitiveContent, sceneAnalysis, objects, text] = await Promise.all([
     options.detectSensitiveContent
       ? detectSensitiveContent(imageBuffer, {
-          types: ['face', 'license_plate', 'text', 'address', 'sensitive_object', 'qr_code', 'barcode'],
+          types: [
+            'face',
+            'license_plate',
+            'text',
+            'address',
+            'sensitive_object',
+            'qr_code',
+            'barcode',
+          ],
           minConfidence: options.minConfidence,
         })
       : Promise.resolve({ detections: [], imageWidth: 0, imageHeight: 0, processingTime: 0 }),
-    options.detectScenes ? analyzeScene(imageBuffer) : Promise.resolve(null),
-    options.detectObjects ? detectObjects(imageBuffer, options.minConfidence) : Promise.resolve([]),
-    options.detectText ? detectText(imageBuffer, options.minConfidence) : Promise.resolve([]),
+    options.detectScenes ? analyzeScene(imageBuffer, adapter) : Promise.resolve(null),
+    options.detectObjects
+      ? detectObjects(imageBuffer, options.minConfidence, adapter)
+      : Promise.resolve([]),
+    options.detectText
+      ? detectText(imageBuffer, options.minConfidence, adapter)
+      : Promise.resolve([]),
   ]);
 
   // Generate recommendations based on findings
@@ -92,50 +120,122 @@ export async function analyzeImage(
 /**
  * Analyze the scene/context of an image
  */
-async function analyzeScene(imageBuffer: Buffer): Promise<SceneAnalysis | null> {
-  // In production: Call scene classification AI model
-  // Simulation for development
-  const scenes = [
-    { scene: 'street', confidence: 0.85, attributes: ['outdoor', 'urban', 'public'] },
-    { scene: 'office', confidence: 0.75, attributes: ['indoor', 'workplace', 'professional'] },
-    { scene: 'home', confidence: 0.90, attributes: ['indoor', 'private', 'residential'] },
-    { scene: 'restaurant', confidence: 0.70, attributes: ['indoor', 'public', 'social'] },
-  ];
+async function analyzeScene(
+  imageBuffer: Buffer,
+  adapter?: IVisionModelAdapter
+): Promise<SceneAnalysis | null> {
+  if (!adapter) {
+    throw new Error('Vision adapter is required for real analysis');
+  }
 
-  // Randomly select a scene for simulation
-  const randomScene = scenes[Math.floor(Math.random() * scenes.length)];
+  const imageInput = bufferToImageInput(imageBuffer);
 
-  return randomScene;
+  const prompt = `Analyze this image and classify the scene. Return the result in JSON format:
+{
+  "scene": "scene name (e.g., street, office, home, restaurant)",
+  "confidence": 0.0-1.0,
+  "attributes": ["attribute1", "attribute2", ...]
+}`;
+
+  const response = await adapter.analyzeImage(imageInput, prompt, {
+    maxTokens: 512,
+    temperature: 0.2,
+  });
+
+  try {
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const data = JSON.parse(jsonMatch[0]);
+      return {
+        scene: String(data.scene || 'unknown'),
+        confidence: Number(data.confidence) || 0.5,
+        attributes: Array.isArray(data.attributes) ? data.attributes : [],
+      };
+    }
+  } catch {
+    // JSON parsing failed
+  }
+
+  return null;
 }
 
 /**
  * Detect objects in an image
  */
-async function detectObjects(imageBuffer: Buffer, minConfidence: number): Promise<ObjectAnalysis[]> {
-  // In production: Call object detection AI model (e.g., YOLO, Detectron2)
-  // Simulation for development
-  const mockObjects: ObjectAnalysis[] = [
-    { label: 'person', boundingBox: { x: 100, y: 150, width: 120, height: 300 }, confidence: 0.92 },
-    { label: 'car', boundingBox: { x: 500, y: 400, width: 300, height: 200 }, confidence: 0.88 },
-    { label: 'document', boundingBox: { x: 50, y: 50, width: 200, height: 150 }, confidence: 0.75 },
-  ];
+async function detectObjects(
+  imageBuffer: Buffer,
+  minConfidence: number,
+  adapter?: IVisionModelAdapter
+): Promise<ObjectAnalysis[]> {
+  if (!adapter) {
+    throw new Error('Vision adapter is required for real analysis');
+  }
 
-  return mockObjects.filter((o) => o.confidence >= minConfidence);
+  const imageInput = bufferToImageInput(imageBuffer);
+
+  const prompt = `Detect all significant objects in this image. Return the results as a JSON array:
+[
+  {
+    "label": "object name",
+    "boundingBox": { "x": 0, "y": 0, "width": 0, "height": 0 },
+    "confidence": 0.0-1.0
+  }
+]`;
+
+  const response = await adapter.analyzeImage(imageInput, prompt, {
+    maxTokens: 1024,
+    temperature: 0.2,
+  });
+
+  try {
+    const jsonMatch = response.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      const data = JSON.parse(jsonMatch[0]);
+      if (Array.isArray(data)) {
+        return data
+          .map(obj => ({
+            label: String(obj.label || ''),
+            boundingBox: {
+              x: Number(obj.boundingBox?.x) || 0,
+              y: Number(obj.boundingBox?.y) || 0,
+              width: Number(obj.boundingBox?.width) || 0,
+              height: Number(obj.boundingBox?.height) || 0,
+            },
+            confidence: Number(obj.confidence) || 0,
+          }))
+          .filter(o => o.label && o.confidence >= minConfidence);
+      }
+    }
+  } catch {
+    // JSON parsing failed
+  }
+
+  return [];
 }
 
 /**
  * Detect text in an image using OCR
  */
-async function detectText(imageBuffer: Buffer, minConfidence: number): Promise<TextAnalysis[]> {
-  // In production: Call OCR service (e.g., Tesseract, Google Vision OCR)
-  // Simulation for development
-  const mockTexts: TextAnalysis[] = [
-    { text: 'Confidential', boundingBox: { x: 50, y: 50, width: 200, height: 40 }, confidence: 0.90 },
-    { text: 'John Doe', boundingBox: { x: 300, y: 100, width: 150, height: 35 }, confidence: 0.85 },
-    { text: '123 Main St', boundingBox: { x: 100, y: 600, width: 250, height: 40 }, confidence: 0.88 },
-  ];
+async function detectText(
+  imageBuffer: Buffer,
+  minConfidence: number,
+  adapter?: IVisionModelAdapter
+): Promise<TextAnalysis[]> {
+  if (!adapter) {
+    throw new Error('Vision adapter is required for real analysis');
+  }
 
-  return mockTexts.filter((t) => t.confidence >= minConfidence);
+  const imageInput = bufferToImageInput(imageBuffer);
+  const ocrService = new OCRService({ adapter });
+  const ocrResult = await ocrService.extractText(imageInput);
+
+  return ocrResult.textBlocks
+    .map(block => ({
+      text: block.text,
+      boundingBox: block.boundingBox,
+      confidence: block.confidence,
+    }))
+    .filter(t => t.confidence >= minConfidence);
 }
 
 /**
@@ -237,9 +337,12 @@ function generateRecommendations(
  */
 export async function batchAnalyzeImages(
   imageBuffers: Buffer[],
-  options?: VisionAnalysisOptions
+  options?: VisionAnalysisOptions,
+  adapter?: IVisionModelAdapter
 ): Promise<ComprehensiveVisionResult[]> {
-  const results = await Promise.all(imageBuffers.map((buffer) => analyzeImage(buffer, options)));
+  const results = await Promise.all(
+    imageBuffers.map(buffer => analyzeImage(buffer, options, adapter))
+  );
   return results;
 }
 
@@ -248,7 +351,9 @@ export async function batchAnalyzeImages(
  */
 export function getBatchStatistics(results: ComprehensiveVisionResult[]) {
   const totalImages = results.length;
-  const imagesWithSensitiveContent = results.filter((r) => r.sensitiveContent.detections.length > 0).length;
+  const imagesWithSensitiveContent = results.filter(
+    r => r.sensitiveContent.detections.length > 0
+  ).length;
   const totalDetections = results.reduce((sum, r) => sum + r.sensitiveContent.detections.length, 0);
   const avgProcessingTime =
     results.reduce((sum, r) => sum + r.sensitiveContent.processingTime, 0) / totalImages;

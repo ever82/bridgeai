@@ -67,8 +67,68 @@ export class ImageSemanticSearchService {
   private searchHistory: Map<string, SearchHistoryItem[]> = new Map();
   private readonly MAX_HISTORY_PER_USER = 50;
 
+  // In-memory semantic image index
+  private imageIndex: Map<string, { embedding: number[]; result: SearchResult }> = new Map();
+
   constructor(llmService: LLMService) {
     this.llmService = llmService;
+  }
+
+  /**
+   * Index an image with its embedding for semantic search
+   */
+  async indexImage(
+    imageId: string,
+    imageData: {
+      url: string;
+      thumbnailUrl: string;
+      title?: string;
+      description?: string;
+      tags?: string[];
+      metadata?: ImageMetadata;
+    }
+  ): Promise<void> {
+    const textToEmbed = [
+      imageData.title || '',
+      imageData.description || '',
+      ...(imageData.tags || []),
+    ]
+      .join(' ')
+      .trim();
+
+    const embedding = textToEmbed
+      ? await this.generateQueryEmbedding(textToEmbed)
+      : new Array(512).fill(0);
+
+    const result: SearchResult = {
+      id: imageId,
+      url: imageData.url,
+      thumbnailUrl: imageData.thumbnailUrl,
+      title: imageData.title || '',
+      description: imageData.description || '',
+      tags: imageData.tags || [],
+      confidence: 1.0,
+      metadata: imageData.metadata || {
+        createdAt: new Date(),
+      },
+      matchedTerms: [],
+    };
+
+    this.imageIndex.set(imageId, { embedding, result });
+  }
+
+  /**
+   * Remove an image from the search index
+   */
+  async removeFromIndex(imageId: string): Promise<void> {
+    this.imageIndex.delete(imageId);
+  }
+
+  /**
+   * Get total indexed image count
+   */
+  getIndexSize(): number {
+    return this.imageIndex.size;
   }
 
   /**
@@ -105,7 +165,7 @@ export class ImageSemanticSearchService {
       results,
       total,
       analysis,
-      suggestions
+      suggestions,
     };
   }
 
@@ -130,11 +190,14 @@ export class ImageSemanticSearchService {
       const response = await this.llmService.chatCompletion({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are an AI that analyzes image search queries. Return only valid JSON.' },
-          { role: 'user', content: prompt }
+          {
+            role: 'system',
+            content: 'You are an AI that analyzes image search queries. Return only valid JSON.',
+          },
+          { role: 'user', content: prompt },
         ],
         temperature: 0.1,
-        response_format: { type: 'json_object' }
+        response_format: { type: 'json_object' },
       });
 
       const content = response.choices[0]?.message?.content || '{}';
@@ -146,7 +209,7 @@ export class ImageSemanticSearchService {
         attributes: parsed.attributes || {},
         intent: parsed.intent || 'search',
         temporalContext: parsed.temporalContext,
-        spatialContext: parsed.spatialContext
+        spatialContext: parsed.spatialContext,
       };
     } catch (error) {
       console.error('Query analysis failed:', error);
@@ -154,7 +217,7 @@ export class ImageSemanticSearchService {
         concepts: [],
         entities: [],
         attributes: {},
-        intent: 'search'
+        intent: 'search',
       };
     }
   }
@@ -167,7 +230,7 @@ export class ImageSemanticSearchService {
       const request: EmbeddingRequest = {
         model: 'text-embedding-3-small',
         input: query,
-        dimensions: 512
+        dimensions: 512,
       };
 
       const response: EmbeddingResponse = await this.llmService.createEmbedding(request);
@@ -179,7 +242,7 @@ export class ImageSemanticSearchService {
   }
 
   /**
-   * Execute search with filters
+   * Execute search with filters using cosine similarity
    */
   private async executeSearch(
     queryEmbedding: number[],
@@ -188,24 +251,93 @@ export class ImageSemanticSearchService {
     limit: number,
     offset: number
   ): Promise<{ results: SearchResult[]; total: number }> {
-    // This would integrate with the actual image index
-    // For now, return mock data structure
-    const mockResults: SearchResult[] = [];
+    if (queryEmbedding.length === 0 || this.imageIndex.size === 0) {
+      return { results: [], total: 0 };
+    }
 
-    // Build search criteria from analysis
+    // Calculate cosine similarity against all indexed images
+    const scored: Array<{ score: number; result: SearchResult }> = [];
     const searchTerms = [
       ...analysis.concepts,
       ...analysis.entities,
-      ...Object.values(analysis.attributes)
-    ];
+      ...Object.values(analysis.attributes),
+    ].filter(Boolean);
 
-    // In real implementation, this would query the image index
-    // with semantic similarity and filter matching
+    for (const [, entry] of this.imageIndex) {
+      const similarity = this.cosineSimilarity(queryEmbedding, entry.embedding);
 
-    return {
-      results: mockResults.slice(offset, offset + limit),
-      total: mockResults.length
-    };
+      // Apply filters
+      if (filters && !this.matchesFilters(entry.result, filters)) {
+        continue;
+      }
+
+      scored.push({
+        score: similarity,
+        result: {
+          ...entry.result,
+          confidence: similarity,
+          matchedTerms: searchTerms.filter(
+            term =>
+              entry.result.title.includes(term) ||
+              entry.result.description.includes(term) ||
+              entry.result.tags.some(tag => tag.toLowerCase().includes(term.toLowerCase()))
+          ),
+        },
+      });
+    }
+
+    // Sort by similarity descending
+    scored.sort((a, b) => b.score - a.score);
+
+    const total = scored.length;
+    const paged = scored.slice(offset, offset + limit).map(s => s.result);
+
+    return { results: paged, total };
+  }
+
+  /**
+   * Calculate cosine similarity between two vectors
+   */
+  private cosineSimilarity(a: number[], b: number[]): number {
+    if (a.length !== b.length || a.length === 0) return 0;
+
+    let dot = 0;
+    let normA = 0;
+    let normB = 0;
+
+    for (let i = 0; i < a.length; i++) {
+      dot += a[i] * b[i];
+      normA += a[i] * a[i];
+      normB += b[i] * b[i];
+    }
+
+    if (normA === 0 || normB === 0) return 0;
+    return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+  }
+
+  /**
+   * Check if a result matches the given filters
+   */
+  private matchesFilters(result: SearchResult, filters: SearchFilters): boolean {
+    if (filters.tags && filters.tags.length > 0) {
+      const hasTag = filters.tags.some(ft =>
+        result.tags.some(rt => rt.toLowerCase().includes(ft.toLowerCase()))
+      );
+      if (!hasTag) return false;
+    }
+
+    if (filters.favoritesOnly) {
+      // Would check favorites flag - for now pass through
+    }
+
+    if (filters.dateRange) {
+      const created = result.metadata.createdAt;
+      if (created < filters.dateRange.start || created > filters.dateRange.end) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -214,7 +346,7 @@ export class ImageSemanticSearchService {
   private async generateSuggestions(
     query: string,
     analysis: SemanticAnalysis,
-    results: SearchResult[]
+    _results: SearchResult[]
   ): Promise<string[]> {
     const suggestions: string[] = [];
 
@@ -258,7 +390,7 @@ export class ImageSemanticSearchService {
       query,
       timestamp: new Date(),
       resultCount,
-      filters
+      filters,
     };
 
     history.unshift(item);

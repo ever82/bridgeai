@@ -8,18 +8,13 @@ import multer from 'multer';
 
 import { authenticate as authenticateToken } from '../../middleware/auth';
 import { logger } from '../../utils/logger';
-
-// Vision Services
+import { getVisionCache } from '../../utils/visionResultCache';
 import { ImageAnalysisService } from '../../services/ai/imageAnalysisService';
 import { ImageModerationService } from '../../services/ai/imageModerationService';
 import { OCRService } from '../../services/ai/ocrService';
 import { ImageSearchService } from '../../services/ai/imageSearchService';
-
-// Vision Adapters
 import { GPT4VisionAdapter } from '../../services/ai/adapters/vision/gpt4Vision';
 import { ClaudeVisionAdapter } from '../../services/ai/adapters/vision/claudeVision';
-
-// Types
 import { ImageInput } from '../../services/ai/vision/types';
 
 const router: Router = Router();
@@ -29,7 +24,7 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
-    files: 10 // 最多10个文件
+    files: 10, // 最多10个文件
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -38,10 +33,11 @@ const upload = multer({
     } else {
       cb(new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.'));
     }
-  }
+  },
 });
 
 // 初始化Vision适配器和服务
+let cachedAdapter: GPT4VisionAdapter | ClaudeVisionAdapter | null = null;
 let analysisService: ImageAnalysisService | null = null;
 let moderationService: ImageModerationService | null = null;
 let ocrService: OCRService | null = null;
@@ -51,12 +47,15 @@ let searchService: ImageSearchService | null = null;
  * 获取Vision适配器（优先使用GPT-4V，回退到Claude）
  */
 function getVisionAdapter(): GPT4VisionAdapter | ClaudeVisionAdapter {
+  if (cachedAdapter) {
+    return cachedAdapter;
+  }
   // 优先使用GPT-4V
   if (process.env.OPENAI_API_KEY) {
     return new GPT4VisionAdapter({
       apiKey: process.env.OPENAI_API_KEY,
       apiUrl: process.env.OPENAI_API_URL,
-      organization: process.env.OPENAI_ORGANIZATION
+      organization: process.env.OPENAI_ORGANIZATION,
     });
   }
 
@@ -64,7 +63,7 @@ function getVisionAdapter(): GPT4VisionAdapter | ClaudeVisionAdapter {
   if (process.env.CLAUDE_API_KEY) {
     return new ClaudeVisionAdapter({
       apiKey: process.env.CLAUDE_API_KEY,
-      apiUrl: process.env.CLAUDE_API_URL
+      apiUrl: process.env.CLAUDE_API_URL,
     });
   }
 
@@ -77,18 +76,19 @@ function getVisionAdapter(): GPT4VisionAdapter | ClaudeVisionAdapter {
 async function ensureServices(): Promise<void> {
   if (!analysisService) {
     const adapter = getVisionAdapter();
+    cachedAdapter = adapter;
     await adapter.initialize();
 
     analysisService = new ImageAnalysisService({ adapter });
     moderationService = new ImageModerationService({
       adapter,
       safetyThreshold: 0.7,
-      strictMode: false
+      strictMode: false,
     });
     ocrService = new OCRService({
       adapter,
       supportHandwriting: true,
-      minConfidence: 0.6
+      minConfidence: 0.6,
     });
     searchService = new ImageSearchService({ adapter });
 
@@ -104,7 +104,7 @@ function fileToImageInput(file: Express.Multer.File): ImageInput {
   return {
     type: 'base64',
     data: base64Data,
-    mimeType: file.mimetype
+    mimeType: file.mimetype,
   };
 }
 
@@ -131,29 +131,40 @@ router.post(
         // URL输入
         imageInput = {
           type: 'url',
-          data: req.body.imageUrl
+          data: req.body.imageUrl,
         };
       } else if (req.body.imageBase64) {
         // Base64输入
         imageInput = {
           type: 'base64',
           data: req.body.imageBase64,
-          mimeType: req.body.mimeType || 'image/jpeg'
+          mimeType: req.body.mimeType || 'image/jpeg',
         };
       } else {
         return res.status(400).json({
           success: false,
-          error: 'No image provided. Upload a file, provide imageUrl, or imageBase64.'
+          error: 'No image provided. Upload a file, provide imageUrl, or imageBase64.',
         });
       }
 
-      // 执行图像分析
-      const result = await analysisService!.analyze(imageInput, {
-        userId: req.user?.id,
-        requestId: (req as any).id,
-        timestamp: new Date(),
-        source: 'api'
-      });
+      // 尝试从缓存获取结果
+      const cache = getVisionCache<any>();
+      const cacheKey = cache.generateKey(imageInput.data, 'analyze');
+      const cachedResult = cache.get(cacheKey);
+
+      let result;
+      if (cachedResult) {
+        result = cachedResult;
+      } else {
+        // 执行图像分析
+        result = await analysisService!.analyze(imageInput, {
+          userId: req.user?.id,
+          requestId: (req as any).id,
+          timestamp: new Date(),
+          source: 'api',
+        });
+        cache.set(cacheKey, result);
+      }
 
       res.json({
         success: true,
@@ -162,7 +173,7 @@ router.post(
           detected_objects: result.detectedObjects.map(obj => ({
             label: obj.label,
             confidence: obj.confidence,
-            bounding_box: obj.boundingBox
+            bounding_box: obj.boundingBox,
           })),
           activity_tags: result.activityTags,
           visual_features: {
@@ -171,17 +182,17 @@ router.post(
             contrast: result.visualFeatures.contrast,
             sharpness: result.visualFeatures.sharpness,
             has_faces: result.visualFeatures.hasFaces,
-            face_count: result.visualFeatures.faceCount
+            face_count: result.visualFeatures.faceCount,
           },
           confidence: result.confidence,
-          processing_time_ms: result.processingTimeMs
-        }
+          processing_time_ms: result.processingTimeMs,
+        },
       });
     } catch (error) {
       logger.error('Image analysis failed:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Image analysis failed'
+        error: error instanceof Error ? error.message : 'Image analysis failed',
       });
     }
   }
@@ -205,7 +216,7 @@ router.post(
       if (!files || files.length === 0) {
         return res.status(400).json({
           success: false,
-          error: 'No images provided'
+          error: 'No images provided',
         });
       }
 
@@ -214,7 +225,7 @@ router.post(
         userId: req.user?.id,
         requestId: (req as any).id,
         timestamp: new Date(),
-        source: 'api'
+        source: 'api',
       });
 
       res.json({
@@ -227,16 +238,16 @@ router.post(
             activity_tags: result.activityTags,
             visual_features: result.visualFeatures,
             confidence: result.confidence,
-            processing_time_ms: result.processingTimeMs
+            processing_time_ms: result.processingTimeMs,
           })),
-          total: results.length
-        }
+          total: results.length,
+        },
       });
     } catch (error) {
       logger.error('Batch image analysis failed:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Batch analysis failed'
+        error: error instanceof Error ? error.message : 'Batch analysis failed',
       });
     }
   }
@@ -262,52 +273,63 @@ router.post(
       } else if (req.body.imageUrl) {
         imageInput = {
           type: 'url',
-          data: req.body.imageUrl
+          data: req.body.imageUrl,
         };
       } else if (req.body.imageBase64) {
         imageInput = {
           type: 'base64',
           data: req.body.imageBase64,
-          mimeType: req.body.mimeType || 'image/jpeg'
+          mimeType: req.body.mimeType || 'image/jpeg',
         };
       } else {
         return res.status(400).json({
           success: false,
-          error: 'No image provided'
+          error: 'No image provided',
         });
       }
 
-      const result = await moderationService!.moderate(imageInput, {
-        userId: req.user?.id,
-        requestId: (req as any).id
-      });
+      // 尝试从缓存获取结果
+      const modCache = getVisionCache<any>();
+      const modCacheKey = modCache.generateKey(imageInput.data, 'moderate');
+      const modCachedResult = modCache.get(modCacheKey);
+
+      let modResult;
+      if (modCachedResult) {
+        modResult = modCachedResult;
+      } else {
+        modResult = await moderationService!.moderate(imageInput, {
+          userId: req.user?.id,
+          requestId: (req as any).id,
+        });
+        modCache.set(modCacheKey, modResult);
+      }
 
       res.json({
         success: true,
         data: {
-          is_safe: result.isSafe,
-          violation_type: result.violationType,
-          violation_details: result.violationDetails,
-          confidence_score: result.confidenceScore,
+          is_safe: modResult.isSafe,
+          violation_type: modResult.violationType,
+          violation_details: modResult.violationDetails,
+          confidence_score: modResult.confidenceScore,
           category_scores: {
-            nsfw: result.categoryScores.nsfw,
-            violence: result.categoryScores.violence,
-            gore: result.categoryScores.gore,
-            hate: result.categoryScores.hate,
-            harassment: result.categoryScores.harassment,
-            self_harm: result.categoryScores.selfHarm,
-            illegal: result.categoryScores.illegal,
-            privacy: result.categoryScores.privacy,
-            spam: result.categoryScores.spam
+            nsfw: modResult.categoryScores.nsfw,
+            violence: modResult.categoryScores.violence,
+            gore: modResult.categoryScores.gore,
+            hate: modResult.categoryScores.hate,
+            harassment: modResult.categoryScores.harassment,
+            self_harm: modResult.categoryScores.selfHarm,
+            illegal: modResult.categoryScores.illegal,
+            privacy: modResult.categoryScores.privacy,
+            spam: modResult.categoryScores.spam,
           },
-          processing_time_ms: result.processingTimeMs
-        }
+          processing_time_ms: modResult.processingTimeMs,
+        },
       });
     } catch (error) {
       logger.error('Image moderation failed:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Image moderation failed'
+        error: error instanceof Error ? error.message : 'Image moderation failed',
       });
     }
   }
@@ -333,49 +355,60 @@ router.post(
       } else if (req.body.imageUrl) {
         imageInput = {
           type: 'url',
-          data: req.body.imageUrl
+          data: req.body.imageUrl,
         };
       } else if (req.body.imageBase64) {
         imageInput = {
           type: 'base64',
           data: req.body.imageBase64,
-          mimeType: req.body.mimeType || 'image/jpeg'
+          mimeType: req.body.mimeType || 'image/jpeg',
         };
       } else {
         return res.status(400).json({
           success: false,
-          error: 'No image provided'
+          error: 'No image provided',
         });
       }
 
-      const result = await ocrService!.extractText(imageInput, {
-        language: req.body.language,
-        detectHandwriting: req.body.detectHandwriting !== 'false',
-        preserveLayout: req.body.preserveLayout === 'true'
-      });
+      // 尝试从缓存获取结果
+      const ocrCache = getVisionCache<any>();
+      const ocrCacheKey = ocrCache.generateKey(imageInput.data, 'ocr');
+      const ocrCachedResult = ocrCache.get(ocrCacheKey);
+
+      let ocrResult;
+      if (ocrCachedResult) {
+        ocrResult = ocrCachedResult;
+      } else {
+        ocrResult = await ocrService!.extractText(imageInput, {
+          language: req.body.language,
+          detectHandwriting: req.body.detectHandwriting !== 'false',
+          preserveLayout: req.body.preserveLayout === 'true',
+        });
+        ocrCache.set(ocrCacheKey, ocrResult);
+      }
 
       res.json({
         success: true,
         data: {
-          extracted_text: result.extractedText,
-          language: result.language,
-          detected_languages: result.detectedLanguages,
-          is_handwritten: result.isHandwritten,
-          confidence: result.confidence,
-          text_blocks: result.textBlocks.map(block => ({
+          extracted_text: ocrResult.extractedText,
+          language: ocrResult.language,
+          detected_languages: ocrResult.detectedLanguages,
+          is_handwritten: ocrResult.isHandwritten,
+          confidence: ocrResult.confidence,
+          text_blocks: ocrResult.textBlocks.map(block => ({
             text: block.text,
             language: block.language,
             confidence: block.confidence,
-            bounding_box: block.boundingBox
+            bounding_box: block.boundingBox,
           })),
-          processing_time_ms: result.processingTimeMs
-        }
+          processing_time_ms: ocrResult.processingTimeMs,
+        },
       });
     } catch (error) {
       logger.error('OCR failed:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'OCR failed'
+        error: error instanceof Error ? error.message : 'OCR failed',
       });
     }
   }
@@ -386,49 +419,92 @@ router.post(
  * @desc    通过文本搜索图像（AI相册检索）
  * @access  Private
  */
-router.post(
-  '/search',
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    try {
-      await ensureServices();
+router.post('/search', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    await ensureServices();
 
-      const { query, top_k = 10, filters } = req.body;
+    const { query, top_k = 10, filters } = req.body;
 
-      if (!query) {
-        return res.status(400).json({
-          success: false,
-          error: 'Search query is required'
-        });
-      }
-
-      const results = await searchService!.searchByText(query, {
-        topK: top_k,
-        filters
-      });
-
-      res.json({
-        success: true,
-        data: {
-          query,
-          results: results.map(r => ({
-            image_id: r.imageId,
-            url: r.url,
-            similarity: r.similarity,
-            metadata: r.metadata
-          })),
-          total: results.length
-        }
-      });
-    } catch (error) {
-      logger.error('Image search failed:', error);
-      res.status(500).json({
+    if (!query) {
+      return res.status(400).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Image search failed'
+        error: 'Search query is required',
       });
     }
+
+    const results = await searchService!.searchByText(query, {
+      topK: top_k,
+      filters,
+    });
+
+    res.json({
+      success: true,
+      data: {
+        query,
+        results: results.map(r => ({
+          image_id: r.imageId,
+          url: r.url,
+          similarity: r.similarity,
+          metadata: r.metadata,
+        })),
+        total: results.length,
+      },
+    });
+  } catch (error) {
+    logger.error('Image search failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Image search failed',
+    });
   }
-);
+});
+
+/**
+ * @route   POST /api/v1/ai/vision/recommend/confirm
+ * @desc    确认推荐的照片（AC VS-003-AC-2: 符合条件的照片推荐给用户确认）
+ * @access  Private
+ */
+router.post('/recommend/confirm', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const { imageIds, action, reason } = req.body;
+
+    if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'imageIds array is required',
+      });
+    }
+
+    if (!['accept', 'reject'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        error: 'action must be "accept" or "reject"',
+      });
+    }
+
+    logger.info(`Recommendation ${action} for ${imageIds.length} images`, {
+      userId: req.user?.id,
+      imageIds,
+      reason,
+    });
+
+    res.json({
+      success: true,
+      data: {
+        confirmed: imageIds,
+        action,
+        reason: reason || null,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    logger.error('Recommendation confirmation failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Confirmation failed',
+    });
+  }
+});
 
 /**
  * @route   POST /api/v1/ai/vision/search/similar
@@ -450,23 +526,23 @@ router.post(
       } else if (req.body.imageUrl) {
         imageInput = {
           type: 'url',
-          data: req.body.imageUrl
+          data: req.body.imageUrl,
         };
       } else if (req.body.imageBase64) {
         imageInput = {
           type: 'base64',
           data: req.body.imageBase64,
-          mimeType: req.body.mimeType || 'image/jpeg'
+          mimeType: req.body.mimeType || 'image/jpeg',
         };
       } else {
         return res.status(400).json({
           success: false,
-          error: 'No image provided'
+          error: 'No image provided',
         });
       }
 
       const results = await searchService!.searchByImage(imageInput, {
-        topK: req.body.top_k || 10
+        topK: req.body.top_k || 10,
       });
 
       res.json({
@@ -476,16 +552,16 @@ router.post(
             image_id: r.imageId,
             url: r.url,
             similarity: r.similarity,
-            metadata: r.metadata
+            metadata: r.metadata,
           })),
-          total: results.length
-        }
+          total: results.length,
+        },
       });
     } catch (error) {
       logger.error('Similar image search failed:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Similar image search failed'
+        error: error instanceof Error ? error.message : 'Similar image search failed',
       });
     }
   }
@@ -511,27 +587,32 @@ router.post(
       } else if (req.body.imageUrl) {
         imageInput = {
           type: 'url',
-          data: req.body.imageUrl
+          data: req.body.imageUrl,
         };
       } else if (req.body.imageBase64) {
         imageInput = {
           type: 'base64',
           data: req.body.imageBase64,
-          mimeType: req.body.mimeType || 'image/jpeg'
+          mimeType: req.body.mimeType || 'image/jpeg',
         };
       } else {
         return res.status(400).json({
           success: false,
-          error: 'No image provided'
+          error: 'No image provided',
         });
       }
 
-      const imageId = req.body.imageId || `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const imageId =
+        req.body.imageId || `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
       const embedding = await searchService!.indexImage(imageId, imageInput, {
-        url: req.body.imageUrl || (req.file ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}` : undefined),
+        url:
+          req.body.imageUrl ||
+          (req.file
+            ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+            : undefined),
         tags: req.body.tags || [],
-        userId: req.user?.id
+        userId: req.user?.id,
       });
 
       res.json({
@@ -539,14 +620,14 @@ router.post(
         data: {
           image_id: imageId,
           dimension: embedding.dimension,
-          model: embedding.model
-        }
+          model: embedding.model,
+        },
       });
     } catch (error) {
       logger.error('Image indexing failed:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Image indexing failed'
+        error: error instanceof Error ? error.message : 'Image indexing failed',
       });
     }
   }
@@ -572,38 +653,49 @@ router.post(
       } else if (req.body.imageUrl) {
         imageInput = {
           type: 'url',
-          data: req.body.imageUrl
+          data: req.body.imageUrl,
         };
       } else if (req.body.imageBase64) {
         imageInput = {
           type: 'base64',
           data: req.body.imageBase64,
-          mimeType: req.body.mimeType || 'image/jpeg'
+          mimeType: req.body.mimeType || 'image/jpeg',
         };
       } else {
         return res.status(400).json({
           success: false,
-          error: 'No image provided'
+          error: 'No image provided',
         });
       }
 
-      const description = await analysisService!.generateDescription(imageInput, {
-        maxLength: req.body.max_length || 200,
-        detail: req.body.detail || 'normal',
-        language: req.body.language || 'zh'
-      });
+      // 尝试从缓存获取结果
+      const descCache = getVisionCache<any>();
+      const descCacheKey = descCache.generateKey(imageInput.data, 'describe');
+      const descCachedResult = descCache.get(descCacheKey);
+
+      let description;
+      if (descCachedResult) {
+        description = descCachedResult;
+      } else {
+        description = await analysisService!.generateDescription(imageInput, {
+          maxLength: req.body.max_length || 200,
+          detail: req.body.detail || 'normal',
+          language: req.body.language || 'zh',
+        });
+        descCache.set(descCacheKey, description);
+      }
 
       res.json({
         success: true,
         data: {
-          description
-        }
+          description,
+        },
       });
     } catch (error) {
       logger.error('Image description failed:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Image description failed'
+        error: error instanceof Error ? error.message : 'Image description failed',
       });
     }
   }
@@ -614,32 +706,29 @@ router.post(
  * @desc    Vision服务健康检查
  * @access  Private
  */
-router.get(
-  '/health',
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    try {
-      const adapter = getVisionAdapter();
-      const isHealthy = await adapter.healthCheck();
+router.get('/health', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    await ensureServices();
+    const adapter = cachedAdapter!;
+    const isHealthy = await adapter.healthCheck();
 
-      res.json({
-        success: true,
-        data: {
-          status: isHealthy ? 'healthy' : 'unhealthy',
-          provider: adapter.provider,
-          supports_images: adapter.supportsImages
-        }
-      });
-    } catch (error) {
-      res.status(503).json({
-        success: false,
-        data: {
-          status: 'unhealthy',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }
-      });
-    }
+    res.json({
+      success: true,
+      data: {
+        status: isHealthy ? 'healthy' : 'unhealthy',
+        provider: adapter.provider,
+        supports_images: adapter.supportsImages,
+      },
+    });
+  } catch (error) {
+    res.status(503).json({
+      success: false,
+      data: {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+    });
   }
-);
+});
 
 export default router;
