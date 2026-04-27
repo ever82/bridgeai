@@ -1,11 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  ActivityIndicator,
-} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -14,18 +8,16 @@ import {
   UnifiedSearchResult,
   SearchSource,
 } from '../../components/Search/UnifiedSearch';
-import { localSearchIndex, IndexedImage } from '../../services/indexing/localIndexer';
+import { localSearchIndex } from '../../services/indexing/localIndexer';
 import { localImageAnalysis } from '../../services/ai/localImageAnalysis';
 import { photoLibraryPermission } from '../../permissions/photoLibrary';
-import { PhotoLibraryPrivacyManager } from '../../services/privacy/localPrivacy';
+import { visionShareApi } from '../../services/api/visionShare';
 
 interface VisionShareSearchScreenProps {
-  navigation?: any;
+  navigation?: object;
 }
 
-export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = ({
-  navigation,
-}) => {
+export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = ({ navigation }) => {
   const [results, setResults] = useState<UnifiedSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
@@ -39,9 +31,7 @@ export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = (
 
   const checkPermissions = async () => {
     const state = await photoLibraryPermission.checkPermission();
-    setHasPermission(
-      state.hasFullAccess || state.hasPartialAccess,
-    );
+    setHasPermission(state.hasFullAccess || state.hasPartialAccess);
   };
 
   const initializeServices = async () => {
@@ -76,30 +66,23 @@ export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = (
       }
 
       if (source === 'all' || source === 'cloud') {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        const mockCloudResults: UnifiedSearchResult[] = [
-          {
-            id: 'cloud-1',
-            uri: 'https://cloud.example.com/photo1.jpg',
-            title: 'Cloud Photo 1',
+        const cloudResponse = await visionShareApi.searchPhotos({
+          query,
+          limit: 50,
+        });
+
+        cloudResponse.data.results.forEach(result => {
+          searchResults.push({
+            id: result.id,
+            uri: result.url,
             source: 'cloud',
             sourceLabel: 'Cloud',
-            relevanceScore: 0.85,
-            tags: ['vacation', 'beach', 'summer'],
-            createdAt: new Date('2024-01-15'),
-          },
-          {
-            id: 'cloud-2',
-            uri: 'https://cloud.example.com/photo2.jpg',
-            title: 'Cloud Photo 2',
-            source: 'cloud',
-            sourceLabel: 'Cloud',
-            relevanceScore: 0.72,
-            tags: ['family', 'party', 'birthday'],
-            createdAt: new Date('2024-02-20'),
-          },
-        ];
-        searchResults.push(...mockCloudResults);
+            relevanceScore: result.confidence,
+            tags: result.tags,
+            title: result.title,
+            createdAt: new Date(),
+          });
+        });
       }
 
       setResults(searchResults);
@@ -110,15 +93,16 @@ export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = (
     }
   }, []);
 
-  const handleResultPress = useCallback((result: UnifiedSearchResult) => {
-    navigation?.navigate('PhotoDetail', { photoId: result.id });
-  }, [navigation]);
+  const handleResultPress = useCallback(
+    (result: UnifiedSearchResult) => {
+      navigation?.navigate('PhotoDetail', { photoId: result.id });
+    },
+    [navigation]
+  );
 
   const handleRequestPermission = async () => {
     const state = await photoLibraryPermission.requestPermission();
-    setHasPermission(
-      state.hasFullAccess || state.hasPartialAccess,
-    );
+    setHasPermission(state.hasFullAccess || state.hasPartialAccess);
   };
 
   if (!hasPermission) {
@@ -128,13 +112,10 @@ export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = (
           <Icon name="photo-library" size={64} color="#007AFF" />
           <Text style={styles.permissionTitle}>Photo Library Access</Text>
           <Text style={styles.permissionDescription}>
-            To search your local photos with AI, we need access to your photo library.
-            Your photos will be analyzed on-device and never uploaded without your permission.
+            To search your local photos with AI, we need access to your photo library. Your photos
+            will be analyzed on-device and never uploaded without your permission.
           </Text>
-          <TouchableOpacity
-            style={styles.permissionButton}
-            onPress={handleRequestPermission}
-          >
+          <TouchableOpacity style={styles.permissionButton} onPress={handleRequestPermission}>
             <Text style={styles.permissionButtonText}>Grant Access</Text>
           </TouchableOpacity>
         </View>

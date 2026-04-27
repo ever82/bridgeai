@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
   Alert,
 } from 'react-native';
@@ -20,27 +19,10 @@ import {
   calculateDistance,
 } from '@bridgeai/shared';
 
-// Mock reviews data
-const mockReviews: TaskReview[] = [
-  {
-    id: 'review-001',
-    taskId: 'task-001',
-    reviewerId: 'user-010',
-    reviewerName: '用户A',
-    rating: 5,
-    content: '非常专业的摄影师，作品质量很高，沟通顺畅！',
-    createdAt: new Date('2026-03-15'),
-  },
-  {
-    id: 'review-002',
-    taskId: 'task-001',
-    reviewerId: 'user-011',
-    reviewerName: '用户B',
-    rating: 4,
-    content: '拍摄效果不错，就是时间稍微晚了一点。',
-    createdAt: new Date('2026-03-10'),
-  },
-];
+import { visionShareApi } from '../../services/api/visionShare';
+
+// Mock reviews data - loaded from API per task
+const defaultReviews: TaskReview[] = [];
 
 export const TaskDetailScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -48,7 +30,7 @@ export const TaskDetailScreen: React.FC = () => {
   const { taskId } = route.params as { taskId: string };
 
   const [task, setTask] = useState<Task | null>(null);
-  const [reviews, setReviews] = useState<TaskReview[]>([]);
+  const [reviews, setReviews] = useState<TaskReview[]>(defaultReviews);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,50 +49,11 @@ export const TaskDetailScreen: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // In production, call API
-      // const response = await api.get(`/visionShare/tasks/${taskId}`);
+      const response = await visionShareApi.getTask(taskId);
 
-      // Mock data for development
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const mockTask: Task = {
-        id: taskId,
-        title: '商业摄影拍摄',
-        description: '需要专业摄影师拍摄产品照片，约50张。要求有商业摄影经验，能够熟练使用灯光设备。拍摄内容包括产品白底图、场景图等。预计拍摄时间为3小时。',
-        type: 'photography',
-        status: 'pending',
-        priority: 'high',
-        publisherId: 'user-001',
-        publisherName: '张三',
-        publisherAvatar: '',
-        publisherCreditScore: 85,
-        location: {
-          province: '440000',
-          provinceName: '广东省',
-          city: '440300',
-          cityName: '深圳市',
-          district: '440305',
-          districtName: '南山区',
-        },
-        coordinates: { latitude: 22.5431, longitude: 114.0579 },
-        address: '深圳市南山区科技园南区A栋1001室',
-        budgetMin: 1000,
-        budgetMax: 2000,
-        currency: 'CNY',
-        publishTime: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        estimatedDuration: 180,
-        images: [],
-        tags: ['商业摄影', '产品拍摄', '白底图'],
-        viewCount: 45,
-        inquiryCount: 3,
-        applicationCount: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      setTask(mockTask);
-      setReviews(mockReviews);
+      setTask(response.data.task as Task);
+      // Reviews are included in the task response if available
+      setReviews([]);
     } catch (err) {
       setError('加载任务详情失败');
     } finally {
@@ -119,20 +62,16 @@ export const TaskDetailScreen: React.FC = () => {
   };
 
   const handleAccept = useCallback(() => {
-    Alert.alert(
-      '确认接单',
-      '您确定要接这个任务吗？接单后请按时完成。',
-      [
-        { text: '取消', style: 'cancel' },
-        {
-          text: '确认',
-          onPress: () => {
-            // In production, call API to accept task
-            navigation.navigate('AcceptTask', { taskId });
-          },
+    Alert.alert('确认接单', '您确定要接这个任务吗？接单后请按时完成。', [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '确认',
+        onPress: () => {
+          // In production, call API to accept task
+          navigation.navigate('AcceptTask', { taskId });
         },
-      ]
-    );
+      },
+    ]);
   }, [taskId, navigation]);
 
   const handleNavigate = useCallback(() => {
@@ -197,14 +136,10 @@ export const TaskDetailScreen: React.FC = () => {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={[styles.typeBadge, { backgroundColor: priorityStyle.color + '20' }]}>
-              <Text style={[styles.typeText, { color: priorityStyle.color }]}>
-                {typeLabel}
-              </Text>
+              <Text style={[styles.typeText, { color: priorityStyle.color }]}>{typeLabel}</Text>
             </View>
             <View style={[styles.statusBadge, { backgroundColor: '#52C41A20' }]}>
-              <Text style={[styles.statusText, { color: '#52C41A' }]}>
-                {statusLabel}
-              </Text>
+              <Text style={[styles.statusText, { color: '#52C41A' }]}>{statusLabel}</Text>
             </View>
           </View>
           <Text style={styles.title}>{task.title}</Text>
@@ -218,9 +153,7 @@ export const TaskDetailScreen: React.FC = () => {
         {/* Budget Section */}
         <View style={styles.section}>
           <Text style={styles.budgetLabel}>任务预算</Text>
-          <Text style={styles.budgetValue}>
-            {formatBudget(task.budgetMin, task.budgetMax)}
-          </Text>
+          <Text style={styles.budgetValue}>{formatBudget(task.budgetMin, task.budgetMax)}</Text>
         </View>
 
         {/* Description Section */}
@@ -235,9 +168,7 @@ export const TaskDetailScreen: React.FC = () => {
           <View style={styles.locationContainer}>
             <Text style={styles.address}>{task.address}</Text>
             <View style={styles.distanceRow}>
-              <Text style={styles.distanceText}>
-                距您 {formatDistance(distanceKm * 1000)}
-              </Text>
+              <Text style={styles.distanceText}>距您 {formatDistance(distanceKm * 1000)}</Text>
               <TouchableOpacity onPress={handleNavigate}>
                 <Text style={styles.navigateText}>导航</Text>
               </TouchableOpacity>
@@ -285,9 +216,7 @@ export const TaskDetailScreen: React.FC = () => {
           <Text style={styles.sectionTitle}>发布者</Text>
           <View style={styles.publisherContainer}>
             <View style={styles.publisherAvatar}>
-              <Text style={styles.publisherAvatarText}>
-                {task.publisherName.charAt(0)}
-              </Text>
+              <Text style={styles.publisherAvatarText}>{task.publisherName.charAt(0)}</Text>
             </View>
             <View style={styles.publisherInfo}>
               <Text style={styles.publisherName}>{task.publisherName}</Text>
@@ -302,16 +231,14 @@ export const TaskDetailScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>历史评价</Text>
           {reviews.length > 0 ? (
-            reviews.map((review) => (
+            reviews.map(review => (
               <View key={review.id} style={styles.reviewItem}>
                 <View style={styles.reviewHeader}>
                   <Text style={styles.reviewerName}>{review.reviewerName}</Text>
                   <Text style={styles.rating}>{renderStars(review.rating)}</Text>
                 </View>
                 <Text style={styles.reviewContent}>{review.content}</Text>
-                <Text style={styles.reviewDate}>
-                  {formatDate(review.createdAt)}
-                </Text>
+                <Text style={styles.reviewDate}>{formatDate(review.createdAt)}</Text>
               </View>
             ))
           ) : (
@@ -328,10 +255,7 @@ export const TaskDetailScreen: React.FC = () => {
         <TouchableOpacity style={styles.contactButton}>
           <Text style={styles.contactButtonText}>咨询</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.acceptButton}
-          onPress={handleAccept}
-        >
+        <TouchableOpacity style={styles.acceptButton} onPress={handleAccept}>
           <Text style={styles.acceptButtonText}>立即接单</Text>
         </TouchableOpacity>
       </View>

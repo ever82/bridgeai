@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,19 +7,17 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
   Task,
   TaskFilter,
   GeoCoordinates,
-  TaskSearchResponse,
-  TaskStatus,
   DISTANCE_RANGE_OPTIONS,
   SORT_OPTIONS,
 } from '@bridgeai/shared';
 
+import { visionShareApi } from '../../services/api/visionShare';
 import { TaskFilterPanel } from '../../components/VisionShare/TaskFilter/TaskFilterPanel';
 import { TaskListItem } from '../../components/VisionShare/TaskFilter/TaskListItem';
 
@@ -29,20 +27,18 @@ const MapPlaceholder: React.FC<{
   userLocation: GeoCoordinates;
   selectedTaskId?: string;
   onTaskSelect: (taskId: string) => void;
-}> = ({ tasks, userLocation, selectedTaskId, onTaskSelect }) => {
+}> = ({ tasks, userLocation, selectedTaskId, onTaskSelect: _onTaskSelect }) => {
   return (
     <View style={styles.mapContainer}>
       <View style={styles.mapPlaceholder}>
         <Text style={styles.mapText}>地图视图</Text>
-        <Text style={styles.mapSubtext}>
-          {tasks.length} 个任务在附近
-        </Text>
+        <Text style={styles.mapSubtext}>{tasks.length} 个任务在附近</Text>
         <Text style={styles.mapSubtext}>
           当前位置: {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
         </Text>
         {selectedTaskId && (
           <Text style={styles.selectedTaskText}>
-            已选择: {tasks.find((t) => t.id === selectedTaskId)?.title}
+            已选择: {tasks.find(t => t.id === selectedTaskId)?.title}
           </Text>
         )}
       </View>
@@ -50,8 +46,6 @@ const MapPlaceholder: React.FC<{
     </View>
   );
 };
-
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const NearbyTasksMapScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -78,123 +72,41 @@ export const NearbyTasksMapScreen: React.FC = () => {
     longitude: 114.0579,
   };
 
-  const fetchTasks = useCallback(async (isRefresh = false) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const fetchTasks = useCallback(
+    async (isRefresh = false) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const page = isRefresh ? 1 : filter.page || 1;
+        const page = isRefresh ? 1 : filter.page || 1;
 
-      // In production, call API
-      // const response = await api.get('/visionShare/tasks/nearby', {
-      //   params: { ...filter, page, userLocation },
-      // });
+        const response = await visionShareApi.getNearbyTasks({
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          distanceKm: filter.distanceRange,
+          limit: filter.limit,
+          offset: isRefresh ? 0 : (page - 1) * (filter.limit || 20),
+        });
 
-      // Mock response for development
-      await new Promise((resolve) => setTimeout(resolve, 500));
+        const fetchedTasks = response.data.tasks as Task[];
 
-      const mockTasks: Task[] = [
-        {
-          id: 'task-001',
-          title: '商业摄影拍摄',
-          description: '需要专业摄影师拍摄产品照片',
-          type: 'photography',
-          status: 'pending' as TaskStatus,
-          priority: 'high',
-          publisherId: 'user-001',
-          publisherName: '张三',
-          publisherCreditScore: 85,
-          location: {
-            province: '440000',
-            provinceName: '广东省',
-            city: '440300',
-            cityName: '深圳市',
-          },
-          coordinates: { latitude: 22.5431, longitude: 114.0579 },
-          address: '深圳市南山区科技园',
-          budgetMin: 1000,
-          budgetMax: 2000,
-          currency: 'CNY',
-          publishTime: new Date(),
-          viewCount: 45,
-          inquiryCount: 3,
-          applicationCount: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 'task-002',
-          title: '短视频拍摄剪辑',
-          description: '需要拍摄并剪辑宣传短视频',
-          type: 'video',
-          status: 'pending' as TaskStatus,
-          priority: 'urgent',
-          publisherId: 'user-002',
-          publisherName: '李四',
-          publisherCreditScore: 92,
-          location: {
-            province: '440000',
-            provinceName: '广东省',
-            city: '440300',
-            cityName: '深圳市',
-          },
-          coordinates: { latitude: 22.5485, longitude: 114.1315 },
-          address: '深圳市罗湖区万象城',
-          budgetMin: 3000,
-          budgetMax: 5000,
-          currency: 'CNY',
-          publishTime: new Date(),
-          viewCount: 28,
-          inquiryCount: 5,
-          applicationCount: 2,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 'task-003',
-          title: 'Logo设计',
-          description: '为新创公司设计Logo',
-          type: 'design',
-          status: 'pending' as TaskStatus,
-          priority: 'normal',
-          publisherId: 'user-003',
-          publisherName: '王五',
-          publisherCreditScore: 78,
-          location: {
-            province: '440000',
-            provinceName: '广东省',
-            city: '440300',
-            cityName: '深圳市',
-          },
-          coordinates: { latitude: 22.5431, longitude: 114.0579 },
-          address: '深圳市福田区CBD',
-          budgetMin: 800,
-          budgetMax: 1500,
-          currency: 'CNY',
-          publishTime: new Date(),
-          viewCount: 67,
-          inquiryCount: 8,
-          applicationCount: 4,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
+        if (isRefresh) {
+          setTasks(fetchedTasks);
+        } else {
+          setTasks(prev => [...prev, ...fetchedTasks]);
+        }
 
-      if (isRefresh) {
-        setTasks(mockTasks);
-      } else {
-        setTasks((prev) => [...prev, ...mockTasks]);
+        setTotal(response.data.total);
+        setHasMore(fetchedTasks.length >= (filter.limit || 20));
+      } catch (err) {
+        setError('加载任务失败，请稍后重试');
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-
-      setTotal(mockTasks.length);
-      setHasMore(false);
-    } catch (err) {
-      setError('加载任务失败，请稍后重试');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [filter]);
+    },
+    [filter]
+  );
 
   useEffect(() => {
     fetchTasks(true);
@@ -207,14 +119,17 @@ export const NearbyTasksMapScreen: React.FC = () => {
 
   const handleLoadMore = useCallback(() => {
     if (!loading && hasMore) {
-      setFilter((prev) => ({ ...prev, page: (prev.page || 1) + 1 }));
+      setFilter(prev => ({ ...prev, page: (prev.page || 1) + 1 }));
       fetchTasks();
     }
   }, [loading, hasMore, fetchTasks]);
 
-  const handleTaskPress = useCallback((taskId: string) => {
-    navigation.navigate('TaskDetail', { taskId });
-  }, [navigation]);
+  const handleTaskPress = useCallback(
+    (taskId: string) => {
+      navigation.navigate('TaskDetail', { taskId });
+    },
+    [navigation]
+  );
 
   const handleFilterChange = useCallback((newFilter: TaskFilter) => {
     setFilter(newFilter);
@@ -225,14 +140,17 @@ export const NearbyTasksMapScreen: React.FC = () => {
     setSelectedTaskId(taskId);
   }, []);
 
-  const renderTaskItem = useCallback(({ item }: { item: Task }) => (
-    <TaskListItem
-      task={item}
-      userLocation={userLocation}
-      onPress={() => handleTaskPress(item.id)}
-      isSelected={item.id === selectedTaskId}
-    />
-  ), [handleTaskPress, selectedTaskId, userLocation]);
+  const renderTaskItem = useCallback(
+    ({ item }: { item: Task }) => (
+      <TaskListItem
+        task={item}
+        userLocation={userLocation}
+        onPress={() => handleTaskPress(item.id)}
+        isSelected={item.id === selectedTaskId}
+      />
+    ),
+    [handleTaskPress, selectedTaskId, userLocation]
+  );
 
   return (
     <View style={styles.container}>
@@ -240,19 +158,14 @@ export const NearbyTasksMapScreen: React.FC = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>附近任务</Text>
         <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.filterButton}
-            onPress={() => setShowFilter(true)}
-          >
+          <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilter(true)}>
             <Text style={styles.filterButtonText}>筛选</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.viewModeButton}
             onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
           >
-            <Text style={styles.viewModeButtonText}>
-              {viewMode === 'map' ? '列表' : '地图'}
-            </Text>
+            <Text style={styles.viewModeButtonText}>{viewMode === 'map' ? '列表' : '地图'}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -260,9 +173,9 @@ export const NearbyTasksMapScreen: React.FC = () => {
       {/* Filter Summary */}
       <View style={styles.filterSummary}>
         <Text style={styles.filterSummaryText}>
-          {DISTANCE_RANGE_OPTIONS.find((o) => o.value === filter.distanceRange)?.labelZh || '5公里'}
+          {DISTANCE_RANGE_OPTIONS.find(o => o.value === filter.distanceRange)?.labelZh || '5公里'}
           {' · '}
-          {SORT_OPTIONS.find((o) => o.value === filter.sortBy)?.labelZh || '距离最近'}
+          {SORT_OPTIONS.find(o => o.value === filter.sortBy)?.labelZh || '距离最近'}
           {' · '}
           {total} 个任务
         </Text>
@@ -281,7 +194,7 @@ export const NearbyTasksMapScreen: React.FC = () => {
             <FlatList
               data={tasks}
               renderItem={renderTaskItem}
-              keyExtractor={(item) => item.id}
+              keyExtractor={item => item.id}
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.horizontalList}
@@ -292,10 +205,8 @@ export const NearbyTasksMapScreen: React.FC = () => {
         <FlatList
           data={tasks}
           renderItem={renderTaskItem}
-          keyExtractor={(item) => item.id}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
+          keyExtractor={item => item.id}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           contentContainerStyle={styles.listContent}

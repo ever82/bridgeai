@@ -39,3 +39,5 @@ export * from './visionShare';
 export * from './handoff';
 export * from '../schemas/l2';
 export * from '../schemas/sceneFields';
+export * from './photo';
+export * from './payment';

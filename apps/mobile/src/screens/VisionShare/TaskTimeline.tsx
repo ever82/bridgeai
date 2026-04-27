@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { theme } from '../../theme';
+import { visionShareApi } from '../../services/api/visionShare';
 
 interface TimelineTask {
   id: string;
@@ -45,60 +46,57 @@ export const TaskTimelineScreen = () => {
   const loadTimelineData = async () => {
     setIsLoading(true);
 
-    // TODO: Load from API
-    const mockTasks: TimelineTask[] = [
-      {
-        id: '1',
-        title: 'Photo Enhancement',
-        description: 'Enhanced 24 photos with AI filters',
-        status: 'completed',
-        createdAt: new Date(Date.now() - 1000 * 60 * 30),
-        completedAt: new Date(),
-        photoCount: 24,
-        resultCount: 24,
-      },
-      {
-        id: '2',
-        title: 'Background Removal',
-        description: 'Processing portrait photos',
-        status: 'processing',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-        photoCount: 12,
-      },
-      {
-        id: '3',
-        title: 'Album Organization',
-        description: 'Auto-clustered vacation photos',
-        status: 'completed',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        completedAt: new Date(Date.now() - 1000 * 60 * 60 * 23),
-        photoCount: 156,
-        resultCount: 8,
-      },
-      {
-        id: '4',
-        title: 'Image Restoration',
-        description: 'Restored old family photos',
-        status: 'completed',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-        completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2 + 1000 * 60 * 30),
-        photoCount: 8,
-        resultCount: 8,
-      },
-      {
-        id: '5',
-        title: 'Style Transfer',
-        description: 'Applied artistic styles',
-        status: 'failed',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        photoCount: 6,
-      },
-    ];
+    try {
+      const response = await visionShareApi.getTaskTimeline({
+        status: selectedStatus || undefined,
+        startDate: selectedDate?.toISOString(),
+        endDate: selectedDate?.toISOString(),
+        limit: 50,
+      });
 
-    // Group tasks by date
-    const grouped = groupTasksByDate(mockTasks);
-    setTimelineGroups(grouped);
-    setIsLoading(false);
+      // Transform timeline data to TimelineTask format
+      const tasks: TimelineTask[] = [];
+
+      response.data.timeline.forEach(group => {
+        group.tasks.forEach(task => {
+          tasks.push({
+            id: task.id,
+            title: task.title || 'Task',
+            description: task.description || '',
+            status: mapTaskStatus(task.status),
+            createdAt: new Date(task.publishTime || task.createdAt),
+            completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
+            photoCount: 0,
+            resultCount: undefined,
+          });
+        });
+      });
+
+      // Group tasks by date
+      const grouped = groupTasksByDate(tasks);
+      setTimelineGroups(grouped);
+    } catch (err) {
+      console.error('Failed to load timeline data', err);
+      // Keep existing data on error
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const mapTaskStatus = (status: string): 'pending' | 'processing' | 'completed' | 'failed' => {
+    switch (status) {
+      case 'completed':
+      case 'done':
+        return 'completed';
+      case 'in_progress':
+      case 'processing':
+        return 'processing';
+      case 'cancelled':
+      case 'failed':
+        return 'failed';
+      default:
+        return 'pending';
+    }
   };
 
   const groupTasksByDate = (tasks: TimelineTask[]): TimelineGroup[] => {
@@ -120,9 +118,7 @@ export const TaskTimelineScreen = () => {
       groups.get(dateKey)!.tasks.push(task);
     });
 
-    return Array.from(groups.values()).sort(
-      (a, b) => b.date.getTime() - a.date.getTime()
-    );
+    return Array.from(groups.values()).sort((a, b) => b.date.getTime() - a.date.getTime());
   };
 
   const formatDateLabel = (date: Date): string => {
@@ -187,10 +183,7 @@ export const TaskTimelineScreen = () => {
   const statusFilters = ['all', 'completed', 'processing', 'pending', 'failed'];
 
   const renderTimelineItem = ({ item: task }: { item: TimelineTask }) => (
-    <TouchableOpacity
-      style={styles.taskCard}
-      onPress={() => handleTaskPress(task)}
-    >
+    <TouchableOpacity style={styles.taskCard} onPress={() => handleTaskPress(task)}>
       <View style={styles.taskIcon}>
         <Text style={styles.statusIcon}>{getStatusIcon(task.status)}</Text>
       </View>
@@ -198,10 +191,7 @@ export const TaskTimelineScreen = () => {
         <View style={styles.taskHeader}>
           <Text style={styles.taskTitle}>{task.title}</Text>
           <View
-            style={[
-              styles.statusBadge,
-              { backgroundColor: getStatusColor(task.status) + '20' },
-            ]}
+            style={[styles.statusBadge, { backgroundColor: getStatusColor(task.status) + '20' }]}
           >
             <Text style={[styles.statusText, { color: getStatusColor(task.status) }]}>
               {task.status}
@@ -228,10 +218,7 @@ export const TaskTimelineScreen = () => {
 
   const renderTimelineGroup = ({ item: group }: { item: TimelineGroup }) => (
     <View style={styles.groupContainer}>
-      <TouchableOpacity
-        style={styles.dateHeader}
-        onPress={() => handleDateSelect(group.date)}
-      >
+      <TouchableOpacity style={styles.dateHeader} onPress={() => handleDateSelect(group.date)}>
         <View style={styles.dateLine} />
         <View style={styles.dateBadge}>
           <Text style={styles.dateText}>{group.dateLabel}</Text>
@@ -252,10 +239,7 @@ export const TaskTimelineScreen = () => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Task Timeline</Text>
@@ -281,8 +265,7 @@ export const TaskTimelineScreen = () => {
             <Text
               style={[
                 styles.filterChipText,
-                (selectedStatus === status ||
-                  (selectedStatus === null && status === 'all')) &&
+                (selectedStatus === status || (selectedStatus === null && status === 'all')) &&
                   styles.filterChipTextActive,
               ]}
             >
@@ -307,9 +290,7 @@ export const TaskTimelineScreen = () => {
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>📋</Text>
               <Text style={styles.emptyTitle}>No tasks found</Text>
-              <Text style={styles.emptyText}>
-                Your task history will appear here
-              </Text>
+              <Text style={styles.emptyText}>Your task history will appear here</Text>
             </View>
           }
         />

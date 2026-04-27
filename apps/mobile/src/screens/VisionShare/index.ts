@@ -13,3 +13,6 @@ export { MyTasksScreen } from './MyTasks';
 
 // L3 Natural Language Publish
 export { NaturalLanguagePublishScreen } from './NaturalLanguagePublish';
+
+// Photo Gallery Screen (ISSUE-VS005a)
+export { PhotoGalleryScreen } from './PhotoGallery';

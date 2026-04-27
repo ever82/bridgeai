@@ -7,3 +7,4 @@ export { PhotoPermissionScreen } from './Permissions/PhotoPermission';
 // VisionShare Screens (ISSUE-VS001)
 export { PublishScreen } from './VisionShare/PublishScreen';
 export { PublishSuccessScreen } from './VisionShare/PublishSuccess';
+export { PhotoGalleryScreen } from './VisionShare/PhotoGallery';

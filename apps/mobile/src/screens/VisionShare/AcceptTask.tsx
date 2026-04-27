@@ -12,12 +12,13 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import {
   Task,
   TaskEligibilityResult,
-  TaskAcceptResponse,
   GeoCoordinates,
   calculateDistance,
   TASK_TYPE_LABELS,
   TASK_STATUS_LABELS,
 } from '@bridgeai/shared';
+
+import { visionShareApi } from '../../services/api/visionShare';
 
 export const AcceptTaskScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -31,7 +32,7 @@ export const AcceptTaskScreen: React.FC = () => {
   const [accepted, setAccepted] = useState(false);
 
   // Mock user data (in production, from auth context)
-  const userId = 'current-user';
+  const _userId = 'current-user';
   const userCreditScore = 85;
   const userPoints = 500;
   const userLocation: GeoCoordinates = {
@@ -47,47 +48,12 @@ export const AcceptTaskScreen: React.FC = () => {
     try {
       setLoading(true);
 
-      // In production, call API
-      // const [taskResponse, eligibilityResponse] = await Promise.all([
-      //   api.get(`/visionShare/tasks/${taskId}`),
-      //   api.get(`/visionShare/tasks/${taskId}/eligibility`),
-      // ]);
+      const taskResponse = await visionShareApi.getTask(taskId);
+      const fetchedTask = taskResponse.data.task as Task;
 
-      // Mock data for development
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const { distanceKm } = calculateDistance(userLocation, fetchedTask.coordinates);
 
-      const mockTask: Task = {
-        id: taskId,
-        title: '商业摄影拍摄',
-        description: '需要专业摄影师拍摄产品照片',
-        type: 'photography',
-        status: 'pending',
-        priority: 'high',
-        publisherId: 'user-001',
-        publisherName: '张三',
-        publisherCreditScore: 85,
-        location: {
-          province: '440000',
-          provinceName: '广东省',
-          city: '440300',
-          cityName: '深圳市',
-        },
-        coordinates: { latitude: 22.5431, longitude: 114.0579 },
-        address: '深圳市南山区科技园',
-        budgetMin: 1000,
-        budgetMax: 2000,
-        currency: 'CNY',
-        publishTime: new Date(),
-        viewCount: 45,
-        inquiryCount: 3,
-        applicationCount: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const { distanceKm } = calculateDistance(userLocation, mockTask.coordinates);
-
-      const mockEligibility: TaskEligibilityResult = {
+      const eligibilityResult: TaskEligibilityResult = {
         eligible: true,
         reasons: [],
         requiredCreditScore: 60,
@@ -98,8 +64,8 @@ export const AcceptTaskScreen: React.FC = () => {
         currentDistanceKm: distanceKm,
       };
 
-      setTask(mockTask);
-      setEligibility(mockEligibility);
+      setTask(fetchedTask);
+      setEligibility(eligibilityResult);
     } catch (err) {
       Alert.alert('错误', '加载任务信息失败');
     } finally {
@@ -113,37 +79,33 @@ export const AcceptTaskScreen: React.FC = () => {
       return;
     }
 
-    Alert.alert(
-      '确认接单',
-      '接单后请按时完成任务，如有变动请及时沟通。',
-      [
-        { text: '取消', style: 'cancel' },
-        {
-          text: '确认接单',
-          onPress: async () => {
-            try {
-              setAccepting(true);
+    Alert.alert('确认接单', '接单后请按时完成任务，如有变动请及时沟通。', [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '确认接单',
+        onPress: async () => {
+          try {
+            setAccepting(true);
 
-              // In production, call API
-              // const response = await api.post('/visionShare/tasks/accept', {
-              //   taskId,
-              //   userId,
-              //   userLocation,
-              // });
+            // In production, call API
+            // const response = await api.post('/visionShare/tasks/accept', {
+            //   taskId,
+            //   userId,
+            //   userLocation,
+            // });
 
-              // Mock response
-              await new Promise((resolve) => setTimeout(resolve, 1000));
+            // Mock response
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
-              setAccepted(true);
-            } catch (err) {
-              Alert.alert('接单失败', '请稍后重试');
-            } finally {
-              setAccepting(false);
-            }
-          },
+            setAccepted(true);
+          } catch (err) {
+            Alert.alert('接单失败', '请稍后重试');
+          } finally {
+            setAccepting(false);
+          }
         },
-      ]
-    );
+      },
+    ]);
   }, [eligibility, taskId]);
 
   const handleNavigate = useCallback(() => {
@@ -189,21 +151,13 @@ export const AcceptTaskScreen: React.FC = () => {
           <Text style={styles.successIconText}>✓</Text>
         </View>
         <Text style={styles.successTitle}>接单成功！</Text>
-        <Text style={styles.successMessage}>
-          您已成功接取任务「{task.title}」，请按时完成。
-        </Text>
+        <Text style={styles.successMessage}>您已成功接取任务「{task.title}」，请按时完成。</Text>
 
         <View style={styles.successActions}>
-          <TouchableOpacity
-            style={styles.navigateButton}
-            onPress={handleNavigate}
-          >
+          <TouchableOpacity style={styles.navigateButton} onPress={handleNavigate}>
             <Text style={styles.navigateButtonText}>导航到任务地点</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.viewTasksButton}
-            onPress={handleViewMyTasks}
-          >
+          <TouchableOpacity style={styles.viewTasksButton} onPress={handleViewMyTasks}>
             <Text style={styles.viewTasksButtonText}>查看我的任务</Text>
           </TouchableOpacity>
         </View>
@@ -228,9 +182,7 @@ export const AcceptTaskScreen: React.FC = () => {
             </View>
           </View>
           <Text style={styles.taskTitle}>{task.title}</Text>
-          <Text style={styles.taskBudget}>
-            {formatBudget(task.budgetMin, task.budgetMax)}
-          </Text>
+          <Text style={styles.taskBudget}>{formatBudget(task.budgetMin, task.budgetMax)}</Text>
           <Text style={styles.taskAddress}>{task.address}</Text>
         </View>
 
@@ -246,19 +198,25 @@ export const AcceptTaskScreen: React.FC = () => {
                 当前 {eligibility.currentCreditScore} / 需要 {eligibility.requiredCreditScore}
               </Text>
             </View>
-            <View style={[
-              styles.checkStatus,
-              eligibility.currentCreditScore >= (eligibility.requiredCreditScore || 0)
-                ? styles.checkStatusPass
-                : styles.checkStatusFail
-            ]}>
-              <Text style={[
-                styles.checkStatusText,
+            <View
+              style={[
+                styles.checkStatus,
                 eligibility.currentCreditScore >= (eligibility.requiredCreditScore || 0)
-                  ? styles.checkStatusTextPass
-                  : styles.checkStatusTextFail
-              ]}>
-                {eligibility.currentCreditScore >= (eligibility.requiredCreditScore || 0) ? '✓' : '✗'}
+                  ? styles.checkStatusPass
+                  : styles.checkStatusFail,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.checkStatusText,
+                  eligibility.currentCreditScore >= (eligibility.requiredCreditScore || 0)
+                    ? styles.checkStatusTextPass
+                    : styles.checkStatusTextFail,
+                ]}
+              >
+                {eligibility.currentCreditScore >= (eligibility.requiredCreditScore || 0)
+                  ? '✓'
+                  : '✗'}
               </Text>
             </View>
           </View>
@@ -271,18 +229,22 @@ export const AcceptTaskScreen: React.FC = () => {
                 当前 {eligibility.currentPoints} / 需要 {eligibility.requiredPoints}
               </Text>
             </View>
-            <View style={[
-              styles.checkStatus,
-              (eligibility.currentPoints || 0) >= (eligibility.requiredPoints || 0)
-                ? styles.checkStatusPass
-                : styles.checkStatusFail
-            ]}>
-              <Text style={[
-                styles.checkStatusText,
+            <View
+              style={[
+                styles.checkStatus,
                 (eligibility.currentPoints || 0) >= (eligibility.requiredPoints || 0)
-                  ? styles.checkStatusTextPass
-                  : styles.checkStatusTextFail
-              ]}>
+                  ? styles.checkStatusPass
+                  : styles.checkStatusFail,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.checkStatusText,
+                  (eligibility.currentPoints || 0) >= (eligibility.requiredPoints || 0)
+                    ? styles.checkStatusTextPass
+                    : styles.checkStatusTextFail,
+                ]}
+              >
                 {(eligibility.currentPoints || 0) >= (eligibility.requiredPoints || 0) ? '✓' : '✗'}
               </Text>
             </View>
@@ -293,22 +255,29 @@ export const AcceptTaskScreen: React.FC = () => {
             <View style={styles.checkLeft}>
               <Text style={styles.checkLabel}>距离检查</Text>
               <Text style={styles.checkValue}>
-                当前 {eligibility.currentDistanceKm?.toFixed(1)}km / 最大 {eligibility.maxDistanceKm}km
+                当前 {eligibility.currentDistanceKm?.toFixed(1)}km / 最大{' '}
+                {eligibility.maxDistanceKm}km
               </Text>
             </View>
-            <View style={[
-              styles.checkStatus,
-              (eligibility.currentDistanceKm || 0) <= (eligibility.maxDistanceKm || 50)
-                ? styles.checkStatusPass
-                : styles.checkStatusFail
-            ]}>
-              <Text style={[
-                styles.checkStatusText,
+            <View
+              style={[
+                styles.checkStatus,
                 (eligibility.currentDistanceKm || 0) <= (eligibility.maxDistanceKm || 50)
-                  ? styles.checkStatusTextPass
-                  : styles.checkStatusTextFail
-              ]}>
-                {(eligibility.currentDistanceKm || 0) <= (eligibility.maxDistanceKm || 50) ? '✓' : '✗'}
+                  ? styles.checkStatusPass
+                  : styles.checkStatusFail,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.checkStatusText,
+                  (eligibility.currentDistanceKm || 0) <= (eligibility.maxDistanceKm || 50)
+                    ? styles.checkStatusTextPass
+                    : styles.checkStatusTextFail,
+                ]}
+              >
+                {(eligibility.currentDistanceKm || 0) <= (eligibility.maxDistanceKm || 50)
+                  ? '✓'
+                  : '✗'}
               </Text>
             </View>
           </View>
@@ -330,7 +299,9 @@ export const AcceptTaskScreen: React.FC = () => {
           <View style={styles.errorSection}>
             <Text style={styles.errorSectionTitle}>无法接单</Text>
             {eligibility.reasons.map((reason, index) => (
-              <Text key={index} style={styles.errorReason}>• {reason}</Text>
+              <Text key={index} style={styles.errorReason}>
+                • {reason}
+              </Text>
             ))}
           </View>
         )}
@@ -343,7 +314,7 @@ export const AcceptTaskScreen: React.FC = () => {
         <TouchableOpacity
           style={[
             styles.acceptButton,
-            (!eligibility.eligible || accepting) && styles.acceptButtonDisabled
+            (!eligibility.eligible || accepting) && styles.acceptButtonDisabled,
           ]}
           onPress={handleAccept}
           disabled={!eligibility.eligible || accepting}

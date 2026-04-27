@@ -16,6 +16,7 @@ import { RouteProp } from '@react-navigation/native';
 import { DesensitizationControls } from '../../components/PrivacyEditor/DesensitizationControls';
 import { DetectionOverlay } from '../../components/PrivacyEditor/DetectionOverlay';
 import { AIRecommendations } from '../../components/PrivacyEditor/AIRecommendations';
+import { visionShareApi } from '../../services/api/visionShare';
 
 export type RootStackParamList = {
   PrivacyEditor: {
@@ -52,10 +53,23 @@ interface ProcessingHistory {
   timestamp: number;
 }
 
+interface RecommendationAction {
+  type: 'apply_template' | 'adjust_intensity';
+  payload?: {
+    contentType?: string;
+    method?: string;
+    intensity?: number;
+  };
+}
+
+interface Recommendation {
+  action: RecommendationAction;
+}
+
 const { width: screenWidth } = Dimensions.get('window');
 
 export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route }) => {
-  const { imageUri, imageId } = route.params;
+  const { imageUri, imageId: _imageId } = route.params;
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -71,65 +85,38 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
   const analyzeImage = useCallback(async () => {
     setIsAnalyzing(true);
 
-    // Simulate API call for detection
-    setTimeout(() => {
-      const mockDetections: DetectionRegion[] = [
-        {
-          id: 'det-1',
-          type: 'face',
-          boundingBox: { x: 0.1, y: 0.15, width: 0.15, height: 0.2 },
-          confidence: 0.95,
-          method: 'blur',
-          intensity: 80,
-        },
-        {
-          id: 'det-2',
-          type: 'face',
-          boundingBox: { x: 0.4, y: 0.2, width: 0.12, height: 0.16 },
-          confidence: 0.88,
-          method: 'blur',
-          intensity: 80,
-        },
-        {
-          id: 'det-3',
-          type: 'license_plate',
-          boundingBox: { x: 0.6, y: 0.65, width: 0.25, height: 0.08 },
-          confidence: 0.92,
-          method: 'mosaic',
-          intensity: 90,
-        },
-        {
-          id: 'det-4',
-          type: 'text',
-          boundingBox: { x: 0.05, y: 0.05, width: 0.3, height: 0.05 },
-          confidence: 0.85,
-          method: 'blur',
-          intensity: 60,
-        },
-      ];
+    try {
+      const response = await visionShareApi.analyzeImage(imageUri);
 
-      setDetections(mockDetections);
-      saveToHistory(mockDetections);
+      setDetections(response.data.detections);
+      saveToHistory(response.data.detections);
+    } catch (err) {
+      console.error('Failed to analyze image:', err);
+      // Keep existing state on error
+    } finally {
       setIsAnalyzing(false);
-    }, 2000);
-  }, []);
+    }
+  }, [imageUri]);
 
   // Save current state to history
-  const saveToHistory = useCallback((regions: DetectionRegion[]) => {
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push({
-      regions: JSON.parse(JSON.stringify(regions)),
-      timestamp: Date.now(),
-    });
+  const saveToHistory = useCallback(
+    (regions: DetectionRegion[]) => {
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push({
+        regions: JSON.parse(JSON.stringify(regions)),
+        timestamp: Date.now(),
+      });
 
-    // Keep only last 50 states
-    if (newHistory.length > 50) {
-      newHistory.shift();
-    }
+      // Keep only last 50 states
+      if (newHistory.length > 50) {
+        newHistory.shift();
+      }
 
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-  }, [history, historyIndex]);
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+    },
+    [history, historyIndex]
+  );
 
   // Undo action
   const undo = useCallback(() => {
@@ -152,66 +139,69 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
   // Handle region selection
   const handleRegionSelect = useCallback((regionId: string) => {
     setSelectedRegion(regionId);
-    setDetections((prev) =>
-      prev.map((r) => ({ ...r, isSelected: r.id === regionId }))
-    );
+    setDetections(prev => prev.map(r => ({ ...r, isSelected: r.id === regionId })));
   }, []);
 
   // Handle method change for selected region
-  const handleMethodChange = useCallback((method: string) => {
-    if (!selectedRegion) return;
+  const handleMethodChange = useCallback(
+    (method: string) => {
+      if (!selectedRegion) return;
 
-    setDetections((prev) => {
-      const updated = prev.map((r) =>
-        r.id === selectedRegion ? { ...r, method } : r
-      );
-      saveToHistory(updated);
-      return updated;
-    });
-  }, [selectedRegion, saveToHistory]);
+      setDetections(prev => {
+        const updated = prev.map(r => (r.id === selectedRegion ? { ...r, method } : r));
+        saveToHistory(updated);
+        return updated;
+      });
+    },
+    [selectedRegion, saveToHistory]
+  );
 
   // Handle intensity change for selected region
-  const handleIntensityChange = useCallback((intensity: number) => {
-    if (!selectedRegion) return;
+  const handleIntensityChange = useCallback(
+    (intensity: number) => {
+      if (!selectedRegion) return;
 
-    setDetections((prev) => {
-      const updated = prev.map((r) =>
-        r.id === selectedRegion ? { ...r, intensity } : r
-      );
-      saveToHistory(updated);
-      return updated;
-    });
-  }, [selectedRegion, saveToHistory]);
+      setDetections(prev => {
+        const updated = prev.map(r => (r.id === selectedRegion ? { ...r, intensity } : r));
+        saveToHistory(updated);
+        return updated;
+      });
+    },
+    [selectedRegion, saveToHistory]
+  );
 
   // Apply AI recommendations
-  const handleApplyRecommendation = useCallback((recommendation: any) => {
-    setDetections((prev) => {
-      const updated = prev.map((detection) => {
-        if (recommendation.action.type === 'apply_template') {
-          // Apply template rules
-          return {
-            ...detection,
-            method: getMethodForType(detection.type),
-            intensity: getIntensityForType(detection.type),
-          };
-        }
-        if (recommendation.action.type === 'adjust_intensity') {
-          const payload = recommendation.action.payload;
-          if (detection.type === payload.contentType) {
+  const handleApplyRecommendation = useCallback(
+    (recommendation: Recommendation) => {
+      setDetections(prev => {
+        const updated = prev.map(detection => {
+          if (recommendation.action.type === 'apply_template') {
+            // Apply template rules
             return {
               ...detection,
-              method: payload.method,
-              intensity: payload.intensity,
+              method: getMethodForType(detection.type),
+              intensity: getIntensityForType(detection.type),
             };
           }
-        }
-        return detection;
+          if (recommendation.action.type === 'adjust_intensity') {
+            const payload = recommendation.action.payload;
+            if (detection.type === payload.contentType) {
+              return {
+                ...detection,
+                method: payload.method,
+                intensity: payload.intensity,
+              };
+            }
+          }
+          return detection;
+        });
+        saveToHistory(updated);
+        return updated;
       });
-      saveToHistory(updated);
-      return updated;
-    });
-    setShowRecommendations(false);
-  }, [saveToHistory]);
+      setShowRecommendations(false);
+    },
+    [saveToHistory]
+  );
 
   // Process image with current settings
   const processImage = useCallback(async () => {
@@ -294,7 +284,7 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
             source={{ uri: previewUri || imageUri }}
             style={styles.image}
             resizeMode="contain"
-            onLoad={(event) => {
+            onLoad={event => {
               imageDimensions.current = {
                 width: event.nativeEvent.source.width,
                 height: event.nativeEvent.source.height,
@@ -340,7 +330,7 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
         {/* Desensitization Controls */}
         {selectedRegion && (
           <DesensitizationControls
-            selectedRegion={detections.find((r) => r.id === selectedRegion)}
+            selectedRegion={detections.find(r => r.id === selectedRegion)}
             onMethodChange={handleMethodChange}
             onIntensityChange={handleIntensityChange}
           />

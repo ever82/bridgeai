@@ -4,18 +4,9 @@
  */
 
 import React, { useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Share,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Share, ScrollView } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-import { visionShareApi } from '../../services/visionShareApi';
 
 export type PublishSuccessParams = {
   taskId: string;
@@ -36,7 +27,7 @@ export type PublishSuccessNavigationProp = NativeStackNavigationProp<{
 export const PublishSuccessScreen: React.FC = () => {
   const navigation = useNavigation<PublishSuccessNavigationProp>();
   const route = useRoute<PublishSuccessRouteProp>();
-  const { taskId, shareLink, estimatedMatchTime } = route.params;
+  const { taskId: _taskId, shareLink, estimatedMatchTime } = route.params;
 
   // 分享任务
   const handleShare = useCallback(async () => {
@@ -94,18 +85,14 @@ export const PublishSuccessScreen: React.FC = () => {
           <View style={styles.timeContainer}>
             <Text style={styles.timeLabel}>预计匹配时间</Text>
             <Text style={styles.timeValue}>{estimatedMatchTime}分钟</Text>
-            <Text style={styles.timeDescription}>
-              平均匹配时间，实际时间可能因需求而异
-            </Text>
+            <Text style={styles.timeDescription}>平均匹配时间，实际时间可能因需求而异</Text>
           </View>
         )}
 
         {/* 分享区域 */}
         <View style={styles.shareSection}>
           <Text style={styles.shareTitle}>分享任务</Text>
-          <Text style={styles.shareDescription}>
-            分享给朋友或社交媒体，让更多人看到您的需求
-          </Text>
+          <Text style={styles.shareDescription}>分享给朋友或社交媒体，让更多人看到您的需求</Text>
 
           {/* 分享按钮组 */}
           <View style={styles.shareButtons}>
@@ -141,9 +128,7 @@ export const PublishSuccessScreen: React.FC = () => {
             </View>
             <View style={styles.nextStepContent}>
               <Text style={styles.nextStepTitle}>查看发布历史</Text>
-              <Text style={styles.nextStepDescription}>
-                查看所有已发布的任务状态和进展
-              </Text>
+              <Text style={styles.nextStepDescription}>查看所有已发布的任务状态和进展</Text>
             </View>
             <Text style={styles.nextStepArrow}>›</Text>
           </TouchableOpacity>
@@ -158,9 +143,7 @@ export const PublishSuccessScreen: React.FC = () => {
             </View>
             <View style={styles.nextStepContent}>
               <Text style={styles.nextStepTitle}>返回首页</Text>
-              <Text style={styles.nextStepDescription}>
-                浏览更多功能和服务
-              </Text>
+              <Text style={styles.nextStepDescription}>浏览更多功能和服务</Text>
             </View>
             <Text style={styles.nextStepArrow}>›</Text>
           </TouchableOpacity>
@@ -170,21 +153,15 @@ export const PublishSuccessScreen: React.FC = () => {
         <View style={styles.tipsContainer}>
           <Text style={styles.tipsTitle}>💡 温馨提示</Text>
           <Text style={styles.tipsText}>
-            • 任务发布后，服务提供者会主动联系您{'\n'}
-            • 建议保持手机畅通，及时查看消息通知{'\n'}
-            • 可以在"发布历史"中随时取消或编辑任务{'\n'}
-            • 任务过期后会自动关闭，请注意有效期
+            • 任务发布后，服务提供者会主动联系您{'\n'}• 建议保持手机畅通，及时查看消息通知{'\n'}•
+            可以在&quot;发布历史&quot;中随时取消或编辑任务{'\n'}• 任务过期后会自动关闭，请注意有效期
           </Text>
         </View>
       </ScrollView>
 
       {/* 底部按钮 */}
       <View style={styles.bottomContainer}>
-        <TouchableOpacity
-          style={styles.doneButton}
-          onPress={handleGoHome}
-          testID="done-button"
-        >
+        <TouchableOpacity style={styles.doneButton} onPress={handleGoHome} testID="done-button">
           <Text style={styles.doneButtonText}>完成</Text>
         </TouchableOpacity>
       </View>

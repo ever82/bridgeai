@@ -62,6 +62,84 @@ export interface ShareResponse {
   data?: { shareLink: string };
 }
 
+export interface NearbyTasksResponse {
+  success: boolean;
+  data: {
+    tasks: VisionShareTask[];
+    total: number;
+    page: number;
+    limit: number;
+  };
+}
+
+export interface TaskTimelineResponse {
+  success: boolean;
+  data: {
+    timeline: {
+      date: string;
+      tasks: VisionShareTask[];
+    }[];
+    total: number;
+  };
+}
+
+export interface SmartAlbumsResponse {
+  success: boolean;
+  data: {
+    albums: {
+      id: string;
+      name: string;
+      description?: string;
+      type: 'auto_ai' | 'location' | 'time' | 'scene' | 'custom';
+      photoCount: number;
+      coverPhotoId?: string;
+      createdAt: string;
+      metadata: {
+        dateRange?: { start: string; end: string };
+        location?: { lat: number; lng: number; name: string };
+        dominantScenes?: string[];
+        dominantTags?: string[];
+      };
+    }[];
+  };
+}
+
+export interface SearchResponse {
+  success: boolean;
+  data: {
+    results: {
+      id: string;
+      url: string;
+      thumbnailUrl: string;
+      title: string;
+      description: string;
+      tags: string[];
+      confidence: number;
+      matchedTerms: string[];
+    }[];
+    total: number;
+  };
+}
+
+export interface AnalyzeImageResponse {
+  success: boolean;
+  data: {
+    detections: {
+      id: string;
+      type: string;
+      boundingBox: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      confidence: number;
+      method?: string;
+      intensity?: number;
+    }[];
+  };
+}
+
 export const visionShareApi = {
   /**
    * Create a draft task
@@ -133,6 +211,89 @@ export const visionShareApi = {
   },
 
   /**
+   * Get nearby tasks
+   */
+  getNearbyTasks: async (options?: {
+    latitude?: number;
+    longitude?: number;
+    distanceKm?: number;
+    limit?: number;
+    offset?: number;
+  }): Promise<NearbyTasksResponse> => {
+    const params = new URLSearchParams();
+    if (options?.latitude) params.append('latitude', options.latitude.toString());
+    if (options?.longitude) params.append('longitude', options.longitude.toString());
+    if (options?.distanceKm) params.append('distance_km', options.distanceKm.toString());
+    if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.offset) params.append('offset', options.offset.toString());
+
+    const response = await api.get<NearbyTasksResponse>(
+      `/visionshare/tasks/nearby?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  /**
+   * Get task timeline
+   */
+  getTaskTimeline: async (options?: {
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+  }): Promise<TaskTimelineResponse> => {
+    const params = new URLSearchParams();
+    if (options?.status) params.append('status', options.status);
+    if (options?.startDate) params.append('start_date', options.startDate);
+    if (options?.endDate) params.append('end_date', options.endDate);
+    if (options?.limit) params.append('limit', options.limit.toString());
+
+    const response = await api.get<TaskTimelineResponse>(
+      `/visionshare/tasks/timeline?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  /**
+   * Get smart albums
+   */
+  getSmartAlbums: async (options?: {
+    type?: string;
+    limit?: number;
+  }): Promise<SmartAlbumsResponse> => {
+    const params = new URLSearchParams();
+    if (options?.type) params.append('type', options.type);
+    if (options?.limit) params.append('limit', options.limit.toString());
+
+    const response = await api.get<SmartAlbumsResponse>(`/visionshare/albums?${params.toString()}`);
+    return response.data;
+  },
+
+  /**
+   * Search photos
+   */
+  searchPhotos: async (options: {
+    query: string;
+    favoritesOnly?: boolean;
+    dateRange?: { start: string; end: string };
+    tags?: string[];
+    limit?: number;
+  }): Promise<SearchResponse> => {
+    const params = new URLSearchParams();
+    params.append('query', options.query);
+    if (options.favoritesOnly) params.append('favorites_only', 'true');
+    if (options.dateRange) {
+      params.append('start_date', options.dateRange.start);
+      params.append('end_date', options.dateRange.end);
+    }
+    if (options.tags?.length) params.append('tags', options.tags.join(','));
+    if (options.limit) params.append('limit', options.limit.toString());
+
+    const response = await api.get<SearchResponse>(`/visionshare/search?${params.toString()}`);
+    return response.data;
+  },
+
+  /**
    * Validate publish eligibility
    */
   validatePublish: async (data: {
@@ -168,6 +329,16 @@ export const visionShareApi = {
   analyzeDescription: async (description: string): Promise<RefinementResponse> => {
     const response = await api.post<RefinementResponse>('/visionshare/analyze-description', {
       description,
+    });
+    return response.data;
+  },
+
+  /**
+   * Analyze image for sensitive content detection
+   */
+  analyzeImage: async (imageUri: string): Promise<AnalyzeImageResponse> => {
+    const response = await api.post<AnalyzeImageResponse>('/visionshare/analyze-image', {
+      imageUri,
     });
     return response.data;
   },

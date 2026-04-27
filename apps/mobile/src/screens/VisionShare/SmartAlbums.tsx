@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { theme } from '../../theme';
+import { visionShareApi } from '../../services/api/visionShare';
 
 interface SmartAlbum {
   id: string;
@@ -48,83 +49,40 @@ export const SmartAlbumsScreen = () => {
   const loadAlbums = async () => {
     setIsLoading(true);
 
-    // TODO: Load from API
-    const mockAlbums: SmartAlbum[] = [
-      {
-        id: '1',
-        name: 'Summer Vacation 2024',
-        description: 'AI-generated album from your summer trip',
-        type: 'auto_ai',
-        photoCount: 156,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-        metadata: {
-          dateRange: {
-            start: new Date('2024-07-01'),
-            end: new Date('2024-08-15'),
-          },
-          dominantScenes: ['beach', 'mountain', 'city'],
-          dominantTags: ['vacation', 'travel', 'family'],
-        },
-      },
-      {
-        id: '2',
-        name: 'Paris Trip',
-        description: 'Photos from Paris, France',
-        type: 'location',
-        photoCount: 89,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
-        metadata: {
-          location: { lat: 48.8566, lng: 2.3522, name: 'Paris, France' },
-          dominantScenes: ['landmark', 'architecture', 'street'],
-        },
-      },
-      {
-        id: '3',
-        name: 'December 2024',
-        description: 'All photos from December 2024',
-        type: 'time',
-        photoCount: 234,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15),
-        metadata: {
-          dateRange: {
-            start: new Date('2024-12-01'),
-            end: new Date('2024-12-31'),
-          },
-          dominantScenes: ['holiday', 'winter', 'indoor'],
-        },
-      },
-      {
-        id: '4',
-        name: 'Wedding Photos',
-        description: 'Scene-based collection',
-        type: 'scene',
-        photoCount: 312,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60),
-        metadata: {
-          dominantScenes: ['wedding', 'celebration', 'people'],
-          dominantTags: ['wedding', 'party', 'formal'],
-        },
-      },
-      {
-        id: '5',
-        name: 'My Favorites',
-        description: 'Custom collection',
-        type: 'custom',
-        photoCount: 45,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 100),
-        metadata: {
-          dominantTags: ['favorite', 'best'],
-        },
-      },
-    ];
+    try {
+      const response = await visionShareApi.getSmartAlbums({
+        type: selectedType || undefined,
+        limit: 50,
+      });
 
-    // Filter by type if selected
-    const filtered = selectedType
-      ? mockAlbums.filter(a => a.type === selectedType)
-      : mockAlbums;
+      // Transform API response to SmartAlbum format
+      const albums: SmartAlbum[] = response.data.albums.map(album => ({
+        id: album.id,
+        name: album.name,
+        description: album.description,
+        type: album.type,
+        photoCount: album.photoCount,
+        coverPhotoId: album.coverPhotoId,
+        createdAt: new Date(album.createdAt),
+        metadata: {
+          dateRange: album.metadata.dateRange
+            ? {
+                start: new Date(album.metadata.dateRange.start),
+                end: new Date(album.metadata.dateRange.end),
+              }
+            : undefined,
+          location: album.metadata.location,
+          dominantScenes: album.metadata.dominantScenes,
+          dominantTags: album.metadata.dominantTags,
+        },
+      }));
 
-    setAlbums(filtered);
-    setIsLoading(false);
+      setAlbums(albums);
+    } catch (err) {
+      console.error('Failed to load albums', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getTypeIcon = (type: string): string => {
@@ -205,10 +163,7 @@ export const SmartAlbumsScreen = () => {
   const albumTypes = ['all', 'auto_ai', 'location', 'time', 'scene', 'custom'];
 
   const renderAlbumItem = ({ item: album }: { item: SmartAlbum }) => (
-    <TouchableOpacity
-      style={styles.albumCard}
-      onPress={() => handleAlbumPress(album)}
-    >
+    <TouchableOpacity style={styles.albumCard} onPress={() => handleAlbumPress(album)}>
       <View style={styles.albumCover}>
         <View
           style={[
@@ -217,12 +172,7 @@ export const SmartAlbumsScreen = () => {
           ]}
         >
           <Text style={styles.albumCoverIcon}>{getTypeIcon(album.type)}</Text>
-          <View
-            style={[
-              styles.typeBadge,
-              { backgroundColor: getTypeColor(album.type) },
-            ]}
-          >
+          <View style={[styles.typeBadge, { backgroundColor: getTypeColor(album.type) }]}>
             <Text style={styles.typeBadgeText}>{getTypeLabel(album.type)}</Text>
           </View>
         </View>
@@ -252,19 +202,9 @@ export const SmartAlbumsScreen = () => {
               {album.metadata.dominantScenes.slice(0, 3).map((scene, index) => (
                 <View
                   key={index}
-                  style={[
-                    styles.tagBadge,
-                    { backgroundColor: getTypeColor(album.type) + '20' },
-                  ]}
+                  style={[styles.tagBadge, { backgroundColor: getTypeColor(album.type) + '20' }]}
                 >
-                  <Text
-                    style={[
-                      styles.tagText,
-                      { color: getTypeColor(album.type) },
-                    ]}
-                  >
-                    {scene}
-                  </Text>
+                  <Text style={[styles.tagText, { color: getTypeColor(album.type) }]}>{scene}</Text>
                 </View>
               ))}
             </View>
@@ -277,17 +217,11 @@ export const SmartAlbumsScreen = () => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Smart Albums</Text>
-        <TouchableOpacity
-          onPress={() => setShowCreateModal(true)}
-          style={styles.addButton}
-        >
+        <TouchableOpacity onPress={() => setShowCreateModal(true)} style={styles.addButton}>
           <Text style={styles.addIcon}>+</Text>
         </TouchableOpacity>
       </View>
@@ -308,9 +242,7 @@ export const SmartAlbumsScreen = () => {
             ]}
             onPress={() => setSelectedType(type === 'all' ? null : type)}
           >
-            {type !== 'all' && (
-              <Text style={styles.filterChipIcon}>{getTypeIcon(type)}</Text>
-            )}
+            {type !== 'all' && <Text style={styles.filterChipIcon}>{getTypeIcon(type)}</Text>}
             <Text
               style={[
                 styles.filterChipText,
@@ -339,9 +271,7 @@ export const SmartAlbumsScreen = () => {
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>📁</Text>
               <Text style={styles.emptyTitle}>No albums yet</Text>
-              <Text style={styles.emptyText}>
-                Create your first album to get started
-              </Text>
+              <Text style={styles.emptyText}>Create your first album to get started</Text>
             </View>
           }
         />
@@ -377,10 +307,7 @@ export const SmartAlbumsScreen = () => {
               multiline
               numberOfLines={3}
             />
-            <TouchableOpacity
-              style={styles.createButton}
-              onPress={handleCreateAlbum}
-            >
+            <TouchableOpacity style={styles.createButton} onPress={handleCreateAlbum}>
               <Text style={styles.createButtonText}>Create Album</Text>
             </TouchableOpacity>
           </View>

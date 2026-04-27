@@ -18,11 +18,7 @@ import {
   GeoCoordinates,
 } from '@bridgeai/shared';
 
-interface TaskSection {
-  title: string;
-  status: TaskStatus;
-  data: Task[];
-}
+import { visionShareApi } from '../../services/api/visionShare';
 
 const TABS: { key: TaskStatus | 'all'; label: string }[] = [
   { key: 'all', label: '全部' },
@@ -53,110 +49,18 @@ export const MyTasksScreen: React.FC = () => {
     try {
       setLoading(true);
 
-      // In production, call API
-      // const response = await api.get('/visionShare/tasks/my-tasks');
+      const response = await visionShareApi.getUserTasks();
 
-      // Mock data for development
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const mockTasks: Task[] = [
-        {
-          id: 'task-101',
-          title: '商业摄影拍摄',
-          description: '需要专业摄影师拍摄产品照片',
-          type: 'photography',
-          status: 'accepted',
-          priority: 'high',
-          publisherId: 'user-001',
-          publisherName: '张三',
-          publisherCreditScore: 85,
-          location: {
-            province: '440000',
-            provinceName: '广东省',
-            city: '440300',
-            cityName: '深圳市',
-          },
-          coordinates: { latitude: 22.5431, longitude: 114.0579 },
-          address: '深圳市南山区科技园',
-          budgetMin: 1000,
-          budgetMax: 2000,
-          currency: 'CNY',
-          publishTime: new Date(),
-          acceptedAt: new Date(),
-          viewCount: 45,
-          inquiryCount: 3,
-          applicationCount: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 'task-102',
-          title: '短视频拍摄剪辑',
-          description: '需要拍摄并剪辑宣传短视频',
-          type: 'video',
-          status: 'in_progress',
-          priority: 'urgent',
-          publisherId: 'user-002',
-          publisherName: '李四',
-          publisherCreditScore: 92,
-          location: {
-            province: '440000',
-            provinceName: '广东省',
-            city: '440300',
-            cityName: '深圳市',
-          },
-          coordinates: { latitude: 22.5485, longitude: 114.1315 },
-          address: '深圳市罗湖区万象城',
-          budgetMin: 3000,
-          budgetMax: 5000,
-          currency: 'CNY',
-          publishTime: new Date(),
-          acceptedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          startedAt: new Date(),
-          viewCount: 28,
-          inquiryCount: 5,
-          applicationCount: 2,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 'task-103',
-          title: 'Logo设计',
-          description: '为新创公司设计Logo',
-          type: 'design',
-          status: 'completed',
-          priority: 'normal',
-          publisherId: 'user-003',
-          publisherName: '王五',
-          publisherCreditScore: 78,
-          location: {
-            province: '440000',
-            provinceName: '广东省',
-            city: '440300',
-            cityName: '深圳市',
-          },
-          coordinates: { latitude: 22.5431, longitude: 114.0579 },
-          address: '深圳市福田区CBD',
-          budgetMin: 800,
-          budgetMax: 1500,
-          currency: 'CNY',
-          publishTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-          acceptedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-          startedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-          viewCount: 67,
-          inquiryCount: 8,
-          applicationCount: 4,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
-
-      setTasks(mockTasks);
+      const fetchedTasks = response.data.tasks as Task[];
+      setTasks(fetchedTasks);
       setStats({
-        totalAccepted: 3,
-        totalCompleted: 1,
-        totalEarned: 1500,
+        totalAccepted: fetchedTasks.filter(
+          t => t.status === 'accepted' || t.status === 'in_progress'
+        ).length,
+        totalCompleted: fetchedTasks.filter(t => t.status === 'completed').length,
+        totalEarned: fetchedTasks
+          .filter(t => t.status === 'completed')
+          .reduce((sum, t) => sum + (t.budgetMin || 0), 0),
       });
     } catch (err) {
       console.error('Failed to fetch tasks', err);
@@ -175,9 +79,12 @@ export const MyTasksScreen: React.FC = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  const handleTaskPress = useCallback((taskId: string) => {
-    navigation.navigate('TaskDetail', { taskId });
-  }, [navigation]);
+  const handleTaskPress = useCallback(
+    (taskId: string) => {
+      navigation.navigate('TaskDetail', { taskId });
+    },
+    [navigation]
+  );
 
   const handleStartTask = useCallback((taskId: string) => {
     // In production, call API to start task
@@ -189,81 +96,76 @@ export const MyTasksScreen: React.FC = () => {
     console.log('Complete task:', taskId);
   }, []);
 
-  const filteredTasks = activeTab === 'all'
-    ? tasks
-    : tasks.filter((task) => task.status === activeTab);
+  const filteredTasks =
+    activeTab === 'all' ? tasks : tasks.filter(task => task.status === activeTab);
 
-  const renderTaskItem = useCallback(({ item }: { item: Task }) => {
-    const { distanceKm } = calculateDistance(userLocation, item.coordinates);
-    const typeLabel = TASK_TYPE_LABELS[item.type]?.zh || item.type;
-    const statusLabel = TASK_STATUS_LABELS[item.status]?.zh || item.status;
+  const renderTaskItem = useCallback(
+    ({ item }: { item: Task }) => {
+      const { distanceKm } = calculateDistance(userLocation, item.coordinates);
+      const typeLabel = TASK_TYPE_LABELS[item.type]?.zh || item.type;
+      const statusLabel = TASK_STATUS_LABELS[item.status]?.zh || item.status;
 
-    return (
-      <TouchableOpacity
-        style={styles.taskCard}
-        onPress={() => handleTaskPress(item.id)}
-        activeOpacity={0.8}
-      >
-        {/* Header */}
-        <View style={styles.taskHeader}>
-          <View style={styles.taskTypeBadge}>
-            <Text style={styles.taskTypeText}>{typeLabel}</Text>
+      return (
+        <TouchableOpacity
+          style={styles.taskCard}
+          onPress={() => handleTaskPress(item.id)}
+          activeOpacity={0.8}
+        >
+          {/* Header */}
+          <View style={styles.taskHeader}>
+            <View style={styles.taskTypeBadge}>
+              <Text style={styles.taskTypeText}>{typeLabel}</Text>
+            </View>
+            <View
+              style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}
+            >
+              <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+                {statusLabel}
+              </Text>
+            </View>
           </View>
-          <View style={[
-            styles.statusBadge,
-            { backgroundColor: getStatusColor(item.status) + '20' }
-          ]}>
-            <Text style={[
-              styles.statusText,
-              { color: getStatusColor(item.status) }
-            ]}>
-              {statusLabel}
-            </Text>
+
+          {/* Title */}
+          <Text style={styles.taskTitle}>{item.title}</Text>
+
+          {/* Info */}
+          <View style={styles.taskInfo}>
+            <Text style={styles.taskBudget}>¥{item.budgetMax}</Text>
+            <Text style={styles.taskDistance}>{distanceKm.toFixed(1)}km</Text>
           </View>
-        </View>
 
-        {/* Title */}
-        <Text style={styles.taskTitle}>{item.title}</Text>
-
-        {/* Info */}
-        <View style={styles.taskInfo}>
-          <Text style={styles.taskBudget}>¥{item.budgetMax}</Text>
-          <Text style={styles.taskDistance}>{distanceKm.toFixed(1)}km</Text>
-        </View>
-
-        {/* Publisher */}
-        <View style={styles.publisherRow}>
-          <Text style={styles.publisherName}>{item.publisherName}</Text>
-          <Text style={styles.publisherCredit}>信用 {item.publisherCreditScore}</Text>
-        </View>
-
-        {/* Action Buttons */}
-        {item.status === 'accepted' && (
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleStartTask(item.id)}
-          >
-            <Text style={styles.actionButtonText}>开始任务</Text>
-          </TouchableOpacity>
-        )}
-
-        {item.status === 'in_progress' && (
-          <TouchableOpacity
-            style={[styles.actionButton, styles.completeButton]}
-            onPress={() => handleCompleteTask(item.id)}
-          >
-            <Text style={styles.actionButtonText}>完成任务</Text>
-          </TouchableOpacity>
-        )}
-
-        {item.status === 'completed' && (
-          <View style={styles.completedBadge}>
-            <Text style={styles.completedText}>已完成</Text>
+          {/* Publisher */}
+          <View style={styles.publisherRow}>
+            <Text style={styles.publisherName}>{item.publisherName}</Text>
+            <Text style={styles.publisherCredit}>信用 {item.publisherCreditScore}</Text>
           </View>
-        )}
-      </TouchableOpacity>
-    );
-  }, [handleTaskPress, handleStartTask, handleCompleteTask]);
+
+          {/* Action Buttons */}
+          {item.status === 'accepted' && (
+            <TouchableOpacity style={styles.actionButton} onPress={() => handleStartTask(item.id)}>
+              <Text style={styles.actionButtonText}>开始任务</Text>
+            </TouchableOpacity>
+          )}
+
+          {item.status === 'in_progress' && (
+            <TouchableOpacity
+              style={[styles.actionButton, styles.completeButton]}
+              onPress={() => handleCompleteTask(item.id)}
+            >
+              <Text style={styles.actionButtonText}>完成任务</Text>
+            </TouchableOpacity>
+          )}
+
+          {item.status === 'completed' && (
+            <View style={styles.completedBadge}>
+              <Text style={styles.completedText}>已完成</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      );
+    },
+    [handleTaskPress, handleStartTask, handleCompleteTask]
+  );
 
   const getStatusColor = (status: TaskStatus): string => {
     switch (status) {
@@ -304,18 +206,13 @@ export const MyTasksScreen: React.FC = () => {
 
       {/* Tabs */}
       <View style={styles.tabContainer}>
-        {TABS.map((tab) => (
+        {TABS.map(tab => (
           <TouchableOpacity
             key={tab.key}
             style={[styles.tab, activeTab === tab.key && styles.tabActive]}
             onPress={() => setActiveTab(tab.key)}
           >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === tab.key && styles.tabTextActive,
-              ]}
-            >
+            <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>
               {tab.label}
             </Text>
           </TouchableOpacity>
@@ -331,10 +228,8 @@ export const MyTasksScreen: React.FC = () => {
         <FlatList
           data={filteredTasks}
           renderItem={renderTaskItem}
-          keyExtractor={(item) => item.id}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
+          keyExtractor={item => item.id}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>

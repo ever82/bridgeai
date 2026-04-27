@@ -3,7 +3,7 @@
  * Type definitions for photo viewer components
  */
 
-import { Photo, PhotoMetadata } from '../../../shared/types/photo.types';
+import { Photo, PhotoMetadata } from '@bridgeai/shared';
 
 /** Photo thumbnail grid props */
 export interface PhotoGridProps {

@@ -6,13 +6,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Image,
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { theme } from '../../theme';
+import { visionShareApi } from '../../services/api/visionShare';
 
 interface SearchResult {
   id: string;
@@ -39,7 +39,6 @@ export const SearchAlbumScreen = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
     favoritesOnly: false,
@@ -53,13 +52,14 @@ export const SearchAlbumScreen = () => {
   }, []);
 
   const loadSearchHistory = async () => {
-    // TODO: Load from API
-    const mockHistory: SearchHistoryItem[] = [
-      { id: '1', query: 'beach sunset', timestamp: new Date(), resultCount: 24 },
-      { id: '2', query: 'family photos', timestamp: new Date(), resultCount: 18 },
-      { id: '3', query: 'birthday party', timestamp: new Date(), resultCount: 32 },
-    ];
-    setSearchHistory(mockHistory);
+    try {
+      // TODO(ISSUE-VS005a): Load search history from API
+      // Required API: GET /api/v1/vs/search/history
+      // For now, we'll keep local storage for search history
+      // The history will be managed locally for this version
+    } catch (err) {
+      console.error('Failed to load search history', err);
+    }
   };
 
   const handleSearch = useCallback(async () => {
@@ -67,43 +67,35 @@ export const SearchAlbumScreen = () => {
 
     setIsSearching(true);
 
-    // TODO: Call API to search
-    // Mock results for now
-    const mockResults: SearchResult[] = [
-      {
-        id: '1',
-        url: 'https://example.com/photo1.jpg',
-        thumbnailUrl: 'https://example.com/thumb1.jpg',
-        title: 'Sunset at the Beach',
-        description: 'Beautiful sunset captured at the beach during summer vacation',
-        tags: ['sunset', 'beach', 'summer', 'vacation'],
-        confidence: 0.95,
-        matchedTerms: ['beach', 'sunset'],
-      },
-      {
-        id: '2',
-        url: 'https://example.com/photo2.jpg',
-        thumbnailUrl: 'https://example.com/thumb2.jpg',
-        title: 'Family Beach Day',
-        description: 'Family enjoying a sunny day at the beach',
-        tags: ['family', 'beach', 'summer', 'fun'],
-        confidence: 0.88,
-        matchedTerms: ['beach'],
-      },
-    ];
+    try {
+      const response = await visionShareApi.searchPhotos({
+        query,
+        favoritesOnly: activeFilters.favoritesOnly,
+        dateRange: activeFilters.dateRange
+          ? {
+              start: activeFilters.dateRange.start.toISOString(),
+              end: activeFilters.dateRange.end.toISOString(),
+            }
+          : undefined,
+        tags: activeFilters.tags,
+        limit: 50,
+      });
 
-    setTimeout(() => {
-      setResults(mockResults);
-      setIsSearching(false);
+      setResults(response.data.results);
       // Save to history
       const newHistoryItem: SearchHistoryItem = {
         id: Date.now().toString(),
         query,
         timestamp: new Date(),
-        resultCount: mockResults.length,
+        resultCount: response.data.total,
       };
       setSearchHistory(prev => [newHistoryItem, ...prev.slice(0, 9)]);
-    }, 500);
+    } catch (err) {
+      console.error('Search failed', err);
+      setResults([]);
+    } finally {
+      setIsSearching(false);
+    }
   }, [query, activeFilters]);
 
   const handleSuggestionPress = (suggestion: string) => {
@@ -149,18 +141,13 @@ export const SearchAlbumScreen = () => {
             </View>
           ))}
         </View>
-        <Text style={styles.matchedTerms}>
-          Matched: {item.matchedTerms.join(', ')}
-        </Text>
+        <Text style={styles.matchedTerms}>Matched: {item.matchedTerms.join(', ')}</Text>
       </View>
     </TouchableOpacity>
   );
 
   const renderHistoryItem = ({ item }: { item: SearchHistoryItem }) => (
-    <TouchableOpacity
-      style={styles.historyItem}
-      onPress={() => handleHistoryItemPress(item)}
-    >
+    <TouchableOpacity style={styles.historyItem} onPress={() => handleHistoryItemPress(item)}>
       <Text style={styles.historyIcon}>🕐</Text>
       <View style={styles.historyContent}>
         <Text style={styles.historyQuery}>{item.query}</Text>
@@ -177,7 +164,7 @@ export const SearchAlbumScreen = () => {
       <Text style={styles.emptyIcon}>🔍</Text>
       <Text style={styles.emptyTitle}>Search Your Photos</Text>
       <Text style={styles.emptyText}>
-        Describe what you're looking for in natural language
+        Describe what you&apos;re looking for in natural language
       </Text>
       <View style={styles.suggestionsContainer}>
         <Text style={styles.suggestionsTitle}>Try searching for:</Text>
@@ -199,10 +186,7 @@ export const SearchAlbumScreen = () => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
         <View style={styles.searchInputContainer}>
@@ -230,16 +214,15 @@ export const SearchAlbumScreen = () => {
       {showFilters && (
         <View style={styles.filterPanel}>
           <TouchableOpacity
-            style={[
-              styles.filterChip,
-              activeFilters.favoritesOnly && styles.filterChipActive,
-            ]}
+            style={[styles.filterChip, activeFilters.favoritesOnly && styles.filterChipActive]}
             onPress={toggleFavoriteFilter}
           >
-            <Text style={[
-              styles.filterChipText,
-              activeFilters.favoritesOnly && styles.filterChipTextActive,
-            ]}>
+            <Text
+              style={[
+                styles.filterChipText,
+                activeFilters.favoritesOnly && styles.filterChipTextActive,
+              ]}
+            >
               ⭐ Favorites Only
             </Text>
           </TouchableOpacity>
@@ -284,9 +267,7 @@ export const SearchAlbumScreen = () => {
         <View style={styles.noResultsContainer}>
           <Text style={styles.noResultsIcon}>😕</Text>
           <Text style={styles.noResultsTitle}>No results found</Text>
-          <Text style={styles.noResultsText}>
-            Try different keywords or check your filters
-          </Text>
+          <Text style={styles.noResultsText}>Try different keywords or check your filters</Text>
         </View>
       )}
     </View>

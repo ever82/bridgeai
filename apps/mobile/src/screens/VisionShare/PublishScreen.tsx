@@ -4,15 +4,7 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type {
@@ -76,60 +68,65 @@ export const PublishScreen: React.FC = () => {
   };
 
   // 处理表单提交
-  const handleSubmit = useCallback(async (data: VisionSharePublishFormData) => {
-    // 检查发布限制
-    if (publishLimits && !publishLimits.canPublish) {
-      Alert.alert(
-        '发布限制',
-        `今日发布数量已达上限(${publishLimits.dailyLimit}个)，请明天再试`,
-        [{ text: '确定' }]
-      );
-      return;
-    }
-
-    // 执行验证
-    const validation = await validatePublish(data);
-
-    if (validation && !validation.valid) {
-      const errors: string[] = [];
-      if (!validation.creditCheck.passed) {
-        errors.push(`信用分不足（当前${validation.creditCheck.score}分，需要${validation.creditCheck.requiredScore}分）`);
-      }
-      if (!validation.balanceCheck.passed) {
-        errors.push(`积分余额不足（当前${validation.balanceCheck.balance}，需要${validation.balanceCheck.required}）`);
-      }
-      if (!validation.limitCheck.passed) {
-        errors.push(`今日发布数量已达上限`);
-      }
-      if (!validation.contentCheck.passed) {
-        errors.push(...validation.contentCheck.issues);
-      }
-      if (!validation.locationCheck.passed) {
-        errors.push(validation.locationCheck.reason || '位置信息有误');
-      }
-
-      if (errors.length > 0) {
-        Alert.alert('发布验证失败', errors.join('\n'), [{ text: '确定' }]);
+  const handleSubmit = useCallback(
+    async (data: VisionSharePublishFormData) => {
+      // 检查发布限制
+      if (publishLimits && !publishLimits.canPublish) {
+        Alert.alert('发布限制', `今日发布数量已达上限(${publishLimits.dailyLimit}个)，请明天再试`, [
+          { text: '确定' },
+        ]);
         return;
       }
-    }
 
-    // 确认发布
-    Alert.alert(
-      '确认发布',
-      '确定要发布这个VisionShare任务吗？发布后将在平台上展示并寻找匹配的服务提供者。',
-      [
-        { text: '取消', style: 'cancel' },
-        {
-          text: '确认发布',
-          style: 'default',
-          onPress: async () => {
-            await submitTask(data);
+      // 执行验证
+      const validation = await validatePublish(data);
+
+      if (validation && !validation.valid) {
+        const errors: string[] = [];
+        if (!validation.creditCheck.passed) {
+          errors.push(
+            `信用分不足（当前${validation.creditCheck.score}分，需要${validation.creditCheck.requiredScore}分）`
+          );
+        }
+        if (!validation.balanceCheck.passed) {
+          errors.push(
+            `积分余额不足（当前${validation.balanceCheck.balance}，需要${validation.balanceCheck.required}）`
+          );
+        }
+        if (!validation.limitCheck.passed) {
+          errors.push(`今日发布数量已达上限`);
+        }
+        if (!validation.contentCheck.passed) {
+          errors.push(...validation.contentCheck.issues);
+        }
+        if (!validation.locationCheck.passed) {
+          errors.push(validation.locationCheck.reason || '位置信息有误');
+        }
+
+        if (errors.length > 0) {
+          Alert.alert('发布验证失败', errors.join('\n'), [{ text: '确定' }]);
+          return;
+        }
+      }
+
+      // 确认发布
+      Alert.alert(
+        '确认发布',
+        '确定要发布这个VisionShare任务吗？发布后将在平台上展示并寻找匹配的服务提供者。',
+        [
+          { text: '取消', style: 'cancel' },
+          {
+            text: '确认发布',
+            style: 'default',
+            onPress: async () => {
+              await submitTask(data);
+            },
           },
-        },
-      ]
-    );
-  }, [publishLimits]);
+        ]
+      );
+    },
+    [publishLimits]
+  );
 
   // 提交任务
   const submitTask = async (data: VisionSharePublishFormData) => {

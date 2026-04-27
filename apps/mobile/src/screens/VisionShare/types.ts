@@ -3,8 +3,8 @@
  * Type definitions for VisionShare screens
  */
 
-import { Photo, PhotoFilter, GalleryConfig } from '../../../shared/types/photo.types';
-import { PaymentTransaction, CreditBalance } from '../../../shared/types/payment.types';
+import { Photo, PhotoFilter, GalleryConfig } from '@bridgeai/shared';
+import { PaymentTransaction, CreditBalance } from '@bridgeai/shared';
 
 /** Photo gallery screen props */
 export interface PhotoGalleryProps {
