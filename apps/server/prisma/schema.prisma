@@ -67,7 +67,10 @@ model User {
   couponRatings   CouponRating[]
   offlineMessages  OfflineMessage[]
   readReceipts     ReadReceipt[]
+  chatReadReceipts ChatReadReceipt[]
   datingProfiles   DatingProfile[]
+  webPushSubscriptions WebPushSubscription[]
+  photos           Photo[]
 
   @@map("users")
 }
@@ -1890,4 +1893,42 @@ model DatingProfile {
   @@index([isActive])
   @@index([isComplete])
   @@map("dating_profiles")
+}
+
+// ============================================
+// 照片存储 (Photo Storage)
+// ============================================
+
+model Photo {
+  id            String   @id @default(uuid())
+  originalName  String   @map("original_name")
+  url           String
+  thumbnailUrl  String   @map("thumbnail_url")
+  size          Int
+  width         Int
+  height        Int
+  format        String
+  mimeType      String   @map("mime_type")
+  hash          String
+  userId        String   @map("user_id")
+  taskId        String?  @map("task_id")
+  tags          String[] @default([])
+  description   String?
+  latitude      Float?
+  longitude     Float?
+  device        Json?
+  exif          Json?
+  storageTier   String   @default("hot") @map("storage_tier")
+  accessCount   Int      @default(0) @map("access_count")
+  lastAccessed  DateTime @default(now()) @map("last_accessed")
+  expiresAt     DateTime? @map("expires_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([taskId])
+  @@index([createdAt])
+  @@map("photos")
 }

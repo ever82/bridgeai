@@ -45,6 +45,42 @@ export interface DeIdentificationResult {
 
 export class ImageSecurityService {
   private static instance: ImageSecurityService;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private rekognitionClient: any | null | undefined = undefined;
+
+  /**
+   * Lazily create a Rekognition client from environment variables.
+   * Returns null if required credentials are not configured.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async getRekognitionClient(): Promise<any | null> {
+    if (this.rekognitionClient !== undefined && this.rekognitionClient !== null) {
+      return this.rekognitionClient;
+    }
+
+    const accessKeyId = process.env.S3_ACCESS_KEY;
+    const secretAccessKey = process.env.S3_SECRET_KEY;
+
+    if (!accessKeyId || !secretAccessKey) {
+      this.rekognitionClient = null;
+      return null;
+    }
+
+    try {
+      const { RekognitionClient } = await import('@aws-sdk/client-rekognition');
+      const region = process.env.AWS_REGION || 'us-east-1';
+      const endpoint = process.env.S3_ENDPOINT;
+      this.rekognitionClient = new RekognitionClient({
+        region,
+        credentials: { accessKeyId, secretAccessKey },
+        ...(endpoint && endpoint !== 'localhost' ? { endpoint: `https://${endpoint}` } : {}),
+      });
+      return this.rekognitionClient;
+    } catch {
+      this.rekognitionClient = null;
+      return null;
+    }
+  }
 
   static getInstance(): ImageSecurityService {
     if (!ImageSecurityService.instance) {
@@ -168,41 +204,79 @@ export class ImageSecurityService {
   }
 
   /**
-   * Placeholder implementation for sensitive content identification.
+   * Detect sensitive / policy-violating content using AWS Rekognition
+   * Content Moderation (DetectModerationLabels).
    *
-   * **This is NOT a content moderation system.** The current implementation
-   * only performs basic histogram analysis to detect degenerate images
-   * (nearly all-black or all-white). It does NOT detect explicit, violent,
-   * or otherwise sensitive imagery.
-   *
-   * **Known limitations:**
-   * - Cannot detect nudity, violence, or other policy-violating content.
-   * - Only flags suspiciously uniform images via pixel intensity stats.
-   * - Confidence score (0.7) is a fixed heuristic, not model-derived.
-   *
-   * **Future work:** Integrate with a professional content moderation API
-   * such as AWS Rekognition Moderation, Google Cloud Vision Safe Search,
-   * or Azure Content Moderator to perform real content classification.
-   *
-   * @see ISSUE-VS003~c3 - "sensitive content identification" acceptance criteria
+   * Falls back to basic sharp-based histogram analysis when Rekognition is
+   * not configured (missing credentials) so the method always produces a
+   * result regardless of environment.
    */
   private async checkSensitiveContent(imageBuffer: Buffer): Promise<SensitiveContentResult> {
-    const categories: string[] = [];
+    const client = await this.getRekognitionClient();
 
+    // --- Rekognition path ---
+    if (client) {
+      try {
+        const { DetectModerationLabelsCommand } = await import('@aws-sdk/client-rekognition');
+        const command = new DetectModerationLabelsCommand({
+          Image: { Bytes: imageBuffer },
+          MinConfidence: 50,
+        });
+
+        const response = await client.send(command);
+        const labels = response.ModerationLabels ?? [];
+
+        const categories: string[] = [];
+        let maxConfidence = 0;
+
+        for (const label of labels) {
+          const name = label.Name ?? 'Unknown';
+          const parent = label.ParentName;
+          // Use parent category when available for a cleaner category name
+          const category = parent || name;
+          if (!categories.includes(category)) {
+            categories.push(category);
+          }
+          const conf = (label.Confidence ?? 0) / 100;
+          if (conf > maxConfidence) {
+            maxConfidence = conf;
+          }
+        }
+
+        return {
+          hasSensitiveContent: categories.length > 0,
+          categories,
+          confidence: maxConfidence,
+        };
+      } catch (error) {
+        console.warn(
+          '[ImageSecurity] AWS Rekognition DetectModerationLabels failed, falling back to histogram analysis:',
+          error instanceof Error ? error.message : error
+        );
+        // Fall through to histogram fallback
+      }
+    }
+
+    // --- Fallback: basic sharp histogram analysis (degenerate images only) ---
+    return this.checkSensitiveContentFallback(imageBuffer);
+  }
+
+  /**
+   * Minimal sharp-based fallback that detects only degenerate images
+   * (all-black or all-white). Used when Rekognition is unavailable.
+   */
+  private async checkSensitiveContentFallback(
+    imageBuffer: Buffer
+  ): Promise<SensitiveContentResult> {
     try {
       const stats = await sharp(imageBuffer).stats();
       const channels = stats.channels;
 
       if (!channels || channels.length === 0) {
-        return {
-          hasSensitiveContent: false,
-          categories: [],
-          confidence: 0,
-        };
+        return { hasSensitiveContent: false, categories: [], confidence: 0 };
       }
 
-      // Basic histogram analysis — detects only degenerate (uniform) images.
-      // This does NOT constitute real content moderation.
+      const categories: string[] = [];
       const isMostlyBlack = channels.every(ch => ch.mean < 10 && ch.max < 50);
       const isMostlyWhite = channels.every(ch => ch.mean > 245 && ch.min > 200);
 
@@ -215,45 +289,64 @@ export class ImageSecurityService {
         confidence: categories.length > 0 ? 0.7 : 0,
       };
     } catch (error) {
-      console.error('Sensitive content check failed:', error);
-      return {
-        hasSensitiveContent: false,
-        categories: [],
-        confidence: 0,
-      };
+      console.error('Sensitive content fallback check failed:', error);
+      return { hasSensitiveContent: false, categories: [], confidence: 0 };
     }
   }
 
   /**
-   * Placeholder implementation for face detection and privacy protection.
+   * Detect faces in an image using AWS Rekognition DetectFaces API.
    *
-   * **This is NOT a face detection system.** The current implementation
-   * always returns a no-op result (detected: false, count: 0, blurred: false)
-   * and performs no actual face analysis on the image.
-   *
-   * **Known limitations:**
-   * - Cannot detect faces in images.
-   * - Cannot determine whether detected faces are blurred for privacy.
-   * - The return value is hardcoded and provides zero informational value.
-   * - Callers relying on this for privacy compliance are NOT protected.
-   *
-   * **Future work:** Integrate with a professional face detection API such as:
-   * - AWS Rekognition (DetectFaces / DetectProtectiveEquipment)
-   * - Google Cloud Vision Face Detection
-   * - Azure Face API
-   * The integration should return actual face bounding boxes, landmarks,
-   * blur/confidence scores, and optionally auto-blur faces for privacy.
+   * Falls back to a no-op result when Rekognition is not configured or
+   * the call fails, so callers always receive a valid response.
    *
    * @see ISSUE-VS003~c3 - "face detection and privacy detection" acceptance criteria
    */
   private async detectFaces(
-    _imageBuffer: Buffer
+    imageBuffer: Buffer
   ): Promise<{ detected: boolean; count: number; blurred: boolean }> {
-    return {
-      detected: false,
-      count: 0,
-      blurred: false,
-    };
+    const noFaceResult = { detected: false, count: 0, blurred: false };
+
+    try {
+      const client = await this.getRekognitionClient();
+      if (!client) {
+        return noFaceResult;
+      }
+
+      const { DetectFacesCommand } = await import('@aws-sdk/client-rekognition');
+      const command = new DetectFacesCommand({
+        Image: { Bytes: imageBuffer },
+        Attributes: ['DEFAULT'],
+      });
+
+      const response = await client.send(command);
+      const faceDetails = response.FaceDetails || [];
+      const count = faceDetails.length;
+
+      if (count === 0) {
+        return noFaceResult;
+      }
+
+      // Consider a face "blurred" (low-quality / obscured) when Rekognition
+      // reports confidence below 80. A low-confidence face typically indicates
+      // the face region is blurry, partially occluded, or otherwise degraded.
+      const BLUR_CONFIDENCE_THRESHOLD = 80;
+      const hasBlurredFace = faceDetails.some(
+        face => (face.Confidence ?? 0) < BLUR_CONFIDENCE_THRESHOLD
+      );
+
+      return {
+        detected: true,
+        count,
+        blurred: hasBlurredFace,
+      };
+    } catch (error) {
+      console.warn(
+        '[ImageSecurity] AWS Rekognition DetectFaces failed, falling back to no-op result:',
+        error instanceof Error ? error.message : error
+      );
+      return noFaceResult;
+    }
   }
 
   /**

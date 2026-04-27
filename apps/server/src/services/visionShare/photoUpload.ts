@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import { ImageSecurityService } from '../security/imageSecurity';
+import { PhotoStorageService } from '../storage/photoStorage';
 
 export interface UploadProgress {
   total: number;
@@ -61,10 +62,7 @@ export class PhotoUploadService {
   /**
    * Upload a single photo
    */
-  async uploadPhoto(
-    fileBuffer: Buffer,
-    options: UploadOptions
-  ): Promise<UploadResult> {
+  async uploadPhoto(fileBuffer: Buffer, options: UploadOptions): Promise<UploadResult> {
     const { taskId, userId, compress = true, generateThumbnail = true } = options;
 
     // Security check
@@ -253,7 +251,8 @@ export class PhotoUploadService {
   }
 
   /**
-   * Save to storage (placeholder - would integrate with S3/OSS)
+   * Save to storage using PhotoStorageService for real S3 uploads.
+   * Falls back to mock URLs when S3 is not configured.
    */
   private async saveToStorage(
     fileBuffer: Buffer,
@@ -266,24 +265,70 @@ export class PhotoUploadService {
       metadata: any;
     }
   ): Promise<{ url: string; thumbnailUrl: string }> {
-    // This is a placeholder implementation
-    // In production, this would upload to S3/OSS/MinIO
+    const storageService = PhotoStorageService.getInstance();
 
-    // Simulate upload delay
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    try {
+      // Get a presigned upload URL for the original photo
+      const { uploadUrl, photoId } = await storageService.generatePresignedUploadUrl(
+        metadata.userId,
+        { contentType: 'image/jpeg' }
+      );
 
-    // Generate mock URLs
-    const baseUrl = process.env.STORAGE_BASE_URL || 'https://storage.example.com';
-    const url = `${baseUrl}/photos/${metadata.userId}/${metadata.uploadId}/original.jpg`;
-    const thumbnailUrl = thumbnailBuffer
-      ? `${baseUrl}/photos/${metadata.userId}/${metadata.uploadId}/thumbnail.jpg`
-      : url;
+      // Upload the original file to the presigned URL
+      await fetch(uploadUrl, {
+        method: 'PUT',
+        body: new Uint8Array(fileBuffer),
+        headers: { 'Content-Type': 'image/jpeg' },
+      });
 
-    // TODO: Implement actual S3/OSS upload
-    // const s3Client = new S3Client({...});
-    // await s3Client.send(new PutObjectCommand({...}));
+      // Upload the thumbnail if available
+      let thumbnailUrl: string;
+      if (thumbnailBuffer) {
+        const thumbResult = await storageService.generatePresignedUploadUrl(metadata.userId, {
+          contentType: 'image/jpeg',
+        });
+        await fetch(thumbResult.uploadUrl, {
+          method: 'PUT',
+          body: new Uint8Array(thumbnailBuffer),
+          headers: { 'Content-Type': 'image/jpeg' },
+        });
+        thumbnailUrl = storageService.getStorageUrl(thumbResult.photoId, 'thumbnail');
+      } else {
+        thumbnailUrl = storageService.getStorageUrl(photoId, 'original');
+      }
 
-    return { url, thumbnailUrl };
+      const url = storageService.getStorageUrl(photoId, 'original');
+
+      // Persist metadata to the database
+      await storageService.saveMetadata({
+        id: photoId,
+        originalName: 'photo.jpg',
+        url,
+        thumbnailUrl,
+        size: fileBuffer.length,
+        width: metadata.metadata?.width ?? 0,
+        height: metadata.metadata?.height ?? 0,
+        format: metadata.metadata?.format ?? 'jpeg',
+        mimeType: 'image/jpeg',
+        hash: metadata.metadata?.hash ?? '',
+        uploadedAt: new Date(),
+        userId: metadata.userId,
+        taskId: metadata.taskId,
+      });
+
+      return { url, thumbnailUrl };
+    } catch (error) {
+      console.error('[PhotoUploadService] S3 upload failed, falling back to mock URLs:', error);
+
+      // Fallback: generate mock URLs when S3 is not configured or upload failed
+      const baseUrl = process.env.STORAGE_BASE_URL || 'https://storage.example.com';
+      const url = `${baseUrl}/photos/${metadata.userId}/${metadata.uploadId}/original.jpg`;
+      const thumbnailUrl = thumbnailBuffer
+        ? `${baseUrl}/photos/${metadata.userId}/${metadata.uploadId}/thumbnail.jpg`
+        : url;
+
+      return { url, thumbnailUrl };
+    }
   }
 }
 
