@@ -8,12 +8,7 @@ import { z } from 'zod';
 import type { Location, GeoCoordinates } from '@bridgeai/shared';
 
 import { authenticate } from '../middleware/auth';
-import {
-  updateAgentLocation,
-  getAgentLocation,
-  searchAgentsByLocation,
-  findAgentsNearLocation,
-} from '../services/agentLocationService';
+import { updateAgentLocation, getAgentLocation } from '../services/agentLocationService';
 import {
   getAgentLocationPrivacy,
   setAgentLocationPrivacy,
@@ -192,73 +187,6 @@ router.get('/agents/:agentId/privacy', authenticate, async (req, res, next) => {
         showExactCoords: false,
         hideFromPublic: false,
       },
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-/**
- * GET /api/v1/location/agents
- * Search agents by location (with privacy filtering)
- */
-router.get('/agents', authenticate, async (req, res, next) => {
-  try {
-    const { province, city, district, lat, lng, radius, page, limit } = req.query;
-
-    const filter: any = {};
-    if (province) filter.province = province as string;
-    if (city) filter.city = city as string;
-    if (district) filter.district = district as string;
-
-    if (lat && lng && radius) {
-      filter.withinRadius = {
-        center: {
-          latitude: parseFloat(lat as string),
-          longitude: parseFloat(lng as string),
-        },
-        radiusKm: parseFloat(radius as string),
-      };
-    }
-
-    const result = await searchAgentsByLocation(
-      filter,
-      parseInt(page as string) || 1,
-      parseInt(limit as string) || 20
-    );
-
-    res.json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-/**
- * GET /api/v1/location/agents/nearby
- * Find agents within radius (with privacy filtering)
- */
-router.get('/agents/nearby', authenticate, async (req, res, next) => {
-  try {
-    const { lat, lng, radius, agentType, excludeAgentId } = req.query;
-
-    const results = await findAgentsNearLocation(
-      {
-        latitude: parseFloat(lat as string),
-        longitude: parseFloat(lng as string),
-      },
-      parseFloat(radius as string),
-      {
-        agentType: agentType as string,
-        excludeAgentId: excludeAgentId as string,
-      }
-    );
-
-    res.json({
-      success: true,
-      data: results,
     });
   } catch (error) {
     next(error);

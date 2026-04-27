@@ -18,7 +18,6 @@ import {
   findContainingFences,
   createCircularFence,
 } from '../services/geoFenceService';
-import { logger } from '../utils/logger';
 
 const router: Router = Router();
 
@@ -31,18 +30,27 @@ const createGeoFenceSchema = z.object({
   centerLat: z.number().min(-90).max(90).optional(),
   centerLng: z.number().min(-180).max(180).optional(),
   radiusMeters: z.number().positive().optional(),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
 const updateGeoFenceSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(500).optional(),
-  coordinates: z.array(z.array(z.array(z.number()))).min(1).optional(),
+  coordinates: z
+    .array(z.array(z.array(z.number())))
+    .min(1)
+    .optional(),
   centerLat: z.number().min(-90).max(90).optional(),
   centerLng: z.number().min(-180).max(180).optional(),
   radiusMeters: z.number().positive().optional(),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional(),
   isActive: z.boolean().optional(),
   metadata: z.record(z.unknown()).optional(),
 });
@@ -55,7 +63,10 @@ const pointCheckSchema = z.object({
 const multipleCheckSchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
   lng: z.coerce.number().min(-180).max(180),
-  fenceIds: z.string().transform(s => s.split(',')).pipe(z.array(z.string().uuid())),
+  fenceIds: z
+    .string()
+    .transform(s => s.split(','))
+    .pipe(z.array(z.string().uuid())),
 });
 
 const createCircularFenceSchema = z.object({
@@ -64,7 +75,10 @@ const createCircularFenceSchema = z.object({
   centerLat: z.number().min(-90).max(90),
   centerLng: z.number().min(-180).max(180),
   radiusMeters: z.number().positive().min(10).max(100000),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional(),
 });
 
 /**
@@ -123,14 +137,19 @@ router.post('/circle', authenticate, async (req, res, next) => {
       });
     }
 
-    const fence = await createCircularFence(parsed.data.name, {
-      latitude: parsed.data.centerLat,
-      longitude: parsed.data.centerLng,
-    }, parsed.data.radiusMeters, {
-      description: parsed.data.description,
-      createdBy: req.user!.id,
-      color: parsed.data.color,
-    });
+    const fence = await createCircularFence(
+      parsed.data.name,
+      {
+        latitude: parsed.data.centerLat,
+        longitude: parsed.data.centerLng,
+      },
+      parsed.data.radiusMeters,
+      {
+        description: parsed.data.description,
+        createdBy: req.user!.id,
+        color: parsed.data.color,
+      }
+    );
 
     res.status(201).json({ success: true, data: fence });
   } catch (error) {
@@ -235,10 +254,13 @@ router.post('/:id/check', async (req, res, next) => {
       });
     }
 
-    const result = await checkPointInFence({
-      latitude: parsed.data.lat,
-      longitude: parsed.data.lng,
-    }, req.params.id);
+    const result = await checkPointInFence(
+      {
+        latitude: parsed.data.lat,
+        longitude: parsed.data.lng,
+      },
+      req.params.id
+    );
 
     res.json({ success: true, data: result });
   } catch (error) {
