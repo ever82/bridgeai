@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events';
 
+import { NotificationType, NotificationStatus, PriorityLevel } from '@prisma/client';
+
 import { prisma } from '../db/client';
 import {
-  NotificationType,
   NotificationChannel,
   sendNewReviewNotification,
   sendReviewReplyNotification,
@@ -33,9 +34,7 @@ export enum ReviewNotificationType {
  * Sends notification to the review recipient
  * @param ratingId - Rating ID
  */
-export async function handleReviewCreatedNotification(
-  ratingId: string
-): Promise<void> {
+export async function handleReviewCreatedNotification(ratingId: string): Promise<void> {
   try {
     const rating = await prisma.rating.findUnique({
       where: { id: ratingId },
@@ -86,12 +85,7 @@ export async function handleReviewCreatedNotification(
     const raterName = rating.rater?.name || '匿名用户';
 
     // Send notification to ratee
-    await sendNewReviewNotification(
-      rating.rateeId,
-      raterName,
-      rating.score,
-      ratingId
-    );
+    await sendNewReviewNotification(rating.rateeId, raterName, rating.score, ratingId);
 
     // Emit event
     notificationEvents.emit(ReviewNotificationType.REVIEW_CREATED, {
@@ -101,14 +95,9 @@ export async function handleReviewCreatedNotification(
       score: rating.score,
     });
 
-    console.log(
-      `[NOTIFICATION] Review created notification sent for rating ${ratingId}`
-    );
+    console.log(`[NOTIFICATION] Review created notification sent for rating ${ratingId}`);
   } catch (error) {
-    console.error(
-      `[NOTIFICATION] Error handling review created notification:`,
-      error
-    );
+    console.error(`[NOTIFICATION] Error handling review created notification:`, error);
     throw error;
   }
 }
@@ -150,11 +139,7 @@ export async function handleReviewReplyNotification(
     const rateeName = rating.ratee?.name || '对方';
 
     // Send notification to the original rater
-    await sendReviewReplyNotification(
-      rating.raterId,
-      rateeName,
-      ratingId
-    );
+    await sendReviewReplyNotification(rating.raterId, rateeName, ratingId);
 
     // Emit event
     notificationEvents.emit(ReviewNotificationType.REVIEW_REPLIED, {
@@ -164,14 +149,9 @@ export async function handleReviewReplyNotification(
       replyContent,
     });
 
-    console.log(
-      `[NOTIFICATION] Review reply notification sent for rating ${ratingId}`
-    );
+    console.log(`[NOTIFICATION] Review reply notification sent for rating ${ratingId}`);
   } catch (error) {
-    console.error(
-      `[NOTIFICATION] Error handling review reply notification:`,
-      error
-    );
+    console.error(`[NOTIFICATION] Error handling review reply notification:`, error);
     throw error;
   }
 }
@@ -216,10 +196,7 @@ export async function handlePendingReviewReminder(
       `[NOTIFICATION] Pending review reminder sent to user ${userId} for match ${matchId}`
     );
   } catch (error) {
-    console.error(
-      `[NOTIFICATION] Error handling pending review reminder:`,
-      error
-    );
+    console.error(`[NOTIFICATION] Error handling pending review reminder:`, error);
     throw error;
   }
 }
@@ -257,12 +234,7 @@ export async function handleBadReviewWarningNotification(
       return;
     }
 
-    await sendBadReviewWarning(
-      rating.rateeId,
-      rating.score,
-      creditDelta,
-      ratingId
-    );
+    await sendBadReviewWarning(rating.rateeId, rating.score, creditDelta, ratingId);
 
     // Emit event
     notificationEvents.emit(ReviewNotificationType.REVIEW_CREATED, {
@@ -273,14 +245,9 @@ export async function handleBadReviewWarningNotification(
       isBadReview: true,
     });
 
-    console.log(
-      `[NOTIFICATION] Bad review warning sent for rating ${ratingId}`
-    );
+    console.log(`[NOTIFICATION] Bad review warning sent for rating ${ratingId}`);
   } catch (error) {
-    console.error(
-      `[NOTIFICATION] Error handling bad review warning:`,
-      error
-    );
+    console.error(`[NOTIFICATION] Error handling bad review warning:`, error);
     throw error;
   }
 }
@@ -307,33 +274,20 @@ export async function handleCreditScoreChangeNotification(
       return;
     }
 
-    await sendCreditScoreChangeNotification(
+    await sendCreditScoreChangeNotification(userId, previousScore, newScore, reason);
+
+    // Emit event
+    notificationEvents.emit(ReviewNotificationType.CREDIT_SCORE_UPDATED, {
       userId,
       previousScore,
       newScore,
-      reason
-    );
+      delta,
+      reason,
+    });
 
-    // Emit event
-    notificationEvents.emit(
-      ReviewNotificationType.CREDIT_SCORE_UPDATED,
-      {
-        userId,
-        previousScore,
-        newScore,
-        delta,
-        reason,
-      }
-    );
-
-    console.log(
-      `[NOTIFICATION] Credit score change notification sent to user ${userId}`
-    );
+    console.log(`[NOTIFICATION] Credit score change notification sent to user ${userId}`);
   } catch (error) {
-    console.error(
-      `[NOTIFICATION] Error handling credit score change notification:`,
-      error
-    );
+    console.error(`[NOTIFICATION] Error handling credit score change notification:`, error);
     throw error;
   }
 }
@@ -343,27 +297,70 @@ export async function handleCreditScoreChangeNotification(
  * Sends notification to admins and the reported user
  * @param reportId - Report ID
  */
-export async function handleReviewReportedNotification(
-  reportId: string
-): Promise<void> {
+export async function handleReviewReportedNotification(reportId: string): Promise<void> {
   try {
-    // This is a placeholder for review report functionality
-    // In a real implementation, you would:
-    // 1. Get the report details from the database
-    // 2. Notify admins
-    // 3. Potentially notify the reported user
+    const report = await prisma.reviewReport.findUnique({
+      where: { id: reportId },
+      include: {
+        review: {
+          include: {
+            reviewer: {
+              select: { id: true, name: true },
+            },
+            reviewee: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+      },
+    });
 
-    console.log(`[NOTIFICATION] Review reported: ${reportId}`);
+    if (!report) {
+      console.warn(`[NOTIFICATION] Review report ${reportId} not found`);
+      return;
+    }
+
+    // Find admin users to notify
+    const adminRole = await prisma.role.findUnique({
+      where: { name: 'admin' },
+    });
+
+    let adminUsers: { userId: string }[] = [];
+    if (adminRole) {
+      adminUsers = await prisma.userRole.findMany({
+        where: { roleId: adminRole.id },
+        select: { userId: true },
+      });
+    }
+
+    const reviewerName = report.review.reviewer?.name || '匿名用户';
+    const reasonText = report.reason;
+
+    // Notify admins
+    for (const admin of adminUsers) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.userId,
+          type: NotificationType.SYSTEM_ANNOUNCEMENT,
+          title: '评价被举报',
+          content: `用户 ${reviewerName} 的评价被举报，原因：${reasonText}`,
+          data: { reportId, reviewId: report.reviewId },
+          priority: PriorityLevel.HIGH,
+          category: 'system',
+        },
+      });
+    }
+
+    console.log(
+      `[NOTIFICATION] Review reported notification sent to ${adminUsers.length} admins for report ${reportId}`
+    );
 
     // Emit event
     notificationEvents.emit(ReviewNotificationType.REVIEW_REPORTED, {
       reportId,
     });
   } catch (error) {
-    console.error(
-      `[NOTIFICATION] Error handling review reported notification:`,
-      error
-    );
+    console.error(`[NOTIFICATION] Error handling review reported notification:`, error);
     throw error;
   }
 }
@@ -390,22 +387,22 @@ export function setupNotificationListeners(): void {
   );
 
   // Listen for push sent events
-  notificationEvents.on('pushSent', (data) => {
+  notificationEvents.on('pushSent', data => {
     console.log(`[NOTIFICATION_EVENT] Push notification sent to ${data.userId}`);
   });
 
   // Listen for email sent events
-  notificationEvents.on('emailSent', (data) => {
+  notificationEvents.on('emailSent', data => {
     console.log(`[NOTIFICATION_EVENT] Email sent to ${data.userId}`);
   });
 
   // Listen for SMS sent events
-  notificationEvents.on('smsSent', (data) => {
+  notificationEvents.on('smsSent', data => {
     console.log(`[NOTIFICATION_EVENT] SMS sent to ${data.userId}`);
   });
 
   // Listen for in-app sent events
-  notificationEvents.on('inAppSent', (data) => {
+  notificationEvents.on('inAppSent', data => {
     console.log(`[NOTIFICATION_EVENT] In-app notification sent to ${data.userId}`);
   });
 }
@@ -447,42 +444,27 @@ export function initializeReviewNotificationHandlers(): void {
   setupReviewEventListeners();
 
   // Setup review notification event listeners
-  notificationEvents.on(
-    ReviewNotificationType.REVIEW_CREATED,
-    (data) => {
-      console.log(`[NOTIFICATION_EVENT] Review created: ${data.ratingId}`);
-    }
-  );
+  notificationEvents.on(ReviewNotificationType.REVIEW_CREATED, data => {
+    console.log(`[NOTIFICATION_EVENT] Review created: ${data.ratingId}`);
+  });
 
-  notificationEvents.on(
-    ReviewNotificationType.REVIEW_REPLIED,
-    (data) => {
-      console.log(`[NOTIFICATION_EVENT] Review replied: ${data.ratingId}`);
-    }
-  );
+  notificationEvents.on(ReviewNotificationType.REVIEW_REPLIED, data => {
+    console.log(`[NOTIFICATION_EVENT] Review replied: ${data.ratingId}`);
+  });
 
-  notificationEvents.on(
-    ReviewNotificationType.REVIEW_REMINDER,
-    (data) => {
-      console.log(`[NOTIFICATION_EVENT] Review reminder: ${data.matchId}`);
-    }
-  );
+  notificationEvents.on(ReviewNotificationType.REVIEW_REMINDER, data => {
+    console.log(`[NOTIFICATION_EVENT] Review reminder: ${data.matchId}`);
+  });
 
-  notificationEvents.on(
-    ReviewNotificationType.REVIEW_REPORTED,
-    (data) => {
-      console.log(`[NOTIFICATION_EVENT] Review reported: ${data.reportId}`);
-    }
-  );
+  notificationEvents.on(ReviewNotificationType.REVIEW_REPORTED, data => {
+    console.log(`[NOTIFICATION_EVENT] Review reported: ${data.reportId}`);
+  });
 
-  notificationEvents.on(
-    ReviewNotificationType.CREDIT_SCORE_UPDATED,
-    (data) => {
-      console.log(
-        `[NOTIFICATION_EVENT] Credit score updated: ${data.userId} (${data.previousScore} -> ${data.newScore})`
-      );
-    }
-  );
+  notificationEvents.on(ReviewNotificationType.CREDIT_SCORE_UPDATED, data => {
+    console.log(
+      `[NOTIFICATION_EVENT] Credit score updated: ${data.userId} (${data.previousScore} -> ${data.newScore})`
+    );
+  });
 
   console.log('[NOTIFICATION] Review notification handlers initialized');
 }
@@ -492,15 +474,24 @@ export function initializeReviewNotificationHandlers(): void {
  * @param userId - User ID
  * @returns Notification statistics
  */
-export async function getUserNotificationStats(_userId: string): Promise<{
+export async function getUserNotificationStats(userId: string): Promise<{
   unreadCount: number;
   lastNotificationAt: Date | null;
 }> {
-  // This is a placeholder implementation
-  // In a real implementation, you would query a Notification table
+  const [unreadCount, lastNotification] = await Promise.all([
+    prisma.notification.count({
+      where: { userId, status: NotificationStatus.UNREAD },
+    }),
+    prisma.notification.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true },
+    }),
+  ]);
+
   return {
-    unreadCount: 0,
-    lastNotificationAt: null,
+    unreadCount,
+    lastNotificationAt: lastNotification?.createdAt ?? null,
   };
 }
 
@@ -513,9 +504,17 @@ export async function markNotificationsAsRead(
   userId: string,
   notificationIds: string[]
 ): Promise<void> {
-  // This is a placeholder implementation
-  // In a real implementation, you would update a Notification table
-  console.log(`[NOTIFICATION] Marked ${notificationIds.length} notifications as read for user ${userId}`);
+  await prisma.notification.updateMany({
+    where: {
+      id: { in: notificationIds },
+      userId,
+      status: NotificationStatus.UNREAD,
+    },
+    data: {
+      status: NotificationStatus.READ,
+      readAt: new Date(),
+    },
+  });
 }
 
 /**
@@ -527,17 +526,39 @@ export async function markNotificationsAsRead(
  */
 export async function getNotificationHistory(
   userId: string,
-  _limit: number = 20,
-  _offset: number = 0
-): Promise<Array<{
-  id: string;
-  type: NotificationType;
-  title: string;
-  body: string;
-  read: boolean;
-  createdAt: Date;
-}>> {
-  // This is a placeholder implementation
-  // In a real implementation, you would query a Notification table
-  return [];
+  limit: number = 20,
+  offset: number = 0
+): Promise<
+  Array<{
+    id: string;
+    type: NotificationType;
+    title: string;
+    body: string;
+    read: boolean;
+    createdAt: Date;
+  }>
+> {
+  const notifications = await prisma.notification.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+    skip: offset,
+    select: {
+      id: true,
+      type: true,
+      title: true,
+      content: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+
+  return notifications.map(n => ({
+    id: n.id,
+    type: n.type,
+    title: n.title,
+    body: n.content,
+    read: n.status === NotificationStatus.READ,
+    createdAt: n.createdAt,
+  }));
 }

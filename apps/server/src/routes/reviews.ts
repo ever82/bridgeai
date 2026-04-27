@@ -39,7 +39,19 @@ router.post(
       throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
     }
 
-    const { matchId, revieweeId, sceneType, rating, title, content, tags } = req.body;
+    const {
+      matchId,
+      revieweeId,
+      sceneType,
+      rating,
+      honestyRating,
+      politenessRating,
+      responsivenessRating,
+      satisfactionRating,
+      title,
+      content,
+      tags,
+    } = req.body;
 
     if (!matchId || !revieweeId || !rating || !content) {
       throw new AppError('缺少必要参数', 'INVALID_REQUEST', 400);
@@ -69,6 +81,10 @@ router.post(
       revieweeId,
       sceneType,
       rating,
+      honestyRating,
+      politenessRating,
+      responsivenessRating,
+      satisfactionRating,
       title,
       content,
       tags,
@@ -207,7 +223,16 @@ router.put(
     }
 
     const { id } = req.params;
-    const { rating, title, content, tags } = req.body;
+    const {
+      rating,
+      honestyRating,
+      politenessRating,
+      responsivenessRating,
+      satisfactionRating,
+      title,
+      content,
+      tags,
+    } = req.body;
 
     // 如果修改了内容，进行审核
     if (content) {
@@ -219,6 +244,10 @@ router.put(
 
     const review = await reviewService.updateReview(id, req.user.id, {
       rating,
+      honestyRating,
+      politenessRating,
+      responsivenessRating,
+      satisfactionRating,
       title,
       content,
       tags,

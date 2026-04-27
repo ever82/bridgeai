@@ -372,7 +372,11 @@ model Review {
   reviewerId       String           @map("reviewer_id")
   revieweeId       String           @map("reviewee_id")
   sceneType        ReviewSceneType? @map("scene_type")
-  rating           Int              // 1-5
+  rating           Int              // 1-5 (overall rating)
+  honestyRating          Int?       @map("honesty_rating")        // 1-5
+  politenessRating       Int?       @map("politeness_rating")     // 1-5
+  responsivenessRating   Int?       @map("responsiveness_rating") // 1-5
+  satisfactionRating     Int?       @map("satisfaction_rating")   // 1-5
   title            String?
   content          String
   tags             String[]         @default([])

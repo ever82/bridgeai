@@ -190,6 +190,127 @@ async function checkMeaninglessContent(content: string): Promise<IRuleCheckResul
   return { triggered: false, score: 0 };
 }
 
+/**
+ * AI语义分析审核
+ * 基于轻量语义规则模拟LLM审核能力：
+ * - 情感极性分析（负面情感词密度）
+ * - 语义模式匹配（诱导性、攻击性、虚假评价模式）
+ * - 上下文一致性（评价内容与标题语义背离）
+ * @param content 内容
+ * @param title 标题
+ * @returns 检查结果
+ */
+async function checkAISemanticAnalysis(content: string, title?: string): Promise<IRuleCheckResult> {
+  const lowerContent = content.toLowerCase();
+  let score = 0;
+  const details: string[] = [];
+
+  // 1. 负面情感词密度分析
+  const negativeSentimentWords = [
+    '极差',
+    '糟糕',
+    '失望',
+    '恶心',
+    '愤怒',
+    '气愤',
+    '无语',
+    '坑爹',
+    '上当',
+    '后悔',
+    ' worst',
+    ' terrible',
+    ' awful',
+    ' horrible',
+    ' disgusting',
+    ' disappointed',
+    ' hate',
+    ' disgusting',
+    ' frustrated',
+    ' annoying',
+  ];
+  let negativeCount = 0;
+  for (const word of negativeSentimentWords) {
+    const regex = new RegExp(word, 'gi');
+    const matches = lowerContent.match(regex);
+    if (matches) negativeCount += matches.length;
+  }
+  const sentimentDensity = negativeCount / (content.length || 1);
+  if (sentimentDensity > 0.05) {
+    score += 25;
+    details.push(`负面情感密度过高 (${(sentimentDensity * 100).toFixed(1)}%)`);
+  }
+
+  // 2. 语义模式：诱导性/操纵性语言
+  const manipulativePatterns = [
+    /(大家|所有人|千万|一定).*(不要|别).*(买|买|下单|尝试)/i,
+    /(赶紧|立刻|马上).*(退款|退货|投诉|举报)/i,
+    /(都是|全是|没一个).*(假的|骗人|垃圾|废物)/i,
+    /(曝光|揭发|黑幕|内幕).*(这家|这个|该)/i,
+  ];
+  let manipulativeCount = 0;
+  for (const pattern of manipulativePatterns) {
+    if (pattern.test(content)) manipulativeCount++;
+  }
+  if (manipulativeCount > 0) {
+    score += Math.min(manipulativeCount * 20, 40);
+    details.push(`检测到诱导性语义模式 (${manipulativeCount}处)`);
+  }
+
+  // 3. 语义模式：虚假评价特征
+  const fakeReviewPatterns = [
+    /(好评|五星|非常满意).{0,5}(返现|红包|优惠券|奖励)/i,
+    /(晒图|追评|好评).{0,10}(返|给|送).{0,5}(钱|券|礼)/i,
+    /(老板|客服|店家).*(要求|让我|叫我).*(好评|五星)/i,
+    /(刷单|刷评|水军|任务)/i,
+  ];
+  let fakeCount = 0;
+  for (const pattern of fakeReviewPatterns) {
+    if (pattern.test(content)) fakeCount++;
+  }
+  if (fakeCount > 0) {
+    score += Math.min(fakeCount * 25, 50);
+    details.push(`检测到虚假评价语义特征 (${fakeCount}处)`);
+  }
+
+  // 4. 上下文一致性：标题与内容语义背离
+  if (title && title.length > 0) {
+    const lowerTitle = title.toLowerCase();
+    const titlePositive = /(好评|满意|不错|推荐|喜欢|完美|棒|good|great|love|nice)/i.test(title);
+    const contentNegative = /(差|烂|垃圾|后悔|失望|骗人|不好|worst|terrible|bad|hate)/i.test(
+      lowerContent
+    );
+    const titleNegative = /(差评|失望|垃圾|骗人|后悔|差|烂|worst|terrible|bad|hate)/i.test(
+      lowerTitle
+    );
+    const contentPositive = /(好评|满意|不错|推荐|喜欢|good|great|love|nice)/i.test(lowerContent);
+
+    if (titlePositive && contentNegative) {
+      score += 30;
+      details.push('标题与内容情感极性背离（标题正面/内容负面）');
+    } else if (titleNegative && contentPositive) {
+      score += 30;
+      details.push('标题与内容情感极性背离（标题负面/内容正面）');
+    }
+  }
+
+  // 5. 语义连贯性：检查语义碎片（大量无关联词拼接）
+  const shortWordPattern = /(\b[\u4e00-\u9fa5]{1,2}\b\s*){6,}/;
+  if (shortWordPattern.test(content)) {
+    score += 20;
+    details.push('语义碎片拼接特征');
+  }
+
+  if (score > 0) {
+    return {
+      triggered: true,
+      score: Math.min(score, 80),
+      details: details.join('; '),
+    };
+  }
+
+  return { triggered: false, score: 0 };
+}
+
 // 审核规则列表
 const MODERATION_RULES: IModerationRule[] = [
   {
@@ -229,6 +350,12 @@ const MODERATION_RULES: IModerationRule[] = [
     enabled: true,
     weight: 0.7,
     check: checkMeaninglessContent,
+  },
+  {
+    name: 'ai_semantic_analysis',
+    enabled: true,
+    weight: 1.0,
+    check: async (content: string, title?: string) => checkAISemanticAnalysis(content, title),
   },
 ];
 

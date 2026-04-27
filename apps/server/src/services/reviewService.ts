@@ -17,6 +17,10 @@ export interface ICreateReviewData {
   revieweeId: string;
   sceneType?: string;
   rating: number;
+  honestyRating?: number;
+  politenessRating?: number;
+  responsivenessRating?: number;
+  satisfactionRating?: number;
   title?: string;
   content: string;
   tags?: string[];
@@ -27,6 +31,10 @@ export interface IUpdateReviewData {
   title?: string;
   content?: string;
   rating?: number;
+  honestyRating?: number;
+  politenessRating?: number;
+  responsivenessRating?: number;
+  satisfactionRating?: number;
   tags?: string[];
 }
 
@@ -125,11 +133,37 @@ export async function validateReviewPermission(
  * @returns 创建的评价
  */
 export async function createReview(data: ICreateReviewData): Promise<Review> {
-  const { matchId, reviewerId, revieweeId, sceneType, rating, title, content, tags } = data;
+  const {
+    matchId,
+    reviewerId,
+    revieweeId,
+    sceneType,
+    rating,
+    honestyRating,
+    politenessRating,
+    responsivenessRating,
+    satisfactionRating,
+    title,
+    content,
+    tags,
+  } = data;
 
   // 验证评分范围
   if (rating < 1 || rating > 5) {
     throw new Error('评分必须在1-5之间');
+  }
+
+  // 验证多维度评分范围
+  const dimRatings: Array<[string, number | undefined]> = [
+    ['honestyRating', honestyRating],
+    ['politenessRating', politenessRating],
+    ['responsivenessRating', responsivenessRating],
+    ['satisfactionRating', satisfactionRating],
+  ];
+  for (const [, value] of dimRatings) {
+    if (value !== undefined && (value < 1 || value > 5)) {
+      throw new Error('评分必须在1-5之间');
+    }
   }
 
   // 验证评价权限
@@ -146,6 +180,10 @@ export async function createReview(data: ICreateReviewData): Promise<Review> {
       revieweeId,
       sceneType: sceneType as any,
       rating,
+      honestyRating,
+      politenessRating,
+      responsivenessRating,
+      satisfactionRating,
       title,
       content,
       tags: tags || [],
@@ -341,6 +379,18 @@ export async function updateReview(
   // 验证评分范围
   if (data.rating !== undefined && (data.rating < 1 || data.rating > 5)) {
     throw new Error('评分必须在1-5之间');
+  }
+
+  // 验证多维度评分范围
+  for (const value of [
+    data.honestyRating,
+    data.politenessRating,
+    data.responsivenessRating,
+    data.satisfactionRating,
+  ]) {
+    if (value !== undefined && (value < 1 || value > 5)) {
+      throw new Error('评分必须在1-5之间');
+    }
   }
 
   const updatedReview = await prisma.review.update({

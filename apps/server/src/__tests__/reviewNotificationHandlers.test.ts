@@ -24,6 +24,22 @@ jest.mock('../db/client', () => ({
       findUnique: jest.fn(),
       findFirst: jest.fn(),
     },
+    notification: {
+      count: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      updateMany: jest.fn(),
+    },
+    reviewReport: {
+      findUnique: jest.fn(),
+    },
+    role: {
+      findUnique: jest.fn(),
+    },
+    userRole: {
+      findMany: jest.fn(),
+    },
   },
 }));
 
@@ -41,6 +57,7 @@ jest.mock('../services/notificationService', () => ({
   },
   reviewNotificationEvents: {
     on: jest.fn(),
+    once: jest.fn(),
     emit: jest.fn(),
   },
 }));
@@ -212,31 +229,58 @@ describe('Review Notification Handlers', () => {
 
   describe('getUserNotificationStats', () => {
     it('should return notification statistics', async () => {
+      (prisma.notification.count as jest.Mock).mockResolvedValue(5);
+      (prisma.notification.findFirst as jest.Mock).mockResolvedValue({
+        createdAt: new Date('2024-01-01'),
+      });
+
       const stats = await getUserNotificationStats('user-1');
 
-      expect(stats).toHaveProperty('unreadCount');
+      expect(stats).toHaveProperty('unreadCount', 5);
       expect(stats).toHaveProperty('lastNotificationAt');
     });
   });
 
   describe('markNotificationsAsRead', () => {
     it('should mark notifications as read', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      (prisma.notification.updateMany as jest.Mock).mockResolvedValue({ count: 2 });
 
       await markNotificationsAsRead('user-1', ['notif-1', 'notif-2']);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Marked 2 notifications as read')
-      );
-      consoleSpy.mockRestore();
+      expect(prisma.notification.updateMany).toHaveBeenCalledWith({
+        where: { id: { in: ['notif-1', 'notif-2'] }, userId: 'user-1', status: expect.anything() },
+        data: { status: expect.anything(), readAt: expect.any(Date) },
+      });
     });
   });
 
   describe('getNotificationHistory', () => {
-    it('should return empty notification history', async () => {
+    it('should return notification history', async () => {
+      const mockNotifications = [
+        {
+          id: 'notif-1',
+          type: 'NEW_REVIEW',
+          status: 'READ',
+          content: 'Test',
+          createdAt: new Date(),
+          readAt: new Date(),
+        },
+        {
+          id: 'notif-2',
+          type: 'REVIEW_REPLY',
+          status: 'UNREAD',
+          content: 'Reply',
+          createdAt: new Date(),
+          readAt: null,
+        },
+      ];
+      (prisma.notification.findMany as jest.Mock).mockResolvedValue(mockNotifications);
+
       const history = await getNotificationHistory('user-1');
 
-      expect(history).toEqual([]);
+      expect(history).toHaveLength(2);
+      expect(history[0].read).toBe(true);
+      expect(history[1].read).toBe(false);
     });
   });
 
