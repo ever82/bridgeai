@@ -24,8 +24,12 @@ export const FlatList = jest.fn((props: any) => {
     ListHeaderComponent,
     ListEmptyComponent,
     ListFooterComponent,
+    contentContainerStyle,
     ...rest
   } = props;
+
+  // Props that tests access via flatList.props
+  const renderedProps = { ListFooterComponent, contentContainerStyle };
 
   const renderHeaderOrEmpty = (Component: any) => {
     if (!Component) return null;
@@ -37,7 +41,7 @@ export const FlatList = jest.fn((props: any) => {
 
   // If children are passed directly, render them (for non-standard usage)
   if (children) {
-    return React.createElement('FlatList', { testID, ...rest }, children);
+    return React.createElement('FlatList', { testID, ...renderedProps, ...rest }, children);
   }
   // Otherwise, render items from data using renderItem
   if (data && renderItem) {
@@ -52,9 +56,17 @@ export const FlatList = jest.fn((props: any) => {
         renderItem({ item, index })
       );
     });
-    return React.createElement(View, { testID }, header, ...items, empty, footer);
+    return React.createElement(
+      View,
+      { testID },
+      header,
+      ...items,
+      empty,
+      footer,
+      React.createElement('FlatList', renderedProps)
+    );
   }
-  return React.createElement('FlatList', { testID, ...rest });
+  return React.createElement('FlatList', { testID, ...renderedProps, ...rest });
 });
 export const SectionList = mockComponent('SectionList');
 export const TouchableOpacity = jest.fn((props: any) => {

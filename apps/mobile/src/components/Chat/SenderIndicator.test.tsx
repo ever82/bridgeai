@@ -1,94 +1,61 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import {
-  SenderType,
-  HandoffStatus,
-  SENDER_TYPE_LABELS,
-} from '@bridgeai/shared';
+import { Animated } from 'react-native';
+import { SenderType, HandoffStatus, SENDER_TYPE_LABELS } from '@bridgeai/shared';
 
 import { SenderIndicator, SenderChangeIndicator } from './SenderIndicator';
-
-// Mock Animated
-jest.mock('react-native', () => ({
-  ...jest.requireActual('react-native'),
-  Animated: {
-    Value: jest.fn(() => ({ setValue: jest.fn() })),
-    parallel: jest.fn(() => ({ start: jest.fn() })),
-    sequence: jest.fn(() => ({ start: jest.fn() })),
-    spring: jest.fn(() => ({ start: jest.fn() })),
-    timing: jest.fn(() => ({ start: jest.fn() })),
-  },
-}));
 
 describe('SenderIndicator', () => {
   describe('Agent Sender', () => {
     it('should render agent indicator', () => {
-      const { getByText } = render(
-        <SenderIndicator
-          senderType={SenderType.AGENT}
-        />
-      );
+      const { getAllByText } = render(<SenderIndicator senderType={SenderType.AGENT} />);
 
-      expect(getByText('🤖')).toBeTruthy();
-      expect(getByText(SENDER_TYPE_LABELS[SenderType.AGENT])).toBeTruthy();
+      // Agent renders UserAvatar (initials 'A') + name text + type badge with label
+      expect(getAllByText(SENDER_TYPE_LABELS[SenderType.AGENT]).length).toBeGreaterThan(0);
     });
 
     it('should show agent label with sender name', () => {
       const { getByText } = render(
-        <SenderIndicator
-          senderType={SenderType.AGENT}
-          senderName="AI Assistant"
-        />
+        <SenderIndicator senderType={SenderType.AGENT} senderName="AI Assistant" />
       );
 
-      expect(getByText('AI Assistant')).toBeTruthy();
+      // Agent with name renders "AI Assistant 的 Agent" as the name text
+      expect(getByText('AI Assistant 的 Agent')).toBeTruthy();
     });
   });
 
   describe('Human Sender', () => {
     it('should render human indicator', () => {
-      const { getByText } = render(
-        <SenderIndicator
-          senderType={SenderType.HUMAN}
-        />
-      );
+      const { getAllByText } = render(<SenderIndicator senderType={SenderType.HUMAN} />);
 
-      expect(getByText('👤')).toBeTruthy();
-      expect(getByText(SENDER_TYPE_LABELS[SenderType.HUMAN])).toBeTruthy();
+      // Human renders UserAvatar (initials 'H') + name text + type badge with label
+      expect(getAllByText(SENDER_TYPE_LABELS[SenderType.HUMAN]).length).toBeGreaterThan(0);
     });
 
     it('should show human label with sender name', () => {
-      const { getByText } = render(
-        <SenderIndicator
-          senderType={SenderType.HUMAN}
-          senderName="John Doe"
-        />
+      const { getByText, getAllByText } = render(
+        <SenderIndicator senderType={SenderType.HUMAN} senderName="John Doe" />
       );
 
+      // Human with senderName renders the name directly + type badge "Human"
       expect(getByText('John Doe')).toBeTruthy();
+      expect(getAllByText(SENDER_TYPE_LABELS[SenderType.HUMAN]).length).toBeGreaterThan(0);
     });
   });
 
   describe('System Sender', () => {
     it('should render system indicator', () => {
-      const { getByText } = render(
-        <SenderIndicator
-          senderType={SenderType.SYSTEM}
-        />
-      );
+      const { getAllByText } = render(<SenderIndicator senderType={SenderType.SYSTEM} />);
 
-      expect(getByText('⚙️')).toBeTruthy();
-      expect(getByText(SENDER_TYPE_LABELS[SenderType.SYSTEM])).toBeTruthy();
+      // System renders UserAvatar (initials 'S') + name text + type badge with label
+      expect(getAllByText(SENDER_TYPE_LABELS[SenderType.SYSTEM]).length).toBeGreaterThan(0);
     });
   });
 
   describe('Transition Sender', () => {
     it('should render transition indicator', () => {
       const { getByText } = render(
-        <SenderIndicator
-          senderType={SenderType.TRANSITION}
-          isTransition={true}
-        />
+        <SenderIndicator senderType={SenderType.TRANSITION} isTransition={true} />
       );
 
       expect(getByText('🔄')).toBeTruthy();
@@ -123,10 +90,7 @@ describe('SenderIndicator', () => {
   describe('Animation', () => {
     it('should animate by default', () => {
       const { UNSAFE_getByType } = render(
-        <SenderIndicator
-          senderType={SenderType.AGENT}
-          animate={true}
-        />
+        <SenderIndicator senderType={SenderType.AGENT} animate={true} />
       );
 
       // Should render Animated.View wrapper
@@ -151,10 +115,7 @@ describe('SenderIndicator', () => {
 
     it('should have testID', () => {
       const { getByTestId } = render(
-        <SenderIndicator
-          senderType={SenderType.AGENT}
-          testID="test-indicator"
-        />
+        <SenderIndicator senderType={SenderType.AGENT} testID="test-indicator" />
       );
 
       expect(getByTestId('test-indicator')).toBeTruthy();
@@ -177,10 +138,7 @@ describe('SenderChangeIndicator', () => {
 
   it('should show arrow between sender types', () => {
     const { getByText } = render(
-      <SenderChangeIndicator
-        fromType={SenderType.AGENT}
-        toType={SenderType.HUMAN}
-      />
+      <SenderChangeIndicator fromType={SenderType.AGENT} toType={SenderType.HUMAN} />
     );
 
     expect(getByText('↓')).toBeTruthy();

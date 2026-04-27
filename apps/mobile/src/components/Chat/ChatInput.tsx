@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   TextInput,
@@ -10,9 +10,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  LayoutAnimation,
 } from 'react-native';
 
 import { theme } from '../../theme';
+
+/** Minimal user shape for mention suggestions. */
+export interface MentionUser {
+  id: string;
+  displayName: string;
+  avatarUrl?: string;
+}
 
 const EMOJI_CATEGORIES = [
   {
@@ -101,6 +109,8 @@ export interface ChatInputProps {
   onSend: (text: string) => void;
   onAttachmentPress?: () => void;
   onVoiceInput?: () => void;
+  /** List of users available for @mention suggestions. */
+  mentionUsers?: MentionUser[];
   placeholder?: string;
   disabled?: boolean;
   style?: ViewStyle;
@@ -111,6 +121,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onSend,
   onAttachmentPress,
   onVoiceInput,
+  mentionUsers = [],
   placeholder = '输入消息...',
   disabled = false,
   style,
@@ -119,6 +130,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [text, setText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(0);
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const inputRef = useRef<TextInput>(null);
 
   const handleSend = useCallback(() => {
@@ -139,6 +151,78 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       inputRef.current?.focus();
     }
   }, [showEmojiPicker]);
+
+  // ── @mention logic ──────────────────────────────────────────────
+
+  /**
+   * Called on every text change. Detects whether the cursor is inside an
+   * active @mention trigger (i.e. the user just typed "@" or is typing a
+   * name after it) and updates `mentionQuery` accordingly.
+   */
+  const handleTextChanged = useCallback(
+    (next: string) => {
+      setText(next);
+
+      if (mentionUsers.length === 0) {
+        setMentionQuery(null);
+        return;
+      }
+
+      // Find the last "@" in the text
+      const lastAtIndex = next.lastIndexOf('@');
+      if (lastAtIndex === -1) {
+        setMentionQuery(null);
+        return;
+      }
+
+      // The text after the "@" up to the end is the potential query
+      const afterAt = next.slice(lastAtIndex + 1);
+      // If there is a space after "@", it's not a mention trigger
+      if (afterAt.includes(' ')) {
+        setMentionQuery(null);
+        return;
+      }
+
+      setMentionQuery(afterAt);
+    },
+    [mentionUsers.length]
+  );
+
+  /** Filtered user list shown in the suggestion popup. */
+  const filteredUsers = useMemo(() => {
+    if (mentionQuery === null) return [];
+    const q = mentionQuery.toLowerCase();
+    return mentionUsers.filter(u => u.displayName.toLowerCase().includes(q));
+  }, [mentionQuery, mentionUsers]);
+
+  /**
+   * Inserts the selected user's @mention into the text, replacing the
+   * current "@query" portion.
+   */
+  const handleMentionSelect = useCallback(
+    (user: MentionUser) => {
+      const lastAtIndex = text.lastIndexOf('@');
+      if (lastAtIndex === -1) return;
+
+      const before = text.slice(0, lastAtIndex);
+      const after = text.slice(lastAtIndex).replace(/@\S*/, '');
+      const mention = `@${user.displayName} `;
+      const next = `${before}${mention}${after}`;
+
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setText(next);
+      setMentionQuery(null);
+      inputRef.current?.focus();
+    },
+    [text]
+  );
+
+  const hideMentionPopup = useCallback(() => {
+    if (mentionQuery !== null) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setMentionQuery(null);
+    }
+  }, [mentionQuery]);
 
   const renderEmojiItem = ({ item }: { item: string }) => (
     <TouchableOpacity style={styles.emojiItem} onPress={() => handleEmojiSelect(item)}>
@@ -183,6 +267,31 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         </View>
       )}
 
+      {/* @mention suggestion popup */}
+      {filteredUsers.length > 0 && (
+        <View style={styles.mentionPopup} testID="mention-popup">
+          <FlatList
+            data={filteredUsers}
+            keyExtractor={item => item.id}
+            keyboardShouldPersistTaps="handled"
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.mentionItem}
+                onPress={() => handleMentionSelect(item)}
+                testID={`mention-item-${item.id}`}
+              >
+                <View style={styles.mentionAvatar}>
+                  <Text style={styles.mentionAvatarText}>
+                    {item.displayName.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+                <Text style={styles.mentionName}>{item.displayName}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      )}
+
       <View style={styles.inputRow}>
         <TouchableOpacity
           style={styles.actionButton}
@@ -216,12 +325,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           ref={inputRef}
           style={styles.input}
           value={text}
-          onChangeText={setText}
+          onChangeText={handleTextChanged}
           placeholder={placeholder}
           placeholderTextColor={theme.colors.textTertiary}
           multiline
           maxLength={2000}
           editable={!disabled}
+          onBlur={hideMentionPopup}
           onFocus={() => setShowEmojiPicker(false)}
         />
 
@@ -325,6 +435,37 @@ const styles = StyleSheet.create({
   sendIcon: {
     fontSize: 18,
     color: theme.colors.textInverse,
+  },
+  // ── Mention popup styles ──────────────────────────────────────────
+  mentionPopup: {
+    maxHeight: 180,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    backgroundColor: theme.colors.background,
+  },
+  mentionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    gap: theme.spacing.sm,
+  },
+  mentionAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: theme.colors.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mentionAvatarText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fonts.sizes.sm,
+    fontWeight: '600',
+  },
+  mentionName: {
+    fontSize: theme.fonts.sizes.base,
+    color: theme.colors.text,
   },
 });
 

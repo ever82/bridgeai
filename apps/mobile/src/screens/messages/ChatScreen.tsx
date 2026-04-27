@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import * as ImagePicker from 'expo-image-picker';
 
 import { MessagesStackParamList } from '../../types/navigation';
 import { ChatMessage, createSenderSnapshot } from '../../types/chat';
 import { Header } from '../../components/Header';
 import { MessageList } from '../../components/Chat/MessageList';
 import { ChatInput } from '../../components/Chat/ChatInput';
+import { IdentitySwitcher } from '../../components/Chat/IdentitySwitcher';
 import { QuickReply, QuickReplyItem } from '../../components/Chat/QuickReply';
 import { TypingIndicator } from '../../components/TypingIndicator';
+import { AttachmentPicker, AttachmentData } from '../../components/Chat/AttachmentPicker';
 import { getRoomMessages, sendMessage } from '../../services/chatApi';
 import { socketClient } from '../../services/socketClient';
 import { theme } from '../../theme';
@@ -26,6 +27,8 @@ export const ChatScreen = ({ route }: Props) => {
   const [hasMore, setHasMore] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [quickReplies, setQuickReplies] = useState<QuickReplyItem[]>([]);
+  const [currentIdentity, setCurrentIdentity] = useState<'USER' | 'AGENT'>('AGENT');
+  const [showAttachmentPicker, setShowAttachmentPicker] = useState(false);
 
   // Load messages
   const loadMessages = useCallback(async () => {
@@ -135,33 +138,37 @@ export const ChatScreen = ({ route }: Props) => {
     [handleSend]
   );
 
-  // Handle attachment selection
-  const handleAttachmentPress = useCallback(async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-    });
+  // Handle attachment selection via AttachmentPicker
+  const handleAttachmentPress = useCallback(() => {
+    setShowAttachmentPicker(true);
+  }, []);
 
-    if (result.canceled || !result.assets?.[0]) return;
+  const handleAttachmentSend = useCallback(
+    async (attachment: AttachmentData) => {
+      try {
+        await sendMessage(conversationId, {
+          content: '',
+          type: attachment.type === 'image' ? 'IMAGE' : 'FILE',
+          attachments: [
+            {
+              type: attachment.type,
+              url: attachment.uri,
+              name: attachment.name,
+              size: attachment.size,
+            },
+          ],
+        });
+      } catch {
+        // Keep silent — AttachmentPicker shows its own upload UI
+      }
+    },
+    [conversationId]
+  );
 
-    const asset = result.assets[0];
-    const attachment = {
-      type: 'image' as const,
-      url: asset.uri,
-      name: asset.fileName || 'image.jpg',
-      size: asset.fileSize,
-    };
-
-    try {
-      await sendMessage(conversationId, {
-        content: '',
-        type: 'IMAGE',
-        attachments: [attachment],
-      });
-    } catch {
-      Alert.alert('发送失败', '图片发送失败，请重试');
-    }
-  }, [conversationId]);
+  // Handle voice input button press
+  const handleVoiceInput = useCallback(() => {
+    Alert.alert('Voice Input', 'Voice input is not yet implemented.');
+  }, []);
 
   // Load more messages (pagination)
   const handleLoadMore = useCallback(async () => {
@@ -188,6 +195,14 @@ export const ChatScreen = ({ route }: Props) => {
     >
       <Header title={userName} showBackButton />
 
+      <View style={styles.identityBar}>
+        <IdentitySwitcher
+          currentIdentity={currentIdentity}
+          onSwitch={setCurrentIdentity}
+          testID="chat-identity-switcher"
+        />
+      </View>
+
       <View style={styles.messageListContainer}>
         <MessageList
           messages={messages}
@@ -206,7 +221,17 @@ export const ChatScreen = ({ route }: Props) => {
         <QuickReply replies={quickReplies} onSelect={handleQuickReply} />
       </View>
 
-      <ChatInput onSend={handleSend} onAttachmentPress={handleAttachmentPress} />
+      <ChatInput
+        onSend={handleSend}
+        onAttachmentPress={handleAttachmentPress}
+        onVoiceInput={handleVoiceInput}
+      />
+
+      <AttachmentPicker
+        visible={showAttachmentPicker}
+        onClose={() => setShowAttachmentPicker(false)}
+        onSend={handleAttachmentSend}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -215,6 +240,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  identityBar: {
+    paddingHorizontal: theme.spacing.base,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.border,
   },
   messageListContainer: {
     flex: 1,

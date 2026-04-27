@@ -18,7 +18,7 @@ export type { MessageBubbleProps } from './MessageBubble';
 export { MessageList } from './MessageList';
 export type { MessageListProps } from './MessageList';
 export { ChatInput } from './ChatInput';
-export type { ChatInputProps } from './ChatInput';
+export type { ChatInputProps, MentionUser } from './ChatInput';
 export { QuickReply } from './QuickReply';
 export type { QuickReplyProps, QuickReplyItem } from './QuickReply';
 export { default as AttachmentPicker } from './AttachmentPicker';

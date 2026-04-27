@@ -124,25 +124,64 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({ visible, onC
     }
   }, []);
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     if (!attachment) return;
 
     setStep('uploading');
     setUploadProgress(0);
+    setError(null);
 
-    // Simulate upload progress. In production, replace this with
-    // an actual upload call that reports progress events.
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += Math.random() * 25;
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(interval);
-        onSend(attachment);
-        handleClose();
-      }
-      setUploadProgress(Math.min(Math.round(progress), 100));
-    }, 200);
+    // Upload endpoint — replace with your actual API endpoint.
+    const uploadUrl = 'https://api.example.com/api/upload';
+
+    return new Promise<void>((resolve, _reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', event => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          // Upload succeeded. onSend is called with the local attachment data.
+          // If the server returns a URL or file ID, merge it here.
+          onSend(attachment);
+          handleClose();
+          resolve();
+        } else {
+          setError(`上传失败 (${xhr.status})`);
+          setStep('preview');
+          resolve();
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        setError('上传失败，请检查网络连接');
+        setStep('preview');
+        resolve();
+      });
+
+      xhr.addEventListener('abort', () => {
+        setError('上传已取消');
+        setStep('preview');
+        resolve();
+      });
+
+      xhr.open('POST', uploadUrl);
+      xhr.setRequestHeader('Accept', 'application/json');
+
+      const formData = new FormData();
+      formData.append('file', {
+        uri: attachment.uri,
+        name: attachment.name,
+        type: attachment.mimeType || 'application/octet-stream',
+      } as unknown as Blob);
+
+      xhr.send(formData);
+    });
   }, [attachment, onSend, handleClose]);
 
   const handleCancelUpload = useCallback(() => {
