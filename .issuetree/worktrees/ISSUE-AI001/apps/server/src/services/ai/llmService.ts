@@ -3,8 +3,6 @@
  * 统一的LLM服务入口
  */
 
-import { logger } from '../../utils/logger';
-
 import { ILLMAdapter, OpenAIAdapter, ClaudeAdapter, WenxinAdapter } from './adapters';
 import { CircuitBreakerManager } from './circuitBreaker';
 import { LLMRouter } from './llmRouter';
@@ -81,9 +79,6 @@ export class LLMService {
     if (this.initialized) return;
 
     // 初始化OpenAI适配器
-    if (!this.config.openai?.apiKey) {
-      logger.warn('OpenAI adapter not configured: OPENAI_API_KEY is missing');
-    }
     if (this.config.openai?.apiKey) {
       const adapter = new OpenAIAdapter({
         apiKey: this.config.openai.apiKey,
@@ -107,9 +102,6 @@ export class LLMService {
     }
 
     // 初始化Claude适配器
-    if (!this.config.claude?.apiKey) {
-      logger.warn('Claude adapter not configured: CLAUDE_API_KEY is missing');
-    }
     if (this.config.claude?.apiKey) {
       const adapter = new ClaudeAdapter({
         apiKey: this.config.claude.apiKey,
@@ -130,9 +122,6 @@ export class LLMService {
     }
 
     // 初始化文心一言适配器
-    if (!this.config.wenxin?.apiKey || !this.config.wenxin?.secretKey) {
-      logger.warn('Wenxin adapter not configured: WENXIN_API_KEY or WENXIN_SECRET_KEY is missing');
-    }
     if (this.config.wenxin?.apiKey && this.config.wenxin?.secretKey) {
       const adapter = new WenxinAdapter({
         apiKey: this.config.wenxin.apiKey,
@@ -368,39 +357,6 @@ export class LLMService {
   /**
    * 执行嵌入请求
    */
-  async createEmbedding(
-    request: EmbeddingRequest,
-    preferredProvider?: LLMProvider
-  ): Promise<EmbeddingResponse> {
-    return this.embeddings(request, preferredProvider);
-  }
-
-  /**
-   * 简单补全接口（用于兼容旧代码）
-   */
-  async complete(
-    prompt: string,
-    options?: { provider?: LLMProvider; maxTokens?: number; temperature?: number }
-  ): Promise<{ content: string; provider: string }> {
-    const provider = options?.provider || 'claude';
-    const response = await this.chatCompletion(
-      {
-        model: 'claude-sonnet-4',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: options?.temperature ?? 0.3,
-        maxTokens: options?.maxTokens ?? 2000,
-      },
-      provider as LLMProvider
-    );
-    return {
-      content: response.choices[0]?.message?.content || '',
-      provider,
-    };
-  }
-
-  /**
-   * 执行嵌入请求
-   */
   async embeddings(
     request: EmbeddingRequest,
     preferredProvider?: LLMProvider
@@ -500,14 +456,6 @@ export class LLMService {
   }
 
   /**
-   * 关闭服务，清理资源
-   */
-  async shutdown(): Promise<void> {
-    this.adapters.clear();
-    this.initialized = false;
-  }
-
-  /**
    * 获取健康状态
    */
   async getHealth(): Promise<{
@@ -524,9 +472,7 @@ export class LLMService {
     const healthyCount = results.filter(r => r.healthy).length;
     let status: 'healthy' | 'degraded' | 'unhealthy';
 
-    if (results.length === 0) {
-      status = 'unhealthy';
-    } else if (healthyCount === results.length) {
+    if (healthyCount === results.length) {
       status = 'healthy';
     } else if (healthyCount > 0) {
       status = 'degraded';
@@ -548,70 +494,9 @@ export class LLMService {
     request: ChatCompletionRequest,
     error: Error
   ): Promise<import('./fallback').FallbackResult> {
-    try {
-      const availableProviders = this.getAvailableProviders();
-      const models = new Map<string, import('./types').ModelInfo>();
-
-      // Build models map from registered models
-      for (const provider of this.adapters.keys()) {
-        try {
-          const adapterModels = await this.adapters.get(provider)!.getModels();
-          for (const m of adapterModels) {
-            models.set(m.id, m);
-          }
-        } catch {
-          // Skip provider if getModels fails
-        }
-      }
-
-      const context: import('./fallback').FallbackContext = {
-        availableProviders,
-        models,
-        attemptCount: 0,
-        originalProvider: this.detectProvider(request.model),
-      };
-
-      const result = await this.fallbackChain.execute(request, error, context);
-
-      if (result.success) {
-        // If the result suggests a different model/provider, make a new call
-        if (result.model && result.provider && !result.response) {
-          try {
-            const adapter = this.adapters.get(result.provider);
-            if (adapter) {
-              const response = await adapter.chatCompletion({
-                ...request,
-                model: result.model,
-              });
-              return {
-                success: true,
-                response,
-                strategy: result.strategy,
-                provider: result.provider,
-                model: result.model,
-                message: result.message,
-              };
-            }
-          } catch {
-            // Fallback call also failed
-          }
-        }
-      }
-
-      return result;
-    } catch (fallbackError) {
-      return {
-        success: false,
-        strategy: 'none',
-        message: `Fallback failed: ${fallbackError instanceof Error ? fallbackError.message : 'Unknown error'}`,
-      };
-    }
-  }
-
-  private detectProvider(model: string): LLMProvider {
-    if (model.includes('claude')) return 'claude';
-    if (model.includes('ernie') || model.includes('wenxin')) return 'wenxin';
-    return 'openai';
+    // 降级策略暂未实现完整逻辑
+    // 实际项目中需要实现FallbackContext
+    return { success: false, strategy: 'none', message: 'Fallback not implemented' };
   }
 
   private recordMetrics(metrics: RequestMetrics): void {
@@ -662,8 +547,6 @@ LLMService.prototype.generateText = async function (
   prompt: string,
   options: GenerateTextOptions = {}
 ): Promise<GenerateTextResponse> {
-  const startTime = Date.now();
-
   const response = await this.chatCompletion(
     {
       model: options.model || 'gpt-4',
@@ -675,31 +558,17 @@ LLMService.prototype.generateText = async function (
   );
 
   const text = response.choices[0]?.message?.content || '';
-  const provider: LLMProvider = response.model.includes('claude')
-    ? 'claude'
-    : response.model.includes('ernie')
-      ? 'wenxin'
-      : 'openai';
-  const latencyMs = Date.now() - startTime;
-
-  // Calculate actual cost using the adapter
-  let cost = 0;
-  const adaptersMap = (this as unknown as { adapters: Map<LLMProvider, ILLMAdapter> }).adapters;
-  const adapter = adaptersMap?.get(provider);
-  if (adapter) {
-    cost = adapter.calculateCost(
-      response.model,
-      response.usage.promptTokens,
-      response.usage.completionTokens
-    );
-  }
 
   return {
     text,
-    provider,
+    provider: response.model.includes('claude')
+      ? 'claude'
+      : response.model.includes('ernie')
+        ? 'wenxin'
+        : 'openai',
     model: response.model,
-    latencyMs,
-    cost,
+    latencyMs: 0, // Would need to track this
+    cost: 0, // Would need to calculate this
     usage: {
       promptTokens: response.usage.promptTokens,
       completionTokens: response.usage.completionTokens,

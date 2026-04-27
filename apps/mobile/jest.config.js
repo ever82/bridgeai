@@ -7,15 +7,14 @@ module.exports = {
   transform: {
     '^.+\\.[jt]sx?$': ['babel-jest', { configFile: './babel.config.test.js' }],
   },
-  setupFilesAfterEnv: [
-    '<rootDir>/jest.setup.ts',
-  ],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@bridgeai/shared$': '<rootDir>/../../packages/shared/src',
     '^react-native$': '<rootDir>/__mocks__/react-native.ts',
     '^expo-(.*)$': '<rootDir>/__mocks__/expo-$1.ts',
-    '^@react-native-async-storage/async-storage$': '<rootDir>/__mocks__/@react-native-async-storage/async-storage.ts',
+    '^@react-native-async-storage/async-storage$':
+      '<rootDir>/__mocks__/@react-native-async-storage/async-storage.ts',
     '^@react-navigation/native-stack$': '<rootDir>/__mocks__/@react-navigation/native-stack.ts',
     '^@react-navigation/bottom-tabs$': '<rootDir>/__mocks__/@react-navigation/bottom-tabs.ts',
     '^react-native-maps$': '<rootDir>/__mocks__/react-native-maps.ts',
@@ -24,6 +23,11 @@ module.exports = {
     '^react-native-safe-area-context$': '<rootDir>/__mocks__/react-native-safe-area-context.ts',
     '^react-native-screens$': '<rootDir>/__mocks__/react-native-screens.ts',
     '^nativewind$': '<rootDir>/__mocks__/nativewind.ts',
+    '^react-native-sqlite-storage$': '<rootDir>/__mocks__/react-native-sqlite-storage.ts',
+    '^react-native-vision-camera$': '<rootDir>/__mocks__/react-native-vision-camera.ts',
+    '^react-native-permissions$': '<rootDir>/__mocks__/react-native-permissions/index.ts',
+    '^react-native-worklets-core$': '<rootDir>/__mocks__/react-native-worklets-core.ts',
+    '^react-native-tflite$': '<rootDir>/__mocks__/react-native-tflite.ts',
   },
   transformIgnorePatterns: [
     'node_modules/(?!(react-native|@react-native|@react-navigation|@expo|expo-.*|react-native-.*)/)',
@@ -34,10 +38,7 @@ module.exports = {
     '<rootDir>/src/components/**/*.test.ts',
     '<rootDir>/src/components/**/*.test.tsx',
   ],
-  collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
-    '!src/**/*.d.ts',
-  ],
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
   snapshotFormat: {
     escapeString: true,
     printBasicPrototype: true,

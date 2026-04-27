@@ -11,9 +11,6 @@ export { LLMMetricsService } from './metricsService';
 export { LLMService } from './llmService';
 export * from './fallback';
 
-// Resilience Services (ISSUE-AI006)
-export * from './resilience';
-
 // Demand Extraction Service (ISSUE-AI002a)
 export {
   DemandExtractionService,
@@ -87,52 +84,3 @@ export {
   processNaturalLanguageDemand,
   ExtractedDemandData,
 } from './consumerDemandAI';
-
-// Supply Extraction Service (ISSUE-AI003)
-export {
-  SupplyExtractionService,
-  supplyExtractionService,
-  Supply,
-  Capability,
-  PricingInfo,
-  AvailabilityInfo,
-  LocationInfo,
-  ExperienceInfo,
-  QualityMetrics,
-  SupplyExtractionRequest,
-  ExtractionOptions as SupplyExtractionOptions,
-  SupplyExtractionResult,
-  BulkSupplyExtractionRequest,
-  BulkSupplyExtractionResult,
-  QualityReport,
-  QualityIssue,
-} from './supplyExtractionService';
-
-// Supply Quality Assessor (ISSUE-AI003)
-export {
-  SupplyQualityAssessor,
-  supplyQualityAssessor,
-  SupplyQualityAssessment,
-  QualityGrade,
-  OptimizationSuggestion,
-} from './assessors/supplyQualityAssessor';
-
-// Dating Extraction Service (ISSUE-DATE001)
-export {
-  DatingExtractionService,
-  datingExtractionService,
-  DatingExtractionResult,
-  ImplicitPreferenceResult,
-  ImplicitPreference,
-  CompletionSuggestion,
-  MissingSection,
-  SmartCompletionResult,
-} from './datingExtractionService';
-
-// Vision Services (ISSUE-AI005)
-export * from './vision/types';
-export { ImageAnalysisService } from './imageAnalysisService';
-export { ImageModerationService } from './imageModerationService';
-export { OCRService } from './ocrService';
-export { ImageSearchService } from './imageSearchService';
-export * from './adapters/vision';
