@@ -3,11 +3,13 @@ import multer from 'multer';
 
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/common';
-import { handleUploadError } from '../middleware/upload';
+import { handleUploadError, validateImageContent } from '../middleware/upload';
 import { ApiResponse } from '../utils/response';
 import * as storageService from '../services/storageService';
 import * as userService from '../services/userService';
+import * as uploadAuditService from '../services/uploadAudit';
 import { AppError } from '../errors/AppError';
+import { stripExif } from '../utils/imageProcessing';
 
 const router: Router = Router();
 
@@ -38,20 +40,43 @@ router.post(
   authenticate,
   upload.single('avatar'),
   handleUploadError,
+  validateImageContent,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    // Check if user is restricted
+    if (uploadAuditService.isUserRestricted(req.user.id)) {
+      uploadAuditService.recordViolation(req.user.id, 'Upload attempt while restricted');
+      uploadAuditService.logUpload({
+        userId: req.user.id,
+        fileName: req.file?.originalname || 'unknown',
+        fileSize: req.file?.size || 0,
+        mimeType: req.file?.mimetype || 'unknown',
+        status: 'rejected',
+        reason: 'User is restricted from uploading',
+        ip: req.ip,
+      });
+      throw new AppError(
+        'Upload denied: your account has restricted upload access',
+        'UPLOAD_RESTRICTED',
+        403
+      );
     }
 
     if (!req.file) {
       throw new AppError('No file uploaded', 'NO_FILE', 400);
     }
 
+    // Strip EXIF data for privacy protection before storage
+    const cleanedBuffer = await stripExif(req.file.buffer);
+
     const fileInfo: storageService.FileInfo = {
-      buffer: req.file.buffer,
+      buffer: cleanedBuffer,
       originalName: req.file.originalname,
       mimeType: req.file.mimetype,
-      size: req.file.size,
+      size: cleanedBuffer.length,
     };
 
     // Upload to storage
@@ -60,12 +85,25 @@ router.post(
     // Update user avatar URL
     await userService.updateAvatar(req.user.id, result.url);
 
-    res.json(ApiResponse.success({
-      avatarUrl: result.url,
-      thumbnailUrl: result.thumbnailUrl,
-      size: result.size,
-      message: 'Avatar uploaded successfully',
-    }));
+    // Log successful upload
+    uploadAuditService.logUpload({
+      userId: req.user.id,
+      fileId: result.url,
+      fileName: req.file.originalname,
+      fileSize: result.size,
+      mimeType: req.file.mimetype,
+      status: 'success',
+      ip: req.ip,
+    });
+
+    res.json(
+      ApiResponse.success({
+        avatarUrl: result.url,
+        thumbnailUrl: result.thumbnailUrl,
+        size: result.size,
+        message: 'Avatar uploaded successfully',
+      })
+    );
   })
 );
 
@@ -79,32 +117,68 @@ router.post(
   authenticate,
   upload.single('image'),
   handleUploadError,
+  validateImageContent,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    // Check if user is restricted
+    if (uploadAuditService.isUserRestricted(req.user.id)) {
+      uploadAuditService.recordViolation(req.user.id, 'Upload attempt while restricted');
+      uploadAuditService.logUpload({
+        userId: req.user.id,
+        fileName: req.file?.originalname || 'unknown',
+        fileSize: req.file?.size || 0,
+        mimeType: req.file?.mimetype || 'unknown',
+        status: 'rejected',
+        reason: 'User is restricted from uploading',
+        ip: req.ip,
+      });
+      throw new AppError(
+        'Upload denied: your account has restricted upload access',
+        'UPLOAD_RESTRICTED',
+        403
+      );
     }
 
     if (!req.file) {
       throw new AppError('No file uploaded', 'NO_FILE', 400);
     }
 
+    // Strip EXIF data for privacy protection before storage
+    const cleanedBuffer = await stripExif(req.file.buffer);
+
     const fileInfo: storageService.FileInfo = {
-      buffer: req.file.buffer,
+      buffer: cleanedBuffer,
       originalName: req.file.originalname,
       mimeType: req.file.mimetype,
-      size: req.file.size,
+      size: cleanedBuffer.length,
     };
 
     const result = await storageService.uploadFile(fileInfo, {}, 'images/');
 
-    res.json(ApiResponse.success({
-      url: result.url,
-      thumbnailUrl: result.thumbnailUrl,
-      size: result.size,
-      width: result.width,
-      height: result.height,
-      message: 'Image uploaded successfully',
-    }));
+    // Log successful upload
+    uploadAuditService.logUpload({
+      userId: req.user.id,
+      fileId: result.url,
+      fileName: req.file.originalname,
+      fileSize: result.size,
+      mimeType: req.file.mimetype,
+      status: 'success',
+      ip: req.ip,
+    });
+
+    res.json(
+      ApiResponse.success({
+        url: result.url,
+        thumbnailUrl: result.thumbnailUrl,
+        size: result.size,
+        width: result.width,
+        height: result.height,
+        message: 'Image uploaded successfully',
+      })
+    );
   })
 );
 

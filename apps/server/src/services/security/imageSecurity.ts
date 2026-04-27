@@ -2,6 +2,11 @@ import { createHash } from 'crypto';
 
 import sharp from 'sharp';
 
+import { ImageModerationService } from '../ai/imageModerationService';
+import { ImageInput } from '../ai/vision/types';
+import { ClaudeVisionAdapter } from '../ai/adapters/vision/claudeVision';
+import { GPT4VisionAdapter } from '../ai/adapters/vision/gpt4Vision';
+
 export interface ImageSecurityCheckResult {
   passed: boolean;
   violations: string[];
@@ -47,6 +52,7 @@ export class ImageSecurityService {
   private static instance: ImageSecurityService;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private rekognitionClient: any | null | undefined = undefined;
+  private visionAdapter: ImageModerationService | null | undefined = undefined;
 
   /**
    * Lazily create a Rekognition client from environment variables.
@@ -80,6 +86,47 @@ export class ImageSecurityService {
       this.rekognitionClient = null;
       return null;
     }
+  }
+
+  /**
+   * Lazily create an ImageModerationService backed by a Vision adapter
+   * (Claude Vision or GPT-4 Vision) from environment variables.
+   * Returns null if no Vision API credentials are configured.
+   *
+   * Priority: ANTHROPIC_API_KEY (Claude Vision) > OPENAI_API_KEY (GPT-4 Vision)
+   */
+  private async getVisionModerationService(): Promise<ImageModerationService | null> {
+    if (this.visionAdapter !== undefined && this.visionAdapter !== null) {
+      return this.visionAdapter;
+    }
+
+    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const openaiKey = process.env.OPENAI_API_KEY;
+
+    if (anthropicKey) {
+      try {
+        const adapter = new ClaudeVisionAdapter({ apiKey: anthropicKey });
+        await adapter.initialize();
+        this.visionAdapter = new ImageModerationService({ adapter });
+        return this.visionAdapter;
+      } catch {
+        // fall through to OpenAI
+      }
+    }
+
+    if (openaiKey) {
+      try {
+        const adapter = new GPT4VisionAdapter({ apiKey: openaiKey });
+        await adapter.initialize();
+        this.visionAdapter = new ImageModerationService({ adapter });
+        return this.visionAdapter;
+      } catch {
+        // fall through to histogram fallback
+      }
+    }
+
+    this.visionAdapter = null;
+    return null;
   }
 
   static getInstance(): ImageSecurityService {
@@ -207,14 +254,14 @@ export class ImageSecurityService {
    * Detect sensitive / policy-violating content using AWS Rekognition
    * Content Moderation (DetectModerationLabels).
    *
-   * Falls back to basic sharp-based histogram analysis when Rekognition is
-   * not configured (missing credentials) so the method always produces a
-   * result regardless of environment.
+   * Falls back to Claude/GPT-4 Vision-powered ImageModerationService when
+   * Rekognition is unavailable, and finally to basic sharp histogram analysis
+   * as a last resort (degenerate-image-only detection).
    */
   private async checkSensitiveContent(imageBuffer: Buffer): Promise<SensitiveContentResult> {
     const client = await this.getRekognitionClient();
 
-    // --- Rekognition path ---
+    // --- Tier 1: AWS Rekognition ---
     if (client) {
       try {
         const { DetectModerationLabelsCommand } = await import('@aws-sdk/client-rekognition');
@@ -250,20 +297,56 @@ export class ImageSecurityService {
         };
       } catch (error) {
         console.warn(
-          '[ImageSecurity] AWS Rekognition DetectModerationLabels failed, falling back to histogram analysis:',
+          '[ImageSecurity] AWS Rekognition DetectModerationLabels failed, falling back to Vision moderation:',
+          error instanceof Error ? error.message : error
+        );
+        // Fall through to Vision fallback
+      }
+    }
+
+    // --- Tier 2: Claude / GPT-4 Vision via ImageModerationService ---
+    const moderationService = await this.getVisionModerationService();
+    if (moderationService) {
+      try {
+        const imageInput: ImageInput = {
+          type: 'base64',
+          data: imageBuffer.toString('base64'),
+          mimeType: 'image/jpeg',
+        };
+
+        const modResult = await moderationService.moderate(imageInput);
+
+        if (!modResult.isSafe) {
+          return {
+            hasSensitiveContent: true,
+            categories: [modResult.violationType],
+            confidence: modResult.confidenceScore,
+          };
+        }
+
+        // Vision says safe — return early so we skip the degenerate-image fallback
+        return {
+          hasSensitiveContent: false,
+          categories: [],
+          confidence: modResult.confidenceScore,
+        };
+      } catch (error) {
+        console.warn(
+          '[ImageSecurity] Vision moderation failed, falling back to histogram analysis:',
           error instanceof Error ? error.message : error
         );
         // Fall through to histogram fallback
       }
     }
 
-    // --- Fallback: basic sharp histogram analysis (degenerate images only) ---
+    // --- Tier 3 (last resort): basic sharp histogram analysis (degenerate images only) ---
     return this.checkSensitiveContentFallback(imageBuffer);
   }
 
   /**
    * Minimal sharp-based fallback that detects only degenerate images
-   * (all-black or all-white). Used when Rekognition is unavailable.
+   * (all-black or all-white). Used as the absolute last resort when neither
+   * Rekognition nor Vision moderation is configured.
    */
   private async checkSensitiveContentFallback(
     imageBuffer: Buffer

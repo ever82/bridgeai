@@ -2,6 +2,7 @@
  * Tests for upload middleware
  */
 import { Request, Response } from 'express';
+import multer from 'multer';
 
 import {
   uploadSingle,
@@ -17,11 +18,23 @@ import {
 
 // Mock multer
 jest.mock('multer', () => {
-  return jest.fn(() => ({
+  const multer = jest.fn(() => ({
     single: jest.fn(() => (req: Request, res: Response, next: () => void) => next()),
     array: jest.fn(() => (req: Request, res: Response, next: () => void) => next()),
     fields: jest.fn(() => (req: Request, res: Response, next: () => void) => next()),
   }));
+  multer.memoryStorage = jest.fn();
+  multer.diskStorage = jest.fn();
+  multer.MulterError = class MulterError extends Error {
+    code: string;
+    field?: string;
+    constructor(code: string, field?: string) {
+      super(`Multer error: ${code}`);
+      this.code = code;
+      this.field = field;
+    }
+  };
+  return { __esModule: true, default: multer };
 });
 
 describe('Upload Middleware', () => {
@@ -117,12 +130,11 @@ describe('Upload Middleware', () => {
 
   describe('handleUploadError', () => {
     it('should handle file size limit error', () => {
-      const error = new Error('File too large');
-      (error as Error & { code: string }).code = 'LIMIT_FILE_SIZE';
+      const error = new multer.MulterError('LIMIT_FILE_SIZE');
 
       handleUploadError(error, mockReq as Request, mockRes as Response, mockNext);
 
-      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.status).toHaveBeenCalledWith(413);
       expect(mockRes.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
@@ -134,8 +146,7 @@ describe('Upload Middleware', () => {
     });
 
     it('should handle file count limit error', () => {
-      const error = new Error('Too many files');
-      (error as Error & { code: string }).code = 'LIMIT_FILE_COUNT';
+      const error = new multer.MulterError('LIMIT_FILE_COUNT');
 
       handleUploadError(error, mockReq as Request, mockRes as Response, mockNext);
 
@@ -151,9 +162,7 @@ describe('Upload Middleware', () => {
     });
 
     it('should handle unexpected field error', () => {
-      const error = new Error('Unexpected field');
-      (error as Error & { code: string; field: string }).code = 'LIMIT_UNEXPECTED_FILE';
-      (error as Error & { field: string }).field = 'wrongField';
+      const error = new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'wrongField');
 
       handleUploadError(error, mockReq as Request, mockRes as Response, mockNext);
 
@@ -217,8 +226,7 @@ describe('Upload Middleware', () => {
 
     it('should validate WebP image', () => {
       const buffer = Buffer.from([
-        0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00,
-        0x57, 0x45, 0x42, 0x50,
+        0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
       ]);
       const result = validateImageBuffer(buffer);
       expect(result.valid).toBe(true);

@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
+import { randomUUID } from 'crypto';
 
 import { AppError } from '../errors/AppError';
 
@@ -65,15 +66,16 @@ function validateFile(file: FileInfo, options: UploadOptions = {}): void {
 }
 
 /**
- * Generate unique file key
+ * Generate unique file key using UUID and date-based directory partitioning.
+ * Original filename is NOT retained — only the extension is preserved.
  */
 function generateFileKey(originalName: string, prefix: string = ''): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 15);
   const ext = path.extname(originalName).toLowerCase();
-  const name = path.basename(originalName, ext).replace(/[^a-zA-Z0-9]/g, '_');
+  const uuid = randomUUID();
+  const now = new Date();
+  const datePath = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
 
-  return `${prefix}${name}_${timestamp}_${random}${ext}`;
+  return `${prefix}${datePath}/${uuid}${ext}`;
 }
 
 /**
@@ -91,7 +93,9 @@ async function ensureUploadDir(subDir: string = ''): Promise<string> {
  * Get image dimensions
  * Note: In a real implementation, you would use sharp or similar library
  */
-async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number } | undefined> {
+async function getImageDimensions(
+  _buffer: Buffer
+): Promise<{ width: number; height: number } | undefined> {
   // Placeholder - would use sharp library in production
   // const sharp = require('sharp');
   // const metadata = await sharp(buffer).metadata();
@@ -103,7 +107,7 @@ async function getImageDimensions(buffer: Buffer): Promise<{ width: number; heig
  * Compress image
  * Note: In a real implementation, you would use sharp or similar library
  */
-async function compressImage(buffer: Buffer, quality: number = 80): Promise<Buffer> {
+async function compressImage(buffer: Buffer, _quality: number = 80): Promise<Buffer> {
   // Placeholder - would use sharp library in production
   // const sharp = require('sharp');
   // return await sharp(buffer)
@@ -116,7 +120,11 @@ async function compressImage(buffer: Buffer, quality: number = 80): Promise<Buff
  * Generate thumbnail
  * Note: In a real implementation, you would use sharp or similar library
  */
-async function generateThumbnail(buffer: Buffer, width: number = 200, height: number = 200): Promise<Buffer> {
+async function generateThumbnail(
+  buffer: Buffer,
+  _width: number = 200,
+  _height: number = 200
+): Promise<Buffer> {
   // Placeholder - would use sharp library in production
   // const sharp = require('sharp');
   // return await sharp(buffer)
@@ -134,8 +142,8 @@ async function uploadToLocal(
   key: string,
   options: UploadOptions = {}
 ): Promise<UploadResult> {
-  const subDir = key.split('/')[0] || 'default';
-  const dir = await ensureUploadDir(subDir);
+  const keyDir = path.dirname(key);
+  const dir = await ensureUploadDir(keyDir);
   const filePath = path.join(dir, path.basename(key));
 
   let buffer = file.buffer;
@@ -216,10 +224,7 @@ export async function uploadFile(
 /**
  * Upload avatar
  */
-export async function uploadAvatar(
-  file: FileInfo,
-  userId: string
-): Promise<UploadResult> {
+export async function uploadAvatar(file: FileInfo, userId: string): Promise<UploadResult> {
   const options: UploadOptions = {
     maxSize: 5 * 1024 * 1024, // 5MB
     allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
@@ -243,8 +248,8 @@ export async function deleteFile(key: string): Promise<void> {
   }
 
   // Delete from local storage
-  const subDir = key.split('/')[0] || 'default';
-  const filePath = path.join(UPLOAD_DIR, subDir, path.basename(key));
+  const keyDir = path.dirname(key);
+  const filePath = path.join(UPLOAD_DIR, keyDir, path.basename(key));
 
   try {
     await fs.unlink(filePath);
@@ -254,7 +259,7 @@ export async function deleteFile(key: string): Promise<void> {
 
   // Delete thumbnail if exists
   const thumbnailKey = key.replace(/\.(\w+)$/, '-thumb.$1');
-  const thumbnailPath = path.join(UPLOAD_DIR, subDir, path.basename(thumbnailKey));
+  const thumbnailPath = path.join(UPLOAD_DIR, keyDir, path.basename(thumbnailKey));
   try {
     await fs.unlink(thumbnailPath);
   } catch (error) {

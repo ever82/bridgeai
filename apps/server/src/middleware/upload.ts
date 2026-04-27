@@ -161,7 +161,28 @@ function getFileCategory(mimeType: string): keyof typeof MAX_FILE_SIZES | null {
  */
 function isDangerousExtension(filename: string): boolean {
   const ext = path.extname(filename).toLowerCase();
-  return DANGEROUS_EXTENSIONS.includes(ext);
+  if (DANGEROUS_EXTENSIONS.includes(ext)) {
+    return true;
+  }
+
+  // Check for double extensions (e.g., "script.php.jpg", "malicious.php.png")
+  // Split filename by dots and check for dangerous patterns like "php.jpg"
+  const parts = filename.toLowerCase().split('.');
+  if (parts.length > 2) {
+    // Check all parts except the last one (which is the final extension)
+    for (let i = 0; i < parts.length - 1; i++) {
+      // Check if any non-final part is a dangerous extension
+      for (const dangerousExt of DANGEROUS_EXTENSIONS) {
+        const extName = dangerousExt.substring(1); // remove leading dot
+        if (parts[i] === extName) {
+          // Found a dangerous extension in a non-final position
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -355,7 +376,11 @@ export function uploadImage(fieldName = 'image', maxSize?: number) {
 /**
  * Upload multiple images
  */
-export function uploadImages(fieldName = 'images', maxCount = 10, maxSize?: number): RequestHandler {
+export function uploadImages(
+  fieldName = 'images',
+  maxCount = 10,
+  maxSize?: number
+): RequestHandler {
   return uploadMultiple({
     categories: ['image'],
     fieldName,

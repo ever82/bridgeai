@@ -281,12 +281,32 @@ export async function compareImages(image1: Buffer, image2: Buffer): Promise<num
 
 /**
  * Strip EXIF metadata from image for privacy protection
+ * Preserves the original image format and only removes metadata
  */
 export async function stripExif(imageBuffer: Buffer): Promise<Buffer> {
-  return await sharp(imageBuffer)
-    .rotate() // auto-rotate based on EXIF orientation
-    .jpeg() // re-encode without metadata
-    .toBuffer();
+  const metadata = await sharp(imageBuffer).metadata();
+
+  // Sharp strips all metadata by default when re-encoding.
+  // Apply auto-rotation based on EXIF orientation before stripping.
+  const pipeline = sharp(imageBuffer).rotate();
+
+  // Re-encode in the original format to remove metadata while preserving format
+  switch (metadata.format) {
+    case 'jpeg':
+    case 'jpg':
+      return await pipeline.jpeg().toBuffer();
+    case 'png':
+      return await pipeline.png().toBuffer();
+    case 'webp':
+      return await pipeline.webp().toBuffer();
+    case 'gif':
+      return await pipeline.gif().toBuffer();
+    case 'avif':
+      return await pipeline.avif().toBuffer();
+    default:
+      // Fallback to JPEG for unknown formats
+      return await pipeline.jpeg().toBuffer();
+  }
 }
 
 /**
