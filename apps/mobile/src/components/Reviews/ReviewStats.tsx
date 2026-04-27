@@ -1,31 +1,32 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native';
+import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 
 import { theme } from '../../theme';
-import { ReviewStats as ReviewStatsType } from '../../types/review';
 
 import { StarRating } from './StarRating';
 
+interface DistributionItem {
+  score: number;
+  count: number;
+}
+
+interface ReviewStatsData {
+  averageScore: number;
+  totalReviews: number;
+  distribution: DistributionItem[];
+}
+
 interface ReviewStatsProps {
-  stats: ReviewStatsType;
+  stats: ReviewStatsData;
   style?: ViewStyle;
   testID?: string;
 }
 
-export const ReviewStats: React.FC<ReviewStatsProps> = ({
-  stats,
-  style,
-  testID,
-}) => {
+export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats, style, testID }) => {
   const { averageScore, totalReviews, distribution } = stats;
 
   const getMaxCount = () => {
-    return Math.max(...distribution.map((d) => d.count), 1);
+    return Math.max(...distribution.map(d => d.count), 1);
   };
 
   const maxCount = getMaxCount();
@@ -45,8 +46,7 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({
           .sort((a, b) => b.score - a.score)
           .map(({ score, count }) => {
             const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
-            const actualPercentage =
-              totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+            const actualPercentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
 
             return (
               <View key={score} style={styles.distributionRow}>

@@ -1,84 +1,90 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { theme } from '../../theme';
 import { Review, ReviewTab, ReviewStats as ReviewStatsType } from '../../types/review';
 import { ReviewCard, ReviewStats } from '../../components/Reviews';
-
-// Mock data for demonstration
-const mockReviews: Review[] = [
-  {
-    id: '1',
-    matchId: 'match-1',
-    raterId: 'user-1',
-    rateeId: 'user-2',
-    score: 5,
-    comment: '非常棒的体验！对方很专业，沟通顺畅，强烈推荐！',
-    createdAt: '2026-04-08T10:30:00Z',
-    rater: { id: 'user-1', name: '张三', avatar: undefined },
-    match: { id: 'match-1', title: '摄影服务订单 #1234', completedAt: '2026-04-07' },
-  },
-  {
-    id: '2',
-    matchId: 'match-2',
-    raterId: 'user-3',
-    rateeId: 'user-2',
-    score: 4,
-    comment: '整体不错，就是时间安排有点紧张。',
-    createdAt: '2026-04-05T14:20:00Z',
-    rater: { id: 'user-3', name: '李四', avatar: undefined },
-    match: { id: 'match-2', title: '翻译服务订单 #1235', completedAt: '2026-04-04' },
-  },
-  {
-    id: '3',
-    matchId: 'match-3',
-    raterId: 'user-2',
-    rateeId: 'user-4',
-    score: 5,
-    comment: '合作愉快，期待下次！',
-    createdAt: '2026-04-01T09:00:00Z',
-    ratee: { id: 'user-4', name: '王五', avatar: undefined },
-    match: { id: 'match-3', title: '设计服务订单 #1236', completedAt: '2026-03-31' },
-  },
-];
-
-const mockStats: ReviewStatsType = {
-  averageScore: 4.5,
-  totalReviews: 12,
-  distribution: [
-    { score: 5, count: 7 },
-    { score: 4, count: 3 },
-    { score: 3, count: 1 },
-    { score: 2, count: 1 },
-    { score: 1, count: 0 },
-  ],
-};
+import { getReceivedReviews, getGivenReviews, getReviewStats } from '../../services/api/reviewApi';
 
 export const ReviewListScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState<ReviewTab>('received');
   const [refreshing, setRefreshing] = useState(false);
-  const [reviews] = useState<Review[]>(mockReviews);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [stats, setStats] = useState<ReviewStatsType | null>(null);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await getReviewStats();
+      const data = res.data.data;
+      // Convert backend stats to frontend ReviewStatsType format
+      const statsData: ReviewStatsType = {
+        averageScore: data.avgRating,
+        totalReviews:
+          data.fiveStarCount +
+          data.fourStarCount +
+          data.threeStarCount +
+          data.twoStarCount +
+          data.oneStarCount,
+        distribution: [
+          { score: 5, count: data.fiveStarCount },
+          { score: 4, count: data.fourStarCount },
+          { score: 3, count: data.threeStarCount },
+          { score: 2, count: data.twoStarCount },
+          { score: 1, count: data.oneStarCount },
+        ],
+      };
+      setStats(statsData);
+    } catch {
+      // Stats are non-critical, silently fail
+    }
+  }, []);
+
+  const fetchReviews = useCallback(async (tab: ReviewTab) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const apiCall = tab === 'received' ? getReceivedReviews : getGivenReviews;
+      const res = await apiCall();
+      setReviews(res.data.data.reviews);
+    } catch (err) {
+      setError('加载评价失败，请稍后重试');
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchReviews(activeTab);
+  }, [activeTab, fetchReviews]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await Promise.all([fetchReviews(activeTab), fetchStats()]);
     setRefreshing(false);
-  }, []);
+  }, [activeTab, fetchReviews, fetchStats]);
 
   const handleReviewPress = (review: Review) => {
     navigation.navigate('ReviewDetail', { reviewId: review.id });
   };
-
-  const filteredReviews = reviews.filter(review =>
-    activeTab === 'received'
-      ? review.rateeId === 'user-2' // Current user ID (mock)
-      : review.raterId === 'user-2'
-  );
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
@@ -95,7 +101,7 @@ export const ReviewListScreen: React.FC = () => {
   const renderHeader = () => (
     <View>
       {/* Stats section */}
-      <ReviewStats stats={mockStats} />
+      {stats && <ReviewStats stats={stats} />}
 
       {/* Tab switcher */}
       <View style={styles.tabContainer}>
@@ -128,18 +134,18 @@ export const ReviewListScreen: React.FC = () => {
       </View>
 
       <FlatList
-        data={filteredReviews}
+        data={reviews}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <ReviewCard
             review={item}
-            showUser={activeTab === 'received' ? 'rater' : 'ratee'}
+            showUser={activeTab === 'received' ? 'reviewer' : 'reviewee'}
             onPress={handleReviewPress}
             testID={`review-card-${item.id}`}
           />
         )}
         ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmptyState}
+        ListEmptyComponent={!loading && !error ? renderEmptyState : null}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl
@@ -150,6 +156,21 @@ export const ReviewListScreen: React.FC = () => {
         }
         showsVerticalScrollIndicator={false}
       />
+
+      {loading && !refreshing && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      )}
+
+      {error && (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity onPress={() => fetchReviews(activeTab)}>
+            <Text style={styles.retryText}>重试</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -173,6 +194,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: theme.spacing['2xl'],
+    flexGrow: 1,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -219,5 +241,38 @@ const styles = StyleSheet.create({
     fontSize: theme.fonts.sizes.base,
     color: theme.colors.textSecondary,
     textAlign: 'center',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.6)',
+  },
+  errorBanner: {
+    position: 'absolute',
+    bottom: theme.spacing.lg,
+    left: theme.spacing.base,
+    right: theme.spacing.base,
+    backgroundColor: theme.colors.error,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.base,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  errorText: {
+    color: '#fff',
+    fontSize: theme.fonts.sizes.base,
+    flex: 1,
+  },
+  retryText: {
+    color: '#fff',
+    fontSize: theme.fonts.sizes.base,
+    fontWeight: theme.fonts.weights.bold,
+    marginLeft: theme.spacing.base,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,28 +7,17 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { theme } from '../../theme';
 import { Review } from '../../types/review';
+import { formatDate } from '../../utils/format';
 import { StarRating } from '../../components/Reviews';
 import { Button } from '../../components/Button';
-
-// Mock data
-const mockReview: Review = {
-  id: '1',
-  matchId: 'match-1',
-  raterId: 'user-1',
-  rateeId: 'user-2',
-  score: 5,
-  comment: '非常棒的体验！对方很专业，沟通顺畅，强烈推荐！',
-  createdAt: '2026-04-08T10:30:00Z',
-  rater: { id: 'user-1', name: '张三', avatar: undefined },
-  ratee: { id: 'user-2', name: '李四', avatar: undefined },
-  match: { id: 'match-1', title: '摄影服务订单 #1234', completedAt: '2026-04-07' },
-};
+import { getReviewById, replyToReview as replyToReviewApi } from '../../services/api/reviewApi';
 
 export const ReviewDetailScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -36,23 +25,28 @@ export const ReviewDetailScreen: React.FC = () => {
   const route = useRoute();
   const { reviewId } = route.params as { reviewId: string };
 
-  const [review] = useState<Review>(mockReview);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _reviewId = reviewId; // Will be used for real API fetch
+  const [review, setReview] = useState<Review | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [reply, setReply] = useState('');
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  useEffect(() => {
+    const fetchReview = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await getReviewById(reviewId);
+        setReview(res.data.data);
+      } catch {
+        setError('加载评价详情失败，请稍后重试');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReview();
+  }, [reviewId]);
 
   const handleReply = async () => {
     if (!reply.trim()) {
@@ -61,12 +55,17 @@ export const ReviewDetailScreen: React.FC = () => {
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setShowReplyInput(false);
-    setReply('');
-    Alert.alert('成功', '回复已提交');
+    try {
+      const res = await replyToReviewApi(reviewId, { content: reply.trim() });
+      setReview(res.data.data);
+      setShowReplyInput(false);
+      setReply('');
+      Alert.alert('成功', '回复已提交');
+    } catch {
+      Alert.alert('错误', '回复提交失败，请稍后重试');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReport = () => {
@@ -82,8 +81,37 @@ export const ReviewDetailScreen: React.FC = () => {
     ]);
   };
 
-  const user = review.rater;
-  const isReceivedReview = review.rateeId === 'user-2'; // Current user ID (mock)
+  const handleRetry = () => {
+    setLoading(true);
+    setError(null);
+    getReviewById(reviewId)
+      .then(res => setReview(res.data.data))
+      .catch(() => setError('加载评价详情失败，请稍后重试'))
+      .finally(() => setLoading(false));
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centered, { paddingTop: insets.top }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  if (error || !review) {
+    return (
+      <View style={[styles.container, styles.centered, { paddingTop: insets.top }]}>
+        <Text style={styles.errorText}>{error || '评价不存在'}</Text>
+        <TouchableOpacity onPress={handleRetry} style={styles.retryButton}>
+          <Text style={styles.retryButtonText}>重试</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const user = review.reviewer;
+  // isReceivedReview: the current user is the reviewee
+  const isReceivedReview = true; // Determined by the caller; actual role check would come from auth context
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -108,20 +136,20 @@ export const ReviewDetailScreen: React.FC = () => {
             </View>
             <View style={styles.userInfo}>
               <Text style={styles.userName}>{user?.name || '未知用户'}</Text>
-              <Text style={styles.reviewDate}>{formatDate(review.createdAt)}</Text>
+              <Text style={styles.reviewDate}>{formatDate(review.createdAt, 'long', true)}</Text>
             </View>
           </View>
 
           {/* Rating */}
           <View style={styles.ratingSection}>
-            <StarRating rating={review.score} size="lg" disabled />
-            <Text style={styles.scoreText}>{review.score}.0</Text>
+            <StarRating rating={review.rating} size="lg" disabled />
+            <Text style={styles.scoreText}>{review.rating}.0</Text>
           </View>
 
-          {/* Comment */}
-          {review.comment && (
+          {/* Content */}
+          {review.content && (
             <View style={styles.commentSection}>
-              <Text style={styles.commentText}>{review.comment}</Text>
+              <Text style={styles.commentText}>{review.content}</Text>
             </View>
           )}
 
@@ -132,7 +160,7 @@ export const ReviewDetailScreen: React.FC = () => {
               <View style={styles.matchCard}>
                 <Text style={styles.matchTitle}>{review.match.title}</Text>
                 <Text style={styles.matchDate}>
-                  完成于 {formatDate(review.match.completedAt || '')}
+                  完成于 {formatDate(review.match.completedAt || '', 'long')}
                 </Text>
               </View>
             </View>
@@ -185,6 +213,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.backgroundSecondary,
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -358,5 +390,19 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     gap: theme.spacing.sm,
     marginTop: theme.spacing.sm,
+  },
+  errorText: {
+    fontSize: theme.fonts.sizes.base,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.base,
+  },
+  retryButton: {
+    padding: theme.spacing.sm,
+  },
+  retryButtonText: {
+    fontSize: theme.fonts.sizes.base,
+    color: theme.colors.primary,
+    fontWeight: theme.fonts.weights.medium,
   },
 });

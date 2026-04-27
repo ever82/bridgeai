@@ -1,21 +1,15 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  ViewStyle,
-} from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 
 import { theme } from '../../theme';
 import { Review } from '../../types/review';
+import { formatDate } from '../../utils/format';
 
 import { StarRating } from './StarRating';
 
 interface ReviewCardProps {
   review: Review;
-  showUser?: 'rater' | 'ratee';
+  showUser?: 'reviewer' | 'reviewee';
   onPress?: (review: Review) => void;
   style?: ViewStyle;
   testID?: string;
@@ -23,22 +17,13 @@ interface ReviewCardProps {
 
 export const ReviewCard: React.FC<ReviewCardProps> = ({
   review,
-  showUser = 'rater',
+  showUser = 'reviewer',
   onPress,
   style,
   testID,
 }) => {
-  const user = showUser === 'rater' ? review.rater : review.ratee;
+  const user = showUser === 'reviewer' ? review.reviewer : review.reviewee;
   const displayUser = user || { name: 'Unknown User', avatar: undefined };
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
   const handlePress = () => {
     if (onPress) {
@@ -55,9 +40,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
             <Image source={{ uri: displayUser.avatar }} style={styles.avatar} />
           ) : (
             <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarText}>
-                {displayUser.name.charAt(0).toUpperCase()}
-              </Text>
+              <Text style={styles.avatarText}>{displayUser.name.charAt(0).toUpperCase()}</Text>
             </View>
           )}
           <View style={styles.userDetails}>
@@ -65,13 +48,13 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
             <Text style={styles.date}>{formatDate(review.createdAt)}</Text>
           </View>
         </View>
-        <StarRating rating={review.score} size="sm" disabled />
+        <StarRating rating={review.rating} size="sm" disabled />
       </View>
 
       {/* Review content */}
-      {review.comment && (
+      {review.content && (
         <Text style={styles.comment} numberOfLines={3}>
-          {review.comment}
+          {review.content}
         </Text>
       )}
 

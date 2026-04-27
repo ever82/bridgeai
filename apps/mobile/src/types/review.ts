@@ -6,15 +6,18 @@
 export interface Review {
   id: string;
   matchId: string;
-  raterId: string;
-  rateeId: string;
-  score: number;
-  comment?: string;
+  reviewerId: string;
+  revieweeId: string;
+  rating: number;
+  content?: string;
+  title?: string;
+  tags?: string[];
+  sceneType?: string;
   createdAt: string;
 
   // Populated relations
-  rater?: UserSummary;
-  ratee?: UserSummary;
+  reviewer?: UserSummary;
+  reviewee?: UserSummary;
   match?: MatchSummary;
 }
 
@@ -31,28 +34,32 @@ export interface MatchSummary {
 }
 
 export interface ReviewStats {
-  averageScore: number;
-  totalReviews: number;
-  distribution: {
-    score: number;
-    count: number;
-  }[];
+  avgRating: number;
+  fiveStarCount: number;
+  fourStarCount: number;
+  threeStarCount: number;
+  twoStarCount: number;
+  oneStarCount: number;
+  responseRate: number;
 }
 
 export interface CreateReviewRequest {
   matchId: string;
-  rateeId: string;
-  score: number;
-  comment?: string;
+  revieweeId: string;
+  rating: number;
+  content?: string;
+  title?: string;
+  tags?: string[];
+  sceneType?: string;
 }
 
 export interface UpdateReviewRequest {
-  score?: number;
-  comment?: string;
+  rating?: number;
+  content?: string;
 }
 
 export interface ReplyToReviewRequest {
-  reply: string;
+  content: string;
 }
 
 export type ReviewTab = 'received' | 'given';

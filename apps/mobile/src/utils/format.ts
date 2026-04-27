@@ -44,6 +44,27 @@ export function formatDistanceToNow(date: string | Date): string {
 }
 
 /**
+ * Format date with configurable options
+ */
+export function formatDate(
+  dateString: string,
+  format: 'short' | 'long' = 'short',
+  showTime: boolean = false
+): string {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: format,
+    day: 'numeric',
+  };
+  if (showTime) {
+    options.hour = '2-digit';
+    options.minute = '2-digit';
+  }
+  return date.toLocaleDateString('zh-CN', options);
+}
+
+/**
  * Truncate text with ellipsis
  */
 export function truncateText(text: string, maxLength: number): string {
