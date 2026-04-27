@@ -479,4 +479,57 @@ router.post('/cleanup', authenticate, async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /api/v1/notifications/analytics
+ * 获取推送分析数据
+ */
+router.get('/analytics', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { startDate, endDate } = req.query;
+    const analytics = await notificationService.getPushAnalytics(
+      userId,
+      startDate ? new Date(startDate as string) : undefined,
+      endDate ? new Date(endDate as string) : undefined
+    );
+
+    res.json({
+      success: true,
+      data: analytics,
+    });
+  } catch (error) {
+    logger.error('Failed to get push analytics', error as Error);
+    res.status(500).json({
+      success: false,
+      error: (error as Error).message,
+    });
+  }
+});
+
+/**
+ * POST /api/v1/notifications/retry-failed
+ * 重试失败的推送通知 (admin only)
+ */
+router.post('/retry-failed', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { maxRetries = 3 } = req.body;
+    const count = await notificationService.retryFailedDeliveries(maxRetries);
+
+    res.json({
+      success: true,
+      data: { retriedCount: count },
+    });
+  } catch (error) {
+    logger.error('Failed to retry failed deliveries', error as Error);
+    res.status(500).json({
+      success: false,
+      error: (error as Error).message,
+    });
+  }
+});
+
 export default router;

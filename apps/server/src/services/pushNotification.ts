@@ -7,6 +7,7 @@ import { Notification, NotificationType, NotificationChannel, PriorityLevel } fr
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
 import { prisma } from '../db/client';
+import { webPushAdapter } from './push/WebPushAdapter';
 
 // 推送配置
 interface PushConfig {
@@ -24,10 +25,18 @@ export interface PushMessage {
   type: NotificationType;
   data?: Record<string, any>;
   imageUrl?: string;
+  videoUrl?: string;
   actionUrl?: string;
   category?: string;
   priority?: PriorityLevel;
   channels?: NotificationChannel[];
+  actions?: PushAction[];
+}
+
+export interface PushAction {
+  action: string;
+  title: string;
+  icon?: string;
 }
 
 // 推送结果
@@ -67,10 +76,15 @@ export class PushNotificationService {
       ...config,
     };
 
-    // 初始化 Expo SDK（如果有配置token）
+    // Initialize Expo SDK (if token provided)
     if (config.expoAccessToken) {
       this.expo = new Expo({ accessToken: config.expoAccessToken });
     }
+
+    // Initialize Web Push adapter
+    webPushAdapter.initialize({ enabled: true }).catch(err => {
+      console.error('Failed to initialize WebPushAdapter:', err);
+    });
   }
 
   /**
@@ -275,7 +289,8 @@ export class PushNotificationService {
     // 根据渠道发送
     switch (channel) {
       case NotificationChannel.PUSH:
-        await this.sendPushNotification(notification);
+        await this.sendMobilePushNotification(notification);
+        await this.sendWebPushNotification(notification);
         break;
       case NotificationChannel.EMAIL:
         await this.queueEmail(notification);
@@ -301,9 +316,9 @@ export class PushNotificationService {
   }
 
   /**
-   * 发送 Expo 推送通知
+   * 发送移动端推送通知 (APNs, FCM via Expo)
    */
-  private async sendPushNotification(notification: Notification): Promise<void> {
+  private async sendMobilePushNotification(notification: Notification): Promise<void> {
     if (!this.expo) {
       throw new Error('Expo client not initialized');
     }
@@ -321,15 +336,30 @@ export class PushNotificationService {
     }
 
     // 构建 Expo 推送消息
-    const messages: ExpoPushMessage[] = tokens.map((token: any) => ({
-      to: token.token,
-      sound: 'default',
-      title: notification.title,
-      body: notification.content,
-      data: notification.data as Record<string, any>,
-      priority: this.mapPriorityToExpo(notification.priority),
-      channelId: notification.category || 'default',
-    }));
+    const messages: ExpoPushMessage[] = tokens.map((token: any) => {
+      const msg: ExpoPushMessage = {
+        to: token.token,
+        sound: 'default',
+        title: notification.title,
+        body: notification.content,
+        data: notification.data as Record<string, any>,
+        priority: this.mapPriorityToExpo(notification.priority),
+        channelId: notification.category || 'default',
+      };
+
+      // Add image support
+      if (notification.imageUrl) {
+        msg.image = notification.imageUrl;
+      }
+
+      // Add video support if available
+      const data = notification.data as Record<string, any>;
+      if (data?.videoUrl) {
+        msg.mp4 = data.videoUrl;
+      }
+
+      return msg;
+    });
 
     // 发送推送
     const chunks = this.expo.chunkPushNotifications(messages);
@@ -364,6 +394,47 @@ export class PushNotificationService {
             data: { isActive: false },
           });
         }
+      }
+    }
+  }
+
+  /**
+   * 发送 Web Push 通知
+   */
+  private async sendWebPushNotification(notification: Notification): Promise<void> {
+    if (!webPushAdapter.isConfigured()) {
+      return;
+    }
+
+    // Get web push subscriptions for user
+    const subscriptions = await prisma.webPushSubscription.findMany({
+      where: {
+        userId: notification.userId,
+        isActive: true,
+      },
+    });
+
+    if (subscriptions.length === 0) {
+      return;
+    }
+
+    // Send to all active subscriptions
+    for (const sub of subscriptions) {
+      try {
+        const result = await webPushAdapter.send(sub.endpoint, {
+          title: notification.title,
+          body: notification.content,
+          data: notification.data as Record<string, unknown>,
+          tag: notification.category || 'default',
+          renotify: true,
+          vibrate: [200, 100, 200],
+        });
+
+        if (!result.success) {
+          console.warn(`Web push failed for endpoint ${sub.endpoint}: ${result.error}`);
+        }
+      } catch (error) {
+        console.error('Web push notification error:', error);
       }
     }
   }
@@ -554,10 +625,10 @@ export class PushNotificationService {
     const { quietHoursStart, quietHoursEnd } = prefs;
 
     if (quietHoursStart <= quietHoursEnd) {
-      // 同一天的时段，如 22:00 - 08:00（跨午夜）
-      return currentTime >= quietHoursStart || currentTime <= quietHoursEnd;
+      // Same day range, e.g., 08:00 - 22:00
+      return currentTime >= quietHoursStart && currentTime <= quietHoursEnd;
     } else {
-      // 跨午夜的时段
+      // Cross-midnight range, e.g., 22:00 - 08:00
       return currentTime >= quietHoursStart || currentTime <= quietHoursEnd;
     }
   }

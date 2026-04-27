@@ -47,6 +47,26 @@ interface NotificationStats {
   byCategory: Record<string, number>;
 }
 
+// Push Analytics Stats
+export interface PushAnalytics {
+  totalSent: number;
+  totalDelivered: number;
+  totalFailed: number;
+  deliveryRate: number;
+  openRate: number;
+  clickRate: number;
+  conversionRate: number;
+  byChannel: Record<string, ChannelStats>;
+}
+
+interface ChannelStats {
+  sent: number;
+  delivered: number;
+  failed: number;
+  opened: number;
+  clicked: number;
+}
+
 // 通知分类
 interface NotificationCategory {
   id: string;
@@ -398,6 +418,111 @@ export class NotificationService {
       byType,
       byCategory,
     };
+  }
+
+  /**
+   * 获取推送分析数据
+   */
+  async getPushAnalytics(userId: string, startDate?: Date, endDate?: Date): Promise<PushAnalytics> {
+    const dateFilter: any = {};
+    if (startDate) dateFilter.gte = startDate;
+    if (endDate) dateFilter.lte = endDate;
+
+    const notificationWhere: any = { userId };
+    if (startDate || endDate) {
+      notificationWhere.createdAt = dateFilter;
+    }
+
+    // Get all notifications with their deliveries
+    const notifications = await prisma.notification.findMany({
+      where: notificationWhere,
+      include: {
+        deliveries: true,
+      },
+    });
+
+    // Calculate metrics
+    let totalSent = 0;
+    let totalDelivered = 0;
+    let totalFailed = 0;
+    let totalOpened = 0;
+    let totalClicked = 0;
+    const byChannel: Record<string, ChannelStats> = {};
+
+    for (const notif of notifications) {
+      for (const delivery of notif.deliveries) {
+        totalSent++;
+        byChannel[delivery.channel] = byChannel[delivery.channel] || { sent: 0, delivered: 0, failed: 0, opened: 0, clicked: 0 };
+        byChannel[delivery.channel].sent++;
+
+        if (delivery.status === 'SENT' || delivery.status === 'DELIVERED') {
+          totalDelivered++;
+          byChannel[delivery.channel].delivered++;
+        } else if (delivery.status === 'FAILED') {
+          totalFailed++;
+          byChannel[delivery.channel].failed++;
+        }
+
+        // Track opens and clicks if timestamps exist
+        if (delivery.deliveredAt) {
+          totalOpened++;
+          byChannel[delivery.channel].opened++;
+        }
+        // Clicks tracked via readAt as proxy (since clickedAt not in model)
+        if (delivery.sentAt && notif.status === 'READ') {
+          totalClicked++;
+          byChannel[delivery.channel].clicked++;
+        }
+      }
+    }
+
+    return {
+      totalSent,
+      totalDelivered,
+      totalFailed,
+      deliveryRate: totalSent > 0 ? (totalDelivered / totalSent) * 100 : 0,
+      openRate: totalDelivered > 0 ? (totalOpened / totalDelivered) * 100 : 0,
+      clickRate: totalOpened > 0 ? (totalClicked / totalOpened) * 100 : 0,
+      conversionRate: totalSent > 0 ? (totalClicked / totalSent) * 100 : 0,
+      byChannel,
+    };
+  }
+
+  /**
+   * 重试失败的推送通知
+   */
+  async retryFailedDeliveries(maxRetries: number = 3): Promise<number> {
+    const failedDeliveries = await prisma.notificationDelivery.findMany({
+      where: {
+        status: 'FAILED',
+        retryCount: { lt: maxRetries },
+      },
+      include: {
+        notification: true,
+      },
+      take: 100, // Process in batches
+    });
+
+    let retriedCount = 0;
+
+    for (const delivery of failedDeliveries) {
+      try {
+        // Reset status and increment retry count
+        await prisma.notificationDelivery.update({
+          where: { id: delivery.id },
+          data: {
+            status: 'PENDING',
+            retryCount: { increment: 1 },
+            errorMessage: null,
+          },
+        });
+        retriedCount++;
+      } catch (error) {
+        console.error(`Failed to retry delivery ${delivery.id}:`, error);
+      }
+    }
+
+    return retriedCount;
   }
 
   /**
