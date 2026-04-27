@@ -16,11 +16,11 @@ jest.mock('../../../middleware/auth', () => ({
   },
 }));
 jest.mock('../../../services/ai/supplyExtractionService', () => ({
-  SupplyExtractionService: jest.fn().mockImplementation(() => ({
+  supplyExtractionService: {
     initialize: mockInitialize,
     extract: mockExtract,
     extractBulk: mockExtractBulk,
-  })),
+  },
 }));
 jest.mock('../../../db/client', () => ({
   prisma: {
@@ -29,7 +29,7 @@ jest.mock('../../../db/client', () => ({
       upsert: jest.fn(),
     },
     scene: {
-      findUnique: jest.fn(),
+      upsert: jest.fn(),
     },
   },
 }));
@@ -133,7 +133,7 @@ describe('Supply AI Routes', () => {
 
     it('should store result when agent_id is provided', async () => {
       mockExtract.mockResolvedValue(createMockExtractionResult());
-      (mockedPrisma.scene.findUnique as jest.Mock).mockResolvedValue({ id: 'scene-1' });
+      (mockedPrisma.scene.upsert as jest.Mock).mockResolvedValue({ id: 'scene-1' });
       (mockedPrisma.agentProfile.upsert as jest.Mock).mockResolvedValue({});
 
       const response = await request(app)
@@ -151,7 +151,7 @@ describe('Supply AI Routes', () => {
 
     it('should handle store failure gracefully', async () => {
       mockExtract.mockResolvedValue(createMockExtractionResult());
-      (mockedPrisma.scene.findUnique as jest.Mock).mockRejectedValue(new Error('DB error'));
+      (mockedPrisma.scene.upsert as jest.Mock).mockRejectedValue(new Error('DB error'));
 
       const response = await request(app)
         .post('/api/v1/ai/extract-supply')

@@ -16,23 +16,40 @@ export class AdSupplyExtractor extends BaseSupplyExtractor<AdSupplyData> {
   private readonly sceneTypeValue: SupplySceneType = 'agentad';
 
   protected readonly detectionKeywords = [
-    '出售', '售卖', '供货', '供应', '批发', '零售',
-    '商品', '产品', '库存', '现货',
-    '优惠', '折扣', '促销', '特价', '活动',
-    '商家', '店铺', '旗舰店', '专营店',
-    '包邮', '满减', '优惠券', '赠品',
-    '天猫', '淘宝', '京东', '拼多多', '抖音', '快手',
+    '出售',
+    '售卖',
+    '供货',
+    '供应',
+    '批发',
+    '零售',
+    '商品',
+    '产品',
+    '库存',
+    '现货',
+    '优惠',
+    '折扣',
+    '促销',
+    '特价',
+    '活动',
+    '商家',
+    '店铺',
+    '旗舰店',
+    '专营店',
+    '包邮',
+    '满减',
+    '优惠券',
+    '赠品',
+    '天猫',
+    '淘宝',
+    '京东',
+    '拼多多',
+    '抖音',
+    '快手',
   ];
 
-  protected readonly requiredFields = [
-    'products',
-  ];
+  protected readonly requiredFields = ['products'];
 
-  protected readonly optionalFields = [
-    'offers',
-    'business',
-    'qualification',
-  ];
+  protected readonly optionalFields = ['offers', 'business', 'qualification'];
 
   getSceneType(): SupplySceneType {
     return this.sceneTypeValue;
@@ -41,7 +58,7 @@ export class AdSupplyExtractor extends BaseSupplyExtractor<AdSupplyData> {
   /**
    * Extract Ad supply data from text
    */
-  async extract(text: string, context?: Record<string, any>): Promise<AdSupplyData> {
+  async extract(text: string, _context?: Record<string, any>): Promise<AdSupplyData> {
     logger.info('Extracting Ad supply', { textLength: text.length });
 
     const keywords = this.extractKeywords(text);
@@ -60,7 +77,7 @@ export class AdSupplyExtractor extends BaseSupplyExtractor<AdSupplyData> {
       extractedFields,
       totalFields,
       products.some(p => p.pricing !== undefined),
-      products.some(p => p.features && p.features.length > 0),
+      products.some(p => p.features && p.features.length > 0)
     );
 
     const confidence = this.calculateConfidence(products, offers, business);
@@ -92,17 +109,15 @@ export class AdSupplyExtractor extends BaseSupplyExtractor<AdSupplyData> {
   private extractProducts(text: string): AdSupplyData['products'] {
     const products: AdSupplyData['products'] = [];
 
-    // Common product categories and names
-    const productPatterns = [
-      { pattern: /(?:出售|供应|现货)\s*([\u4e00-\u9fa5\w\s]{2,20}?)(?:，|。|，|$)/g },
-      { pattern: /([\u4e00-\u9fa5\w]{2,15})(?:\s*(?:出售|供货|供应|现货|库存))/g },
-    ];
-
     const extractedNames = new Set<string>();
 
     // Named products
     const namedProducts = [
-      { pattern: /iPhone\s*(\d+)(?:\s*(?:Pro|Plus|Max|Mini))?/gi, name: 'iPhone', category: '手机' },
+      {
+        pattern: /iPhone\s*(\d+)(?:\s*(?:Pro|Plus|Max|Mini))?/gi,
+        name: 'iPhone',
+        category: '手机',
+      },
       { pattern: /(?:华为|Huawei)\s*([\w]+)/gi, name: '华为', category: '手机' },
       { pattern: /(?:小米|Xiaomi)\s*([\w]+)/gi, name: '小米', category: '手机' },
       { pattern: /MacBook\s*(?:Pro|Air)?/gi, name: 'MacBook', category: '电脑' },
@@ -142,7 +157,9 @@ export class AdSupplyExtractor extends BaseSupplyExtractor<AdSupplyData> {
 
     for (const { pattern, category } of categoryPatterns) {
       if (pattern.test(text) && !products.some(p => p.category === category)) {
-        const nameMatch = text.match(new RegExp(`(?:出售|供应|现货)?\\s*([\\u4e00-\\u9fa5]{2,8}?(?:${pattern.source}))`, 'i'));
+        const nameMatch = text.match(
+          new RegExp(`(?:出售|供应|现货)?\\s*([\\u4e00-\\u9fa5]{2,8}?(?:${pattern.source}))`, 'i')
+        );
         products.push({
           name: nameMatch ? nameMatch[1] : category,
           category,
@@ -155,7 +172,9 @@ export class AdSupplyExtractor extends BaseSupplyExtractor<AdSupplyData> {
 
     // If no products found, try a generic extraction
     if (products.length === 0) {
-      const genericMatch = text.match(/(?:供应|出售|售卖|提供)\s*([\u4e00-\u9fa5\w\s]{2,30}?)(?:，|。|,|$)/);
+      const genericMatch = text.match(
+        /(?:供应|出售|售卖|提供)\s*([\u4e00-\u9fa5\w\s]{2,30}?)(?:，|。|,|$)/
+      );
       if (genericMatch) {
         products.push({
           name: genericMatch[1].trim(),
@@ -299,8 +318,18 @@ export class AdSupplyExtractor extends BaseSupplyExtractor<AdSupplyData> {
 
     // Category
     const bizCategories = [
-      '数码', '服装', '食品', '美妆', '家居', '母婴',
-      '运动', '图书', '珠宝', '汽车', '医药', '建材',
+      '数码',
+      '服装',
+      '食品',
+      '美妆',
+      '家居',
+      '母婴',
+      '运动',
+      '图书',
+      '珠宝',
+      '汽车',
+      '医药',
+      '建材',
     ];
     for (const cat of bizCategories) {
       if (text.includes(cat)) {
@@ -348,7 +377,7 @@ export class AdSupplyExtractor extends BaseSupplyExtractor<AdSupplyData> {
    */
   private extractQualification(
     text: string,
-    products: AdSupplyData['products'],
+    products: AdSupplyData['products']
   ): SupplyQualification {
     const certifications: string[] = [];
     const specializations: string[] = [];
@@ -376,7 +405,7 @@ export class AdSupplyExtractor extends BaseSupplyExtractor<AdSupplyData> {
   private calculateConfidence(
     products: AdSupplyData['products'],
     offers: AdSupplyData['offers'],
-    business: AdSupplyData['business'],
+    business: AdSupplyData['business']
   ): number {
     let score = 0.3;
 
@@ -391,9 +420,9 @@ export class AdSupplyExtractor extends BaseSupplyExtractor<AdSupplyData> {
 
   protected getClarificationQuestion(field: string): string {
     const questions: Record<string, string> = {
-      'products': '请问您供应哪些产品或商品？',
-      'offers': '请问您有什么优惠活动？',
-      'business': '请提供您的店铺或企业信息。',
+      products: '请问您供应哪些产品或商品？',
+      offers: '请问您有什么优惠活动？',
+      business: '请提供您的店铺或企业信息。',
       'products.name': '请问具体是什么产品？',
       'products.pricing': '请问产品的价格是多少？',
       'products.inventory': '请问有多少库存？',

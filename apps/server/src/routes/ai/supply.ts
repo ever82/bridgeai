@@ -15,14 +15,13 @@ import { z } from 'zod';
 
 import { authenticate as authenticateToken } from '../../middleware/auth';
 import { validate } from '../../middleware/validation';
-import { SupplyExtractionService } from '../../services/ai/supplyExtractionService';
+import { supplyExtractionService } from '../../services/ai/supplyExtractionService';
 import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
 
 const router: Router = Router();
 
-// 初始化供给提取服务
-const supplyExtractionService = new SupplyExtractionService();
+// 使用模块导出的单例，避免重复创建 LLMService 实例
 
 // 服务初始化状态
 let serviceInitialized = false;
@@ -351,8 +350,8 @@ router.post(
     try {
       const { supply_id, data } = req.body;
 
-      // 这里可以实现将供给数据同步到 Supply 表的逻辑
-      // 目前返回模拟成功响应
+      // TODO(NP-866): 实现供给数据同步到 Supply 表的持久化逻辑
+      // 当前为占位实现，仅记录请求并返回模拟成功响应
       logger.info('Supply sync request received', { supplyId: supply_id });
 
       res.json({

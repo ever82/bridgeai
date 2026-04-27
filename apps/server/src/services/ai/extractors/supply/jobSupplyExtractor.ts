@@ -16,25 +16,32 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
   private readonly sceneTypeValue: SupplySceneType = 'agentjob';
 
   protected readonly detectionKeywords = [
-    '求职', '找工作', '应聘', '简历',
-    '技能', '经验', '项目经验',
-    '薪资期望', '期望薪资', '期望待遇',
-    '求职意向', '个人优势',
-    '技术栈', '技术能力', '专业能力',
-    '教育背景', '学历',
-    '开发', '工程师', '设计师', '经理',
+    '求职',
+    '找工作',
+    '应聘',
+    '简历',
+    '技能',
+    '经验',
+    '项目经验',
+    '薪资期望',
+    '期望薪资',
+    '期望待遇',
+    '求职意向',
+    '个人优势',
+    '技术栈',
+    '技术能力',
+    '专业能力',
+    '教育背景',
+    '学历',
+    '开发',
+    '工程师',
+    '设计师',
+    '经理',
   ];
 
-  protected readonly requiredFields = [
-    'skills',
-    'experience',
-  ];
+  protected readonly requiredFields = ['skills', 'experience'];
 
-  protected readonly optionalFields = [
-    'expectations',
-    'education',
-    'qualification',
-  ];
+  protected readonly optionalFields = ['expectations', 'education', 'qualification'];
 
   getSceneType(): SupplySceneType {
     return this.sceneTypeValue;
@@ -43,7 +50,7 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
   /**
    * Extract Job supply data from text
    */
-  async extract(text: string, context?: Record<string, any>): Promise<JobSupplyData> {
+  async extract(text: string, _context?: Record<string, any>): Promise<JobSupplyData> {
     logger.info('Extracting Job supply', { textLength: text.length });
 
     const keywords = this.extractKeywords(text);
@@ -64,7 +71,7 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
       extractedFields,
       totalFields,
       expectations.salaryRange !== undefined,
-      experience.companies.length > 0,
+      experience.companies.length > 0
     );
 
     const confidence = this.calculateConfidence(skills, experience, expectations);
@@ -102,14 +109,49 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
 
     // Technical skills
     const techSkills = [
-      'Java', 'Python', 'JavaScript', 'TypeScript', 'Go', 'Rust', 'C++', 'C#',
-      'React', 'Vue', 'Angular', 'Next.js', 'Nuxt.js',
-      'Node.js', 'Spring', 'Django', 'Flask', 'Express',
-      'SQL', 'MongoDB', 'Redis', 'PostgreSQL', 'MySQL',
-      'Docker', 'Kubernetes', 'AWS', 'Azure', 'GCP',
-      'Linux', 'Git', 'CI/CD', 'Jenkins', 'Terraform',
-      '机器学习', '深度学习', '数据分析', '数据科学', 'NLP',
-      '产品设计', 'UI设计', 'UX设计', 'Figma', 'Sketch',
+      'Java',
+      'Python',
+      'JavaScript',
+      'TypeScript',
+      'Go',
+      'Rust',
+      'C++',
+      'C#',
+      'React',
+      'Vue',
+      'Angular',
+      'Next.js',
+      'Nuxt.js',
+      'Node.js',
+      'Spring',
+      'Django',
+      'Flask',
+      'Express',
+      'SQL',
+      'MongoDB',
+      'Redis',
+      'PostgreSQL',
+      'MySQL',
+      'Docker',
+      'Kubernetes',
+      'AWS',
+      'Azure',
+      'GCP',
+      'Linux',
+      'Git',
+      'CI/CD',
+      'Jenkins',
+      'Terraform',
+      '机器学习',
+      '深度学习',
+      '数据分析',
+      '数据科学',
+      'NLP',
+      '产品设计',
+      'UI设计',
+      'UX设计',
+      'Figma',
+      'Sketch',
     ];
 
     for (const skill of techSkills) {
@@ -199,9 +241,23 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
 
     // Industries
     const industryNames = [
-      '互联网', '金融', '电商', '教育', '医疗', '制造业',
-      '房地产', '汽车', '游戏', '广告', '咨询', '法律',
-      '物流', '零售', '能源', '半导体', '通信',
+      '互联网',
+      '金融',
+      '电商',
+      '教育',
+      '医疗',
+      '制造业',
+      '房地产',
+      '汽车',
+      '游戏',
+      '广告',
+      '咨询',
+      '法律',
+      '物流',
+      '零售',
+      '能源',
+      '半导体',
+      '通信',
     ];
     for (const industry of industryNames) {
       if (text.includes(industry)) industries.push(industry);
@@ -224,11 +280,17 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
 
     // Roles
     const rolePatterns = [
-      { pattern: /(前端|后端|全栈|移动端)\s*(?:开发|工程师)/, role: (m: RegExpMatchArray) => m[1] + '开发工程师' },
+      {
+        pattern: /(前端|后端|全栈|移动端)\s*(?:开发|工程师)/,
+        role: (m: RegExpMatchArray) => m[1] + '开发工程师',
+      },
       { pattern: /(产品经理|产品总监)/, role: (m: RegExpMatchArray) => m[1] },
       { pattern: /(UI|UX)\s*(?:设计师|设计)/, role: (m: RegExpMatchArray) => m[1] + '设计师' },
       { pattern: /(项目经理|技术经理|技术总监|架构师|CTO)/, role: (m: RegExpMatchArray) => m[1] },
-      { pattern: /(数据分析师|数据科学家|算法工程师|AI工程师)/, role: (m: RegExpMatchArray) => m[1] },
+      {
+        pattern: /(数据分析师|数据科学家|算法工程师|AI工程师)/,
+        role: (m: RegExpMatchArray) => m[1],
+      },
     ];
 
     for (const { pattern, role } of rolePatterns) {
@@ -247,7 +309,6 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
   private extractExpectations(text: string): JobSupplyData['expectations'] {
     const jobTypes: string[] = [];
     let remote = false;
-    let location: string | undefined;
     let salaryRange: JobSupplyData['expectations']['salaryRange'] | undefined;
     let startDate: string | undefined;
 
@@ -263,7 +324,7 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
 
     // Location
     const loc = this.parseLocation(text);
-    location = loc.city || loc.district;
+    const location = loc.city || loc.district;
 
     // Salary range
     const salaryPricing = this.parsePricing(text);
@@ -347,7 +408,7 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
   private extractQualification(
     text: string,
     skills: JobSupplyData['skills'],
-    experience: JobSupplyData['experience'],
+    experience: JobSupplyData['experience']
   ): SupplyQualification {
     const certifications = [...skills.certifications];
     const specializations = [...skills.technical.slice(0, 5), ...experience.industries];
@@ -361,7 +422,7 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
   private calculateConfidence(
     skills: JobSupplyData['skills'],
     experience: JobSupplyData['experience'],
-    expectations: JobSupplyData['expectations'],
+    expectations: JobSupplyData['expectations']
   ): number {
     let score = 0.3;
 
@@ -377,10 +438,10 @@ export class JobSupplyExtractor extends BaseSupplyExtractor<JobSupplyData> {
 
   protected getClarificationQuestion(field: string): string {
     const questions: Record<string, string> = {
-      'skills': '请列举您的核心技能和专业能力。',
-      'experience': '请描述您的工作经验（年限、公司、职位）。',
-      'expectations': '请说明您的求职期望（薪资、工作类型、地点等）。',
-      'education': '请提供您的教育背景信息。',
+      skills: '请列举您的核心技能和专业能力。',
+      experience: '请描述您的工作经验（年限、公司、职位）。',
+      expectations: '请说明您的求职期望（薪资、工作类型、地点等）。',
+      education: '请提供您的教育背景信息。',
       'skills.technical': '请列举您的技术技能。',
       'experience.totalYears': '请问您有多少年工作经验？',
     };

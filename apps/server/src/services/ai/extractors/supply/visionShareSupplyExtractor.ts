@@ -16,26 +16,35 @@ export class VisionShareSupplyExtractor extends BaseSupplyExtractor<VisionShareS
   private readonly sceneTypeValue: SupplySceneType = 'visionshare';
 
   protected readonly detectionKeywords = [
-    '摄影师', '摄影服务', '拍照服务', '拍摄服务',
-    '写真拍摄', '婚纱摄影', '商业摄影', '人像摄影',
-    '摄影棚', '工作室', '影棚',
-    '镜头', '相机', '单反', '微单',
-    '后期修图', '修片', '调色',
-    '摄影作品', '作品集', '样片',
-    '摄影师求职', '接单', '约拍',
+    '摄影师',
+    '摄影服务',
+    '拍照服务',
+    '拍摄服务',
+    '写真拍摄',
+    '婚纱摄影',
+    '商业摄影',
+    '人像摄影',
+    '摄影棚',
+    '工作室',
+    '影棚',
+    '镜头',
+    '相机',
+    '单反',
+    '微单',
+    '后期修图',
+    '修片',
+    '调色',
+    '摄影作品',
+    '作品集',
+    '样片',
+    '摄影师求职',
+    '接单',
+    '约拍',
   ];
 
-  protected readonly requiredFields = [
-    'experience',
-    'style',
-  ];
+  protected readonly requiredFields = ['experience', 'style'];
 
-  protected readonly optionalFields = [
-    'equipment',
-    'pricing',
-    'availability',
-    'qualification',
-  ];
+  protected readonly optionalFields = ['equipment', 'pricing', 'availability', 'qualification'];
 
   getSceneType(): SupplySceneType {
     return this.sceneTypeValue;
@@ -44,7 +53,7 @@ export class VisionShareSupplyExtractor extends BaseSupplyExtractor<VisionShareS
   /**
    * Extract VisionShare supply data from text
    */
-  async extract(text: string, context?: Record<string, any>): Promise<VisionShareSupplyData> {
+  async extract(text: string, _context?: Record<string, any>): Promise<VisionShareSupplyData> {
     logger.info('Extracting VisionShare supply', { textLength: text.length });
 
     const keywords = this.extractKeywords(text);
@@ -68,7 +77,7 @@ export class VisionShareSupplyExtractor extends BaseSupplyExtractor<VisionShareS
       extractedFields,
       totalFields,
       pricing !== undefined,
-      experience.portfolio.length > 0,
+      experience.portfolio.length > 0
     );
 
     const confidence = this.calculateConfidence(experience, style, equipment);
@@ -199,13 +208,25 @@ export class VisionShareSupplyExtractor extends BaseSupplyExtractor<VisionShareS
     // Portfolio
     const portfolioMatch = text.match(/(?:作品|样片|案例)[：:]\s*([^，。]+(?:，[^，。]+)*)/);
     if (portfolioMatch) {
-      portfolio.push(...portfolioMatch[1].split(/[,，、]/).map(s => s.trim()).filter(Boolean));
+      portfolio.push(
+        ...portfolioMatch[1]
+          .split(/[,，、]/)
+          .map(s => s.trim())
+          .filter(Boolean)
+      );
     }
 
     // Notable projects
-    const projectMatch = text.match(/(?:代表|主要|知名)\s*(?:项目|作品|案例)[：:]\s*([^。]+(?:，[^。]+)*)/);
+    const projectMatch = text.match(
+      /(?:代表|主要|知名)\s*(?:项目|作品|案例)[：:]\s*([^。]+(?:，[^。]+)*)/
+    );
     if (projectMatch) {
-      notableProjects.push(...projectMatch[1].split(/[,，、]/).map(s => s.trim()).filter(Boolean));
+      notableProjects.push(
+        ...projectMatch[1]
+          .split(/[,，、]/)
+          .map(s => s.trim())
+          .filter(Boolean)
+      );
     }
 
     return { years, photographyTypes, portfolio, notableProjects };
@@ -347,7 +368,7 @@ export class VisionShareSupplyExtractor extends BaseSupplyExtractor<VisionShareS
   private extractQualification(
     text: string,
     experience: VisionShareSupplyData['experience'],
-    style: VisionShareSupplyData['style'],
+    style: VisionShareSupplyData['style']
   ): SupplyQualification {
     const certifications: string[] = [];
     const specializations: string[] = [];
@@ -371,7 +392,7 @@ export class VisionShareSupplyExtractor extends BaseSupplyExtractor<VisionShareS
   private calculateConfidence(
     experience: VisionShareSupplyData['experience'],
     style: VisionShareSupplyData['style'],
-    equipment: VisionShareSupplyData['equipment'],
+    equipment: VisionShareSupplyData['equipment']
   ): number {
     let score = 0.3;
 
@@ -387,11 +408,11 @@ export class VisionShareSupplyExtractor extends BaseSupplyExtractor<VisionShareS
 
   protected getClarificationQuestion(field: string): string {
     const questions: Record<string, string> = {
-      'equipment': '请问您使用什么摄影设备？（如相机型号、镜头等）',
-      'experience': '请问您有多少年摄影经验？擅长什么类型的摄影？',
-      'style': '请问您的主要拍摄风格是什么？',
-      'pricing': '请问您的服务价格是多少？',
-      'availability': '请问您的可预约时间是什么？',
+      equipment: '请问您使用什么摄影设备？（如相机型号、镜头等）',
+      experience: '请问您有多少年摄影经验？擅长什么类型的摄影？',
+      style: '请问您的主要拍摄风格是什么？',
+      pricing: '请问您的服务价格是多少？',
+      availability: '请问您的可预约时间是什么？',
       'experience.years': '请问您有多少年的摄影从业经验？',
       'experience.photographyTypes': '请问您擅长哪些类型的摄影？',
     };

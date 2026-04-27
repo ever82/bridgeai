@@ -92,11 +92,6 @@ function mapCapabilityLevel(level: string): string {
  */
 export class SupplyToL2Mapper {
   private sceneConfigs: Map<string, SupplySceneMappingConfig> = new Map();
-  private defaultRules: SupplyMappingRule[] = [];
-
-  constructor() {
-    this.initializeDefaultRules();
-  }
 
   /**
    * Map Supply to L2 Data
@@ -150,12 +145,9 @@ export class SupplyToL2Mapper {
       // Generate tags from capabilities, skills, and qualifications
       result.generatedTags = this.generateTags(supply);
 
-      this.resolveConflicts(result, schema);
-
       logger.info('Supply to L2 mapping completed', {
         scene: schema.scene,
         mappedCount: result.mappedFields.length,
-        conflictCount: result.conflicts.length,
         tagCount: result.generatedTags.length,
         latencyMs: Date.now() - startTime,
       });
@@ -651,22 +643,6 @@ export class SupplyToL2Mapper {
   }
 
   /**
-   * Resolve conflicts in mapped data
-   */
-  private resolveConflicts(result: SupplyMappingResult, _schema: L2Schema): void {
-    for (const conflict of result.conflicts) {
-      if (conflict.values.length > 0) {
-        const validValues = conflict.values.filter(v => v !== null && v !== undefined);
-        if (validValues.length > 0) {
-          conflict.resolution = 'first';
-          conflict.resolvedValue = validValues[0];
-          result.data[conflict.field] = validValues[0];
-        }
-      }
-    }
-  }
-
-  /**
    * Register scene-specific mapping configuration
    */
   registerSceneConfig(config: SupplySceneMappingConfig): void {
@@ -679,37 +655,6 @@ export class SupplyToL2Mapper {
    */
   getSceneConfig(scene: string): SupplySceneMappingConfig | undefined {
     return this.sceneConfigs.get(scene);
-  }
-
-  /**
-   * Initialize default mapping rules
-   */
-  private initializeDefaultRules(): void {
-    this.defaultRules = [
-      {
-        sourceField: 'location.city',
-        targetField: 'locationCity',
-        priority: 1,
-      },
-      {
-        sourceField: 'pricing.minRate',
-        targetField: 'priceMin',
-        priority: 1,
-      },
-      {
-        sourceField: 'pricing.maxRate',
-        targetField: 'priceMax',
-        priority: 1,
-      },
-    ];
-  }
-
-  /**
-   * Add custom mapping rule
-   */
-  addMappingRule(rule: SupplyMappingRule): void {
-    this.defaultRules.push(rule);
-    this.defaultRules.sort((a, b) => b.priority - a.priority);
   }
 
   /**

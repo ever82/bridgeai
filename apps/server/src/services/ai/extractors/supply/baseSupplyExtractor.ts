@@ -3,8 +3,6 @@
  * 供给提取器基类 - 供给方(服务提供者)信息提取的通用实现
  */
 
-import { logger } from '../../../../utils/logger';
-
 import {
   SupplyExtractor,
   SupplyExtractedData,
@@ -17,9 +15,9 @@ import {
 /**
  * Base class for supply-specific extractors
  */
-export abstract class BaseSupplyExtractor<T extends SupplyExtractedData>
-  implements SupplyExtractor<T>
-{
+export abstract class BaseSupplyExtractor<
+  T extends SupplyExtractedData,
+> implements SupplyExtractor<T> {
   abstract getSceneType(): SupplySceneType;
 
   /** 场景检测关键词 */
@@ -49,9 +47,10 @@ export abstract class BaseSupplyExtractor<T extends SupplyExtractedData>
       }
     }
 
-    const confidence = matchCount > 0
-      ? Math.min(matchCount / Math.max(this.detectionKeywords.length * 0.2, 1), 1)
-      : 0;
+    const confidence =
+      matchCount > 0
+        ? Math.min(matchCount / Math.max(this.detectionKeywords.length * 0.2, 1), 1)
+        : 0;
 
     return {
       canHandle: confidence > 0.2,
@@ -133,7 +132,7 @@ export abstract class BaseSupplyExtractor<T extends SupplyExtractedData>
   protected buildQualification(
     text: string,
     certifications: string[],
-    specializations: string[],
+    specializations: string[]
   ): SupplyQualification {
     const years = this.parseExperienceYears(text);
     const level = this.parseQualificationLevel(text);
@@ -153,10 +152,13 @@ export abstract class BaseSupplyExtractor<T extends SupplyExtractedData>
     extractedFields: number,
     totalFields: number,
     hasPricing: boolean,
-    hasPortfolio: boolean,
+    hasPortfolio: boolean
   ): SupplyQualityMetrics {
     const completeness = totalFields > 0 ? extractedFields / totalFields : 0;
-    const credibility = (hasPricing ? 0.3 : 0) + (hasPortfolio ? 0.3 : 0) + (completeness > 0.6 ? 0.4 : completeness * 0.4 / 0.6);
+    const credibility =
+      (hasPricing ? 0.3 : 0) +
+      (hasPortfolio ? 0.3 : 0) +
+      (completeness > 0.6 ? 0.4 : (completeness * 0.4) / 0.6);
     const competitiveness = completeness * 0.5 + credibility * 0.5;
 
     return {
@@ -183,7 +185,8 @@ export abstract class BaseSupplyExtractor<T extends SupplyExtractedData>
     if (current == null) return false;
     if (typeof current === 'string' && current.trim() === '') return false;
     if (Array.isArray(current) && current.length === 0) return false;
-    if (typeof current === 'object' && !Array.isArray(current) && Object.keys(current).length === 0) return false;
+    if (typeof current === 'object' && !Array.isArray(current) && Object.keys(current).length === 0)
+      return false;
 
     return true;
   }
@@ -193,13 +196,13 @@ export abstract class BaseSupplyExtractor<T extends SupplyExtractedData>
    */
   protected getClarificationQuestion(field: string): string {
     const questionMap: Record<string, string> = {
-      'equipment': '请问您使用什么摄影设备？',
-      'experience': '请问您有多少年的从业经验？',
-      'style': '请问您的拍摄风格是什么？',
-      'skills': '请列举您的核心技能。',
-      'pricing': '请问您的服务定价是多少？',
-      'products': '请问您提供哪些产品或服务？',
-      'qualification': '请问您有哪些相关资质或认证？',
+      equipment: '请问您使用什么摄影设备？',
+      experience: '请问您有多少年的从业经验？',
+      style: '请问您的拍摄风格是什么？',
+      skills: '请列举您的核心技能。',
+      pricing: '请问您的服务定价是多少？',
+      products: '请问您提供哪些产品或服务？',
+      qualification: '请问您有哪些相关资质或认证？',
     };
 
     for (const [key, question] of Object.entries(questionMap)) {
@@ -230,7 +233,9 @@ export abstract class BaseSupplyExtractor<T extends SupplyExtractedData>
   /**
    * 解析价格区间
    */
-  protected parsePricing(text: string): { price: number; currency: string; unit?: string } | undefined {
+  protected parsePricing(
+    text: string
+  ): { price: number; currency: string; unit?: string } | undefined {
     const currency = text.includes('$') || text.includes('USD') ? 'USD' : 'CNY';
 
     // Range with K suffix: 15K-25K, 15k~25k
@@ -283,8 +288,22 @@ export abstract class BaseSupplyExtractor<T extends SupplyExtractedData>
     } else {
       // Try matching known city names without suffix
       const knownCities = [
-        '北京', '上海', '广州', '深圳', '杭州', '成都', '武汉', '南京',
-        '重庆', '西安', '苏州', '天津', '长沙', '郑州', '东莞', '青岛',
+        '北京',
+        '上海',
+        '广州',
+        '深圳',
+        '杭州',
+        '成都',
+        '武汉',
+        '南京',
+        '重庆',
+        '西安',
+        '苏州',
+        '天津',
+        '长沙',
+        '郑州',
+        '东莞',
+        '青岛',
       ];
       for (const city of knownCities) {
         if (text.includes(city)) {
