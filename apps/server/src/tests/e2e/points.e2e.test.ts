@@ -308,7 +308,7 @@ describe('Points E2E', () => {
       expect(ruleRes.body.data).toHaveProperty('code', 'CHECKIN');
 
       // Get scene rules
-      const sceneRes = await request(app).get('/api/v1/points/rules/scene/AGENT_DATE').set(headers);
+      const sceneRes = await request(app).get('/api/v1/points/rules/scene/agent_date').set(headers);
       expect(sceneRes.status).toBe(200);
       expect(Array.isArray(sceneRes.body.data.rules)).toBe(true);
 

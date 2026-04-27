@@ -581,7 +581,7 @@ describe('Points API Integration', () => {
       const user = await createTestUser();
       const headers = getUserAuthHeader(user);
 
-      const response = await request(app).get('/api/v1/points/rules/scene/AGENT_DATE').set(headers);
+      const response = await request(app).get('/api/v1/points/rules/scene/agent_date').set(headers);
 
       expect(response.status).toBe(200);
       expect(validateSuccessResponse(response)).toBe(true);
@@ -593,7 +593,7 @@ describe('Points API Integration', () => {
     });
 
     it('should return 401 without authentication', async () => {
-      const response = await request(app).get('/api/v1/points/rules/scene/AGENT_DATE');
+      const response = await request(app).get('/api/v1/points/rules/scene/agent_date');
       expect(response.status).toBe(401);
     });
   });
@@ -612,7 +612,8 @@ describe('Points API Integration', () => {
       expect(validateSuccessResponse(response)).toBe(true);
       const body = response.body as Record<string, unknown>;
       expect(body.data).toHaveProperty('allowed');
-      expect(body.data).toHaveProperty('remaining');
+      expect(body.data).toHaveProperty('remainingDaily');
+      expect(body.data).toHaveProperty('remainingWeekly');
 
       await cleanupPointsData(user.id);
     });
