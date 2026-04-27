@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-var-requires */
 // Lazy-load SQLite to avoid crash when native module is not installed
 let SQLite: any = null;
 try {
@@ -8,8 +9,12 @@ try {
 } catch {
   SQLite = {
     enablePromise() {},
-    openDatabase() { return Promise.reject(new Error('SQLite not available')); },
-    deleteDatabase() { return Promise.resolve(); },
+    openDatabase() {
+      return Promise.reject(new Error('SQLite not available'));
+    },
+    deleteDatabase() {
+      return Promise.resolve();
+    },
     databasePath: '',
   };
 }
@@ -153,7 +158,7 @@ export class LocalSearchIndex {
         image.fileSize,
         image.width,
         image.height,
-      ],
+      ]
     );
 
     await this.updateTagsFTS(image.id, image.tags);
@@ -186,19 +191,16 @@ export class LocalSearchIndex {
             image.fileSize,
             image.width,
             image.height,
-          ],
+          ]
         );
 
-        tx.executeSql(
-          'DELETE FROM image_tags WHERE image_id = ?',
-          [image.id],
-        );
+        tx.executeSql('DELETE FROM image_tags WHERE image_id = ?', [image.id]);
 
         for (const tag of image.tags) {
-          tx.executeSql(
-            'INSERT INTO image_tags (image_id, tag_content) VALUES (?, ?)',
-            [image.id, tag],
-          );
+          tx.executeSql('INSERT INTO image_tags (image_id, tag_content) VALUES (?, ?)', [
+            image.id,
+            tag,
+          ]);
         }
       }
     });
@@ -206,23 +208,38 @@ export class LocalSearchIndex {
     await this.recordSyncAction('batch_upsert', `batch_${Date.now()}`);
   }
 
-  async search(query: string, limit: number = 50): Promise<SearchResult[]> {
+  async search(
+    query: string,
+    limit: number = 50,
+    options?: { dateRange?: { start: Date; end: Date } }
+  ): Promise<SearchResult[]> {
     if (!this.db) throw new Error('Database not initialized');
 
     const normalizedQuery = query.trim().toLowerCase();
+
+    let dateFilterSql = '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sqlParams: any[] = [];
+
+    if (options?.dateRange) {
+      dateFilterSql = ' AND i.created_at >= ? AND i.created_at <= ?';
+      sqlParams.push(options.dateRange.start.getTime(), options.dateRange.end.getTime());
+    }
+
+    sqlParams.push(normalizedQuery, limit);
 
     const [ftsResults] = await this.db.executeSql(
       `SELECT DISTINCT i.id, i.uri, i.tags,
               1.0 as relevance_score
        FROM indexed_images i
        JOIN image_tags t ON i.id = t.image_id
-       WHERE t.tag_content MATCH ?
+       WHERE t.tag_content MATCH ?${dateFilterSql}
        ORDER BY relevance_score DESC
        LIMIT ?`,
-      [normalizedQuery, limit],
+      sqlParams
     );
 
-const results: SearchResult[] = [];
+    const results: SearchResult[] = [];
 
     for (let i = 0; i < ftsResults.rows.length; i++) {
       const row = ftsResults.rows.item(i);
@@ -239,16 +256,13 @@ const results: SearchResult[] = [];
     return results.slice(0, limit);
   }
 
-  async searchSemantic(
-    queryEmbedding: number[],
-    limit: number = 50,
-  ): Promise<SearchResult[]> {
+  async searchSemantic(queryEmbedding: number[], limit: number = 50): Promise<SearchResult[]> {
     if (!this.db) throw new Error('Database not initialized');
 
     const [results] = await this.db.executeSql(
       `SELECT id, uri, tags, embeddings FROM indexed_images
        WHERE embeddings IS NOT NULL
-       LIMIT 1000`,
+       LIMIT 1000`
     );
 
     const scored: Array<SearchResult & { score: number }> = [];
@@ -280,24 +294,24 @@ const results: SearchResult[] = [];
   async getIndexStats(): Promise<IndexStats> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const [countResult] = await this.db.executeSql(
-      'SELECT COUNT(*) as total FROM indexed_images',
-    );
+    const [countResult] = await this.db.executeSql('SELECT COUNT(*) as total FROM indexed_images');
     const total = countResult.rows.item(0).total;
 
     const [versionResult] = await this.db.executeSql(
-      "SELECT value FROM index_metadata WHERE key = 'version'",
+      "SELECT value FROM index_metadata WHERE key = 'version'"
     );
-    const version = versionResult.rows.length > 0
-      ? parseInt(versionResult.rows.item(0).value, 10)
-      : INDEX_VERSION;
+    const version =
+      versionResult.rows.length > 0
+        ? parseInt(versionResult.rows.item(0).value, 10)
+        : INDEX_VERSION;
 
     const [updatedResult] = await this.db.executeSql(
-      "SELECT value FROM index_metadata WHERE key = 'last_updated'",
+      "SELECT value FROM index_metadata WHERE key = 'last_updated'"
     );
-    const lastUpdated = updatedResult.rows.length > 0
-      ? new Date(parseInt(updatedResult.rows.item(0).value, 10))
-      : new Date();
+    const lastUpdated =
+      updatedResult.rows.length > 0
+        ? new Date(parseInt(updatedResult.rows.item(0).value, 10))
+        : new Date();
 
     return {
       totalImages: total,
@@ -310,23 +324,17 @@ const results: SearchResult[] = [];
   async deleteImage(imageId: string): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
 
-    await this.db.executeSql(
-      'DELETE FROM indexed_images WHERE id = ?',
-      [imageId],
-    );
-    await this.db.executeSql(
-      'DELETE FROM image_tags WHERE image_id = ?',
-      [imageId],
-    );
+    await this.db.executeSql('DELETE FROM indexed_images WHERE id = ?', [imageId]);
+    await this.db.executeSql('DELETE FROM image_tags WHERE image_id = ?', [imageId]);
     await this.recordSyncAction('delete', imageId);
   }
 
   async backup(): Promise<string> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const _backupPath = `${Platform.OS === 'ios'
-      ? SQLite.databasePath
-      : '/data/data/com.bridgeai/databases/'}backup_${Date.now()}.db`;
+    const _backupPath = `${
+      Platform.OS === 'ios' ? SQLite.databasePath : '/data/data/com.bridgeai/databases/'
+    }backup_${Date.now()}.db`;
 
     await this.db.executeSql(`VACUUM INTO '${_backupPath}'`);
     return _backupPath;
@@ -349,7 +357,7 @@ const results: SearchResult[] = [];
     const newVersion = INDEX_VERSION + 1;
     await this.db.executeSql(
       `INSERT OR REPLACE INTO index_metadata (key, value) VALUES ('version', ?)`,
-      [newVersion.toString()],
+      [newVersion.toString()]
     );
   }
 
@@ -357,17 +365,16 @@ const results: SearchResult[] = [];
     if (!this.db) return;
 
     const [result] = await this.db.executeSql(
-      "SELECT value FROM index_metadata WHERE key = 'version'",
+      "SELECT value FROM index_metadata WHERE key = 'version'"
     );
 
     if (result.rows.length === 0) {
-      await this.db.executeSql(
-        `INSERT INTO index_metadata (key, value) VALUES ('version', ?)`,
-        [INDEX_VERSION.toString()],
-      );
+      await this.db.executeSql(`INSERT INTO index_metadata (key, value) VALUES ('version', ?)`, [
+        INDEX_VERSION.toString(),
+      ]);
       await this.db.executeSql(
         `INSERT INTO index_metadata (key, value) VALUES ('last_updated', ?)`,
-        [Date.now().toString()],
+        [Date.now().toString()]
       );
     }
   }
@@ -375,16 +382,13 @@ const results: SearchResult[] = [];
   private async updateTagsFTS(imageId: string, tags: string[]): Promise<void> {
     if (!this.db) return;
 
-    await this.db.executeSql(
-      'DELETE FROM image_tags WHERE image_id = ?',
-      [imageId],
-    );
+    await this.db.executeSql('DELETE FROM image_tags WHERE image_id = ?', [imageId]);
 
     for (const tag of tags) {
-      await this.db.executeSql(
-        'INSERT INTO image_tags (image_id, tag_content) VALUES (?, ?)',
-        [imageId, tag],
-      );
+      await this.db.executeSql('INSERT INTO image_tags (image_id, tag_content) VALUES (?, ?)', [
+        imageId,
+        tag,
+      ]);
     }
   }
 
@@ -393,13 +397,12 @@ const results: SearchResult[] = [];
 
     await this.db.executeSql(
       `INSERT INTO incremental_sync (action, image_id, timestamp) VALUES (?, ?, ?)`,
-      [action, imageId, Date.now()],
+      [action, imageId, Date.now()]
     );
 
-    await this.db.executeSql(
-      `UPDATE index_metadata SET value = ? WHERE key = 'last_updated'`,
-      [Date.now().toString()],
-    );
+    await this.db.executeSql(`UPDATE index_metadata SET value = ? WHERE key = 'last_updated'`, [
+      Date.now().toString(),
+    ]);
   }
 
   private compressEmbeddings(embeddings: number[]): Uint8Array {

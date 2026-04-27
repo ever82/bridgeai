@@ -28,6 +28,7 @@ module.exports = {
     '^react-native-permissions$': '<rootDir>/__mocks__/react-native-permissions/index.ts',
     '^react-native-worklets-core$': '<rootDir>/__mocks__/react-native-worklets-core.ts',
     '^react-native-tflite$': '<rootDir>/__mocks__/react-native-tflite.ts',
+    '^react-native-fast-tflite$': '<rootDir>/__mocks__/react-native-fast-tflite.ts',
   },
   transformIgnorePatterns: [
     'node_modules/(?!(react-native|@react-native|@react-navigation|@expo|expo-.*|react-native-.*)/)',

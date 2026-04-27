@@ -78,10 +78,11 @@ describe('LocalSearchIndexStorage', () => {
       storage = LocalSearchIndexStorage.getInstance();
       await storage.initialize();
 
-      // Should insert version metadata
+      // Should insert version metadata (passed as a parameter, not in SQL string)
       const calls = mockDb.executeSql.mock.calls;
       const versionInsert = calls.find(
-        (call: string[]) => call[0].includes('version') && call[0].includes('INSERT')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (call: any[]) => call[0].includes('INSERT') && call[1]?.[0] === 'version'
       );
       expect(versionInsert).toBeDefined();
     });
@@ -248,9 +249,11 @@ describe('LocalSearchIndexStorage', () => {
     });
 
     it('returns compression statistics', async () => {
+      let pragmaCallCount = 0;
       mockDb.executeSql.mockImplementation((sql: string) => {
         if (sql.includes('pragma_page_count')) {
-          return [{ rows: { item: () => ({ size: 50000 }) } }];
+          pragmaCallCount++;
+          return [{ rows: { item: () => ({ size: pragmaCallCount === 1 ? 50000 : 40000 }) } }];
         }
         if (sql === 'VACUUM') {
           return [];
@@ -274,6 +277,12 @@ describe('LocalSearchIndexStorage', () => {
         if (sql.includes('pragma_page_count')) {
           return [{ rows: { item: () => ({ size: 100000 }) } }];
         }
+        if (sql.includes('index_metadata') && sql.includes('SELECT')) {
+          return [{ rows: { length: 0, item: jest.fn() } }];
+        }
+        if (sql.includes('COUNT')) {
+          return [{ rows: { length: 1, item: () => ({ count: 0 }) } }];
+        }
         return [{ rows: { length: 0, item: jest.fn() } }];
       });
 
@@ -288,6 +297,19 @@ describe('LocalSearchIndexStorage', () => {
     });
 
     it('records backup in database', async () => {
+      mockDb.executeSql.mockImplementation((sql: string) => {
+        if (sql.includes('index_metadata') && sql.includes('SELECT')) {
+          return [{ rows: { length: 0, item: jest.fn() } }];
+        }
+        if (sql.includes('COUNT')) {
+          return [{ rows: { length: 1, item: () => ({ count: 0 }) } }];
+        }
+        if (sql.includes('pragma_page_count')) {
+          return [{ rows: { item: () => ({ size: 1000 }) } }];
+        }
+        return [{ rows: { length: 0, item: jest.fn() } }];
+      });
+
       await storage.createBackup();
 
       const backupInsertCall = mockDb.executeSql.mock.calls.find(
@@ -312,6 +334,12 @@ describe('LocalSearchIndexStorage', () => {
               },
             },
           ];
+        }
+        if (sql.includes('index_metadata') && sql.includes('SELECT')) {
+          return [{ rows: { length: 0, item: jest.fn() } }];
+        }
+        if (sql.includes('COUNT')) {
+          return [{ rows: { length: 1, item: () => ({ count: 0 }) } }];
         }
         return [{ rows: { length: 0, item: jest.fn() } }];
       });
@@ -338,7 +366,7 @@ describe('LocalSearchIndexStorage', () => {
   describe('Index Version Management', () => {
     it('stores version in metadata', async () => {
       mockDb.executeSql.mockImplementation((sql: string) => {
-        if (sql.includes('index_metadata') && sql.includes('version')) {
+        if (sql.includes('index_metadata') && sql.includes('SELECT')) {
           return [
             {
               rows: {
@@ -347,6 +375,12 @@ describe('LocalSearchIndexStorage', () => {
               },
             },
           ];
+        }
+        if (sql.includes('COUNT')) {
+          return [{ rows: { length: 1, item: () => ({ count: 0 }) } }];
+        }
+        if (sql.includes('pragma_page_count')) {
+          return [{ rows: { item: () => ({ size: 0 }) } }];
         }
         return [{ rows: { length: 0, item: jest.fn() } }];
       });

@@ -56,17 +56,43 @@ export class EncryptedStorage {
       await this.ensureEncryptionKey();
     }
 
-    // Simple XOR encryption for demonstration
-    // In production, use proper encryption like AES-GCM
-    const dataBytes = new TextEncoder().encode(data);
-    const keyBytes = new TextEncoder().encode(this.encryptionKey!);
+    // Generate random nonce for each encryption
+    const nonce = await Crypto.getRandomBytesAsync(16);
+    const nonceHex = Array.from(nonce)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
 
+    // Derive a per-message key using SHA-256
+    const messageKey = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      this.encryptionKey! + nonceHex
+    );
+
+    // Encrypt using derived key stream
+    const dataBytes = new TextEncoder().encode(data);
+    const keyBytes = new TextEncoder().encode(messageKey);
     const encrypted = new Uint8Array(dataBytes.length);
     for (let i = 0; i < dataBytes.length; i++) {
       encrypted[i] = dataBytes[i] ^ keyBytes[i % keyBytes.length];
     }
 
-    return btoa(String.fromCharCode(...encrypted));
+    // Compute authentication tag
+    const ciphertextHex = Array.from(encrypted)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const tag = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      nonceHex + ciphertextHex + this.encryptionKey!
+    );
+
+    // Format: nonce(16 bytes) + tag(32 bytes from hex[0:32]) + ciphertext
+    const tagBytes = new TextEncoder().encode(tag.substring(0, 32));
+    const combined = new Uint8Array(16 + 32 + encrypted.length);
+    combined.set(nonce, 0);
+    combined.set(tagBytes, 16);
+    combined.set(encrypted, 48);
+
+    return btoa(String.fromCharCode(...combined));
   }
 
   private async decrypt(encryptedData: string): Promise<string> {
@@ -74,12 +100,39 @@ export class EncryptedStorage {
       await this.ensureEncryptionKey();
     }
 
-    const encryptedBytes = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
-    const keyBytes = new TextEncoder().encode(this.encryptionKey!);
+    const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
 
-    const decrypted = new Uint8Array(encryptedBytes.length);
-    for (let i = 0; i < encryptedBytes.length; i++) {
-      decrypted[i] = encryptedBytes[i] ^ keyBytes[i % keyBytes.length];
+    const nonce = combined.slice(0, 16);
+    const storedTag = new TextDecoder().decode(combined.slice(16, 48));
+    const ciphertext = combined.slice(48);
+
+    // Derive the same per-message key
+    const nonceHex = Array.from(nonce)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const messageKey = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      this.encryptionKey! + nonceHex
+    );
+
+    // Verify authentication tag
+    const ciphertextHex = Array.from(ciphertext)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const expectedTag = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      nonceHex + ciphertextHex + this.encryptionKey!
+    );
+
+    if (storedTag !== expectedTag.substring(0, 32)) {
+      throw new Error('Authentication failed: data may have been tampered with');
+    }
+
+    // Decrypt using derived key stream
+    const keyBytes = new TextEncoder().encode(messageKey);
+    const decrypted = new Uint8Array(ciphertext.length);
+    for (let i = 0; i < ciphertext.length; i++) {
+      decrypted[i] = ciphertext[i] ^ keyBytes[i % keyBytes.length];
     }
 
     return new TextDecoder().decode(decrypted);

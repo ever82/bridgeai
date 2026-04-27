@@ -43,22 +43,65 @@ export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = (
     }
   };
 
+  const parseDateRange = (query: string): { start: Date; end: Date } | undefined => {
+    const afterMatch = query.match(/after:(\d{4}-\d{2}-\d{2})/i);
+    const beforeMatch = query.match(/before:(\d{4}-\d{2}-\d{2})/i);
+
+    if (afterMatch || beforeMatch) {
+      return {
+        start: afterMatch ? new Date(afterMatch[1]) : new Date('2000-01-01'),
+        end: beforeMatch ? new Date(beforeMatch[1]) : new Date(),
+      };
+    }
+
+    // Try to parse month-year pattern (e.g., "Jan 2024", "2024-01")
+    const monthYearMatch = query.match(/(\d{4})-(\d{2})/);
+    if (monthYearMatch) {
+      const year = parseInt(monthYearMatch[1], 10);
+      const month = parseInt(monthYearMatch[2], 10) - 1;
+      return {
+        start: new Date(year, month, 1),
+        end: new Date(year, month + 1, 0, 23, 59, 59),
+      };
+    }
+
+    return undefined;
+  };
+
+  const stripDateFilters = (query: string): string => {
+    return query
+      .replace(/after:\d{4}-\d{2}-\d{2}/gi, '')
+      .replace(/before:\d{4}-\d{2}-\d{2}/gi, '')
+      .replace(/\d{4}-\d{2}/g, '')
+      .trim();
+  };
+
   const handleSearch = useCallback(async (query: string, source: SearchSource) => {
     setLoading(true);
 
     try {
       const searchResults: UnifiedSearchResult[] = [];
 
+      // Parse date range from query (e.g., "beach 2024-01" or "after:2024-01-01 before:2024-06-01")
+      const dateRange = parseDateRange(query);
+      const cleanQuery = stripDateFilters(query);
+
       if (source === 'all' || source === 'local') {
-        const localResults = await localSearchIndex.search(query, 50);
+        const localResults = await localSearchIndex.search(cleanQuery, 50, { dateRange });
 
         localResults.forEach(result => {
+          // Calculate relevance score based on tag match quality
+          const tagMatchCount = result.tags.filter(tag =>
+            tag.toLowerCase().includes(cleanQuery.toLowerCase())
+          ).length;
+          const relevanceScore = Math.min(result.relevanceScore + tagMatchCount * 0.1, 1.0);
+
           searchResults.push({
             id: result.id,
             uri: result.uri,
             source: 'local',
             sourceLabel: 'Local',
-            relevanceScore: result.relevanceScore,
+            relevanceScore,
             tags: result.tags,
             createdAt: new Date(),
           });
@@ -67,7 +110,7 @@ export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = (
 
       if (source === 'all' || source === 'cloud') {
         const cloudResponse = await visionShareApi.searchPhotos({
-          query,
+          query: cleanQuery,
           limit: 50,
         });
 
@@ -84,6 +127,9 @@ export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = (
           });
         });
       }
+
+      // Sort mixed results by relevance score (cross-source ranking)
+      searchResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
 
       setResults(searchResults);
     } catch (error) {

@@ -28,9 +28,18 @@ const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {
 };
 
 const SENSITIVE_KEYWORDS = [
-  'document', 'id_card', 'passport', 'license',
-  'receipt', 'invoice', 'contract', 'medical',
-  'ssn', 'credit_card', 'bank', 'statement',
+  'document',
+  'id_card',
+  'passport',
+  'license',
+  'receipt',
+  'invoice',
+  'contract',
+  'medical',
+  'ssn',
+  'credit_card',
+  'bank',
+  'statement',
 ];
 
 export class PhotoLibraryPrivacyManager {
@@ -61,10 +70,10 @@ export class PhotoLibraryPrivacyManager {
 
     const keyData = await Crypto.digestStringAsync(
       Crypto.CryptoDigestAlgorithm.SHA256,
-      `vision_share_${Platform.OS}_${Date.now()}`,
+      `vision_share_${Platform.OS}_${Date.now()}`
     );
     this.encryptionKey = new Uint8Array(
-      keyData.match(/.{2}/g)?.map(byte => parseInt(byte, 16)) || [],
+      keyData.match(/.{2}/g)?.map(byte => parseInt(byte, 16)) || []
     );
   }
 
@@ -126,12 +135,12 @@ export class PhotoLibraryPrivacyManager {
 
   private hasSensitivePattern(tags: string[]): boolean {
     const textIndicators = tags.filter(t =>
-      ['document', 'paper', 'text', 'scan'].some(ind => t.includes(ind)),
+      ['document', 'paper', 'text', 'scan'].some(ind => t.includes(ind))
     );
 
     if (textIndicators.length > 0) {
       const privacyIndicators = tags.filter(t =>
-        ['personal', 'private', 'confidential'].some(ind => t.includes(ind)),
+        ['personal', 'private', 'confidential'].some(ind => t.includes(ind))
       );
 
       return privacyIndicators.length > 0;
@@ -163,9 +172,45 @@ export class PhotoLibraryPrivacyManager {
       return data;
     }
 
+    // Generate random nonce for each encryption
+    const nonce = await Crypto.getRandomBytesAsync(16);
+    const nonceHex = Array.from(nonce)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const keyHex = Array.from(this.encryptionKey)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    // Derive per-message key using SHA-256
+    const messageKey = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      keyHex + nonceHex
+    );
+
     const dataBytes = new TextEncoder().encode(data);
-    const encrypted = await this.xorEncrypt(dataBytes, this.encryptionKey);
-    return btoa(String.fromCharCode(...encrypted));
+    const keyBytes = new TextEncoder().encode(messageKey);
+    const encrypted = new Uint8Array(dataBytes.length);
+    for (let i = 0; i < dataBytes.length; i++) {
+      encrypted[i] = dataBytes[i] ^ keyBytes[i % keyBytes.length];
+    }
+
+    // Authentication tag
+    const ciphertextHex = Array.from(encrypted)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const tag = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      nonceHex + ciphertextHex + keyHex
+    );
+
+    // Format: nonce(16) + tag(32) + ciphertext
+    const tagBytes = new TextEncoder().encode(tag.substring(0, 32));
+    const combined = new Uint8Array(16 + 32 + encrypted.length);
+    combined.set(nonce, 0);
+    combined.set(tagBytes, 16);
+    combined.set(encrypted, 48);
+
+    return btoa(String.fromCharCode(...combined));
   }
 
   async decryptData(encryptedData: string): Promise<string> {
@@ -173,17 +218,44 @@ export class PhotoLibraryPrivacyManager {
       return encryptedData;
     }
 
-    const dataBytes = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
-    const decrypted = await this.xorEncrypt(dataBytes, this.encryptionKey);
-    return new TextDecoder().decode(decrypted);
-  }
+    const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+    const nonce = combined.slice(0, 16);
+    const storedTag = new TextDecoder().decode(combined.slice(16, 48));
+    const ciphertext = combined.slice(48);
 
-  private async xorEncrypt(data: Uint8Array, key: Uint8Array): Promise<Uint8Array> {
-    const result = new Uint8Array(data.length);
-    for (let i = 0; i < data.length; i++) {
-      result[i] = data[i] ^ key[i % key.length];
+    const nonceHex = Array.from(nonce)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const keyHex = Array.from(this.encryptionKey)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    // Derive same per-message key
+    const messageKey = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      keyHex + nonceHex
+    );
+
+    // Verify authentication tag
+    const ciphertextHex = Array.from(ciphertext)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const expectedTag = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      nonceHex + ciphertextHex + keyHex
+    );
+
+    if (storedTag !== expectedTag.substring(0, 32)) {
+      throw new Error('Authentication failed: data may have been tampered with');
     }
-    return result;
+
+    const keyBytes = new TextEncoder().encode(messageKey);
+    const decrypted = new Uint8Array(ciphertext.length);
+    for (let i = 0; i < ciphertext.length; i++) {
+      decrypted[i] = ciphertext[i] ^ keyBytes[i % keyBytes.length];
+    }
+
+    return new TextDecoder().decode(decrypted);
   }
 
   enablePrivacyMode(): void {
@@ -235,8 +307,8 @@ export class PhotoLibraryPrivacyManager {
     this.sensitivePhotoIds.clear();
 
     try {
-      // Delete search index
-      // await localSearchIndex.clear(); // Would need to implement this
+      // Reset search index by re-initializing the database (deletes all data)
+      await localSearchIndex.restore('');
     } catch (error) {
       console.error('Failed to clear local data:', error);
     }

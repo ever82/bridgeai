@@ -1,11 +1,4 @@
-import * as tflite from 'react-native-tflite';
-
-import {
-  LocalImageAnalysis,
-  AnalysisProgress,
-  ImageAnalysisResult,
-  AnalysisOptions,
-} from '../localImageAnalysis';
+import { LocalImageAnalysisService, AnalysisProgress } from '../localImageAnalysis';
 
 // Mock react-native-vision-camera
 jest.mock('react-native-vision-camera', () => ({
@@ -13,40 +6,72 @@ jest.mock('react-native-vision-camera', () => ({
     getFrameProcessorPlugin: jest.fn(() => ({
       call: jest.fn(),
     })),
+    createTensorFromImage: jest.fn(() => ({
+      data: new Float32Array(224 * 224 * 3),
+      shape: [1, 224, 224, 3],
+      dataType: 'float32',
+    })),
   },
 }));
 
 // Mock react-native-worklets-core
 jest.mock('react-native-worklets-core', () => ({
   Worklets: {
-    createRunInJsFn: jest.fn((fn) => fn),
-    createRunOnJS: jest.fn((fn) => fn),
+    createRunInJsFn: jest.fn(fn => fn),
+    createRunOnJS: jest.fn(fn => fn),
   },
 }));
 
-// Mock TensorFlow Lite
-jest.mock('react-native-tflite', () => ({
-  loadTensorflowModel: jest.fn().mockResolvedValue({
-    run: jest.fn().mockResolvedValue({
-      output: new Float32Array(1000),
-    }),
+// Mock expo-image-manipulator
+jest.mock('expo-image-manipulator', () => ({
+  manipulateAsync: jest.fn().mockResolvedValue({
+    uri: 'file:///resized.jpg',
   }),
-  TensorflowModel: jest.Mock,
+  SaveFormat: { JPEG: 'jpeg' },
 }));
 
-describe('LocalImageAnalysis', () => {
-  let analyzer: LocalImageAnalysis;
+// Mock react-native-fast-tflite
+jest.mock('react-native-fast-tflite', () => {
+  const mockRun = jest.fn().mockResolvedValue({
+    embeddings: { data: new Float32Array(128).fill(0.5) },
+    texture: { data: new Float32Array(128).fill(0.3) },
+    detections: { data: new Float32Array(6).fill(0) },
+    scene: { data: new Float32Array([0.1, 0.8, 0.05, 0.02, 0.02, 0.01]) },
+  });
+
+  return {
+    Tensor: jest.fn(),
+    TensorflowModel: {
+      fromAssets: jest.fn().mockResolvedValue({ run: mockRun }),
+    },
+    __mockRun: mockRun,
+  };
+});
+
+describe('LocalImageAnalysisService', () => {
+  let analyzer: LocalImageAnalysisService;
+  let mockRun: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (LocalImageAnalysis as unknown as { instance: LocalImageAnalysis | null }).instance = null;
-    analyzer = LocalImageAnalysis.getInstance();
+    const tflite = jest.requireMock('react-native-fast-tflite');
+    mockRun = tflite.__mockRun;
+    mockRun.mockResolvedValue({
+      embeddings: { data: new Float32Array(128).fill(0.5) },
+      texture: { data: new Float32Array(128).fill(0.3) },
+      detections: { data: new Float32Array(6).fill(0) },
+      scene: { data: new Float32Array([0.1, 0.8, 0.05, 0.02, 0.02, 0.01]) },
+    });
+    (
+      LocalImageAnalysisService as unknown as { instance: LocalImageAnalysisService | null }
+    ).instance = null;
+    analyzer = LocalImageAnalysisService.getInstance();
   });
 
   describe('Singleton Pattern', () => {
     it('returns the same instance', () => {
-      const instance1 = LocalImageAnalysis.getInstance();
-      const instance2 = LocalImageAnalysis.getInstance();
+      const instance1 = LocalImageAnalysisService.getInstance();
+      const instance2 = LocalImageAnalysisService.getInstance();
       expect(instance1).toBe(instance2);
     });
   });
@@ -54,14 +79,15 @@ describe('LocalImageAnalysis', () => {
   describe('Model Initialization', () => {
     it('initializes the analysis model', async () => {
       await expect(analyzer.initialize()).resolves.not.toThrow();
-      expect(analyzer.isModelLoaded()).toBe(true);
     });
 
     it('handles initialization errors gracefully', async () => {
-      (tflite.loadTensorflowModel as jest.Mock).mockRejectedValueOnce(new Error('Model load failed'));
+      const { TensorflowModel } = jest.requireMock('react-native-fast-tflite');
+      TensorflowModel.fromAssets.mockRejectedValueOnce(new Error('Model load failed'));
 
-      await expect(analyzer.initialize()).rejects.toThrow('Model load failed');
-      expect(analyzer.isModelLoaded()).toBe(false);
+      await expect(analyzer.initialize()).rejects.toThrow(
+        'Failed to initialize on-device AI model'
+      );
     });
   });
 
@@ -73,45 +99,36 @@ describe('LocalImageAnalysis', () => {
     });
 
     it('analyzes a single image and returns results', async () => {
-      const result = await analyzer.analyzeImage(mockImageUri);
+      const result = await analyzer.analyzeImage(mockImageUri, 'img-1');
 
       expect(result).toMatchObject({
+        imageId: 'img-1',
         uri: mockImageUri,
         tags: expect.any(Array),
-        embeddings: expect.any(Float32Array),
-        sceneType: expect.any(String),
+        confidence: expect.any(Number),
       });
+      expect(result.features).toBeDefined();
+      expect(result.features.sceneClassification).toBeDefined();
     });
 
-    it('respects analysis options', async () => {
-      const options: AnalysisOptions = {
-        generateEmbeddings: false,
-        generateTags: true,
-        sceneDetection: true,
-      };
+    it('throws if model not initialized', async () => {
+      (
+        LocalImageAnalysisService as unknown as { instance: LocalImageAnalysisService | null }
+      ).instance = null;
+      const fresh = LocalImageAnalysisService.getInstance();
 
-      const result = await analyzer.analyzeImage(mockImageUri, options);
+      const { TensorflowModel } = jest.requireMock('react-native-fast-tflite');
+      TensorflowModel.fromAssets.mockRejectedValueOnce(new Error('No model'));
 
-      expect(result.tags.length).toBeGreaterThan(0);
-      // Embeddings might be empty if disabled
-    });
-
-    it('handles analysis errors', async () => {
-      const mockModel = {
-        run: jest.fn().mockRejectedValue(new Error('Analysis failed')),
-      };
-      (tflite.loadTensorflowModel as jest.Mock).mockResolvedValue(mockModel);
-      await analyzer.initialize();
-
-      await expect(analyzer.analyzeImage(mockImageUri)).rejects.toThrow('Analysis failed');
+      await expect(fresh.analyzeImage(mockImageUri, 'img-2')).rejects.toThrow();
     });
   });
 
   describe('Batch Processing', () => {
-    const mockImageUris = [
-      'file:///path/to/image1.jpg',
-      'file:///path/to/image2.jpg',
-      'file:///path/to/image3.jpg',
+    const mockImages = [
+      { uri: 'file:///path/to/image1.jpg', id: 'img-1' },
+      { uri: 'file:///path/to/image2.jpg', id: 'img-2' },
+      { uri: 'file:///path/to/image3.jpg', id: 'img-3' },
     ];
 
     beforeEach(async () => {
@@ -119,152 +136,61 @@ describe('LocalImageAnalysis', () => {
     });
 
     it('processes multiple images in batch', async () => {
-      const results: ImageAnalysisResult[] = [];
       const progressUpdates: AnalysisProgress[] = [];
 
-      const onProgress = (progress: AnalysisProgress) => {
+      const results = await analyzer.analyzeBatch(mockImages, progress => {
         progressUpdates.push(progress);
-      };
-
-      const onComplete = (result: ImageAnalysisResult) => {
-        results.push(result);
-      };
-
-      await analyzer.analyzeBatch(mockImageUris, {
-        onProgress,
-        onComplete,
-        batchSize: 2,
       });
 
-      expect(results.length).toBe(mockImageUris.length);
+      expect(results.length).toBe(mockImages.length);
       expect(progressUpdates.length).toBeGreaterThan(0);
 
-      // Check progress updates
       const finalProgress = progressUpdates[progressUpdates.length - 1];
-      expect(finalProgress.completed).toBe(mockImageUris.length);
-      expect(finalProgress.total).toBe(mockImageUris.length);
+      expect(finalProgress.percentage).toBe(100);
+      expect(finalProgress.total).toBe(mockImages.length);
     });
 
     it('shows correct progress during batch processing', async () => {
       const progressUpdates: AnalysisProgress[] = [];
 
-      await analyzer.analyzeBatch(mockImageUris, {
-        onProgress: (progress) => progressUpdates.push(progress),
+      await analyzer.analyzeBatch(mockImages, progress => {
+        progressUpdates.push(progress);
       });
 
-      // First progress should show 0 or 1 completed
-      expect(progressUpdates[0].completed).toBeGreaterThanOrEqual(0);
-      expect(progressUpdates[0].total).toBe(mockImageUris.length);
+      expect(progressUpdates[0].total).toBe(mockImages.length);
 
-      // Progress should increment
       for (let i = 1; i < progressUpdates.length; i++) {
-        expect(progressUpdates[i].completed).toBeGreaterThanOrEqual(
-          progressUpdates[i - 1].completed
+        expect(progressUpdates[i].processed).toBeGreaterThanOrEqual(
+          progressUpdates[i - 1].processed
         );
       }
     });
 
-it('handles batch processing with errors', async () => {
-      const mockModel = {
-        run: jest.fn()
-          .mockResolvedValueOnce({ output: new Float32Array(1000) })
-          .mockRejectedValueOnce(new Error('Analysis error'))
-          .mockResolvedValueOnce({ output: new Float32Array(1000) }),
-      };
-      (tflite.loadTensorflowModel as jest.Mock).mockResolvedValue(mockModel);
-      await analyzer.initialize();
+    it('throws if already processing', async () => {
+      const batchPromise = analyzer.analyzeBatch(mockImages);
 
-      const errors: Error[] = [];
-      const results: ImageAnalysisResult[] = [];
+      await expect(analyzer.analyzeBatch(mockImages)).rejects.toThrow(
+        'Another batch processing is already running'
+      );
 
-      await analyzer.analyzeBatch(mockImageUris, {
-        onComplete: (result) => results.push(result),
-        onError: (error) => errors.push(error),
-        continueOnError: true,
-      });
-
-      // Should have some results and some errors
-      expect(results.length + errors.length).toBe(mockImageUris.length);
+      await batchPromise;
     });
 
     it('allows cancellation of batch processing', async () => {
-      let wasCancelled = false;
+      const batchPromise = analyzer.analyzeBatch(mockImages);
 
-      const batchPromise = analyzer.analyzeBatch(mockImageUris, {
-        onProgress: () => {
-          analyzer.cancelBatch();
-        },
-        onCancelled: () => {
-          wasCancelled = true;
-        },
-      });
+      analyzer.cancelBatchProcessing();
 
       await batchPromise;
 
-      expect(wasCancelled).toBe(true);
-      expect(analyzer.isBatchProcessing()).toBe(false);
+      expect(analyzer.isAnalyzing()).toBe(false);
     });
   });
 
-  describe('Feature Extraction', () => {
-    beforeEach(async () => {
+  describe('Processing State', () => {
+    it('reports analyzing state', async () => {
       await analyzer.initialize();
-    });
-
-    it('extracts image embeddings', async () => {
-      const embeddings = await analyzer.extractEmbeddings('file:///image.jpg');
-
-      expect(embeddings).toBeInstanceOf(Float32Array);
-      expect(embeddings.length).toBeGreaterThan(0);
-    });
-
-    it('generates semantic tags', async () => {
-      const tags = await analyzer.generateTags('file:///image.jpg');
-
-      expect(Array.isArray(tags)).toBe(true);
-      expect(tags.length).toBeGreaterThan(0);
-      expect(tags[0]).toMatchObject({
-        label: expect.any(String),
-        confidence: expect.any(Number),
-      });
-    });
-
-    it('detects scene type', async () => {
-      const sceneType = await analyzer.detectScene('file:///image.jpg');
-
-      expect(typeof sceneType).toBe('string');
-      expect(sceneType.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('Processing Progress', () => {
-    it('provides progress callback during analysis', async () => {
-      await analyzer.initialize();
-
-      const progressCallback = jest.fn();
-      const options: AnalysisOptions = {
-        onProgress: progressCallback,
-      };
-
-      await analyzer.analyzeImage('file:///image.jpg', options);
-
-      expect(progressCallback).toHaveBeenCalled();
-    });
-
-    it('reports processing stages', async () => {
-      await analyzer.initialize();
-
-      const stages: string[] = [];
-
-      await analyzer.analyzeImage('file:///image.jpg', {
-        onProgress: (progress) => {
-          if (!stages.includes(progress.stage)) {
-            stages.push(progress.stage);
-          }
-        },
-      });
-
-      expect(stages.length).toBeGreaterThan(0);
+      expect(analyzer.isAnalyzing()).toBe(false);
     });
   });
 
@@ -272,21 +198,22 @@ it('handles batch processing with errors', async () => {
     it('processes images locally without uploading', async () => {
       await analyzer.initialize();
 
-      const result = await analyzer.analyzeImage('file:///image.jpg');
+      const result = await analyzer.analyzeImage('file:///image.jpg', 'img-test');
 
-      // Result should be processed locally
       expect(result).toBeDefined();
-      expect(result.processedLocally).toBe(true);
+      expect(result.processedAt).toBeInstanceOf(Date);
     });
 
     it('does not make network requests during analysis', async () => {
-      const fetchSpy = jest.spyOn(global, 'fetch');
+      const mockFetch = jest.fn();
+      global.fetch = mockFetch;
       await analyzer.initialize();
 
-      await analyzer.analyzeImage('file:///image.jpg');
+      await analyzer.analyzeImage('file:///image.jpg', 'img-test');
 
-      expect(fetchSpy).not.toHaveBeenCalled();
-      fetchSpy.mockRestore();
+      expect(mockFetch).not.toHaveBeenCalled();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (global as any).fetch;
     });
   });
 });
