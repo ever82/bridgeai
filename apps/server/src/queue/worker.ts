@@ -12,6 +12,7 @@ import { Worker, Job, ConnectionOptions } from 'bullmq';
 
 import { getQueueManager, QueueManager } from './queues';
 import { QueueName, QueueConfig, queueConfigurations } from './config';
+import { getRetryStrategy } from './retry';
 
 // Job processor function type
 export type JobProcessor<T = any> = (job: Job<T>) => Promise<void>;
@@ -67,10 +68,7 @@ class QueueWorker {
   /**
    * Start processing jobs for a queue
    */
-  async startProcessor(
-    queueName: QueueName,
-    events?: WorkerEvents
-  ): Promise<Worker> {
+  async startProcessor(queueName: QueueName, events?: WorkerEvents): Promise<Worker> {
     const queueConfig = queueConfigurations[queueName] || {};
     const mergedConfig = this.mergeConfig(queueConfig);
 
@@ -83,6 +81,10 @@ class QueueWorker {
       connection: this.getRedisConnection(),
       concurrency: mergedConfig.worker.concurrency,
       lockDuration: mergedConfig.worker.lockDuration,
+      limiter: {
+        max: mergedConfig.worker.rateLimitMax,
+        duration: mergedConfig.worker.rateLimitWindow,
+      },
       removeOnComplete: {
         age: mergedConfig.defaultJobOptions.removeCompletedDelay / 1000,
         count: 1000,
@@ -114,9 +116,25 @@ class QueueWorker {
       console.log(`[Worker] Job ${job.id} in queue ${queueName} completed`);
     });
 
-    // Default failed handler
+    // Default failed handler - send to dead letter queue after BullMQ exhausts retries
     worker.on('failed', (job: any, err: Error) => {
-      console.error(`[Worker] Job ${job?.id} in queue ${queueName} failed:`, err.message);
+      const attemptsMade = job?.attemptsMade ?? 0;
+      const maxAttempts = job?.opts?.attempts ?? 1;
+      console.error(
+        `[Worker] Job ${job?.id} in queue ${queueName} failed (attempt ${attemptsMade}/${maxAttempts}):`,
+        err.message
+      );
+
+      if (attemptsMade >= maxAttempts) {
+        getRetryStrategy()
+          .handleFailedJob(job)
+          .catch((handlerErr: Error) => {
+            console.error(
+              `[Worker] Error routing failed job ${job?.id} to DLQ:`,
+              handlerErr.message
+            );
+          });
+      }
     });
 
     this.manager.registerWorker(queueName, worker);
@@ -187,12 +205,10 @@ class QueueWorker {
   /**
    * Merge default config with queue-specific config
    */
-  private mergeConfig(
-    queueConfig: {
-      worker?: Partial<QueueConfig['worker']>;
-      defaultJobOptions?: Partial<QueueConfig['defaultJobOptions']>;
-    }
-  ): QueueConfig {
+  private mergeConfig(queueConfig: {
+    worker?: Partial<QueueConfig['worker']>;
+    defaultJobOptions?: Partial<QueueConfig['defaultJobOptions']>;
+  }): QueueConfig {
     const defaultConfig = this.manager['config'];
     return {
       connection: defaultConfig.connection,

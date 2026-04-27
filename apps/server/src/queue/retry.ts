@@ -80,10 +80,7 @@ export function calculateBackoffDelay(
 /**
  * Check if a job should be retried
  */
-export function shouldRetry(
-  attemptNumber: number,
-  maxAttempts: number
-): boolean {
+export function shouldRetry(attemptNumber: number, maxAttempts: number): boolean {
   return attemptNumber < maxAttempts;
 }
 
@@ -128,31 +125,16 @@ class RetryStrategy {
   }
 
   /**
-   * Process a failed job - retry or send to dead letter queue
+   * Process a permanently failed job - send to dead letter queue.
+   * BullMQ handles retries via attempts+backoff config; this is called
+   * only after all built-in retries have been exhausted.
    */
   async handleFailedJob(job: Job): Promise<void> {
     const { failedReason } = job;
-    const attemptNumber = job.attemptsMade + 1;
-
-    console.log(`[Retry] Job ${job.id} failed (attempt ${attemptNumber}/${this.options.maxAttempts})`);
-
-    if (shouldRetry(attemptNumber, this.options.maxAttempts)) {
-      // Calculate delay for next retry
-      const delay = getRetryDelay(attemptNumber, this.options);
-      console.log(`[Retry] Scheduling retry for job ${job.id} in ${delay}ms`);
-
-      // Re-add job with delay using the queue manager
-      const queue = this.manager.getQueue(job.queueName as QueueName);
-      await queue.add(job.name, job.data, {
-        delay,
-        attempts: this.options.maxAttempts - attemptNumber,
-        jobId: `${job.id}-retry-${attemptNumber}`,
-      });
-    } else {
-      // Max retries exceeded - send to dead letter queue
-      console.log(`[Retry] Max retries exceeded for job ${job.id}, sending to dead letter queue`);
-      await this.sendToDeadLetterQueue(job, failedReason || 'Unknown error');
-    }
+    console.log(
+      `[Retry] Job ${job.id} permanently failed after ${job.attemptsMade} attempts, sending to dead letter queue`
+    );
+    await this.sendToDeadLetterQueue(job, failedReason || 'Unknown error');
   }
 
   /**

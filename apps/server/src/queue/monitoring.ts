@@ -13,7 +13,7 @@ import { Job } from 'bullmq';
 
 import { getQueueManager } from './queues';
 import { QueueNames, QueueName } from './config';
-import { DeadLetterJobData, getRetryStrategy } from './retry';
+import { DeadLetterJobData } from './retry';
 
 export interface QueueMetrics {
   name: string;
@@ -41,7 +41,8 @@ export interface QueueStats {
 }
 
 // Metrics history for calculating rates
-const metricsHistory: Map<string, { timestamp: number; completed: number; failed: number }[]> = new Map();
+const metricsHistory: Map<string, { timestamp: number; completed: number; failed: number }[]> =
+  new Map();
 const METRICS_HISTORY_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const METRICS_SAMPLE_INTERVAL_MS = 60 * 1000; // 1 minute
 
@@ -129,11 +130,7 @@ class QueueMonitor {
   /**
    * Get failed jobs from a queue
    */
-  async getFailedJobs(
-    queueName: QueueName,
-    start: number = 0,
-    end: number = 10
-  ): Promise<Job[]> {
+  async getFailedJobs(queueName: QueueName, start: number = 0, end: number = 10): Promise<Job[]> {
     const queue = this.manager.getQueue(queueName);
     const counts = await queue.getJobCounts();
 
@@ -147,10 +144,7 @@ class QueueMonitor {
   /**
    * Get dead letter queue contents
    */
-  async getDeadLetterJobs(
-    start: number = 0,
-    end: number = 10
-  ): Promise<Array<Job<any>>> {
+  async getDeadLetterJobs(start: number = 0, end: number = 10): Promise<Array<Job<any>>> {
     const deadLetterQueue = this.manager.getQueue(QueueNames.DEAD_LETTER);
     return deadLetterQueue.getJobs([], start, start + end) as Promise<Job<any>[]>;
   }
@@ -172,7 +166,7 @@ class QueueMonitor {
 
     return {
       total: jobs.length,
-      jobs: jobs.map((job) => {
+      jobs: jobs.map(job => {
         const data = job.data as DeadLetterJobData;
         return {
           originalQueue: data.originalQueue,
@@ -214,7 +208,7 @@ class QueueMonitor {
         workers.push({
           queueName: name,
           running: true,
-          paused: worker.isPaused(),
+          paused: await worker.isPaused(),
           concurrency: worker.concurrency,
           activeCount: counts.active,
         });
@@ -275,7 +269,7 @@ class QueueMonitor {
     let totalJobs = 0;
 
     for (const [, history] of metricsHistory) {
-      const recentHistory = history.filter((h) => now - h.timestamp < METRICS_SAMPLE_INTERVAL_MS * 5);
+      const recentHistory = history.filter(h => now - h.timestamp < METRICS_SAMPLE_INTERVAL_MS * 5);
       for (const h of recentHistory) {
         totalJobs += h.completed + h.failed;
       }
@@ -309,7 +303,7 @@ class QueueMonitor {
 
           // Clean old entries
           const cutoff = now - METRICS_HISTORY_WINDOW_MS;
-          const filtered = history.filter((h) => h.timestamp > cutoff);
+          const filtered = history.filter(h => h.timestamp > cutoff);
           metricsHistory.set(name, filtered);
         } catch {
           // Ignore errors in metrics collection
@@ -352,7 +346,7 @@ class QueueMonitor {
       queues,
       health,
       stats,
-      workers: workers.map((w) => ({
+      workers: workers.map(w => ({
         queueName: w.queueName,
         running: w.running,
         paused: w.paused,
