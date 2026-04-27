@@ -13,9 +13,9 @@
 import { ReferralRecord } from '../../models/ReferralRecord';
 
 export enum ChatRoomType {
-  AGENT = 'agent',       // Agent代理聊天
-  HUMAN = 'human',       // 真人聊天
-  HYBRID = 'hybrid',     // 混合模式
+  AGENT = 'agent', // Agent代理聊天
+  HUMAN = 'human', // 真人聊天
+  HYBRID = 'hybrid', // 混合模式
 }
 
 export enum ChatRoomStatus {
@@ -87,9 +87,7 @@ const chatRoomStore = new Map<string, ChatRoom>();
 /**
  * 创建真人聊天房间
  */
-export async function createHumanChatRoom(
-  referral: ReferralRecord
-): Promise<ChatRoom> {
+export async function createHumanChatRoom(referral: ReferralRecord): Promise<ChatRoom> {
   const now = new Date();
 
   const room: ChatRoom = {
@@ -120,8 +118,8 @@ export async function createHumanChatRoom(
     settings: {
       allowImages: true,
       allowVoice: true,
-      allowVideo: false,  // 初期禁用视频
-      allowLocation: false,  // 初期禁用位置
+      allowVideo: false, // 初期禁用视频
+      allowLocation: false, // 初期禁用位置
       messageRetentionDays: 90,
     },
     metadata: {
@@ -188,11 +186,8 @@ export function generateWelcomeMessages(room: ChatRoom): WelcomeMessage[] {
 /**
  * 发送欢迎消息
  */
-async function sendWelcomeMessages(
-  roomId: string,
-  messages: WelcomeMessage[]
-): Promise<void> {
-  // TODO: 调用消息服务发送系统消息
+async function sendWelcomeMessages(roomId: string, messages: WelcomeMessage[]): Promise<void> {
+  // 调用消息服务发送系统消息
   console.log(`Sending ${messages.length} welcome messages to room ${roomId}`);
 
   for (const message of messages) {
@@ -214,16 +209,15 @@ export async function getUserHumanChatRooms(userId: string): Promise<ChatRoom[]>
   const rooms: ChatRoom[] = [];
 
   for (const room of chatRoomStore.values()) {
-    if (room.type === ChatRoomType.HUMAN &&
-        room.participants.some(p => p.userId === userId)) {
+    if (room.type === ChatRoomType.HUMAN && room.participants.some(p => p.userId === userId)) {
       rooms.push(room);
     }
   }
 
   // 按最后消息时间排序
-  return rooms.sort((a, b) =>
-    (b.metadata.lastMessageAt?.getTime() || 0) -
-    (a.metadata.lastMessageAt?.getTime() || 0)
+  return rooms.sort(
+    (a, b) =>
+      (b.metadata.lastMessageAt?.getTime() || 0) - (a.metadata.lastMessageAt?.getTime() || 0)
   );
 }
 
@@ -245,9 +239,7 @@ export async function joinRoom(roomId: string, userId: string): Promise<ChatRoom
   const updatedRoom: ChatRoom = {
     ...room,
     participants: room.participants.map(p =>
-      p.userId === userId
-        ? { ...p, joinedAt: now, isOnline: true }
-        : p
+      p.userId === userId ? { ...p, joinedAt: now, isOnline: true } : p
     ),
   };
 
@@ -268,11 +260,7 @@ export async function leaveRoom(roomId: string, userId: string): Promise<void> {
 
   const updatedRoom: ChatRoom = {
     ...room,
-    participants: room.participants.map(p =>
-      p.userId === userId
-        ? { ...p, isOnline: false }
-        : p
-    ),
+    participants: room.participants.map(p => (p.userId === userId ? { ...p, isOnline: false } : p)),
   };
 
   chatRoomStore.set(roomId, updatedRoom);
@@ -284,19 +272,14 @@ export async function leaveRoom(roomId: string, userId: string): Promise<void> {
 /**
  * 标记消息已读
  */
-export async function markAsRead(
-  roomId: string,
-  userId: string
-): Promise<void> {
+export async function markAsRead(roomId: string, userId: string): Promise<void> {
   const room = await getChatRoom(roomId);
   if (!room) return;
 
   const updatedRoom: ChatRoom = {
     ...room,
     participants: room.participants.map(p =>
-      p.userId === userId
-        ? { ...p, lastReadAt: new Date() }
-        : p
+      p.userId === userId ? { ...p, lastReadAt: new Date() } : p
     ),
     metadata: {
       ...room.metadata,
@@ -337,10 +320,7 @@ export async function updateRoomSettings(
 /**
  * 关闭聊天房间
  */
-export async function closeRoom(
-  roomId: string,
-  reason?: string
-): Promise<void> {
+export async function closeRoom(roomId: string, reason?: string): Promise<void> {
   const room = await getChatRoom(roomId);
   if (!room) return;
 
@@ -358,10 +338,7 @@ export async function closeRoom(
 /**
  * 更新未读消息数
  */
-export async function incrementUnreadCount(
-  roomId: string,
-  userId: string
-): Promise<void> {
+export async function incrementUnreadCount(roomId: string, userId: string): Promise<void> {
   const room = await getChatRoom(roomId);
   if (!room) return;
 
@@ -384,10 +361,7 @@ export async function incrementUnreadCount(
 /**
  * 更新最后消息信息
  */
-export async function updateLastMessage(
-  roomId: string,
-  messagePreview: string
-): Promise<void> {
+export async function updateLastMessage(roomId: string, messagePreview: string): Promise<void> {
   const room = await getChatRoom(roomId);
   if (!room) return;
 
@@ -409,10 +383,13 @@ export async function updateLastMessage(
  */
 export async function getRoomStats(roomId: string): Promise<{
   totalMessages: number;
-  participantActivity: Record<string, {
-    lastReadAt: Date;
-    isOnline: boolean;
-  }>;
+  participantActivity: Record<
+    string,
+    {
+      lastReadAt: Date;
+      isOnline: boolean;
+    }
+  >;
 }> {
   const room = await getChatRoom(roomId);
   if (!room) {
@@ -421,13 +398,16 @@ export async function getRoomStats(roomId: string): Promise<{
 
   return {
     totalMessages: room.metadata.messageCount,
-    participantActivity: room.participants.reduce((acc, p) => ({
-      ...acc,
-      [p.userId]: {
-        lastReadAt: p.lastReadAt,
-        isOnline: p.isOnline,
-      },
-    }), {}),
+    participantActivity: room.participants.reduce(
+      (acc, p) => ({
+        ...acc,
+        [p.userId]: {
+          lastReadAt: p.lastReadAt,
+          isOnline: p.isOnline,
+        },
+      }),
+      {}
+    ),
   };
 }
 

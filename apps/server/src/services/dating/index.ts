@@ -12,6 +12,7 @@ export * from './humanChatRoomService';
 export * from './profileService';
 export * from './profileQualityService';
 export * from './privacyService';
+export * from './conversationStateManager';
 
 // 默认导出
 export { default as consentStateManager } from './consentStateManager';
@@ -20,3 +21,4 @@ export { default as referralService } from './referralService';
 export { default as referralNotificationService } from './referralNotificationService';
 export { default as referralHistoryService } from './referralHistoryService';
 export { default as humanChatRoomService } from './humanChatRoomService';
+export { default as conversationStateManager } from './conversationStateManager';

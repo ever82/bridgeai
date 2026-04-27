@@ -8,15 +8,12 @@ import type {
   Lifestyle,
   RelationshipExpectations,
   PrivacySettings,
-  ProfileQualityResult,
 } from '@bridgeai/shared';
 import { VisibilityLevel } from '@bridgeai/shared';
+import type { Prisma } from '@prisma/client';
 
 import { prisma } from '../../db/client';
 import { AppError } from '../../errors/AppError';
-
-// Prisma client with any-type alias for non-existent models
-const _prisma = prisma as any;
 
 // Default privacy settings
 const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {
@@ -37,10 +34,7 @@ const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {
 /**
  * Get or create dating profile for an agent
  */
-export async function getOrCreateProfile(
-  agentId: string,
-  userId: string
-): Promise<DatingProfile> {
+export async function getOrCreateProfile(agentId: string, userId: string): Promise<DatingProfile> {
   // Check if agent exists and belongs to user
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
@@ -54,19 +48,18 @@ export async function getOrCreateProfile(
     throw new AppError('Unauthorized to access this agent', 'UNAUTHORIZED', 403);
   }
 
-  const _prisma = prisma as any;
-// Check if profile exists
-  let profile = await _prisma.datingProfile.findUnique({
+  // Check if profile exists
+  let profile = await prisma.datingProfile.findUnique({
     where: { agentId },
   });
 
   if (!profile) {
     // Create default profile
-    profile = await _prisma.datingProfile.create({
+    profile = await prisma.datingProfile.create({
       data: {
         agentId,
         userId,
-        privacySettings: DEFAULT_PRIVACY_SETTINGS,
+        privacySettings: DEFAULT_PRIVACY_SETTINGS as unknown as Prisma.InputJsonValue,
         isActive: true,
         isComplete: false,
       },
@@ -96,7 +89,7 @@ export async function getProfileByAgentId(
     throw new AppError('Unauthorized to access this agent', 'UNAUTHORIZED', 403);
   }
 
-  const profile = await _prisma.datingProfile.findUnique({
+  const profile = await prisma.datingProfile.findUnique({
     where: { agentId },
   });
 
@@ -128,7 +121,7 @@ export async function createProfile(
   }
 
   // Check if profile already exists
-  const existing = await _prisma.datingProfile.findUnique({
+  const existing = await prisma.datingProfile.findUnique({
     where: { agentId: data.agentId },
   });
 
@@ -137,7 +130,7 @@ export async function createProfile(
   }
 
   // Validate data
-  const validation = validateProfileData(data as any);
+  const validation = validateProfileData(data);
   if (!validation.valid) {
     throw new AppError(
       `Validation failed: ${validation.errors.map(e => e.message).join(', ')}`,
@@ -147,26 +140,26 @@ export async function createProfile(
   }
 
   // Calculate completeness
-  const completeness = calculateCompleteness(data as unknown as Partial<DatingProfile>);
+  const completeness = calculateCompleteness(data as Partial<DatingProfile>);
 
   // Create profile
-  const profile = await _prisma.datingProfile.create({
+  const profile = await prisma.datingProfile.create({
     data: {
       agentId: data.agentId,
       userId,
-      basicConditions: data.basicConditions as any,
-      personality: data.personality as any,
-      interests: data.interests as any,
-      lifestyle: data.lifestyle as any,
-      expectations: data.expectations as any,
+      basicConditions: data.basicConditions as unknown as Prisma.InputJsonValue,
+      personality: data.personality as unknown as Prisma.InputJsonValue,
+      interests: data.interests as unknown as Prisma.InputJsonValue,
+      lifestyle: data.lifestyle as unknown as Prisma.InputJsonValue,
+      expectations: data.expectations as unknown as Prisma.InputJsonValue,
       description: data.description,
       privacySettings: {
         ...DEFAULT_PRIVACY_SETTINGS,
-        ...(data.privacySettings as any),
-      } as any,
+        ...data.privacySettings,
+      } as unknown as Prisma.InputJsonValue,
       completenessScore: completeness.score,
       isComplete: completeness.isComplete,
-    } as any,
+    },
   });
 
   return mapPrismaProfileToProfile(profile);
@@ -181,7 +174,7 @@ export async function updateProfile(
   data: UpdateDatingProfileRequest
 ): Promise<DatingProfile> {
   // Check if profile exists
-  const existing = await _prisma.datingProfile.findUnique({
+  const existing = await prisma.datingProfile.findUnique({
     where: { agentId },
   });
 
@@ -194,7 +187,7 @@ export async function updateProfile(
   }
 
   // Validate data
-  const validation = validateProfileData(data as any);
+  const validation = validateProfileData(data);
   if (!validation.valid) {
     throw new AppError(
       `Validation failed: ${validation.errors.map(e => e.message).join(', ')}`,
@@ -204,44 +197,54 @@ export async function updateProfile(
   }
 
   // Merge with existing data
-  const mergedData = {
-    basicConditions: data.basicConditions !== undefined
-      ? { ...existing.basicConditions, ...data.basicConditions }
-      : existing.basicConditions,
-    personality: data.personality !== undefined
-      ? { ...existing.personality, ...data.personality }
-      : existing.personality,
-    interests: data.interests !== undefined
-      ? { ...existing.interests, ...data.interests }
-      : existing.interests,
-    lifestyle: data.lifestyle !== undefined
-      ? { ...existing.lifestyle, ...data.lifestyle }
-      : existing.lifestyle,
-    expectations: data.expectations !== undefined
-      ? { ...existing.expectations, ...data.expectations }
-      : existing.expectations,
-    description: data.description !== undefined
-      ? data.description
-      : existing.description,
-    privacySettings: data.privacySettings !== undefined
-      ? { ...existing.privacySettings, ...(data.privacySettings as any) }
-      : existing.privacySettings,
-  } as any;
+  const mergedData: Record<string, unknown> = {
+    basicConditions:
+      data.basicConditions !== undefined
+        ? { ...(existing.basicConditions as Record<string, unknown>), ...data.basicConditions }
+        : existing.basicConditions,
+    personality:
+      data.personality !== undefined
+        ? { ...(existing.personality as Record<string, unknown>), ...data.personality }
+        : existing.personality,
+    interests:
+      data.interests !== undefined
+        ? { ...(existing.interests as Record<string, unknown>), ...data.interests }
+        : existing.interests,
+    lifestyle:
+      data.lifestyle !== undefined
+        ? { ...(existing.lifestyle as Record<string, unknown>), ...data.lifestyle }
+        : existing.lifestyle,
+    expectations:
+      data.expectations !== undefined
+        ? { ...(existing.expectations as Record<string, unknown>), ...data.expectations }
+        : existing.expectations,
+    description: data.description !== undefined ? data.description : existing.description,
+    privacySettings:
+      data.privacySettings !== undefined
+        ? { ...(existing.privacySettings as Record<string, unknown>), ...data.privacySettings }
+        : existing.privacySettings,
+  };
 
   // Calculate completeness
   const completeness = calculateCompleteness({
     agentId,
     ...mergedData,
-  });
+  } as Partial<DatingProfile>);
 
   // Update profile
-  const profile = await _prisma.datingProfile.update({
+  const profile = await prisma.datingProfile.update({
     where: { agentId },
     data: {
-      ...mergedData,
+      basicConditions: mergedData.basicConditions as Prisma.InputJsonValue,
+      personality: mergedData.personality as Prisma.InputJsonValue,
+      interests: mergedData.interests as Prisma.InputJsonValue,
+      lifestyle: mergedData.lifestyle as Prisma.InputJsonValue,
+      expectations: mergedData.expectations as Prisma.InputJsonValue,
+      description: mergedData.description as string | null,
+      privacySettings: mergedData.privacySettings as Prisma.InputJsonValue,
       completenessScore: completeness.score,
       isComplete: completeness.isComplete,
-    } as any,
+    },
   });
 
   return mapPrismaProfileToProfile(profile);
@@ -250,11 +253,8 @@ export async function updateProfile(
 /**
  * Delete dating profile
  */
-export async function deleteProfile(
-  agentId: string,
-  userId: string
-): Promise<void> {
-  const profile = await _prisma.datingProfile.findUnique({
+export async function deleteProfile(agentId: string, userId: string): Promise<void> {
+  const profile = await prisma.datingProfile.findUnique({
     where: { agentId },
   });
 
@@ -266,7 +266,7 @@ export async function deleteProfile(
     throw new AppError('Unauthorized to delete this profile', 'UNAUTHORIZED', 403);
   }
 
-  await _prisma.datingProfile.delete({
+  await prisma.datingProfile.delete({
     where: { agentId },
   });
 }
@@ -277,10 +277,10 @@ export async function deleteProfile(
 export async function updateAIExtractedData(
   agentId: string,
   userId: string,
-  extractedData: Record<string, any>,
+  extractedData: Record<string, unknown>,
   confidence: number
 ): Promise<DatingProfile> {
-  const profile = await _prisma.datingProfile.findUnique({
+  const profile = await prisma.datingProfile.findUnique({
     where: { agentId },
   });
 
@@ -292,10 +292,10 @@ export async function updateAIExtractedData(
     throw new AppError('Unauthorized to update this profile', 'UNAUTHORIZED', 403);
   }
 
-  const updated = await _prisma.datingProfile.update({
+  const updated = await prisma.datingProfile.update({
     where: { agentId },
     data: {
-      aiExtractedData: extractedData,
+      aiExtractedData: extractedData as Prisma.InputJsonValue,
       aiExtractionConfidence: confidence,
     },
   });
@@ -312,12 +312,38 @@ export function checkCompleteness(profile: Partial<DatingProfile>): {
   score: number;
 } {
   const sections = [
-    { name: 'basicConditions', weight: 25, check: (p: any) => p.basicConditions && Object.keys(p.basicConditions).length > 0 },
-    { name: 'personality', weight: 15, check: (p: any) => p.personality && Object.keys(p.personality).length > 0 },
-    { name: 'interests', weight: 20, check: (p: any) => p.interests && p.interests.interests && p.interests.interests.length > 0 },
-    { name: 'lifestyle', weight: 20, check: (p: any) => p.lifestyle && Object.keys(p.lifestyle).length > 0 },
-    { name: 'expectations', weight: 15, check: (p: any) => p.expectations && p.expectations.purpose },
-    { name: 'description', weight: 5, check: (p: any) => p.description && p.description.length > 10 },
+    {
+      name: 'basicConditions',
+      weight: 25,
+      check: (p: Partial<DatingProfile>) =>
+        p.basicConditions && Object.keys(p.basicConditions).length > 0,
+    },
+    {
+      name: 'personality',
+      weight: 15,
+      check: (p: Partial<DatingProfile>) => p.personality && Object.keys(p.personality).length > 0,
+    },
+    {
+      name: 'interests',
+      weight: 20,
+      check: (p: Partial<DatingProfile>) =>
+        p.interests && p.interests.interests && p.interests.interests.length > 0,
+    },
+    {
+      name: 'lifestyle',
+      weight: 20,
+      check: (p: Partial<DatingProfile>) => p.lifestyle && Object.keys(p.lifestyle).length > 0,
+    },
+    {
+      name: 'expectations',
+      weight: 15,
+      check: (p: Partial<DatingProfile>) => p.expectations && p.expectations.purpose,
+    },
+    {
+      name: 'description',
+      weight: 5,
+      check: (p: Partial<DatingProfile>) => !!(p.description && p.description.length > 10),
+    },
   ];
 
   let score = 0;
@@ -355,7 +381,7 @@ function calculateCompleteness(data: Partial<DatingProfile>): {
 /**
  * Validate profile data
  */
-function validateProfileData(data: Partial<DatingProfile>): {
+function validateProfileData(data: CreateDatingProfileRequest | UpdateDatingProfileRequest): {
   valid: boolean;
   errors: Array<{ field: string; message: string }>;
 } {
@@ -409,20 +435,22 @@ function validateProfileData(data: Partial<DatingProfile>): {
 /**
  * Map Prisma profile to DatingProfile interface
  */
-function mapPrismaProfileToProfile(prismaProfile: any): DatingProfile {
+function mapPrismaProfileToProfile(
+  prismaProfile: NonNullable<Awaited<ReturnType<typeof prisma.datingProfile.findUnique>>>
+): DatingProfile {
   return {
     id: prismaProfile.id,
     agentId: prismaProfile.agentId,
     userId: prismaProfile.userId,
-    basicConditions: prismaProfile.basicConditions as BasicConditions | undefined,
-    personality: prismaProfile.personality as PersonalityPreferences | undefined,
-    interests: prismaProfile.interests as InterestPreferences | undefined,
-    lifestyle: prismaProfile.lifestyle as Lifestyle | undefined,
-    expectations: prismaProfile.expectations as RelationshipExpectations | undefined,
+    basicConditions: prismaProfile.basicConditions as unknown as BasicConditions | undefined,
+    personality: prismaProfile.personality as unknown as PersonalityPreferences | undefined,
+    interests: prismaProfile.interests as unknown as InterestPreferences | undefined,
+    lifestyle: prismaProfile.lifestyle as unknown as Lifestyle | undefined,
+    expectations: prismaProfile.expectations as unknown as RelationshipExpectations | undefined,
     description: prismaProfile.description,
-    aiExtractedData: prismaProfile.aiExtractedData as Record<string, any> | undefined,
+    aiExtractedData: prismaProfile.aiExtractedData as Record<string, unknown> | undefined,
     aiExtractionConfidence: prismaProfile.aiExtractionConfidence,
-    privacySettings: prismaProfile.privacySettings as PrivacySettings,
+    privacySettings: prismaProfile.privacySettings as unknown as PrivacySettings,
     completenessScore: prismaProfile.completenessScore,
     qualityScore: prismaProfile.qualityScore,
     isActive: prismaProfile.isActive,

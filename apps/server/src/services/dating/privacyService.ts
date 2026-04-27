@@ -1,34 +1,93 @@
-import type {
-  DatingProfile,
-  PrivacySettings,
-  FieldVisibility,
-} from '@bridgeai/shared';
+import type { DatingProfile, PrivacySettings } from '@bridgeai/shared';
 import { VisibilityLevel } from '@bridgeai/shared';
 
 /**
  * Field definitions with sensitivity levels
  */
-export const FIELD_DEFINITIONS: Record<string, {
-  category: string;
-  sensitivity: 'high' | 'medium' | 'low';
-  defaultVisibility: VisibilityLevel;
-}> = {
-  ageRange: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
-  heightRange: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
-  education: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
+export const FIELD_DEFINITIONS: Record<
+  string,
+  {
+    category: string;
+    sensitivity: 'high' | 'medium' | 'low';
+    defaultVisibility: VisibilityLevel;
+  }
+> = {
+  ageRange: {
+    category: 'basicInfo',
+    sensitivity: 'low',
+    defaultVisibility: VisibilityLevel.PUBLIC,
+  },
+  heightRange: {
+    category: 'basicInfo',
+    sensitivity: 'low',
+    defaultVisibility: VisibilityLevel.PUBLIC,
+  },
+  education: {
+    category: 'basicInfo',
+    sensitivity: 'low',
+    defaultVisibility: VisibilityLevel.PUBLIC,
+  },
   photos: { category: 'photos', sensitivity: 'medium', defaultVisibility: VisibilityLevel.PUBLIC },
-  income: { category: 'income', sensitivity: 'high', defaultVisibility: VisibilityLevel.MATCHED_ONLY },
-  location: { category: 'location', sensitivity: 'medium', defaultVisibility: VisibilityLevel.MATCHED_ONLY },
-  phone: { category: 'contactInfo', sensitivity: 'high', defaultVisibility: VisibilityLevel.PRIVATE },
-  wechat: { category: 'contactInfo', sensitivity: 'high', defaultVisibility: VisibilityLevel.PRIVATE },
-  address: { category: 'location', sensitivity: 'high', defaultVisibility: VisibilityLevel.PRIVATE },
-  occupation: { category: 'basicInfo', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
-  company: { category: 'basicInfo', sensitivity: 'medium', defaultVisibility: VisibilityLevel.MATCHED_ONLY },
-  personality: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
-  interests: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
-  lifestyle: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
-  expectations: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
-  description: { category: 'personalDetails', sensitivity: 'low', defaultVisibility: VisibilityLevel.PUBLIC },
+  income: {
+    category: 'income',
+    sensitivity: 'high',
+    defaultVisibility: VisibilityLevel.MATCHED_ONLY,
+  },
+  location: {
+    category: 'location',
+    sensitivity: 'medium',
+    defaultVisibility: VisibilityLevel.MATCHED_ONLY,
+  },
+  phone: {
+    category: 'contactInfo',
+    sensitivity: 'high',
+    defaultVisibility: VisibilityLevel.PRIVATE,
+  },
+  wechat: {
+    category: 'contactInfo',
+    sensitivity: 'high',
+    defaultVisibility: VisibilityLevel.PRIVATE,
+  },
+  address: {
+    category: 'location',
+    sensitivity: 'high',
+    defaultVisibility: VisibilityLevel.PRIVATE,
+  },
+  occupation: {
+    category: 'basicInfo',
+    sensitivity: 'low',
+    defaultVisibility: VisibilityLevel.PUBLIC,
+  },
+  company: {
+    category: 'basicInfo',
+    sensitivity: 'medium',
+    defaultVisibility: VisibilityLevel.MATCHED_ONLY,
+  },
+  personality: {
+    category: 'personalDetails',
+    sensitivity: 'low',
+    defaultVisibility: VisibilityLevel.PUBLIC,
+  },
+  interests: {
+    category: 'personalDetails',
+    sensitivity: 'low',
+    defaultVisibility: VisibilityLevel.PUBLIC,
+  },
+  lifestyle: {
+    category: 'personalDetails',
+    sensitivity: 'low',
+    defaultVisibility: VisibilityLevel.PUBLIC,
+  },
+  expectations: {
+    category: 'personalDetails',
+    sensitivity: 'low',
+    defaultVisibility: VisibilityLevel.PUBLIC,
+  },
+  description: {
+    category: 'personalDetails',
+    sensitivity: 'low',
+    defaultVisibility: VisibilityLevel.PUBLIC,
+  },
 };
 
 /**
@@ -53,7 +112,11 @@ export function getVisibleFieldsAtStage(
   isMatched: boolean
 ): string[] {
   if (isOwner) {
-    return Object.keys(FIELD_DEFINITIONS);
+    const categories = new Set<string>();
+    Object.values(FIELD_DEFINITIONS).forEach(def => {
+      categories.add(def.category);
+    });
+    return [...categories];
   }
 
   const visibility = profile.privacySettings;
@@ -128,12 +191,7 @@ export function filterProfileForViewer(
     return profile;
   }
 
-  const visibleFields = getVisibleFieldsAtStage(
-    profile,
-    relationshipStage,
-    isOwner,
-    isMatched
-  );
+  const visibleFields = getVisibleFieldsAtStage(profile, relationshipStage, isOwner, isMatched);
 
   const filtered: Partial<DatingProfile> = {
     id: profile.id,
@@ -142,7 +200,10 @@ export function filterProfileForViewer(
   };
 
   // Filter basic conditions
-  if (profile.basicConditions && visibleFields.some(f => ['ageRange', 'heightRange', 'education', 'location'].includes(f))) {
+  if (
+    profile.basicConditions &&
+    visibleFields.some(f => ['ageRange', 'heightRange', 'education', 'location'].includes(f))
+  ) {
     filtered.basicConditions = {};
     if (visibleFields.includes('ageRange')) {
       filtered.basicConditions.ageRange = profile.basicConditions.ageRange;
@@ -241,7 +302,12 @@ export function validatePrivacySettings(settings: Partial<PrivacySettings>): {
 
   // Validate profile visibility
   if (settings.profileVisibility) {
-    const validLevels = [VisibilityLevel.PUBLIC, VisibilityLevel.MATCHED_ONLY, VisibilityLevel.VERIFIED_ONLY, VisibilityLevel.PRIVATE];
+    const validLevels = [
+      VisibilityLevel.PUBLIC,
+      VisibilityLevel.MATCHED_ONLY,
+      VisibilityLevel.VERIFIED_ONLY,
+      VisibilityLevel.PRIVATE,
+    ];
     if (!validLevels.includes(settings.profileVisibility)) {
       errors.push('Invalid profile visibility level');
     }
@@ -249,7 +315,12 @@ export function validatePrivacySettings(settings: Partial<PrivacySettings>): {
 
   // Validate field visibility
   if (settings.fieldVisibility) {
-    const validLevels = [VisibilityLevel.PUBLIC, VisibilityLevel.MATCHED_ONLY, VisibilityLevel.VERIFIED_ONLY, VisibilityLevel.PRIVATE];
+    const validLevels = [
+      VisibilityLevel.PUBLIC,
+      VisibilityLevel.MATCHED_ONLY,
+      VisibilityLevel.VERIFIED_ONLY,
+      VisibilityLevel.PRIVATE,
+    ];
     Object.entries(settings.fieldVisibility).forEach(([field, level]) => {
       if (!validLevels.includes(level as VisibilityLevel)) {
         errors.push(`Invalid visibility level for field ${field}`);
@@ -296,9 +367,7 @@ export function getDefaultPrivacySettings(): PrivacySettings {
 /**
  * Get recommended privacy settings for different privacy levels
  */
-export function getRecommendedPrivacySettings(
-  level: 'low' | 'medium' | 'high'
-): PrivacySettings {
+export function getRecommendedPrivacySettings(level: 'low' | 'medium' | 'high'): PrivacySettings {
   const base = {
     profileVisibility: VisibilityLevel.PUBLIC,
     fieldVisibility: {
@@ -379,9 +448,7 @@ export function maskFieldValue(field: string, value: string): string {
 /**
  * Get disclosure recommendations
  */
-export function getDisclosureRecommendations(
-  profile: DatingProfile
-): Array<{
+export function getDisclosureRecommendations(profile: DatingProfile): Array<{
   field: string;
   currentVisibility: VisibilityLevel;
   recommendedVisibility: VisibilityLevel;
@@ -407,7 +474,10 @@ export function getDisclosureRecommendations(
   }
 
   // Recommend protecting location
-  if (profile.basicConditions?.location?.district && visibility.location === VisibilityLevel.PUBLIC) {
+  if (
+    profile.basicConditions?.location?.district &&
+    visibility.location === VisibilityLevel.PUBLIC
+  ) {
     recommendations.push({
       field: 'location',
       currentVisibility: VisibilityLevel.PUBLIC,

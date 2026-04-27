@@ -11,17 +11,23 @@
 
 import {
   MutualConsent,
-  UserConsent,
   ConsentStatus,
   ReferralResult,
   createMutualConsent,
   updateUserDecision,
   expireConsent,
   isBothDecided,
-  isMutualAccept,
   ConsentExpiredError,
   ConsentChangeLimitError,
 } from '../../models/MutualConsent';
+
+import {
+  sendReferralNotification,
+  sendOtherUserDecidedNotification,
+  sendTimeoutWarningNotification,
+  sendTimeoutExpiredNotification,
+  sendCancelNotification,
+} from './referralNotificationService';
 
 // 模拟数据存储（实际项目中应使用数据库）
 const consentStore = new Map<string, MutualConsent>();
@@ -29,7 +35,7 @@ const consentStore = new Map<string, MutualConsent>();
 export interface ConsentState {
   consent: MutualConsent;
   canChange: boolean;
-  timeRemaining: number;  // 剩余时间（毫秒）
+  timeRemaining: number; // 剩余时间（毫秒）
   isExpired: boolean;
 }
 
@@ -48,8 +54,12 @@ export async function createConsent(
 
   consentStore.set(consent.id, consent);
 
-  // TODO: 发送决策邀请通知给双方用户
-  // await notifyUsersOfDecisionRequest(userAId, userBId, consent);
+  // 发送决策邀请通知给双方用户
+  try {
+    await sendReferralNotification({ id: referralId, userAId, userBId } as any, consent);
+  } catch (err) {
+    console.error('Failed to send decision request notification:', err);
+  }
 
   return consent;
 }
@@ -106,8 +116,19 @@ export async function recordDecision(
     const updatedConsent = updateUserDecision(consent, userId, decision, reason);
     consentStore.set(consentId, updatedConsent);
 
-    // TODO: 通知对方用户已决策（不透露具体选择）
-    // await notifyOtherUserDecided(consent, userId);
+    // 通知对方用户已决策（不透露具体选择）
+    try {
+      await sendOtherUserDecidedNotification(
+        {
+          id: updatedConsent.referralId,
+          userAId: updatedConsent.userAId,
+          userBId: updatedConsent.userBId,
+        } as any,
+        userId
+      );
+    } catch (err) {
+      console.error('Failed to notify other user of decision:', err);
+    }
 
     // 如果双方都已完成决策，触发结果处理
     if (isBothDecided(updatedConsent)) {
@@ -140,14 +161,11 @@ export async function getUserConsentState(
   const isExpired = now > consent.expiresAt;
   const timeRemaining = Math.max(0, consent.expiresAt.getTime() - now.getTime());
 
-  const userConsent = userId === consent.userAId
-    ? consent.userAConsent
-    : consent.userBConsent;
+  const userConsent = userId === consent.userAId ? consent.userAConsent : consent.userBConsent;
 
   // 检查是否可以变更决策
-  const canChange = !isExpired &&
-    userConsent.status !== ConsentStatus.PENDING &&
-    userConsent.changedCount < 3;  // 最多变更3次
+  const canChange =
+    !isExpired && userConsent.status !== ConsentStatus.PENDING && userConsent.changedCount < 3; // 最多变更3次
 
   return {
     consent,
@@ -167,10 +185,7 @@ export async function getOtherUserDecisionStatus(
   const consent = await getConsent(consentId);
   if (!consent) throw new ConsentNotFoundError('Consent not found');
 
-  const otherUserId = userId === consent.userAId ? consent.userBId : consent.userAId;
-  const otherConsent = userId === consent.userAId
-    ? consent.userBConsent
-    : consent.userAConsent;
+  const otherConsent = userId === consent.userAId ? consent.userBConsent : consent.userAConsent;
 
   return otherConsent.status === ConsentStatus.PENDING ? 'pending' : 'decided';
 }
@@ -180,7 +195,7 @@ export async function getOtherUserDecisionStatus(
  */
 export async function checkAndSendTimeoutReminders(): Promise<void> {
   const now = new Date();
-  const reminderThresholds = [24, 4];  // 到期前24小时和4小时
+  const reminderThresholds = [24, 4]; // 到期前24小时和4小时
 
   for (const consent of consentStore.values()) {
     if (consent.result !== ReferralResult.PENDING) continue;
@@ -190,8 +205,16 @@ export async function checkAndSendTimeoutReminders(): Promise<void> {
     for (const threshold of reminderThresholds) {
       // 如果在提醒时间窗口内（±5分钟）
       if (hoursUntilExpiry <= threshold && hoursUntilExpiry > threshold - 0.08) {
-        // TODO: 发送超时提醒
-        // await sendTimeoutReminder(consent, threshold);
+        // 发送超时提醒
+        try {
+          await sendTimeoutWarningNotification(
+            { id: consent.referralId, userAId: consent.userAId, userBId: consent.userBId } as any,
+            consent,
+            threshold
+          );
+        } catch (err) {
+          console.error('Failed to send timeout reminder:', err);
+        }
         break;
       }
     }
@@ -211,8 +234,16 @@ export async function processExpiredConsents(): Promise<number> {
       consentStore.set(id, expiredConsent);
       expiredCount++;
 
-      // TODO: 发送过期通知
-      // await notifyConsentExpired(expiredConsent);
+      // 发送过期通知
+      try {
+        await sendTimeoutExpiredNotification({
+          id: expiredConsent.referralId,
+          userAId: expiredConsent.userAId,
+          userBId: expiredConsent.userBId,
+        } as any);
+      } catch (err) {
+        console.error('Failed to send expiry notification:', err);
+      }
     }
   }
 
@@ -228,9 +259,7 @@ export async function getPendingConsents(userId: string): Promise<MutualConsent[
   for (const consent of consentStore.values()) {
     if (consent.userAId !== userId && consent.userBId !== userId) continue;
 
-    const userConsent = userId === consent.userAId
-      ? consent.userAConsent
-      : consent.userBConsent;
+    const userConsent = userId === consent.userAId ? consent.userAConsent : consent.userBConsent;
 
     if (userConsent.status === ConsentStatus.PENDING) {
       const updatedConsent = await getConsent(consent.id);
@@ -266,17 +295,24 @@ export async function getUserConsents(userId: string): Promise<MutualConsent[]> 
 /**
  * 取消同意记录
  */
-export async function cancelConsent(consentId: string, reason?: string): Promise<void> {
+export async function cancelConsent(consentId: string, _reason?: string): Promise<void> {
   const consent = await getConsent(consentId);
   if (!consent) {
     throw new ConsentNotFoundError('Consent not found');
   }
 
-  // TODO: 实现取消逻辑
-  // - 从存储中删除或标记为取消
-  // - 发送取消通知
-
+  // 从存储中删除
   consentStore.delete(consentId);
+
+  // 发送取消通知
+  try {
+    await sendCancelNotification(
+      { id: consent.referralId, userAId: consent.userAId, userBId: consent.userBId } as any,
+      consent.userAId
+    );
+  } catch (err) {
+    console.error('Failed to send cancel notification:', err);
+  }
 }
 
 /**

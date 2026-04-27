@@ -1168,7 +1168,8 @@ export interface HandoffAuditLog {
 export enum VisibilityLevel {
   PUBLIC = 'PUBLIC',
   PRIVATE = 'PRIVATE',
-  MATCHED = 'MATCHED',
+  MATCHED_ONLY = 'MATCHED_ONLY',
+  VERIFIED_ONLY = 'VERIFIED_ONLY',
 }
 
 export enum AgeRange {

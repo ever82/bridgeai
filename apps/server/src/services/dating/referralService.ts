@@ -17,13 +17,18 @@ import {
   updateReferralStatus,
   incrementViewCount,
 } from '../../models/ReferralRecord';
-import {
-  MutualConsent,
-  createMutualConsent,
-} from '../../models/MutualConsent';
+import { MutualConsent, createMutualConsent } from '../../models/MutualConsent';
+import { logger } from '../../utils/logger';
 
 import { createHumanChatRoom } from './humanChatRoomService';
-import { sendReferralNotification } from './referralNotificationService';
+import {
+  sendReferralNotification,
+  sendOtherUserDecidedNotification,
+  sendMutualAcceptNotification,
+  sendSingleAcceptNotification,
+  sendRejectionNotification,
+  sendCancelNotification,
+} from './referralNotificationService';
 
 // 模拟存储
 const referralStore = new Map<string, ReferralRecord>();
@@ -78,14 +83,9 @@ export async function createReferral(
     referralStore.set(referral.id, referral);
 
     // 2. 创建双向同意记录
-    const consent = createMutualConsent(
-      referral.id,
-      request.userAId,
-      request.userBId,
-      {
-        defaultTimeoutHours: request.timeoutHours,
-      }
-    );
+    const consent = createMutualConsent(referral.id, request.userAId, request.userBId, {
+      defaultTimeoutHours: request.timeoutHours,
+    });
 
     consentStore.set(consent.id, consent);
 
@@ -128,10 +128,7 @@ export async function getReferralConsent(referralId: string): Promise<MutualCons
 /**
  * 记录引荐查看
  */
-export async function recordReferralView(
-  referralId: string,
-  userId: string
-): Promise<void> {
+export async function recordReferralView(referralId: string, userId: string): Promise<void> {
   const referral = await getReferral(referralId);
   if (!referral) return;
 
@@ -218,9 +215,8 @@ export async function processReferralDecision(
       status: newStatus as any,
       decidedAt: now,
       reason: decision === 'reject' ? reason : undefined,
-      changedCount: userConsent.status !== 'pending'
-        ? userConsent.changedCount + 1
-        : userConsent.changedCount,
+      changedCount:
+        userConsent.status !== 'pending' ? userConsent.changedCount + 1 : userConsent.changedCount,
     },
   };
 
@@ -231,7 +227,7 @@ export async function processReferralDecision(
   const finalConsent = { ...updatedConsent, result };
   consentStore.set(consent.id, finalConsent as MutualConsent);
 
-// 如果双方都已完成决策，处理最终结果
+  // 如果双方都已完成决策，处理最终结果
   if (isBothDecided(finalConsent as MutualConsent)) {
     return await finalizeReferral(referral, finalConsent as MutualConsent);
   }
@@ -249,7 +245,9 @@ export async function processReferralDecision(
 /**
  * 计算引荐结果
  */
-function calculateReferralResult(consent: MutualConsent): 'pending' | 'mutual_accept' | 'single_accept' | 'mutual_reject' | 'single_reject' {
+function calculateReferralResult(
+  consent: MutualConsent
+): 'pending' | 'mutual_accept' | 'single_accept' | 'mutual_reject' | 'single_reject' {
   const { userAConsent, userBConsent } = consent;
 
   // 如果任一方还在等待
@@ -279,8 +277,7 @@ function calculateReferralResult(consent: MutualConsent): 'pending' | 'mutual_ac
  * 检查是否双方都已决策
  */
 function isBothDecided(consent: MutualConsent): boolean {
-  return consent.userAConsent.status !== 'pending' &&
-         consent.userBConsent.status !== 'pending';
+  return consent.userAConsent.status !== 'pending' && consent.userBConsent.status !== 'pending';
 }
 
 /**
@@ -323,10 +320,7 @@ async function handleMutualAccept(
 ): Promise<ReferralDecisionResponse> {
   try {
     // 1. 更新引荐状态
-    const updatedReferral = updateReferralStatus(
-      referral,
-      ReferralStatus.SUCCESS
-    );
+    const updatedReferral = updateReferralStatus(referral, ReferralStatus.SUCCESS);
     referralStore.set(referral.id, updatedReferral);
 
     // 2. 创建真人聊天房间
@@ -358,10 +352,7 @@ async function handleSingleAccept(
   referral: ReferralRecord,
   consent: MutualConsent
 ): Promise<ReferralDecisionResponse> {
-  const updatedReferral = updateReferralStatus(
-    referral,
-    ReferralStatus.FAILED
-  );
+  const updatedReferral = updateReferralStatus(referral, ReferralStatus.FAILED);
   referralStore.set(referral.id, updatedReferral);
 
   await sendSingleAcceptNotifications(referral, consent);
@@ -380,10 +371,7 @@ async function handleMutualReject(
   referral: ReferralRecord,
   consent: MutualConsent
 ): Promise<ReferralDecisionResponse> {
-  const updatedReferral = updateReferralStatus(
-    referral,
-    ReferralStatus.FAILED
-  );
+  const updatedReferral = updateReferralStatus(referral, ReferralStatus.FAILED);
   referralStore.set(referral.id, updatedReferral);
 
   await sendRejectionNotifications(referral, consent, true);
@@ -402,10 +390,7 @@ async function handleSingleReject(
   referral: ReferralRecord,
   consent: MutualConsent
 ): Promise<ReferralDecisionResponse> {
-  const updatedReferral = updateReferralStatus(
-    referral,
-    ReferralStatus.FAILED
-  );
+  const updatedReferral = updateReferralStatus(referral, ReferralStatus.FAILED);
   referralStore.set(referral.id, updatedReferral);
 
   await sendRejectionNotifications(referral, consent, false);
@@ -433,14 +418,11 @@ export async function cancelReferral(
     throw new UnauthorizedCancelError('User is not authorized to cancel this referral');
   }
 
-  const updatedReferral = updateReferralStatus(
-    referral,
-    ReferralStatus.CANCELLED
-  );
+  const updatedReferral = updateReferralStatus(referral, ReferralStatus.CANCELLED);
   referralStore.set(referralId, updatedReferral);
 
   // 发送取消通知
-  await sendCancelNotification(referral, cancelledBy, reason);
+  await sendCancelNotificationInternal(referral, cancelledBy, reason);
 
   return true;
 }
@@ -461,9 +443,7 @@ export async function getUserReferrals(
   }
 
   // 按创建时间倒序
-  return referrals.sort((a, b) =>
-    b.createdAt.getTime() - a.createdAt.getTime()
-  );
+  return referrals.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 }
 
 /**
@@ -478,12 +458,7 @@ async function notifyOtherUserDecided(
   referral: ReferralRecord,
   decidedUserId: string
 ): Promise<void> {
-  const otherUserId = decidedUserId === referral.userAId
-    ? referral.userBId
-    : referral.userAId;
-
-  console.log(`Notifying ${otherUserId} that ${decidedUserId} has decided`);
-  // TODO: 实现实际的通知发送
+  await sendOtherUserDecidedNotification(referral, decidedUserId);
 }
 
 async function sendMatchSuccessNotifications(
@@ -491,16 +466,16 @@ async function sendMatchSuccessNotifications(
   consent: MutualConsent,
   chatRoomId: string
 ): Promise<void> {
-  console.log(`Sending match success notifications for ${referral.id}, chat room: ${chatRoomId}`);
-  // TODO: 实现实际的通知发送
+  await sendMutualAcceptNotification(referral, chatRoomId);
 }
 
 async function sendSingleAcceptNotifications(
   referral: ReferralRecord,
   consent: MutualConsent
 ): Promise<void> {
-  console.log(`Sending single accept notifications for ${referral.id}`);
-  // TODO: 实现实际的通知发送
+  const acceptedUserId =
+    consent.userAConsent.status === 'accepted' ? referral.userAId : referral.userBId;
+  await sendSingleAcceptNotification(referral, acceptedUserId);
 }
 
 async function sendRejectionNotifications(
@@ -508,21 +483,15 @@ async function sendRejectionNotifications(
   consent: MutualConsent,
   mutual: boolean
 ): Promise<void> {
-  console.log(`Sending ${mutual ? 'mutual' : 'single'} rejection notifications for ${referral.id}`);
-  // TODO: 实现实际的通知发送
+  await sendRejectionNotification(referral, mutual);
 }
 
-async function sendCancelNotification(
+async function sendCancelNotificationInternal(
   referral: ReferralRecord,
   cancelledBy: string,
-  reason?: string
+  _reason?: string
 ): Promise<void> {
-  const otherUserId = cancelledBy === referral.userAId
-    ? referral.userBId
-    : referral.userAId;
-
-  console.log(`Sending cancel notification to ${otherUserId}. Reason: ${reason}`);
-  // TODO: 实现实际的通知发送
+  await sendCancelNotification(referral, cancelledBy);
 }
 
 /**
@@ -542,6 +511,62 @@ export class UnauthorizedCancelError extends Error {
   }
 }
 
+/**
+ * 从Agent对话结果创建引荐
+ * 当Agent间对话完成且匹配度达标时自动触发
+ */
+export async function createReferralFromConversation(
+  roomId: string,
+  agentAId: string,
+  agentBId: string,
+  userIdA: string,
+  userIdBId: string,
+  conversationResult: {
+    summary: string;
+    qualityScore: number;
+    sharedInterests: string[];
+    compatibilityScore: number;
+  },
+  matchThreshold: number = 60
+): Promise<CreateReferralResponse> {
+  logger.info('Creating referral from conversation', {
+    roomId,
+    agentAId,
+    agentBId,
+    compatibilityScore: conversationResult.compatibilityScore,
+  });
+
+  // 检查匹配度是否达标
+  if (conversationResult.compatibilityScore < matchThreshold) {
+    logger.info('Compatibility score below threshold, skipping referral', {
+      roomId,
+      score: conversationResult.compatibilityScore,
+      threshold: matchThreshold,
+    });
+    return {
+      success: false,
+      error: 'Compatibility score below threshold',
+    };
+  }
+
+  // 构建匹配数据
+  const matchData: ReferralMatchData = {
+    matchScore: conversationResult.compatibilityScore,
+    compatibilityFactors: conversationResult.sharedInterests,
+    agentConversationSummary: conversationResult.summary,
+    recommendedTopics: conversationResult.sharedInterests.slice(0, 5),
+  };
+
+  // 创建引荐
+  return createReferral({
+    userAId: userIdA,
+    userBId: userIdBId,
+    matchData,
+    type: ReferralType.AGENT,
+    initiatedBy: 'system',
+  });
+}
+
 export default {
   createReferral,
   getReferral,
@@ -551,4 +576,5 @@ export default {
   cancelReferral,
   getUserReferrals,
   getPendingReferrals,
+  createReferralFromConversation,
 };

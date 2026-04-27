@@ -1,8 +1,5 @@
-import { Router, Request, Response } from 'express';
-import type {
-  CreateDatingProfileRequest,
-  UpdateDatingProfileRequest,
-} from '@bridgeai/shared';
+import { Router, Response } from 'express';
+import type { CreateDatingProfileRequest, UpdateDatingProfileRequest } from '@bridgeai/shared';
 
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
 import { asyncHandler } from '../../middleware/common';
@@ -36,15 +33,20 @@ router.get(
     // Calculate quality metrics
     const quality = qualityService.calculateProfileQuality(profile);
 
-    res.json(ApiResponse.success({
-      profile,
-      quality,
-      completion: {
-        percentage: quality.metrics.completenessScore,
-        filledSections: quality.metrics.completenessScore > 0 ? Math.round(quality.metrics.completenessScore / 20) : 0,
-        totalSections: 5,
-      },
-    }));
+    res.json(
+      ApiResponse.success({
+        profile,
+        quality,
+        completion: {
+          percentage: quality.metrics.completenessScore,
+          filledSections:
+            quality.metrics.completenessScore > 0
+              ? Math.round(quality.metrics.completenessScore / 20)
+              : 0,
+          totalSections: 5,
+        },
+      })
+    );
   })
 );
 
@@ -85,10 +87,7 @@ router.post(
 
     const profile = await profileService.createProfile(data, req.user.id);
 
-    res.status(201).json(ApiResponse.success(
-      { profile },
-      'Dating profile created successfully'
-    ));
+    res.status(201).json(ApiResponse.success({ profile }, 'Dating profile created successfully'));
   })
 );
 
@@ -131,18 +130,23 @@ router.put(
     // Calculate updated quality metrics
     const quality = qualityService.calculateProfileQuality(profile);
 
-    res.json(ApiResponse.success(
-      {
-        profile,
-        quality,
-        completion: {
-          percentage: quality.metrics.completenessScore,
-          filledSections: quality.metrics.completenessScore > 0 ? Math.round(quality.metrics.completenessScore / 20) : 0,
-          totalSections: 5,
+    res.json(
+      ApiResponse.success(
+        {
+          profile,
+          quality,
+          completion: {
+            percentage: quality.metrics.completenessScore,
+            filledSections:
+              quality.metrics.completenessScore > 0
+                ? Math.round(quality.metrics.completenessScore / 20)
+                : 0,
+            totalSections: 5,
+          },
         },
-      },
-      'Dating profile updated successfully'
-    ));
+        'Dating profile updated successfully'
+      )
+    );
   })
 );
 
@@ -190,11 +194,13 @@ router.get(
     const quality = qualityService.calculateProfileQuality(profile);
     const readyForMatching = qualityService.isProfileReadyForMatching(profile);
 
-    res.json(ApiResponse.success({
-      completeness,
-      quality: quality.metrics,
-      readyForMatching,
-    }));
+    res.json(
+      ApiResponse.success({
+        completeness,
+        quality: quality.metrics,
+        readyForMatching,
+      })
+    );
   })
 );
 

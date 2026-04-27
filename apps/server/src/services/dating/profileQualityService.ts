@@ -1,9 +1,4 @@
-import type {
-  DatingProfile,
-  ProfileQualityResult,
-  ProfileQualityMetrics,
-  InterestPreferences,
-} from '@bridgeai/shared';
+import type { DatingProfile, ProfileQualityResult } from '@bridgeai/shared';
 
 /**
  * Calculate profile quality metrics
@@ -15,8 +10,8 @@ export function calculateProfileQuality(profile: DatingProfile): ProfileQualityR
 
   const overallScore = Math.round(
     completenessMetrics.score * 0.4 +
-    richnessMetrics.score * 0.3 +
-    matchPotentialMetrics.score * 0.3
+      richnessMetrics.score * 0.3 +
+      matchPotentialMetrics.score * 0.3
   );
 
   const recommendations = generateRecommendations(profile, {
@@ -351,10 +346,10 @@ export function getMissingFields(profile: DatingProfile): string[] {
 export function calculateCompletenessPercentage(profile: DatingProfile): number {
   const weights = {
     basicConditions: 30,
-    personality: 15,
+    personality: 10,
     interests: 20,
-    lifestyle: 15,
-    expectations: 15,
+    lifestyle: 10,
+    expectations: 25,
     description: 5,
   };
 
@@ -366,11 +361,11 @@ export function calculateCompletenessPercentage(profile: DatingProfile): number 
   if (profile.basicConditions) {
     const bc = profile.basicConditions;
     let bcScore = 0;
-    if (bc.ageRange) bcScore += 25;
+    if (bc.ageRange) bcScore += 30;
     if (bc.heightRange) bcScore += 15;
     if (bc.education) bcScore += 25;
-    if (bc.location?.city) bcScore += 20;
-    if (bc.income) bcScore += 15;
+    if (bc.location?.city) bcScore += 18;
+    if (bc.income) bcScore += 12;
     filledWeight += (weights.basicConditions * bcScore) / 100;
   }
 

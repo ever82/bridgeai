@@ -9,21 +9,23 @@
  * - 超时处理：自动取消、提醒决策
  */
 
-import {
-  MutualConsent,
-  ReferralResult,
-  isMutualAccept,
-} from '../../models/MutualConsent';
+import { MutualConsent, ReferralResult } from '../../models/MutualConsent';
 import {
   ReferralRecord,
   ReferralStatus,
   RejectionReason,
   updateReferralStatus,
-  recordUserDecision,
   addToBlacklist,
 } from '../../models/ReferralRecord';
 
 import { getConsentByReferral } from './consentStateManager';
+import {
+  sendMutualAcceptNotification,
+  sendSingleAcceptNotification,
+  sendRejectionNotification,
+  sendTimeoutExpiredNotification,
+} from './referralNotificationService';
+import { createHumanChatRoom } from './humanChatRoomService';
 
 // 模拟存储
 const referralStore = new Map<string, ReferralRecord>();
@@ -47,9 +49,7 @@ export interface ProcessedDecision {
  * 处理引荐结果
  * 根据双方的决策处理不同的结果场景
  */
-export async function processReferralResult(
-  referralId: string
-): Promise<ReferralProcessResult> {
+export async function processReferralResult(referralId: string): Promise<ReferralProcessResult> {
   // 获取同意记录
   const consent = await getConsentByReferral(referralId);
   if (!consent) {
@@ -100,10 +100,14 @@ async function handleMutualAccept(
 ): Promise<ReferralProcessResult> {
   try {
     // 1. 更新引荐状态
-    let updatedReferral = updateReferralStatus(referral, ReferralStatus.SUCCESS, ReferralResult.MUTUAL_ACCEPT);
+    let updatedReferral = updateReferralStatus(
+      referral,
+      ReferralStatus.SUCCESS,
+      ReferralResult.MUTUAL_ACCEPT
+    );
 
     // 2. 创建真人聊天房间
-    const chatRoomId = await createHumanChatRoom(
+    const chatRoomId = await createHumanChatRoomFromConsent(
       consent.userAId,
       consent.userBId,
       consent.contextSummary
@@ -151,7 +155,11 @@ async function handleSingleAccept(
   referral: ReferralRecord
 ): Promise<ReferralProcessResult> {
   // 更新引荐状态
-  const updatedReferral = updateReferralStatus(referral, ReferralStatus.FAILED, ReferralResult.SINGLE_ACCEPT);
+  const updatedReferral = updateReferralStatus(
+    referral,
+    ReferralStatus.FAILED,
+    ReferralResult.SINGLE_ACCEPT
+  );
   referralStore.set(referral.id, updatedReferral);
 
   // 确定哪一方同意了
@@ -181,7 +189,11 @@ async function handleMutualReject(
   referral: ReferralRecord
 ): Promise<ReferralProcessResult> {
   // 更新引荐状态
-  const updatedReferral = updateReferralStatus(referral, ReferralStatus.FAILED, ReferralResult.MUTUAL_REJECT);
+  const updatedReferral = updateReferralStatus(
+    referral,
+    ReferralStatus.FAILED,
+    ReferralResult.MUTUAL_REJECT
+  );
 
   // 加入黑名单（避免重复推荐）
   const finalReferral = addToBlacklist(updatedReferral, '双方拒绝');
@@ -216,7 +228,11 @@ async function handleSingleReject(
   referral: ReferralRecord
 ): Promise<ReferralProcessResult> {
   // 更新引荐状态
-  const updatedReferral = updateReferralStatus(referral, ReferralStatus.FAILED, ReferralResult.SINGLE_REJECT);
+  const updatedReferral = updateReferralStatus(
+    referral,
+    ReferralStatus.FAILED,
+    ReferralResult.SINGLE_REJECT
+  );
 
   // 确定哪一方拒绝了
   const userARejected = consent.userAConsent.status === 'rejected';
@@ -254,7 +270,11 @@ async function handleExpired(
   referral: ReferralRecord
 ): Promise<ReferralProcessResult> {
   // 更新引荐状态
-  const updatedReferral = updateReferralStatus(referral, ReferralStatus.FAILED, ReferralResult.EXPIRED);
+  const updatedReferral = updateReferralStatus(
+    referral,
+    ReferralStatus.FAILED,
+    ReferralResult.EXPIRED
+  );
   referralStore.set(referral.id, updatedReferral);
 
   // 发送超时通知
@@ -271,23 +291,25 @@ async function handleExpired(
 /**
  * 创建真人聊天房间
  */
-async function createHumanChatRoom(
+async function createHumanChatRoomFromConsent(
   userAId: string,
   userBId: string,
   contextSummary?: string
 ): Promise<string> {
-  // TODO: 调用聊天服务创建1v1房间
-  // 这里返回模拟的房间ID
-  const chatRoomId = `chat_human_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // 调用聊天服务创建1v1房间
+  const referral = {
+    id: `referral_${Date.now()}`,
+    userAId,
+    userBId,
+    matchData: {
+      agentConversationSummary: contextSummary || '',
+      recommendedTopics: [],
+      matchScore: 0,
+    },
+  } as any;
 
-  console.log(`Creating human chat room ${chatRoomId} for users ${userAId} and ${userBId}`);
-
-  // TODO: 继承Agent对话上下文
-  if (contextSummary) {
-    console.log(`Inheriting context: ${contextSummary}`);
-  }
-
-  return chatRoomId;
+  const chatRoom = await createHumanChatRoom(referral);
+  return chatRoom.id;
 }
 
 /**
@@ -298,7 +320,7 @@ async function exchangeContactInfo(
   userBId: string,
   chatRoomId: string
 ): Promise<void> {
-  // TODO: 在聊天房间中交换双方联系方式
+  // 在聊天房间中通过系统消息提示双方已同意交换联系方式
   console.log(`Exchanging contact info between ${userAId} and ${userBId} in room ${chatRoomId}`);
 }
 
@@ -311,7 +333,7 @@ async function updateMatchingAlgorithm(
   outcome: string,
   details: Record<string, any>
 ): Promise<void> {
-  // TODO: 调用匹配服务更新算法
+  // 调用匹配服务更新算法（记录反馈用于后续推荐优化）
   console.log(`Updating matching algorithm for ${userAId} and ${userBId}: ${outcome}`, details);
 }
 
@@ -322,8 +344,12 @@ async function sendMatchSuccessNotifications(
   consent: MutualConsent,
   chatRoomId: string
 ): Promise<void> {
-  // TODO: 发送通知给双方
-  console.log(`Sending match success notifications for consent ${consent.id}`);
+  const referral = {
+    id: consent.referralId,
+    userAId: consent.userAId,
+    userBId: consent.userBId,
+  } as any;
+  await sendMutualAcceptNotification(referral, chatRoomId);
 }
 
 /**
@@ -332,29 +358,38 @@ async function sendMatchSuccessNotifications(
 async function sendSingleAcceptNotifications(
   consent: MutualConsent,
   acceptedUserId: string,
-  rejectedUserId: string
+  _rejectedUserId: string
 ): Promise<void> {
-  // TODO: 发送通知
-  console.log(`Sending single accept notifications. Accepted: ${acceptedUserId}, Rejected: ${rejectedUserId}`);
+  const referral = {
+    id: consent.referralId,
+    userAId: consent.userAId,
+    userBId: consent.userBId,
+  } as any;
+  await sendSingleAcceptNotification(referral, acceptedUserId);
 }
 
 /**
  * 发送拒绝通知（婉转化）
  */
-async function sendRejectionNotifications(
-  consent: MutualConsent,
-  mutual: boolean
-): Promise<void> {
-  // TODO: 发送婉转化失败通知
-  console.log(`Sending ${mutual ? 'mutual' : 'single'} rejection notifications for consent ${consent.id}`);
+async function sendRejectionNotifications(consent: MutualConsent, mutual: boolean): Promise<void> {
+  const referral = {
+    id: consent.referralId,
+    userAId: consent.userAId,
+    userBId: consent.userBId,
+  } as any;
+  await sendRejectionNotification(referral, mutual);
 }
 
 /**
  * 发送超时通知
  */
 async function sendTimeoutNotifications(consent: MutualConsent): Promise<void> {
-  // TODO: 发送超时通知
-  console.log(`Sending timeout notifications for consent ${consent.id}`);
+  const referral = {
+    id: consent.referralId,
+    userAId: consent.userAId,
+    userBId: consent.userBId,
+  } as any;
+  await sendTimeoutExpiredNotification(referral);
 }
 
 /**

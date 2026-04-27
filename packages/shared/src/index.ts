@@ -62,6 +62,7 @@ export {
   IncomeRange,
   InterestCategory,
   InterestPreferences,
+  Interest,
   PersonalityTrait,
   Lifestyle,
   DatingPurpose,
@@ -71,6 +72,10 @@ export {
   BasicConditions,
   PersonalityPreferences,
   RelationshipExpectations,
+  AIExtractedPreference,
+  AIExtractionResult,
+  ExtractFromDescriptionRequest,
+  ExtractFromDescriptionResponse,
 } from './types/dating';
 // Explicitly re-export disclosure types (use export not export type for enums)
 export {

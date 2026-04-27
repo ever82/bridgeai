@@ -21,6 +21,7 @@ import userPrivacyRoutes from '../userPrivacy';
 import { strictAuthLimiter } from '../../middleware/rateLimiter';
 import pointsRoutes from '../points';
 import matchQueryRoutes from '../matchQuery';
+import datingRoutes from '../dating';
 
 import healthRoutes from './health';
 import sceneRoutes from './scene';
@@ -52,5 +53,6 @@ router.use('/consumer', consumerDemandRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/chat', chatRoutes);
 router.use('/matches', matchQueryRoutes);
+router.use('/dating', datingRoutes);
 
 export default router;

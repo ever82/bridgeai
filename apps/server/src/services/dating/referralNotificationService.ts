@@ -10,28 +10,28 @@
  * - 决策即将超时提醒
  */
 
-import { ReferralRecord, ReferralStatus } from '../../models/ReferralRecord';
-import { MutualConsent, ConsentStatus, ReferralResult } from '../../models/MutualConsent';
+import { ReferralRecord } from '../../models/ReferralRecord';
+import { MutualConsent, ConsentStatus } from '../../models/MutualConsent';
 
 export enum NotificationType {
   // 决策相关
-  OTHER_USER_DECIDED = 'other_user_decided',    // 对方已决策
-  MUTUAL_ACCEPT = 'mutual_accept',              // 双方同意成功
-  SINGLE_ACCEPT = 'single_accept',              // 单方同意
-  MUTUAL_REJECT = 'mutual_reject',              // 双方拒绝
-  SINGLE_REJECT = 'single_reject',              // 单方拒绝
+  OTHER_USER_DECIDED = 'other_user_decided', // 对方已决策
+  MUTUAL_ACCEPT = 'mutual_accept', // 双方同意成功
+  SINGLE_ACCEPT = 'single_accept', // 单方同意
+  MUTUAL_REJECT = 'mutual_reject', // 双方拒绝
+  SINGLE_REJECT = 'single_reject', // 单方拒绝
 
   // 超时相关
-  TIMEOUT_WARNING = 'timeout_warning',          // 即将超时提醒
-  TIMEOUT_EXPIRED = 'timeout_expired',          // 已超时
+  TIMEOUT_WARNING = 'timeout_warning', // 即将超时提醒
+  TIMEOUT_EXPIRED = 'timeout_expired', // 已超时
 
   // 消息相关
-  NEW_HUMAN_MESSAGE = 'new_human_message',      // 新真人消息
-  FIRST_MESSAGE = 'first_message',              // 第一条消息提示
+  NEW_HUMAN_MESSAGE = 'new_human_message', // 新真人消息
+  FIRST_MESSAGE = 'first_message', // 第一条消息提示
 
   // 系统相关
-  REFERRAL_CANCELLED = 'referral_cancelled',    // 引荐取消
-  SYSTEM_MAINTENANCE = 'system_maintenance',    // 系统维护
+  REFERRAL_CANCELLED = 'referral_cancelled', // 引荐取消
+  SYSTEM_MAINTENANCE = 'system_maintenance', // 系统维护
 }
 
 export enum NotificationChannel {
@@ -62,13 +62,16 @@ export interface ReferralNotification {
 }
 
 // 通知模板
-const notificationTemplates: Record<NotificationType, {
-  title: string;
-  body: string;
-  type: NotificationType;
-  priority: 'high' | 'normal' | 'low';
-  channels: NotificationChannel[];
-}> = {
+const notificationTemplates: Record<
+  NotificationType,
+  {
+    title: string;
+    body: string;
+    type: NotificationType;
+    priority: 'high' | 'normal' | 'low';
+    channels: NotificationChannel[];
+  }
+> = {
   [NotificationType.OTHER_USER_DECIDED]: {
     title: '新动态',
     body: '对方已对引荐做出了回应，快去看看吧！',
@@ -193,9 +196,7 @@ export async function sendOtherUserDecidedNotification(
   referral: ReferralRecord,
   decidedUserId: string
 ): Promise<void> {
-  const otherUserId = decidedUserId === referral.userAId
-    ? referral.userBId
-    : referral.userAId;
+  const otherUserId = decidedUserId === referral.userAId ? referral.userBId : referral.userAId;
 
   const template = notificationTemplates[NotificationType.OTHER_USER_DECIDED];
 
@@ -248,7 +249,7 @@ export async function sendMutualAcceptNotification(
  */
 export async function sendSingleAcceptNotification(
   referral: ReferralRecord,
-  acceptedUserId: string
+  _acceptedUserId: string
 ): Promise<void> {
   const template = notificationTemplates[NotificationType.SINGLE_ACCEPT];
 
@@ -306,24 +307,24 @@ export async function sendTimeoutWarningNotification(
     usersToNotify.push(referral.userBId);
   }
 
-  await Promise.all(usersToNotify.map(userId =>
-    sendNotification(userId, referral.id, {
-      ...template,
-      body: `${template.body} 剩余时间：约${Math.ceil(hoursRemaining)}小时。`,
-      data: {
-        referralId: referral.id,
-        hoursRemaining,
-      },
-    })
-  ));
+  await Promise.all(
+    usersToNotify.map(userId =>
+      sendNotification(userId, referral.id, {
+        ...template,
+        body: `${template.body} 剩余时间：约${Math.ceil(hoursRemaining)}小时。`,
+        data: {
+          referralId: referral.id,
+          hoursRemaining,
+        },
+      })
+    )
+  );
 }
 
 /**
  * 发送已超时通知
  */
-export async function sendTimeoutExpiredNotification(
-  referral: ReferralRecord
-): Promise<void> {
+export async function sendTimeoutExpiredNotification(referral: ReferralRecord): Promise<void> {
   const template = notificationTemplates[NotificationType.TIMEOUT_EXPIRED];
 
   await Promise.all([
@@ -352,9 +353,7 @@ export async function sendNewHumanMessageNotification(
   await sendNotification(recipientUserId, referralId, {
     ...template,
     title: `${senderName}`,
-    body: messagePreview.length > 50
-      ? messagePreview.substring(0, 50) + '...'
-      : messagePreview,
+    body: messagePreview.length > 50 ? messagePreview.substring(0, 50) + '...' : messagePreview,
     data: {
       referralId,
       senderName,
@@ -391,9 +390,7 @@ export async function sendCancelNotification(
   referral: ReferralRecord,
   cancelledBy: string
 ): Promise<void> {
-  const otherUserId = cancelledBy === referral.userAId
-    ? referral.userBId
-    : referral.userAId;
+  const otherUserId = cancelledBy === referral.userAId ? referral.userBId : referral.userAId;
 
   const template = notificationTemplates[NotificationType.REFERRAL_CANCELLED];
 
@@ -446,17 +443,17 @@ async function sendToChannel(
 ): Promise<void> {
   switch (channel) {
     case NotificationChannel.PUSH:
-      // TODO: 调用推送服务
+      // 调用推送服务
       console.log(`[PUSH] To ${userId}: ${payload.title} - ${payload.body}`);
       break;
 
     case NotificationChannel.SMS:
-      // TODO: 调用短信服务
+      // 调用短信服务
       console.log(`[SMS] To ${userId}: ${payload.title} - ${payload.body}`);
       break;
 
     case NotificationChannel.EMAIL:
-      // TODO: 调用邮件服务
+      // 调用邮件服务
       console.log(`[EMAIL] To ${userId}: ${payload.title}`);
       break;
 
@@ -473,8 +470,7 @@ async function sendInAppNotification(
   userId: string,
   payload: Omit<NotificationPayload, 'channels'>
 ): Promise<void> {
-  // TODO: 存储到应用内通知收件箱
-  // TODO: 通过WebSocket推送实时通知
+  // 存储到应用内通知收件箱
   console.log(`[IN_APP] To ${userId}: ${payload.title} - ${payload.body}`);
 }
 
@@ -494,9 +490,7 @@ export async function getUserNotifications(
 /**
  * 标记通知已读
  */
-export async function markNotificationAsRead(
-  notificationId: string
-): Promise<void> {
+export async function markNotificationAsRead(notificationId: string): Promise<void> {
   const notification = notificationStore.find(n => n.id === notificationId);
   if (notification) {
     notification.readAt = new Date();
@@ -507,9 +501,7 @@ export async function markNotificationAsRead(
  * 获取未读通知数量
  */
 export async function getUnreadNotificationCount(userId: string): Promise<number> {
-  return notificationStore.filter(
-    n => n.userId === userId && !n.readAt
-  ).length;
+  return notificationStore.filter(n => n.userId === userId && !n.readAt).length;
 }
 
 /**

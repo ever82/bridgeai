@@ -113,3 +113,15 @@ export {
   QualityGrade,
   OptimizationSuggestion,
 } from './assessors/supplyQualityAssessor';
+
+// Dating Extraction Service (ISSUE-DATE001)
+export {
+  DatingExtractionService,
+  datingExtractionService,
+  DatingExtractionResult,
+  ImplicitPreferenceResult,
+  ImplicitPreference,
+  CompletionSuggestion,
+  MissingSection,
+  SmartCompletionResult,
+} from './datingExtractionService';

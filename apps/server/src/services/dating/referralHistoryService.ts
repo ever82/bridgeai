@@ -14,7 +14,6 @@ import {
   ReferralRecord,
   ReferralStatus,
   ReferralType,
-  ReferralFilter,
   ReferralStatistics,
   ReferralReport,
   generateReferralReport,
@@ -143,8 +142,7 @@ export async function getReferralStats(userId: string): Promise<ReferralStatsRes
 
     const monthReferrals = userReferrals.filter(r => {
       const rDate = new Date(r.createdAt);
-      return rDate.getFullYear() === date.getFullYear() &&
-             rDate.getMonth() === date.getMonth();
+      return rDate.getFullYear() === date.getFullYear() && rDate.getMonth() === date.getMonth();
     });
 
     byMonth[monthKey] = calculateStatistics(monthReferrals);
@@ -168,12 +166,13 @@ function calculateStatistics(referrals: ReferralRecord[]): ReferralStatistics {
 
   // 计算平均决策时间
   const decidedReferrals = referrals.filter(r => r.decidedAt);
-  const avgDecisionTime = decidedReferrals.length > 0
-    ? decidedReferrals.reduce((sum, r) => {
-        const hours = (r.decidedAt!.getTime() - r.createdAt.getTime()) / (1000 * 60 * 60);
-        return sum + hours;
-      }, 0) / decidedReferrals.length
-    : 0;
+  const avgDecisionTime =
+    decidedReferrals.length > 0
+      ? decidedReferrals.reduce((sum, r) => {
+          const hours = (r.decidedAt!.getTime() - r.createdAt.getTime()) / (1000 * 60 * 60);
+          return sum + hours;
+        }, 0) / decidedReferrals.length
+      : 0;
 
   return {
     totalReferrals: total,
@@ -188,10 +187,7 @@ function calculateStatistics(referrals: ReferralRecord[]): ReferralStatistics {
 /**
  * 生成引荐报告
  */
-export async function generateReport(
-  userId: string,
-  period: string
-): Promise<ReferralReport> {
+export async function generateReport(userId: string, period: string): Promise<ReferralReport> {
   // 解析周期（如 "2024-01", "2024-Q1", "2024"）
   const referrals = await getReferralsForPeriod(userId, period);
 
@@ -213,20 +209,21 @@ export async function exportReport(
   }
 
   // JSON格式
-  return JSON.stringify({
-    period,
-    generatedAt: new Date().toISOString(),
-    referrals,
-  }, null, 2);
+  return JSON.stringify(
+    {
+      period,
+      generatedAt: new Date().toISOString(),
+      referrals,
+    },
+    null,
+    2
+  );
 }
 
 /**
  * 获取周期内的引荐
  */
-async function getReferralsForPeriod(
-  userId: string,
-  period: string
-): Promise<ReferralRecord[]> {
+async function getReferralsForPeriod(userId: string, period: string): Promise<ReferralRecord[]> {
   const referrals: ReferralRecord[] = [];
 
   for (const referral of referralStore.values()) {
@@ -270,10 +267,7 @@ export async function addToBlacklist(
 /**
  * 从黑名单移除
  */
-export async function removeFromBlacklist(
-  userId: string,
-  blockedUserId: string
-): Promise<boolean> {
+export async function removeFromBlacklist(userId: string, blockedUserId: string): Promise<boolean> {
   const key = `${userId}:${blockedUserId}`;
   return blacklistStore.delete(key);
 }
@@ -281,10 +275,7 @@ export async function removeFromBlacklist(
 /**
  * 检查是否在黑名单中
  */
-export async function isBlacklisted(
-  userId: string,
-  checkUserId: string
-): Promise<boolean> {
+export async function isBlacklisted(userId: string, checkUserId: string): Promise<boolean> {
   const key = `${userId}:${checkUserId}`;
   const entry = blacklistStore.get(key);
 
@@ -325,12 +316,14 @@ export async function getUserBlacklist(userId: string): Promise<ReferralBlacklis
 export async function getReferralTimeline(
   referralId: string,
   userId: string
-): Promise<Array<{
-  timestamp: Date;
-  event: string;
-  description: string;
-  actor?: string;
-}>> {
+): Promise<
+  Array<{
+    timestamp: Date;
+    event: string;
+    description: string;
+    actor?: string;
+  }>
+> {
   const referral = await getReferralDetail(referralId, userId);
   if (!referral) {
     throw new ReferralNotFoundError('Referral not found');
@@ -438,9 +431,11 @@ export async function getReferralPreferences(userId: string): Promise<{
 
   // 成功模式分析
   const successfulReferrals = referrals.filter(r => r.status === ReferralStatus.SUCCESS);
-  const avgMatchScore = successfulReferrals.length > 0
-    ? successfulReferrals.reduce((sum, r) => sum + r.matchData.matchScore, 0) / successfulReferrals.length
-    : 0;
+  const avgMatchScore =
+    successfulReferrals.length > 0
+      ? successfulReferrals.reduce((sum, r) => sum + r.matchData.matchScore, 0) /
+        successfulReferrals.length
+      : 0;
 
   const factorCounts: Record<string, number> = {};
   successfulReferrals.forEach(r => {
@@ -456,19 +451,23 @@ export async function getReferralPreferences(userId: string): Promise<{
 
   // 决策模式分析
   const decidedReferrals = referrals.filter(r => r.decidedAt);
-  const avgDecisionTime = decidedReferrals.length > 0
-    ? decidedReferrals.reduce((sum, r) => {
-        const hours = (r.decidedAt!.getTime() - r.createdAt.getTime()) / (1000 * 60 * 60);
-        return sum + hours;
-      }, 0) / decidedReferrals.length
-    : 0;
+  const avgDecisionTime =
+    decidedReferrals.length > 0
+      ? decidedReferrals.reduce((sum, r) => {
+          const hours = (r.decidedAt!.getTime() - r.createdAt.getTime()) / (1000 * 60 * 60);
+          return sum + hours;
+        }, 0) / decidedReferrals.length
+      : 0;
 
-  const changeRate = referrals.length > 0
-    ? (referrals.filter(r =>
-        (r.userAId === userId && r.userADecision) ||
-        (r.userBId === userId && r.userBDecision)
-      ).length / referrals.length) * 100
-    : 0;
+  const changeRate =
+    referrals.length > 0
+      ? (referrals.filter(
+          r =>
+            (r.userAId === userId && r.userADecision) || (r.userBId === userId && r.userBDecision)
+        ).length /
+          referrals.length) *
+        100
+      : 0;
 
   return {
     preferredTypes,
