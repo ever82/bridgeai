@@ -174,7 +174,7 @@ export async function filterAgents(options: AgentFilterOptions): Promise<FilterR
             ? {
                 excellent: '优秀',
                 good: '良好',
-                average: '一般',
+                general: '一般',
                 poor: '较差',
               }[creditLevel]
             : '无信用分',
@@ -408,11 +408,11 @@ export async function getCreditFilterStatistics(): Promise<{
     const byLevel: Record<CreditLevel, number> = {
       excellent: 0,
       good: 0,
-      average: 0,
+      general: 0,
       poor: 0,
     };
 
-    for (const level of ['excellent', 'good', 'average', 'poor'] as CreditLevel[]) {
+    for (const level of ['excellent', 'good', 'general', 'poor'] as CreditLevel[]) {
       const range = CREDIT_LEVEL_THRESHOLDS[level];
       byLevel[level] = await prisma.agent.count({
         where: {
@@ -473,7 +473,7 @@ export function validateCreditFilterParams(options: CreditFilterOptions): {
   }
 
   if (options.creditLevel) {
-    const validLevels: CreditLevel[] = ['excellent', 'good', 'average', 'poor'];
+    const validLevels: CreditLevel[] = ['excellent', 'good', 'general', 'poor'];
     const levels = Array.isArray(options.creditLevel) ? options.creditLevel : [options.creditLevel];
 
     for (const level of levels) {

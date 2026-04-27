@@ -1434,8 +1434,8 @@ model CreditHistory {
 model CreditScore {
   id          String   @id @default(uuid())
   userId      String   @unique @map("user_id")
-  score       Int      @default(75)
-  level       String   @default("GENERAL")
+  score       Int      @default(600)
+  level       String   @default("general")
   lastUpdated DateTime @default(now()) @map("last_updated")
   updatedBy   String?  @map("updated_by")
   reason      String?  // 更新原因

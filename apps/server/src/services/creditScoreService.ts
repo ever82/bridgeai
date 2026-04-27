@@ -182,6 +182,9 @@ export class CreditScoreService {
     subFactors.push({ name: 'rating_count', score: ratingCountScore });
 
     // 被举报次数 (负向指标)
+    // TODO: 当 Complaint model 添加到 Prisma schema 后，替换为实际查询
+    // const complaintCount = await prisma.complaint.count({ where: { targetUserId: userId } });
+    // const complaintScore = Math.max(0, 100 - complaintCount * 10);
     const complaintScore = 100; // 默认满分，有举报时扣分
     subFactors.push({ name: 'complaint_count', score: complaintScore });
 
@@ -350,6 +353,20 @@ export class CreditScoreService {
     const existing = await prisma.creditScore.findUnique({
       where: { userId },
     });
+
+    // Rate limiting: skip update if last update was less than updateIntervalMinutes ago
+    if (existing?.lastUpdated) {
+      const minutesSinceUpdate = (Date.now() - existing.lastUpdated.getTime()) / (1000 * 60);
+      if (minutesSinceUpdate < CREDIT_SCORE_CONFIG.updateIntervalMinutes) {
+        return {
+          success: true,
+          score: existing.score,
+          level: existing.level,
+          delta: 0,
+          reason: 'Rate limited: update interval not reached',
+        };
+      }
+    }
 
     // 计算新分数
     const result = await this.calculateScore(userId);
@@ -702,35 +719,6 @@ export async function updateCreditScore(
 export async function recalculateCreditScore(userId: string): Promise<number> {
   const result = await creditScoreService.updateCreditScore(userId, 'RECALCULATION');
   return result.score;
-}
-
-/**
- * Handle new rating submission and update credit score
- * @param ratingId - The submitted rating ID
- */
-export async function handleNewRating(ratingId: string): Promise<void> {
-  const rating = await prisma.rating.findUnique({
-    where: { id: ratingId },
-    include: {
-      match: true,
-    },
-  });
-
-  if (!rating) {
-    throw new Error(`Rating not found: ${ratingId}`);
-  }
-
-  // Use class method for unified credit score system
-  await creditScoreService.updateCreditScore(rating.rateeId, 'RATING', ratingId);
-
-  // Emit event for notification
-  creditScoreEvents.emit('ratingSubmitted', {
-    ratingId,
-    rateeId: rating.rateeId,
-    raterId: rating.raterId,
-    score: rating.score,
-    delta,
-  });
 }
 
 /**
