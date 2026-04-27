@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BridgeAI Monitoring Alert Thresholds",
+  "description": "Alert threshold configuration for performance monitoring. Used by k6 tests and runtime monitoring.",
+  "version": "1.0.0",
+  "targets": {
+    "startup": {
+      "description": "Mobile app startup performance",
+      "metrics": {
+        "coldStartMs": {
+          "target": 3000,
+          "warning": 5000,
+          "critical": 8000,
+          "unit": "ms"
+        },
+        "warmStartMs": {
+          "target": 1000,
+          "warning": 2000,
+          "critical": 3000,
+          "unit": "ms"
+        },
+        "timeToInteractiveMs": {
+          "target": 3000,
+          "warning": 5000,
+          "critical": 8000,
+          "unit": "ms"
+        }
+      }
+    },
+    "frameRate": {
+      "description": "UI frame rate during scroll interactions",
+      "metrics": {
+        "avgFps": {
+          "target": 60,
+          "warning": 55,
+          "critical": 30,
+          "unit": "fps"
+        },
+        "minFps": {
+          "target": 55,
+          "warning": 45,
+          "critical": 20,
+          "unit": "fps"
+        },
+        "droppedFramePercent": {
+          "target": 1,
+          "warning": 5,
+          "critical": 15,
+          "unit": "percent"
+        }
+      }
+    },
+    "memory": {
+      "description": "Mobile memory usage",
+      "metrics": {
+        "activeHeapMB": {
+          "target": 100,
+          "warning": 150,
+          "critical": 250,
+          "unit": "MB"
+        },
+        "cacheSizeMB": {
+          "target": 50,
+          "warning": 100,
+          "critical": 200,
+          "unit": "MB"
+        },
+        "totalMemoryMB": {
+          "target": 150,
+          "warning": 250,
+          "critical": 400,
+          "unit": "MB"
+        }
+      }
+    },
+    "imageCache": {
+      "description": "Image cache performance",
+      "metrics": {
+        "hitRate": {
+          "target": 0.8,
+          "warning": 0.6,
+          "critical": 0.4,
+          "unit": "ratio"
+        },
+        "avgLoadTimeMs": {
+          "target": 100,
+          "warning": 300,
+          "critical": 500,
+          "unit": "ms"
+        }
+      }
+    },
+    "api": {
+      "description": "API response time targets by endpoint type",
+      "metrics": {
+        "healthCheck": {
+          "target": { "p95": 50, "p99": 100 },
+          "warning": { "p95": 100, "p99": 200 },
+          "critical": { "p95": 500, "p99": 1000 },
+          "unit": "ms"
+        },
+        "authEndpoints": {
+          "target": { "p95": 200, "p99": 500 },
+          "warning": { "p95": 500, "p99": 1000 },
+          "critical": { "p95": 1000, "p99": 2000 },
+          "unit": "ms"
+        },
+        "userEndpoints": {
+          "target": { "p95": 150, "p99": 300 },
+          "warning": { "p95": 300, "p99": 600 },
+          "critical": { "p95": 600, "p99": 1000 },
+          "unit": "ms"
+        },
+        "agentEndpoints": {
+          "target": { "p95": 200, "p99": 400 },
+          "warning": { "p95": 400, "p99": 800 },
+          "critical": { "p95": 800, "p99": 1500 },
+          "unit": "ms"
+        },
+        "matchEndpoints": {
+          "target": { "p95": 300, "p99": 500 },
+          "warning": { "p95": 500, "p99": 1000 },
+          "critical": { "p95": 1000, "p99": 2000 },
+          "unit": "ms"
+        },
+        "searchEndpoints": {
+          "target": { "p95": 400, "p99": 800 },
+          "warning": { "p95": 800, "p99": 1500 },
+          "critical": { "p95": 1500, "p99": 3000 },
+          "unit": "ms"
+        }
+      }
+    },
+    "concurrency": {
+      "description": "System concurrency capacity",
+      "metrics": {
+        "maxConcurrentUsers": {
+          "target": 1000,
+          "warning": 800,
+          "critical": 500,
+          "unit": "users"
+        },
+        "maxWebSocketConnections": {
+          "target": 1000,
+          "warning": 800,
+          "critical": 500,
+          "unit": "connections"
+        },
+        "errorRateAtPeak": {
+          "target": 0.01,
+          "warning": 0.03,
+          "critical": 0.05,
+          "unit": "ratio"
+        }
+      }
+    },
+    "network": {
+      "description": "Network performance from mobile client",
+      "metrics": {
+        "avgResponseTimeMs": {
+          "target": 200,
+          "warning": 500,
+          "critical": 1000,
+          "unit": "ms"
+        },
+        "p95ResponseTimeMs": {
+          "target": 500,
+          "warning": 1000,
+          "critical": 2000,
+          "unit": "ms"
+        },
+        "failedRequestRate": {
+          "target": 0.01,
+          "warning": 0.03,
+          "critical": 0.05,
+          "unit": "ratio"
+        }
+      }
+    }
+  },
+  "alerts": {
+    "channels": ["console", "sentry"],
+    "rules": [
+      {
+        "name": "api-slow-p95",
+        "condition": "api.p95 > targets.api.userEndpoints.warning.p95",
+        "message": "API P95 response time exceeds warning threshold",
+        "severity": "warning"
+      },
+      {
+        "name": "api-critical-p95",
+        "condition": "api.p95 > targets.api.userEndpoints.critical.p95",
+        "message": "API P95 response time exceeds critical threshold",
+        "severity": "critical"
+      },
+      {
+        "name": "startup-slow",
+        "condition": "startup.coldStartMs > targets.startup.coldStartMs.warning",
+        "message": "App cold start time exceeds warning threshold",
+        "severity": "warning"
+      },
+      {
+        "name": "frame-rate-low",
+        "condition": "frameRate.avgFps < targets.frameRate.avgFps.warning",
+        "message": "Average frame rate below warning threshold",
+        "severity": "warning"
+      },
+      {
+        "name": "memory-high",
+        "condition": "memory.totalMemoryMB > targets.memory.totalMemoryMB.warning",
+        "message": "Total memory usage exceeds warning threshold",
+        "severity": "warning"
+      },
+      {
+        "name": "concurrency-critical",
+        "condition": "concurrency.errorRateAtPeak > targets.concurrency.errorRateAtPeak.critical",
+        "message": "Error rate at peak load exceeds critical threshold",
+        "severity": "critical"
+      }
+    ]
+  }
+}

@@ -127,22 +127,37 @@ main() {
     db)
       run_test "./perf/db-performance-test.js" "Database Performance Test"
       ;;
+    e2e)
+      run_test "./perf/e2e-scenario-test.js" "E2E Scenario Test (1000+ users)"
+      ;;
+    peak)
+      run_test "./perf/peak-load-test.js" "Peak Load Capacity Test"
+      ;;
     all)
       run_test "./perf/api-baseline-test.js" "Baseline Performance Test"
       run_test "./perf/api-load-test.js" "Load Test"
       run_test "./perf/api-rate-limit-test.js" "Rate Limiter Stress Test"
       run_test "./perf/db-performance-test.js" "Database Performance Test"
+      run_test "./perf/e2e-scenario-test.js" "E2E Scenario Test"
+      run_test "./perf/peak-load-test.js" "Peak Load Capacity Test"
       generate_report
       ;;
+    bottleneck)
+      echo -e "${YELLOW}Running bottleneck analysis...${NC}"
+      node ./perf/bottleneck-analysis.js "$RESULTS_DIR"
+      ;;
     *)
-      echo "Usage: $0 [baseline|load|stress|db|all]"
+      echo "Usage: $0 [baseline|load|stress|db|e2e|peak|all|bottleneck]"
       echo ""
       echo "Commands:"
-      echo "  baseline  - Run baseline performance test"
-      echo "  load      - Run load test with ramping"
-      echo "  stress    - Run rate limiter stress test"
-      echo "  db        - Run database performance test"
-      echo "  all       - Run all tests (default)"
+      echo "  baseline   - Run baseline performance test"
+      echo "  load       - Run load test with ramping"
+      echo "  stress     - Run rate limiter stress test"
+      echo "  db         - Run database performance test"
+      echo "  e2e        - Run E2E scenario test (1000+ concurrent users)"
+      echo "  peak       - Run peak load capacity test"
+      echo "  bottleneck - Run bottleneck analysis on existing results"
+      echo "  all        - Run all tests (default)"
       exit 1
       ;;
   esac
