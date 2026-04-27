@@ -484,6 +484,19 @@ export async function executeMigration(
       newProfileId = newProfile.id;
     }
 
+    // Record migration history
+    await prisma.migrationHistory.create({
+      data: {
+        agentId,
+        fromScene,
+        toScene,
+        status: 'COMPLETED',
+        newProfileId,
+        migratedFields: Object.keys(preview.previewData),
+        lostFields: preview.willLoseData,
+      },
+    });
+
     // Log migration
     logger.info('Scene migration executed', {
       agentId,
@@ -500,6 +513,22 @@ export async function executeMigration(
     };
   } catch (error) {
     logger.error('Failed to execute migration', { error, agentId, fromScene, toScene });
+
+    // Record failed migration
+    try {
+      await prisma.migrationHistory.create({
+        data: {
+          agentId,
+          fromScene,
+          toScene,
+          status: 'FAILED',
+          errorMessage: error instanceof Error ? error.message : String(error),
+        },
+      });
+    } catch (logError) {
+      logger.error('Failed to record migration failure', { logError });
+    }
+
     throw error;
   }
 }
@@ -507,7 +536,7 @@ export async function executeMigration(
 /**
  * Get migration history
  */
-export async function getMigrationHistory(_agentId: string): Promise<
+export async function getMigrationHistory(agentId: string): Promise<
   Array<{
     id: string;
     fromScene: SceneId;
@@ -516,9 +545,19 @@ export async function getMigrationHistory(_agentId: string): Promise<
     createdAt: Date;
   }>
 > {
-  // In a real implementation, this would query a migration history table
-  // For now, return empty
-  return [];
+  const histories = await prisma.migrationHistory.findMany({
+    where: { agentId },
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+  });
+
+  return histories.map(h => ({
+    id: h.id,
+    fromScene: h.fromScene as SceneId,
+    toScene: h.toScene as SceneId,
+    status: h.status.toLowerCase() as 'pending' | 'completed' | 'failed',
+    createdAt: h.createdAt,
+  }));
 }
 
 /**

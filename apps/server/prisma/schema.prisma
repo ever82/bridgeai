@@ -1795,6 +1795,35 @@ model DialogSessionRecord {
 }
 
 // ============================================
+// Scene Migration History
+// ============================================
+
+model MigrationHistory {
+  id          String             @id @default(uuid())
+  agentId     String             @map("agent_id")
+  fromScene   SceneCode          @map("from_scene")
+  toScene     SceneCode          @map("to_scene")
+  status      MigrationStatus    @default(PENDING)
+  newProfileId String?            @map("new_profile_id")
+  migratedFields Json?            @map("migrated_fields")
+  lostFields    Json?             @map("lost_fields")
+  errorMessage  String?           @map("error_message")
+  metadata      Json?
+  createdAt   DateTime           @default(now()) @map("created_at")
+
+  @@index([agentId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("migration_history")
+}
+
+enum MigrationStatus {
+  PENDING     @map("pending")
+  COMPLETED   @map("completed")
+  FAILED      @map("failed")
+}
+
+// ============================================
 // Dating Profile (AgentDate)
 // ============================================
 
