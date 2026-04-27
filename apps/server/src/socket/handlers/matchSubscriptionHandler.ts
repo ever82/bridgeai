@@ -10,10 +10,7 @@ import { Server as SocketServer, Socket } from 'socket.io';
 import { FilterDSL } from '@bridgeai/shared';
 
 import { logger } from '../../utils/logger';
-import {
-  matchQueryService,
-  MatchQueryValidationError,
-} from '../../services/matching/matchQueryService';
+import { MatchQueryValidationError } from '../../services/matching/matchQueryService';
 import {
   querySubscriptionManager,
   SubscriptionEvent,
@@ -25,10 +22,7 @@ import {
  * The socket-level event listener is removed on disconnect to avoid leaking
  * EventEmitter listeners on the long-lived QuerySubscriptionManager.
  */
-export function registerMatchSubscriptionHandlers(
-  socket: Socket,
-  _nsp: SocketServer
-): void {
+export function registerMatchSubscriptionHandlers(socket: Socket, _nsp: SocketServer): void {
   const userId = socket.user?.id;
   if (!userId) {
     socket.emit('error', { code: 'UNAUTHORIZED', message: 'Authentication required' });
@@ -70,7 +64,7 @@ export function registerMatchSubscriptionHandlers(
           ack?.({ ok: false, error: 'query is required' });
           return;
         }
-        const subscription = await matchQueryService.createSubscription(
+        const subscription = await querySubscriptionManager.createSubscription(
           userId,
           payload.query,
           payload.filters
@@ -110,7 +104,7 @@ export function registerMatchSubscriptionHandlers(
         ack?.({ ok: false, error: 'Subscription not found' });
         return;
       }
-      const removed = matchQueryService.removeSubscription(id);
+      const removed = querySubscriptionManager.removeSubscription(id);
       socketSubscriptionIds.delete(id);
       ack?.({ ok: removed });
     }
@@ -118,10 +112,7 @@ export function registerMatchSubscriptionHandlers(
 
   socket.on(
     'heartbeat',
-    (
-      payload: { subscriptionId: string },
-      ack?: (response: { ok: boolean }) => void
-    ) => {
+    (payload: { subscriptionId: string }, ack?: (response: { ok: boolean }) => void) => {
       const id = payload?.subscriptionId;
       if (!id) {
         ack?.({ ok: false });
@@ -132,7 +123,7 @@ export function registerMatchSubscriptionHandlers(
         ack?.({ ok: false });
         return;
       }
-      ack?.({ ok: matchQueryService.heartbeat(id) });
+      ack?.({ ok: querySubscriptionManager.handleHeartbeat(id) });
     }
   );
 
@@ -153,7 +144,7 @@ export function registerMatchSubscriptionHandlers(
         return;
       }
       try {
-        await matchQueryService.refreshSubscription(id);
+        await querySubscriptionManager.refreshSubscription(id);
         ack?.({ ok: true });
       } catch (err) {
         ack?.({
@@ -168,11 +159,12 @@ export function registerMatchSubscriptionHandlers(
     'list',
     (
       _payload: unknown,
-      ack?: (response: { ok: boolean; subscriptions: ReturnType<
-        typeof matchQueryService.listUserSubscriptions
-      > }) => void
+      ack?: (response: {
+        ok: boolean;
+        subscriptions: ReturnType<typeof querySubscriptionManager.getUserSubscriptions>;
+      }) => void
     ) => {
-      ack?.({ ok: true, subscriptions: matchQueryService.listUserSubscriptions(userId) });
+      ack?.({ ok: true, subscriptions: querySubscriptionManager.getUserSubscriptions(userId) });
     }
   );
 
@@ -186,7 +178,7 @@ export function registerMatchSubscriptionHandlers(
     // Clean up subscriptions created on this socket so they don't outlive the
     // connection that asked for them.
     for (const id of socketSubscriptionIds) {
-      matchQueryService.removeSubscription(id);
+      querySubscriptionManager.removeSubscription(id);
     }
     socketSubscriptionIds.clear();
   });

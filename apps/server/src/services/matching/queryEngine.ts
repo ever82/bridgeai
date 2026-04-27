@@ -1,6 +1,11 @@
 /**
  * Query Engine
- * Provides query compilation, execution plan generation, optimization, and parallel query execution
+ * Provides query compilation, execution plan generation, optimization, and parallel query execution.
+ *
+ * Note: This engine currently serves subscription queries via QuerySubscriptionManager only.
+ * The synchronous match query path in MatchQueryService.queryMatches() uses prisma.agent.findMany
+ * directly via buildPrismaQuery for simplicity and correctness. Routing one-shot queries through
+ * QueryEngine would add caching/planning overhead with no benefit for low-volume request paths.
  */
 
 import { FilterDSL } from '@bridgeai/shared';
@@ -224,14 +229,17 @@ export class QueryEngine {
       const timeoutMs = resourceLimits.maxExecutionTime - elapsed;
       let timeoutId: ReturnType<typeof setTimeout>;
 
-      const data = await Promise.race([
-        this.executePrismaQuery<T>(plan.query),
-        new Promise<never>((_, reject) => {
-          timeoutId = setTimeout(() => reject(new Error('Query timeout')), timeoutMs);
-        }),
-      ]);
-
-      clearTimeout(timeoutId);
+      let data: T[];
+      try {
+        data = await Promise.race([
+          this.executePrismaQuery<T>(plan.query),
+          new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error('Query timeout')), timeoutMs);
+          }),
+        ]);
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       // Cache result
       if (useCache) {

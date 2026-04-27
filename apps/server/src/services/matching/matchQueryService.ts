@@ -10,6 +10,7 @@
  */
 
 import { FilterDSL, SceneId } from '@bridgeai/shared';
+import type { Prisma } from '@prisma/client';
 
 import { prisma } from '../../db/client';
 import { buildPrismaQuery, validateFilterDSL } from '../../utils/queryBuilder';
@@ -122,6 +123,21 @@ const DEFAULT_WEIGHTS: SceneWeights = {
   time: 0.15,
   credit: 0.2,
 };
+
+// ============================================
+// MatchQueryValidationError
+// ============================================
+
+export class MatchQueryValidationError extends Error {
+  constructor(
+    message: string,
+    public readonly errors: Array<{ field?: string; message: string }> = []
+  ) {
+    super(message);
+    this.name = 'MatchQueryValidationError';
+    Error.captureStackTrace?.(this, this.constructor);
+  }
+}
 
 // ============================================
 // Match Query Service
@@ -716,14 +732,14 @@ export class MatchQueryService {
 /**
  * 将 SceneId 转换为数据库 SceneCode
  */
-function sceneCodeToDbCode(sceneId: SceneId): string {
-  const mapping: Record<SceneId, string> = {
+function sceneCodeToDbCode(sceneId: SceneId): Prisma.SceneCode {
+  const mapping: Record<SceneId, Prisma.SceneCode> = {
     visionshare: 'VISION_SHARE',
     agentdate: 'AGENT_DATE',
     agentjob: 'AGENT_JOB',
     agentad: 'AGENT_AD',
   };
-  return mapping[sceneId] || sceneId.toUpperCase();
+  return mapping[sceneId];
 }
 
 // Export singleton
