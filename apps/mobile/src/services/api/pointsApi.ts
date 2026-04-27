@@ -3,7 +3,7 @@
  * Handles points wallet, transactions, and payment operations
  */
 
-import type { PointsTransactionListResponse, PointsStatistics } from '@visionshare/shared';
+import type { PointsTransactionListResponse, PointsStatistics } from '@bridgeai/shared';
 
 import { api } from './client';
 

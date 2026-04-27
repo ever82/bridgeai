@@ -14,93 +14,19 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import type { PointsTransaction } from '@visionshare/shared';
+import type { PointsTransaction } from '@bridgeai/shared';
 
 import { theme } from '../../theme';
 import { pointsApi, PointsBalanceResponse } from '../../services/api/pointsApi';
 import { TransactionList } from '../../components/Points/TransactionList';
+import { PointsTaskList } from '../../components/Points/PointsTaskList';
+import type { PointsTask } from '../../components/Points/PointsTaskList';
 
 // Tab types for the wallet screen
 type TabType = 'transactions' | 'tasks';
-
-const MOCK_RECENT_TRANSACTIONS: PointsTransaction[] = [
-  {
-    id: '1',
-    accountId: 'a1',
-    userId: 'u1',
-    type: 'earn',
-    amount: 100,
-    balanceAfter: 1000,
-    description: '每日签到奖励',
-    scene: 'vision_share',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    accountId: 'a1',
-    userId: 'u1',
-    type: 'spend',
-    amount: -50,
-    balanceAfter: 950,
-    description: '查看照片',
-    scene: 'vision_share',
-    referenceId: 'photo-123',
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-  },
-];
-
-const POINTS_TASKS = [
-  {
-    id: 'task-1',
-    name: '每日签到',
-    description: '每日签到可获得积分奖励',
-    points: 10,
-    icon: '📅',
-    repeatable: true,
-    dailyLimit: 1,
-    completedCount: 0,
-  },
-  {
-    id: 'task-2',
-    name: '完善个人资料',
-    description: '完善个人资料可获得积分',
-    points: 50,
-    icon: '👤',
-    repeatable: false,
-    completedCount: 0,
-  },
-  {
-    id: 'task-3',
-    name: '上传头像',
-    description: '上传头像可获得积分',
-    points: 20,
-    icon: '📷',
-    repeatable: false,
-    completedCount: 0,
-  },
-  {
-    id: 'task-4',
-    name: '邀请好友',
-    description: '每成功邀请一位好友可获得积分',
-    points: 100,
-    icon: '👥',
-    repeatable: true,
-    dailyLimit: 3,
-    completedCount: 0,
-  },
-  {
-    id: 'task-5',
-    name: '分享应用',
-    description: '分享应用到社交媒体可获得积分',
-    points: 5,
-    icon: '📤',
-    repeatable: true,
-    dailyLimit: 5,
-    completedCount: 0,
-  },
-];
 
 interface PointsBalanceData extends PointsBalanceResponse {
   availableBalance: number;
@@ -108,15 +34,19 @@ interface PointsBalanceData extends PointsBalanceResponse {
 
 export const PointsWalletScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const [balance, setBalance] = useState<PointsBalanceData | null>(null);
   const [transactions, setTransactions] = useState<PointsTransaction[]>([]);
+  const [tasks, _setTasks] = useState<PointsTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('transactions');
 
   const loadData = useCallback(async () => {
+    setError(null);
     try {
       const [balanceData, txData] = await Promise.all([
         pointsApi.getBalance(),
@@ -129,15 +59,9 @@ export const PointsWalletScreen: React.FC = () => {
       });
       setTransactions(txData.transactions ?? []);
     } catch (_error: unknown) {
-      // Use mock data when API is unavailable
-      setBalance({
-        balance: 1000,
-        totalEarned: 1500,
-        totalSpent: 500,
-        lastUpdatedAt: new Date().toISOString(),
-        availableBalance: 1000,
-      });
-      setTransactions(MOCK_RECENT_TRANSACTIONS);
+      setError('加载失败，请下拉刷新重试');
+      setBalance(null);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -227,38 +151,51 @@ export const PointsWalletScreen: React.FC = () => {
         <View style={styles.headerRight} />
       </View>
 
-      <FlatList
-        data={activeTab === 'transactions' ? transactions : POINTS_TASKS}
-        keyExtractor={item => ('id' in item ? item.id : String(item))}
-        ListHeaderComponent={
-          <>
-            {renderHeader()}
-            {renderTabBar()}
-          </>
-        }
-        renderItem={
-          activeTab === 'transactions'
-            ? ({ item }) => (
-                <TransactionList
-                  transactions={[item]}
-                  onTransactionPress={tx => {
-                    // Navigate to transaction detail
-                    Alert.alert('交易详情', `交易ID: ${tx.id}`);
-                  }}
-                />
-              )
-            : undefined
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {activeTab === 'transactions' ? '暂无交易记录' : '暂无积分任务'}
-            </Text>
-          </View>
-        }
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        contentContainerStyle={styles.listContent}
-      />
+      {error && (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+
+      {activeTab === 'transactions' ? (
+        <FlatList
+          data={transactions}
+          keyExtractor={item => item.id}
+          ListHeaderComponent={
+            <>
+              {renderHeader()}
+              {renderTabBar()}
+            </>
+          }
+          renderItem={({ item }) => (
+            <TransactionList
+              transactions={[item]}
+              onTransactionPress={tx => {
+                navigation.navigate('TransactionDetail', { transaction: tx } as never);
+              }}
+            />
+          )}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>暂无交易记录</Text>
+            </View>
+          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          contentContainerStyle={styles.listContent}
+        />
+      ) : (
+        <View style={styles.container}>
+          {renderHeader()}
+          {renderTabBar()}
+          {tasks.length > 0 ? (
+            <PointsTaskList tasks={tasks} />
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>暂无积分任务</Text>
+            </View>
+          )}
+        </View>
+      )}
     </View>
   );
 };
@@ -387,5 +324,19 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: theme.fonts.sizes.md,
     color: theme.colors.textSecondary,
+  },
+  errorBanner: {
+    marginHorizontal: theme.spacing.base,
+    marginTop: theme.spacing.sm,
+    padding: theme.spacing.md,
+    backgroundColor: '#FFF3F3',
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: '#FFD6D6',
+  },
+  errorText: {
+    fontSize: theme.fonts.sizes.sm,
+    color: '#D32F2F',
+    textAlign: 'center',
   },
 });

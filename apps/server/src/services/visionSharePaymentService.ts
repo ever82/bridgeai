@@ -6,6 +6,7 @@
 
 import { PrismaClient, Prisma } from '@prisma/client';
 
+import { AppError } from '../errors/AppError';
 import { prisma } from '../db/client';
 
 // VisionShare payment configuration
@@ -291,6 +292,71 @@ export class VisionSharePaymentService {
             }),
           },
         });
+
+        // Deduct photographer earnings that were credited from the original payment
+        try {
+          const originalMetadata = originalTx.metadata
+            ? JSON.parse(originalTx.metadata as string)
+            : null;
+
+          if (originalMetadata?.photographerUserId && originalMetadata?.photographerPoints) {
+            const { photographerUserId, photographerPoints } = originalMetadata;
+
+            if (photographerPoints > 0) {
+              const photographerAccount = await tx.pointsAccount.findUnique({
+                where: { userId: photographerUserId },
+              });
+
+              if (photographerAccount) {
+                if (photographerAccount.balance >= photographerPoints) {
+                  const newPhotographerBalance = photographerAccount.balance - photographerPoints;
+                  await tx.pointsAccount.update({
+                    where: {
+                      userId: photographerUserId,
+                      version: photographerAccount.version,
+                    },
+                    data: {
+                      balance: newPhotographerBalance,
+                      totalSpent: photographerAccount.totalSpent + photographerPoints,
+                      version: photographerAccount.version + 1,
+                    },
+                  });
+
+                  await tx.pointsTransaction.create({
+                    data: {
+                      accountId: photographerAccount.id,
+                      userId: photographerUserId,
+                      type: 'REFUND_DEDUCTION' as any,
+                      amount: -photographerPoints,
+                      balanceAfter: newPhotographerBalance,
+                      description: `照片退款扣减 - ${photoId}`,
+                      scene: 'VISION_SHARE' as any,
+                      referenceId: photoId,
+                      metadata: JSON.stringify({
+                        originalTransactionId,
+                        photoId,
+                        buyerUserId,
+                        type: 'photographer_refund_deduction',
+                      }),
+                    },
+                  });
+                } else {
+                  console.warn(
+                    `[processRefund] Photographer ${photographerUserId} has insufficient balance (${photographerAccount.balance}) for deduction (${photographerPoints}). Skipping photographer deduction.`
+                  );
+                }
+              } else {
+                console.warn(
+                  `[processRefund] Photographer points account not found for user ${photographerUserId}. Skipping photographer deduction.`
+                );
+              }
+            }
+          }
+        } catch (metadataError) {
+          console.warn(
+            `[processRefund] Failed to process photographer deduction for refund of ${originalTransactionId}: ${metadataError}. Skipping photographer deduction.`
+          );
+        }
       });
 
       return {
@@ -319,6 +385,20 @@ export class VisionSharePaymentService {
     const expiresAt = new Date(
       Date.now() + VISION_SHARE_CONFIG.unlockTokenExpiryHours * 3600000
     ).toISOString();
+
+    // Persist token so validateToken in photoUnlockService can find it
+    try {
+      await this.prisma.$executeRawUnsafe(
+        `INSERT INTO points_freezes (id, account_id, reference_id, status, reason, expires_at, created_at)
+         VALUES ($1, $2, $3, 'USED', 'photo_unlock', $4, NOW())`,
+        token,
+        `account-${userId}`,
+        photoId,
+        expiresAt
+      );
+    } catch (err) {
+      console.warn('Failed to persist unlock token to points_freezes:', err);
+    }
 
     return {
       token,

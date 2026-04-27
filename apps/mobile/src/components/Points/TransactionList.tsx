@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
-import type { PointsTransaction } from '@visionshare/shared';
+import type { PointsTransaction } from '@bridgeai/shared';
 
 import { theme } from '../../theme';
 
