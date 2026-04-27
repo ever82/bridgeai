@@ -29,7 +29,7 @@ const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {
   allowScreenshot: false,
   showOnlineStatus: true,
   hideFromSearch: false,
-} as unknown as PrivacySettings;
+};
 
 /**
  * Get or create dating profile for an agent
@@ -147,10 +147,10 @@ export async function createProfile(
     data: {
       agentId: data.agentId,
       userId,
-      basicConditions: data.basicConditions as unknown as Prisma.InputJsonValue,
-      personality: data.personality as unknown as Prisma.InputJsonValue,
+      basicConditions: data.basicConditions as Prisma.InputJsonValue,
+      personality: data.personality as Prisma.InputJsonValue,
       interests: data.interests as unknown as Prisma.InputJsonValue,
-      lifestyle: data.lifestyle as unknown as Prisma.InputJsonValue,
+      lifestyle: data.lifestyle as Prisma.InputJsonValue,
       expectations: data.expectations as unknown as Prisma.InputJsonValue,
       description: data.description,
       privacySettings: {
@@ -387,6 +387,21 @@ function validateProfileData(data: CreateDatingProfileRequest | UpdateDatingProf
 } {
   const errors: Array<{ field: string; message: string }> = [];
 
+  // Validate agentId (required for create requests)
+  if ('agentId' in data && data.agentId !== undefined) {
+    if (typeof data.agentId !== 'string' || data.agentId.trim() === '') {
+      errors.push({
+        field: 'agentId',
+        message: 'agentId must be a non-empty string',
+      });
+    } else if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.agentId)) {
+      errors.push({
+        field: 'agentId',
+        message: 'agentId must be a valid UUID',
+      });
+    }
+  }
+
   // Validate description length
   if (data.description !== undefined && data.description !== null) {
     if (data.description.length > 2000) {
@@ -408,6 +423,32 @@ function validateProfileData(data: CreateDatingProfileRequest | UpdateDatingProf
         });
       }
     }
+    if (data.basicConditions.education !== undefined) {
+      if (typeof data.basicConditions.education !== 'string' || data.basicConditions.education.trim() === '') {
+        errors.push({
+          field: 'basicConditions.education',
+          message: 'Education must be a non-empty string',
+        });
+      }
+    }
+    if (data.basicConditions.income !== undefined) {
+      if (typeof data.basicConditions.income !== 'string' || data.basicConditions.income.trim() === '') {
+        errors.push({
+          field: 'basicConditions.income',
+          message: 'Income must be a non-empty string',
+        });
+      }
+    }
+  }
+
+  // Validate personality is an object
+  if (data.personality !== undefined) {
+    if (typeof data.personality !== 'object' || data.personality === null || Array.isArray(data.personality)) {
+      errors.push({
+        field: 'personality',
+        message: 'Personality must be an object',
+      });
+    }
   }
 
   // Validate interests
@@ -423,6 +464,71 @@ function validateProfileData(data: CreateDatingProfileRequest | UpdateDatingProf
         field: 'interests.customInterests',
         message: 'Cannot have more than 10 custom interests',
       });
+    }
+    // Validate each interest has a category
+    if (Array.isArray(data.interests.interests)) {
+      data.interests.interests.forEach((interest, index) => {
+        if (!interest || typeof interest !== 'object') {
+          errors.push({
+            field: `interests.interests[${index}]`,
+            message: 'Each interest must be an object',
+          });
+        } else if (!interest.category || typeof interest.category !== 'string' || interest.category.trim() === '') {
+          errors.push({
+            field: `interests.interests[${index}].category`,
+            message: 'Each interest must have a non-empty category',
+          });
+        }
+      });
+    }
+  }
+
+  // Validate lifestyle enum fields
+  if (data.lifestyle) {
+    const validSmokingValues = ['NEVER', 'OCCASIONALLY', 'REGULARLY', 'QUITTING', 'NO_PREFERENCE'];
+    const validDrinkingValues = ['NEVER', 'SOCIALLY', 'REGULARLY', 'NO_PREFERENCE'];
+
+    if (data.lifestyle.smoking !== undefined) {
+      if (!validSmokingValues.includes(data.lifestyle.smoking)) {
+        errors.push({
+          field: 'lifestyle.smoking',
+          message: `Smoking must be one of: ${validSmokingValues.join(', ')}`,
+        });
+      }
+    }
+    if (data.lifestyle.drinking !== undefined) {
+      if (!validDrinkingValues.includes(data.lifestyle.drinking)) {
+        errors.push({
+          field: 'lifestyle.drinking',
+          message: `Drinking must be one of: ${validDrinkingValues.join(', ')}`,
+        });
+      }
+    }
+  }
+
+  // Validate privacy settings
+  if (data.privacySettings) {
+    const validVisibilityValues = ['PUBLIC', 'MATCHED_ONLY', 'VERIFIED_ONLY', 'PRIVATE'];
+
+    if (data.privacySettings.profileVisibility !== undefined) {
+      if (!validVisibilityValues.includes(data.privacySettings.profileVisibility)) {
+        errors.push({
+          field: 'privacySettings.profileVisibility',
+          message: `Profile visibility must be one of: ${validVisibilityValues.join(', ')}`,
+        });
+      }
+    }
+  }
+
+  // Validate expectations
+  if (data.expectations) {
+    if (data.expectations.purpose !== undefined) {
+      if (typeof data.expectations.purpose !== 'string' || data.expectations.purpose.trim() === '') {
+        errors.push({
+          field: 'expectations.purpose',
+          message: 'Purpose must be a non-empty string',
+        });
+      }
     }
   }
 
@@ -442,10 +548,10 @@ function mapPrismaProfileToProfile(
     id: prismaProfile.id,
     agentId: prismaProfile.agentId,
     userId: prismaProfile.userId,
-    basicConditions: prismaProfile.basicConditions as unknown as BasicConditions | undefined,
-    personality: prismaProfile.personality as unknown as PersonalityPreferences | undefined,
+    basicConditions: prismaProfile.basicConditions as BasicConditions | undefined,
+    personality: prismaProfile.personality as PersonalityPreferences | undefined,
     interests: prismaProfile.interests as unknown as InterestPreferences | undefined,
-    lifestyle: prismaProfile.lifestyle as unknown as Lifestyle | undefined,
+    lifestyle: prismaProfile.lifestyle as Lifestyle | undefined,
     expectations: prismaProfile.expectations as unknown as RelationshipExpectations | undefined,
     description: prismaProfile.description,
     aiExtractedData: prismaProfile.aiExtractedData as Record<string, unknown> | undefined,

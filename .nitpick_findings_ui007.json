@@ -1,0 +1,98 @@
+[
+  {
+    "category": "ac_quality",
+    "severity": "critical",
+    "description": "AC c1: ProfileScreen 缺少用户ID、注册时间、个人简介/签名、认证状态显示。当前只显示头像(首字母)、昵称、用户名和编辑按钮。",
+    "evidence": "ProfileScreen.tsx:40-44 显示 avatarText, userName, userHandle，但无 user?.id, user?.createdAt, user?.bio, 认证状态",
+    "recommendation": "在 ProfileScreen 的用户信息卡片中添加 ID、注册时间、简介和认证状态展示",
+    "file_path": "apps/mobile/src/screens/profile/ProfileScreen.tsx"
+  },
+  {
+    "category": "ac_quality",
+    "severity": "critical",
+    "description": "AC c2: ProfileScreen 完全没有集成信用分展示。CreditScore 和 CreditBadge 组件存在但未被使用。",
+    "evidence": "ProfileScreen.tsx 无 CreditScore/CreditBadge 导入或使用。CreditScore.tsx 和 CreditBadge.tsx 已存在但未集成到个人中心。",
+    "recommendation": "在 ProfileScreen 中添加信用分大数字显示、信用等级标识、趋势图入口和信用提升建议",
+    "file_path": "apps/mobile/src/screens/profile/ProfileScreen.tsx"
+  },
+  {
+    "category": "consistency",
+    "severity": "critical",
+    "description": "AC c3: PointsWalletScreen 未在任何导航器中注册，用户无法访问该页面。",
+    "evidence": "全局搜索 ActivityScreen 和 PointsWalletScreen 仅在各自文件中被引用，未出现在任何 StackNavigator 或路由配置中",
+    "recommendation": "在 ProfileStackNavigator 或 MainNavigator 中注册 PointsWalletScreen 路由",
+    "file_path": "apps/mobile/src/navigation/ProfileStackNavigator.tsx"
+  },
+  {
+    "category": "code_quality",
+    "severity": "critical",
+    "description": "AC c3: PointsWalletScreen 业务代码中内嵌 MOCK_RECENT_TRANSACTIONS 模拟数据，API 失败时直接回退到 mock 数据。",
+    "evidence": "PointsWalletScreen.tsx:28-52 定义 MOCK_RECENT_TRANSACTIONS，:132-140 在 catch 中直接 setBalance/setTransactions 为 mock 数据",
+    "recommendation": "移除业务代码中的 mock 数据，API 失败时应显示错误状态或空状态，而非虚假数据",
+    "file_path": "apps/mobile/src/screens/points/PointsWalletScreen.tsx"
+  },
+  {
+    "category": "ac_quality",
+    "severity": "critical",
+    "description": "AC c4: ActivityScreen 实现的是通知动态列表（赞、评论），而非用户活动统计（对话数、匹配数、发布数、日历、成就徽章）。",
+    "evidence": "ActivityScreen.tsx 显示的是 MOCK_ACTIVITIES 通知列表（actor, message），没有活动概览统计、日历视图、成就徽章",
+    "recommendation": "重新实现 ActivityScreen 为个人活动统计页面，包含概览数据、近期活动、日历视图、成就徽章",
+    "file_path": "apps/mobile/src/screens/activity/ActivityScreen.tsx"
+  },
+  {
+    "category": "consistency",
+    "severity": "critical",
+    "description": "AC c4: ActivityScreen 未在任何导航器中注册，用户无法访问。",
+    "evidence": "ActivityScreen 仅在自己的文件中被定义，未在任何 StackNavigator 中注册",
+    "recommendation": "在 ProfileStackNavigator 中注册 ActivityScreen 路由",
+    "file_path": "apps/mobile/src/navigation/ProfileStackNavigator.tsx"
+  },
+  {
+    "category": "code_quality",
+    "severity": "critical",
+    "description": "AC c4: ActivityScreen 业务代码中内嵌 MOCK_ACTIVITIES 模拟数据。",
+    "evidence": "ActivityScreen.tsx:14-29 定义并直接使用 MOCK_ACTIVITIES 作为列表数据源",
+    "recommendation": "移除业务代码中的 mock 数据，使用真实 API 获取活动数据",
+    "file_path": "apps/mobile/src/screens/activity/ActivityScreen.tsx"
+  },
+  {
+    "category": "ac_quality",
+    "severity": "warning",
+    "description": "AC c5: SettingsScreen 缺少语言设置和帮助/FAQ 入口，且通知开关使用空操作处理函数。",
+    "evidence": "SettingsScreen.tsx:62-63 推送/邮件通知 toggle 的 onChange 为 () => {}。无语言设置项，无帮助/FAQ",
+    "recommendation": "添加语言选择设置、帮助与FAQ入口，并实现通知设置的真正状态管理",
+    "file_path": "apps/mobile/src/screens/settings/SettingsScreen.tsx"
+  },
+  {
+    "category": "ac_quality",
+    "severity": "warning",
+    "description": "AC c6: EditProfileScreen 头像上传使用硬编码默认URL，未集成 PhotoPicker 组件，不支持拍照/相册选择。",
+    "evidence": "EditProfileScreen.tsx:64 调用 uploadAvatar(undefined, \"https://example.com/default-avatar.png\")，无 PhotoPicker 集成",
+    "recommendation": "集成 PhotoPicker 组件实现头像更换，支持拍照和相册选择",
+    "file_path": "apps/mobile/src/screens/settings/EditProfileScreen.tsx"
+  },
+  {
+    "category": "ac_quality",
+    "severity": "warning",
+    "description": "AC c3: PointsWalletScreen 缺少交易类型筛选功能。",
+    "evidence": "PointsWalletScreen 只有 transactions/tasks 两个Tab切换，无交易类型（earn/spend/recharge等）筛选",
+    "recommendation": "添加交易类型筛选器或筛选标签",
+    "file_path": "apps/mobile/src/screens/points/PointsWalletScreen.tsx"
+  },
+  {
+    "category": "test_coverage",
+    "severity": "info",
+    "description": "CreditScore 组件单元测试有 4 个失败：getByRole(button) 找不到元素、样式断言使用 toMatchObject 与数组样式不兼容。",
+    "evidence": "CreditScore.test.tsx:128 getByRole(\"button\") 失败；颜色断言 Received: [{...}, {...}, {color}] 而非 {color}",
+    "recommendation": "修复测试：使用 fireEvent.press(screen.getByTestId) 替代 getByRole；使用 expect(...props.style).toEqual(expect.arrayContaining([...])) 或检查特定索引",
+    "file_path": "apps/mobile/src/components/CreditScore/CreditScore.test.tsx"
+  },
+  {
+    "category": "code_quality",
+    "severity": "info",
+    "description": "PhotoPicker.tsx 有 react-hooks/exhaustive-deps ESLint warning。",
+    "evidence": "PhotoPicker.tsx:45 useEffect 缺少 requestPermission 依赖，虽有 eslint-disable 注释但 lint 仍报错",
+    "recommendation": "将 requestPermission 放入 useEffect 内部或使用 useCallback 包裹",
+    "file_path": "apps/mobile/src/components/PhotoPicker/PhotoPicker.tsx"
+  }
+]

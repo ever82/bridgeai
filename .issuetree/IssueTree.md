@@ -170,9 +170,9 @@ flowchart TD
     F003 --> SEC004
     COM002c --> SEC005
     SEC001 --> C001
-    SEC002 --> C002a
+    C002a --> SEC002
     SEC003 --> A004
-    SEC005 --> CR002
+    CR002 --> SEC005
 
     %% 认证层依赖
     A001 --> A002
@@ -189,6 +189,7 @@ flowchart TD
     C002b --> C003
     C002b --> C004
     C002b --> C005
+    CR001 --> C005
     C001 --> C006
     C002a --> C006
     C002c --> C007
@@ -201,9 +202,9 @@ flowchart TD
     C005 --> M001a
     M001a --> M001b
     M001b --> M002
-    C002c --> M002
     AI002 --> M002
     AI003 --> M002
+    AI004 --> M002
     M002 --> M003
     M003 --> M004
     COM001b --> M004
@@ -232,7 +233,7 @@ flowchart TD
     C002b --> AI003
     AI004 --> COM002c
     AI005 --> VS004
-    AI006 --> AI004
+    AI004 --> AI006
 
     %% 信用系统依赖
     CR001 --> CR002
@@ -253,6 +254,7 @@ flowchart TD
     AI005 --> VS006
     CR003 --> VS005
     SEC004 --> VS003
+    F004 --> VS003
     VS006 --> VS007
     AI005 --> VS007
 
@@ -358,7 +360,7 @@ flowchart TD
 
 | Issue      | 标题                         | 复杂度 | 关键依赖                |
 | ---------- | ---------------------------- | ------ | ----------------------- |
-| ISSUE-T001 | 单元测试框架搭建(Jest)       | M      | F003, A001              |
+| ISSUE-T001 | 单元测试框架搭建(Jest)       | M      | F003, A001, C001              |
 | ISSUE-T002 | API集成测试框架              | M      | F003                    |
 | ISSUE-T003 | 移动端测试框架               | M      | F004                    |
 | ISSUE-T004 | E2E端到端测试框架 [严格标准] | H      | T001, T002, T003, UI001 |
@@ -380,13 +382,13 @@ flowchart TD
 | ISSUE-A001 | 用户注册与登录系统 | M      | F002, F003 |
 | ISSUE-A002 | JWT认证与API安全   | M      | A001       |
 | ISSUE-A003 | 用户基础资料管理   | **L**  | A002       |
-| ISSUE-A004 | 输入验证与数据校验 | M      | A002       |
+| ISSUE-A004 | 输入验证与数据校验 | M      | A002, A003 |
 
 ### 🤖 Core Agent (Agent核心层)
 
 | Issue       | 标题                  | 复杂度 | 关键依赖       |
 | ----------- | --------------------- | ------ | -------------- |
-| ISSUE-C001  | Agent创建与基础配置   | M      | A003           |
+| ISSUE-C001  | Agent创建与基础配置   | M      | A003, SEC001         |
 | ISSUE-C002a | L1基础信息模型        | M      | C001           |
 | ISSUE-C002b | L2结构化信息模型      | M      | C002a          |
 | ISSUE-C002c | L3自然语言信息模型    | M      | C002b          |
@@ -444,7 +446,7 @@ flowchart TD
 | ----------- | ------------------------ | ------ | ------------ |
 | ISSUE-VS001 | VisionShare需求发布      | M      | C006, AI002  |
 | ISSUE-VS002 | 附近任务查询与接单       | M      | C006, M004   |
-| ISSUE-VS003 | 相机拍照与上传           | M      | VS002, F004  |
+| ISSUE-VS003 | 相机拍照与上传           | M      | VS002, F004, SEC004 |
 | ISSUE-VS004 | AI隐私脱敏处理           | H      | VS003, AI005 |
 | ISSUE-VS005 | 照片查看与积分支付       | M      | VS004, CR003 |
 | ISSUE-VS006 | AI相册智能检索与历史查询 | **M**  | VS002, AI005 |
@@ -488,7 +490,7 @@ flowchart TD
 | ISSUE-UI004b | Agent/人类用户状态指示器 | S      | UI002, UI004a                     |
 | ISSUE-UI004c | 聊天记录滚动与分页加载   | M      | UI002, UI004b                     |
 | ISSUE-UI005  | Agent配置界面            | M      | UI002, C001, C006                 |
-| ISSUE-UI006  | 消息中心                 | M      | UI002, COM002c                    |
+| ISSUE-UI006  | 消息中心                 | M      | UI002, COM002c, VS001, DATE001, JOB001, AD001 |
 | ISSUE-UI007  | 个人中心与信用展示       | M      | UI002, CR001, A003                |
 
 ### 🚀 Integration (集成与部署)

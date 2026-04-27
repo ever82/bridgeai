@@ -76,6 +76,25 @@ export {
   AIExtractionResult,
   ExtractFromDescriptionRequest,
   ExtractFromDescriptionResponse,
+  // Additional dating enums
+  MBTIType,
+  SmokingHabit,
+  DrinkingHabit,
+  PetPreference,
+  ExerciseFrequency,
+  DietPreference,
+  RelationshipPace,
+  LivingArrangement,
+  FamilyPlan,
+  LocationPreference,
+  SleepSchedule,
+  // Dating labels
+  DATING_AGE_RANGE_LABELS,
+  HEIGHT_RANGE_LABELS,
+  DATING_EDUCATION_LABELS,
+  INCOME_LABELS,
+  DATING_PURPOSE_LABELS,
+  VISIBILITY_LABELS,
 } from './types/dating';
 // Explicitly re-export disclosure types (use export not export type for enums)
 export {

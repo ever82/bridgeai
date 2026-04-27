@@ -4,8 +4,10 @@
  */
 
 import webpush from 'web-push';
-import { IAdapter, PushPayload, ISendResult, PushAdapterConfig } from './IAdapter';
+
 import { prisma } from '../../db/client';
+
+import { IAdapter, PushPayload, ISendResult, PushAdapterConfig } from './IAdapter';
 
 // VAPID keys should be generated once and stored in environment variables
 // Generate with: npx web-push generate-vapid-keys
