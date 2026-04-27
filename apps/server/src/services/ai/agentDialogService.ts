@@ -438,7 +438,7 @@ export class AgentDialogService {
     sessionId: string,
     updates: Partial<DialogContext>
   ): Promise<DialogSession> {
-    const session = this.sessions.get(sessionId);
+    const session = await this.getSessionAsync(sessionId);
     if (!session) {
       throw new Error(`Session ${sessionId} not found`);
     }
