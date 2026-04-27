@@ -5,25 +5,6 @@ import { SenderType, HandoffStatus } from '@bridgeai/shared';
 
 import { SenderIndicator, SenderChangeIndicator } from '../SenderIndicator';
 
-// Mock Animated
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  return {
-    ...RN,
-    Animated: {
-      ...RN.Animated,
-      Value: jest.fn(() => ({ setValue: jest.fn() })),
-      View: RN.View,
-      Text: RN.Text,
-      Image: RN.Image,
-      parallel: jest.fn(() => ({ start: jest.fn() })),
-      sequence: jest.fn(() => ({ start: jest.fn() })),
-      spring: jest.fn(() => ({ start: jest.fn() })),
-      timing: jest.fn(() => ({ start: jest.fn() })),
-    },
-  };
-});
-
 describe('SenderIndicator', () => {
   describe('Agent Sender', () => {
     it('should render agent indicator', () => {

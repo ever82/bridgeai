@@ -1,15 +1,13 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
+import { FlatList } from 'react-native';
 
 import { ChatMessage } from '../../../types/chat';
 import { MessageList } from '../MessageList';
 
 jest.mock('../MessageBubble', () => {
-  const R = jest.requireActual('react') as typeof React;
-  const RN = jest.requireActual('react-native') as {
-    View: React.ComponentType<unknown>;
-    Text: React.ComponentType<unknown>;
-  };
+  const R = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
   return {
     MessageBubble: (props: Record<string, unknown>) =>
       R.createElement(
@@ -25,8 +23,8 @@ jest.mock('../MessageBubble', () => {
 });
 
 jest.mock('../SenderIndicator', () => {
-  const R = jest.requireActual('react') as typeof React;
-  const RN = jest.requireActual('react-native') as { View: React.ComponentType<unknown> };
+  const R = jest.requireActual('react');
+  const RN = jest.requireActual('react-native');
   return {
     SenderChangeIndicator: (props: Record<string, unknown>) =>
       R.createElement(RN.View, { testID: 'sender-change', ...props }),
@@ -125,9 +123,8 @@ describe('MessageList', () => {
       />
     );
 
-    const flatList = screen.getByTestId('message-list');
-    const footer = flatList.props.ListFooterComponent;
-    expect(footer).toBeDefined();
+    const flatList = screen.UNSAFE_getByType(FlatList);
+    expect(flatList.props.ListFooterComponent).toBeDefined();
   });
 
   it('passes onMessagePress through to MessageBubble', () => {
@@ -194,7 +191,7 @@ describe('MessageList', () => {
       />
     );
 
-    const flatList = screen.getByTestId('message-list');
+    const flatList = screen.UNSAFE_getByType(FlatList);
     expect(flatList.props.contentContainerStyle).toEqual(
       expect.arrayContaining([expect.objectContaining(customStyle)])
     );
