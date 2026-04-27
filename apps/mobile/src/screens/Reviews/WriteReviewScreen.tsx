@@ -14,6 +14,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { theme } from '../../theme';
 import { StarRating } from '../../components/Reviews';
 import { Button } from '../../components/Button';
+import { createReview } from '../../services/api/reviewApi';
 
 interface RouteParams {
   matchId: string;
@@ -27,10 +28,6 @@ export const WriteReviewScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { matchId, rateeId, rateeName, matchTitle } = route.params as RouteParams;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _matchId = matchId; // Will be used for real API submission
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _rateeId = rateeId; // Will be used for real API submission
 
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -57,8 +54,12 @@ export const WriteReviewScreen: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await createReview({
+        matchId,
+        revieweeId: rateeId,
+        rating,
+        content: comment,
+      });
 
       Alert.alert('提交成功', '感谢您的评价！', [
         {

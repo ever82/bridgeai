@@ -18,6 +18,7 @@ import { formatDate } from '../../utils/format';
 import { StarRating } from '../../components/Reviews';
 import { Button } from '../../components/Button';
 import { getReviewById, replyToReview as replyToReviewApi } from '../../services/api/reviewApi';
+import { useAuthStore } from '../../stores/authStore';
 
 export const ReviewDetailScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -31,6 +32,7 @@ export const ReviewDetailScreen: React.FC = () => {
   const [reply, setReply] = useState('');
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const currentUserId = useAuthStore(state => state.user?.id);
 
   useEffect(() => {
     const fetchReview = async () => {
@@ -110,8 +112,7 @@ export const ReviewDetailScreen: React.FC = () => {
   }
 
   const user = review.reviewer;
-  // isReceivedReview: the current user is the reviewee
-  const isReceivedReview = true; // Determined by the caller; actual role check would come from auth context
+  const isReceivedReview = currentUserId === review.revieweeId;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
