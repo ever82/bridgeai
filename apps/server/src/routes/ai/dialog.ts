@@ -403,7 +403,7 @@ router.get(
     try {
       const { participantId } = req.params;
 
-      const sessions = agentDialogService.getSessionsForParticipant(participantId);
+      const sessions = await agentDialogService.getParticipantHistory(participantId);
 
       res.json({
         success: true,

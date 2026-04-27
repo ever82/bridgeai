@@ -17,6 +17,7 @@ jest.mock('../../../services/ai/agentDialogService', () => ({
     agentToAgentDialog: jest.fn(),
     userToAgentDialog: jest.fn(),
     getSessionsForParticipant: jest.fn(),
+    getParticipantHistory: jest.fn(),
     updateSessionContext: jest.fn(),
     archiveSession: jest.fn(),
     getSessionCount: jest.fn().mockReturnValue(5),
@@ -204,7 +205,7 @@ describe('Dialog Routes', () => {
 
   describe('GET /api/v1/ai/dialog/participants/:participantId/sessions', () => {
     it('should get participant sessions', async () => {
-      (agentDialogService.getSessionsForParticipant as jest.Mock).mockReturnValue([mockSession]);
+      (agentDialogService.getParticipantHistory as jest.Mock).mockResolvedValue([mockSession]);
 
       const response = await request(app).get('/api/v1/ai/dialog/participants/user-1/sessions');
 

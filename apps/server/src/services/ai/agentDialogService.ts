@@ -207,7 +207,7 @@ export class AgentDialogService {
    * Generate a dialog message (agent-to-agent or agent-to-user)
    */
   async generateMessage(request: GenerateDialogRequest): Promise<DialogMessage> {
-    const session = this.sessions.get(request.sessionId);
+    const session = await this.getSessionAsync(request.sessionId);
     if (!session) {
       throw new Error(`Session ${request.sessionId} not found`);
     }
@@ -420,13 +420,15 @@ export class AgentDialogService {
    * Archive session
    */
   async archiveSession(sessionId: string): Promise<void> {
-    const session = this.sessions.get(sessionId);
-    if (session) {
-      session.status = 'archived';
-      session.updatedAt = new Date();
-      await this.persistSession(session);
-      logger.info('Dialog session archived', { sessionId });
+    const session = await this.getSessionAsync(sessionId);
+    if (!session) {
+      logger.warn('Session not found for archive', { sessionId });
+      return;
     }
+    session.status = 'archived';
+    session.updatedAt = new Date();
+    await this.persistSession(session);
+    logger.info('Dialog session archived', { sessionId });
   }
 
   /**

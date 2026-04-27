@@ -221,15 +221,17 @@ export class QueryEngine {
       }
 
       // Execute query with timeout
+      const timeoutMs = resourceLimits.maxExecutionTime - elapsed;
+      let timeoutId: ReturnType<typeof setTimeout>;
+
       const data = await Promise.race([
         this.executePrismaQuery<T>(plan.query),
-        new Promise<never>((_, reject) =>
-          setTimeout(
-            () => reject(new Error('Query timeout')),
-            resourceLimits.maxExecutionTime - elapsed
-          )
-        ),
+        new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error('Query timeout')), timeoutMs);
+        }),
       ]);
+
+      clearTimeout(timeoutId);
 
       // Cache result
       if (useCache) {
