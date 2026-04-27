@@ -273,7 +273,6 @@ export async function filterAgentsByAttributes(
         take: limit,
         orderBy: { [sortBy]: sortOrder },
         include: {
-          profiles: true,
           user: {
             select: {
               id: true,
