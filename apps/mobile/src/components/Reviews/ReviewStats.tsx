@@ -2,18 +2,13 @@ import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 
 import { theme } from '../../theme';
+import { ReviewStats as ReviewStatsData } from '../../types/review';
 
 import { StarRating } from './StarRating';
 
 interface DistributionItem {
   score: number;
   count: number;
-}
-
-interface ReviewStatsData {
-  averageScore: number;
-  totalReviews: number;
-  distribution: DistributionItem[];
 }
 
 interface ReviewStatsProps {
@@ -23,7 +18,23 @@ interface ReviewStatsProps {
 }
 
 export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats, style, testID }) => {
-  const { averageScore, totalReviews, distribution } = stats;
+  const { avgRating } = stats;
+  const fiveStarCount = stats.fiveStarCount ?? 0;
+  const fourStarCount = stats.fourStarCount ?? 0;
+  const threeStarCount = stats.threeStarCount ?? 0;
+  const twoStarCount = stats.twoStarCount ?? 0;
+  const oneStarCount = stats.oneStarCount ?? 0;
+
+  const averageScore = avgRating;
+  const totalReviews = fiveStarCount + fourStarCount + threeStarCount + twoStarCount + oneStarCount;
+
+  const distribution: DistributionItem[] = [
+    { score: 5, count: fiveStarCount },
+    { score: 4, count: fourStarCount },
+    { score: 3, count: threeStarCount },
+    { score: 2, count: twoStarCount },
+    { score: 1, count: oneStarCount },
+  ];
 
   const getMaxCount = () => {
     return Math.max(...distribution.map(d => d.count), 1);

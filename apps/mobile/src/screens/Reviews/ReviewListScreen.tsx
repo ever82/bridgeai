@@ -29,25 +29,7 @@ export const ReviewListScreen: React.FC = () => {
   const fetchStats = useCallback(async () => {
     try {
       const res = await getReviewStats();
-      const data = res.data.data;
-      // Convert backend stats to frontend ReviewStatsType format
-      const statsData: ReviewStatsType = {
-        averageScore: data.avgRating,
-        totalReviews:
-          data.fiveStarCount +
-          data.fourStarCount +
-          data.threeStarCount +
-          data.twoStarCount +
-          data.oneStarCount,
-        distribution: [
-          { score: 5, count: data.fiveStarCount },
-          { score: 4, count: data.fourStarCount },
-          { score: 3, count: data.threeStarCount },
-          { score: 2, count: data.twoStarCount },
-          { score: 1, count: data.oneStarCount },
-        ],
-      };
-      setStats(statsData);
+      setStats(res.data.data);
     } catch {
       // Stats are non-critical, silently fail
     }

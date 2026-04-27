@@ -1,26 +1,18 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
 
+import { ReviewStats as ReviewStatsData } from '../../types/review';
+
 import { ReviewStats } from './ReviewStats';
 
-// Shape that ReviewStats component actually consumes
-// (not matching types/review.ts ReviewStats type due to component/type mismatch)
-interface StatsShape {
-  averageScore: number;
-  totalReviews: number;
-  distribution: Array<{ score: number; count: number }>;
-}
-
-const createStats = (overrides: Partial<StatsShape> = {}): StatsShape => ({
-  averageScore: 4.2,
-  totalReviews: 25,
-  distribution: [
-    { score: 5, count: 10 },
-    { score: 4, count: 8 },
-    { score: 3, count: 4 },
-    { score: 2, count: 2 },
-    { score: 1, count: 1 },
-  ],
+const createStats = (overrides: Partial<ReviewStatsData> = {}): ReviewStatsData => ({
+  avgRating: 4.2,
+  fiveStarCount: 10,
+  fourStarCount: 8,
+  threeStarCount: 4,
+  twoStarCount: 2,
+  oneStarCount: 1,
+  responseRate: 80,
   ...overrides,
 });
 
@@ -36,27 +28,50 @@ describe('ReviewStats', () => {
     });
 
     it('renders average score formatted to one decimal', () => {
-      render(<ReviewStats stats={createStats({ averageScore: 4.567 })} testID="review-stats" />);
+      render(<ReviewStats stats={createStats({ avgRating: 4.567 })} testID="review-stats" />);
       expect(screen.getByText('4.6')).toBeTruthy();
     });
 
     it('renders average score of zero', () => {
-      render(<ReviewStats stats={createStats({ averageScore: 0 })} testID="review-stats" />);
+      render(<ReviewStats stats={createStats({ avgRating: 0 })} testID="review-stats" />);
       expect(screen.getByText('0.0')).toBeTruthy();
     });
 
     it('renders average score of 5.0', () => {
-      render(<ReviewStats stats={createStats({ averageScore: 5.0 })} testID="review-stats" />);
+      render(<ReviewStats stats={createStats({ avgRating: 5.0 })} testID="review-stats" />);
       expect(screen.getByText('5.0')).toBeTruthy();
     });
 
     it('renders total reviews count', () => {
-      render(<ReviewStats stats={createStats({ totalReviews: 100 })} testID="review-stats" />);
-      expect(screen.getByText('共 100 条评价')).toBeTruthy();
+      // 10+20+15+3+2 = 50 total
+      render(
+        <ReviewStats
+          stats={createStats({
+            fiveStarCount: 10,
+            fourStarCount: 20,
+            threeStarCount: 15,
+            twoStarCount: 3,
+            oneStarCount: 2,
+          })}
+          testID="review-stats"
+        />
+      );
+      expect(screen.getByText('共 50 条评价')).toBeTruthy();
     });
 
     it('renders zero total reviews', () => {
-      render(<ReviewStats stats={createStats({ totalReviews: 0 })} testID="review-stats" />);
+      render(
+        <ReviewStats
+          stats={createStats({
+            fiveStarCount: 0,
+            fourStarCount: 0,
+            threeStarCount: 0,
+            twoStarCount: 0,
+            oneStarCount: 0,
+          })}
+          testID="review-stats"
+        />
+      );
       expect(screen.getByText('共 0 条评价')).toBeTruthy();
     });
   });
@@ -81,14 +96,11 @@ describe('ReviewStats', () => {
       render(
         <ReviewStats
           stats={createStats({
-            totalReviews: 10,
-            distribution: [
-              { score: 5, count: 0 },
-              { score: 4, count: 5 },
-              { score: 3, count: 3 },
-              { score: 2, count: 2 },
-              { score: 1, count: 0 },
-            ],
+            fiveStarCount: 0,
+            fourStarCount: 5,
+            threeStarCount: 3,
+            twoStarCount: 2,
+            oneStarCount: 0,
           })}
           testID="review-stats"
         />
@@ -101,14 +113,11 @@ describe('ReviewStats', () => {
       render(
         <ReviewStats
           stats={createStats({
-            totalReviews: 3,
-            distribution: [
-              { score: 5, count: 1 },
-              { score: 4, count: 1 },
-              { score: 3, count: 1 },
-              { score: 2, count: 0 },
-              { score: 1, count: 0 },
-            ],
+            fiveStarCount: 1,
+            fourStarCount: 1,
+            threeStarCount: 1,
+            twoStarCount: 0,
+            oneStarCount: 0,
           })}
           testID="review-stats"
         />
@@ -132,15 +141,12 @@ describe('ReviewStats', () => {
       render(
         <ReviewStats
           stats={createStats({
-            averageScore: 0,
-            totalReviews: 0,
-            distribution: [
-              { score: 5, count: 0 },
-              { score: 4, count: 0 },
-              { score: 3, count: 0 },
-              { score: 2, count: 0 },
-              { score: 1, count: 0 },
-            ],
+            avgRating: 0,
+            fiveStarCount: 0,
+            fourStarCount: 0,
+            threeStarCount: 0,
+            twoStarCount: 0,
+            oneStarCount: 0,
           })}
           testID="review-stats"
         />
@@ -153,14 +159,11 @@ describe('ReviewStats', () => {
       render(
         <ReviewStats
           stats={createStats({
-            totalReviews: 1,
-            distribution: [
-              { score: 5, count: 0 },
-              { score: 4, count: 0 },
-              { score: 3, count: 0 },
-              { score: 2, count: 0 },
-              { score: 1, count: 1 },
-            ],
+            fiveStarCount: 0,
+            fourStarCount: 0,
+            threeStarCount: 0,
+            twoStarCount: 0,
+            oneStarCount: 1,
           })}
           testID="review-stats"
         />

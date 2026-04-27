@@ -15,13 +15,35 @@ export const Text = mockComponent('Text');
 export const Image = mockComponent('Image');
 export const ScrollView = mockComponent('ScrollView');
 export const FlatList = jest.fn((props: any) => {
-  const { data, renderItem, keyExtractor, testID, children, ...rest } = props;
+  const {
+    data,
+    renderItem,
+    keyExtractor,
+    testID,
+    children,
+    ListHeaderComponent,
+    ListEmptyComponent,
+    ListFooterComponent,
+    ...rest
+  } = props;
+
+  const renderHeaderOrEmpty = (Component: any) => {
+    if (!Component) return null;
+    if (typeof Component === 'function') {
+      return React.createElement(Component);
+    }
+    return Component;
+  };
+
   // If children are passed directly, render them (for non-standard usage)
   if (children) {
     return React.createElement('FlatList', { testID, ...rest }, children);
   }
   // Otherwise, render items from data using renderItem
   if (data && renderItem) {
+    const header = renderHeaderOrEmpty(ListHeaderComponent);
+    const empty = data.length === 0 ? renderHeaderOrEmpty(ListEmptyComponent) : null;
+    const footer = renderHeaderOrEmpty(ListFooterComponent);
     const items = data.map((item: any, index: number) => {
       const key = keyExtractor ? keyExtractor(item, index) : index;
       return React.createElement(
@@ -30,7 +52,7 @@ export const FlatList = jest.fn((props: any) => {
         renderItem({ item, index })
       );
     });
-    return React.createElement(View, { testID }, items);
+    return React.createElement(View, { testID }, header, ...items, empty, footer);
   }
   return React.createElement('FlatList', { testID, ...rest });
 });
