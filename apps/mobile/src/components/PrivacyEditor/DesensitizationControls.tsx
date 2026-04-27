@@ -1,11 +1,5 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Slider,
-} from 'react-native';
+import React, { useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, PanResponder } from 'react-native';
 
 interface DetectionRegion {
   id: string;
@@ -77,6 +71,107 @@ const TYPE_LABELS: Record<string, string> = {
   barcode: 'Barcode',
 };
 
+interface CustomSliderProps {
+  value: number;
+  onValueChange: (value: number) => void;
+  minimumValue?: number;
+  maximumValue?: number;
+  step?: number;
+  trackHeight?: number;
+  thumbSize?: number;
+  minimumTrackColor?: string;
+  maximumTrackColor?: string;
+  thumbColor?: string;
+  style?: import('react-native').ViewStyle;
+}
+
+const CustomSlider: React.FC<CustomSliderProps> = ({
+  value,
+  onValueChange,
+  minimumValue = 0,
+  maximumValue = 100,
+  step = 1,
+  trackHeight = 4,
+  thumbSize = 20,
+  minimumTrackColor = '#007AFF',
+  maximumTrackColor = '#ccc',
+  thumbColor = '#007AFF',
+  style,
+}) => {
+  const sliderWidth = useRef(0);
+  const ratio = (value - minimumValue) / (maximumValue - minimumValue);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (_, gestureState) => {
+        handleGesture(gestureState.x0);
+      },
+      onPanResponderMove: evt => {
+        handleGesture(evt.nativeEvent.locationX);
+      },
+    })
+  ).current;
+
+  const handleGesture = useCallback(
+    (x: number) => {
+      const width = sliderWidth.current;
+      if (width <= 0) return;
+      const clampedX = Math.max(0, Math.min(width, x));
+      let newValue = minimumValue + (clampedX / width) * (maximumValue - minimumValue);
+      newValue = Math.round(newValue / step) * step;
+      newValue = Math.max(minimumValue, Math.min(maximumValue, newValue));
+      if (newValue !== value) {
+        onValueChange(newValue);
+      }
+    },
+    [minimumValue, maximumValue, step, value, onValueChange]
+  );
+
+  return (
+    <View
+      style={[{ flex: 1, height: thumbSize, justifyContent: 'center' }, style]}
+      onLayout={e => {
+        sliderWidth.current = e.nativeEvent.layout.width;
+      }}
+      {...panResponder.panHandlers}
+    >
+      <View
+        style={{
+          height: trackHeight,
+          borderRadius: trackHeight / 2,
+          backgroundColor: maximumTrackColor,
+          overflow: 'hidden',
+        }}
+      >
+        <View
+          style={{
+            height: trackHeight,
+            width: `${ratio * 100}%`,
+            backgroundColor: minimumTrackColor,
+          }}
+        />
+      </View>
+      <View
+        style={{
+          position: 'absolute',
+          left: ratio * (sliderWidth.current || 0) - thumbSize / 2,
+          width: thumbSize,
+          height: thumbSize,
+          borderRadius: thumbSize / 2,
+          backgroundColor: thumbColor,
+          elevation: 3,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.3,
+          shadowRadius: 2,
+        }}
+      />
+    </View>
+  );
+};
+
 export const DesensitizationControls: React.FC<DesensitizationControlsProps> = ({
   selectedRegion,
   onMethodChange,
@@ -91,9 +186,7 @@ export const DesensitizationControls: React.FC<DesensitizationControlsProps> = (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>
-          {TYPE_LABELS[selectedRegion.type] || selectedRegion.type}
-        </Text>
+        <Text style={styles.title}>{TYPE_LABELS[selectedRegion.type] || selectedRegion.type}</Text>
         <Text style={styles.confidence}>
           {Math.round(selectedRegion.confidence * 100)}% confidence
         </Text>
@@ -102,21 +195,15 @@ export const DesensitizationControls: React.FC<DesensitizationControlsProps> = (
       {/* Method Selection */}
       <Text style={styles.sectionTitle}>Desensitization Method</Text>
       <View style={styles.methodsContainer}>
-        {DESENSITIZATION_METHODS.map((method) => (
+        {DESENSITIZATION_METHODS.map(method => (
           <TouchableOpacity
             key={method.id}
-            style={[
-              styles.methodButton,
-              currentMethod === method.id && styles.methodButtonActive,
-            ]}
+            style={[styles.methodButton, currentMethod === method.id && styles.methodButtonActive]}
             onPress={() => onMethodChange(method.id)}
           >
             <Text style={styles.methodIcon}>{method.icon}</Text>
             <Text
-              style={[
-                styles.methodName,
-                currentMethod === method.id && styles.methodNameActive,
-              ]}
+              style={[styles.methodName, currentMethod === method.id && styles.methodNameActive]}
             >
               {method.name}
             </Text>
@@ -131,16 +218,18 @@ export const DesensitizationControls: React.FC<DesensitizationControlsProps> = (
       <Text style={styles.sectionTitle}>Intensity</Text>
       <View style={styles.sliderContainer}>
         <Text style={styles.sliderLabel}>Light</Text>
-        <Slider
-          style={styles.slider}
+        <CustomSlider
           value={currentIntensity}
           onValueChange={onIntensityChange}
           minimumValue={0}
           maximumValue={100}
           step={5}
-          minimumTrackTintColor="#007AFF"
-          maximumTrackTintColor="#444"
-          thumbTintColor="#007AFF"
+          trackHeight={6}
+          thumbSize={22}
+          minimumTrackColor="#007AFF"
+          maximumTrackColor="#444"
+          thumbColor="#007AFF"
+          style={styles.slider}
         />
         <Text style={styles.sliderLabel}>Strong</Text>
       </View>

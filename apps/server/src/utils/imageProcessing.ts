@@ -1,7 +1,9 @@
 /**
  * Image Processing Utilities
- * Helper functions for image manipulation and processing
+ * Helper functions for image manipulation using Sharp
  */
+
+import sharp from 'sharp';
 
 import { BoundingBox } from '../services/ai/sensitiveContentDetection';
 
@@ -17,25 +19,23 @@ export interface ImageMetadata {
   size: number;
   colorSpace?: string;
   hasAlpha?: boolean;
+  exif?: Record<string, unknown>;
 }
 
 /**
- * Get image dimensions and metadata from buffer
- * In production, this would use an image library like Sharp
+ * Get image dimensions and metadata from buffer using Sharp
  */
 export async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
-  // In production: Use sharp or similar library
-  // const sharp = require('sharp');
-  // const metadata = await sharp(imageBuffer).metadata();
+  const metadata = await sharp(imageBuffer).metadata();
 
-  // Mock metadata for development
   return {
-    width: 1920,
-    height: 1080,
-    format: 'jpeg',
+    width: metadata.width ?? 0,
+    height: metadata.height ?? 0,
+    format: metadata.format ?? 'unknown',
     size: imageBuffer.length,
-    colorSpace: 'srgb',
-    hasAlpha: false,
+    colorSpace: metadata.space,
+    hasAlpha: metadata.hasAlpha,
+    exif: metadata.exif as Record<string, unknown> | undefined,
   };
 }
 
@@ -47,14 +47,7 @@ export async function resizeImage(
   targetWidth: number,
   targetHeight?: number
 ): Promise<Buffer> {
-  // In production: Use sharp
-  // const sharp = require('sharp');
-  // return await sharp(imageBuffer)
-  //   .resize(targetWidth, targetHeight, { fit: 'inside' })
-  //   .toBuffer();
-
-  console.log(`Resized image to ${targetWidth}x${targetHeight || 'auto'}`);
-  return imageBuffer;
+  return await sharp(imageBuffer).resize(targetWidth, targetHeight, { fit: 'inside' }).toBuffer();
 }
 
 /**
@@ -64,43 +57,28 @@ export async function convertImageFormat(
   imageBuffer: Buffer,
   targetFormat: 'jpeg' | 'png' | 'webp' | 'avif'
 ): Promise<Buffer> {
-  // In production: Use sharp for format conversion
-  console.log(`Converted image to ${targetFormat}`);
-  return imageBuffer;
+  return await sharp(imageBuffer).toFormat(targetFormat).toBuffer();
 }
 
 /**
  * Optimize image for web
  */
-export async function optimizeImage(
-  imageBuffer: Buffer,
-  quality: number = 80
-): Promise<Buffer> {
-  // In production: Use sharp with compression
-  console.log(`Optimized image with quality ${quality}`);
-  return imageBuffer;
+export async function optimizeImage(imageBuffer: Buffer, quality: number = 80): Promise<Buffer> {
+  return await sharp(imageBuffer).jpeg({ quality, mozjpeg: true }).toBuffer();
 }
 
 /**
  * Crop image to specified region
  */
-export async function cropImage(
-  imageBuffer: Buffer,
-  boundingBox: BoundingBox
-): Promise<Buffer> {
-  // In production: Use sharp extract
-  // const sharp = require('sharp');
-  // return await sharp(imageBuffer)
-  //   .extract({
-  //     left: boundingBox.x,
-  //     top: boundingBox.y,
-  //     width: boundingBox.width,
-  //     height: boundingBox.height
-  //   })
-  //   .toBuffer();
-
-  console.log(`Cropped image: ${JSON.stringify(boundingBox)}`);
-  return imageBuffer;
+export async function cropImage(imageBuffer: Buffer, boundingBox: BoundingBox): Promise<Buffer> {
+  return await sharp(imageBuffer)
+    .extract({
+      left: boundingBox.x,
+      top: boundingBox.y,
+      width: boundingBox.width,
+      height: boundingBox.height,
+    })
+    .toBuffer();
 }
 
 /**
@@ -111,9 +89,32 @@ export async function applyBlur(
   sigma: number,
   boundingBox?: BoundingBox
 ): Promise<Buffer> {
-  // In production: Use sharp blur
-  console.log(`Applied blur with sigma ${sigma}`);
-  return imageBuffer;
+  if (boundingBox) {
+    // Blur only the specified region: extract, blur, composite back
+
+    const regionBuffer = await sharp(imageBuffer)
+      .extract({
+        left: boundingBox.x,
+        top: boundingBox.y,
+        width: boundingBox.width,
+        height: boundingBox.height,
+      })
+      .blur(sigma)
+      .toBuffer();
+
+    return await sharp(imageBuffer)
+      .ensureAlpha()
+      .composite([
+        {
+          input: regionBuffer,
+          left: boundingBox.x,
+          top: boundingBox.y,
+        },
+      ])
+      .toBuffer();
+  }
+
+  return await sharp(imageBuffer).blur(sigma).toBuffer();
 }
 
 /**
@@ -124,9 +125,16 @@ export async function compositeImages(
   overlayImage: Buffer,
   position: { x: number; y: number }
 ): Promise<Buffer> {
-  // In production: Use sharp composite
-  console.log(`Composited image at position ${position.x}, ${position.y}`);
-  return baseImage;
+  return await sharp(baseImage)
+    .ensureAlpha()
+    .composite([
+      {
+        input: overlayImage,
+        left: position.x,
+        top: position.y,
+      },
+    ])
+    .toBuffer();
 }
 
 /**
@@ -136,12 +144,7 @@ export async function generateThumbnail(
   imageBuffer: Buffer,
   maxDimension: number = 200
 ): Promise<Buffer> {
-  const metadata = await getImageMetadata(imageBuffer);
-  const scale = Math.min(maxDimension / metadata.width, maxDimension / metadata.height);
-  const newWidth = Math.round(metadata.width * scale);
-  const newHeight = Math.round(metadata.height * scale);
-
-  return resizeImage(imageBuffer, newWidth, newHeight);
+  return await sharp(imageBuffer).resize(maxDimension, maxDimension, { fit: 'inside' }).toBuffer();
 }
 
 /**
@@ -190,7 +193,6 @@ export function mergeBoundingBoxes(boxes: BoundingBox[]): BoundingBox[] {
     const next = sorted[i];
 
     if (doBoundingBoxesOverlap(current, next)) {
-      // Merge boxes
       const minX = Math.min(current.x, next.x);
       const minY = Math.min(current.y, next.y);
       const maxX = Math.max(current.x + current.width, next.x + next.width);
@@ -232,7 +234,6 @@ export function padBoundingBox(
  * Validate image buffer
  */
 export function isValidImage(buffer: Buffer): boolean {
-  // Check magic numbers for common image formats
   const jpegMagic = Buffer.from([0xff, 0xd8, 0xff]);
   const pngMagic = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
   const webpMagic = Buffer.from([0x52, 0x49, 0x46, 0x46]);
@@ -264,8 +265,6 @@ export function getImageFormat(buffer: Buffer): string | null {
  * Calculate image hash for comparison
  */
 export function calculateImageHash(buffer: Buffer): string {
-  // In production: Use perceptual hashing (pHash)
-  // For now, use simple hash of first 1KB
   const sample = buffer.slice(0, Math.min(1024, buffer.length));
   return Buffer.from(sample).toString('base64');
 }
@@ -274,10 +273,37 @@ export function calculateImageHash(buffer: Buffer): string {
  * Compare two images for similarity
  */
 export async function compareImages(image1: Buffer, image2: Buffer): Promise<number> {
-  // In production: Use perceptual hashing comparison
   const hash1 = calculateImageHash(image1);
   const hash2 = calculateImageHash(image2);
 
-  // Simple comparison - in production use Hamming distance of pHashes
   return hash1 === hash2 ? 1.0 : 0.0;
+}
+
+/**
+ * Strip EXIF metadata from image for privacy protection
+ */
+export async function stripExif(imageBuffer: Buffer): Promise<Buffer> {
+  return await sharp(imageBuffer)
+    .rotate() // auto-rotate based on EXIF orientation
+    .jpeg() // re-encode without metadata
+    .toBuffer();
+}
+
+/**
+ * Extract EXIF metadata from image
+ */
+export async function extractExif(imageBuffer: Buffer): Promise<Record<string, unknown> | null> {
+  const metadata = await sharp(imageBuffer).metadata();
+  if (!metadata.exif) return null;
+  return metadata.exif as Record<string, unknown>;
+}
+
+/**
+ * Check if image contains GPS EXIF data
+ */
+export async function hasGpsExif(imageBuffer: Buffer): Promise<boolean> {
+  const metadata = await sharp(imageBuffer).metadata();
+  if (!metadata.exif) return false;
+  const exifStr = typeof metadata.exif === 'string' ? metadata.exif : JSON.stringify(metadata.exif);
+  return exifStr.includes('GPS') || exifStr.includes('gps');
 }

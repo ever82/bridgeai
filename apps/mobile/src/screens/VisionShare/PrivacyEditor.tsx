@@ -81,6 +81,29 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
   const [showRecommendations, setShowRecommendations] = useState(true);
   const imageDimensions = useRef({ width: 0, height: 0 });
 
+  // Helper functions
+  const getMethodForType = (type: string): string => {
+    const methods: Record<string, string> = {
+      face: 'blur',
+      license_plate: 'mosaic',
+      text: 'blur',
+      address: 'pixelate',
+      sensitive_object: 'replace_background',
+    };
+    return methods[type] || 'blur';
+  };
+
+  const getIntensityForType = (type: string): number => {
+    const intensities: Record<string, number> = {
+      face: 80,
+      license_plate: 90,
+      text: 60,
+      address: 85,
+      sensitive_object: 95,
+    };
+    return intensities[type] || 70;
+  };
+
   // Analyze image for sensitive content
   const analyzeImage = useCallback(async () => {
     setIsAnalyzing(true);
@@ -88,15 +111,27 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
     try {
       const response = await visionShareApi.analyzeImage(imageUri);
 
-      setDetections(response.data.detections);
-      saveToHistory(response.data.detections);
+      if (response.success) {
+        // Add unique IDs to detections
+        const detectionsWithIds = response.data.detections.map((d, index) => ({
+          id: `detection-${index}`,
+          type: d.type,
+          boundingBox: d.boundingBox,
+          confidence: d.confidence,
+          method: getMethodForType(d.type),
+          intensity: getIntensityForType(d.type),
+        }));
+
+        setDetections(detectionsWithIds);
+        saveToHistory(detectionsWithIds);
+      }
     } catch (err) {
       console.error('Failed to analyze image:', err);
       // Keep existing state on error
     } finally {
       setIsAnalyzing(false);
     }
-  }, [imageUri]);
+  }, [imageUri, saveToHistory]);
 
   // Save current state to history
   const saveToHistory = useCallback(
@@ -207,41 +242,45 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
   const processImage = useCallback(async () => {
     setIsProcessing(true);
 
-    // Simulate processing
-    setTimeout(() => {
-      setPreviewUri(imageUri); // In production, this would be the processed image
+    try {
+      const regions = detections.map(d => ({
+        type: d.type,
+        boundingBox: d.boundingBox,
+        confidence: d.confidence,
+      }));
+
+      // Get the method and intensity from the first selected region or defaults
+      const selected = selectedRegion ? detections.find(r => r.id === selectedRegion) : null;
+      const method = selected?.method || 'blur';
+      const intensity = selected?.intensity || 70;
+
+      const response = await visionShareApi.desensitizeImage({
+        imageUri,
+        detections: regions,
+        method,
+        intensity,
+      });
+
+      if (response.success && response.data.processedImage) {
+        setPreviewUri(response.data.processedImage);
+      } else {
+        console.warn('Desensitization failed, using original image');
+        setPreviewUri(imageUri);
+      }
+    } catch (err) {
+      console.error('Failed to process image:', err);
+      // Fall back to original on error
+      setPreviewUri(imageUri);
+    } finally {
       setIsProcessing(false);
-    }, 1500);
-  }, [imageUri]);
+    }
+  }, [imageUri, detections, selectedRegion]);
 
   // Save processed image
   const saveImage = useCallback(() => {
     // Navigate back or to next screen
     navigation.goBack();
   }, [navigation]);
-
-  // Helper functions
-  const getMethodForType = (type: string): string => {
-    const methods: Record<string, string> = {
-      face: 'blur',
-      license_plate: 'mosaic',
-      text: 'blur',
-      address: 'pixelate',
-      sensitive_object: 'replace_background',
-    };
-    return methods[type] || 'blur';
-  };
-
-  const getIntensityForType = (type: string): number => {
-    const intensities: Record<string, number> = {
-      face: 80,
-      license_plate: 90,
-      text: 60,
-      address: 85,
-      sensitive_object: 95,
-    };
-    return intensities[type] || 70;
-  };
 
   return (
     <SafeAreaView style={styles.container}>

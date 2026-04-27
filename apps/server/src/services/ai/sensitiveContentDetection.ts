@@ -1,7 +1,16 @@
 /**
  * AI Sensitive Content Detection Service
- * Provides detection for faces, license plates, text/addresses, and sensitive objects
+ * Uses vision AI models for real detection of faces, license plates, text/addresses, etc.
+ * Includes error handling, timeout, and graceful degradation.
  */
+
+import sharp from 'sharp';
+
+import { stripExif, extractExif, hasGpsExif } from '../../utils/imageProcessing';
+
+import { GPT4VisionAdapter } from './adapters/vision/gpt4Vision';
+import { ClaudeVisionAdapter } from './adapters/vision/claudeVision';
+import { ImageInput } from './vision/types';
 
 export interface BoundingBox {
   x: number;
@@ -30,6 +39,7 @@ export interface DetectionOptions {
   types: SensitiveType[];
   minConfidence: number;
   maxResults?: number;
+  timeoutMs?: number;
 }
 
 export interface VisionAnalysisResult {
@@ -37,6 +47,126 @@ export interface VisionAnalysisResult {
   imageWidth: number;
   imageHeight: number;
   processingTime: number;
+  exifStripped: boolean;
+  hadGpsData: boolean;
+}
+
+const DEFAULT_TIMEOUT_MS = 30000;
+
+/**
+ * Get vision adapter for sensitive content detection
+ */
+function getDetectionAdapter(): GPT4VisionAdapter | ClaudeVisionAdapter {
+  if (process.env.OPENAI_API_KEY) {
+    return new GPT4VisionAdapter({
+      apiKey: process.env.OPENAI_API_KEY,
+      apiUrl: process.env.OPENAI_API_URL,
+      organization: process.env.OPENAI_ORGANIZATION,
+    });
+  }
+  if (process.env.CLAUDE_API_KEY) {
+    return new ClaudeVisionAdapter({
+      apiKey: process.env.CLAUDE_API_KEY,
+      apiUrl: process.env.CLAUDE_API_URL,
+    });
+  }
+  throw new Error('No Vision API key configured for sensitive content detection');
+}
+
+/**
+ * Parse AI response to extract detection results
+ */
+function parseDetectionResponse(
+  response: string,
+  types: SensitiveType[],
+  imageWidth: number,
+  imageHeight: number
+): DetectionResult[] {
+  const detections: DetectionResult[] = [];
+
+  try {
+    // Try to extract JSON from the response
+    const jsonMatch = response.match(/\[[\s\S]*?\]/);
+    if (!jsonMatch) return detections;
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (!Array.isArray(parsed)) return detections;
+
+    for (const item of parsed) {
+      const type = (item.type || '').toLowerCase() as SensitiveType;
+      if (!types.includes(type)) continue;
+
+      const confidence = typeof item.confidence === 'number' ? item.confidence : 0.5;
+      const bbox = item.boundingBox || item.bbox || {};
+
+      detections.push({
+        type,
+        boundingBox: {
+          x: Math.round(
+            typeof bbox.x === 'number'
+              ? bbox.x
+              : bbox.x_percent
+                ? (bbox.x_percent / 100) * imageWidth
+                : 0
+          ),
+          y: Math.round(
+            typeof bbox.y === 'number'
+              ? bbox.y
+              : bbox.y_percent
+                ? (bbox.y_percent / 100) * imageHeight
+                : 0
+          ),
+          width: Math.round(
+            typeof bbox.width === 'number'
+              ? bbox.width
+              : bbox.w_percent
+                ? (bbox.w_percent / 100) * imageWidth
+                : 100
+          ),
+          height: Math.round(
+            typeof bbox.height === 'number'
+              ? bbox.height
+              : bbox.h_percent
+                ? (bbox.h_percent / 100) * imageHeight
+                : 100
+          ),
+        },
+        confidence,
+        metadata: item.metadata || {},
+      });
+    }
+  } catch {
+    // If JSON parsing fails, return empty detections
+  }
+
+  return detections;
+}
+
+/**
+ * Build a detection prompt for the AI model
+ */
+function buildDetectionPrompt(types: SensitiveType[]): string {
+  const typeDescriptions: Record<SensitiveType, string> = {
+    face: 'human faces',
+    license_plate: 'vehicle license plates',
+    text: 'readable text content',
+    address: 'street addresses or location information',
+    sensitive_object: 'sensitive objects like ID cards, documents, credit cards, medical records',
+    qr_code: 'QR codes',
+    barcode: 'barcodes',
+  };
+
+  const targetTypes = types.map(t => typeDescriptions[t]).join(', ');
+
+  return `Analyze this image for sensitive/privacy content. Look for: ${targetTypes}.
+
+For each detection, provide a JSON array with objects containing:
+- "type": one of [${types.map(t => `"${t}"`).join(', ')}]
+- "confidence": 0.0 to 1.0
+- "boundingBox": { "x_percent": 0-100, "y_percent": 0-100, "w_percent": 0-100, "h_percent": 0-100 }
+- "metadata": any relevant details (text content, plate number, etc.)
+
+Respond ONLY with the JSON array, no other text. If nothing is detected, respond with [].`;
 }
 
 /**
@@ -44,41 +174,57 @@ export interface VisionAnalysisResult {
  */
 export async function detectSensitiveContent(
   imageBuffer: Buffer,
-  options: DetectionOptions = { types: ['face', 'license_plate', 'text', 'address'], minConfidence: 0.7 }
+  options: DetectionOptions = {
+    types: ['face', 'license_plate', 'text', 'address'],
+    minConfidence: 0.7,
+  }
 ): Promise<VisionAnalysisResult> {
   const startTime = Date.now();
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
-  // Simulated AI detection - in production, this would call an actual AI service
-  const detections: DetectionResult[] = [];
+  // Get real image dimensions
+  const metadata = await sharp(imageBuffer).metadata();
+  const imageWidth = metadata.width ?? 0;
+  const imageHeight = metadata.height ?? 0;
 
-  // Face detection simulation
-  if (options.types.includes('face')) {
-    const faceDetections = await detectFaces(imageBuffer, options.minConfidence);
-    detections.push(...faceDetections);
-  }
+  // Check EXIF data
+  const hadGps = await hasGpsExif(imageBuffer);
 
-  // License plate detection simulation
-  if (options.types.includes('license_plate')) {
-    const plateDetections = await detectLicensePlates(imageBuffer, options.minConfidence);
-    detections.push(...plateDetections);
-  }
+  let detections: DetectionResult[] = [];
 
-  // Text/address detection simulation
-  if (options.types.includes('text') || options.types.includes('address')) {
-    const textDetections = await detectTextAndAddresses(imageBuffer, options.minConfidence, options.types);
-    detections.push(...textDetections);
-  }
+  try {
+    // Attempt real AI detection
+    const adapter = getDetectionAdapter();
+    await adapter.initialize();
 
-  // Sensitive object detection simulation
-  if (options.types.includes('sensitive_object')) {
-    const objectDetections = await detectSensitiveObjects(imageBuffer, options.minConfidence);
-    detections.push(...objectDetections);
-  }
+    const imageInput: ImageInput = {
+      type: 'base64',
+      data: imageBuffer.toString('base64'),
+      mimeType: `image/${metadata.format ?? 'jpeg'}`,
+    };
 
-  // QR code and barcode detection
-  if (options.types.includes('qr_code') || options.types.includes('barcode')) {
-    const codeDetections = await detectCodes(imageBuffer, options.minConfidence, options.types);
-    detections.push(...codeDetections);
+    const prompt = buildDetectionPrompt(options.types);
+
+    // Apply timeout
+    const detectionPromise = adapter.analyzeImage(imageInput, prompt);
+    const timeoutPromise = new Promise<string>((_, reject) =>
+      setTimeout(() => reject(new Error('Detection timeout')), timeoutMs)
+    );
+
+    const response = await Promise.race([detectionPromise, timeoutPromise]);
+
+    detections = parseDetectionResponse(response, options.types, imageWidth, imageHeight);
+
+    // Filter by minimum confidence
+    detections = detections.filter(d => d.confidence >= options.minConfidence);
+  } catch (error) {
+    // Graceful degradation: if AI service fails, return empty detections
+    // In production, this should log to monitoring
+    const errorMsg = error instanceof Error ? error.message : 'Unknown detection error';
+    console.warn(
+      `[SensitiveContentDetection] AI detection failed, returning empty results: ${errorMsg}`
+    );
+    detections = [];
   }
 
   // Sort by confidence and limit results
@@ -89,140 +235,27 @@ export async function detectSensitiveContent(
 
   return {
     detections,
-    imageWidth: 1920, // Would be extracted from actual image
-    imageHeight: 1080,
+    imageWidth,
+    imageHeight,
     processingTime: Date.now() - startTime,
+    exifStripped: false, // Caller should strip EXIF separately
+    hadGpsData: hadGps,
   };
 }
 
 /**
- * Detect faces in an image
+ * Strip EXIF data from image and return cleaned buffer
  */
-async function detectFaces(imageBuffer: Buffer, minConfidence: number): Promise<DetectionResult[]> {
-  // In production: Call face detection AI model
-  // This is a simulation for development
-  const mockFaces: DetectionResult[] = [
-    {
-      type: 'face',
-      boundingBox: { x: 100, y: 150, width: 120, height: 140 },
-      confidence: 0.95,
-      metadata: { faceId: 'face_001', landmarks: ['eye_left', 'eye_right', 'nose', 'mouth'] },
-    },
-    {
-      type: 'face',
-      boundingBox: { x: 400, y: 200, width: 100, height: 120 },
-      confidence: 0.88,
-      metadata: { faceId: 'face_002', landmarks: ['eye_left', 'eye_right', 'nose', 'mouth'] },
-    },
-  ];
+export async function stripExifFromImage(imageBuffer: Buffer): Promise<{
+  cleanedBuffer: Buffer;
+  exifData: Record<string, unknown> | null;
+  hadGpsData: boolean;
+}> {
+  const exifData = await extractExif(imageBuffer);
+  const hadGpsData = exifData ? await hasGpsExif(imageBuffer) : false;
+  const cleanedBuffer = await stripExif(imageBuffer);
 
-  return mockFaces.filter((f) => f.confidence >= minConfidence);
-}
-
-/**
- * Detect license plates in an image
- */
-async function detectLicensePlates(imageBuffer: Buffer, minConfidence: number): Promise<DetectionResult[]> {
-  // In production: Call license plate detection AI model
-  const mockPlates: DetectionResult[] = [
-    {
-      type: 'license_plate',
-      boundingBox: { x: 600, y: 450, width: 180, height: 60 },
-      confidence: 0.92,
-      metadata: { plateNumber: '京A12345', country: 'CN' },
-    },
-  ];
-
-  return mockPlates.filter((p) => p.confidence >= minConfidence);
-}
-
-/**
- * Detect text and addresses in an image using OCR
- */
-async function detectTextAndAddresses(
-  imageBuffer: Buffer,
-  minConfidence: number,
-  types: SensitiveType[]
-): Promise<DetectionResult[]> {
-  // In production: Call OCR service with NLP for address extraction
-  const mockTexts: DetectionResult[] = [];
-
-  if (types.includes('text')) {
-    mockTexts.push({
-      type: 'text',
-      boundingBox: { x: 50, y: 50, width: 300, height: 40 },
-      confidence: 0.85,
-      metadata: { text: 'Confidential Document', language: 'en' },
-    });
-  }
-
-  if (types.includes('address')) {
-    mockTexts.push({
-      type: 'address',
-      boundingBox: { x: 50, y: 600, width: 400, height: 80 },
-      confidence: 0.90,
-      metadata: {
-        address: '北京市朝阳区建国路88号',
-        addressComponents: { city: '北京', district: '朝阳', street: '建国路' },
-      },
-    });
-  }
-
-  return mockTexts.filter((t) => t.confidence >= minConfidence);
-}
-
-/**
- * Detect sensitive objects (documents, IDs, etc.)
- */
-async function detectSensitiveObjects(imageBuffer: Buffer, minConfidence: number): Promise<DetectionResult[]> {
-  // In production: Call object detection AI model
-  const mockObjects: DetectionResult[] = [
-    {
-      type: 'sensitive_object',
-      boundingBox: { x: 200, y: 300, width: 250, height: 180 },
-      confidence: 0.87,
-      metadata: { objectType: 'id_card', label: 'ID Document' },
-    },
-    {
-      type: 'sensitive_object',
-      boundingBox: { x: 500, y: 100, width: 200, height: 150 },
-      confidence: 0.82,
-      metadata: { objectType: 'document', label: 'Confidential Paper' },
-    },
-  ];
-
-  return mockObjects.filter((o) => o.confidence >= minConfidence);
-}
-
-/**
- * Detect QR codes and barcodes in an image
- */
-async function detectCodes(
-  imageBuffer: Buffer,
-  minConfidence: number,
-  types: SensitiveType[]
-): Promise<DetectionResult[]> {
-  const mockCodes: DetectionResult[] = [];
-
-  if (types.includes('qr_code')) {
-    mockCodes.push({
-      type: 'qr_code',
-      boundingBox: { x: 700, y: 100, width: 100, height: 100 },
-      confidence: 0.93,
-      metadata: { content: 'https://example.com', format: 'QR' },
-    });
-  }
-
-  if (types.includes('barcode')) {
-    mockCodes.push({
-      type: 'barcode',
-      boundingBox: { x: 100, y: 700, width: 200, height: 80 },
-      confidence: 0.89,
-      metadata: { content: '123456789012', format: 'EAN-13' },
-    });
-  }
-
-  return mockCodes.filter((c) => c.confidence >= minConfidence);
+  return { cleanedBuffer, exifData, hadGpsData };
 }
 
 /**
@@ -231,7 +264,6 @@ async function detectCodes(
 export function calculatePrivacyRisk(detections: DetectionResult[]): number {
   if (detections.length === 0) return 0;
 
-  // Weight different types by sensitivity
   const typeWeights: Record<SensitiveType, number> = {
     face: 0.9,
     license_plate: 0.8,
@@ -251,8 +283,10 @@ export function calculatePrivacyRisk(detections: DetectionResult[]): number {
     totalWeight += weight;
   }
 
-  // Normalize to 0-100 scale
-  const normalizedScore = Math.min(100, Math.round((weightedScore / Math.max(1, totalWeight)) * 100));
+  const normalizedScore = Math.min(
+    100,
+    Math.round((weightedScore / Math.max(1, totalWeight)) * 100)
+  );
 
   return normalizedScore;
 }

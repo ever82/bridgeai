@@ -11,6 +11,7 @@ import extractionRoutes from './extraction';
 import negotiationRoutes from './negotiation';
 import supplyRoutes from './supply';
 import visionRoutes from './vision';
+import privacyRoutes from './privacy';
 import dialogRoutes from './dialog';
 
 const router: Router = Router();
@@ -20,6 +21,9 @@ router.use('/', llmRoutes);
 
 // Vision API路由
 router.use('/vision', visionRoutes);
+
+// Vision Privacy路由
+router.use('/privacy', privacyRoutes);
 
 // L3自然语言提取路由
 router.use('/', extractionRoutes);

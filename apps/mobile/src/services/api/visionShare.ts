@@ -12,7 +12,7 @@ import type {
   VisionShareTaskStatus,
 } from '@packages/shared/types/visionShare';
 
-import { api } from './client';
+import { api, apiClient } from './client';
 
 export interface CreateTaskResponse {
   success: boolean;
@@ -125,7 +125,6 @@ export interface AnalyzeImageResponse {
   success: boolean;
   data: {
     detections: {
-      id: string;
       type: string;
       boundingBox: {
         x: number;
@@ -134,9 +133,15 @@ export interface AnalyzeImageResponse {
         height: number;
       };
       confidence: number;
-      method?: string;
-      intensity?: number;
+      metadata?: Record<string, unknown>;
     }[];
+    imageWidth: number;
+    imageHeight: number;
+    processingTimeMs: number;
+    riskScore?: number;
+    riskLevel?: string;
+    hadGpsData?: boolean;
+    exifStripped?: boolean;
   };
 }
 
@@ -337,9 +342,109 @@ export const visionShareApi = {
    * Analyze image for sensitive content detection
    */
   analyzeImage: async (imageUri: string): Promise<AnalyzeImageResponse> => {
-    const response = await api.post<AnalyzeImageResponse>('/visionshare/analyze-image', {
-      imageUri,
+    const formData = new FormData();
+    formData.append('image', {
+      uri: imageUri,
+      type: 'image/jpeg',
+      name: 'image.jpg',
+    } as unknown as Blob);
+
+    const response = await apiClient.post('/api/v1/ai/privacy/analyze', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
+    return response.data;
+  },
+
+  /**
+   * Desensitize image with specified regions and method
+   */
+  desensitizeImage: async (params: {
+    imageUri: string;
+    detections: Array<{
+      type: string;
+      boundingBox: { x: number; y: number; width: number; height: number };
+      confidence: number;
+    }>;
+    method: string;
+    intensity: number;
+  }): Promise<{
+    success: boolean;
+    data: {
+      processedImage: string;
+      appliedRegions: Array<{
+        boundingBox: { x: number; y: number; width: number; height: number };
+        method: string;
+        intensity: number;
+      }>;
+      processingTimeMs: number;
+    };
+  }> => {
+    const formData = new FormData();
+    // Append image as a file
+    formData.append('image', {
+      uri: params.imageUri,
+      type: 'image/jpeg',
+      name: 'image.jpg',
+    } as unknown as Blob);
+    formData.append('detections', JSON.stringify(params.detections));
+    formData.append('method', params.method);
+    formData.append('intensity', params.intensity.toString());
+
+    const response = await apiClient.post('/api/v1/ai/privacy/desensitize', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Preview desensitization effect on a region
+   */
+  previewDesensitization: async (params: {
+    imageUri: string;
+    boundingBox: { x: number; y: number; width: number; height: number };
+    method: string;
+    intensity: number;
+  }): Promise<{
+    success: boolean;
+    data: { previewImage: string };
+  }> => {
+    const formData = new FormData();
+    formData.append('image', {
+      uri: params.imageUri,
+      type: 'image/jpeg',
+      name: 'image.jpg',
+    } as unknown as Blob);
+    formData.append('boundingBox', JSON.stringify(params.boundingBox));
+    formData.append('method', params.method);
+    formData.append('intensity', params.intensity.toString());
+
+    const response = await apiClient.post('/api/v1/ai/privacy/preview', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Get recommended desensitization settings for a content type
+   */
+  getDesensitizationRecommendation: async (
+    contentType: string,
+    confidence?: number
+  ): Promise<{
+    success: boolean;
+    data: { recommendedMethod: string; recommendedIntensity: number };
+  }> => {
+    const params = new URLSearchParams();
+    if (confidence !== undefined) params.append('confidence', confidence.toString());
+    const response = await api.get(
+      `/ai/privacy/recommendations/${contentType}?${params.toString()}`
+    );
     return response.data;
   },
 };
