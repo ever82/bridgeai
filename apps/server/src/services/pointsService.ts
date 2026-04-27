@@ -5,13 +5,11 @@
 
 import { PrismaClient } from '@prisma/client';
 import {
-  PointsAccount,
   PointsTransaction,
   PointsFreeze,
   PointsAccountResponse,
   PointsTransactionListResponse,
   PointsFreezeListResponse,
-  CreatePointsTransactionRequest,
   CreatePointsFreezeRequest,
   PointsOperationResult,
   PointsTransactionType,
@@ -19,7 +17,6 @@ import {
 } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
-import { AppError } from '../errors/AppError';
 import {
   getRuleByCode,
   getPointsValueConfig,
@@ -35,7 +32,6 @@ import {
   PointsTransactionService,
   pointsTransactionService,
   TransactionOptions,
-  FreezeOptions,
 } from './pointsTransactionService';
 
 // 规则执行选项
@@ -277,7 +273,10 @@ export class PointsService {
   /**
    * 完成任务获得积分
    */
-  async completeTask(userId: string, taskType: 'daily' | 'normal' = 'normal'): Promise<PointsOperationResult> {
+  async completeTask(
+    userId: string,
+    taskType: 'daily' | 'normal' = 'normal'
+  ): Promise<PointsOperationResult> {
     const ruleCode = taskType === 'daily' ? 'TASK_DAILY' : 'TASK_COMPLETE';
     return this.earnByRule({
       userId,
@@ -379,7 +378,11 @@ export class PointsService {
   /**
    * 查看照片
    */
-  async viewPhoto(userId: string, photoId: string, ownerId: string): Promise<PointsOperationResult> {
+  async viewPhoto(
+    userId: string,
+    photoId: string,
+    ownerId: string
+  ): Promise<PointsOperationResult> {
     return this.spendByRule({
       userId,
       ruleCode: 'VIEW_PHOTO',
@@ -430,7 +433,12 @@ export class PointsService {
   /**
    * 打赏用户
    */
-  async tipUser(userId: string, toUserId: string, amount: number, message?: string): Promise<PointsOperationResult> {
+  async tipUser(
+    userId: string,
+    toUserId: string,
+    amount: number,
+    message?: string
+  ): Promise<PointsOperationResult> {
     // 打赏实际是转账
     return this.transfer(userId, toUserId, amount, {
       description: message || `Tip to user`,
@@ -441,7 +449,12 @@ export class PointsService {
   /**
    * 购买服务
    */
-  async buyService(userId: string, serviceId: string, pointsCost: number, serviceName: string): Promise<PointsOperationResult> {
+  async buyService(
+    userId: string,
+    serviceId: string,
+    pointsCost: number,
+    serviceName: string
+  ): Promise<PointsOperationResult> {
     return this.spendByRule({
       userId,
       ruleCode: 'BUY_SERVICE',
@@ -649,7 +662,10 @@ export class PointsService {
   /**
    * 获取交易详情
    */
-  async getTransactionDetail(userId: string, transactionId: string): Promise<PointsTransaction | null> {
+  async getTransactionDetail(
+    userId: string,
+    transactionId: string
+  ): Promise<PointsTransaction | null> {
     const transaction = await this.prisma.pointsTransaction.findFirst({
       where: {
         id: transactionId,

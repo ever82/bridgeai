@@ -5,6 +5,7 @@
 
 import { Router } from 'express';
 import { z } from 'zod';
+import { SceneCode } from '@bridgeai/shared';
 
 import { pointsService } from '../services/pointsService';
 import { authenticate, requireAdmin } from '../middleware/auth';
@@ -39,7 +40,7 @@ const viewPhotoSchema = z.object({
 const freezeSchema = z.object({
   amount: z.number().int().positive(),
   reason: z.string().min(1).max(500),
-  scene: z.enum(['vision_share', 'agent_date', 'agent_job', 'agent_ad']).optional(),
+  scene: z.nativeEnum(SceneCode).optional(),
   referenceId: z.string().optional(),
   expiresAt: z.string().datetime().optional(),
 });
@@ -88,7 +89,7 @@ const ruleCodeParamSchema = z.object({
 });
 
 const sceneParamSchema = z.object({
-  scene: z.enum(['vision_share', 'agent_date', 'agent_job', 'agent_ad']),
+  scene: z.nativeEnum(SceneCode),
 });
 
 // ==================== 账户管理 ====================
