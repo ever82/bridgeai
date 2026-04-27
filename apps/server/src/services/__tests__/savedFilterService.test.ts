@@ -154,9 +154,9 @@ describe('createSavedFilter', () => {
     const error = new Error('DB error');
     mockSavedFilter.create.mockRejectedValue(error);
 
-    await expect(
-      savedFilterService.createSavedFilter(mockUserId, makeInput())
-    ).rejects.toThrow('DB error');
+    await expect(savedFilterService.createSavedFilter(mockUserId, makeInput())).rejects.toThrow(
+      'DB error'
+    );
   });
 });
 
@@ -173,10 +173,7 @@ describe('getSavedFilter', () => {
     expect(mockSavedFilter.findFirst).toHaveBeenCalledWith({
       where: {
         id: mockFilterId,
-        OR: [
-          { userId: mockUserId },
-          { isPublic: true },
-        ],
+        OR: [{ userId: mockUserId }, { isPublic: true }],
       },
     });
     expect(result).toEqual({
@@ -215,9 +212,9 @@ describe('getSavedFilter', () => {
   it('re-throws on database error', async () => {
     mockSavedFilter.findFirst.mockRejectedValue(new Error('DB error'));
 
-    await expect(
-      savedFilterService.getSavedFilter(mockFilterId, mockUserId)
-    ).rejects.toThrow('DB error');
+    await expect(savedFilterService.getSavedFilter(mockFilterId, mockUserId)).rejects.toThrow(
+      'DB error'
+    );
   });
 });
 
@@ -269,10 +266,7 @@ describe('getSavedFiltersByUser', () => {
     expect(mockSavedFilter.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          OR: [
-            { userId: mockUserId },
-            { isPublic: true },
-          ],
+          OR: [{ userId: mockUserId }, { isPublic: true }],
         },
       })
     );
@@ -301,9 +295,7 @@ describe('getSavedFiltersByUser', () => {
 
     await savedFilterService.getSavedFiltersByUser(mockUserId);
 
-    expect(mockSavedFilter.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ take: 20 })
-    );
+    expect(mockSavedFilter.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 20 }));
   });
 
   it('returns empty items when no filters exist', async () => {
@@ -319,9 +311,7 @@ describe('getSavedFiltersByUser', () => {
   it('re-throws on database error', async () => {
     mockSavedFilter.findMany.mockRejectedValue(new Error('DB error'));
 
-    await expect(
-      savedFilterService.getSavedFiltersByUser(mockUserId)
-    ).rejects.toThrow('DB error');
+    await expect(savedFilterService.getSavedFiltersByUser(mockUserId)).rejects.toThrow('DB error');
   });
 });
 
@@ -335,11 +325,9 @@ describe('updateSavedFilter', () => {
     const updated = { ...mockPrismaFilter, name: 'Updated Name' };
     mockSavedFilter.update.mockResolvedValue(updated);
 
-    const result = await savedFilterService.updateSavedFilter(
-      mockFilterId,
-      mockUserId,
-      { name: 'Updated Name' }
-    );
+    const result = await savedFilterService.updateSavedFilter(mockFilterId, mockUserId, {
+      name: 'Updated Name',
+    });
 
     expect(mockSavedFilter.findFirst).toHaveBeenCalledWith({
       where: { id: mockFilterId, userId: mockUserId },
@@ -356,11 +344,9 @@ describe('updateSavedFilter', () => {
     const updated = { ...mockPrismaFilter, isPublic: false };
     mockSavedFilter.update.mockResolvedValue(updated);
 
-    const result = await savedFilterService.updateSavedFilter(
-      mockFilterId,
-      mockUserId,
-      { isPublic: false }
-    );
+    const result = await savedFilterService.updateSavedFilter(mockFilterId, mockUserId, {
+      isPublic: false,
+    });
 
     expect(mockSavedFilter.update).toHaveBeenCalledWith({
       where: { id: mockFilterId },
@@ -372,11 +358,9 @@ describe('updateSavedFilter', () => {
   it('returns null when filter not owned by user', async () => {
     mockSavedFilter.findFirst.mockResolvedValue(null);
 
-    const result = await savedFilterService.updateSavedFilter(
-      mockFilterId,
-      'other-user',
-      { name: 'Hacked' }
-    );
+    const result = await savedFilterService.updateSavedFilter(mockFilterId, 'other-user', {
+      name: 'Hacked',
+    });
 
     expect(result).toBeNull();
     expect(mockSavedFilter.update).not.toHaveBeenCalled();
@@ -429,10 +413,7 @@ describe('deleteSavedFilter', () => {
   it('returns false when filter not found or not owned', async () => {
     mockSavedFilter.findFirst.mockResolvedValue(null);
 
-    const result = await savedFilterService.deleteSavedFilter(
-      mockFilterId,
-      'other-user'
-    );
+    const result = await savedFilterService.deleteSavedFilter(mockFilterId, 'other-user');
 
     expect(result).toBe(false);
     expect(mockSavedFilter.delete).not.toHaveBeenCalled();
@@ -442,9 +423,9 @@ describe('deleteSavedFilter', () => {
     mockSavedFilter.findFirst.mockResolvedValue(mockPrismaFilter);
     mockSavedFilter.delete.mockRejectedValue(new Error('DB error'));
 
-    await expect(
-      savedFilterService.deleteSavedFilter(mockFilterId, mockUserId)
-    ).rejects.toThrow('DB error');
+    await expect(savedFilterService.deleteSavedFilter(mockFilterId, mockUserId)).rejects.toThrow(
+      'DB error'
+    );
   });
 });
 
@@ -455,10 +436,11 @@ describe('deleteSavedFilter', () => {
 describe('shareSavedFilter', () => {
   it('returns a share URL for owned filter', async () => {
     mockSavedFilter.findFirst.mockResolvedValue(mockPrismaFilter);
+    mockSavedFilter.update.mockResolvedValue(mockPrismaFilter);
 
     const result = await savedFilterService.shareSavedFilter(mockFilterId, mockUserId);
 
-    expect(result).toMatch(/^\/filters\/shared\/share-/);
+    expect(result).toMatch(/^\/filters\/shared\/[a-f0-9]{32}$/);
   });
 
   it('returns null when filter not found', async () => {
@@ -530,17 +512,13 @@ describe('getPopularSavedFilters', () => {
 
     await savedFilterService.getPopularSavedFilters();
 
-    expect(mockSavedFilter.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ take: 10 })
-    );
+    expect(mockSavedFilter.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 10 }));
   });
 
   it('re-throws on database error', async () => {
     mockSavedFilter.findMany.mockRejectedValue(new Error('DB error'));
 
-    await expect(
-      savedFilterService.getPopularSavedFilters()
-    ).rejects.toThrow('DB error');
+    await expect(savedFilterService.getPopularSavedFilters()).rejects.toThrow('DB error');
   });
 });
 
@@ -560,10 +538,7 @@ describe('duplicateSavedFilter', () => {
     };
     mockSavedFilter.create.mockResolvedValue(duplicated);
 
-    const result = await savedFilterService.duplicateSavedFilter(
-      mockFilterId,
-      mockUserId
-    );
+    const result = await savedFilterService.duplicateSavedFilter(mockFilterId, mockUserId);
 
     expect(result).not.toBeNull();
     expect(result!.name).toBe('My Filter (复制)');
@@ -598,10 +573,7 @@ describe('duplicateSavedFilter', () => {
   it('returns null when original filter not found', async () => {
     mockSavedFilter.findFirst.mockResolvedValueOnce(null);
 
-    const result = await savedFilterService.duplicateSavedFilter(
-      'nonexistent',
-      mockUserId
-    );
+    const result = await savedFilterService.duplicateSavedFilter('nonexistent', mockUserId);
 
     expect(result).toBeNull();
     expect(mockSavedFilter.create).not.toHaveBeenCalled();

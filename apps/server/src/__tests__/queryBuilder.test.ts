@@ -110,6 +110,37 @@ describe('QueryBuilder', () => {
       });
     });
 
+    it('should build JSON path query when field starts with $.', () => {
+      const dsl = {
+        where: { field: '$.profile.l1Data.budget', operator: 'eq', value: 1000 },
+      };
+
+      const result = buildPrismaQuery(dsl);
+
+      expect(result.where).toEqual({
+        profile: {
+          path: ['l1Data', 'budget'],
+          equals: 1000,
+        },
+      });
+    });
+
+    it('should build JSON path query with contains operator', () => {
+      const dsl = {
+        where: { field: '$.metadata.tags', operator: 'contains', value: 'important' },
+      };
+
+      const result = buildPrismaQuery(dsl);
+
+      expect(result.where).toEqual({
+        metadata: {
+          path: ['tags'],
+          contains: 'important',
+          mode: 'insensitive',
+        },
+      });
+    });
+
     it('should include orderBy clause', () => {
       const dsl = {
         where: { field: 'status', operator: 'eq', value: 'active' },

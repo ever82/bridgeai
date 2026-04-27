@@ -3,6 +3,8 @@
  * 过滤结果缓存
  */
 
+import { createHash } from 'crypto';
+
 import { FilterDSL, FilterResult } from '@bridgeai/shared';
 
 import { logger } from './logger';
@@ -157,19 +159,24 @@ class FilterCache<T> {
   }
 
   /**
-   * Simple hash function for objects
+   * Hash function for objects using SHA-256
    */
   private hashObject(obj: any): string {
-    const str = JSON.stringify(obj, Object.keys(obj).sort());
-    let hash = 0;
-
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-
-    return hash.toString(16);
+    const str = JSON.stringify(obj, (key, value) => {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        return Object.keys(value)
+          .sort()
+          .reduce(
+            (acc, k) => {
+              acc[k] = value[k];
+              return acc;
+            },
+            {} as Record<string, any>
+          );
+      }
+      return value;
+    });
+    return createHash('sha256').update(str).digest('hex');
   }
 }
 
@@ -192,6 +199,17 @@ export function getFilterCache<T>(): FilterCache<T> {
 export function clearFilterCache(pattern?: string): void {
   if (globalCache) {
     globalCache.invalidate(pattern);
+  }
+}
+
+/**
+ * Destroy global filter cache (clears interval timer and cache).
+ * Should be called on app shutdown or in test teardown.
+ */
+export function destroyFilterCache(): void {
+  if (globalCache) {
+    globalCache.destroy();
+    globalCache = null;
   }
 }
 

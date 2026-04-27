@@ -79,15 +79,36 @@ function buildWhereClause(expression: FilterExpression): any {
 }
 
 /**
+ * JSON path prefix — field paths starting with "$." are treated as JSON column
+ * queries. The first segment after "$" is the JSON column name and the
+ * remaining segments form the Prisma JSON `path` array.
+ *
+ * Example: "$.profile.l1Data.budget" → { profile: { path: ['l1Data', 'budget'], ... } }
+ */
+const JSON_PATH_PREFIX = '$.';
+
+/**
  * Build a single condition
  *
  * Multi-segment field paths (e.g. "agent.user.name") are treated as Prisma
  * relation nesting and produce `{ agent: { user: { name: { equals: value } } } }`.
- * For JSON column queries, use {@link buildJsonFieldFilter} instead — it emits
- * the correct Prisma JSON `path` syntax.
+ *
+ * For JSON column queries, prefix the field with "$." — e.g. "$.profile.l1Data.budget"
+ * emits `{ profile: { path: ['l1Data', 'budget'], equals: value } }`.
  */
 function buildCondition(condition: FilterCondition): any {
   const { field, operator, value } = condition;
+
+  // Detect JSON path queries: "$.column.path.to.key"
+  if (field.startsWith(JSON_PATH_PREFIX)) {
+    const segments = field.slice(JSON_PATH_PREFIX.length).split('.');
+    if (segments.length >= 2) {
+      const jsonField = segments[0];
+      const path = segments.slice(1);
+      return buildJsonFieldFilter(jsonField, path, operator, value);
+    }
+  }
+
   const parts = field.split('.');
   const operatorClause = buildOperatorClause(operator, value);
 
@@ -326,6 +347,9 @@ export function createQueryBuilder(): QueryBuilder {
  *
  * Generates the Prisma JSON path syntax for querying nested fields in JSON
  * columns, e.g. `{ profile: { path: ['l2Data', 'budget'], equals: value } }`.
+ *
+ * This is invoked automatically by `buildCondition` when the field path starts
+ * with "$." — e.g. `$.profile.l2Data.budget`.
  */
 export function buildJsonFieldFilter(
   jsonField: string,
@@ -348,8 +372,18 @@ export function buildJsonFieldFilter(
  */
 const MAX_NESTING_DEPTH = 10;
 const VALID_OPERATORS = new Set<string>([
-  'eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'nin',
-  'contains', 'startsWith', 'endsWith', 'exists',
+  'eq',
+  'ne',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'in',
+  'nin',
+  'contains',
+  'startsWith',
+  'endsWith',
+  'exists',
 ]);
 
 export function validateFilterDSL(dsl: FilterDSL): { valid: boolean; errors: string[] } {

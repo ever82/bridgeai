@@ -33,18 +33,13 @@ function generateConditionId(): string {
 }
 
 interface ConditionRowProps {
-  condition: FilterCondition & { _id?: string };
-  onChange: (condition: FilterCondition & { _id?: string }) => void;
+  condition: FilterCondition & { _id?: string; _fromNot?: boolean };
+  onChange: (condition: FilterCondition & { _id?: string; _fromNot?: boolean }) => void;
   onRemove: () => void;
   fields: FilterPanelProps['fields'];
 }
 
-const ConditionRow: React.FC<ConditionRowProps> = ({
-  condition,
-  onChange,
-  onRemove,
-  fields,
-}) => {
+const ConditionRow: React.FC<ConditionRowProps> = ({ condition, onChange, onRemove, fields }) => {
   const [showOperatorPicker, setShowOperatorPicker] = useState(false);
   const field = fields.find(f => f.name === condition.field);
 
@@ -92,7 +87,9 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
                     onChange({ ...condition, value: newValues });
                   }}
                 >
-                  <Text style={[styles.multiSelectText, selected && styles.multiSelectTextSelected]}>
+                  <Text
+                    style={[styles.multiSelectText, selected && styles.multiSelectTextSelected]}
+                  >
                     {opt.label}
                   </Text>
                 </TouchableOpacity>
@@ -105,8 +102,11 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
         <TextInput
           style={styles.valueInput}
           value={Array.isArray(condition.value) ? condition.value.join(', ') : ''}
-          onChangeText={(text) => {
-            const values = text.split(',').map(v => v.trim()).filter(Boolean);
+          onChangeText={text => {
+            const values = text
+              .split(',')
+              .map(v => v.trim())
+              .filter(Boolean);
             onChange({ ...condition, value: values });
           }}
           placeholder="输入值，用逗号分隔"
@@ -122,7 +122,9 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
             style={[styles.booleanOption, condition.value === true && styles.booleanSelected]}
             onPress={() => onChange({ ...condition, value: true })}
           >
-            <Text style={[styles.booleanText, condition.value === true && styles.booleanTextSelected]}>
+            <Text
+              style={[styles.booleanText, condition.value === true && styles.booleanTextSelected]}
+            >
               是
             </Text>
           </TouchableOpacity>
@@ -130,7 +132,9 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
             style={[styles.booleanOption, condition.value === false && styles.booleanSelected]}
             onPress={() => onChange({ ...condition, value: false })}
           >
-            <Text style={[styles.booleanText, condition.value === false && styles.booleanTextSelected]}>
+            <Text
+              style={[styles.booleanText, condition.value === false && styles.booleanTextSelected]}
+            >
               否
             </Text>
           </TouchableOpacity>
@@ -145,16 +149,12 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
           {field.enumValues.map(opt => (
             <TouchableOpacity
               key={opt.value}
-              style={[
-                styles.enumOption,
-                condition.value === opt.value && styles.enumSelected,
-              ]}
+              style={[styles.enumOption, condition.value === opt.value && styles.enumSelected]}
               onPress={() => onChange({ ...condition, value: opt.value })}
             >
-              <Text style={[
-                styles.enumText,
-                condition.value === opt.value && styles.enumTextSelected,
-              ]}>
+              <Text
+                style={[styles.enumText, condition.value === opt.value && styles.enumTextSelected]}
+              >
                 {opt.label}
               </Text>
             </TouchableOpacity>
@@ -168,8 +168,8 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
       <TextInput
         style={styles.valueInput}
         value={condition.value?.toString() || ''}
-        onChangeText={(text) => {
-          const parsedValue = field.type === 'number' ? (parseFloat(text) || 0) : text;
+        onChangeText={text => {
+          const parsedValue = field.type === 'number' ? parseFloat(text) || 0 : text;
           onChange({ ...condition, value: parsedValue });
         }}
         placeholder="输入值"
@@ -180,6 +180,13 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
 
   return (
     <View style={styles.conditionRow}>
+      {/* NOT indicator badge */}
+      {condition._fromNot && (
+        <View style={styles.notBadge}>
+          <Text style={styles.notBadgeText}>NOT (取反)</Text>
+        </View>
+      )}
+
       {/* Field selector */}
       <View style={styles.fieldSection}>
         <Text style={styles.sectionLabel}>字段</Text>
@@ -190,7 +197,12 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
               style={[styles.fieldChip, condition.field === f.name && styles.fieldChipSelected]}
               onPress={() => onChange({ ...condition, field: f.name })}
             >
-              <Text style={[styles.fieldChipText, condition.field === f.name && styles.fieldChipTextSelected]}>
+              <Text
+                style={[
+                  styles.fieldChipText,
+                  condition.field === f.name && styles.fieldChipTextSelected,
+                ]}
+              >
                 {f.label}
               </Text>
             </TouchableOpacity>
@@ -201,10 +213,7 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
       {/* Operator selector */}
       <View style={styles.operatorSection}>
         <Text style={styles.sectionLabel}>操作符</Text>
-        <TouchableOpacity
-          style={styles.operatorButton}
-          onPress={() => setShowOperatorPicker(true)}
-        >
+        <TouchableOpacity style={styles.operatorButton} onPress={() => setShowOperatorPicker(true)}>
           <Text style={styles.operatorText}>
             {OPERATOR_METADATA[condition.operator]?.label || condition.operator}
           </Text>
@@ -230,12 +239,8 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
                   setShowOperatorPicker(false);
                 }}
               >
-                <Text style={styles.operatorOptionText}>
-                  {OPERATOR_METADATA[op]?.label || op}
-                </Text>
-                <Text style={styles.operatorDescription}>
-                  {OPERATOR_METADATA[op]?.description}
-                </Text>
+                <Text style={styles.operatorOptionText}>{OPERATOR_METADATA[op]?.label || op}</Text>
+                <Text style={styles.operatorDescription}>{OPERATOR_METADATA[op]?.description}</Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity
@@ -262,35 +267,38 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
   );
 };
 
-export const FilterPanel: React.FC<FilterPanelProps> = ({
-  fields,
-  value,
-  onChange,
-}) => {
+export const FilterPanel: React.FC<FilterPanelProps> = ({ fields, value, onChange }) => {
   const [logicMode, setLogicMode] = useState<'and' | 'or'>('and');
 
-  const conditions: (FilterCondition & { _id?: string })[] = (() => {
-    const extractConditions = (expr: FilterExpression): (FilterCondition & { _id?: string })[] => {
+  // Track top-level logic mode and whether any condition came from a NOT
+  const conditions: (FilterCondition & { _id?: string; _fromNot?: boolean })[] = (() => {
+    const extractConditions = (
+      expr: FilterExpression,
+      fromNot = false
+    ): (FilterCondition & { _id?: string; _fromNot?: boolean })[] => {
       // Direct condition
       if ('field' in expr) {
         const withId = expr as FilterCondition & { _id?: string };
-        return [{ ...withId, _id: withId._id || generateConditionId() }];
+        return [{ ...withId, _id: withId._id || generateConditionId(), _fromNot: fromNot }];
       }
-      // AND/OR - recursively extract all conditions
+      // AND/OR - recursively extract all conditions, preserving NOT flag
       if ('and' in expr && Array.isArray(expr.and)) {
-        return expr.and.flatMap(extractConditions);
+        return expr.and.flatMap(child => extractConditions(child, fromNot));
       }
       if ('or' in expr && Array.isArray(expr.or)) {
-        return expr.or.flatMap(extractConditions);
+        return expr.or.flatMap(child => extractConditions(child, fromNot));
       }
-      // NOT - skip, not representable as flat condition list
+      // NOT - propagate NOT flag to children
       if ('not' in expr) {
-        return extractConditions(expr.not);
+        return extractConditions(expr.not, true);
       }
       return [];
     };
     return extractConditions(value);
   })();
+
+  // Whether any condition was nested inside a NOT - requires preserving NOT on update
+  const hasNotConditions = conditions.some(c => c._fromNot);
 
   const handleAddCondition = () => {
     const newCondition: FilterCondition & { _id: string } = {
@@ -301,28 +309,28 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     };
 
     const newConditions = [...conditions, newCondition];
-    const newFilter: FilterExpression =
+    const baseFilter: FilterExpression =
       newConditions.length === 1
         ? newConditions[0]
         : logicMode === 'and'
-        ? { and: newConditions }
-        : { or: newConditions };
+          ? { and: newConditions }
+          : { or: newConditions };
 
-    onChange(newFilter);
+    onChange(hasNotConditions && newConditions.length > 0 ? { not: baseFilter } : baseFilter);
   };
 
   const handleUpdateCondition = (index: number, condition: FilterCondition) => {
     const newConditions = [...conditions];
     newConditions[index] = condition;
 
-    const newFilter: FilterExpression =
+    const baseFilter: FilterExpression =
       newConditions.length === 1
         ? newConditions[0]
         : logicMode === 'and'
-        ? { and: newConditions }
-        : { or: newConditions };
+          ? { and: newConditions }
+          : { or: newConditions };
 
-    onChange(newFilter);
+    onChange(hasNotConditions && newConditions.length > 0 ? { not: baseFilter } : baseFilter);
   };
 
   const handleRemoveCondition = (index: number) => {
@@ -331,11 +339,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     if (newConditions.length === 0) {
       onChange({ and: [] });
     } else if (newConditions.length === 1) {
-      onChange(newConditions[0]);
+      onChange(hasNotConditions ? { not: newConditions[0] } : newConditions[0]);
     } else {
-      const newFilter: FilterExpression =
+      const baseFilter: FilterExpression =
         logicMode === 'and' ? { and: newConditions } : { or: newConditions };
-      onChange(newFilter);
+      onChange(hasNotConditions ? { not: baseFilter } : baseFilter);
     }
   };
 
@@ -366,10 +374,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             style={[styles.logicButton, logicMode === 'and' && styles.logicButtonActive]}
             onPress={() => {
               setLogicMode('and');
-              onChange({ and: conditions });
+              const baseFilter: FilterExpression = { and: conditions };
+              onChange(hasNotConditions ? { not: baseFilter } : baseFilter);
             }}
           >
-            <Text style={[styles.logicButtonText, logicMode === 'and' && styles.logicButtonTextActive]}>
+            <Text
+              style={[styles.logicButtonText, logicMode === 'and' && styles.logicButtonTextActive]}
+            >
               满足全部
             </Text>
           </TouchableOpacity>
@@ -377,10 +388,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             style={[styles.logicButton, logicMode === 'or' && styles.logicButtonActive]}
             onPress={() => {
               setLogicMode('or');
-              onChange({ or: conditions });
+              const baseFilter: FilterExpression = { or: conditions };
+              onChange(hasNotConditions ? { not: baseFilter } : baseFilter);
             }}
           >
-            <Text style={[styles.logicButtonText, logicMode === 'or' && styles.logicButtonTextActive]}>
+            <Text
+              style={[styles.logicButtonText, logicMode === 'or' && styles.logicButtonTextActive]}
+            >
               满足任一
             </Text>
           </TouchableOpacity>
@@ -396,17 +410,15 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </View>
         ) : (
           conditions.map((condition, index) => (
-            <View key={condition._id || index} style={styles.conditionWrapper}>
+            <View key={condition._id} style={styles.conditionWrapper}>
               {index > 0 && (
                 <View style={styles.logicIndicator}>
-                  <Text style={styles.logicIndicatorText}>
-                    {logicMode === 'and' ? '且' : '或'}
-                  </Text>
+                  <Text style={styles.logicIndicatorText}>{logicMode === 'and' ? '且' : '或'}</Text>
                 </View>
               )}
               <ConditionRow
                 condition={condition}
-                onChange={(c) => handleUpdateCondition(index, c)}
+                onChange={c => handleUpdateCondition(index, c)}
                 onRemove={() => handleRemoveCondition(index)}
                 fields={fields}
               />
@@ -700,6 +712,19 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     color: '#666',
+  },
+  notBadge: {
+    backgroundColor: '#FFF3E0',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+  },
+  notBadgeText: {
+    fontSize: 11,
+    color: '#E65100',
+    fontWeight: '500',
   },
 });
 

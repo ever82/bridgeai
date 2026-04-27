@@ -18,11 +18,21 @@ jest.mock('../logger', () => ({
 // and also by importing the module to access internals.
 import { FilterDSL, FilterResult } from '@bridgeai/shared';
 
-import { getFilterCache, clearFilterCache, withFilterCache } from '../filterCache';
+import {
+  getFilterCache,
+  clearFilterCache,
+  destroyFilterCache,
+  withFilterCache,
+} from '../filterCache';
 
 // Reset the global cache between tests
 beforeEach(() => {
   clearFilterCache();
+});
+
+// Destroy global cache after all tests to clean up setInterval timer
+afterAll(() => {
+  destroyFilterCache();
 });
 
 // ============================================
@@ -102,6 +112,13 @@ describe('FilterCache set/get', () => {
 // ============================================
 
 describe('TTL expiration', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('returns null after TTL expires', () => {
     const cache = getFilterCache<any>();
     const key = 'ttl-key';

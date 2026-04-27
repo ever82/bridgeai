@@ -1064,6 +1064,7 @@ model SavedFilter {
   filter      Json     // FilterDSL JSON
   isPublic    Boolean  @default(false) @map("is_public")  // 是否公开
   usageCount  Int      @default(0) @map("usage_count")     // 使用次数
+  shareToken   String?                                  // 分享令牌
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
