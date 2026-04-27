@@ -46,6 +46,8 @@ export {
   SenderType,
   HandoffSocketEvents,
   HandoffRequest,
+  SENDER_TYPE_COLORS,
+  SENDER_TYPE_LABELS,
 } from './types/handoff';
 // Explicitly re-export dating types (use export not export type for enums)
 export {

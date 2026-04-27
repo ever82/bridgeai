@@ -4,14 +4,14 @@
  */
 
 import { ChatRoom, ChatMessage, RoomParticipant } from '../types/chat';
+import { useAuthStore } from '../stores/authStore';
 
 // API 基础配置
 const API_BASE_URL = process.env.API_URL || 'http://localhost:3001';
 
 // 请求工具函数
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
-  // TODO: 从存储中获取 token
-  const token = '';
+  const token = useAuthStore.getState().tokens?.accessToken || '';
 
   const headers = {
     'Content-Type': 'application/json',
@@ -37,15 +37,17 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
 /**
  * 获取用户房间列表
  */
-export async function getUserRooms(options: {
-  type?: string;
-  status?: string;
-  search?: string;
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-} = {}): Promise<{ rooms: ChatRoom[]; total: number; totalPages: number }> {
+export async function getUserRooms(
+  options: {
+    type?: string;
+    status?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  } = {}
+): Promise<{ rooms: ChatRoom[]; total: number; totalPages: number }> {
   const params = new URLSearchParams();
   Object.entries(options).forEach(([key, value]) => {
     if (value !== undefined) {
@@ -245,7 +247,9 @@ export async function getRoomMessages(
     }
   });
 
-  const response = await fetchWithAuth(`/api/v1/chat/rooms/${roomId}/messages?${params.toString()}`);
+  const response = await fetchWithAuth(
+    `/api/v1/chat/rooms/${roomId}/messages?${params.toString()}`
+  );
   const data = await response.json();
 
   return {

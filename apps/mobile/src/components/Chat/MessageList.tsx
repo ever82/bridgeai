@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SenderType } from '@bridgeai/shared';
 
-import { ChatMessage } from '../../types/chat';
+import { ChatMessage, MessageAttachment } from '../../types/chat';
 import { theme } from '../../theme';
 
 import { MessageBubble } from './MessageBubble';
@@ -23,6 +23,7 @@ export interface MessageListProps {
   onLoadMore?: () => void;
   onMessagePress?: (message: ChatMessage) => void;
   onMessageLongPress?: (message: ChatMessage) => void;
+  onImagePress?: (attachment: MessageAttachment) => void;
   ListHeaderComponent?: React.ReactElement;
   ListFooterComponent?: React.ReactElement;
   style?: ViewStyle;
@@ -37,6 +38,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   onLoadMore,
   onMessagePress,
   onMessageLongPress,
+  onImagePress,
   ListHeaderComponent,
   ListFooterComponent,
   style,
@@ -93,6 +95,7 @@ export const MessageList: React.FC<MessageListProps> = ({
           isConsecutive={isConsecutive}
           onPress={onMessagePress}
           onLongPress={onMessageLongPress}
+          onImagePress={onImagePress}
         />
       </View>
     );

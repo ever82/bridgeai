@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import * as ImagePicker from 'expo-image-picker';
 
 import { MessagesStackParamList } from '../../types/navigation';
 import { ChatMessage, createSenderSnapshot } from '../../types/chat';
@@ -126,6 +127,34 @@ export const ChatScreen = ({ route }: Props) => {
     [handleSend]
   );
 
+  // Handle attachment selection
+  const handleAttachmentPress = useCallback(async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets?.[0]) return;
+
+    const asset = result.assets[0];
+    const attachment = {
+      type: 'image' as const,
+      url: asset.uri,
+      name: asset.fileName || 'image.jpg',
+      size: asset.fileSize,
+    };
+
+    try {
+      await sendMessage(conversationId, {
+        content: '',
+        type: 'IMAGE',
+        attachments: [attachment],
+      });
+    } catch {
+      Alert.alert('发送失败', '图片发送失败，请重试');
+    }
+  }, [conversationId]);
+
   // Load more messages (pagination)
   const handleLoadMore = useCallback(async () => {
     if (isLoading || !hasMore || messages.length === 0) return;
@@ -169,7 +198,7 @@ export const ChatScreen = ({ route }: Props) => {
         <QuickReply replies={quickReplies} onSelect={handleQuickReply} />
       </View>
 
-      <ChatInput onSend={handleSend} />
+      <ChatInput onSend={handleSend} onAttachmentPress={handleAttachmentPress} />
     </KeyboardAvoidingView>
   );
 };
