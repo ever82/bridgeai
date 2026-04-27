@@ -152,6 +152,175 @@ export const isNotFilter = (expr: any): boolean => 'not' in expr && !Array.isArr
 export const isFilterCondition = (expr: any): boolean =>
   'field' in expr && 'operator' in expr && 'value' in expr;
 
+// SceneId enum
+export enum SceneId {
+  visionshare = 'visionshare',
+  agentdate = 'agentdate',
+  agentjob = 'agentjob',
+  agentad = 'agentad',
+}
+
+// Attribute filter types
+export interface RangeFilter {
+  min?: number;
+  max?: number;
+}
+
+export interface EnumFilter<T = string> {
+  include?: T[];
+  exclude?: T[];
+}
+
+export interface TagsOverlapFilter {
+  tags: string[];
+  minOverlap?: number;
+}
+
+export interface VisionShareAttributeFilter {
+  contentType?: EnumFilter;
+  purpose?: EnumFilter;
+  style?: EnumFilter;
+  experienceLevel?: EnumFilter;
+  priceRange?: RangeFilter;
+  skillsOverlap?: TagsOverlapFilter;
+}
+
+export interface AgentDateAttributeFilter {
+  ageRange?: RangeFilter;
+  gender?: EnumFilter<Gender>;
+  maritalStatus?: EnumFilter;
+  hasChildren?: boolean;
+  incomeRange?: RangeFilter;
+  propertyStatus?: EnumFilter;
+  education?: EnumFilter<EducationLevel>;
+  interestsOverlap?: TagsOverlapFilter;
+  locationPreference?: EnumFilter;
+  personalityTraits?: EnumFilter;
+  lifestyle?: EnumFilter;
+}
+
+export interface AgentJobAttributeFilter {
+  jobType?: EnumFilter;
+  jobCategory?: EnumFilter;
+  targetPositions?: TagsOverlapFilter;
+  expectedSalary?: RangeFilter;
+  workLocation?: EnumFilter;
+  workExperience?: EnumFilter;
+  skillsOverlap?: TagsOverlapFilter;
+  certifications?: EnumFilter;
+  education?: EnumFilter<EducationLevel>;
+  preferredCompanySize?: EnumFilter;
+  availability?: EnumFilter;
+}
+
+export interface AgentAdAttributeFilter {
+  adType?: EnumFilter;
+  productCategory?: EnumFilter;
+  targetAudience?: EnumFilter;
+  campaignObjective?: EnumFilter;
+  budgetRange?: RangeFilter;
+  campaignDuration?: EnumFilter;
+  keyFeaturesOverlap?: TagsOverlapFilter;
+}
+
+export type SceneAttributeFilter =
+  | VisionShareAttributeFilter
+  | AgentDateAttributeFilter
+  | AgentJobAttributeFilter
+  | AgentAdAttributeFilter;
+
+export interface AttributeFilterRequest {
+  sceneId: SceneId;
+  filters: SceneAttributeFilter;
+}
+
+export interface AttributeFilterResult<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+// FilterSchema interface
+export interface FieldDefinition {
+  field: string;
+  type: string;
+  operators: string[];
+}
+
+export interface FilterSchema {
+  sceneId: string;
+  fields: FieldDefinition[];
+}
+
+// SCENE_FILTER_SCHEMAS
+export const SCENE_FILTER_SCHEMAS: Record<SceneId, FilterSchema> = {
+  [SceneId.visionshare]: {
+    sceneId: 'visionshare',
+    fields: [
+      { field: 'contentType', type: 'string', operators: ['eq', 'in'] },
+      { field: 'purpose', type: 'string', operators: ['eq', 'in'] },
+      { field: 'style', type: 'string', operators: ['eq', 'in'] },
+      { field: 'experienceLevel', type: 'string', operators: ['eq', 'in'] },
+      { field: 'priceRange', type: 'range', operators: ['gte', 'lte'] },
+      { field: 'skillsOverlap', type: 'tags', operators: ['overlap'] },
+    ],
+  },
+  [SceneId.agentdate]: {
+    sceneId: 'agentdate',
+    fields: [
+      { field: 'ageRange', type: 'range', operators: ['gte', 'lte'] },
+      { field: 'gender', type: 'string', operators: ['eq', 'in'] },
+      { field: 'maritalStatus', type: 'string', operators: ['eq', 'in'] },
+      { field: 'hasChildren', type: 'boolean', operators: ['eq'] },
+      { field: 'incomeRange', type: 'range', operators: ['gte', 'lte'] },
+      { field: 'propertyStatus', type: 'string', operators: ['eq', 'in'] },
+      { field: 'education', type: 'string', operators: ['eq', 'in'] },
+      { field: 'interestsOverlap', type: 'tags', operators: ['overlap'] },
+      { field: 'locationPreference', type: 'string', operators: ['eq', 'in'] },
+      { field: 'personalityTraits', type: 'string', operators: ['in'] },
+      { field: 'lifestyle', type: 'string', operators: ['in'] },
+    ],
+  },
+  [SceneId.agentjob]: {
+    sceneId: 'agentjob',
+    fields: [
+      { field: 'jobType', type: 'string', operators: ['eq', 'in'] },
+      { field: 'jobCategory', type: 'string', operators: ['eq', 'in'] },
+      { field: 'targetPositions', type: 'tags', operators: ['overlap'] },
+      { field: 'expectedSalary', type: 'range', operators: ['gte', 'lte'] },
+      { field: 'workLocation', type: 'string', operators: ['eq', 'in'] },
+      { field: 'workExperience', type: 'string', operators: ['eq', 'in'] },
+      { field: 'skillsOverlap', type: 'tags', operators: ['overlap'] },
+      { field: 'certifications', type: 'string', operators: ['eq', 'in'] },
+      { field: 'education', type: 'string', operators: ['eq', 'in'] },
+      { field: 'preferredCompanySize', type: 'string', operators: ['eq', 'in'] },
+      { field: 'availability', type: 'string', operators: ['eq', 'in'] },
+    ],
+  },
+  [SceneId.agentad]: {
+    sceneId: 'agentad',
+    fields: [
+      { field: 'adType', type: 'string', operators: ['eq', 'in'] },
+      { field: 'productCategory', type: 'string', operators: ['eq', 'in'] },
+      { field: 'targetAudience', type: 'string', operators: ['eq', 'in'] },
+      { field: 'campaignObjective', type: 'string', operators: ['eq', 'in'] },
+      { field: 'budgetRange', type: 'range', operators: ['gte', 'lte'] },
+      { field: 'campaignDuration', type: 'string', operators: ['eq', 'in'] },
+      { field: 'keyFeaturesOverlap', type: 'tags', operators: ['overlap'] },
+    ],
+  },
+};
+
+// getFilterSchemaForScene function
+export function getFilterSchemaForScene(sceneId: SceneId): FilterSchema {
+  return SCENE_FILTER_SCHEMAS[sceneId];
+}
+
+// getFilterableFieldsForScene function
+export function getFilterableFieldsForScene(sceneId: SceneId): FieldDefinition[] {
+  return SCENE_FILTER_SCHEMAS[sceneId]?.fields ?? [];
+}
+
 // Credit level type (string literal union)
 export type CreditLevel = 'excellent' | 'good' | 'general' | 'poor';
 

@@ -7,17 +7,8 @@
  */
 
 import {
-  FilterDSL,
-  FilterExpression,
-  FilterCondition,
-  AndFilter,
-  isFilterCondition,
-  isAndFilter,
-  isOrFilter,
-  isNotFilter,
   SceneId,
   getFilterSchemaForScene,
-  getFilterableFieldsForScene,
   RangeFilter,
   EnumFilter,
   TagsOverlapFilter,
@@ -30,6 +21,7 @@ import {
 
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
+import { buildJsonFieldFilter } from '../utils/queryBuilder';
 
 // ============================================
 // Validation
@@ -55,7 +47,10 @@ export function validateAttributeFilter(
     if (value === undefined || value === null) continue;
 
     if (!filterableFields.has(key)) {
-      errors.push({ field: key, message: `Field "${key}" is not filterable for scene "${sceneId}"` });
+      errors.push({
+        field: key,
+        message: `Field "${key}" is not filterable for scene "${sceneId}"`,
+      });
       continue;
     }
 
@@ -90,8 +85,14 @@ export function validateAttributeFilter(
         if (!Array.isArray(tagsFilter.tags) || tagsFilter.tags.length === 0) {
           errors.push({ field: key, message: `tags must be a non-empty array for field "${key}"` });
         }
-        if (tagsFilter.minOverlap !== undefined && (tagsFilter.minOverlap < 0 || tagsFilter.minOverlap > 1)) {
-          errors.push({ field: key, message: `minOverlap must be between 0 and 1 for field "${key}"` });
+        if (
+          tagsFilter.minOverlap !== undefined &&
+          (tagsFilter.minOverlap < 0 || tagsFilter.minOverlap > 1)
+        ) {
+          errors.push({
+            field: key,
+            message: `minOverlap must be between 0 and 1 for field "${key}"`,
+          });
         }
       }
     }
@@ -105,68 +106,57 @@ export function validateAttributeFilter(
 // ============================================
 
 /**
- * Build a Prisma where clause from an enum filter
+ * Build JSON field condition using buildJsonFieldFilter for Prisma JSON column queries
+ * Converts $.profile.l1Data.field to { profile: { path: ['l1Data', 'field'], equals: value } }
  */
-function buildEnumCondition(path: string, filter: EnumFilter): any {
-  const conditions: any[] = [];
+function buildJsonFieldCondition(jsonPath: string, filter: any): any {
+  // Parse $.profile.l1Data.field path
+  if (!jsonPath.startsWith('$.')) return {};
 
-  if (filter.include && filter.include.length > 0) {
-    conditions.push({
-      [path]: { in: filter.include },
-    });
+  const segments = jsonPath.slice(2).split('.');
+  if (segments.length < 3) return {};
+
+  const jsonField = segments[0];
+  const path = segments.slice(1); // ['l1Data', 'field']
+
+  if (typeof filter === 'object' && 'min' in filter) {
+    const conditions: any[] = [];
+    if (filter.min !== undefined) {
+      conditions.push(buildJsonFieldFilter(jsonField, path, 'gte', filter.min));
+    }
+    if (filter.max !== undefined) {
+      conditions.push(buildJsonFieldFilter(jsonField, path, 'lte', filter.max));
+    }
+    if (conditions.length === 1) return conditions[0];
+    if (conditions.length > 1) return { AND: conditions };
+    return {};
   }
 
-  if (filter.exclude && filter.exclude.length > 0) {
-    conditions.push({
-      [path]: { notIn: filter.exclude },
-    });
+  if (typeof filter === 'object' && 'include' in filter) {
+    if (filter.include && filter.include.length > 0) {
+      return buildJsonFieldFilter(jsonField, path, 'in', filter.include);
+    }
+    if (filter.exclude && filter.exclude.length > 0) {
+      return buildJsonFieldFilter(jsonField, path, 'nin', filter.exclude);
+    }
+    return {};
   }
 
-  if (conditions.length === 0) return {};
-  if (conditions.length === 1) return conditions[0];
-  return { AND: conditions };
-}
-
-/**
- * Build a Prisma where clause from a range filter
- */
-function buildRangeCondition(path: string, filter: RangeFilter): any {
-  const conditions: any = {};
-
-  if (filter.min !== undefined) {
-    conditions.gte = filter.min;
-  }
-  if (filter.max !== undefined) {
-    conditions.lte = filter.max;
+  if (typeof filter === 'object' && 'tags' in filter) {
+    return buildJsonFieldFilter(jsonField, path, 'contains', filter.tags);
   }
 
-  if (Object.keys(conditions).length === 0) return {};
-  return { [path]: conditions };
-}
+  if (typeof filter === 'boolean') {
+    return buildJsonFieldFilter(jsonField, path, 'eq', filter);
+  }
 
-/**
- * Build a Prisma where clause from a tags overlap filter
- * Uses hasSome for matching at least one tag
- */
-function buildTagsCondition(path: string, filter: TagsOverlapFilter): any {
-  if (!filter.tags || filter.tags.length === 0) return {};
-  return { [path]: { hasSome: filter.tags } };
-}
-
-/**
- * Build a boolean condition
- */
-function buildBooleanCondition(path: string, value: boolean): any {
-  return { [path]: { equals: value } };
+  return buildJsonFieldFilter(jsonField, path, 'eq', filter);
 }
 
 /**
  * Convert a scene-specific attribute filter into Prisma where conditions
  */
-function buildAttributeWhereClause(
-  sceneId: SceneId,
-  filters: SceneAttributeFilter
-): any[] {
+function buildAttributeWhereClause(sceneId: SceneId, filters: SceneAttributeFilter): any[] {
   const schema = getFilterSchemaForScene(sceneId);
   const conditions: any[] = [];
 
@@ -176,30 +166,31 @@ function buildAttributeWhereClause(
     const fieldDef = schema.fields.find(f => f.name === key);
     if (!fieldDef) continue;
 
-    // Build the JSON path for Prisma: profile -> l1Data -> field
-    const jsonPath = `profile.l1Data.${key}`;
+    // Build JSON path with $. prefix for Prisma JSON column queries
+    const jsonPath = `$.profile.l1Data.${key}`;
 
     switch (fieldDef.type) {
       case 'enum': {
-        const condition = buildEnumCondition(jsonPath, value as EnumFilter);
+        const condition = buildJsonFieldCondition(jsonPath, value as EnumFilter);
         if (Object.keys(condition).length > 0) conditions.push(condition);
         break;
       }
       case 'object': {
-        const condition = buildRangeCondition(jsonPath, value as RangeFilter);
+        const condition = buildJsonFieldCondition(jsonPath, value as RangeFilter);
         if (Object.keys(condition).length > 0) conditions.push(condition);
         break;
       }
       case 'array': {
         const tagsFilter = value as TagsOverlapFilter;
         if (tagsFilter && typeof tagsFilter === 'object' && 'tags' in tagsFilter) {
-          const condition = buildTagsCondition(jsonPath, tagsFilter);
+          const condition = buildJsonFieldCondition(jsonPath, tagsFilter);
           if (Object.keys(condition).length > 0) conditions.push(condition);
         }
         break;
       }
       case 'boolean': {
-        conditions.push(buildBooleanCondition(jsonPath, value as boolean));
+        const condition = buildJsonFieldCondition(jsonPath, value as boolean);
+        if (Object.keys(condition).length > 0) conditions.push(condition);
         break;
       }
     }
@@ -253,7 +244,9 @@ export async function filterAgentsByAttributes(
   // Validate
   const validation = validateAttributeFilter(sceneId, filters);
   if (!validation.valid) {
-    throw new Error(`Invalid attribute filters: ${validation.errors.map(e => e.message).join('; ')}`);
+    throw new Error(
+      `Invalid attribute filters: ${validation.errors.map(e => e.message).join('; ')}`
+    );
   }
 
   // Build conditions
@@ -262,9 +255,7 @@ export async function filterAgentsByAttributes(
   // Combine with mode
   let where: any = {};
   if (attributeConditions.length > 0) {
-    where = combinationMode === 'or'
-      ? { OR: attributeConditions }
-      : { AND: attributeConditions };
+    where = combinationMode === 'or' ? { OR: attributeConditions } : { AND: attributeConditions };
   }
 
   // Merge with additional conditions
@@ -478,9 +469,9 @@ export function agentAdFilterBuilder() {
  */
 export function calculateTagOverlap(tags1: string[], tags2: string[]): number {
   if (!tags1.length || !tags2.length) return 0;
-  const set1 = new Set(tags1);
-  const matchCount = tags2.filter(t => set1.has(t)).length;
-  return matchCount / tags1.length;
+  const uniqueTags = [...new Set(tags1)];
+  const matchCount = uniqueTags.filter(t => tags2.includes(t)).length;
+  return matchCount / uniqueTags.length;
 }
 
 /**
@@ -490,7 +481,7 @@ export function calculateTagOverlap(tags1: string[], tags2: string[]): number {
 export function matchesAttributeFilter(
   agentProfile: any,
   filters: SceneAttributeFilter,
-  sceneId: SceneId
+  _sceneId: SceneId
 ): boolean {
   const l1Data = agentProfile?.l1Data || {};
 
@@ -512,7 +503,19 @@ export function matchesAttributeFilter(
     // Handle RangeFilter
     if (value && typeof value === 'object' && ('min' in value || 'max' in value)) {
       const range = value as RangeFilter;
-      const numVal = typeof profileValue === 'number' ? profileValue : parseFloat(profileValue);
+      // Handle profileValue as an object with min/max (e.g., { min: 100, max: 500 })
+      if (profileValue && typeof profileValue === 'object' && 'min' in profileValue) {
+        const profileMin = (profileValue as any).min;
+        const profileMax = (profileValue as any).max;
+        if (typeof profileMin === 'number' && range.max !== undefined && profileMin > range.max)
+          return false;
+        if (typeof profileMax === 'number' && range.min !== undefined && profileMax < range.min)
+          return false;
+        continue;
+      }
+      // Handle profileValue as a single number
+      const numVal =
+        typeof profileValue === 'number' ? profileValue : parseFloat(profileValue as string);
       if (isNaN(numVal)) continue;
       if (range.min !== undefined && numVal < range.min) return false;
       if (range.max !== undefined && numVal > range.max) return false;

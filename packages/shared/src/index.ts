@@ -128,6 +128,23 @@ export {
   VERIFICATION_STATUS_LABELS,
   VERIFICATION_STATUS_COLORS,
 } from './types/employer';
+// Explicitly re-export attributeFilter types and functions
+export {
+  RangeFilter,
+  EnumFilter,
+  TagsOverlapFilter,
+  VisionShareAttributeFilter,
+  AgentDateAttributeFilter,
+  AgentJobAttributeFilter,
+  AgentAdAttributeFilter,
+  SceneAttributeFilter,
+  AttributeFilterRequest,
+  AttributeFilterResult,
+  SCENE_FILTER_SCHEMAS,
+  getFilterSchemaForScene,
+  getFilterableFieldsForScene,
+} from './types/attributeFilter';
+
 // Re-export geo fencing service functions
 export {
   createGeoFence,
