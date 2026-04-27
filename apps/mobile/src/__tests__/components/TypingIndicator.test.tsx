@@ -3,7 +3,16 @@
  */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity, Text, Animated } from 'react-native';
+
+// Mock Animated to prevent infinite recursion in animate() loop
+jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+const mockTiming = jest.fn().mockReturnValue({ start: jest.fn() });
+const mockSequence = jest.fn().mockReturnValue({ start: jest.fn() });
+const mockParallel = jest.fn().mockReturnValue({ start: jest.fn() });
+jest.spyOn(Animated, 'timing', 'get').mockImplementation(mockTiming);
+jest.spyOn(Animated, 'sequence', 'get').mockImplementation(mockSequence);
+jest.spyOn(Animated, 'parallel', 'get').mockImplementation(mockParallel);
 
 import { TypingStatusIndicator, useTypingDetector } from '../../components/TypingIndicator';
 import { socketClient } from '../../services/socketClient';

@@ -242,33 +242,32 @@ router.get(
       verified: verified !== undefined ? verified === 'true' : undefined,
     };
 
-    // Fetch agents with DB-level pagination
+    // Fetch all agents first, then apply in-memory filtering/sorting, then paginate
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
     const skip = (pageNum - 1) * limitNum;
 
-    const agents = await prisma.agent.findMany({
+    const allAgents = await prisma.agent.findMany({
       where: { userId: req.user.id },
       include: {
         profiles: true,
       },
-      take: limitNum,
-      skip,
     });
 
     // Apply smart filtering and sorting
     const results = filterAndSort(
-      agents as any,
+      allAgents as any,
       criteria,
       sortBy as SortingStrategy,
       sortOrder as 'asc' | 'desc'
     );
 
-    const total = await prisma.agent.count({ where: { userId: req.user.id } });
+    const total = results.length;
+    const pagedResults = results.slice(skip, skip + limitNum);
 
     res.json(
       ApiResponse.success({
-        agents: results.map(r => ({
+        agents: pagedResults.map(r => ({
           ...r.agent,
           matchScore: r.score,
           matchDetails: r.matchDetails,

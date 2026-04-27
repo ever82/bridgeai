@@ -45,6 +45,7 @@ export class QuerySubscriptionManager extends EventEmitter {
   private subscriptions = new Map<string, Subscription>();
   private userSubscriptions = new Map<string, Set<string>>(); // userId -> Set<subscriptionId>
   private subscriptionTimers = new Map<string, NodeJS.Timeout>();
+  private updateProcessorTimer: NodeJS.Timeout | null = null;
   private updateQueue: IncrementalUpdate[] = [];
   private isProcessingUpdates = false;
   private static instance: QuerySubscriptionManager;
@@ -66,6 +67,16 @@ export class QuerySubscriptionManager extends EventEmitter {
       QuerySubscriptionManager.instance = new QuerySubscriptionManager();
     }
     return QuerySubscriptionManager.instance;
+  }
+
+  /**
+   * Reset the singleton instance. Mainly used in tests after destroy().
+   */
+  static resetInstance(): void {
+    if (QuerySubscriptionManager.instance) {
+      QuerySubscriptionManager.instance.destroy();
+      QuerySubscriptionManager.instance = undefined as unknown as QuerySubscriptionManager;
+    }
   }
 
   /**
@@ -327,7 +338,7 @@ export class QuerySubscriptionManager extends EventEmitter {
    * Process queued incremental updates
    */
   private startUpdateProcessor(): void {
-    setInterval(async () => {
+    this.updateProcessorTimer = setInterval(async () => {
       if (this.isProcessingUpdates || this.updateQueue.length === 0) {
         return;
       }
@@ -374,6 +385,27 @@ export class QuerySubscriptionManager extends EventEmitter {
         this.isProcessingUpdates = false;
       }
     }, this.UPDATE_INTERVAL);
+  }
+
+  /**
+   * Shut down the subscription manager: clear update processor timer, all
+   * heartbeat timers, and drop all subscriptions. Safe to call multiple times.
+   */
+  destroy(): void {
+    if (this.updateProcessorTimer) {
+      clearInterval(this.updateProcessorTimer);
+      this.updateProcessorTimer = null;
+    }
+
+    for (const timer of this.subscriptionTimers.values()) {
+      clearInterval(timer);
+    }
+    this.subscriptionTimers.clear();
+
+    this.subscriptions.clear();
+    this.userSubscriptions.clear();
+    this.updateQueue = [];
+    this.removeAllListeners();
   }
 
   /**

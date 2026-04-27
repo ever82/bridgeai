@@ -5,7 +5,7 @@
  * Supports complex filtering with operators and logical combinations
  * 支持复杂过滤，包括操作符和逻辑组合
  */
-export type FilterOperator = 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'nin' | 'contains' | 'startsWith' | 'endsWith' | 'exists' | 'regex';
+export type FilterOperator = 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'nin' | 'contains' | 'startsWith' | 'endsWith' | 'exists';
 export type FilterValue = string | number | boolean | Date | string[] | number[] | null;
 export interface FilterCondition {
     field: string;
@@ -51,7 +51,6 @@ export interface FilterBuilder {
     startsWith(field: string, value: string): FilterCondition;
     endsWith(field: string, value: string): FilterCondition;
     exists(field: string, value: boolean): FilterCondition;
-    regex(field: string, pattern: string): FilterCondition;
     and(...expressions: FilterExpression[]): AndFilter;
     or(...expressions: FilterExpression[]): OrFilter;
     not(expression: FilterExpression): NotFilter;

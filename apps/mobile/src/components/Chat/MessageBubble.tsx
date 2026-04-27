@@ -2,10 +2,11 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { SenderType, SENDER_TYPE_COLORS } from '@bridgeai/shared';
 
-import { ChatMessage, MessageAttachment } from '../../types/chat';
+import { UserAvatar } from '../UserAvatar/UserAvatar';
+import { IdentityBadge } from '../IdentityBadge/IdentityBadge';
+import { ChatMessage, MessageAttachment, resolveMessageSender } from '../../types/chat';
 import { theme } from '../../theme';
 
-import { SenderIndicator } from './SenderIndicator';
 import { MessageStatus, MessageStatusType } from './MessageStatus';
 
 export interface MessageBubbleProps {
@@ -25,11 +26,6 @@ export interface MessageBubbleProps {
 const isOwnMessage = (message: ChatMessage, currentUserId: string): boolean =>
   message.senderId === currentUserId;
 
-const getSenderType = (message: ChatMessage, _currentUserId: string): SenderType => {
-  if (message.senderType === 'AGENT') return SenderType.AGENT;
-  return SenderType.HUMAN;
-};
-
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   currentUserId,
@@ -44,7 +40,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   testID,
 }) => {
   const own = isOwnMessage(message, currentUserId);
-  const senderType = getSenderType(message, currentUserId);
+  const resolved = resolveMessageSender(message);
+  const senderType = resolved.senderType === 'AGENT' ? SenderType.AGENT : SenderType.HUMAN;
   const senderColor = SENDER_TYPE_COLORS[senderType] || theme.colors.textSecondary;
 
   const renderContent = () => {
@@ -123,6 +120,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const senderDisplayName = resolved.displayName;
+  const senderAvatarUrl = resolved.avatarUrl;
+  const isAgent = senderType === SenderType.AGENT;
+
   return (
     <View
       style={[
@@ -133,11 +134,28 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       ]}
       testID={testID}
     >
-      {showSenderIndicator && !own && (
-        <SenderIndicator
-          senderType={senderType}
-          senderName={message.sender?.displayName || message.sender?.name}
-        />
+      {/* Sender identity row for other's messages */}
+      {!own && showSenderIndicator && (
+        <View style={styles.senderIdentityRow}>
+          <UserAvatar
+            uri={senderAvatarUrl}
+            name={senderDisplayName}
+            size="xs"
+            userType={isAgent ? 'agent' : 'human'}
+            showStatus={false}
+            testID={`${testID}-avatar`}
+          />
+          {senderDisplayName ? (
+            <Text style={styles.senderName}>{senderDisplayName}</Text>
+          ) : null}
+          <IdentityBadge
+            type={isAgent ? 'agent' : 'verified'}
+            size="sm"
+            showLabel={isAgent}
+            position="beside-name"
+            testID={`${testID}-identity-badge`}
+          />
+        </View>
       )}
 
       <TouchableOpacity
@@ -150,6 +168,19 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         onLongPress={() => onLongPress?.(message)}
         activeOpacity={0.7}
       >
+        {/* Own-message identity badge */}
+        {own && (
+          <View style={styles.ownIdentityRow}>
+            <IdentityBadge
+              type={isAgent ? 'agent' : 'verified'}
+              size="sm"
+              showLabel={false}
+              position="beside-name"
+              testID={`${testID}-identity-badge`}
+            />
+          </View>
+        )}
+
         {renderContent()}
 
         <View style={[styles.footer, own ? styles.ownFooter : styles.otherFooter]}>
@@ -251,6 +282,23 @@ const styles = StyleSheet.create({
   time: {
     fontSize: theme.fonts.sizes.xs,
     color: theme.colors.textTertiary,
+  },
+  senderIdentityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    marginBottom: 2,
+    paddingLeft: theme.spacing.xs,
+  },
+  senderName: {
+    fontSize: theme.fonts.sizes.xs,
+    fontWeight: theme.fonts.weights.semibold,
+    color: theme.colors.textSecondary,
+  },
+  ownIdentityRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 2,
   },
 });
 

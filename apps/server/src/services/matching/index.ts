@@ -12,6 +12,13 @@ export { QueryEngine, queryEngine } from './queryEngine';
 // Export QuerySubscriptionManager
 export { QuerySubscriptionManager, querySubscriptionManager } from './querySubscriptionManager';
 
+// Export MatchQueryService (HTTP/WS-facing API)
+export {
+  MatchQueryService,
+  matchQueryService,
+  MatchQueryValidationError,
+} from './matchQueryService';
+
 // Re-export legacy service for backwards compatibility
 export { MatchingService, matchingService } from '../matchingService';
 

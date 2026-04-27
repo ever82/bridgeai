@@ -14,6 +14,7 @@ import {
 } from '@bridgeai/shared';
 
 import { theme } from '../../theme';
+import { UserAvatar } from '../UserAvatar/UserAvatar';
 
 export interface SenderIndicatorProps {
   /** Type of sender */
@@ -22,6 +23,8 @@ export interface SenderIndicatorProps {
   handoffStatus?: HandoffStatus;
   /** Sender name (optional) */
   senderName?: string;
+  /** Sender avatar URI (optional) */
+  senderAvatarUrl?: string;
   /** Whether this is a transition message */
   isTransition?: boolean;
   /** Show animation for sender change */
@@ -42,6 +45,7 @@ export const SenderIndicator: React.FC<SenderIndicatorProps> = ({
   senderType,
   handoffStatus,
   senderName,
+  senderAvatarUrl,
   isTransition = false,
   animate = true,
   style,
@@ -72,23 +76,15 @@ export const SenderIndicator: React.FC<SenderIndicatorProps> = ({
     }
   }, [senderType, animate]);
 
-  const getSenderIcon = () => {
-    switch (senderType) {
-      case SenderType.AGENT:
-        return '🤖';
-      case SenderType.HUMAN:
-        return '👤';
-      case SenderType.SYSTEM:
-        return '⚙️';
-      case SenderType.TRANSITION:
-        return '⏳';
-      default:
-        return '❓';
-    }
+  const getUserType = (): 'agent' | 'human' => {
+    return senderType === SenderType.AGENT ? 'agent' : 'human';
   };
 
   const getSenderLabel = () => {
     if (senderName) {
+      if (senderType === SenderType.AGENT) {
+        return `${senderName} 的 Agent`;
+      }
       return senderName;
     }
     return SENDER_TYPE_LABELS[senderType] || 'Unknown';
@@ -136,9 +132,15 @@ export const SenderIndicator: React.FC<SenderIndicatorProps> = ({
       testID={testID}
     >
       {/* Sender avatar/icon */}
-      <View style={[styles.avatar, { backgroundColor: getSenderColor() }]}>
-        <Text style={styles.avatarIcon}>{getSenderIcon()}</Text>
-      </View>
+      <UserAvatar
+        uri={senderAvatarUrl}
+        name={senderName || SENDER_TYPE_LABELS[senderType]}
+        size="sm"
+        userType={getUserType()}
+        showStatus={false}
+        style={styles.avatar}
+        testID={testID ? `${testID}-avatar` : undefined}
+      />
 
       {/* Sender info */}
       <View style={styles.infoContainer}>
@@ -176,6 +178,26 @@ export const SenderChangeIndicator: React.FC<SenderChangeIndicatorProps> = ({
   const slideAnim = React.useRef(new Animated.Value(-20)).current;
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
+  // Debounce rapid identity switches to avoid UI flicker.
+  // Only the final stable value is shown.
+  const [debouncedToType, setDebouncedToType] = React.useState(toType);
+  const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    // Clear any pending update from a previous rapid switch
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
+      setDebouncedToType(toType);
+    }, 150);
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [toType]);
+
   React.useEffect(() => {
     Animated.sequence([
       Animated.timing(fadeAnim, {
@@ -190,10 +212,10 @@ export const SenderChangeIndicator: React.FC<SenderChangeIndicatorProps> = ({
         useNativeDriver: true,
       }),
     ]).start();
-  }, [fromType, toType]);
+  }, [fromType, debouncedToType]);
 
   const fromColor = SENDER_TYPE_COLORS[fromType] || theme.colors.textSecondary;
-  const toColor = SENDER_TYPE_COLORS[toType] || theme.colors.textSecondary;
+  const toColor = SENDER_TYPE_COLORS[debouncedToType] || theme.colors.textSecondary;
 
   return (
     <Animated.View
@@ -223,15 +245,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xs,
   },
   avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginRight: theme.spacing.sm,
-  },
-  avatarIcon: {
-    fontSize: 16,
   },
   infoContainer: {
     flex: 1,

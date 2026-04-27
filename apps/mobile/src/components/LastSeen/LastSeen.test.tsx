@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, act } from '@testing-library/react-native';
 
 import { LastSeen, formatRelativeTime, formatExactTime } from './LastSeen';
 
@@ -7,6 +7,9 @@ describe('LastSeen', () => {
   jest.useFakeTimers();
 
   afterEach(() => {
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
     jest.clearAllTimers();
   });
 
@@ -104,7 +107,9 @@ describe('LastSeen', () => {
         />
       );
 
-      jest.advanceTimersByTime(60000);
+      act(() => {
+        jest.advanceTimersByTime(60000);
+      });
       // Component should have updated
       expect(screen.getByText('5分钟前')).toBeTruthy();
     });

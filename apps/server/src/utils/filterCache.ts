@@ -18,13 +18,25 @@ class FilterCache<T> {
   private cache: Map<string, CacheEntry<T>> = new Map();
   private readonly defaultTTL: number = 5 * 60 * 1000; // 5 minutes
   private readonly maxSize: number = 1000;
+  private cleanupHandle: ReturnType<typeof setInterval> | null = null;
 
   constructor(defaultTTL?: number, maxSize?: number) {
     if (defaultTTL) this.defaultTTL = defaultTTL;
     if (maxSize) this.maxSize = maxSize;
 
     // Start cleanup interval
-    setInterval(() => this.cleanup(), 60 * 1000); // Every minute
+    this.cleanupHandle = setInterval(() => this.cleanup(), 60 * 1000); // Every minute
+  }
+
+  /**
+   * Stop cleanup interval and clear cache
+   */
+  destroy(): void {
+    if (this.cleanupHandle !== null) {
+      clearInterval(this.cleanupHandle);
+      this.cleanupHandle = null;
+    }
+    this.cache.clear();
   }
 
   /**

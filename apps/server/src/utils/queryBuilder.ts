@@ -136,10 +136,6 @@ function buildOperatorClause(operator: FilterOperator, value: FilterValue): any 
     case 'exists':
       return value ? { not: null } : { equals: null };
 
-    case 'regex':
-      // Prisma doesn't support regex directly, use contains as fallback
-      return { contains: value, mode: 'insensitive' };
-
     default:
       return { equals: value };
   }
@@ -250,11 +246,6 @@ export class QueryBuilder {
     return this;
   }
 
-  regex(field: string, pattern: string): this {
-    this.addCondition({ field, operator: 'regex', value: pattern });
-    return this;
-  }
-
   // Logical combinations
   and(...expressions: FilterExpression[]): this {
     this.dsl.where = { and: [this.dsl.where, { and: expressions }] };
@@ -355,11 +346,19 @@ export function buildJsonFieldFilter(
 /**
  * Validate and sanitize filter DSL
  */
+const MAX_NESTING_DEPTH = 10;
+const VALID_OPERATORS = new Set<string>([
+  'eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'nin',
+  'contains', 'startsWith', 'endsWith', 'exists',
+]);
+
 export function validateFilterDSL(dsl: FilterDSL): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   if (!dsl.where) {
     errors.push('FilterDSL must have a "where" clause');
+  } else {
+    validateExpression(dsl.where, 0, errors);
   }
 
   if (dsl.pagination) {
@@ -375,6 +374,71 @@ export function validateFilterDSL(dsl: FilterDSL): { valid: boolean; errors: str
   }
 
   return { valid: errors.length === 0, errors };
+}
+
+function validateExpression(expr: FilterExpression, depth: number, errors: string[]): void {
+  if (depth > MAX_NESTING_DEPTH) {
+    errors.push(`Filter nesting depth exceeds maximum of ${MAX_NESTING_DEPTH}`);
+    return;
+  }
+
+  if (isFilterCondition(expr)) {
+    validateCondition(expr, errors);
+    return;
+  }
+
+  if (isAndFilter(expr)) {
+    if (!Array.isArray(expr.and)) {
+      errors.push('"and" must be an array');
+      return;
+    }
+    expr.and.forEach(e => validateExpression(e, depth + 1, errors));
+    return;
+  }
+
+  if (isOrFilter(expr)) {
+    if (!Array.isArray(expr.or)) {
+      errors.push('"or" must be an array');
+      return;
+    }
+    expr.or.forEach(e => validateExpression(e, depth + 1, errors));
+    return;
+  }
+
+  if (isNotFilter(expr)) {
+    validateExpression(expr.not, depth + 1, errors);
+    return;
+  }
+
+  errors.push('Invalid filter expression structure');
+}
+
+function validateCondition(condition: FilterCondition, errors: string[]): void {
+  if (!condition.field || typeof condition.field !== 'string') {
+    errors.push('Filter condition must have a "field" string');
+  }
+
+  if (!condition.operator || !VALID_OPERATORS.has(condition.operator)) {
+    errors.push(`Invalid filter operator: "${condition.operator}"`);
+  }
+
+  // Value type checks per operator
+  const { operator, value } = condition;
+  if (operator === 'in' || operator === 'nin') {
+    if (!Array.isArray(value)) {
+      errors.push(`Operator "${operator}" requires an array value`);
+    }
+  }
+  if (operator === 'exists') {
+    if (typeof value !== 'boolean') {
+      errors.push('Operator "exists" requires a boolean value');
+    }
+  }
+  if (['gt', 'gte', 'lt', 'lte'].includes(operator)) {
+    if (typeof value !== 'number' && !(value instanceof Date)) {
+      errors.push(`Operator "${operator}" requires a number or Date value`);
+    }
+  }
 }
 
 /**

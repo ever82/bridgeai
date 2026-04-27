@@ -22,8 +22,7 @@ export type FilterOperator =
   | 'contains'// Contains substring (包含子串)
   | 'startsWith' // Starts with (以...开头)
   | 'endsWith'   // Ends with (以...结尾)
-  | 'exists'     // Field exists (字段存在)
-  | 'regex';     // Regular expression (正则匹配)
+  | 'exists';    // Field exists (字段存在)
 
 // ============================================
 // Filter Value Types
@@ -124,7 +123,6 @@ export interface FilterBuilder {
   startsWith(field: string, value: string): FilterCondition;
   endsWith(field: string, value: string): FilterCondition;
   exists(field: string, value: boolean): FilterCondition;
-  regex(field: string, pattern: string): FilterCondition;
 
   // Logical combinations
   and(...expressions: FilterExpression[]): AndFilter;
@@ -262,5 +260,4 @@ export const OPERATOR_METADATA: Record<FilterOperator, { label: string; descript
   startsWith: { label: '以...开头', description: 'Starts with' },
   endsWith: { label: '以...结尾', description: 'Ends with' },
   exists: { label: '存在', description: 'Field exists' },
-  regex: { label: '正则匹配', description: 'Matches pattern' },
 };

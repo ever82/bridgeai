@@ -138,11 +138,23 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
         });
 
         // Broadcast to room (including sender)
+        // Include senderSnapshot to freeze identity at send time
+        const senderSnapshot = message.sender
+          ? {
+              id: message.sender.id,
+              name: message.sender.name ?? undefined,
+              displayName: message.sender.name ?? undefined,
+              avatarUrl: message.sender.avatarUrl ?? undefined,
+              senderType: 'USER' as const,
+            }
+          : undefined;
+
         nsp.to(roomId).emit('chat:message', {
           id: message.id,
           roomId: message.conversationId,
           senderId: message.senderId,
           sender: message.sender,
+          senderSnapshot,
           content: message.content,
           type: message.type.toLowerCase(),
           attachments: message.attachments,
@@ -275,6 +287,15 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
               roomId: msg.conversationId,
               senderId: msg.senderId,
               sender: msg.sender,
+              senderSnapshot: msg.sender
+                ? {
+                    id: msg.sender.id,
+                    name: msg.sender.name ?? undefined,
+                    displayName: msg.sender.name ?? undefined,
+                    avatarUrl: msg.sender.avatarUrl ?? undefined,
+                    senderType: 'USER' as const,
+                  }
+                : undefined,
               content: msg.content,
               type: msg.type.toLowerCase(),
               attachments: msg.attachments,
@@ -330,6 +351,15 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
               roomId: msg.conversationId,
               senderId: msg.senderId,
               sender: msg.sender,
+              senderSnapshot: msg.sender
+                ? {
+                    id: msg.sender.id,
+                    name: msg.sender.name ?? undefined,
+                    displayName: msg.sender.name ?? undefined,
+                    avatarUrl: msg.sender.avatarUrl ?? undefined,
+                    senderType: 'USER' as const,
+                  }
+                : undefined,
               content: msg.content,
               type: msg.type.toLowerCase(),
               attachments: msg.attachments,

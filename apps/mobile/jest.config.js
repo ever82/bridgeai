@@ -31,6 +31,8 @@ module.exports = {
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.test.ts',
     '<rootDir>/src/**/__tests__/**/*.test.tsx',
+    '<rootDir>/src/components/**/*.test.ts',
+    '<rootDir>/src/components/**/*.test.tsx',
   ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

@@ -3,7 +3,7 @@ import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { MessagesStackParamList } from '../../types/navigation';
-import { ChatMessage } from '../../types/chat';
+import { ChatMessage, createSenderSnapshot } from '../../types/chat';
 import { Header } from '../../components/Header';
 import { MessageList } from '../../components/Chat/MessageList';
 import { ChatInput } from '../../components/Chat/ChatInput';
@@ -67,16 +67,24 @@ export const ChatScreen = ({ route }: Props) => {
       }
     };
 
+    // Reconnection sync: after socket reconnects, re-fetch messages to
+    // pick up any missed messages and ensure sender identities are in sync.
+    const handleReconnected = () => {
+      loadMessages();
+    };
+
     socketClient.on('chat:message', handleNewMessage);
     socketClient.on('chat:typing', handleTyping);
     socketClient.on('chat:stop_typing', handleStopTyping);
+    socketClient.on('reconnected', handleReconnected);
 
     return () => {
       socketClient.off('chat:message', handleNewMessage);
       socketClient.off('chat:typing', handleTyping);
       socketClient.off('chat:stop_typing', handleStopTyping);
+      socketClient.off('reconnected', handleReconnected);
     };
-  }, [conversationId, currentUserId]);
+  }, [conversationId, currentUserId, loadMessages]);
 
   // Handle send message
   const handleSend = useCallback(
@@ -86,6 +94,12 @@ export const ChatScreen = ({ route }: Props) => {
         chatRoomId: conversationId,
         senderId: currentUserId,
         senderType: 'USER',
+        senderSnapshot: createSenderSnapshot(currentUserId, 'USER', {
+          id: currentUserId,
+          name: user?.username,
+          displayName: user?.displayName,
+          avatarUrl: user?.avatar,
+        }),
         content: text,
         type: 'TEXT',
         createdAt: new Date().toISOString(),
@@ -101,7 +115,7 @@ export const ChatScreen = ({ route }: Props) => {
         // Keep temp message showing, could add retry logic
       }
     },
-    [conversationId, currentUserId]
+    [conversationId, currentUserId, user]
   );
 
   // Handle quick reply selection

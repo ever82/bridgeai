@@ -34,6 +34,11 @@ export const lightTheme = {
     // Overlay colors
     overlay: 'rgba(0, 0, 0, 0.5)',
     overlayLight: 'rgba(0, 0, 0, 0.25)',
+
+    // Notification colors
+    notificationBg: '#FEF3C7',
+    notificationBorder: '#FDE68A',
+    notificationText: '#92400E',
   },
 
   fonts: {
@@ -172,6 +177,11 @@ export const darkTheme = {
     // Overlay colors
     overlay: 'rgba(0, 0, 0, 0.75)',
     overlayLight: 'rgba(0, 0, 0, 0.5)',
+
+    // Notification colors
+    notificationBg: '#3D2E08',
+    notificationBorder: '#5C4314',
+    notificationText: '#FCD34D',
   },
 
   fonts: lightTheme.fonts,

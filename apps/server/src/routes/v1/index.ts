@@ -20,6 +20,7 @@ import disclosureRoutes from '../disclosure';
 import userPrivacyRoutes from '../userPrivacy';
 import { strictAuthLimiter } from '../../middleware/rateLimiter';
 import pointsRoutes from '../points';
+import matchQueryRoutes from '../matchQuery';
 
 import healthRoutes from './health';
 import sceneRoutes from './scene';
@@ -50,8 +51,6 @@ router.use('/jobs', jobPostingRoutes);
 router.use('/consumer', consumerDemandRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/chat', chatRoutes);
-
-// Placeholder for future routes
-// router.use('/matches', matchRoutes);
+router.use('/matches', matchQueryRoutes);
 
 export default router;

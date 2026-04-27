@@ -6,6 +6,14 @@
 export type ChatRoomType = 'PRIVATE' | 'GROUP' | 'QUAD';
 export type ChatRoomStatus = 'ACTIVE' | 'INACTIVE' | 'CLOSED';
 export type ParticipantRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
+export type ParticipantIdentity = 'agent' | 'human';
+export type UserOnlineStatus = 'online' | 'offline' | 'away';
+
+export interface ParticipantStatusInfo {
+  identity: ParticipantIdentity;
+  onlineStatus: UserOnlineStatus;
+  isTyping?: boolean;
+}
 export type MessageType = 'TEXT' | 'IMAGE' | 'VIDEO' | 'FILE';
 
 export interface ChatRoom {
@@ -76,12 +84,27 @@ export interface ParticipantUser {
   avatarUrl?: string;
 }
 
+/**
+ * Snapshot of sender identity captured at message creation time.
+ * Prevents retroactive changes (name/avatar updates) from affecting
+ * historical message display.
+ */
+export interface SenderSnapshot {
+  id: string;
+  name?: string;
+  displayName?: string;
+  avatarUrl?: string;
+  senderType: 'USER' | 'AGENT';
+}
+
 export interface ChatMessage {
   id: string;
   chatRoomId: string;
   senderId: string;
   sender?: ParticipantUser;
   senderType: 'USER' | 'AGENT';
+  /** Identity snapshot captured when the message was created. */
+  senderSnapshot?: SenderSnapshot;
   content: string;
   type: MessageType;
   attachments?: MessageAttachment[];
@@ -104,6 +127,43 @@ export interface MessageMetadata {
   replyTo?: string;
   editedAt?: string;
   [key: string]: unknown;
+}
+
+/**
+ * Capture a sender identity snapshot from message data.
+ * Used when creating a message to freeze identity at that point in time.
+ */
+export function createSenderSnapshot(
+  senderId: string,
+  senderType: 'USER' | 'AGENT',
+  sender?: ParticipantUser
+): SenderSnapshot {
+  return {
+    id: senderId,
+    name: sender?.name,
+    displayName: sender?.displayName,
+    avatarUrl: sender?.avatarUrl,
+    senderType,
+  };
+}
+
+/**
+ * Resolve the display identity for a message.
+ * Prefers the senderSnapshot (identity at send time) over the live sender data
+ * to prevent name/avatar changes from rewriting history.
+ */
+export function resolveMessageSender(message: ChatMessage): {
+  displayName?: string;
+  avatarUrl?: string;
+  senderType: 'USER' | 'AGENT';
+} {
+  const snapshot = message.senderSnapshot;
+  const sender = message.sender;
+  return {
+    displayName: snapshot?.displayName || snapshot?.name || sender?.displayName || sender?.name,
+    avatarUrl: snapshot?.avatarUrl ?? sender?.avatarUrl,
+    senderType: snapshot?.senderType ?? message.senderType,
+  };
 }
 
 export interface ChatRoomListItemProps {

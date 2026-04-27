@@ -9,7 +9,7 @@ import { View, Text, StyleSheet, Animated, ViewStyle } from 'react-native';
 
 import { socketClient } from '../../services/socketClient';
 
-export interface TypingIndicatorProps {
+export interface TypingStatusIndicatorProps {
   roomId: string;
   currentUserId: string;
   style?: ViewStyle;
@@ -74,7 +74,7 @@ const AnimatedDot: React.FC<{ delay: number; color: string }> = ({ delay, color 
 /**
  * Typing Status Indicator - Shows when others are typing (socket-integrated)
  */
-export const TypingStatusIndicator: React.FC<TypingIndicatorProps> = ({
+export const TypingStatusIndicator: React.FC<TypingStatusIndicatorProps> = ({
   roomId,
   currentUserId,
   style,
@@ -342,7 +342,6 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TypingStatusIndicator;
-
-// Re-export pure UI TypingIndicator for convenience
-export { TypingIndicator } from './TypingIndicator';
+// Re-export pure UI TypingIndicator as the primary default export
+export { TypingIndicator, type TypingIndicatorProps, type TypingType } from './TypingIndicator';
+export { TypingIndicator as default } from './TypingIndicator';

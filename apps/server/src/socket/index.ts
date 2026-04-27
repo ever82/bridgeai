@@ -24,6 +24,7 @@ import { registerRoomHandlers } from './handlers/roomHandler';
 import { registerAgentNegotiationHandlers } from './handlers/agentNegotiation';
 import { registerPresenceHandlers } from './handlers/presenceHandler';
 import { registerDialogHandlers } from './handlers/dialogHandler';
+import { registerMatchSubscriptionHandlers } from './handlers/matchSubscriptionHandler';
 
 /**
  * Socket.io server instance
@@ -157,6 +158,14 @@ function setupNamespaces(io: SocketServer): void {
   dialogNsp.on('connection', socket => {
     handleConnection(socket, 'dialog');
     registerDialogHandlers(socket, dialogNsp);
+  });
+
+  // Match subscriptions namespace for real-time query subscriptions
+  const matchSubNsp = io.of('/matchSubscriptions');
+  matchSubNsp.use(socketAuthMiddleware);
+  matchSubNsp.on('connection', socket => {
+    handleConnection(socket, 'matchSubscriptions');
+    registerMatchSubscriptionHandlers(socket, matchSubNsp);
   });
 }
 

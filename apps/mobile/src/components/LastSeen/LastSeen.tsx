@@ -70,7 +70,8 @@ export const formatExactTime = (timestamp: Date | number | string): string => {
   const date = new Date(timestamp);
   const now = new Date();
   const isToday = date.toDateString() === now.toDateString();
-  const isYesterday = new Date(now.setDate(now.getDate() - 1)).toDateString() === date.toDateString();
+  const nowCopy = new Date(now);
+  const isYesterday = new Date(nowCopy.setDate(nowCopy.getDate() - 1)).toDateString() === date.toDateString();
 
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -87,6 +88,7 @@ export const formatExactTime = (timestamp: Date | number | string): string => {
 export const LastSeen: React.FC<LastSeenProps> = ({
   timestamp,
   isOnline = false,
+  showExactOnHover = false,
   updateInterval = 60000,
   format = 'relative',
   style,
@@ -94,6 +96,7 @@ export const LastSeen: React.FC<LastSeenProps> = ({
   testID,
 }) => {
   const [, setTick] = useState(0);
+  const [showExact, setShowExact] = useState(false);
 
   const triggerUpdate = useCallback(() => {
     setTick((t) => t + 1);
@@ -112,6 +115,11 @@ export const LastSeen: React.FC<LastSeenProps> = ({
   const getDisplayText = (): string => {
     if (isOnline) return defaultFormatOptions.online;
 
+    // When toggled via long-press, show exact time
+    if (showExact && showExactOnHover && format === 'relative') {
+      return formatExactTime(timestamp);
+    }
+
     switch (format) {
       case 'relative':
         return formatRelativeTime(timestamp);
@@ -123,6 +131,17 @@ export const LastSeen: React.FC<LastSeenProps> = ({
         return formatRelativeTime(timestamp);
     }
   };
+
+  const handleLongPress = useCallback(() => {
+    if (!showExactOnHover || isOnline) return;
+    setShowExact(true);
+  }, [showExactOnHover, isOnline]);
+
+  const handlePressOut = useCallback(() => {
+    if (showExact) {
+      setShowExact(false);
+    }
+  }, [showExact]);
 
   const getAccessibilityLabel = (): string => {
     if (isOnline) return '当前在线';
@@ -139,6 +158,9 @@ export const LastSeen: React.FC<LastSeenProps> = ({
           textStyle,
         ]}
         accessibilityLabel={getAccessibilityLabel()}
+        onLongPress={handleLongPress}
+        onPressOut={handlePressOut}
+        delayLongPress={300}
       >
         {getDisplayText()}
       </Text>

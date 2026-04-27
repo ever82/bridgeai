@@ -3,6 +3,8 @@
  * 保存筛选器服务
  */
 
+import crypto from 'crypto';
+
 import { FilterDSL, SavedFilter, SavedFilterInput } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
@@ -170,7 +172,7 @@ export async function updateSavedFilter(
     const updated = await prisma.savedFilter.update({
       where: { id },
       data: {
-        ...(input.name && { name: input.name }),
+        ...(input.name !== undefined && { name: input.name }),
         ...(input.description !== undefined && { description: input.description }),
         ...(input.category !== undefined && { category: input.category }),
         ...(input.filter && { filter: input.filter as any }),
@@ -292,11 +294,18 @@ export async function shareSavedFilter(
       return null;
     }
 
-    // Generate share token
-    const shareToken = `share-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate crypto-secure share token
+    const shareToken = crypto.randomBytes(16).toString('hex');
 
-    // In production, store this token and link it to the filter
-    // For now, just return a URL
+    // Store share token on the filter record
+    await prisma.savedFilter.update({
+      where: { id },
+      data: {
+        shareToken,
+        updatedAt: new Date(),
+      },
+    });
+
     return `/filters/shared/${shareToken}`;
   } catch (error) {
     logger.error('Failed to share saved filter', { error, id, userId });

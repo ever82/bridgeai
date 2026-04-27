@@ -460,7 +460,7 @@ router.post(
     try {
       const { sessionId } = req.params;
 
-      agentDialogService.archiveSession(sessionId);
+      await agentDialogService.archiveSession(sessionId);
 
       res.json({
         success: true,

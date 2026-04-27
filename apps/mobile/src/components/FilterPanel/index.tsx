@@ -27,9 +27,14 @@ interface FilterPanelProps {
   onChange: (filter: FilterExpression) => void;
 }
 
+let _conditionIdCounter = 0;
+function generateConditionId(): string {
+  return `cond-${++_conditionIdCounter}-${Date.now()}`;
+}
+
 interface ConditionRowProps {
-  condition: FilterCondition;
-  onChange: (condition: FilterCondition) => void;
+  condition: FilterCondition & { _id?: string };
+  onChange: (condition: FilterCondition & { _id?: string }) => void;
   onRemove: () => void;
   fields: FilterPanelProps['fields'];
 }
@@ -49,7 +54,7 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
 
     switch (field.type) {
       case 'string':
-        return ['eq', 'ne', 'contains', 'startsWith', 'endsWith', 'regex'];
+        return ['eq', 'ne', 'contains', 'startsWith', 'endsWith'];
       case 'number':
         return ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'];
       case 'date':
@@ -163,7 +168,10 @@ const ConditionRow: React.FC<ConditionRowProps> = ({
       <TextInput
         style={styles.valueInput}
         value={condition.value?.toString() || ''}
-        onChangeText={(text) => onChange({ ...condition, value: text })}
+        onChangeText={(text) => {
+          const parsedValue = field.type === 'number' ? (parseFloat(text) || 0) : text;
+          onChange({ ...condition, value: parsedValue });
+        }}
         placeholder="输入值"
         keyboardType={field.type === 'number' ? 'numeric' : 'default'}
       />
@@ -261,24 +269,35 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 }) => {
   const [logicMode, setLogicMode] = useState<'and' | 'or'>('and');
 
-  const conditions: FilterCondition[] = (() => {
-    if ('and' in value && Array.isArray(value.and)) {
-      return value.and.filter((c): c is FilterCondition => 'field' in c);
-    }
-    if ('or' in value && Array.isArray(value.or)) {
-      return value.or.filter((c): c is FilterCondition => 'field' in c);
-    }
-    if ('field' in value) {
-      return [value as FilterCondition];
-    }
-    return [];
+  const conditions: (FilterCondition & { _id?: string })[] = (() => {
+    const extractConditions = (expr: FilterExpression): (FilterCondition & { _id?: string })[] => {
+      // Direct condition
+      if ('field' in expr) {
+        const withId = expr as FilterCondition & { _id?: string };
+        return [{ ...withId, _id: withId._id || generateConditionId() }];
+      }
+      // AND/OR - recursively extract all conditions
+      if ('and' in expr && Array.isArray(expr.and)) {
+        return expr.and.flatMap(extractConditions);
+      }
+      if ('or' in expr && Array.isArray(expr.or)) {
+        return expr.or.flatMap(extractConditions);
+      }
+      // NOT - skip, not representable as flat condition list
+      if ('not' in expr) {
+        return extractConditions(expr.not);
+      }
+      return [];
+    };
+    return extractConditions(value);
   })();
 
   const handleAddCondition = () => {
-    const newCondition: FilterCondition = {
+    const newCondition: FilterCondition & { _id: string } = {
       field: fields[0]?.name || '',
       operator: 'eq',
       value: '',
+      _id: generateConditionId(),
     };
 
     const newConditions = [...conditions, newCondition];
@@ -377,7 +396,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </View>
         ) : (
           conditions.map((condition, index) => (
-            <View key={index} style={styles.conditionWrapper}>
+            <View key={condition._id || index} style={styles.conditionWrapper}>
               {index > 0 && (
                 <View style={styles.logicIndicator}>
                   <Text style={styles.logicIndicatorText}>

@@ -32,6 +32,59 @@ export interface ResourceLimits {
   maxMemoryUsage: number; // bytes
 }
 
+interface CachedResult {
+  data: unknown;
+  timestamp: number;
+  ttl: number;
+}
+
+/**
+ * Bounded cache with LRU eviction. Optionally evicts entries whose TTL is
+ * exceeded on access.
+ */
+class LruCache<V> {
+  private store = new Map<string, V>();
+  constructor(private readonly maxSize: number) {}
+
+  get(key: string): V | undefined {
+    const value = this.store.get(key);
+    if (value === undefined) return undefined;
+    // Refresh recency: delete + re-insert moves the entry to the tail.
+    this.store.delete(key);
+    this.store.set(key, value);
+    return value;
+  }
+
+  set(key: string, value: V): void {
+    if (this.store.has(key)) {
+      this.store.delete(key);
+    } else if (this.store.size >= this.maxSize) {
+      // Evict the oldest (least recently used) entry.
+      const oldestKey = this.store.keys().next().value as string | undefined;
+      if (oldestKey !== undefined) {
+        this.store.delete(oldestKey);
+      }
+    }
+    this.store.set(key, value);
+  }
+
+  delete(key: string): boolean {
+    return this.store.delete(key);
+  }
+
+  clear(): void {
+    this.store.clear();
+  }
+
+  get size(): number {
+    return this.store.size;
+  }
+
+  keys(): IterableIterator<string> {
+    return this.store.keys();
+  }
+}
+
 // Resource management
 const activeQueries = new Map<string, { startTime: number; userId?: string }>();
 const DEFAULT_LIMITS: ResourceLimits = {
@@ -40,6 +93,10 @@ const DEFAULT_LIMITS: ResourceLimits = {
   maxMemoryUsage: 512 * 1024 * 1024, // 512 MB
 };
 
+// Default cache sizes - tuned to keep memory bounded under heavy load.
+const DEFAULT_PLAN_CACHE_SIZE = 500;
+const DEFAULT_RESULT_CACHE_SIZE = 1000;
+
 let resourceLimits: ResourceLimits = { ...DEFAULT_LIMITS };
 
 /**
@@ -47,17 +104,30 @@ let resourceLimits: ResourceLimits = { ...DEFAULT_LIMITS };
  * Handles query compilation, planning, execution, and resource management
  */
 export class QueryEngine {
-  private planCache = new Map<string, ExecutionPlan>();
-  private resultCache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  private planCache: LruCache<ExecutionPlan>;
+  private resultCache: LruCache<CachedResult>;
   private static instance: QueryEngine;
 
-  private constructor() {}
+  private constructor(
+    planCacheSize: number = DEFAULT_PLAN_CACHE_SIZE,
+    resultCacheSize: number = DEFAULT_RESULT_CACHE_SIZE
+  ) {
+    this.planCache = new LruCache<ExecutionPlan>(planCacheSize);
+    this.resultCache = new LruCache<CachedResult>(resultCacheSize);
+  }
 
   static getInstance(): QueryEngine {
     if (!QueryEngine.instance) {
       QueryEngine.instance = new QueryEngine();
     }
     return QueryEngine.instance;
+  }
+
+  /**
+   * Reset the singleton instance. Used in tests.
+   */
+  static resetInstance(): void {
+    QueryEngine.instance = undefined as unknown as QueryEngine;
   }
 
   /**
@@ -129,14 +199,18 @@ export class QueryEngine {
       // Check result cache
       if (useCache) {
         const cached = this.resultCache.get(plan.id);
-        if (cached && Date.now() - cached.timestamp < cached.ttl) {
-          activeQueries.delete(plan.id);
-          return {
-            data: cached.data,
-            executionTime: Date.now() - startTime,
-            planId: plan.id,
-            cached: true,
-          };
+        if (cached) {
+          if (Date.now() - cached.timestamp < cached.ttl) {
+            activeQueries.delete(plan.id);
+            return {
+              data: cached.data as T[],
+              executionTime: Date.now() - startTime,
+              planId: plan.id,
+              cached: true,
+            };
+          }
+          // Expired - drop from cache so memory is reclaimed eagerly.
+          this.resultCache.delete(plan.id);
         }
       }
 
