@@ -1,0 +1,277 @@
+# AI Service Load Test Configuration
+# Covers LLM router, circuit breaker, fallback strategies, and adapter resilience
+# Run with: k6 run perf/ai-service-load-test.js (when implemented)
+#
+# This file defines the test scenarios, thresholds, and configuration
+# for AI service performance testing using k6 or Artillery.
+
+---
+test:
+  name: AI Service Load Test Suite
+  description: >
+    Performance benchmarks for the AI service layer including LLM routing,
+    circuit breaker state transitions, fallback strategy chains, and adapter
+    timeout/retry behavior under load. Validates routing decision latency,
+    breaker switching speed, and fallback execution time.
+  version: '1.0'
+
+target:
+  base_url: 'http://localhost:3000'
+  ai_service_prefix: '/api/ai'
+  transport: http
+  providers:
+    - openai
+    - claude
+    - wenxin
+
+scenarios:
+  # Scenario 1: LLM Router concurrent requests
+  # Validates routing decision latency and provider distribution under load
+  - name: router_concurrent_requests
+    description: Concurrent LLM routing decisions under load (routing latency <50ms target)
+    executor: ramping-vus
+    phases:
+      - name: warmup
+        duration: 30s
+        target: 20
+      - name: ramp_to_100
+        duration: 1m
+        target: 100
+      - name: sustain_100
+        duration: 2m
+        target: 100
+      - name: ramp_to_200
+        duration: 1m
+        target: 200
+      - name: sustain_200
+        duration: 2m
+        target: 200
+      - name: cooldown
+        duration: 30s
+        target: 0
+    config:
+      routing_strategies:
+        - round-robin
+        - weighted
+        - least-connections
+        - latency
+        - cost
+        - quality
+      models:
+        - gpt-4
+        - claude-sonnet-4
+        - ernie-bot-4
+      requests_per_second: 50
+      message_payload_size: 512
+    actions:
+      - send_chat_completion_request
+      - measure_routing_decision_time
+      - verify_provider_selection
+    thresholds:
+      routing_decision_latency_p50: '<20ms'
+      routing_decision_latency_p95: '<50ms'
+      routing_decision_latency_p99: '<80ms'
+      request_success_rate: '>99%'
+      error_rate: '<1%'
+      provider_distribution_variance: '<15%'
+
+  # Scenario 2: Circuit breaker under high failure rate
+  # Measures breaker state transition speed (CLOSED -> OPEN -> HALF_OPEN -> CLOSED)
+  - name: circuit_breaker_high_failure
+    description: Circuit breaker response under simulated provider failures (switch <100ms target)
+    executor: constant-vus
+    phases:
+      - name: baseline
+        duration: 1m
+        target: 50
+      - name: inject_failures
+        duration: 3m
+        target: 50
+      - name: recovery
+        duration: 2m
+        target: 50
+    config:
+      failure_injection_rate: 0.8
+      failure_threshold: 5
+      recovery_timeout_ms: 30000
+      half_open_max_calls: 3
+      success_threshold: 2
+      providers_under_test:
+        - openai
+        - claude
+        - wenxin
+    actions:
+      - send_requests_with_injected_failures
+      - monitor_breaker_state_transitions
+      - measure_transition_latency
+      - verify_half_open_probe_behavior
+    thresholds:
+      breaker_state_transition_p95: '<100ms'
+      breaker_open_detection_latency: '<50ms'
+      breaker_recovery_detection_latency: '<100ms'
+      cascading_failure_prevention_rate: '>99.9%'
+      half_open_probe_success_rate: '>95%'
+      fallback_trigger_rate: '>99%'
+
+  # Scenario 3: Fallback strategy chain execution
+  # Tests the full fallback chain: cache -> model-downgrade -> provider-switch -> simplified-output
+  - name: fallback_chain_execution
+    description: Fallback strategy chain execution under provider outages (execution <200ms target)
+    executor: ramping-vus
+    phases:
+      - name: warmup
+        duration: 30s
+        target: 30
+      - name: single_provider_down
+        duration: 2m
+        target: 100
+      - name: two_providers_down
+        duration: 2m
+        target: 100
+      - name: all_but_one_down
+        duration: 2m
+        target: 100
+      - name: cooldown
+        duration: 30s
+        target: 0
+    config:
+      fallback_chain:
+        - cache-fallback
+        - model-downgrade
+        - provider-switch
+        - simplified-output
+        - async-queue
+      cache_ttl_ms: 300000
+      async_queue_max_size: 1000
+    actions:
+      - simulate_provider_outage
+      - trigger_fallback_chain
+      - measure_strategy_execution_time
+      - verify_graceful_degradation
+    thresholds:
+      fallback_chain_execution_p50: '<100ms'
+      fallback_chain_execution_p95: '<200ms'
+      fallback_chain_execution_p99: '<300ms'
+      fallback_success_rate: '>95%'
+      cache_hit_rate_when_available: '>80%'
+      model_downgrade_latency_p95: '<50ms'
+      provider_switch_latency_p95: '<100ms'
+      user_visible_error_rate: '<5%'
+
+  # Scenario 4: Adapter timeout and retry behavior
+  # Tests timeout handling, retry logic, and connection management across adapters
+  - name: adapter_timeout_retry
+    description: Adapter timeout handling and retry behavior under latency injection
+    executor: ramping-vus
+    phases:
+      - name: baseline
+        duration: 1m
+        target: 50
+      - name: slow_responses
+        duration: 2m
+        target: 100
+      - name: timeout_injection
+        duration: 2m
+        target: 100
+      - name: intermittent_failures
+        duration: 2m
+        target: 100
+      - name: recovery
+        duration: 1m
+        target: 50
+    config:
+      adapter_timeout_ms: 60000
+      max_retries: 3
+      retry_delay_ms: 1000
+      latency_injection_ms: [500, 5000, 30000, 60000]
+      timeout_rates: [0.0, 0.1, 0.3, 0.5]
+      adapters_under_test:
+        - openai
+        - claude
+        - wenxin
+    actions:
+      - send_requests_with_latency_injection
+      - measure_timeout_detection_time
+      - verify_retry_backoff_behavior
+      - check_connection_cleanup
+    thresholds:
+      timeout_detection_latency_p95: '<65s'
+      retry_success_rate: '>90%'
+      connection_leak_rate: '<0.1%'
+      graceful_timeout_handling_rate: '>99%'
+      avg_total_retry_latency: '<15s'
+      adapter_error_message_accuracy: '>99%'
+
+global_thresholds:
+  # All scenarios must meet these overall requirements
+  ai_service_availability: '>99.5%'
+  p95_end_to_end_latency: '<5s'
+  p99_end_to_end_latency: '<10s'
+  error_rate: '<1%'
+  memory_leak_threshold: 'RSS growth <100MB over test duration'
+  no_unhandled_rejections: true
+  circuit_breaker_coverage: 'All providers monitored'
+
+service_config:
+  # AI service configuration being tested
+  llm_service:
+    default_strategy: round-robin
+    fallback_enabled: true
+    max_retries: 3
+    timeout_ms: 60000
+  circuit_breaker:
+    failure_threshold: 5
+    recovery_timeout_ms: 30000
+    half_open_max_calls: 3
+    success_threshold: 2
+  router:
+    health_check_interval_ms: 30000
+    provider_weights:
+      openai: 40
+      claude: 35
+      wenxin: 25
+  fallback_chain:
+    - cache-fallback
+    - model-downgrade
+    - provider-switch
+    - simplified-output
+    - async-queue
+
+metrics:
+  custom:
+    - name: routing_decision_latency
+      type: trend
+      description: Time for LLM router to make a provider/model routing decision
+    - name: breaker_state_transition_latency
+      type: trend
+      description: Time for circuit breaker state change (CLOSED/OPEN/HALF_OPEN)
+    - name: fallback_chain_execution_latency
+      type: trend
+      description: Time for complete fallback strategy chain to execute
+    - name: adapter_request_latency
+      type: trend
+      description: End-to-end latency for adapter request including retries
+    - name: retry_count
+      type: counter
+      description: Number of retry attempts across all requests
+    - name: provider_distribution
+      type: rate
+      description: Distribution of requests across providers per strategy
+
+output:
+  format: json
+  path: perf/results/ai-service-load-test-results.json
+  summary: true
+
+related_files:
+  - perf/api-load-test.js # k6 HTTP load test (existing)
+  - perf/websocket-load-test.yml # WebSocket load test config
+  - apps/server/src/services/ai/llmService.ts # Unified LLM service entry point
+  - apps/server/src/services/ai/llmRouter.ts # LLM router with multi-strategy support
+  - apps/server/src/services/ai/circuitBreaker.ts # Circuit breaker and manager
+  - apps/server/src/services/ai/fallback/strategies.ts # Fallback strategy implementations
+  - apps/server/src/services/ai/adapters/openai.ts # OpenAI adapter
+  - apps/server/src/services/ai/adapters/claude.ts # Claude adapter
+  - apps/server/src/services/ai/adapters/wenxin.ts # Wenxin adapter
+  - apps/server/src/services/ai/metricsService.ts # AI metrics collection
+  - apps/server/src/services/ai/types.ts # AI service type definitions

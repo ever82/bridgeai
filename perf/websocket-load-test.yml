@@ -1,0 +1,224 @@
+# WebSocket / Socket.io Load Test Configuration
+# Companion to api-load-test.js -- covers Socket.io real-time scenarios
+# Run with: k6 run perf/websocket-load-test.js (when implemented)
+#
+# This file defines the test scenarios, thresholds, and configuration
+# for WebSocket load testing using k6 with the ws module or Artillery.
+
+---
+test:
+  name: WebSocket Load Test Suite
+  description: >
+    Performance benchmarks for Socket.io real-time communication layer.
+    Validates concurrent connections, message broadcast latency, room system
+    concurrency, and presence synchronization under load.
+  version: '1.0'
+
+target:
+  base_url: 'http://localhost:3000'
+  socket_url: 'ws://localhost:3000'
+  transport: websocket
+  namespaces:
+    - /
+    - /chat
+    - /room
+    - /presence
+
+scenarios:
+  # Scenario 1: High-concurrency connection ramp
+  # Validates server stability with 1000+ simultaneous WebSocket connections
+  - name: connection_ramp
+    description: Ramp up to 1000+ concurrent WebSocket connections
+    executor: ramping-vus
+    phases:
+      - name: warmup
+        duration: 30s
+        target: 50
+      - name: ramp_to_500
+        duration: 1m
+        target: 500
+      - name: sustain_500
+        duration: 2m
+        target: 500
+      - name: ramp_to_1000
+        duration: 1m
+        target: 1000
+      - name: sustain_1000
+        duration: 3m
+        target: 1000
+      - name: peak_1500
+        duration: 30s
+        target: 1500
+      - name: cooldown
+        duration: 1m
+        target: 0
+    actions:
+      - connect_socket
+      - authenticate
+      - emit_heartbeat
+    thresholds:
+      connection_success_rate: '>99%'
+      connection_time_p95: '<500ms'
+      error_rate: '<1%'
+
+  # Scenario 2: Message broadcast latency
+  # Measures end-to-end latency for message delivery via room broadcasts
+  - name: broadcast_latency
+    description: Measure message broadcast latency under load (<100ms target)
+    executor: constant-vus
+    phases:
+      - name: steady_state
+        duration: 3m
+        target: 200
+    config:
+      rooms_per_test: 10
+      messages_per_second: 50
+      message_size_bytes: 256
+    actions:
+      - connect_socket
+      - join_room
+      - send_message
+      - measure_delivery_latency
+    thresholds:
+      broadcast_latency_p50: '<50ms'
+      broadcast_latency_p95: '<100ms'
+      broadcast_latency_p99: '<200ms'
+      message_delivery_rate: '>99.9%'
+      out_of_order_rate: '<0.1%'
+
+  # Scenario 3: Room system concurrency
+  # Tests join/leave/broadcast across many rooms simultaneously
+  - name: room_concurrency
+    description: Room join/leave/broadcast under concurrent access
+    executor: ramping-vus
+    phases:
+      - name: ramp_up
+        duration: 1m
+        target: 500
+      - name: sustain
+        duration: 3m
+        target: 500
+      - name: ramp_down
+        duration: 30s
+        target: 0
+    config:
+      total_rooms: 100
+      users_per_room: 5-50
+      broadcast_interval_ms: 100
+    actions:
+      - connect_socket
+      - create_room
+      - join_room
+      - broadcast_to_room
+      - leave_room
+    thresholds:
+      room_join_latency_p95: '<200ms'
+      room_broadcast_latency_p95: '<100ms'
+      room_operation_success_rate: '>99.5%'
+      concurrent_rooms_supported: '>100'
+
+  # Scenario 4: Presence synchronization
+  # Tests online/offline/away status propagation under load
+  - name: presence_sync
+    description: User presence status synchronization performance
+    executor: ramping-vus
+    phases:
+      - name: ramp_up
+        duration: 1m
+        target: 300
+      - name: status_churn
+        duration: 3m
+        target: 300
+      - name: ramp_down
+        duration: 30s
+        target: 0
+    config:
+      status_changes_per_second: 30
+      subscribers_per_user: 10
+    actions:
+      - connect_socket
+      - subscribe_to_presence
+      - update_presence_status
+      - verify_status_propagation
+    thresholds:
+      presence_propagation_p95: '<150ms'
+      presence_accuracy: '>99%'
+      stale_presence_rate: '<1%'
+
+  # Scenario 5: Chat namespace load
+  # Tests chat message sending and delivery at scale
+  - name: chat_load
+    description: Chat message throughput and delivery reliability
+    executor: constant-vus
+    phases:
+      - name: sustained_chat
+        duration: 3m
+        target: 200
+    config:
+      messages_per_user_per_minute: 10
+      chat_rooms: 20
+    actions:
+      - connect_socket
+      - join_chat_room
+      - send_chat_message
+      - receive_chat_message
+    thresholds:
+      chat_delivery_latency_p95: '<100ms'
+      chat_message_loss_rate: '<0.1%'
+      chat_throughput: '>2000 msg/min'
+
+global_thresholds:
+  # All scenarios must meet these overall requirements
+  connection_drop_rate: '<0.5%'
+  memory_leak_threshold: 'RSS growth <50MB over test duration'
+  error_rate: '<1%'
+  websocket_upgrade_success: '>99.5%'
+
+server_config:
+  # Socket.io server configuration being tested
+  ping_timeout: 60000
+  ping_interval: 25000
+  transports:
+    - websocket
+    - polling
+  max_http_buffer_size: 1MB
+  connect_timeout: 45000
+  namespaces_under_test:
+    - path: /
+      events: [connected, error]
+    - path: /chat
+      events: [chat:join, chat:message, chat:user_joined, chat:typing]
+    - path: /room
+      events: [room:create, room:join, room:leave, room:broadcast, room:user_joined, room:user_left]
+    - path: /presence
+      events: [presence:update, presence:subscribe, presence:status_changed]
+
+metrics:
+  custom:
+    - name: broadcast_latency
+      type: trend
+      description: Time from message send to delivery confirmation
+    - name: connection_success_rate
+      type: rate
+      description: Percentage of successful WebSocket connections
+    - name: message_delivery_rate
+      type: rate
+      description: Percentage of messages successfully delivered
+    - name: room_operation_success_rate
+      type: rate
+      description: Percentage of room operations (join/leave/broadcast) that succeed
+    - name: presence_propagation_time
+      type: trend
+      description: Time for presence status change to propagate to subscribers
+
+output:
+  format: json
+  path: perf/results/websocket-load-test-results.json
+  summary: true
+
+related_files:
+  - perf/api-load-test.js # k6 HTTP load test (existing)
+  - apps/server/src/socket/index.ts # Socket.io server initialization
+  - apps/server/src/socket/handlers/chat.ts # Chat event handlers
+  - apps/server/src/socket/handlers/roomHandler.ts # Room event handlers
+  - apps/server/src/socket/handlers/presenceHandler.ts # Presence event handlers
