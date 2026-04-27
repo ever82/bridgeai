@@ -408,7 +408,24 @@ export class DegradationController extends EventEmitter {
   }
 }
 
-export const degradationController = new DegradationController(
-  new DegradationStrategy(),
-  new ResilienceMetricsService()
-);
+let _degradationController: DegradationController | null = null;
+
+/**
+ * Get the singleton DegradationController instance.
+ * Uses lazy initialization to avoid eager side effects at import time.
+ */
+export function getDegradationController(): DegradationController {
+  if (!_degradationController) {
+    _degradationController = new DegradationController(
+      new DegradationStrategy(),
+      new ResilienceMetricsService()
+    );
+  }
+  return _degradationController;
+}
+
+/**
+ * @deprecated Prefer getDegradationController() for lazy initialization.
+ * Exported for backwards compatibility only.
+ */
+export const degradationController = getDegradationController();

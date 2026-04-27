@@ -11,7 +11,11 @@ export type {
   DegradationResult,
 } from './degradationStrategy';
 
-export { DegradationController, degradationController } from './degradationController';
+export {
+  DegradationController,
+  degradationController,
+  getDegradationController,
+} from './degradationController';
 
 export type {
   HealthStatus,

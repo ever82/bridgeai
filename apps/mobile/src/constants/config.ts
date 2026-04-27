@@ -3,7 +3,7 @@
  */
 
 // API Configuration
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001/api';
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.3.156:3001/api';
 
 // App Configuration
 export const APP_NAME = 'BridgeAI';
