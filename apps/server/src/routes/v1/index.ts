@@ -15,6 +15,7 @@ import offerRoutes from '../offers';
 import jobPostingRoutes from '../job/jobPostingRoutes';
 import consumerDemandRoutes from '../consumerDemand';
 import reviewRoutes from '../reviews';
+import transactionRoutes from '../transaction';
 import authRoutes from '../auth';
 import disclosureRoutes from '../disclosure';
 import userPrivacyRoutes from '../userPrivacy';
@@ -58,5 +59,6 @@ router.use('/matches', matchQueryRoutes);
 router.use('/dating', datingRoutes);
 router.use('/visionshare', visionSharePublishRoutes);
 router.use('/visionshare/payment', visionSharePaymentRoutes);
+router.use('/transactions', transactionRoutes);
 
 export default router;

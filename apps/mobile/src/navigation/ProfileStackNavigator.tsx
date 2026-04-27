@@ -17,6 +17,14 @@ import { UserProfileScreen } from '../screens/user/UserProfileScreen';
 import { ReviewListScreen, ReviewDetailScreen, WriteReviewScreen } from '../screens/Reviews';
 import { AgentListScreen } from '../screens/agent/AgentListScreen';
 import { CreateAgentScreen } from '../screens/agent/CreateAgentScreen';
+import {
+  TransactionListScreen,
+  TransactionDetailScreen,
+  RefundListScreen,
+  RefundDetailScreen,
+  CreateRefundScreen,
+  CreateAppealScreen,
+} from '../screens/transaction';
 import { ProfileStackParamList } from '../types/navigation';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -47,6 +55,12 @@ export const ProfileStackNavigator = () => {
       <Stack.Screen name="WriteReview" component={WriteReviewScreen} />
       <Stack.Screen name="AgentList" component={AgentListScreen} />
       <Stack.Screen name="CreateAgent" component={CreateAgentScreen} />
+      <Stack.Screen name="TransactionList" component={TransactionListScreen} />
+      <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
+      <Stack.Screen name="RefundList" component={RefundListScreen} />
+      <Stack.Screen name="RefundDetail" component={RefundDetailScreen} />
+      <Stack.Screen name="CreateRefund" component={CreateRefundScreen} />
+      <Stack.Screen name="CreateAppeal" component={CreateAppealScreen} />
     </Stack.Navigator>
   );
 };

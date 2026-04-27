@@ -41,6 +41,7 @@ model User {
   ratingsReceived Rating[] @relation("Ratee")
   creditRecords CreditRecord[]
   transactions  Transaction[]
+  refunds       Refund[]
   connections   Connection[]
   devices       UserDevice[]
   blockedUsers  BlockedUser[] @relation("BlockingUser")
@@ -739,12 +740,78 @@ model Transaction {
 
   // Relations
   user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refund      Refund?
 
   @@index([userId])
   @@index([type])
   @@index([status])
   @@index([createdAt])
   @@map("transactions")
+}
+
+// ============================================
+// 退款与申诉
+// ============================================
+
+model Refund {
+  id              String        @id @default(uuid())
+  transactionId   String        @unique @map("transaction_id")
+  userId          String        @map("user_id")
+  reason          String
+  details         String?
+  evidence        Json?         // URL array for evidence images
+  status          RefundStatus  @default(PENDING)
+  refundAmount    Decimal       @map("refund_amount") @db.Decimal(10, 2)
+  pointsRefunded  Boolean       @default(false) @map("points_refunded")
+  reviewedBy      String?       @map("reviewed_by")
+  reviewNote      String?       @map("review_note")
+  reviewedAt      DateTime?     @map("reviewed_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  transaction     Transaction   @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  appeals         RefundAppeal[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("refunds")
+}
+
+model RefundAppeal {
+  id          String          @id @default(uuid())
+  refundId    String          @map("refund_id")
+  userId      String          @map("user_id")
+  reason      String
+  evidence    Json?           // URL array for appeal evidence
+  status      AppealStatus    @default(PENDING)
+  reviewedBy  String?         @map("reviewed_by")
+  reviewNote  String?         @map("review_note")
+  reviewedAt  DateTime?       @map("reviewed_at")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  refund      Refund          @relation(fields: [refundId], references: [id], onDelete: Cascade)
+
+  @@index([refundId])
+  @@index([userId])
+  @@index([status])
+  @@map("refund_appeals")
+}
+
+enum RefundStatus {
+  PENDING     @map("pending")
+  APPROVED    @map("approved")
+  REJECTED    @map("rejected")
+  CANCELLED   @map("cancelled")
+}
+
+enum AppealStatus {
+  PENDING     @map("pending")
+  APPROVED    @map("approved")
+  REJECTED    @map("rejected")
 }
 
 enum TransactionType {

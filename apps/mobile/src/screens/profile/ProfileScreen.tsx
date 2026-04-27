@@ -18,6 +18,7 @@ export const ProfileScreen = () => {
   const menuItems: { icon: string; title: string; onPress: () => void; testID?: string }[] = [
     { icon: '📝', title: '我的动态', onPress: () => navigation.navigate('MyMoments') },
     { icon: '⭐', title: '我的评价', onPress: () => navigation.navigate('ReviewList') },
+    { icon: '💰', title: '交易记录', onPress: () => navigation.navigate('TransactionList') },
     { icon: '❤️', title: '赞过的', onPress: () => navigation.navigate('LikedMoments') },
     {
       icon: '🤖',
