@@ -1963,6 +1963,28 @@ model DatingProfile {
 }
 
 // ============================================
+// 审计日志 (Audit Log)
+// ============================================
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  action      String   // e.g., PERMISSION_GRANT, PERMISSION_REVOKE, ROLE_ASSIGN
+  resource    String   // e.g., user, role, permission
+  resourceId  String?  @map("resource_id")
+  details     Json?    // Additional context (old/new values, metadata)
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  timestamp   DateTime @default(now()) @map("timestamp")
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+// ============================================
 // 照片存储 (Photo Storage)
 // ============================================
 

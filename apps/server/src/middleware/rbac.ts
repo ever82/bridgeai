@@ -74,6 +74,46 @@ export function requireRole(...allowedRoles: string[]) {
 }
 
 /**
+ * Check if a user permission grants access to a required permission
+ * Handles wildcard patterns like resource:admin and resource:*
+ */
+function permissionMatches(userPermission: string, requiredPermission: string): boolean {
+  // Exact match
+  if (userPermission === requiredPermission) return true;
+
+  // Global admin wildcard
+  if (userPermission === '*:admin') return true;
+
+  // Check resource:admin and resource:* wildcards
+  const [requiredResource] = requiredPermission.split(':');
+  return (
+    userPermission === `${requiredResource}:admin` || userPermission === `${requiredResource}:*`
+  );
+}
+
+/**
+ * Check if user has all required permissions (with wildcard expansion)
+ */
+function hasAllPermissions(
+  userPermissions: string[],
+  requiredPermissions: string[]
+): { hasAll: boolean; missing: string[] } {
+  const missing: string[] = [];
+
+  for (const required of requiredPermissions) {
+    const hasPermission = userPermissions.some(userPerm => permissionMatches(userPerm, required));
+    if (!hasPermission) {
+      missing.push(required);
+    }
+  }
+
+  return {
+    hasAll: missing.length === 0,
+    missing,
+  };
+}
+
+/**
  * Check if user has required permission
  */
 export function requirePermission(...requiredPermissions: string[]) {
@@ -92,12 +132,13 @@ export function requirePermission(...requiredPermissions: string[]) {
       const userPermissions = await rbacService.getUserPermissions(req.user.id);
       const permissionNames = userPermissions.map(p => p.name);
 
-      // Check if user has all required permissions
-      const missingPermissions = requiredPermissions.filter(
-        perm => !permissionNames.includes(perm)
+      // Check if user has all required permissions (with wildcard expansion)
+      const { hasAll, missing: missingPermissions } = hasAllPermissions(
+        permissionNames,
+        requiredPermissions
       );
 
-      if (missingPermissions.length > 0) {
+      if (!hasAll) {
         context?.logWarning('Permission access denied', {
           userId: req.user.id,
           requiredPermissions,

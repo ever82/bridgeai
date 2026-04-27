@@ -3,13 +3,17 @@
  *
  * Provides audit logging for security events.
  */
-interface AuditLogEntry {
+import { prisma } from '../db/client';
+
+export interface AuditLogEntry {
   action: string;
   resource: string;
   resourceId?: string;
   userId?: string;
   details?: Record<string, unknown>;
   timestamp?: Date;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
 /**
@@ -17,13 +21,17 @@ interface AuditLogEntry {
  */
 export async function log(entry: AuditLogEntry): Promise<void> {
   const logEntry = {
-    ...entry,
+    userId: entry.userId,
+    action: entry.action,
+    resource: entry.resource,
+    resourceId: entry.resourceId,
+    details: entry.details,
+    ipAddress: entry.ipAddress,
+    userAgent: entry.userAgent,
     timestamp: entry.timestamp || new Date(),
   };
 
-  // In a real implementation, this would write to a database
-  // For now, we just log to console
-  console.log('[AUDIT]', JSON.stringify(logEntry));
+  await prisma.auditLog.create({ data: logEntry });
 }
 
 /**

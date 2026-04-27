@@ -10,7 +10,8 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 
-import { authenticate, requireRole } from '../../middleware/auth';
+import { authenticate } from '../../middleware/auth';
+import { requireRole } from '../../middleware/rbac';
 import { validate } from '../../middleware/validation';
 import {
   getBlockedIPs,
@@ -34,11 +35,16 @@ import {
 import { getDDoSStats } from '../../middleware/ddosProtection';
 import { getRealTimeStats, exportSecurityData } from '../../services/securityMonitor';
 
+import rbacRoutes from './rbac';
+
 const router: Router = Router();
 
 // All admin routes require authentication and admin role
 router.use(authenticate);
 router.use(requireRole('admin'));
+
+// Mount RBAC routes under /admin/rbac
+router.use('/rbac', rbacRoutes);
 
 // Validation schemas
 const blockIPSchema = z.object({

@@ -1,11 +1,11 @@
 /**
  * RBAC Service Tests
  */
-import { RBACService, DEFAULT_ROLES, DEFAULT_PERMISSIONS } from '../../src/services/rbacService';
-import { prisma } from '../../src/lib/prisma';
+import { RBACService, DEFAULT_ROLES, DEFAULT_PERMISSIONS } from '../rbacService';
+import { prisma } from '../../lib/prisma';
 
 // Mock Prisma
-jest.mock('../../src/lib/prisma', () => ({
+jest.mock('../../lib/prisma', () => ({
   prisma: {
     role: {
       upsert: jest.fn(),
@@ -35,7 +35,7 @@ jest.mock('../../src/lib/prisma', () => ({
 }));
 
 // Mock audit service
-jest.mock('../../src/services/auditService', () => ({
+jest.mock('../../services/auditService', () => ({
   auditService: {
     log: jest.fn(),
   },
@@ -158,9 +158,7 @@ describe('RBACService', () => {
 
   describe('hasRole', () => {
     it('should return true if user has role', async () => {
-      (prisma.userRole.findMany as jest.Mock).mockResolvedValue([
-        { role: { name: 'admin' } },
-      ]);
+      (prisma.userRole.findMany as jest.Mock).mockResolvedValue([{ role: { name: 'admin' } }]);
 
       const result = await rbacService.hasRole('user-1', 'admin');
 
@@ -168,9 +166,7 @@ describe('RBACService', () => {
     });
 
     it('should return false if user does not have role', async () => {
-      (prisma.userRole.findMany as jest.Mock).mockResolvedValue([
-        { role: { name: 'user' } },
-      ]);
+      (prisma.userRole.findMany as jest.Mock).mockResolvedValue([{ role: { name: 'user' } }]);
 
       const result = await rbacService.hasRole('user-1', 'admin');
 
@@ -180,9 +176,7 @@ describe('RBACService', () => {
 
   describe('hasPermission', () => {
     it('should return true if user has exact permission', async () => {
-      (prisma.userRole.findMany as jest.Mock).mockResolvedValue([
-        { roleId: 'role-1' },
-      ]);
+      (prisma.userRole.findMany as jest.Mock).mockResolvedValue([{ roleId: 'role-1' }]);
       (prisma.permission.findMany as jest.Mock).mockResolvedValue([
         { name: 'users:read', resource: 'users', action: 'read' },
       ]);
@@ -193,9 +187,7 @@ describe('RBACService', () => {
     });
 
     it('should return true if user has wildcard permission', async () => {
-      (prisma.userRole.findMany as jest.Mock).mockResolvedValue([
-        { roleId: 'role-1' },
-      ]);
+      (prisma.userRole.findMany as jest.Mock).mockResolvedValue([{ roleId: 'role-1' }]);
       (prisma.permission.findMany as jest.Mock).mockResolvedValue([
         { name: '*:admin', resource: '*', action: 'admin' },
       ]);
@@ -206,9 +198,7 @@ describe('RBACService', () => {
     });
 
     it('should return false if user does not have permission', async () => {
-      (prisma.userRole.findMany as jest.Mock).mockResolvedValue([
-        { roleId: 'role-1' },
-      ]);
+      (prisma.userRole.findMany as jest.Mock).mockResolvedValue([{ roleId: 'role-1' }]);
       (prisma.permission.findMany as jest.Mock).mockResolvedValue([
         { name: 'users:read', resource: 'users', action: 'read' },
       ]);
