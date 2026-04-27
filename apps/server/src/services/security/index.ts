@@ -1,2 +1,6 @@
-export { ImageSecurityService, type ImageSecurityCheckResult } from './imageSecurity';
+export {
+  ImageSecurityService,
+  type ImageSecurityCheckResult,
+  type DeIdentificationResult,
+} from './imageSecurity';
 export { default } from './imageSecurity';

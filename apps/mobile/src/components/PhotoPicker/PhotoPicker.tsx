@@ -84,43 +84,57 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
     }
   };
 
-  const handleToggleSelect = useCallback((photoId: string) => {
-    setPhotos((prev) => {
-      const photo = prev.find((p) => p.id === photoId);
-      if (!photo) return prev;
+  const handleToggleSelect = useCallback(
+    (photoId: string) => {
+      setPhotos(prev => {
+        const photo = prev.find(p => p.id === photoId);
+        if (!photo) return prev;
 
-      const selectedCount = prev.filter((p) => p.selected).length;
+        const selectedCount = prev.filter(p => p.selected).length;
 
-      // If trying to select and already at max
-      if (!photo.selected && selectedCount >= maxPhotos) {
-        Alert.alert('提示', `最多只能选择 ${maxPhotos} 张照片`);
-        return prev;
-      }
+        // If trying to select and already at max
+        if (!photo.selected && selectedCount >= maxPhotos) {
+          Alert.alert('提示', `最多只能选择 ${maxPhotos} 张照片`);
+          return prev;
+        }
 
-      return prev.map((p) =>
-        p.id === photoId ? { ...p, selected: !p.selected } : p
-      );
-    });
-  }, [maxPhotos]);
+        return prev.map(p => (p.id === photoId ? { ...p, selected: !p.selected } : p));
+      });
+    },
+    [maxPhotos]
+  );
 
   const handleSecurityCheck = async (photoUri: string): Promise<boolean> => {
     if (!enableSecurityCheck) return true;
 
+    const ALLOWED_MIME_TYPES = [
+      'image/jpeg',
+      'image/png',
+      'image/heic',
+      'image/heif',
+      'image/webp',
+    ];
+
     try {
-      // Check file size
+      // Check file format
       const response = await fetch(photoUri);
       const blob = await response.blob();
+
+      if (!ALLOWED_MIME_TYPES.includes(blob.type)) {
+        Alert.alert(
+          '格式不支持',
+          `仅支持 ${ALLOWED_MIME_TYPES.map(t => t.split('/')[1].toUpperCase()).join('、')} 格式的图片`
+        );
+        return false;
+      }
+
+      // Check file size
       const sizeInMB = blob.size / (1024 * 1024);
 
       if (sizeInMB > 50) {
         Alert.alert('文件过大', '单张照片大小不能超过50MB');
         return false;
       }
-
-      // Additional security checks can be added here
-      // - Image format validation
-      // - Metadata analysis
-      // - Content moderation API call
 
       return true;
     } catch (error) {
@@ -130,7 +144,7 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
   };
 
   const handleConfirm = async () => {
-    const selectedPhotos = photos.filter((p) => p.selected);
+    const selectedPhotos = photos.filter(p => p.selected);
 
     if (selectedPhotos.length === 0) {
       Alert.alert('提示', '请至少选择一张照片');
@@ -139,12 +153,10 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
 
     if (enableSecurityCheck) {
       setLoading(true);
-      const checkResults = await Promise.all(
-        selectedPhotos.map((p) => handleSecurityCheck(p.uri))
-      );
+      const checkResults = await Promise.all(selectedPhotos.map(p => handleSecurityCheck(p.uri)));
       setLoading(false);
 
-      const failedCount = checkResults.filter((r) => !r).length;
+      const failedCount = checkResults.filter(r => !r).length;
       if (failedCount > 0) {
         Alert.alert('安全检查', `${failedCount} 张照片未通过安全检查`);
         return;
@@ -192,7 +204,7 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
     );
   }
 
-  const selectedCount = photos.filter((p) => p.selected).length;
+  const selectedCount = photos.filter(p => p.selected).length;
 
   return (
     <View style={styles.container}>
@@ -208,9 +220,7 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
           </Text>
         </View>
         <TouchableOpacity onPress={handleConfirm}>
-          <Text style={[styles.confirmText, selectedCount === 0 && styles.disabledText]}>
-            确定
-          </Text>
+          <Text style={[styles.confirmText, selectedCount === 0 && styles.disabledText]}>确定</Text>
         </TouchableOpacity>
       </View>
 
@@ -232,7 +242,7 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
         <FlatList
           data={photos}
           renderItem={renderPhotoItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           numColumns={3}
           contentContainerStyle={styles.photoGrid}
           showsVerticalScrollIndicator={false}

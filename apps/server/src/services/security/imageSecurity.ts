@@ -32,6 +32,17 @@ export interface SensitiveContentResult {
   confidence: number;
 }
 
+export interface DeIdentificationResult {
+  /** Whether de-identification processing was applied */
+  processed: boolean;
+  /** The de-identified image buffer */
+  buffer: Buffer;
+  /** Method used for de-identification */
+  method: string;
+  /** Whether any faces or PII regions were detected */
+  regionsDetected: number;
+}
+
 export class ImageSecurityService {
   private static instance: ImageSecurityService;
 
@@ -125,7 +136,12 @@ export class ImageSecurityService {
     }
 
     // Perform quality check
-    let qualityResult = { score: 100, blurDetected: false, overexposed: false, underexposed: false };
+    let qualityResult = {
+      score: 100,
+      blurDetected: false,
+      overexposed: false,
+      underexposed: false,
+    };
     if (checkQuality) {
       qualityResult = await this.checkImageQuality(imageBuffer);
       if (qualityResult.score < 50) {
@@ -152,32 +168,46 @@ export class ImageSecurityService {
   }
 
   /**
-   * Check for sensitive content using image analysis
+   * Placeholder implementation for sensitive content identification.
+   *
+   * **This is NOT a content moderation system.** The current implementation
+   * only performs basic histogram analysis to detect degenerate images
+   * (nearly all-black or all-white). It does NOT detect explicit, violent,
+   * or otherwise sensitive imagery.
+   *
+   * **Known limitations:**
+   * - Cannot detect nudity, violence, or other policy-violating content.
+   * - Only flags suspiciously uniform images via pixel intensity stats.
+   * - Confidence score (0.7) is a fixed heuristic, not model-derived.
+   *
+   * **Future work:** Integrate with a professional content moderation API
+   * such as AWS Rekognition Moderation, Google Cloud Vision Safe Search,
+   * or Azure Content Moderator to perform real content classification.
+   *
+   * @see ISSUE-VS003~c3 - "sensitive content identification" acceptance criteria
    */
   private async checkSensitiveContent(imageBuffer: Buffer): Promise<SensitiveContentResult> {
-    // This would integrate with a content moderation API or model
-    // For now, implementing basic checks
-
     const categories: string[] = [];
 
     try {
-      // Analyze image histogram for extreme content
       const stats = await sharp(imageBuffer).stats();
-
-      // Check for mostly black/white images (could indicate corrupted or artificial content)
       const channels = stats.channels;
-      const isMostlyBlack = channels.every(
-        (ch) => ch.mean < 10 && ch.max < 50
-      );
-      const isMostlyWhite = channels.every(
-        (ch) => ch.mean > 245 && ch.min > 200
-      );
+
+      if (!channels || channels.length === 0) {
+        return {
+          hasSensitiveContent: false,
+          categories: [],
+          confidence: 0,
+        };
+      }
+
+      // Basic histogram analysis — detects only degenerate (uniform) images.
+      // This does NOT constitute real content moderation.
+      const isMostlyBlack = channels.every(ch => ch.mean < 10 && ch.max < 50);
+      const isMostlyWhite = channels.every(ch => ch.mean > 245 && ch.min > 200);
 
       if (isMostlyBlack) categories.push('suspicious_dark');
       if (isMostlyWhite) categories.push('suspicious_bright');
-
-      // TODO: Integrate with content moderation API (e.g., AWS Rekognition, Google Vision)
-      // const moderationResult = await this.callModerationAPI(imageBuffer);
 
       return {
         hasSensitiveContent: categories.length > 0,
@@ -195,15 +225,30 @@ export class ImageSecurityService {
   }
 
   /**
-   * Detect faces in image
+   * Placeholder implementation for face detection and privacy protection.
+   *
+   * **This is NOT a face detection system.** The current implementation
+   * always returns a no-op result (detected: false, count: 0, blurred: false)
+   * and performs no actual face analysis on the image.
+   *
+   * **Known limitations:**
+   * - Cannot detect faces in images.
+   * - Cannot determine whether detected faces are blurred for privacy.
+   * - The return value is hardcoded and provides zero informational value.
+   * - Callers relying on this for privacy compliance are NOT protected.
+   *
+   * **Future work:** Integrate with a professional face detection API such as:
+   * - AWS Rekognition (DetectFaces / DetectProtectiveEquipment)
+   * - Google Cloud Vision Face Detection
+   * - Azure Face API
+   * The integration should return actual face bounding boxes, landmarks,
+   * blur/confidence scores, and optionally auto-blur faces for privacy.
+   *
+   * @see ISSUE-VS003~c3 - "face detection and privacy detection" acceptance criteria
    */
-  private async detectFaces(_imageBuffer: Buffer): Promise<{ detected: boolean; count: number; blurred: boolean }> {
-    // This would integrate with a face detection API or model
-    // For now, return placeholder result
-
-    // TODO: Integrate with face detection API (e.g., AWS Rekognition, Azure Face API)
-    // const faces = await this.callFaceDetectionAPI(imageBuffer);
-
+  private async detectFaces(
+    _imageBuffer: Buffer
+  ): Promise<{ detected: boolean; count: number; blurred: boolean }> {
     return {
       detected: false,
       count: 0,
@@ -214,7 +259,12 @@ export class ImageSecurityService {
   /**
    * Check image quality
    */
-  private async checkImageQuality(imageBuffer: Buffer): Promise<{ score: number; blurDetected: boolean; overexposed: boolean; underexposed: boolean }> {
+  private async checkImageQuality(imageBuffer: Buffer): Promise<{
+    score: number;
+    blurDetected: boolean;
+    overexposed: boolean;
+    underexposed: boolean;
+  }> {
     try {
       const stats = await sharp(imageBuffer).stats();
       const channels = stats.channels;
@@ -225,16 +275,14 @@ export class ImageSecurityService {
       let underexposed = false;
 
       // Check for blur (low contrast using max-min range as proxy for std dev)
-      const avgRange =
-        channels.reduce((sum, ch) => sum + (ch.max - ch.min), 0) / channels.length;
+      const avgRange = channels.reduce((sum, ch) => sum + (ch.max - ch.min), 0) / channels.length;
       if (avgRange < 40) {
         blurDetected = true;
         score -= 30;
       }
 
       // Check exposure
-      const avgMean =
-        channels.reduce((sum, ch) => sum + ch.mean, 0) / channels.length;
+      const avgMean = channels.reduce((sum, ch) => sum + ch.mean, 0) / channels.length;
       if (avgMean > 250) {
         overexposed = true;
         score -= 25;
@@ -244,7 +292,7 @@ export class ImageSecurityService {
       }
 
       // Check detail/complexity (low range suggests flat/uniform image)
-      const hasDetail = channels.every((ch) => (ch.max - ch.min) > 10);
+      const hasDetail = channels.every(ch => ch.max - ch.min > 10);
       if (!hasDetail) {
         score -= 20;
       }
@@ -301,8 +349,10 @@ export class ImageSecurityService {
     const metadata = await processed.metadata();
 
     // Resize if too large
-    if ((metadata.width && metadata.width > maxWidth) ||
-        (metadata.height && metadata.height > maxHeight)) {
+    if (
+      (metadata.width && metadata.width > maxWidth) ||
+      (metadata.height && metadata.height > maxHeight)
+    ) {
       processed = processed.resize(maxWidth, maxHeight, {
         fit: 'inside',
         withoutEnlargement: true,
@@ -320,6 +370,49 @@ export class ImageSecurityService {
     }
 
     return output;
+  }
+
+  /**
+   * Perform privacy de-identification on an image.
+   *
+   * Applies image-level blurring as a baseline privacy protection measure.
+   *
+   * **Current implementation: full-image Gaussian blur.** This is a
+   * conservative approach that treats the entire image as potentially
+   * identifying, which is suitable for cases where face/region detection
+   * is unavailable or unreliable.
+   *
+   * **Known limitations:**
+   * - Applies blur to the entire image rather than specific face/PPI regions.
+   * - Does not perform actual face detection to localise blur.
+   * - The `regionsDetected` count is always 0 (no region-based detection).
+   *
+   * **Future work:** Integrate a face detection library or cloud API
+   * (AWS Rekognition, Google Cloud Vision, Azure Face API) to perform
+   * region-based blurring — only blurring detected faces / PII rather
+   * than the whole image.
+   *
+   * @param imageBuffer - Original image buffer
+   * @param options.blurRadius - Gaussian blur sigma (default 5)
+   * @see AC AS-VS-002-AC-3 - "privacy de-identification and upload"
+   */
+  async deIdentifyImage(
+    imageBuffer: Buffer,
+    options: { blurRadius?: number } = {}
+  ): Promise<DeIdentificationResult> {
+    const { blurRadius = 5 } = options;
+
+    const processedBuffer = await sharp(imageBuffer)
+      .blur(blurRadius)
+      .jpeg({ quality: 85 })
+      .toBuffer();
+
+    return {
+      processed: true,
+      buffer: processedBuffer,
+      method: 'full_image_gaussian_blur',
+      regionsDetected: 0,
+    };
   }
 
   private createFailedResult(violations: string[]): ImageSecurityCheckResult {

@@ -1,6 +1,6 @@
 /**
- * AI Extraction E2E Tests
- * Tests the full HTTP request flow for AI extraction API endpoints
+ * AI Extraction Routes Integration Tests
+ * Tests the HTTP request flow for AI extraction API endpoints with mocked services
  */
 
 /* eslint-disable import/order */
@@ -50,7 +50,7 @@ const mockedDemandToL2Mapper = demandToL2Mapper as jest.Mocked<typeof demandToL2
 const mockedExtractionValidator = extractionValidator as jest.Mocked<typeof extractionValidator>;
 const mockedGetL2Schema = getL2Schema as jest.MockedFunction<typeof getL2Schema>;
 
-describe('AI Extraction E2E', () => {
+describe('AI Extraction Routes Integration', () => {
   let app: Express;
 
   const mockSchema = {
@@ -132,7 +132,7 @@ describe('AI Extraction E2E', () => {
     jest.clearAllMocks();
   });
 
-  describe('E2E: POST /api/v1/ai/extract-demand - Full Success Flow', () => {
+  describe('Integration: POST /api/v1/ai/extract-demand - Full Success Flow', () => {
     it('should return complete extraction result with all pipeline stages', async () => {
       mockedGetL2Schema.mockReturnValue(mockSchema as any);
       mockedDemandExtractionService.extract.mockResolvedValue(mockDemand as any);
@@ -192,7 +192,7 @@ describe('AI Extraction E2E', () => {
     });
   });
 
-  describe('E2E: Error Response Flows', () => {
+  describe('Integration: Error Response Flows', () => {
     it('should return 400 for missing text', async () => {
       const response = await request(app)
         .post('/api/v1/ai/extract-demand')
@@ -239,7 +239,7 @@ describe('AI Extraction E2E', () => {
     });
   });
 
-  describe('E2E: Batch Extraction Flow', () => {
+  describe('Integration: Batch Extraction Flow', () => {
     it('should process multiple demands in batch', async () => {
       mockedGetL2Schema.mockReturnValue(mockSchema as any);
       mockedDemandExtractionService.extract
@@ -304,7 +304,7 @@ describe('AI Extraction E2E', () => {
     });
   });
 
-  describe('E2E: Scene Configuration Flow', () => {
+  describe('Integration: Scene Configuration Flow', () => {
     it('should return scene config for valid scene', async () => {
       mockedGetL2Schema.mockReturnValue(mockSchema as any);
 
@@ -326,7 +326,7 @@ describe('AI Extraction E2E', () => {
     });
   });
 
-  describe('E2E: Confirmation Flow', () => {
+  describe('Integration: Confirmation Flow', () => {
     it('should confirm extraction result', async () => {
       const response = await request(app)
         .post('/api/v1/ai/extract-demand/test-id/confirm')
@@ -350,7 +350,7 @@ describe('AI Extraction E2E', () => {
     });
   });
 
-  describe('E2E: Feedback Flow', () => {
+  describe('Integration: Feedback Flow', () => {
     it('should accept extraction feedback', async () => {
       const response = await request(app)
         .post('/api/v1/ai/extract-demand/feedback')

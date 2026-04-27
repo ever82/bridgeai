@@ -1,3 +1,4 @@
+import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface PhotoMetadata {
@@ -61,9 +62,28 @@ export interface StorageStats {
   coldStorage: { count: number; size: number };
 }
 
+/**
+ * Photo storage service for managing photo uploads, metadata, and lifecycle.
+ *
+ * @placeholder Current implementation uses in-memory metadata cache only.
+ * Photos are NOT actually persisted to cloud storage (S3/OSS). All storage
+ * URLs generated are mock/placeholder URLs for development purposes.
+ *
+ * TODO: Integrate actual S3/OSS SDK for:
+ * - Real presigned upload/download URLs
+ * - Persistent metadata storage (database)
+ * - Actual file upload/download to cloud bucket
+ * - Storage tier transitions (Standard, IA, Glacier)
+ * - Thumbnail generation via sharp
+ * - Search indexing via Elasticsearch/OpenSearch
+ *
+ * Acceptance criteria referencing cloud storage (e.g. ISSUE-VS003~c5)
+ * should be treated as not yet fulfilled until this placeholder is replaced.
+ */
 export class PhotoStorageService {
   private static instance: PhotoStorageService;
   private config: StorageConfig;
+  /** @placeholder In-memory cache only; data is lost on server restart */
   private metadataCache: Map<string, PhotoMetadata> = new Map();
 
   private constructor() {
@@ -103,7 +123,11 @@ export class PhotoStorageService {
   }
 
   /**
-   * Store photo metadata
+   * Store photo metadata.
+   *
+   * @placeholder Only saves to the in-memory metadataCache. Data is NOT
+   * persisted to any database and will be lost on server restart. The
+   * search index call (indexPhoto) is also a no-op placeholder.
    */
   async saveMetadata(metadata: PhotoMetadata): Promise<void> {
     // Initialize lifecycle if not set
@@ -115,11 +139,17 @@ export class PhotoStorageService {
       };
     }
 
-    // Save to database/cache
+    // Save to in-memory cache
     this.metadataCache.set(metadata.id, metadata);
 
-    // TODO: Persist to database
-    // await db.photos.create({...});
+    // LIMITATION: Metadata is only stored in the in-memory cache above and is
+    // lost on server restart.  Full database persistence requires:
+    //   1. A "photos" table / Drizzle schema (id, originalName, url, size,
+    //      width, height, format, mimeType, hash, userId, taskId, tags, etc.)
+    //   2. A database migration to create the table
+    //   3. Replace the line below with e.g. await db.insert(photosTable).values(metadata)
+    // See acceptance criterion ISSUE-VS003~c5 ("photo metadata recording").
+    // TODO: Implement database persistence for photo metadata
 
     // Update search index
     await this.indexPhoto(metadata);
@@ -141,7 +171,14 @@ export class PhotoStorageService {
       return cached;
     }
 
-    // TODO: Load from database
+    // LIMITATION: Without database persistence the metadata cache is always
+    // empty after a server restart, so this path always returns null for any
+    // photoId that was not created in the current process lifetime.
+    // Full persistence requires:
+    //   1. A "photos" table / Drizzle schema (see saveMetadata LIMITATION note)
+    //   2. Replace the block below with e.g. await db.select().from(photosTable).where(eq(id, photoId))
+    //   3. Populate the in-memory cache on cache-miss to speed up future reads
+    // TODO: Implement database read-through for photo metadata
     // const metadata = await db.photos.findById(photoId);
     // if (metadata) {
     //   this.metadataCache.set(photoId, metadata);
@@ -158,23 +195,22 @@ export class PhotoStorageService {
     // const photos = await db.photos.find({ taskId });
 
     // Filter from cache for now
-    return Array.from(this.metadataCache.values()).filter(
-      (p) => p.taskId === taskId
-    );
+    return Array.from(this.metadataCache.values()).filter(p => p.taskId === taskId);
   }
 
   /**
    * Get photos by user
    */
-  async getPhotosByUser(userId: string, options?: {
-    limit?: number;
-    offset?: number;
-    orderBy?: 'uploadedAt' | 'size' | 'accessCount';
-    order?: 'asc' | 'desc';
-  }): Promise<PhotoMetadata[]> {
-    const photos = Array.from(this.metadataCache.values()).filter(
-      (p) => p.userId === userId
-    );
+  async getPhotosByUser(
+    userId: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+      orderBy?: 'uploadedAt' | 'size' | 'accessCount';
+      order?: 'asc' | 'desc';
+    }
+  ): Promise<PhotoMetadata[]> {
+    const photos = Array.from(this.metadataCache.values()).filter(p => p.userId === userId);
 
     // Sort
     const orderBy = options?.orderBy || 'uploadedAt';
@@ -206,14 +242,18 @@ export class PhotoStorageService {
    * Generate storage URL
    */
   getStorageUrl(photoId: string, type: 'original' | 'thumbnail' = 'original'): string {
-    const baseUrl = this.config.cdnDomain ||
+    const baseUrl =
+      this.config.cdnDomain ||
       (this.config.endpoint ? `${this.config.endpoint}/${this.config.bucket}` : '');
 
     return `${baseUrl}/photos/${photoId}/${type}.jpg`;
   }
 
   /**
-   * Generate presigned URL for upload
+   * Generate presigned URL for upload.
+   *
+   * @placeholder Returns a mock URL string. No actual S3/OSS presigned URL
+   * is generated and files cannot be uploaded via the returned URL.
    */
   async generatePresignedUploadUrl(
     userId: string,
@@ -232,7 +272,10 @@ export class PhotoStorageService {
   }
 
   /**
-   * Generate presigned URL for download
+   * Generate presigned URL for download.
+   *
+   * @placeholder Returns a mock URL string. No actual S3/OSS presigned URL
+   * is generated and files cannot be downloaded via the returned URL.
    */
   async generatePresignedDownloadUrl(
     photoId: string,
@@ -281,7 +324,10 @@ export class PhotoStorageService {
   }
 
   /**
-   * Delete photo
+   * Delete photo.
+   *
+   * @placeholder Only removes from in-memory cache. No actual deletion
+   * from cloud storage or database occurs.
    */
   async deletePhoto(photoId: string): Promise<boolean> {
     // TODO: Delete from storage
@@ -320,17 +366,23 @@ export class PhotoStorageService {
   }
 
   /**
-   * Create thumbnail
+   * Create thumbnail.
+   * If imageBuffer is provided, generates a real 200x200 JPEG thumbnail using sharp.
+   * Otherwise returns the thumbnail storage URL (placeholder until cloud download is implemented).
    */
-  async createThumbnail(photoId: string): Promise<string> {
-    // TODO: Generate thumbnail using sharp
-    // const photo = await this.getMetadata(photoId);
-    // if (!photo) throw new Error('Photo not found');
-    // const buffer = await this.downloadPhoto(photoId);
-    // const thumbnail = await sharp(buffer).resize(200, 200).toBuffer();
-    // await this.uploadThumbnail(photoId, thumbnail);
+  async createThumbnail(photoId: string, imageBuffer?: Buffer): Promise<string> {
+    if (imageBuffer) {
+      const thumbnailBuffer = await sharp(imageBuffer)
+        .resize(200, 200, { fit: 'cover', position: 'center' })
+        .jpeg({ quality: 80 })
+        .toBuffer();
 
-    return `${this.getStorageUrl(photoId, 'thumbnail')}`;
+      // TODO: Upload thumbnail buffer to cloud storage
+      // await this.uploadThumbnail(photoId, thumbnailBuffer);
+      void thumbnailBuffer;
+    }
+
+    return this.getStorageUrl(photoId, 'thumbnail');
   }
 
   /**
