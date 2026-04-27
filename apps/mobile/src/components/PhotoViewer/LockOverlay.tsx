@@ -5,7 +5,6 @@
 
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { BlurView } from '@react-native-community/blur';
 import { Ionicons } from '@expo/vector-icons';
 
 import type { LockOverlayProps } from './types';
@@ -21,12 +20,7 @@ export const LockOverlay: React.FC<LockOverlayProps> = ({
     <View style={styles.container}>
       {previewBlur && (
         <View style={styles.blurContainer}>
-          <BlurView
-            style={styles.blur}
-            blurType="dark"
-            blurAmount={12}
-            reducedTransparencyFallbackColor="rgba(0,0,0,0.6)"
-          />
+          <View style={styles.blurFallback} />
         </View>
       )}
 
@@ -67,6 +61,10 @@ const styles = StyleSheet.create({
   },
   blur: {
     ...StyleSheet.absoluteFillObject,
+  },
+  blurFallback: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   content: {
     alignItems: 'center',

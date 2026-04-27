@@ -30,20 +30,17 @@ export const PhotoMetadataDisplay: React.FC<PhotoMetadataDisplayProps> = ({
   if (metadata.capturedAt) {
     rows.push({ label: '拍摄时间', value: formatDate(metadata.capturedAt) });
   }
-  if (metadata.device) {
-    rows.push({ label: '拍摄设备', value: metadata.device });
+  if (metadata.camera) {
+    rows.push({ label: '拍摄设备', value: metadata.camera });
   }
-  if (showSettings && metadata.settings) {
-    const { aperture, shutterSpeed, iso, focalLength } = metadata.settings;
-    if (aperture) rows.push({ label: '光圈', value: `f/${aperture}` });
-    if (shutterSpeed) rows.push({ label: '快门速度', value: shutterSpeed });
-    if (iso) rows.push({ label: 'ISO', value: String(iso) });
-    if (focalLength) rows.push({ label: '焦距', value: focalLength });
+  if (showSettings) {
+    if (metadata.aperture) rows.push({ label: '光圈', value: `f/${metadata.aperture}` });
+    if (metadata.shutterSpeed) rows.push({ label: '快门速度', value: metadata.shutterSpeed });
+    if (metadata.iso != null) rows.push({ label: 'ISO', value: String(metadata.iso) });
+    if (metadata.focalLength) rows.push({ label: '焦距', value: metadata.focalLength });
   }
-  if (showLocation && metadata.location) {
-    const { address, city, country } = metadata.location;
-    const locationStr = [address, city, country].filter(Boolean).join(', ');
-    if (locationStr) rows.push({ label: '拍摄地点', value: locationStr });
+  if (showLocation && metadata.locationName) {
+    rows.push({ label: '拍摄地点', value: metadata.locationName });
   }
 
   if (rows.length === 0) {

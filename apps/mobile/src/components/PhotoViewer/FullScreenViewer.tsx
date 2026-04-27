@@ -108,7 +108,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
     ],
   }));
 
-  const imageUrl = isUnlocked && photo.hdUrl ? photo.hdUrl : photo.url;
+  const imageUrl = isUnlocked ? photo.fullUrl : photo.previewUrl || photo.thumbnailUrl;
 
   return (
     <GestureDetector gesture={composed}>

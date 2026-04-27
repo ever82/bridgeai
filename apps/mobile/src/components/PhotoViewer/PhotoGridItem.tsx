@@ -23,7 +23,7 @@ export const PhotoGridItem: React.FC<PhotoGridItemProps> = ({
       activeOpacity={0.8}
     >
       <Image
-        source={{ uri: photo.thumbnailUrl || photo.url }}
+        source={{ uri: photo.thumbnailUrl }}
         style={[styles.image, { height: 120 }]}
         resizeMode="cover"
       />
@@ -31,7 +31,9 @@ export const PhotoGridItem: React.FC<PhotoGridItemProps> = ({
       {/* Price overlay */}
       {!isUnlocked && (
         <View style={styles.priceOverlay}>
-          <Text style={styles.priceText}>{photo.price > 0 ? `${photo.price}积分` : '免费'}</Text>
+          <Text style={styles.priceText}>
+            {photo.credit.creditCost > 0 ? `${photo.credit.creditCost}积分` : '免费'}
+          </Text>
         </View>
       )}
 

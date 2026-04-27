@@ -15,7 +15,7 @@ const COLLAPSED_HEIGHT = 60;
 const EXPANDED_HEIGHT = SCREEN_HEIGHT * 0.5;
 
 export const PhotoInfoPanel: React.FC<PhotoInfoPanelProps> = ({
-  photo,
+  photo: _photo,
   metadata,
   isExpanded,
   onToggleExpand,
@@ -62,74 +62,60 @@ export const PhotoInfoPanel: React.FC<PhotoInfoPanelProps> = ({
           {/* Basic info */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>基本信息</Text>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>分辨率</Text>
-              <Text style={styles.infoValue}>
-                {photo.width} x {photo.height}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>文件大小</Text>
-              <Text style={styles.infoValue}>{formatFileSize(photo.fileSize)}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>格式</Text>
-              <Text style={styles.infoValue}>{photo.format.toUpperCase()}</Text>
-            </View>
+            {metadata.width && metadata.height && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>分辨率</Text>
+                <Text style={styles.infoValue}>
+                  {metadata.width} x {metadata.height}
+                </Text>
+              </View>
+            )}
+            {metadata.fileSize != null && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>文件大小</Text>
+                <Text style={styles.infoValue}>{formatFileSize(metadata.fileSize)}</Text>
+              </View>
+            )}
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>拍摄时间</Text>
               <Text style={styles.infoValue}>{formatDate(metadata.capturedAt)}</Text>
             </View>
-            {metadata.device && (
+            {metadata.camera && (
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>设备</Text>
-                <Text style={styles.infoValue}>{metadata.device}</Text>
+                <Text style={styles.infoValue}>{metadata.camera}</Text>
               </View>
             )}
           </View>
 
           {/* Camera settings */}
-          {metadata.settings && (
+          {(metadata.aperture || metadata.shutterSpeed || metadata.iso || metadata.focalLength) && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>拍摄参数</Text>
-              {metadata.settings.aperture && (
+              {metadata.aperture && (
                 <View style={styles.infoRow}>
                   <Text style={styles.infoLabel}>光圈</Text>
-                  <Text style={styles.infoValue}>f/{metadata.settings.aperture}</Text>
+                  <Text style={styles.infoValue}>f/{metadata.aperture}</Text>
                 </View>
               )}
-              {metadata.settings.shutterSpeed && (
+              {metadata.shutterSpeed && (
                 <View style={styles.infoRow}>
                   <Text style={styles.infoLabel}>快门</Text>
-                  <Text style={styles.infoValue}>{metadata.settings.shutterSpeed}</Text>
+                  <Text style={styles.infoValue}>{metadata.shutterSpeed}</Text>
                 </View>
               )}
-              {metadata.settings.iso && (
+              {metadata.iso != null && (
                 <View style={styles.infoRow}>
                   <Text style={styles.infoLabel}>ISO</Text>
-                  <Text style={styles.infoValue}>{metadata.settings.iso}</Text>
+                  <Text style={styles.infoValue}>{metadata.iso}</Text>
                 </View>
               )}
-              {metadata.settings.focalLength && (
+              {metadata.focalLength && (
                 <View style={styles.infoRow}>
                   <Text style={styles.infoLabel}>焦距</Text>
-                  <Text style={styles.infoValue}>{metadata.settings.focalLength}</Text>
+                  <Text style={styles.infoValue}>{metadata.focalLength}</Text>
                 </View>
               )}
-            </View>
-          )}
-
-          {/* Tags */}
-          {metadata.tags && metadata.tags.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>标签</Text>
-              <View style={styles.tagsContainer}>
-                {metadata.tags.map((tag, index) => (
-                  <View key={index} style={styles.tag}>
-                    <Text style={styles.tagText}>{tag}</Text>
-                  </View>
-                ))}
-              </View>
             </View>
           )}
         </View>
@@ -201,21 +187,6 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 14,
     color: '#333',
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  tagText: {
-    fontSize: 13,
-    color: '#666',
   },
 });
 

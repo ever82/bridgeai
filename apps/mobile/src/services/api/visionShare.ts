@@ -17,6 +17,7 @@ import type {
   CreditBalance,
   PaymentConfirmation,
 } from '@packages/shared/types/payment.types';
+import type { PhotoFilter, PhotoGalleryResponse } from '@packages/shared/types/photo.types';
 
 import { api, apiClient } from './client';
 
@@ -277,6 +278,31 @@ export const visionShareApi = {
     if (options?.limit) params.append('limit', options.limit.toString());
 
     const response = await api.get<SmartAlbumsResponse>(`/visionshare/albums?${params.toString()}`);
+    return response.data;
+  },
+
+  /**
+   * Get photos for gallery with filtering, sorting, and pagination
+   */
+  getPhotos: async (filter: PhotoFilter): Promise<PhotoGalleryResponse> => {
+    const params = new URLSearchParams();
+    if (filter.sceneId) params.append('sceneId', filter.sceneId);
+    if (filter.categories?.length) params.append('categories', filter.categories.join(','));
+    if (filter.minCredit != null) params.append('minCredit', filter.minCredit.toString());
+    if (filter.maxCredit != null) params.append('maxCredit', filter.maxCredit.toString());
+    if (filter.minRating != null) params.append('minRating', filter.minRating.toString());
+    if (filter.sortBy) params.append('sortBy', filter.sortBy);
+    if (filter.sortOrder) params.append('sortOrder', filter.sortOrder);
+    if (filter.page) params.append('page', filter.page.toString());
+    if (filter.limit) params.append('limit', filter.limit.toString());
+    if (filter.dateRange) {
+      if (filter.dateRange.start) params.append('startDate', filter.dateRange.start);
+      if (filter.dateRange.end) params.append('endDate', filter.dateRange.end);
+    }
+
+    const response = await api.get<PhotoGalleryResponse>(
+      `/visionshare/photos?${params.toString()}`
+    );
     return response.data;
   },
 

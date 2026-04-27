@@ -20,231 +20,12 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { Photo, PhotoFilter, PhotoSortField } from '@bridgeai/shared';
+import type { Photo, PhotoFilter, PhotoSortField, PhotoGalleryResponse } from '@bridgeai/shared';
 
 import { PhotoGrid } from '../../components/PhotoViewer/PhotoGrid';
+import { visionShareApi } from '../../services/api/visionShare';
 
 import type { PhotoGalleryProps, PhotoGalleryState } from './types';
-
-// ============================================================
-// Mock Data - Replace with actual API calls
-// TODO: Wire up to real VisionShare photo API when endpoints are available
-// ============================================================
-
-const MOCK_PHOTOS: Photo[] = [
-  {
-    id: 'photo-001',
-    title: '城市夜景',
-    description: '深圳CBD夜景摄影作品',
-    sceneId: 'visionshare',
-    photographer: {
-      id: 'user-101',
-      name: '李明',
-      creditScore: 92,
-      avatarUrl: 'https://i.pravatar.cc/100?img=1',
-      isVerified: true,
-    },
-    metadata: {
-      camera: 'Sony A7R IV',
-      lens: '24-70mm f/2.8 GM',
-      iso: 3200,
-      aperture: 'f/2.8',
-      shutterSpeed: '1/60s',
-      focalLength: '35mm',
-      locationName: '深圳市福田区',
-      capturedAt: '2025-12-15T20:00:00Z',
-      width: 7952,
-      height: 5304,
-    },
-    thumbnailUrl: 'https://picsum.photos/seed/photo001/400/300',
-    fullUrl: 'https://picsum.photos/seed/photo001/1600/1200',
-    previewUrl: 'https://picsum.photos/seed/photo001/200/150',
-    status: 'active',
-    categories: ['street', 'architecture'],
-    credit: { creditCost: 50, priceType: 'fixed', currency: 'CREDIT' },
-    isUnlocked: false,
-    purchaseCount: 128,
-    rating: 4.8,
-    ratingCount: 45,
-    createdAt: '2025-12-15T20:00:00Z',
-    updatedAt: '2025-12-20T10:00:00Z',
-  },
-  {
-    id: 'photo-002',
-    title: '海岛日落',
-    description: '马尔代夫海边日落',
-    sceneId: 'visionshare',
-    photographer: {
-      id: 'user-102',
-      name: '王芳',
-      creditScore: 85,
-      avatarUrl: 'https://i.pravatar.cc/100?img=5',
-      isVerified: true,
-    },
-    metadata: {
-      camera: 'Canon EOS R5',
-      iso: 400,
-      aperture: 'f/8',
-      shutterSpeed: '1/500s',
-      locationName: '马尔代夫',
-      capturedAt: '2025-11-20T18:30:00Z',
-      width: 8192,
-      height: 5464,
-    },
-    thumbnailUrl: 'https://picsum.photos/seed/photo002/400/300',
-    fullUrl: 'https://picsum.photos/seed/photo002/1600/1200',
-    status: 'active',
-    categories: ['landscape', 'nature'],
-    credit: { creditCost: 80, priceType: 'fixed', currency: 'CREDIT' },
-    isUnlocked: true,
-    purchaseCount: 256,
-    rating: 4.9,
-    ratingCount: 89,
-    createdAt: '2025-11-20T18:30:00Z',
-    updatedAt: '2025-12-01T09:00:00Z',
-    isFavorited: true,
-  },
-  {
-    id: 'photo-003',
-    title: '咖啡馆人像',
-    description: '文艺风格室内人像',
-    sceneId: 'visionshare',
-    photographer: {
-      id: 'user-103',
-      name: '张伟',
-      creditScore: 78,
-      avatarUrl: 'https://i.pravatar.cc/100?img=3',
-      isVerified: false,
-    },
-    metadata: {
-      camera: 'Fujifilm X-T5',
-      iso: 800,
-      aperture: 'f/1.4',
-      shutterSpeed: '1/125s',
-      focalLength: '56mm',
-      locationName: '深圳市南山区',
-      capturedAt: '2025-10-05T14:00:00Z',
-      width: 6240,
-      height: 4160,
-    },
-    thumbnailUrl: 'https://picsum.photos/seed/photo003/400/300',
-    fullUrl: 'https://picsum.photos/seed/photo003/1600/1200',
-    status: 'active',
-    categories: ['portrait'],
-    credit: { creditCost: 30, priceType: 'fixed', currency: 'CREDIT' },
-    isUnlocked: false,
-    purchaseCount: 67,
-    rating: 4.5,
-    ratingCount: 23,
-    createdAt: '2025-10-05T14:00:00Z',
-    updatedAt: '2025-10-10T16:00:00Z',
-  },
-  {
-    id: 'photo-004',
-    title: '产品静物',
-    description: '数码产品摄影作品',
-    sceneId: 'visionshare',
-    photographer: {
-      id: 'user-104',
-      name: '陈静',
-      creditScore: 88,
-      avatarUrl: 'https://i.pravatar.cc/100?img=9',
-      isVerified: true,
-    },
-    metadata: {
-      camera: 'Nikon Z9',
-      iso: 64,
-      aperture: 'f/11',
-      shutterSpeed: '1/200s',
-      focalLength: '105mm',
-      locationName: '广州市天河区',
-      capturedAt: '2025-09-18T10:00:00Z',
-      width: 8256,
-      height: 5504,
-    },
-    thumbnailUrl: 'https://picsum.photos/seed/photo004/400/300',
-    fullUrl: 'https://picsum.photos/seed/photo004/1600/1200',
-    status: 'active',
-    categories: ['product'],
-    credit: { creditCost: 100, priceType: 'negotiable', currency: 'CREDIT' },
-    isUnlocked: false,
-    purchaseCount: 42,
-    rating: 4.7,
-    ratingCount: 15,
-    createdAt: '2025-09-18T10:00:00Z',
-    updatedAt: '2025-09-25T12:00:00Z',
-  },
-  {
-    id: 'photo-005',
-    title: '建筑线条',
-    description: '现代建筑几何美学',
-    sceneId: 'visionshare',
-    photographer: {
-      id: 'user-105',
-      name: '刘洋',
-      creditScore: 95,
-      avatarUrl: 'https://i.pravatar.cc/100?img=7',
-      isVerified: true,
-    },
-    metadata: {
-      camera: 'Sony A7R V',
-      iso: 100,
-      aperture: 'f/8',
-      shutterSpeed: '1/250s',
-      focalLength: '16mm',
-      locationName: '香港中环',
-      capturedAt: '2025-08-22T11:00:00Z',
-      width: 9504,
-      height: 6336,
-    },
-    thumbnailUrl: 'https://picsum.photos/seed/photo005/400/300',
-    fullUrl: 'https://picsum.photos/seed/photo005/1600/1200',
-    status: 'active',
-    categories: ['architecture'],
-    credit: { creditCost: 60, priceType: 'fixed', currency: 'CREDIT' },
-    isUnlocked: true,
-    purchaseCount: 189,
-    rating: 4.6,
-    ratingCount: 56,
-    createdAt: '2025-08-22T11:00:00Z',
-    updatedAt: '2025-09-01T08:00:00Z',
-  },
-  {
-    id: 'photo-006',
-    title: '美食摄影',
-    description: '精致料理摄影作品',
-    sceneId: 'visionshare',
-    photographer: {
-      id: 'user-106',
-      name: '周婷',
-      creditScore: 81,
-      avatarUrl: 'https://i.pravatar.cc/100?img=16',
-      isVerified: false,
-    },
-    metadata: {
-      camera: 'Canon EOS R6 II',
-      iso: 400,
-      aperture: 'f/2.8',
-      shutterSpeed: '1/100s',
-      focalLength: '50mm',
-      locationName: '上海市静安区',
-      capturedAt: '2025-07-30T19:00:00Z',
-      width: 6000,
-      height: 4000,
-    },
-    thumbnailUrl: 'https://picsum.photos/seed/photo006/400/300',
-    fullUrl: 'https://picsum.photos/seed/photo006/1600/1200',
-    status: 'active',
-    categories: ['food'],
-    credit: { creditCost: 25, priceType: 'fixed', currency: 'CREDIT' },
-    isUnlocked: false,
-    purchaseCount: 93,
-    rating: 4.4,
-    ratingCount: 31,
-    createdAt: '2025-07-30T19:00:00Z',
-    updatedAt: '2025-08-05T14:00:00Z',
-  },
-];
 
 // Sort options
 const SORT_OPTIONS: { key: PhotoSortField; label: string; labelZh: string }[] = [
@@ -290,69 +71,29 @@ export const PhotoGalleryScreen: React.FC<PhotoGalleryProps> = ({
   const columns = config?.columns || 2;
   const itemWidth = (SCREEN_WIDTH - 16 * 2 - (columns - 1) * 8) / columns;
 
-  // Load photos (mock data - replace with actual API call)
+  // Load photos via API
   const loadPhotos = useCallback(async (filter: PhotoFilter, isRefresh = false) => {
     try {
       setState(prev => ({ ...prev, isLoading: !isRefresh, error: undefined }));
 
-      // TODO: Replace with actual API call when endpoint is available
-      // const response = await visionShareApi.getPhotos(filter);
-      // if (response.success) { ... }
+      const response: PhotoGalleryResponse = await visionShareApi.getPhotos(filter);
 
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 600));
-
-      // Apply sorting to mock data
-      const sortedPhotos = [...MOCK_PHOTOS];
-      const sortBy = filter.sortBy || 'createdAt';
-      const sortOrder = filter.sortOrder || 'desc';
-
-      sortedPhotos.sort((a, b) => {
-        let aVal: number | string;
-        let bVal: number | string;
-
-        switch (sortBy) {
-          case 'credit':
-            aVal = a.credit.creditCost;
-            bVal = b.credit.creditCost;
-            break;
-          case 'rating':
-            aVal = a.rating || 0;
-            bVal = b.rating || 0;
-            break;
-          case 'purchaseCount':
-            aVal = a.purchaseCount || 0;
-            bVal = b.purchaseCount || 0;
-            break;
-          case 'createdAt':
-          default:
-            aVal = new Date(a.createdAt).getTime();
-            bVal = new Date(b.createdAt).getTime();
-            break;
-        }
-
-        if (typeof aVal === 'string' && typeof bVal === 'string') {
-          return sortOrder === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-        }
-        return sortOrder === 'asc'
-          ? (aVal as number) - (bVal as number)
-          : (bVal as number) - (aVal as number);
-      });
-
-      // Apply pagination
-      const page = filter.page || 1;
-      const limit = filter.limit || 20;
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedPhotos = sortedPhotos.slice(startIndex, endIndex);
-
-      setState(prev => ({
-        ...prev,
-        photos: isRefresh ? paginatedPhotos : [...prev.photos, ...paginatedPhotos],
-        hasMore: endIndex < sortedPhotos.length,
-        isLoading: false,
-        filter,
-      }));
+      if (response.success) {
+        const { photos: newPhotos, hasMore } = response.data;
+        setState(prev => ({
+          ...prev,
+          photos: isRefresh ? newPhotos : [...prev.photos, ...newPhotos],
+          hasMore,
+          isLoading: false,
+          filter,
+        }));
+      } else {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: '加载照片失败，请稍后重试',
+        }));
+      }
     } catch (err) {
       setState(prev => ({
         ...prev,
@@ -365,7 +106,7 @@ export const PhotoGalleryScreen: React.FC<PhotoGalleryProps> = ({
   // Initial load
   useEffect(() => {
     loadPhotos(state.filter, true);
-  }, []);
+  }, [loadPhotos, state.filter]);
 
   // Refresh
   const handleRefresh = useCallback(() => {
@@ -419,20 +160,22 @@ export const PhotoGalleryScreen: React.FC<PhotoGalleryProps> = ({
   );
 
   // Handle photo long press
-  const handlePhotoLongPress = useCallback((photo: Photo) => {
-    if (photo.unlockType === 'paid' && !photo.isUnlocked) {
-      Alert.alert('解锁照片', `需要 ${photo.credit.creditCost} 积分解锁此照片`, [
-        { text: '取消', style: 'cancel' },
-        {
-          text: '解锁',
-          onPress: () => {
-            // TODO: Implement payment/unlock flow
-            Alert.alert('提示', '解锁功能即将上线');
+  const handlePhotoLongPress = useCallback(
+    (photo: Photo) => {
+      if (photo.unlockType === 'paid' && !photo.isUnlocked) {
+        Alert.alert('解锁照片', `需要 ${photo.credit.creditCost} 积分解锁此照片`, [
+          { text: '取消', style: 'cancel' },
+          {
+            text: '解锁',
+            onPress: () => {
+              navigation.navigate('PhotoPayment', { photoId: photo.id, sceneId: photo.sceneId });
+            },
           },
-        },
-      ]);
-    }
-  }, []);
+        ]);
+      }
+    },
+    [navigation]
+  );
 
   // Handle back
   const handleBack = useCallback(() => {

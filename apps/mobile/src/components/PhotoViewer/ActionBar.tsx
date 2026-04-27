@@ -67,7 +67,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
         <TouchableOpacity style={styles.payButton} onPress={handlePay}>
           <Ionicons name="key-outline" size={20} color="#fff" />
           <Text style={styles.payButtonText}>
-            {photo.price > 0 ? `${photo.price}积分解锁` : '免费解锁'}
+            {photo.credit.creditCost > 0 ? `${photo.credit.creditCost}积分解锁` : '免费解锁'}
           </Text>
         </TouchableOpacity>
       )}
