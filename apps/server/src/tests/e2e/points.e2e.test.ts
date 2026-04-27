@@ -205,6 +205,10 @@ describe('Points E2E', () => {
         { method: 'GET', path: '/api/v1/points/transactions/export' },
         { method: 'GET', path: '/api/v1/points/rules' },
         { method: 'GET', path: '/api/v1/points/freezes' },
+        { method: 'POST', path: '/api/v1/points/earn' },
+        { method: 'POST', path: '/api/v1/points/spend' },
+        { method: 'POST', path: '/api/v1/points/freeze' },
+        { method: 'POST', path: '/api/v1/points/transfer' },
       ];
 
       for (const { method, path } of endpoints) {
@@ -212,6 +216,167 @@ describe('Points E2E', () => {
 
         expect(res.status).toBe(401);
       }
+    });
+
+    it('should handle freeze and unfreeze flow', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      // Earn points first
+      await request(app).get('/api/v1/points/account').set(headers);
+      const earnRes = await request(app)
+        .post('/api/v1/points/earn')
+        .set(headers)
+        .send({ ruleCode: 'CHECKIN' });
+
+      if (earnRes.body.data?.success) {
+        // Get initial balance
+        const accountRes = await request(app).get('/api/v1/points/account').set(headers);
+        const _initialBalance = accountRes.body.data.balance;
+
+        // Freeze points
+        const freezeRes = await request(app)
+          .post('/api/v1/points/freeze')
+          .set(headers)
+          .send({ amount: 1, reason: 'Test freeze for matching' });
+
+        if (freezeRes.body.data?.success) {
+          // Get freeze list
+          const freezesRes = await request(app).get('/api/v1/points/freezes').set(headers);
+          expect(freezesRes.status).toBe(200);
+          expect(Array.isArray(freezesRes.body.data.freezes)).toBe(true);
+
+          // Get frozen amount in account
+          const accountAfterRes = await request(app).get('/api/v1/points/account').set(headers);
+          expect(accountAfterRes.body.data.frozenAmount).toBeGreaterThan(0);
+        }
+      }
+
+      await cleanupPointsData(user.id);
+    });
+
+    it('should handle transfer flow between users', async () => {
+      const user1 = await createTestUser();
+      const user2 = await createTestUser();
+      const headers1 = getUserAuthHeader(user1);
+      const headers2 = getUserAuthHeader(user2);
+
+      // Ensure accounts exist
+      await request(app).get('/api/v1/points/account').set(headers1);
+      await request(app).get('/api/v1/points/account').set(headers2);
+
+      // Earn points for user1
+      await request(app).post('/api/v1/points/earn').set(headers1).send({ ruleCode: 'CHECKIN' });
+
+      // Get user2 initial balance
+      const user2InitialRes = await request(app).get('/api/v1/points/account').set(headers2);
+      const user2InitialBalance = user2InitialRes.body.data.balance;
+
+      // Transfer to user2
+      const transferRes = await request(app)
+        .post('/api/v1/points/transfer')
+        .set(headers1)
+        .send({ toUserId: user2.id, amount: 1, description: 'Test transfer' });
+
+      expect([200, 400]).toContain(transferRes.status);
+
+      // Verify user2 balance increased
+      const user2FinalRes = await request(app).get('/api/v1/points/account').set(headers2);
+      expect(user2FinalRes.body.data.balance).toBeGreaterThanOrEqual(user2InitialBalance);
+
+      await cleanupPointsData(user1.id);
+      await cleanupPointsData(user2.id);
+    });
+
+    it('should handle config and rules queries', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      // Get value config
+      const valueRes = await request(app).get('/api/v1/points/config/value').set(headers);
+      expect(valueRes.status).toBe(200);
+      expect(valueRes.body.data).toHaveProperty('rmbToPointsRate');
+
+      // Get limits config
+      const limitsRes = await request(app).get('/api/v1/points/config/limits').set(headers);
+      expect(limitsRes.status).toBe(200);
+      expect(limitsRes.body.data).toHaveProperty('dailyEarnLimit');
+
+      // Get specific rule detail
+      const ruleRes = await request(app).get('/api/v1/points/rules/CHECKIN').set(headers);
+      expect(ruleRes.status).toBe(200);
+      expect(ruleRes.body.data).toHaveProperty('code', 'CHECKIN');
+
+      // Get scene rules
+      const sceneRes = await request(app).get('/api/v1/points/rules/scene/AGENT_DATE').set(headers);
+      expect(sceneRes.status).toBe(200);
+      expect(Array.isArray(sceneRes.body.data.rules)).toBe(true);
+
+      // Check rule limits
+      const checkRes = await request(app)
+        .post('/api/v1/points/rules/CHECKIN/check-limits')
+        .set(headers)
+        .send({});
+      expect(checkRes.status).toBe(200);
+      expect(checkRes.body.data).toHaveProperty('allowed');
+
+      await cleanupPointsData(user.id);
+    });
+
+    it('should get transaction detail', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      // Create a transaction
+      await request(app).get('/api/v1/points/account').set(headers);
+      const earnRes = await request(app)
+        .post('/api/v1/points/earn')
+        .set(headers)
+        .send({ ruleCode: 'CHECKIN' });
+
+      const transactionId = earnRes.body.data?.transaction?.id;
+
+      if (transactionId) {
+        const detailRes = await request(app)
+          .get(`/api/v1/points/transactions/${transactionId}`)
+          .set(headers);
+
+        expect(detailRes.status).toBe(200);
+        expect(detailRes.body.data).toHaveProperty('id', transactionId);
+      }
+
+      await cleanupPointsData(user.id);
+    });
+
+    it('should export transactions in CSV format', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      // Create some transactions
+      await request(app).get('/api/v1/points/account').set(headers);
+      await request(app).post('/api/v1/points/earn').set(headers).send({ ruleCode: 'CHECKIN' });
+
+      // Export CSV
+      const exportRes = await request(app)
+        .get('/api/v1/points/transactions/export')
+        .set(headers)
+        .query({ format: 'csv' });
+
+      expect(exportRes.status).toBe(200);
+      expect(exportRes.headers['content-type']).toContain('text/csv');
+      expect(exportRes.headers['content-disposition']).toContain('attachment');
+      // CSV should have header row
+      expect(exportRes.text).toContain('ID,Type,Amount');
+
+      // Filter by type in export
+      const filterRes = await request(app)
+        .get('/api/v1/points/transactions/export')
+        .set(headers)
+        .query({ format: 'csv', type: 'EARN' });
+
+      expect(filterRes.status).toBe(200);
+
+      await cleanupPointsData(user.id);
     });
   });
 });

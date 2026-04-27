@@ -364,4 +364,305 @@ describe('Points API Integration', () => {
       await cleanupPointsData(user.id);
     });
   });
+
+  describe('POST /api/v1/points/spend', () => {
+    it('should spend points with valid rule code', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      // Ensure account and balance first
+      await request(app).get('/api/v1/points/account').set(headers);
+      // Earn some points first
+      await request(app).post('/api/v1/points/earn').set(headers).send({ ruleCode: 'CHECKIN' });
+
+      const response = await request(app)
+        .post('/api/v1/points/spend')
+        .set(headers)
+        .send({ ruleCode: 'VIEW_PROFILE', metadata: { targetUserId: 'some-user-id' } });
+
+      expect([200, 400]).toContain(response.status);
+      // If 200, should have success; if 400, should have error
+      if (response.status === 200) {
+        expect(validateSuccessResponse(response)).toBe(true);
+      }
+
+      await cleanupPointsData(user.id);
+    });
+
+    it('should return 400 for invalid rule code', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      const response = await request(app)
+        .post('/api/v1/points/spend')
+        .set(headers)
+        .send({ ruleCode: 'INVALID_RULE' });
+
+      expect(response.status).toBe(400);
+      await cleanupPointsData(user.id);
+    });
+  });
+
+  describe('POST /api/v1/points/freeze', () => {
+    it('should freeze points successfully', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      // Earn some points first
+      await request(app).get('/api/v1/points/account').set(headers);
+      await request(app).post('/api/v1/points/earn').set(headers).send({ ruleCode: 'CHECKIN' });
+
+      const response = await request(app)
+        .post('/api/v1/points/freeze')
+        .set(headers)
+        .send({ amount: 1, reason: 'Test freeze', scene: 'AGENT_DATE' });
+
+      expect([200, 400]).toContain(response.status);
+      if (response.status === 200) {
+        expect(validateSuccessResponse(response)).toBe(true);
+      }
+
+      await cleanupPointsData(user.id);
+    });
+
+    it('should return 400 for invalid amount', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      const response = await request(app)
+        .post('/api/v1/points/freeze')
+        .set(headers)
+        .send({ amount: -1, reason: 'Test freeze' });
+
+      expect(response.status).toBe(400);
+      await cleanupPointsData(user.id);
+    });
+
+    it('should return 401 without authentication', async () => {
+      const response = await request(app)
+        .post('/api/v1/points/freeze')
+        .send({ amount: 1, reason: 'Test freeze' });
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('POST /api/v1/points/transfer', () => {
+    it('should transfer points between users', async () => {
+      const user1 = await createTestUser();
+      const user2 = await createTestUser();
+      const headers1 = getUserAuthHeader(user1);
+      const _headers2 = getUserAuthHeader(user2);
+
+      // Earn some points for user1
+      await request(app).get('/api/v1/points/account').set(headers1);
+      await request(app).post('/api/v1/points/earn').set(headers1).send({ ruleCode: 'CHECKIN' });
+
+      const response = await request(app)
+        .post('/api/v1/points/transfer')
+        .set(headers1)
+        .send({ toUserId: user2.id, amount: 1, description: 'Test transfer' });
+
+      expect([200, 400]).toContain(response.status);
+      if (response.status === 200) {
+        expect(validateSuccessResponse(response)).toBe(true);
+      }
+
+      await cleanupPointsData(user1.id);
+      await cleanupPointsData(user2.id);
+    });
+
+    it('should return 400 for invalid amount', async () => {
+      const user1 = await createTestUser();
+      const user2 = await createTestUser();
+      const headers1 = getUserAuthHeader(user1);
+
+      const response = await request(app)
+        .post('/api/v1/points/transfer')
+        .set(headers1)
+        .send({ toUserId: user2.id, amount: -1 });
+
+      expect(response.status).toBe(400);
+
+      await cleanupPointsData(user1.id);
+      await cleanupPointsData(user2.id);
+    });
+
+    it('should return 401 without authentication', async () => {
+      const response = await request(app)
+        .post('/api/v1/points/transfer')
+        .send({ toUserId: 'some-user-id', amount: 1 });
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('GET /api/v1/points/transactions/:transactionId', () => {
+    it('should return transaction detail', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      // Create a transaction first
+      await request(app).get('/api/v1/points/account').set(headers);
+      const earnRes = await request(app)
+        .post('/api/v1/points/earn')
+        .set(headers)
+        .send({ ruleCode: 'CHECKIN' });
+
+      const transactionId = earnRes.body.data?.transaction?.id;
+
+      if (transactionId) {
+        const response = await request(app)
+          .get(`/api/v1/points/transactions/${transactionId}`)
+          .set(headers);
+
+        expect(response.status).toBe(200);
+        expect(validateSuccessResponse(response)).toBe(true);
+        const body = response.body as Record<string, unknown>;
+        expect(body.data).toHaveProperty('id', transactionId);
+      }
+
+      await cleanupPointsData(user.id);
+    });
+
+    it('should return 404 for non-existent transaction', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      const response = await request(app)
+        .get('/api/v1/points/transactions/00000000-0000-0000-0000-000000000000')
+        .set(headers);
+
+      expect(response.status).toBe(404);
+      await cleanupPointsData(user.id);
+    });
+
+    it('should return 401 without authentication', async () => {
+      const response = await request(app).get(
+        '/api/v1/points/transactions/00000000-0000-0000-0000-000000000000'
+      );
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('GET /api/v1/points/rules/:ruleCode', () => {
+    it('should return rule detail', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      const response = await request(app).get('/api/v1/points/rules/CHECKIN').set(headers);
+
+      expect(response.status).toBe(200);
+      expect(validateSuccessResponse(response)).toBe(true);
+      const body = response.body as Record<string, unknown>;
+      expect(body.data).toHaveProperty('code', 'CHECKIN');
+
+      await cleanupPointsData(user.id);
+    });
+
+    it('should return 404 for unknown rule', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      const response = await request(app).get('/api/v1/points/rules/UNKNOWN_RULE').set(headers);
+
+      expect(response.status).toBe(404);
+      await cleanupPointsData(user.id);
+    });
+
+    it('should return 401 without authentication', async () => {
+      const response = await request(app).get('/api/v1/points/rules/CHECKIN');
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('GET /api/v1/points/rules/scene/:scene', () => {
+    it('should return rules for specific scene', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      const response = await request(app).get('/api/v1/points/rules/scene/AGENT_DATE').set(headers);
+
+      expect(response.status).toBe(200);
+      expect(validateSuccessResponse(response)).toBe(true);
+      const body = response.body as Record<string, unknown>;
+      expect(body.data).toHaveProperty('rules');
+      expect(Array.isArray((body.data as Record<string, unknown>).rules)).toBe(true);
+
+      await cleanupPointsData(user.id);
+    });
+
+    it('should return 401 without authentication', async () => {
+      const response = await request(app).get('/api/v1/points/rules/scene/AGENT_DATE');
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('POST /api/v1/points/rules/:ruleCode/check-limits', () => {
+    it('should check rule limits', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      const response = await request(app)
+        .post('/api/v1/points/rules/CHECKIN/check-limits')
+        .set(headers)
+        .send({});
+
+      expect(response.status).toBe(200);
+      expect(validateSuccessResponse(response)).toBe(true);
+      const body = response.body as Record<string, unknown>;
+      expect(body.data).toHaveProperty('allowed');
+      expect(body.data).toHaveProperty('remaining');
+
+      await cleanupPointsData(user.id);
+    });
+
+    it('should return 401 without authentication', async () => {
+      const response = await request(app).post('/api/v1/points/rules/CHECKIN/check-limits');
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('GET /api/v1/points/config/value', () => {
+    it('should return value config', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      const response = await request(app).get('/api/v1/points/config/value').set(headers);
+
+      expect(response.status).toBe(200);
+      expect(validateSuccessResponse(response)).toBe(true);
+      const body = response.body as Record<string, unknown>;
+      expect(body.data).toHaveProperty('rmbToPointsRate');
+      expect(body.data).toHaveProperty('pointsToRmbRate');
+
+      await cleanupPointsData(user.id);
+    });
+
+    it('should return 401 without authentication', async () => {
+      const response = await request(app).get('/api/v1/points/config/value');
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('GET /api/v1/points/config/limits', () => {
+    it('should return limit config', async () => {
+      const user = await createTestUser();
+      const headers = getUserAuthHeader(user);
+
+      const response = await request(app).get('/api/v1/points/config/limits').set(headers);
+
+      expect(response.status).toBe(200);
+      expect(validateSuccessResponse(response)).toBe(true);
+      const body = response.body as Record<string, unknown>;
+      expect(body.data).toHaveProperty('dailyEarnLimit');
+
+      await cleanupPointsData(user.id);
+    });
+
+    it('should return 401 without authentication', async () => {
+      const response = await request(app).get('/api/v1/points/config/limits');
+      expect(response.status).toBe(401);
+    });
+  });
 });
