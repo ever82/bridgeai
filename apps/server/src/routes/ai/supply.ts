@@ -339,8 +339,9 @@ router.get(
 
 /**
  * @route   POST /api/v1/ai/extract-supply/sync
- * @desc    同步供给更新到存储
+ * @desc    同步供给更新到存储 (DEPRECATED: 无实际持久化，使用 /extract-supply 替代)
  * @access  Private
+ * @deprecated 此端点返回模拟响应，不做实际持久化。新增供给请使用 POST /extract-supply。
  */
 router.post(
   '/extract-supply/sync',
@@ -350,8 +351,8 @@ router.post(
     try {
       const { supply_id, data } = req.body;
 
-      // TODO(NP-866): 实现供给数据同步到 Supply 表的持久化逻辑
-      // 当前为占位实现，仅记录请求并返回模拟成功响应
+      // DEPRECATED: 占位实现，仅记录请求并返回模拟成功响应
+      // 此端点将在未来版本中移除
       logger.info('Supply sync request received', { supplyId: supply_id });
 
       res.json({

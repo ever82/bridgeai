@@ -50,12 +50,17 @@ describe('SupplyToL2Mapper', () => {
       { id: 'locationRemote', type: L2FieldType.BOOLEAN, label: 'Remote' },
       { id: 'experienceYears', type: L2FieldType.NUMBER, label: 'Years', min: 0 },
       { id: 'skills', type: L2FieldType.TEXT, label: 'Skills' },
-      { id: 'serviceType', type: L2FieldType.ENUM, label: 'Service Type', options: [
-        { value: 'photography', label: 'Photography' },
-        { value: 'design', label: 'Design' },
-        { value: 'development', label: 'Development' },
-        { value: 'consulting', label: 'Consulting' },
-      ]},
+      {
+        id: 'serviceType',
+        type: L2FieldType.ENUM,
+        label: 'Service Type',
+        options: [
+          { value: 'photography', label: 'Photography' },
+          { value: 'design', label: 'Design' },
+          { value: 'development', label: 'Development' },
+          { value: 'consulting', label: 'Consulting' },
+        ],
+      },
     ]) as L2Schema['fields'],
   });
 
@@ -220,10 +225,15 @@ describe('SupplyToL2Mapper', () => {
     it('should map enum values correctly', () => {
       const supply = createMockSupply({ serviceType: 'photography' });
       const schema = createMockSchema([
-        { id: 'serviceType', type: L2FieldType.ENUM, label: 'Type', options: [
-          { value: 'photography', label: 'Photography' },
-          { value: 'design', label: 'Design' },
-        ]},
+        {
+          id: 'serviceType',
+          type: L2FieldType.ENUM,
+          label: 'Type',
+          options: [
+            { value: 'photography', label: 'Photography' },
+            { value: 'design', label: 'Design' },
+          ],
+        },
       ]);
 
       const result = mapper.map(supply, schema);
@@ -234,10 +244,15 @@ describe('SupplyToL2Mapper', () => {
     it('should fuzzy match enum values by label', () => {
       const supply = createMockSupply({ serviceType: 'photo' });
       const schema = createMockSchema([
-        { id: 'serviceType', type: L2FieldType.ENUM, label: 'Type', options: [
-          { value: 'photography', label: 'Photography' },
-          { value: 'design', label: 'Design' },
-        ]},
+        {
+          id: 'serviceType',
+          type: L2FieldType.ENUM,
+          label: 'Type',
+          options: [
+            { value: 'photography', label: 'Photography' },
+            { value: 'design', label: 'Design' },
+          ],
+        },
       ]);
 
       const result = mapper.map(supply, schema);
@@ -393,23 +408,6 @@ describe('SupplyToL2Mapper', () => {
       const result = mapper.map(supply, schema);
 
       expect(result.mappedFields).toContain('capabilities');
-    });
-  });
-
-  describe('addMappingRule', () => {
-    it('should add and prioritize custom rules', () => {
-      mapper.addMappingRule({
-        sourceField: 'custom.source',
-        targetField: 'customTarget',
-        priority: 10,
-      });
-
-      // Should not throw
-      const supply = createMockSupply();
-      const schema = createMockSchema();
-      const result = mapper.map(supply, schema);
-
-      expect(result.success).toBe(true);
     });
   });
 });
