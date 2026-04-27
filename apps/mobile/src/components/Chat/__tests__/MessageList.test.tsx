@@ -1,22 +1,37 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
-import { View, Text } from 'react-native';
 
 import { ChatMessage } from '../../../types/chat';
 import { MessageList } from '../MessageList';
 
-jest.mock('../MessageBubble', () => ({
-  MessageBubble: props =>
-    React.createElement(
-      View,
-      { testID: 'message-bubble', ...props },
-      React.createElement(Text, null, props.message?.content)
-    ),
-}));
+jest.mock('../MessageBubble', () => {
+  const R = jest.requireActual('react') as typeof React;
+  const RN = jest.requireActual('react-native') as {
+    View: React.ComponentType<unknown>;
+    Text: React.ComponentType<unknown>;
+  };
+  return {
+    MessageBubble: (props: Record<string, unknown>) =>
+      R.createElement(
+        RN.View,
+        { testID: 'message-bubble', ...props },
+        R.createElement(
+          RN.Text,
+          null,
+          (props as { message?: { content?: string } }).message?.content
+        )
+      ),
+  };
+});
 
-jest.mock('../SenderIndicator', () => ({
-  SenderChangeIndicator: props => React.createElement(View, { testID: 'sender-change', ...props }),
-}));
+jest.mock('../SenderIndicator', () => {
+  const R = jest.requireActual('react') as typeof React;
+  const RN = jest.requireActual('react-native') as { View: React.ComponentType<unknown> };
+  return {
+    SenderChangeIndicator: (props: Record<string, unknown>) =>
+      R.createElement(RN.View, { testID: 'sender-change', ...props }),
+  };
+});
 
 function makeMessage(overrides: Partial<ChatMessage> = {}): ChatMessage {
   return {

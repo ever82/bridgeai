@@ -3,7 +3,7 @@
  * 聊天相关 API 调用
  */
 
-import { ChatRoom, ChatMessage, RoomParticipant } from '../types/chat';
+import { ChatRoom, ChatMessage, RoomParticipant, MessageType } from '../types/chat';
 import { useAuthStore } from '../stores/authStore';
 
 // API 基础配置
@@ -265,7 +265,7 @@ export async function sendMessage(
   roomId: string,
   input: {
     content: string;
-    type?: 'TEXT' | 'IMAGE' | 'FILE';
+    type?: MessageType;
     attachments?: Array<{
       type: 'image' | 'file' | 'audio';
       url: string;

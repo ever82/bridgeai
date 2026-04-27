@@ -1,28 +1,38 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { SenderType, HandoffStatus, SENDER_TYPE_LABELS } from '@bridgeai/shared';
+import { Animated } from 'react-native';
+import { SenderType, HandoffStatus } from '@bridgeai/shared';
 
 import { SenderIndicator, SenderChangeIndicator } from '../SenderIndicator';
 
 // Mock Animated
-jest.mock('react-native', () => ({
-  ...jest.requireActual('react-native'),
-  Animated: {
-    Value: jest.fn(() => ({ setValue: jest.fn() })),
-    parallel: jest.fn(() => ({ start: jest.fn() })),
-    sequence: jest.fn(() => ({ start: jest.fn() })),
-    spring: jest.fn(() => ({ start: jest.fn() })),
-    timing: jest.fn(() => ({ start: jest.fn() })),
-  },
-}));
+jest.mock('react-native', () => {
+  const RN = jest.requireActual('react-native');
+  return {
+    ...RN,
+    Animated: {
+      ...RN.Animated,
+      Value: jest.fn(() => ({ setValue: jest.fn() })),
+      View: RN.View,
+      Text: RN.Text,
+      Image: RN.Image,
+      parallel: jest.fn(() => ({ start: jest.fn() })),
+      sequence: jest.fn(() => ({ start: jest.fn() })),
+      spring: jest.fn(() => ({ start: jest.fn() })),
+      timing: jest.fn(() => ({ start: jest.fn() })),
+    },
+  };
+});
 
 describe('SenderIndicator', () => {
   describe('Agent Sender', () => {
     it('should render agent indicator', () => {
-      const { getByText } = render(<SenderIndicator senderType={SenderType.AGENT} />);
+      const { getAllByText, getByTestId } = render(
+        <SenderIndicator senderType={SenderType.AGENT} testID="sender" />
+      );
 
-      expect(getByText('🤖')).toBeTruthy();
-      expect(getByText(SENDER_TYPE_LABELS[SenderType.AGENT])).toBeTruthy();
+      expect(getAllByText('AI Agent').length).toBeGreaterThan(0);
+      expect(getByTestId('sender-avatar')).toBeTruthy();
     });
 
     it('should show agent label with sender name', () => {
@@ -30,16 +40,18 @@ describe('SenderIndicator', () => {
         <SenderIndicator senderType={SenderType.AGENT} senderName="AI Assistant" />
       );
 
-      expect(getByText('AI Assistant')).toBeTruthy();
+      expect(getByText('AI Assistant 的 Agent')).toBeTruthy();
     });
   });
 
   describe('Human Sender', () => {
     it('should render human indicator', () => {
-      const { getByText } = render(<SenderIndicator senderType={SenderType.HUMAN} />);
+      const { getAllByText, getByTestId } = render(
+        <SenderIndicator senderType={SenderType.HUMAN} testID="sender" />
+      );
 
-      expect(getByText('👤')).toBeTruthy();
-      expect(getByText(SENDER_TYPE_LABELS[SenderType.HUMAN])).toBeTruthy();
+      expect(getAllByText('Human').length).toBeGreaterThan(0);
+      expect(getByTestId('sender-avatar')).toBeTruthy();
     });
 
     it('should show human label with sender name', () => {
@@ -53,10 +65,12 @@ describe('SenderIndicator', () => {
 
   describe('System Sender', () => {
     it('should render system indicator', () => {
-      const { getByText } = render(<SenderIndicator senderType={SenderType.SYSTEM} />);
+      const { getAllByText, getByTestId } = render(
+        <SenderIndicator senderType={SenderType.SYSTEM} testID="sender" />
+      );
 
-      expect(getByText('⚙️')).toBeTruthy();
-      expect(getByText(SENDER_TYPE_LABELS[SenderType.SYSTEM])).toBeTruthy();
+      expect(getAllByText('System').length).toBeGreaterThan(0);
+      expect(getByTestId('sender-avatar')).toBeTruthy();
     });
   });
 
@@ -97,21 +111,21 @@ describe('SenderIndicator', () => {
 
   describe('Animation', () => {
     it('should animate by default', () => {
-      const { UNSAFE_getByType } = render(
-        <SenderIndicator senderType={SenderType.AGENT} animate={true} />
+      const { UNSAFE_getByType, getByTestId } = render(
+        <SenderIndicator senderType={SenderType.AGENT} animate={true} testID="sender" />
       );
 
-      // Should render Animated.View wrapper
+      expect(getByTestId('sender')).toBeTruthy();
       expect(UNSAFE_getByType(Animated.View)).toBeTruthy();
     });
 
     it('should skip animation when animate is false', () => {
-      const { getByText } = render(
-        <SenderIndicator senderType={SenderType.AGENT} animate={false} />
+      const { getAllByText, getByTestId } = render(
+        <SenderIndicator senderType={SenderType.AGENT} animate={false} testID="sender" />
       );
 
-      expect(getByText('🤖')).toBeTruthy();
-      expect(getByText(SENDER_TYPE_LABELS[SenderType.AGENT])).toBeTruthy();
+      expect(getAllByText('AI Agent').length).toBeGreaterThan(0);
+      expect(getByTestId('sender')).toBeTruthy();
     });
   });
 

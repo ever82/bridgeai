@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  RefreshControl,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
 
 import { ChatRoom, ChatRoomListProps, ChatRoomListItemProps } from '../../types/chat';
 import { ConversationItem } from '../ConversationItem/ConversationItem';
@@ -65,7 +58,6 @@ const ChatRoomListItem: React.FC<ChatRoomListItemProps> = ({
     lastMessage={getLastMessagePreview(room)}
     lastMessageTime={room.lastMessageAt ?? room.updatedAt}
     unreadCount={room.unreadCount}
-    userType={room.type === 'PRIVATE' ? 'agent' : 'human'}
     onPress={() => onPress?.(room)}
     onLongPress={() => onLongPress?.(room)}
     style={selected ? styles.selectedContainer : undefined}
