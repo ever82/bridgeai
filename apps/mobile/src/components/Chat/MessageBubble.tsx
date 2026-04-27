@@ -1,5 +1,14 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ViewStyle,
+  Alert,
+  Clipboard,
+} from 'react-native';
 import { SenderType, SENDER_TYPE_COLORS } from '@bridgeai/shared';
 
 import { UserAvatar } from '../UserAvatar/UserAvatar';
@@ -17,6 +26,8 @@ export interface MessageBubbleProps {
   onPress?: (message: ChatMessage) => void;
   onLongPress?: (message: ChatMessage) => void;
   onImagePress?: (attachment: MessageAttachment) => void;
+  onDelete?: (message: ChatMessage) => void;
+  onReport?: (message: ChatMessage) => void;
   status?: MessageStatusType;
   totalMembers?: number;
   style?: ViewStyle;
@@ -34,6 +45,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   onPress,
   onLongPress,
   onImagePress,
+  onDelete,
+  onReport,
   status = 'sent',
   totalMembers,
   style,
@@ -120,6 +133,21 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const handleLongPress = () => {
+    Alert.alert(
+      '',
+      undefined,
+      [
+        { text: '复制', onPress: () => Clipboard.setString(message.content) },
+        ...(onDelete ? [{ text: '删除', onPress: () => onDelete(message) }] : []),
+        ...(onReport ? [{ text: '举报', onPress: () => onReport(message) }] : []),
+        { text: '取消', style: 'cancel' },
+      ],
+      { cancelable: true }
+    );
+    onLongPress?.(message);
+  };
+
   const senderDisplayName = resolved.displayName;
   const senderAvatarUrl = resolved.avatarUrl;
   const isAgent = senderType === SenderType.AGENT;
@@ -145,9 +173,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             showStatus={false}
             testID={`${testID}-avatar`}
           />
-          {senderDisplayName ? (
-            <Text style={styles.senderName}>{senderDisplayName}</Text>
-          ) : null}
+          {senderDisplayName ? <Text style={styles.senderName}>{senderDisplayName}</Text> : null}
           <IdentityBadge
             type={isAgent ? 'agent' : 'verified'}
             size="sm"
@@ -165,7 +191,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           own ? { backgroundColor: senderColor } : { backgroundColor: '#F0F0F0' },
         ]}
         onPress={() => onPress?.(message)}
-        onLongPress={() => onLongPress?.(message)}
+        onLongPress={handleLongPress}
         activeOpacity={0.7}
       >
         {/* Own-message identity badge */}

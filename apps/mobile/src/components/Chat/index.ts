@@ -21,3 +21,7 @@ export { ChatInput } from './ChatInput';
 export type { ChatInputProps } from './ChatInput';
 export { QuickReply } from './QuickReply';
 export type { QuickReplyProps, QuickReplyItem } from './QuickReply';
+export { default as AttachmentPicker } from './AttachmentPicker';
+export type { AttachmentPickerProps } from './AttachmentPicker';
+export { IdentitySwitcher } from './IdentitySwitcher';
+export type { IdentitySwitcherProps } from './IdentitySwitcher';

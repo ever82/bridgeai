@@ -9,6 +9,7 @@ import {
   ViewStyle,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
 
 import { theme } from '../../theme';
@@ -99,6 +100,7 @@ const EMOJI_CATEGORIES = [
 export interface ChatInputProps {
   onSend: (text: string) => void;
   onAttachmentPress?: () => void;
+  onVoiceInput?: () => void;
   placeholder?: string;
   disabled?: boolean;
   style?: ViewStyle;
@@ -108,6 +110,7 @@ export interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = ({
   onSend,
   onAttachmentPress,
+  onVoiceInput,
   placeholder = '输入消息...',
   disabled = false,
   style,
@@ -115,6 +118,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const [text, setText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(0);
   const inputRef = useRef<TextInput>(null);
 
   const handleSend = useCallback(() => {
@@ -150,8 +154,26 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     >
       {showEmojiPicker && (
         <View style={styles.emojiPicker}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryTabs}>
+            {EMOJI_CATEGORIES.map((category, index) => (
+              <TouchableOpacity
+                key={category.name}
+                style={[styles.categoryTab, selectedCategory === index && styles.categoryTabActive]}
+                onPress={() => setSelectedCategory(index)}
+              >
+                <Text
+                  style={[
+                    styles.categoryTabText,
+                    selectedCategory === index && styles.categoryTabTextActive,
+                  ]}
+                >
+                  {category.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
           <FlatList
-            data={EMOJI_CATEGORIES[0].emojis}
+            data={EMOJI_CATEGORIES[selectedCategory].emojis}
             renderItem={renderEmojiItem}
             keyExtractor={(item, index) => `${item}-${index}`}
             numColumns={8}
@@ -169,6 +191,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         >
           <Text style={styles.actionIcon}>{showEmojiPicker ? '⌨️' : '😊'}</Text>
         </TouchableOpacity>
+
+        {onVoiceInput && (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={onVoiceInput}
+            testID="voice-input-button"
+          >
+            <Text style={styles.actionIcon}>🎤</Text>
+          </TouchableOpacity>
+        )}
 
         {onAttachmentPress && (
           <TouchableOpacity
@@ -217,6 +249,26 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     backgroundColor: theme.colors.backgroundSecondary,
+  },
+  categoryTabs: {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  categoryTab: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
+  categoryTabActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: theme.colors.primary,
+  },
+  categoryTabText: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+  },
+  categoryTabTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '600',
   },
   emojiGrid: {
     padding: theme.spacing.sm,

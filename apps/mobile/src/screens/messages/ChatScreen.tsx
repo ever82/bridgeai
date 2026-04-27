@@ -68,6 +68,12 @@ export const ChatScreen = ({ route }: Props) => {
       }
     };
 
+    const handleQuickReplies = (data: { roomId: string; replies: QuickReplyItem[] }) => {
+      if (data.roomId === conversationId) {
+        setQuickReplies(data.replies);
+      }
+    };
+
     // Reconnection sync: after socket reconnects, re-fetch messages to
     // pick up any missed messages and ensure sender identities are in sync.
     const handleReconnected = () => {
@@ -77,12 +83,14 @@ export const ChatScreen = ({ route }: Props) => {
     socketClient.on('chat:message', handleNewMessage);
     socketClient.on('chat:typing', handleTyping);
     socketClient.on('chat:stop_typing', handleStopTyping);
+    socketClient.on('chat:quick_replies', handleQuickReplies);
     socketClient.on('reconnected', handleReconnected);
 
     return () => {
       socketClient.off('chat:message', handleNewMessage);
       socketClient.off('chat:typing', handleTyping);
       socketClient.off('chat:stop_typing', handleStopTyping);
+      socketClient.off('chat:quick_replies', handleQuickReplies);
       socketClient.off('reconnected', handleReconnected);
     };
   }, [conversationId, currentUserId, loadMessages]);
