@@ -3,7 +3,7 @@
  * 提供积分操作的高层API，整合规则引擎和交易服务
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import {
   PointsTransaction,
   PointsFreeze,
@@ -14,6 +14,8 @@ import {
   PointsOperationResult,
   PointsTransactionType,
   SceneCode,
+  PointsStatsResponse,
+  PointsTransactionStatsByType,
 } from '@bridgeai/shared';
 
 import { prisma } from '../db/client';
@@ -230,6 +232,9 @@ export class PointsService {
         error: `Minimum recharge amount is ${config.minRechargeAmount} RMB`,
       };
     }
+
+    // Ensure account exists
+    await this.getOrCreateAccount(userId);
 
     const points = calculateRechargePoints(rmbAmount);
 
@@ -618,7 +623,7 @@ export class PointsService {
     const { page = 1, pageSize = 20 } = options;
     const skip = (page - 1) * pageSize;
 
-    const where: any = { userId };
+    const where: Prisma.PointsTransactionWhereInput = { userId };
 
     if (filter.type) {
       where.type = filter.type;
@@ -674,6 +679,155 @@ export class PointsService {
     });
 
     return transaction as unknown as PointsTransaction | null;
+  }
+
+  /**
+   * 获取交易统计（按类型分类）
+   */
+  async getTransactionStats(userId: string): Promise<PointsStatsResponse> {
+    const account = await this.prisma.pointsAccount.findUnique({
+      where: { userId },
+    });
+
+    if (!account) {
+      return {
+        balance: 0,
+        totalEarned: 0,
+        totalSpent: 0,
+        frozenAmount: 0,
+        availableBalance: 0,
+        byType: [],
+        recentStats: {
+          dailyEarned: 0,
+          weeklyEarned: 0,
+          dailySpent: 0,
+          weeklySpent: 0,
+        },
+      };
+    }
+
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(startOfDay);
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
+    // 按类型统计
+    const statsByType = await this.prisma.pointsTransaction.groupBy({
+      by: ['type'],
+      where: { userId },
+      _count: { id: true },
+      _sum: { amount: true },
+    });
+
+    const byType: PointsTransactionStatsByType[] = statsByType.map(s => ({
+      type: s.type as PointsTransactionType,
+      count: s._count.id,
+      totalAmount: s._sum.amount ?? 0,
+    }));
+
+    // 按类型分别获取今日/本周数据
+    const earnTypes: Prisma.PointsTransactionType[] = ['EARN'];
+    const spendTypes: Prisma.PointsTransactionType[] = ['SPEND'];
+
+    const [dailyEarned, weeklyEarned, dailySpent, weeklySpent] = await Promise.all([
+      this.prisma.pointsTransaction.aggregate({
+        where: {
+          userId,
+          type: { in: earnTypes },
+          createdAt: { gte: startOfDay },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.pointsTransaction.aggregate({
+        where: {
+          userId,
+          type: { in: earnTypes },
+          createdAt: { gte: startOfWeek },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.pointsTransaction.aggregate({
+        where: {
+          userId,
+          type: { in: spendTypes },
+          createdAt: { gte: startOfDay },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.pointsTransaction.aggregate({
+        where: {
+          userId,
+          type: { in: spendTypes },
+          createdAt: { gte: startOfWeek },
+        },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    return {
+      balance: account.balance,
+      totalEarned: account.totalEarned,
+      totalSpent: account.totalSpent,
+      frozenAmount: account.frozenAmount,
+      availableBalance: account.balance - account.frozenAmount,
+      byType,
+      recentStats: {
+        dailyEarned: dailyEarned._sum.amount ?? 0,
+        weeklyEarned: weeklyEarned._sum.amount ?? 0,
+        dailySpent: Math.abs(dailySpent._sum.amount ?? 0),
+        weeklySpent: Math.abs(weeklySpent._sum.amount ?? 0),
+      },
+    };
+  }
+
+  /**
+   * 导出交易记录为CSV格式
+   */
+  async exportTransactions(userId: string, filter: TransactionFilter = {}): Promise<string> {
+    const where: Prisma.PointsTransactionWhereInput = { userId };
+
+    if (filter.type) {
+      where.type = filter.type;
+    }
+
+    if (filter.scene) {
+      where.scene = filter.scene;
+    }
+
+    if (filter.startDate || filter.endDate) {
+      where.createdAt = {};
+      if (filter.startDate) {
+        where.createdAt.gte = filter.startDate;
+      }
+      if (filter.endDate) {
+        where.createdAt.lte = filter.endDate;
+      }
+    }
+
+    const transactions = await this.prisma.pointsTransaction.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: 10000, // 限制导出数量
+    });
+
+    // CSV 头部
+    const headers = ['ID', 'Type', 'Amount', 'Balance After', 'Description', 'Scene', 'Created At'];
+    const rows = transactions.map(t => [
+      t.id,
+      t.type,
+      t.amount.toString(),
+      t.balanceAfter.toString(),
+      t.description ?? '',
+      t.scene ?? '',
+      t.createdAt.toISOString(),
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+    ].join('\n');
+
+    return csvContent;
   }
 
   // ==================== 规则查询 ====================

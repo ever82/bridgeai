@@ -149,3 +149,32 @@ export interface PointsStatistics {
   dailySpent: number;
   weeklySpent: number;
 }
+
+// 按交易类型分类的统计
+export interface PointsTransactionStatsByType {
+  type: PointsTransactionType;
+  count: number;
+  totalAmount: number;
+}
+
+// 积分统计响应
+export interface PointsStatsResponse {
+  balance: number;
+  totalEarned: number;
+  totalSpent: number;
+  frozenAmount: number;
+  availableBalance: number;
+  byType: PointsTransactionStatsByType[];
+  recentStats: {
+    dailyEarned: number;
+    weeklyEarned: number;
+    dailySpent: number;
+    weeklySpent: number;
+  };
+}
+
+// 导出格式枚举
+export enum ExportFormat {
+  CSV = 'csv',
+  XLSX = 'xlsx',
+}

@@ -994,6 +994,32 @@ export interface PointsStatistics {
   weeklySpent: number;
 }
 
+export interface PointsTransactionStatsByType {
+  type: PointsTransactionType;
+  count: number;
+  totalAmount: number;
+}
+
+export interface PointsStatsResponse {
+  balance: number;
+  totalEarned: number;
+  totalSpent: number;
+  frozenAmount: number;
+  availableBalance: number;
+  byType: PointsTransactionStatsByType[];
+  recentStats: {
+    dailyEarned: number;
+    weeklyEarned: number;
+    dailySpent: number;
+    weeklySpent: number;
+  };
+}
+
+export enum ExportFormat {
+  CSV = 'csv',
+  XLSX = 'xlsx',
+}
+
 // Dating types for AgentDate extractor
 export enum PersonalityTrait {
   INTROVERTED = 'INTROVERTED',

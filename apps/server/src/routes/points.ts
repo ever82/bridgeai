@@ -384,6 +384,35 @@ router.get(
 );
 
 /**
+ * GET /api/v1/points/transactions/export
+ * 导出交易记录
+ */
+router.get('/transactions/export', authenticate, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const format = String(req.query.format || 'csv');
+
+    if (format !== 'csv' && format !== 'xlsx') {
+      return res.status(400).json({ success: false, error: 'Unsupported format' });
+    }
+
+    const filter: Record<string, unknown> = {};
+    if (req.query.type) filter.type = req.query.type;
+    if (req.query.scene) filter.scene = req.query.scene;
+    if (req.query.startDate) filter.startDate = new Date(String(req.query.startDate));
+    if (req.query.endDate) filter.endDate = new Date(String(req.query.endDate));
+
+    const csvContent = await pointsService.exportTransactions(userId, filter);
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="points-transactions.csv"');
+    res.send(csvContent);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
  * GET /api/v1/points/transactions/:transactionId
  * 获取交易详情
  */
@@ -405,6 +434,20 @@ router.get(
     }
   }
 );
+
+/**
+ * GET /api/v1/points/stats
+ * 获取积分统计（按类型分类）
+ */
+router.get('/stats', authenticate, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const stats = await pointsService.getTransactionStats(userId);
+    res.json({ success: true, data: stats });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // ==================== 规则查询 ====================
 

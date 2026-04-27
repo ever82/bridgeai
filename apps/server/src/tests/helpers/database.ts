@@ -14,10 +14,9 @@ const originalDatabaseUrl = process.env.DATABASE_URL;
  */
 export function configureTestDatabase(): void {
   // Use test database URL if available, otherwise append _test to database name
-  const testDbUrl = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL?.replace(
-    /\/([^/]+)$/,
-    '/bridgeai_test'
-  );
+  const testDbUrl =
+    process.env.TEST_DATABASE_URL ||
+    process.env.DATABASE_URL?.replace(/\/([^/]+)$/, '/bridgeai_test');
 
   if (testDbUrl) {
     process.env.DATABASE_URL = testDbUrl;
@@ -37,6 +36,9 @@ export async function cleanDatabase(): Promise<void> {
     'Match',
     'RefreshToken',
     'User',
+    'PointsTransaction',
+    'PointsFreeze',
+    'PointsAccount',
   ];
 
   // Disable foreign key checks temporarily for cleaning
@@ -81,26 +83,27 @@ export async function teardownTestDatabase(): Promise<void> {
  * Wraps a test function in a transaction that gets rolled back after completion
  * Note: This requires PostgreSQL and Prisma's interactive transactions
  */
-export async function withTransaction<T>(
-  fn: () => Promise<T>
-): Promise<T> {
-  return await prisma.$transaction(async (tx: typeof prisma) => {
-    try {
-      // Temporarily replace global prisma with transaction client
-      const result = await fn();
-      // Rollback by throwing a special error that's caught
-      throw new TransactionRollbackError(result);
-    } catch (error) {
-      if (error instanceof TransactionRollbackError) {
-        return error.result as T;
+export async function withTransaction<T>(fn: () => Promise<T>): Promise<T> {
+  return await prisma.$transaction(
+    async (_tx: typeof prisma) => {
+      try {
+        // Temporarily replace global prisma with transaction client
+        const result = await fn();
+        // Rollback by throwing a special error that's caught
+        throw new TransactionRollbackError(result);
+      } catch (error) {
+        if (error instanceof TransactionRollbackError) {
+          return error.result as T;
+        }
+        throw error;
       }
-      throw error;
+    },
+    {
+      isolationLevel: 'Serializable',
+      maxWait: 5000,
+      timeout: 10000,
     }
-  }, {
-    isolationLevel: 'Serializable',
-    maxWait: 5000,
-    timeout: 10000,
-  });
+  );
 }
 
 /**

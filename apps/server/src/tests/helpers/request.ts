@@ -87,10 +87,13 @@ export class RequestBuilder {
    * Set query parameters
    */
   setQuery(params: Record<string, string | number | boolean>): this {
-    this.queryParams = Object.entries(params).reduce((acc, [key, value]) => {
-      acc[key] = String(value);
-      return acc;
-    }, {} as Record<string, string>);
+    this.queryParams = Object.entries(params).reduce(
+      (acc, [key, value]) => {
+        acc[key] = String(value);
+        return acc;
+      },
+      {} as Record<string, string>
+    );
     return this;
   }
 
@@ -106,7 +109,12 @@ export class RequestBuilder {
    * Execute the request
    */
   async execute<T = unknown>(): Promise<TestResponse<T>> {
-    const methodLower = this.httpMethod.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete';
+    const methodLower = this.httpMethod.toLowerCase() as
+      | 'get'
+      | 'post'
+      | 'put'
+      | 'patch'
+      | 'delete';
     let req = (request(app) as any)[methodLower](this.requestPath);
 
     // Set timeout
@@ -152,13 +160,8 @@ export const Request = {
   /**
    * GET request
    */
-  async get<T = unknown>(
-    path: string,
-    options: RequestOptions = {}
-  ): Promise<TestResponse<T>> {
-    const builder = new RequestBuilder()
-      .setMethod('GET')
-      .setPath(path);
+  async get<T = unknown>(path: string, options: RequestOptions = {}): Promise<TestResponse<T>> {
+    const builder = new RequestBuilder().setMethod('GET').setPath(path);
 
     if (options.headers) {
       builder.setHeaders(options.headers);
@@ -183,10 +186,7 @@ export const Request = {
     body: unknown,
     options: RequestOptions = {}
   ): Promise<TestResponse<T>> {
-    const builder = new RequestBuilder()
-      .setMethod('POST')
-      .setPath(path)
-      .setBody(body);
+    const builder = new RequestBuilder().setMethod('POST').setPath(path).setBody(body);
 
     if (options.headers) {
       builder.setHeaders(options.headers);
@@ -207,10 +207,7 @@ export const Request = {
     body: unknown,
     options: RequestOptions = {}
   ): Promise<TestResponse<T>> {
-    const builder = new RequestBuilder()
-      .setMethod('PUT')
-      .setPath(path)
-      .setBody(body);
+    const builder = new RequestBuilder().setMethod('PUT').setPath(path).setBody(body);
 
     if (options.headers) {
       builder.setHeaders(options.headers);
@@ -231,10 +228,7 @@ export const Request = {
     body: unknown,
     options: RequestOptions = {}
   ): Promise<TestResponse<T>> {
-    const builder = new RequestBuilder()
-      .setMethod('PATCH')
-      .setPath(path)
-      .setBody(body);
+    const builder = new RequestBuilder().setMethod('PATCH').setPath(path).setBody(body);
 
     if (options.headers) {
       builder.setHeaders(options.headers);
@@ -250,13 +244,8 @@ export const Request = {
   /**
    * DELETE request
    */
-  async delete<T = unknown>(
-    path: string,
-    options: RequestOptions = {}
-  ): Promise<TestResponse<T>> {
-    const builder = new RequestBuilder()
-      .setMethod('DELETE')
-      .setPath(path);
+  async delete<T = unknown>(path: string, options: RequestOptions = {}): Promise<TestResponse<T>> {
+    const builder = new RequestBuilder().setMethod('DELETE').setPath(path);
 
     if (options.headers) {
       builder.setHeaders(options.headers);
@@ -298,6 +287,20 @@ export const ApiPaths = {
     create: '/api/v1/agents',
     update: (id: string) => `/api/v1/agents/${id}`,
     delete: (id: string) => `/api/v1/agents/${id}`,
+  },
+  points: {
+    account: '/api/v1/points/account',
+    balance: '/api/v1/points/balance',
+    transactions: '/api/v1/points/transactions',
+    transactionDetail: (id: string) => `/api/v1/points/transactions/${id}`,
+    transactionsExport: '/api/v1/points/transactions/export',
+    stats: '/api/v1/points/stats',
+    freezes: '/api/v1/points/freezes',
+    rules: '/api/v1/points/rules',
+    earn: '/api/v1/points/earn',
+    spend: '/api/v1/points/spend',
+    checkin: '/api/v1/points/checkin',
+    recharge: '/api/v1/points/recharge',
   },
 };
 
