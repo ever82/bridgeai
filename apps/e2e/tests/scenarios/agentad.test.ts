@@ -551,8 +551,7 @@ test.describe('AgentAd场景', () => {
         },
       });
 
-      // Discard agent creation result, we only need token for comparison
-      await agentResponse.json();
+      const _agent = await agentResponse.json();
 
       // 按价格排序
       const compareResponse = await apiContext.get(
