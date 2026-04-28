@@ -10,6 +10,7 @@ import { authenticate } from '../../middleware/auth';
 import { validate as validateRequest } from '../../middleware/validation';
 import { visionShareTaskService } from '../../services/visionShare/taskService';
 import { publishValidationService } from '../../services/visionShare/publishValidation';
+import { checkTaskEligibility } from '../../services/visionShare/acceptTask';
 import { visionShareDemandRefinementService } from '../../services/ai/visionShareDemandRefinement';
 import { logger } from '../../utils/logger';
 
@@ -67,360 +68,365 @@ router.post(
  * POST /api/visionshare/tasks/:id/refine
  * AI提炼需求
  */
-router.post(
-  '/tasks/:id/refine',
-  authenticate,
-  async (req: Request, res: Response) => {
-    try {
-      const userId = req.user!.id;
-      const taskId = req.params.id;
-      const { description } = req.body;
+router.post('/tasks/:id/refine', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const taskId = req.params.id;
+    const { description } = req.body;
 
-      if (!description) {
-        return res.status(400).json({
-          success: false,
-          error: '请提供需求描述',
-        });
-      }
-
-      const refinement = await visionShareTaskService.refineDemand(taskId, description, userId);
-
-      res.json({
-        success: true,
-        data: { refinement },
-      });
-    } catch (error) {
-      loggerCtx.error('Refine demand failed', { error });
-      res.status(500).json({
+    if (!description) {
+      return res.status(400).json({
         success: false,
-        error: '需求提炼失败',
+        error: '请提供需求描述',
       });
     }
+
+    const refinement = await visionShareTaskService.refineDemand(taskId, description, userId);
+
+    res.json({
+      success: true,
+      data: { refinement },
+    });
+  } catch (error) {
+    loggerCtx.error('Refine demand failed', { error });
+    res.status(500).json({
+      success: false,
+      error: '需求提炼失败',
+    });
   }
-);
+});
 
 /**
  * POST /api/visionshare/tasks/:id/publish
  * 发布任务
  */
-router.post(
-  '/tasks/:id/publish',
-  authenticate,
-  async (req: Request, res: Response) => {
-    try {
-      const userId = req.user!.id;
-      const taskId = req.params.id;
+router.post('/tasks/:id/publish', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const taskId = req.params.id;
 
-      const result = await visionShareTaskService.publishTask(userId, taskId);
+    const result = await visionShareTaskService.publishTask(userId, taskId);
 
-      if (result.success) {
-        res.json({
-          success: true,
-          data: {
-            task: result.task,
-            estimatedMatchTime: result.estimatedMatchTime,
-            shareLink: result.shareLink,
-          },
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          errors: result.errors,
-        });
-      }
-    } catch (error) {
-      loggerCtx.error('Publish task failed', { error });
-      res.status(500).json({
+    if (result.success) {
+      res.json({
+        success: true,
+        data: {
+          task: result.task,
+          estimatedMatchTime: result.estimatedMatchTime,
+          shareLink: result.shareLink,
+        },
+      });
+    } else {
+      res.status(400).json({
         success: false,
-        error: '发布任务失败',
+        errors: result.errors,
       });
     }
+  } catch (error) {
+    loggerCtx.error('Publish task failed', { error });
+    res.status(500).json({
+      success: false,
+      error: '发布任务失败',
+    });
   }
-);
+});
 
 /**
  * PUT /api/visionshare/tasks/:id
  * 更新任务（仅草稿）
  */
-router.put(
-  '/tasks/:id',
-  authenticate,
-  async (req: Request, res: Response) => {
-    try {
-      const userId = req.user!.id;
-      const taskId = req.params.id;
-      const data = req.body as UpdateTaskRequest;
+router.put('/tasks/:id', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const taskId = req.params.id;
+    const data = req.body as UpdateTaskRequest;
 
-      const task = await visionShareTaskService.updateTask(userId, taskId, data);
+    const task = await visionShareTaskService.updateTask(userId, taskId, data);
 
-      if (!task) {
-        return res.status(404).json({
-          success: false,
-          error: '任务不存在或无权访问',
-        });
-      }
-
-      res.json({
-        success: true,
-        data: { task },
-      });
-    } catch (error) {
-      if ((error as Error).message?.includes('只有草稿状态')) {
-        return res.status(400).json({
-          success: false,
-          error: (error as Error).message,
-        });
-      }
-      loggerCtx.error('Update task failed', { error });
-      res.status(500).json({
+    if (!task) {
+      return res.status(404).json({
         success: false,
-        error: '更新任务失败',
+        error: '任务不存在或无权访问',
       });
     }
+
+    res.json({
+      success: true,
+      data: { task },
+    });
+  } catch (error) {
+    if ((error as Error).message?.includes('只有草稿状态')) {
+      return res.status(400).json({
+        success: false,
+        error: (error as Error).message,
+      });
+    }
+    loggerCtx.error('Update task failed', { error });
+    res.status(500).json({
+      success: false,
+      error: '更新任务失败',
+    });
   }
-);
+});
 
 /**
  * DELETE /api/visionshare/tasks/:id
  * 取消任务
  */
-router.delete(
-  '/tasks/:id',
-  authenticate,
-  async (req: Request, res: Response) => {
-    try {
-      const userId = req.user!.id;
-      const taskId = req.params.id;
-      const { reason } = req.body;
+router.delete('/tasks/:id', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const taskId = req.params.id;
+    const { reason } = req.body;
 
-      const task = await visionShareTaskService.cancelTask(userId, taskId, reason);
+    const task = await visionShareTaskService.cancelTask(userId, taskId, reason);
 
-      if (!task) {
-        return res.status(404).json({
-          success: false,
-          error: '任务不存在或无权访问',
-        });
-      }
-
-      res.json({
-        success: true,
-        data: { task },
-      });
-    } catch (error) {
-      if ((error as Error).message?.includes('无法取消')) {
-        return res.status(400).json({
-          success: false,
-          error: (error as Error).message,
-        });
-      }
-      loggerCtx.error('Cancel task failed', { error });
-      res.status(500).json({
+    if (!task) {
+      return res.status(404).json({
         success: false,
-        error: '取消任务失败',
+        error: '任务不存在或无权访问',
       });
     }
+
+    res.json({
+      success: true,
+      data: { task },
+    });
+  } catch (error) {
+    if ((error as Error).message?.includes('无法取消')) {
+      return res.status(400).json({
+        success: false,
+        error: (error as Error).message,
+      });
+    }
+    loggerCtx.error('Cancel task failed', { error });
+    res.status(500).json({
+      success: false,
+      error: '取消任务失败',
+    });
   }
-);
+});
 
 /**
  * GET /api/visionshare/tasks/:id
  * 获取任务详情
  */
-router.get(
-  '/tasks/:id',
-  authenticate,
-  async (req: Request, res: Response) => {
-    try {
-      const userId = req.user!.id;
-      const taskId = req.params.id;
+router.get('/tasks/:id', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const taskId = req.params.id;
 
-      const task = await visionShareTaskService.getTask(taskId, userId);
+    const task = await visionShareTaskService.getTask(taskId, userId);
 
-      if (!task) {
-        return res.status(404).json({
-          success: false,
-          error: '任务不存在',
-        });
-      }
-
-      res.json({
-        success: true,
-        data: { task },
-      });
-    } catch (error) {
-      loggerCtx.error('Get task failed', { error });
-      res.status(500).json({
+    if (!task) {
+      return res.status(404).json({
         success: false,
-        error: '获取任务失败',
+        error: '任务不存在',
       });
     }
+
+    res.json({
+      success: true,
+      data: { task },
+    });
+  } catch (error) {
+    loggerCtx.error('Get task failed', { error });
+    res.status(500).json({
+      success: false,
+      error: '获取任务失败',
+    });
   }
-);
+});
 
 /**
  * GET /api/visionshare/tasks
  * 获取用户的任务列表
  */
-router.get(
-  '/tasks',
-  authenticate,
-  async (req: Request, res: Response) => {
-    try {
-      const userId = req.user!.id;
-      const { status, limit, offset } = req.query;
+router.get('/tasks', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { status, limit, offset } = req.query;
 
-      const result = await visionShareTaskService.getUserTasks(userId, {
-        status: status as any,
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
+    const result = await visionShareTaskService.getUserTasks(userId, {
+      status: status as any,
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      offset: offset ? parseInt(offset as string, 10) : undefined,
+    });
 
-      res.json({
-        success: true,
-        data: result,
-      });
-    } catch (error) {
-      loggerCtx.error('Get user tasks failed', { error });
-      res.status(500).json({
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    loggerCtx.error('Get user tasks failed', { error });
+    res.status(500).json({
+      success: false,
+      error: '获取任务列表失败',
+    });
+  }
+});
+
+/**
+ * POST /api/visionshare/tasks/eligibility
+ * 检查用户接单资格
+ */
+router.post('/tasks/eligibility', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { taskId, latitude, longitude } = req.body;
+
+    if (!taskId) {
+      return res.status(400).json({
         success: false,
-        error: '获取任务列表失败',
+        error: { code: 'MISSING_TASK_ID', message: '缺少任务ID' },
       });
     }
+
+    if (latitude == null || longitude == null) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'MISSING_LOCATION', message: '缺少用户位置信息' },
+      });
+    }
+
+    // Get user profile data from auth context
+    const creditScore = req.user?.creditScore ?? 0;
+    const points = req.user?.points ?? 0;
+
+    const eligibility = await checkTaskEligibility(
+      taskId,
+      userId,
+      { latitude, longitude },
+      creditScore,
+      points
+    );
+
+    res.json({
+      success: true,
+      data: eligibility,
+    });
+  } catch (error) {
+    loggerCtx.error('Check task eligibility failed', { error });
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: '检查资格失败' },
+    });
   }
-);
+});
 
 /**
  * POST /api/visionshare/tasks/validate
  * 验证发布资格
  */
-router.post(
-  '/tasks/validate',
-  authenticate,
-  async (req: Request, res: Response) => {
-    try {
-      const userId = req.user!.id;
-      const { budgetAmount, budgetType, description, latitude, longitude } = req.body;
+router.post('/tasks/validate', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { budgetAmount, budgetType, description, latitude, longitude } = req.body;
 
-      const result = await publishValidationService.validate({
-        userId,
-        budgetAmount: budgetAmount || 0,
-        budgetType: budgetType || 'POINTS',
-        description,
-        latitude,
-        longitude,
-      });
+    const result = await publishValidationService.validate({
+      userId,
+      budgetAmount: budgetAmount || 0,
+      budgetType: budgetType || 'POINTS',
+      description,
+      latitude,
+      longitude,
+    });
 
-      res.json({
-        success: true,
-        data: result,
-      });
-    } catch (error) {
-      loggerCtx.error('Validate publish failed', { error });
-      res.status(500).json({
-        success: false,
-        error: '验证失败',
-      });
-    }
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    loggerCtx.error('Validate publish failed', { error });
+    res.status(500).json({
+      success: false,
+      error: '验证失败',
+    });
   }
-);
+});
 
 /**
  * GET /api/visionshare/publish-limits
  * 获取发布限制信息
  */
-router.get(
-  '/publish-limits',
-  authenticate,
-  async (req: Request, res: Response) => {
-    try {
-      const userId = req.user!.id;
-      const limits = await publishValidationService.getPublishLimits(userId);
+router.get('/publish-limits', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const limits = await publishValidationService.getPublishLimits(userId);
 
-      res.json({
-        success: true,
-        data: limits,
-      });
-    } catch (error) {
-      loggerCtx.error('Get publish limits failed', { error });
-      res.status(500).json({
-        success: false,
-        error: '获取发布限制失败',
-      });
-    }
+    res.json({
+      success: true,
+      data: limits,
+    });
+  } catch (error) {
+    loggerCtx.error('Get publish limits failed', { error });
+    res.status(500).json({
+      success: false,
+      error: '获取发布限制失败',
+    });
   }
-);
+});
 
 /**
  * POST /api/visionshare/tasks/:id/share
  * 分享任务
  */
-router.post(
-  '/tasks/:id/share',
-  authenticate,
-  async (req: Request, res: Response) => {
-    try {
-      const userId = req.user!.id;
-      const taskId = req.params.id;
+router.post('/tasks/:id/share', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const taskId = req.params.id;
 
-      const result = await visionShareTaskService.shareTask(taskId, userId);
+    const result = await visionShareTaskService.shareTask(taskId, userId);
 
-      if (result.success) {
-        res.json({
-          success: true,
-          data: { shareLink: result.shareLink },
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          error: '分享任务失败',
-        });
-      }
-    } catch (error) {
-      loggerCtx.error('Share task failed', { error });
-      res.status(500).json({
+    if (result.success) {
+      res.json({
+        success: true,
+        data: { shareLink: result.shareLink },
+      });
+    } else {
+      res.status(400).json({
         success: false,
         error: '分享任务失败',
       });
     }
+  } catch (error) {
+    loggerCtx.error('Share task failed', { error });
+    res.status(500).json({
+      success: false,
+      error: '分享任务失败',
+    });
   }
-);
+});
 
 /**
  * POST /api/visionshare/analyze-description
  * 分析描述文本（AI提炼预览）
  */
-router.post(
-  '/analyze-description',
-  authenticate,
-  async (req: Request, res: Response) => {
-    try {
-      const userId = req.user!.id;
-      const { description } = req.body;
+router.post('/analyze-description', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { description } = req.body;
 
-      if (!description || description.trim().length < 10) {
-        return res.status(400).json({
-          success: false,
-          error: '描述至少需要10个字符',
-        });
-      }
-
-      const refinement = await visionShareDemandRefinementService.refineDemand(
-        description,
-        userId
-      );
-
-      res.json({
-        success: true,
-        data: { refinement },
-      });
-    } catch (error) {
-      loggerCtx.error('Analyze description failed', { error });
-      res.status(500).json({
+    if (!description || description.trim().length < 10) {
+      return res.status(400).json({
         success: false,
-        error: '分析描述失败',
+        error: '描述至少需要10个字符',
       });
     }
+
+    const refinement = await visionShareDemandRefinementService.refineDemand(description, userId);
+
+    res.json({
+      success: true,
+      data: { refinement },
+    });
+  } catch (error) {
+    loggerCtx.error('Analyze description failed', { error });
+    res.status(500).json({
+      success: false,
+      error: '分析描述失败',
+    });
   }
-);
+});
 
 export default router;

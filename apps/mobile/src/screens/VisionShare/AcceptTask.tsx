@@ -12,12 +12,11 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import {
   Task,
   TaskEligibilityResult,
-  GeoCoordinates,
-  calculateDistance,
   TASK_TYPE_LABELS,
   TASK_STATUS_LABELS,
 } from '@bridgeai/shared';
 
+import { useAuthStore } from '../../stores/authStore';
 import { visionShareApi } from '../../services/api/visionShare';
 
 export const AcceptTaskScreen: React.FC = () => {
@@ -25,47 +24,67 @@ export const AcceptTaskScreen: React.FC = () => {
   const route = useRoute();
   const { taskId } = route.params as { taskId: string };
 
+  // Get user data from auth store
+  const authUser = useAuthStore(state => state.user);
+
   const [task, setTask] = useState<Task | null>(null);
   const [eligibility, setEligibility] = useState<TaskEligibilityResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
   const [accepted, setAccepted] = useState(false);
-
-  // Mock user data (in production, from auth context)
-  const _userId = 'current-user';
-  const userCreditScore = 85;
-  const userPoints = 500;
-  const userLocation: GeoCoordinates = {
-    latitude: 22.5431,
-    longitude: 114.0579,
-  };
+  const [_locationError, setLocationError] = useState<string | null>(null);
 
   useEffect(() => {
     loadTaskAndCheckEligibility();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [taskId]);
 
   const loadTaskAndCheckEligibility = async () => {
     try {
       setLoading(true);
+      setLocationError(null);
 
       const taskResponse = await visionShareApi.getTask(taskId);
       const fetchedTask = taskResponse.data.task as Task;
 
-      const { distanceKm } = calculateDistance(userLocation, fetchedTask.coordinates);
+      // Get user data from auth store, fallback to error if not available
+      if (!authUser?.id) {
+        Alert.alert('错误', '用户未登录，请先登录');
+        setLoading(false);
+        return;
+      }
 
-      const eligibilityResult: TaskEligibilityResult = {
-        eligible: true,
-        reasons: [],
-        requiredCreditScore: 60,
-        currentCreditScore: userCreditScore,
-        requiredPoints: 100,
-        currentPoints: userPoints,
-        maxDistanceKm: 50,
-        currentDistanceKm: distanceKm,
-      };
+      // Use user's stored location or prompt for location
+      // In production, get from device GPS or user profile
+      const userLocation = authUser.location || null;
+
+      if (!userLocation) {
+        setLocationError('无法获取用户位置信息');
+        setTask(fetchedTask);
+        // Set eligibility to fail with reason
+        setEligibility({
+          eligible: false,
+          reasons: ['无法获取用户位置，无法进行距离校验'],
+          currentDistanceKm: undefined,
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Call real API to check eligibility
+      const eligibilityResponse = await visionShareApi.checkTaskEligibility({
+        taskId,
+        userId: authUser.id,
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+      });
+
+      if (!eligibilityResponse.success || !eligibilityResponse.data) {
+        throw new Error(eligibilityResponse.error?.message || '获取资格检查结果失败');
+      }
 
       setTask(fetchedTask);
-      setEligibility(eligibilityResult);
+      setEligibility(eligibilityResponse.data);
     } catch (err) {
       Alert.alert('错误', '加载任务信息失败');
     } finally {
@@ -87,11 +106,10 @@ export const AcceptTaskScreen: React.FC = () => {
           try {
             setAccepting(true);
 
-            // In production, call API
+            // TODO: Replace mock with real API call in production
             // const response = await api.post('/visionShare/tasks/accept', {
             //   taskId,
-            //   userId,
-            //   userLocation,
+            //   userId: authUser?.id,
             // });
 
             // Mock response
@@ -106,7 +124,7 @@ export const AcceptTaskScreen: React.FC = () => {
         },
       },
     ]);
-  }, [eligibility, taskId]);
+  }, [eligibility]);
 
   const handleNavigate = useCallback(() => {
     Alert.alert('导航', '正在打开地图导航...');
@@ -116,6 +134,10 @@ export const AcceptTaskScreen: React.FC = () => {
   const handleViewMyTasks = useCallback(() => {
     navigation.navigate('MyTasks');
   }, [navigation]);
+
+  const handleTakePhoto = useCallback(() => {
+    navigation.navigate('Camera', { taskId });
+  }, [navigation, taskId]);
 
   const formatBudget = (min: number, max: number) => {
     if (min === max) {
@@ -154,6 +176,9 @@ export const AcceptTaskScreen: React.FC = () => {
         <Text style={styles.successMessage}>您已成功接取任务「{task.title}」，请按时完成。</Text>
 
         <View style={styles.successActions}>
+          <TouchableOpacity style={styles.cameraButton} onPress={handleTakePhoto}>
+            <Text style={styles.cameraButtonText}>去拍照</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.navigateButton} onPress={handleNavigate}>
             <Text style={styles.navigateButtonText}>导航到任务地点</Text>
           </TouchableOpacity>
@@ -557,6 +582,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#1890FF',
     borderRadius: 8,
     alignItems: 'center',
+  },
+  cameraButton: {
+    paddingVertical: 14,
+    backgroundColor: '#FA8C16',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cameraButtonText: {
+    fontSize: 15,
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   navigateButtonText: {
     fontSize: 15,

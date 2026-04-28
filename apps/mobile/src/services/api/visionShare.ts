@@ -152,6 +152,19 @@ export interface AnalyzeImageResponse {
   };
 }
 
+export interface TaskEligibilityResponse {
+  success: boolean;
+  data?: TaskEligibilityResult;
+  error?: { code: string; message: string };
+}
+
+export interface CheckEligibilityParams {
+  taskId: string;
+  userId: string;
+  latitude: number;
+  longitude: number;
+}
+
 export const visionShareApi = {
   /**
    * Create a draft task
@@ -202,6 +215,19 @@ export const visionShareApi = {
    */
   getTask: async (taskId: string): Promise<CreateTaskResponse> => {
     const response = await api.get<CreateTaskResponse>(`/visionshare/tasks/${taskId}`);
+    return response.data;
+  },
+
+  /**
+   * Check task eligibility for user
+   */
+  checkTaskEligibility: async (
+    params: CheckEligibilityParams
+  ): Promise<TaskEligibilityResponse> => {
+    const response = await api.post<TaskEligibilityResponse>(
+      '/visionshare/tasks/eligibility',
+      params
+    );
     return response.data;
   },
 
