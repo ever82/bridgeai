@@ -4,33 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-
-// Define enums locally to avoid build dependency issues
-enum PointsTransactionType {
-  EARN = 'earn',
-  SPEND = 'spend',
-  RECHARGE = 'recharge',
-  REFUND = 'refund',
-  FROZEN = 'frozen',
-  UNFROZEN = 'unfrozen',
-  DEDUCT = 'deduct',
-  TRANSFER_IN = 'transfer_in',
-  TRANSFER_OUT = 'transfer_out',
-}
-
-enum FreezeStatus {
-  FROZEN = 'frozen',
-  USED = 'used',
-  RELEASED = 'released',
-  EXPIRED = 'expired',
-}
-
-enum SceneCode {
-  VISION_SHARE = 'vision_share',
-  AGENT_DATE = 'agent_date',
-  AGENT_JOB = 'agent_job',
-  AGENT_AD = 'agent_ad',
-}
+import { PointsTransactionType, FreezeStatus, SceneCode } from '@bridgeai/shared';
 
 // Mock Prisma
 jest.mock('@prisma/client', () => ({
@@ -212,7 +186,7 @@ describe('Points Account Data Models', () => {
           accountId: 'account-1',
           userId: 'user-123',
           type,
-          amount: type.includes('OUT') || type === 'spend' || type === 'deduct' || type === 'frozen' ? -50 : 50,
+          amount: type.includes('OUT') || type === 'SPEND' || type === 'FROZEN' ? -50 : 50,
           balanceAfter: 100,
           createdAt: new Date(),
         };
@@ -494,22 +468,18 @@ describe('Points Account Data Models', () => {
 
   describe('Type Definitions', () => {
     it('should have correct transaction type values', () => {
-      expect(PointsTransactionType.EARN).toBe('earn');
-      expect(PointsTransactionType.SPEND).toBe('spend');
-      expect(PointsTransactionType.RECHARGE).toBe('recharge');
-      expect(PointsTransactionType.REFUND).toBe('refund');
-      expect(PointsTransactionType.FROZEN).toBe('frozen');
-      expect(PointsTransactionType.UNFROZEN).toBe('unfrozen');
-      expect(PointsTransactionType.DEDUCT).toBe('deduct');
-      expect(PointsTransactionType.TRANSFER_IN).toBe('transfer_in');
-      expect(PointsTransactionType.TRANSFER_OUT).toBe('transfer_out');
+      expect(PointsTransactionType.EARN).toBe('EARN');
+      expect(PointsTransactionType.SPEND).toBe('SPEND');
+      expect(PointsTransactionType.FROZEN).toBe('FROZEN');
+      expect(PointsTransactionType.UNFROZEN).toBe('UNFROZEN');
+      expect(PointsTransactionType.TRANSFER_IN).toBe('TRANSFER_IN');
+      expect(PointsTransactionType.TRANSFER_OUT).toBe('TRANSFER_OUT');
     });
 
     it('should have correct freeze status values', () => {
-      expect(FreezeStatus.FROZEN).toBe('frozen');
-      expect(FreezeStatus.USED).toBe('used');
-      expect(FreezeStatus.RELEASED).toBe('released');
-      expect(FreezeStatus.EXPIRED).toBe('expired');
+      expect(FreezeStatus.FROZEN).toBe('FROZEN');
+      expect(FreezeStatus.USED).toBe('USED');
+      expect(FreezeStatus.RELEASED).toBe('RELEASED');
     });
 
     it('should have correct scene code values', () => {

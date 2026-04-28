@@ -8,6 +8,16 @@ import { z } from 'zod';
 import { SceneCode } from '@bridgeai/shared';
 
 import { pointsService } from '../services/pointsService';
+import {
+  updatePointsLimitConfig,
+  updatePointsValueConfig,
+  updateTransferConfig,
+  updateFreezeConfig,
+  type PointsLimitConfig,
+  type PointsValueConfig,
+  type TransferConfig,
+  type FreezeConfig,
+} from '../config/pointsRules';
 import { visionSharePaymentService } from '../services/visionSharePaymentService';
 import { photoUnlockService } from '../services/photoUnlockService';
 import { prisma } from '../db/client';
@@ -94,6 +104,35 @@ const ruleCodeParamSchema = z.object({
 
 const sceneParamSchema = z.object({
   scene: z.nativeEnum(SceneCode),
+});
+
+const limitConfigSchema = z.object({
+  dailyEarnLimit: z.number().int().positive().optional(),
+  weeklyEarnLimit: z.number().int().positive().optional(),
+  dailySpendLimit: z.number().int().positive().optional(),
+  weeklySpendLimit: z.number().int().positive().optional(),
+});
+
+const valueConfigSchema = z.object({
+  rmbToPointsRate: z.number().positive().optional(),
+  pointsToRmbRate: z.number().positive().optional(),
+  minRechargeAmount: z.number().positive().optional(),
+  minWithdrawAmount: z.number().positive().optional(),
+});
+
+const transferConfigSchema = z.object({
+  enabled: z.boolean().optional(),
+  minAmount: z.number().int().positive().optional(),
+  maxAmount: z.number().int().positive().optional(),
+  feeRate: z.number().min(0).max(1).optional(),
+  feeMin: z.number().int().nonnegative().optional(),
+  feeMax: z.number().int().positive().optional(),
+  dailyLimit: z.number().int().positive().optional(),
+});
+
+const freezeConfigSchema = z.object({
+  defaultExpireHours: z.number().int().positive().optional(),
+  maxFreezeAmount: z.number().min(0).max(1).optional(),
 });
 
 // ==================== 账户管理 ====================
@@ -635,6 +674,84 @@ router.post(
       const { userIds, amount, reason } = req.body;
       const result = await pointsService.batchReward(userIds, amount, reason);
       res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * PUT /api/v1/points/admin/config/limits
+ * 更新积分限制配置（管理员）
+ */
+router.put(
+  '/admin/config/limits',
+  authenticate,
+  requireRole('admin'),
+  validate({ body: limitConfigSchema }),
+  async (req, res, next) => {
+    try {
+      updatePointsLimitConfig(req.body as Partial<PointsLimitConfig>);
+      const config = pointsService.getLimitConfig();
+      res.json({ success: true, data: config });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * PUT /api/v1/points/admin/config/value
+ * 更新积分价值配置（管理员）
+ */
+router.put(
+  '/admin/config/value',
+  authenticate,
+  requireRole('admin'),
+  validate({ body: valueConfigSchema }),
+  async (req, res, next) => {
+    try {
+      updatePointsValueConfig(req.body as Partial<PointsValueConfig>);
+      const config = pointsService.getValueConfig();
+      res.json({ success: true, data: config });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * PUT /api/v1/points/admin/config/transfer
+ * 更新转账配置（管理员）
+ */
+router.put(
+  '/admin/config/transfer',
+  authenticate,
+  requireRole('admin'),
+  validate({ body: transferConfigSchema }),
+  async (req, res, next) => {
+    try {
+      updateTransferConfig(req.body as Partial<TransferConfig>);
+      res.json({ success: true, data: req.body });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * PUT /api/v1/points/admin/config/freeze
+ * 更新冻结配置（管理员）
+ */
+router.put(
+  '/admin/config/freeze',
+  authenticate,
+  requireRole('admin'),
+  validate({ body: freezeConfigSchema }),
+  async (req, res, next) => {
+    try {
+      updateFreezeConfig(req.body as Partial<FreezeConfig>);
+      res.json({ success: true, data: req.body });
     } catch (error) {
       next(error);
     }

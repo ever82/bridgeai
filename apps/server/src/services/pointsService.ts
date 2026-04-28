@@ -196,7 +196,7 @@ export class PointsService {
 
     // 执行获取
     const result = await this.transactionService.earnPoints(userId, points, {
-      description: rule?.name || ruleCode,
+      description: `${rule?.name || ruleCode} (${ruleCode})`,
       scene: metadata?.scene as SceneCode,
       referenceId: metadata?.referenceId as string,
       metadata: {
@@ -364,7 +364,7 @@ export class PointsService {
 
     // 执行消耗
     const result = await this.transactionService.spendPoints(userId, spendAmount, {
-      description: rule?.name || ruleCode,
+      description: `${rule?.name || ruleCode} (${ruleCode})`,
       scene: rule?.scene || (metadata?.scene as SceneCode),
       referenceId: metadata?.referenceId as string,
       metadata: {
