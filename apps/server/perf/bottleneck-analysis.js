@@ -276,9 +276,18 @@ function main() {
       { file: 'peak-load-test-*-summary.json', analyzer: analyzePeakResults, name: 'Peak Load' },
     ];
 
+    if (!fs.existsSync(resultsDir)) {
+      console.log('No test results directory found. Run performance tests first.');
+      console.log('Usage: node bottleneck-analysis.js <summary-json-path>');
+      process.exit(0);
+    }
+
     for (const { file, analyzer, name } of testTypes) {
-      const pattern = file.replace('*', '');
-      const files = fs.readdirSync(resultsDir).filter(f => f.includes(pattern.split('*')[0]));
+      const prefix = file.split('*')[0];
+      const suffix = file.split('*')[1];
+      const files = fs
+        .readdirSync(resultsDir)
+        .filter(f => f.startsWith(prefix) && f.endsWith(suffix));
       if (files.length > 0) {
         const latest = files.sort().pop();
         try {

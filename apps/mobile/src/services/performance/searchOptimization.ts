@@ -276,6 +276,9 @@ export class SearchOptimizationService {
   private memoryMonitorInterval: ReturnType<typeof setInterval> | null = null;
 
   private startMemoryMonitoring(): void {
+    if (this.memoryMonitorInterval !== null) {
+      return; // Already monitoring
+    }
     this.memoryMonitorInterval = setInterval(() => {
       this.checkMemoryUsage();
     }, 30000); // Check every 30 seconds
