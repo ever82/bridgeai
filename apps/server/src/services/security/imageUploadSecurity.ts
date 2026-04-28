@@ -13,6 +13,7 @@ import { createHash } from 'crypto';
 import sharp from 'sharp';
 
 import { ImageSecurityService } from './imageSecurity';
+import { VirusScanService } from './virusScan';
 
 // ============================================================================
 // Types
@@ -246,7 +247,7 @@ export class ImageUploadSecurityService {
 
     // Step 10: Virus scan (if configured)
     if (cfg.scanForMalware && violations.length === 0) {
-      const scanResult = await this.scanForViruses(sanitizedBuffer);
+      const scanResult = await this.scanForViruses(sanitizedBuffer, filename);
       if (!scanResult.clean) {
         violations.push(`Malware detected: ${scanResult.threats.join(', ')}`);
       }
@@ -273,26 +274,19 @@ export class ImageUploadSecurityService {
   }
 
   /**
-   * Scan buffer for viruses. Pluggable: override for ClamAV / cloud scan.
+   * Scan buffer for viruses. Delegates to VirusScanService for comprehensive
+   * detection (EICAR, executable signatures, polyglots, script malware).
    */
-  async scanForViruses(buffer: Buffer): Promise<VirusScanResult> {
-    // Default: heuristic check for common embedded malicious signatures
-    const threats: string[] = [];
+  async scanForViruses(buffer: Buffer, filename?: string): Promise<VirusScanResult> {
+    const virusScanService = VirusScanService.getInstance();
+    const result = virusScanService.scanFile(buffer, { filenameHint: filename });
 
-    // Check for common exploit signatures in the raw bytes
+    // Also check for embedded PDF/archive content (heuristic layer)
+    const threats: string[] = result.threats.map(t => t.name);
     const bufferStr = buffer.toString('binary');
-
-    // PE executable header (MZ)
-    if (buffer.length >= 2 && buffer[0] === 0x4d && buffer[1] === 0x5a) {
-      threats.push('PE executable embedded');
-    }
-
-    // PDF header (potential exploit vector)
     if (bufferStr.startsWith('%PDF')) {
       threats.push('PDF content embedded');
     }
-
-    // ZIP/archive header (could contain malware)
     if (
       buffer.length >= 4 &&
       buffer[0] === 0x50 &&
@@ -303,13 +297,10 @@ export class ImageUploadSecurityService {
       threats.push('Archive content embedded');
     }
 
-    // TODO: Integrate with ClamAV for production virus scanning
-    // const clamavResult = await clamavScanner.scan(buffer);
-
     return {
       clean: threats.length === 0,
       threats,
-      scanner: 'heuristic',
+      scanner: 'VirusScanService+heuristic',
     };
   }
 

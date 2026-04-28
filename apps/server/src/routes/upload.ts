@@ -9,7 +9,7 @@ import * as storageService from '../services/storageService';
 import * as userService from '../services/userService';
 import * as uploadAuditService from '../services/uploadAudit';
 import { AppError } from '../errors/AppError';
-import { stripExif } from '../utils/imageProcessing';
+import { ImageUploadSecurityService } from '../services/security/imageUploadSecurity';
 
 const router: Router = Router();
 
@@ -69,8 +69,33 @@ router.post(
       throw new AppError('No file uploaded', 'NO_FILE', 400);
     }
 
-    // Strip EXIF data for privacy protection before storage
-    const cleanedBuffer = await stripExif(req.file.buffer);
+    // Run full security pipeline (type validation, EXIF strip, virus scan)
+    const securityService = ImageUploadSecurityService.getInstance();
+    const securityResult = await securityService.secureImage(
+      req.file.buffer,
+      req.file.mimetype,
+      req.file.originalname,
+      { scanForMalware: true, stripMetadata: true }
+    );
+
+    if (!securityResult.passed) {
+      uploadAuditService.logUpload({
+        userId: req.user.id,
+        fileName: req.file.originalname,
+        fileSize: req.file.size,
+        mimeType: req.file.mimetype,
+        status: 'rejected',
+        reason: securityResult.violations.join('; '),
+        ip: req.ip,
+      });
+      throw new AppError(
+        `Upload rejected: ${securityResult.violations.join(', ')}`,
+        'UPLOAD_SECURITY_VIOLATION',
+        400
+      );
+    }
+
+    const cleanedBuffer = securityResult.sanitizedBuffer || req.file.buffer;
 
     const fileInfo: storageService.FileInfo = {
       buffer: cleanedBuffer,
@@ -146,8 +171,33 @@ router.post(
       throw new AppError('No file uploaded', 'NO_FILE', 400);
     }
 
-    // Strip EXIF data for privacy protection before storage
-    const cleanedBuffer = await stripExif(req.file.buffer);
+    // Run full security pipeline (type validation, EXIF strip, virus scan)
+    const securityService = ImageUploadSecurityService.getInstance();
+    const securityResult = await securityService.secureImage(
+      req.file.buffer,
+      req.file.mimetype,
+      req.file.originalname,
+      { scanForMalware: true, stripMetadata: true }
+    );
+
+    if (!securityResult.passed) {
+      uploadAuditService.logUpload({
+        userId: req.user.id,
+        fileName: req.file.originalname,
+        fileSize: req.file.size,
+        mimeType: req.file.mimetype,
+        status: 'rejected',
+        reason: securityResult.violations.join('; '),
+        ip: req.ip,
+      });
+      throw new AppError(
+        `Upload rejected: ${securityResult.violations.join(', ')}`,
+        'UPLOAD_SECURITY_VIOLATION',
+        400
+      );
+    }
+
+    const cleanedBuffer = securityResult.sanitizedBuffer || req.file.buffer;
 
     const fileInfo: storageService.FileInfo = {
       buffer: cleanedBuffer,

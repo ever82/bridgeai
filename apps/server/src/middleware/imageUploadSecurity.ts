@@ -7,6 +7,11 @@
  * Usage:
  *   router.post('/image', authenticate, secureImageUpload('image'), handler)
  */
+export {
+  ImageSecurityService,
+  type ImageSecurityCheckResult,
+} from '../services/security/imageSecurity';
+
 import { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 
