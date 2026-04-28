@@ -132,7 +132,7 @@ describe('AgentListScreen Integration Tests', () => {
       });
 
       // Click type filter dropdown
-      const typeFilter = screen.getByText('All Types');
+      const typeFilter = screen.getAllByText('All Types')[0];
       fireEvent.press(typeFilter);
 
       // Select VisionShare type
@@ -186,8 +186,8 @@ describe('AgentListScreen Integration Tests', () => {
 
       await waitFor(() => {
         // Status badges should be visible
-        expect(screen.getByText('Active')).toBeTruthy();
-        expect(screen.getByText('Draft')).toBeTruthy();
+        expect(screen.getAllByText('Active')[0]).toBeTruthy();
+        expect(screen.getAllByText('Draft')[0]).toBeTruthy();
       });
     });
   });
@@ -205,7 +205,7 @@ describe('AgentListScreen Integration Tests', () => {
       });
 
       // Click sort dropdown
-      const sortFilter = screen.getByText('Updated Time');
+      const sortFilter = screen.getAllByText('Updated Time')[0];
       fireEvent.press(sortFilter);
 
       // Select "Name" sort
@@ -237,7 +237,7 @@ describe('AgentListScreen Integration Tests', () => {
 
       // Should call updateAgentStatus
       await waitFor(() => {
-        expect(mockUpdateAgentStatus).toHaveBeenCalledWith('agent-1', AgentStatus.INACTIVE);
+        expect(mockUpdateAgentStatus).toHaveBeenCalledWith('agent-1', AgentStatus.PAUSED);
       });
     });
   });

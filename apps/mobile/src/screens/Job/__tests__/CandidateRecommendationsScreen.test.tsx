@@ -81,8 +81,8 @@ describe('CandidateRecommendationsScreen', () => {
   });
 
   it('renders job selector', () => {
-    const { getByText } = renderScreen();
-    expect(getByText('高级前端工程师')).toBeTruthy();
+    const { getByText, getAllByText } = renderScreen();
+    expect(getAllByText('高级前端工程师')[0]).toBeTruthy();
     expect(getByText('全栈开发工程师')).toBeTruthy();
   });
 
@@ -102,10 +102,10 @@ describe('CandidateRecommendationsScreen', () => {
   });
 
   it('displays candidate titles and experience', () => {
-    const { getByText } = renderScreen();
-    expect(getByText('高级前端工程师')).toBeTruthy();
-    expect(getByText('5年经验')).toBeTruthy();
-    expect(getByText('本科')).toBeTruthy();
+    const { getAllByText } = renderScreen();
+    expect(getAllByText('高级前端工程师')[0]).toBeTruthy();
+    expect(getAllByText('5年经验')[0]).toBeTruthy();
+    expect(getAllByText('本科')[0]).toBeTruthy();
   });
 
   it('displays match scores', () => {
@@ -116,8 +116,8 @@ describe('CandidateRecommendationsScreen', () => {
   });
 
   it('displays AI summaries', () => {
-    const { getByText } = renderScreen();
-    expect(getByText('AI评价')).toBeTruthy();
+    const { getAllByText } = renderScreen();
+    expect(getAllByText('AI评价')[0]).toBeTruthy();
   });
 
   it('displays match reasons', () => {
@@ -126,10 +126,10 @@ describe('CandidateRecommendationsScreen', () => {
   });
 
   it('displays skill tags', () => {
-    const { getByText } = renderScreen();
-    expect(getByText('React')).toBeTruthy();
-    expect(getByText('TypeScript')).toBeTruthy();
-    expect(getByText('Next.js')).toBeTruthy();
+    const { getAllByText } = renderScreen();
+    expect(getAllByText('React')[0]).toBeTruthy();
+    expect(getAllByText('TypeScript')[0]).toBeTruthy();
+    expect(getAllByText('Next.js')[0]).toBeTruthy();
   });
 
   it('displays action buttons', () => {

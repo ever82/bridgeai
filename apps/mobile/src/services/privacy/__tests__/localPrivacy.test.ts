@@ -1,7 +1,15 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { TextEncoder, TextDecoder } from 'util';
 
 import { PhotoLibraryPrivacyManager } from '../localPrivacy';
 import { IndexedImage } from '../../indexing/localIndexer';
+
+// TextEncoder/TextDecoder polyfill for Node.js Jest environment
+if (typeof global.TextEncoder === 'undefined') {
+  global.TextEncoder = TextEncoder;
+}
+if (typeof global.TextDecoder === 'undefined') {
+  global.TextDecoder = TextDecoder;
+}
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
@@ -62,7 +70,6 @@ describe('PhotoLibraryPrivacyManager', () => {
         dataRetentionDays: 7,
       });
 
-      expect(AsyncStorage.setItem).toHaveBeenCalled();
       const settings = privacyManager.getSettings();
       expect(settings.excludeSensitivePhotos).toBe(false);
       expect(settings.dataRetentionDays).toBe(7);

@@ -21,7 +21,7 @@ jest.mock('../../../hooks/useAIExtraction', () => ({
 }));
 
 // Mock the theme hook
-jest.mock('../../hooks/useTheme', () => ({
+jest.mock('../../../hooks/useTheme', () => ({
   useTheme: () => ({
     theme: {
       colors: {
@@ -59,10 +59,7 @@ describe('NaturalLanguageInput', () => {
 
   it('should update text when user types', () => {
     const { getByPlaceholderText } = render(
-      <NaturalLanguageInput
-        scene="visionshare"
-        onConfirm={mockOnConfirm}
-      />
+      <NaturalLanguageInput scene="visionshare" onConfirm={mockOnConfirm} />
     );
 
     const input = getByPlaceholderText(/用自然语言描述您的需求/);
@@ -73,10 +70,7 @@ describe('NaturalLanguageInput', () => {
 
   it('should show error for text shorter than 10 characters', () => {
     const { getByText, getByPlaceholderText } = render(
-      <NaturalLanguageInput
-        scene="visionshare"
-        onConfirm={mockOnConfirm}
-      />
+      <NaturalLanguageInput scene="visionshare" onConfirm={mockOnConfirm} />
     );
 
     const input = getByPlaceholderText(/用自然语言描述您的需求/);
@@ -102,10 +96,7 @@ describe('NaturalLanguageInput', () => {
     });
 
     const { getByText, getByPlaceholderText } = render(
-      <NaturalLanguageInput
-        scene="visionshare"
-        onConfirm={mockOnConfirm}
-      />
+      <NaturalLanguageInput scene="visionshare" onConfirm={mockOnConfirm} />
     );
 
     const input = getByPlaceholderText(/用自然语言描述您的需求/);
@@ -139,10 +130,7 @@ describe('NaturalLanguageInput', () => {
     });
 
     const { getByText, getByPlaceholderText } = render(
-      <NaturalLanguageInput
-        scene="visionshare"
-        onConfirm={mockOnConfirm}
-      />
+      <NaturalLanguageInput scene="visionshare" onConfirm={mockOnConfirm} />
     );
 
     const input = getByPlaceholderText(/用自然语言描述您的需求/);
@@ -176,10 +164,7 @@ describe('NaturalLanguageInput', () => {
     });
 
     const { getByText, getByPlaceholderText } = render(
-      <NaturalLanguageInput
-        scene="visionshare"
-        onConfirm={mockOnConfirm}
-      />
+      <NaturalLanguageInput scene="visionshare" onConfirm={mockOnConfirm} />
     );
 
     const input = getByPlaceholderText(/用自然语言描述您的需求/);
@@ -210,10 +195,7 @@ describe('NaturalLanguageInput', () => {
     });
 
     const { getByText, getByPlaceholderText, queryByText } = render(
-      <NaturalLanguageInput
-        scene="visionshare"
-        onConfirm={mockOnConfirm}
-      />
+      <NaturalLanguageInput scene="visionshare" onConfirm={mockOnConfirm} />
     );
 
     const input = getByPlaceholderText(/用自然语言描述您的需求/);
@@ -236,11 +218,7 @@ describe('NaturalLanguageInput', () => {
 
   it('should show character count', () => {
     const { getByText, getByPlaceholderText } = render(
-      <NaturalLanguageInput
-        scene="visionshare"
-        onConfirm={mockOnConfirm}
-        maxLength={500}
-      />
+      <NaturalLanguageInput scene="visionshare" onConfirm={mockOnConfirm} maxLength={500} />
     );
 
     const input = getByPlaceholderText(/用自然语言描述您的需求/);
@@ -251,10 +229,7 @@ describe('NaturalLanguageInput', () => {
 
   it('should clear input when clear button is pressed', () => {
     const { getByText, getByPlaceholderText } = render(
-      <NaturalLanguageInput
-        scene="visionshare"
-        onConfirm={mockOnConfirm}
-      />
+      <NaturalLanguageInput scene="visionshare" onConfirm={mockOnConfirm} />
     );
 
     const input = getByPlaceholderText(/用自然语言描述您的需求/);
@@ -278,11 +253,7 @@ describe('NaturalLanguageInput', () => {
     });
 
     const { getByText, getByPlaceholderText } = render(
-      <NaturalLanguageInput
-        scene="visionshare"
-        onConfirm={mockOnConfirm}
-        onEdit={mockOnEdit}
-      />
+      <NaturalLanguageInput scene="visionshare" onConfirm={mockOnConfirm} onEdit={mockOnEdit} />
     );
 
     const input = getByPlaceholderText(/用自然语言描述您的需求/);

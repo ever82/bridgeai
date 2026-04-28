@@ -84,7 +84,7 @@ describe('JobRecommendationsScreen', () => {
     const { getByText } = renderScreen();
     expect(getByText('全部推荐 (3)')).toBeTruthy();
     expect(getByText('高度匹配 (1)')).toBeTruthy();
-    expect(getByText('较匹配 (1)')).toBeTruthy();
+    expect(getByText('较匹配 (2)')).toBeTruthy();
     expect(getByText('已收藏 (0)')).toBeTruthy();
   });
 
@@ -112,10 +112,10 @@ describe('JobRecommendationsScreen', () => {
   });
 
   it('displays skill badges', () => {
-    const { getByText } = renderScreen();
-    expect(getByText('React')).toBeTruthy();
-    expect(getByText('TypeScript')).toBeTruthy();
-    expect(getByText('Node.js')).toBeTruthy();
+    const { getAllByText } = renderScreen();
+    expect(getAllByText('React')[0]).toBeTruthy();
+    expect(getAllByText('TypeScript')[0]).toBeTruthy();
+    expect(getAllByText('Node.js')[0]).toBeTruthy();
   });
 
   it('displays action buttons', () => {

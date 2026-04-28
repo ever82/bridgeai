@@ -1,12 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Text,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, ActivityIndicator, Alert } from 'react-native';
 import { CameraView, CameraType, FlashMode } from 'expo-camera';
 import { useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,8 +19,8 @@ export interface PhotoCapture {
 }
 
 export const VisionShareCamera: React.FC<VisionShareCameraProps> = ({
-  onCapture,
-  onCancel,
+  onCapture = () => {},
+  onCancel = () => {},
   maxPhotos = 10,
   enableBurst = true,
 }) => {
@@ -67,7 +60,7 @@ export const VisionShareCamera: React.FC<VisionShareCameraProps> = ({
           height: photo.height,
           timestamp: Date.now(),
         };
-        setCapturedPhotos((prev) => [...prev, newPhoto]);
+        setCapturedPhotos(prev => [...prev, newPhoto]);
       }
     } catch {
       Alert.alert('拍照失败', '请重试');
@@ -93,11 +86,11 @@ export const VisionShareCamera: React.FC<VisionShareCameraProps> = ({
   }, [enableBurst, maxPhotos, capturedPhotos.length, capturePhoto, stopBurstCapture]);
 
   const toggleCameraFacing = useCallback(() => {
-    setFacing((current) => (current === 'back' ? 'front' : 'back'));
+    setFacing(current => (current === 'back' ? 'front' : 'back'));
   }, []);
 
   const toggleFlash = useCallback(() => {
-    setFlash((current) => {
+    setFlash(current => {
       switch (current) {
         case 'off':
           return 'on';
@@ -110,11 +103,11 @@ export const VisionShareCamera: React.FC<VisionShareCameraProps> = ({
   }, []);
 
   const handleZoomIn = useCallback(() => {
-    setZoom((current) => Math.min(current + 0.1, 1));
+    setZoom(current => Math.min(current + 0.1, 1));
   }, []);
 
   const handleZoomOut = useCallback(() => {
-    setZoom((current) => Math.max(current - 0.1, 0));
+    setZoom(current => Math.max(current - 0.1, 0));
   }, []);
 
   const handleLongPress = useCallback(() => {
@@ -141,10 +134,7 @@ export const VisionShareCamera: React.FC<VisionShareCameraProps> = ({
     return (
       <View style={styles.container}>
         <Text style={styles.permissionText}>需要相机权限</Text>
-        <TouchableOpacity
-          style={styles.permissionButton}
-          onPress={requestPermission}
-        >
+        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
           <Text style={styles.permissionButtonText}>授予权限</Text>
         </TouchableOpacity>
       </View>
@@ -179,13 +169,18 @@ export const VisionShareCamera: React.FC<VisionShareCameraProps> = ({
               <Ionicons name="close" size={28} color="white" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={toggleFlash}
+              testID="flash-button"
+            >
               <Ionicons name={getFlashIcon()} size={28} color="white" />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.controlButton}
               onPress={toggleCameraFacing}
+              testID="camera-reverse"
             >
               <Ionicons name="camera-reverse" size={28} color="white" />
             </TouchableOpacity>
@@ -212,10 +207,7 @@ export const VisionShareCamera: React.FC<VisionShareCameraProps> = ({
 
             <View style={styles.captureContainer}>
               {capturedPhotos.length > 0 && (
-                <TouchableOpacity
-                  style={styles.retakeButton}
-                  onPress={handleRetake}
-                >
+                <TouchableOpacity style={styles.retakeButton} onPress={handleRetake}>
                   <Text style={styles.retakeText}>重拍</Text>
                 </TouchableOpacity>
               )}
@@ -235,18 +227,13 @@ export const VisionShareCamera: React.FC<VisionShareCameraProps> = ({
               </TouchableOpacity>
 
               {capturedPhotos.length > 0 && (
-                <TouchableOpacity
-                  style={styles.confirmButton}
-                  onPress={handleConfirm}
-                >
+                <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
                   <Text style={styles.confirmText}>完成</Text>
                 </TouchableOpacity>
               )}
             </View>
 
-            {enableBurst && (
-              <Text style={styles.burstHint}>长按连拍</Text>
-            )}
+            {enableBurst && <Text style={styles.burstHint}>长按连拍</Text>}
           </View>
         </View>
       </CameraView>

@@ -1,25 +1,33 @@
+import React from 'react';
+
+const mockAnimatedComponent = (name: string) =>
+  jest.fn((props: Record<string, unknown>) => React.createElement(name, props));
+
 // React Native Reanimated mock
 export default {
-  default: {
-    call: jest.fn(),
-    createAnimatedComponent: jest.fn(component => component),
-    event: jest.fn(),
-    interpolate: jest.fn(),
-    loop: jest.fn(),
-    runOnJS: jest.fn(fn => fn),
-    runOnUI: jest.fn(fn => fn),
-    useAnimatedGestureHandler: jest.fn(() => () => {}),
-    useAnimatedProps: jest.fn(() => ({})),
-    useAnimatedReaction: jest.fn(),
-    useAnimatedRef: jest.fn(() => ({ current: null })),
-    useAnimatedScrollHandler: jest.fn(() => () => {}),
-    useAnimatedStyle: jest.fn(() => ({})),
-    useDerivedValue: jest.fn(fn => ({ value: fn() })),
-    useEvent: jest.fn(() => ({})),
-    useHandler: jest.fn(() => ({})),
-    useSharedValue: jest.fn(init => ({ value: init })),
-    Value: jest.fn(),
-  },
+  View: mockAnimatedComponent('Animated.View'),
+  Text: mockAnimatedComponent('Animated.Text'),
+  Image: mockAnimatedComponent('Animated.Image'),
+  ScrollView: mockAnimatedComponent('Animated.ScrollView'),
+  FlatList: mockAnimatedComponent('Animated.FlatList'),
+  call: jest.fn(),
+  createAnimatedComponent: jest.fn(component => component),
+  event: jest.fn(),
+  interpolate: jest.fn(),
+  loop: jest.fn(),
+  runOnJS: jest.fn(fn => fn),
+  runOnUI: jest.fn(fn => fn),
+  useAnimatedGestureHandler: jest.fn(() => () => {}),
+  useAnimatedProps: jest.fn(() => ({})),
+  useAnimatedReaction: jest.fn(),
+  useAnimatedRef: jest.fn(() => ({ current: null })),
+  useAnimatedScrollHandler: jest.fn(() => () => {}),
+  useAnimatedStyle: jest.fn(() => ({})),
+  useDerivedValue: jest.fn(fn => ({ value: fn() })),
+  useEvent: jest.fn(() => ({})),
+  useHandler: jest.fn(() => ({})),
+  useSharedValue: jest.fn(init => ({ value: init })),
+  Value: jest.fn(),
 };
 
 export const useSharedValue = jest.fn(init => ({ value: init }));

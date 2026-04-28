@@ -15,6 +15,8 @@ jest.mock('../../services/socketClient', () => ({
     getPresence: jest.fn(),
     on: jest.fn(),
     off: jest.fn(),
+    emit: jest.fn(),
+    socket: { on: jest.fn(), off: jest.fn(), emit: jest.fn() },
   },
 }));
 
@@ -89,15 +91,24 @@ describe('OnlineStatus', () => {
 
   it('shows last seen when user is offline', async () => {
     const lastSeen = new Date(Date.now() - 3600000).toISOString(); // 1 hour ago
-    (socketClient.getPresence as jest.Mock).mockResolvedValue([
-      { userId: 'user123', online: false, lastSeenAt: lastSeen },
-    ]);
 
-    const { getByText } = render(<OnlineStatus userId="user123" />);
+    // Use mockImplementationOnce to ensure only this call returns offline
+    (socketClient.getPresence as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve([{ userId: 'user123', online: false, lastSeenAt: lastSeen }])
+    );
 
-    await waitFor(() => {
-      expect(getByText(/小时前/)).toBeTruthy();
-    });
+    const { findByText, queryByText, unmount } = render(<OnlineStatus userId="user123" />);
+
+    try {
+      // First wait for presence to load (should show offline status)
+      await findByText('离线');
+
+      // Then check for last seen time
+      const lastSeenText = queryByText(/小时前/);
+      expect(lastSeenText).toBeTruthy();
+    } finally {
+      unmount();
+    }
   });
 });
 
@@ -107,8 +118,8 @@ describe('OnlineStatusBadge', () => {
   });
 
   it('renders correctly', () => {
-    const { container } = render(<OnlineStatusBadge userId="user123" />);
-    expect(container).toBeTruthy();
+    const { root } = render(<OnlineStatusBadge userId="user123" />);
+    expect(root).toBeTruthy();
   });
 
   it('subscribes and unsubscribes correctly', () => {

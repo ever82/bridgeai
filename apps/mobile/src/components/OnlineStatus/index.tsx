@@ -108,7 +108,6 @@ export const OnlineStatus: React.FC<OnlineStatusProps> = ({
   onStatusChange,
 }) => {
   const [presence, setPresence] = useState<UserPresence | null>(null);
-  const [isSubscribed, setIsSubscribed] = useState(false);
 
   const indicatorSize = getIndicatorSize(size);
   const statusColor = getStatusColor(presence?.status || 'offline');
@@ -119,7 +118,6 @@ export const OnlineStatus: React.FC<OnlineStatusProps> = ({
 
     // Subscribe to user events
     socketClient.subscribeToUser(userId);
-    setIsSubscribed(true);
 
     // Fetch initial presence
     const fetchPresence = async () => {
@@ -143,7 +141,11 @@ export const OnlineStatus: React.FC<OnlineStatusProps> = ({
     fetchPresence();
 
     // Listen for status updates
-    const handleStatusUpdate = (data: { userId: string; status: OnlineStatusType; timestamp: string }) => {
+    const handleStatusUpdate = (data: {
+      userId: string;
+      status: OnlineStatusType;
+      timestamp: string;
+    }) => {
       if (data.userId === userId) {
         setPresence(prev => ({
           ...prev,
@@ -159,9 +161,7 @@ export const OnlineStatus: React.FC<OnlineStatusProps> = ({
 
     return () => {
       socketClient.off('user:status_update', handleStatusUpdate);
-      if (isSubscribed) {
-        socketClient.unsubscribeFromUser(userId);
-      }
+      socketClient.unsubscribeFromUser(userId);
     };
   }, [userId, onStatusChange]);
 
@@ -189,16 +189,12 @@ export const OnlineStatus: React.FC<OnlineStatusProps> = ({
 
       {/* Status Label */}
       {showLabel && (
-        <Text style={styles.statusLabel}>
-          {getStatusLabel(presence?.status || 'offline')}
-        </Text>
+        <Text style={styles.statusLabel}>{getStatusLabel(presence?.status || 'offline')}</Text>
       )}
 
       {/* Last Seen */}
       {showLastSeen && presence?.status === 'offline' && presence?.lastSeenAt && (
-        <Text style={styles.lastSeenText}>
-          {formatLastSeen(presence.lastSeenAt)}
-        </Text>
+        <Text style={styles.lastSeenText}>{formatLastSeen(presence.lastSeenAt)}</Text>
       )}
     </View>
   );
