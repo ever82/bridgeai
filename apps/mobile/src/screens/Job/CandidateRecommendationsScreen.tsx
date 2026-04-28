@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { getCandidateRecommendations } from '../../services/api/jobMatchingApi';
 import { theme } from '../../theme';
 
 // Local types
@@ -350,72 +351,41 @@ export const CandidateRecommendationsScreen: React.FC = () => {
   );
 
   const fetchData = useCallback(async () => {
-    const mockRecommendations: CandidateRecommendationItem[] = [
-      {
-        id: 'rec-1',
-        jobId: 'job-1',
+    try {
+      const response = await getCandidateRecommendations(
+        selectedJobId ? { jobId: selectedJobId } : undefined
+      );
+      const mapped: CandidateRecommendationItem[] = response.data.map(rec => ({
+        id: rec.id,
+        jobId: rec.jobId,
         candidate: {
-          id: 'cand-1',
-          name: '张明',
-          title: '高级前端工程师',
-          location: '杭州',
-          experienceYears: 5,
-          education: '本科',
-          skills: ['React', 'TypeScript', 'Next.js', 'GraphQL', 'Webpack', 'Jest'],
-          expectedSalary: '30-45K/月',
-          isOpenToWork: true,
-          aiSummary:
-            '该候选人拥有丰富的前端架构经验，React技能扎实，有带领小团队的经验，符合贵司高级工程师职位要求。',
+          id: rec.candidate.id,
+          name: rec.candidate.name,
+          title: rec.candidate.title,
+          location: rec.candidate.location,
+          experienceYears: rec.candidate.experienceYears,
+          education: rec.candidate.educationLevel,
+          skills: rec.candidate.skills,
+          expectedSalary: `${rec.candidate.expectedSalary.min / 1000}-${rec.candidate.expectedSalary.max / 1000}K/月`,
+          isOpenToWork: rec.candidate.isOpenToWork,
+          aiSummary: rec.candidate.agentGeneratedSummary,
         },
-        matchScore: 95,
-        matchFactors: { skills: 98, experience: 95, education: 85, salary: 90, location: 95 },
-        reasons: ['React技能与职位要求高度匹配', '5年经验符合高级职位要求'],
-        status: 'new',
-      },
-      {
-        id: 'rec-2',
-        jobId: 'job-1',
-        candidate: {
-          id: 'cand-2',
-          name: '李华',
-          title: '前端开发工程师',
-          location: '杭州',
-          experienceYears: 3,
-          education: '硕士',
-          skills: ['React', 'Vue.js', 'TypeScript', 'Node.js', 'CSS3'],
-          expectedSalary: '25-35K/月',
-          isOpenToWork: true,
-          aiSummary: '技术基础扎实，学习能力强，虽然经验相对较少，但潜力巨大，薪资期望合理。',
+        matchScore: rec.matchScore,
+        matchFactors: {
+          skills: rec.matchFactors.skills,
+          experience: rec.matchFactors.experience,
+          education: rec.matchFactors.education,
+          salary: rec.matchFactors.salary,
+          location: rec.matchFactors.location,
         },
-        matchScore: 82,
-        matchFactors: { skills: 85, experience: 75, education: 95, salary: 95, location: 90 },
-        reasons: ['React技能符合职位要求', '硕士学历，学习能力强'],
-        status: 'viewed',
-      },
-      {
-        id: 'rec-3',
-        jobId: 'job-1',
-        candidate: {
-          id: 'cand-3',
-          name: '王芳',
-          title: '资深前端工程师',
-          location: '上海',
-          experienceYears: 7,
-          education: '本科',
-          skills: ['React', 'Angular', 'TypeScript', 'Node.js', 'Docker', 'AWS'],
-          expectedSalary: '40-55K/月',
-          isOpenToWork: false,
-          aiSummary: '经验丰富，技术全面，但薪资期望较高，可能需要考虑远程工作选项。',
-        },
-        matchScore: 68,
-        matchFactors: { skills: 80, experience: 95, education: 80, salary: 60, location: 50 },
-        reasons: ['7年经验，技术全面', '有团队管理经验'],
-        status: 'shortlisted',
-      },
-    ];
-
-    setRecommendations(mockRecommendations);
-  }, []);
+        reasons: rec.reasons,
+        status: rec.status,
+      }));
+      setRecommendations(mapped);
+    } catch {
+      setRecommendations([]);
+    }
+  }, [selectedJobId]);
 
   useEffect(() => {
     fetchData();

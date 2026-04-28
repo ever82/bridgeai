@@ -16,8 +16,18 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  JOB_TYPE_LABELS,
+  EXPERIENCE_LEVEL_LABELS,
+  SALARY_PERIOD_LABELS,
+  JobType,
+  ExperienceLevel,
+  SalaryPeriod,
+} from '@bridgeai/shared';
 
+import { getJobRecommendations } from '../../services/api/jobMatchingApi';
 import { theme } from '../../theme';
 
 // Local types for job recommendations
@@ -250,60 +260,39 @@ const FilterTab: React.FC<FilterTabProps> = ({ label, count, isActive, onPress }
 
 export const JobRecommendationsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   const [recommendations, setRecommendations] = useState<JobRecommendationItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'high' | 'medium' | 'saved'>('all');
 
   const fetchRecommendations = useCallback(async () => {
-    const mockRecommendations: JobRecommendationItem[] = [
-      {
-        id: 'rec-1',
-        title: '高级前端工程师',
-        company: '阿里巴巴',
-        location: '杭州',
-        salary: '30-50K/月',
-        jobType: '全职',
-        experience: '5年以上',
-        isUrgent: true,
-        matchScore: 92,
-        matchFactors: { skills: 95, experience: 90, location: 85, salary: 95 },
-        reasons: ['您的React技能与职位要求高度匹配', '您的前端架构经验符合高级职位要求'],
-        skills: ['React', 'TypeScript', 'Node.js', 'Webpack', 'CSS3'],
-        isInterested: null,
-      },
-      {
-        id: 'rec-2',
-        title: '全栈开发工程师',
-        company: '字节跳动',
-        location: '北京',
-        salary: '25-40K/月',
-        jobType: '全职',
-        experience: '3年以上',
-        isUrgent: false,
-        matchScore: 78,
-        matchFactors: { skills: 85, experience: 80, location: 70, salary: 85 },
-        reasons: ['您的全栈开发经验与该职位匹配', 'Node.js和React技能符合职位要求'],
-        skills: ['React', 'Node.js', 'TypeScript', 'MySQL', 'Redis'],
-        isInterested: null,
-      },
-      {
-        id: 'rec-3',
-        title: 'React Native开发工程师',
-        company: '腾讯',
-        location: '深圳',
-        salary: '20-35K/月',
-        jobType: '全职',
-        experience: '2年以上',
-        isUrgent: false,
-        matchScore: 65,
-        matchFactors: { skills: 70, experience: 60, location: 65, salary: 70 },
-        reasons: ['您的React经验可迁移至React Native', '移动端开发经验是加分项'],
-        skills: ['React Native', 'TypeScript', 'iOS', 'Android', 'Redux'],
-        isInterested: null,
-      },
-    ];
-
-    setRecommendations(mockRecommendations);
+    try {
+      const response = await getJobRecommendations();
+      const mapped: JobRecommendationItem[] = response.data.map(rec => ({
+        id: rec.id,
+        title: rec.job.title,
+        company: rec.job.department,
+        location: rec.job.location.city,
+        salary: `${rec.job.salary.min / 1000}-${rec.job.salary.max / 1000}K/${SALARY_PERIOD_LABELS[rec.job.salary.period as SalaryPeriod] || '月'}`,
+        jobType: JOB_TYPE_LABELS[rec.job.type as JobType] || rec.job.type,
+        experience:
+          EXPERIENCE_LEVEL_LABELS[rec.job.requirements.experienceLevel as ExperienceLevel] || '',
+        isUrgent: rec.job.isUrgent,
+        matchScore: rec.matchScore,
+        matchFactors: {
+          skills: rec.matchFactors.skills,
+          experience: rec.matchFactors.experience,
+          location: rec.matchFactors.location,
+          salary: rec.matchFactors.salary,
+        },
+        reasons: rec.reasons,
+        skills: rec.job.requirements.skills.slice(0, 5),
+        isInterested: rec.isInterested,
+      }));
+      setRecommendations(mapped);
+    } catch {
+      setRecommendations([]);
+    }
   }, []);
 
   useEffect(() => {
@@ -343,9 +332,12 @@ export const JobRecommendationsScreen: React.FC = () => {
     ]);
   }, []);
 
-  const handlePressCard = useCallback((_rec: JobRecommendationItem) => {
-    // TODO: Navigate to job detail
-  }, []);
+  const handlePressCard = useCallback(
+    (rec: JobRecommendationItem) => {
+      navigation.navigate('JobDetail', { jobId: rec.id });
+    },
+    [navigation]
+  );
 
   const filteredRecommendations = recommendations.filter(rec => {
     switch (activeFilter) {
