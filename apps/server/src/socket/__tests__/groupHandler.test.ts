@@ -2,7 +2,6 @@
  * Group Handler Tests
  */
 import { registerGroupHandlers } from '../handlers/groupHandler';
-import { connectionManager } from '../connectionManager';
 
 // Mock connection manager
 jest.mock('../connectionManager', () => ({
@@ -15,7 +14,7 @@ describe('Group Handler', () => {
   let mockSocket: any;
   let mockNamespace: any;
   let mockCallback: jest.Mock;
-  let eventHandlers: Map<string, Function>;
+  let eventHandlers: Map<string, (args: any, cb?: any) => void>;
 
   beforeEach(() => {
     eventHandlers = new Map();
@@ -28,7 +27,7 @@ describe('Group Handler', () => {
       leave: jest.fn(),
       to: jest.fn().mockReturnThis(),
       emit: jest.fn(),
-      on: jest.fn((event: string, handler: Function) => {
+      on: jest.fn((event: string, handler: (args: any, cb?: any) => void) => {
         eventHandlers.set(event, handler);
       }),
       rooms: new Set(),
@@ -103,9 +102,7 @@ describe('Group Handler', () => {
       handler({ groupId: 'group123' }, mockCallback);
 
       expect(mockSocket.leave).toHaveBeenCalledWith('group:group123');
-      expect(mockCallback).toHaveBeenCalledWith(
-        expect.objectContaining({ success: true })
-      );
+      expect(mockCallback).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });
   });
 
@@ -118,10 +115,7 @@ describe('Group Handler', () => {
       createHandler({ name: 'Test Group' }, jest.fn());
 
       // Try to update settings without being a member
-      handler(
-        { groupId: 'nonexistent', settings: { allowInvite: false } },
-        mockCallback
-      );
+      handler({ groupId: 'nonexistent', settings: { allowInvite: false } }, mockCallback);
 
       expect(mockCallback).toHaveBeenCalledWith(
         expect.objectContaining({

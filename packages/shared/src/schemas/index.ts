@@ -6,3 +6,4 @@
 
 export * from './employerSchema';
 export * from './jobPostingSchema';
+export * from './jobSeekerSchema';

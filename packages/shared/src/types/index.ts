@@ -1,12 +1,10 @@
 // Export all shared types
 export * from './agent';
-export * from './dating';
 export {
   // Explicitly re-export from agentProfile, excluding Location (see ./location)
   AgeRange,
   Gender,
   EducationLevel,
-  ProfileLocation,
   L1Profile,
   L1_FIELD_WEIGHTS,
   L1_FIELD_LABELS,
@@ -27,17 +25,16 @@ export * from './capability';
 export * from './credit';
 export * from './employer';
 export * from './filter';
-export * from './handoff';
 export * from './jobPosting';
 export * from './location';
 export * from './points';
 export * from './scene';
 export * from './agentAdConsumer';
-export * from './attributeFilter';
 export * from './disclosure';
 export * from './visionShare';
+export * from './jobSeeker';
+export * from './resume';
 export * from './handoff';
 export * from '../schemas/l2';
 export * from '../schemas/sceneFields';
 export * from './photo.types';
-export * from './payment';
