@@ -202,6 +202,86 @@ scenarios:
       avg_total_retry_latency: '<15s'
       adapter_error_message_accuracy: '>99%'
 
+  # Scenario 5: Vision API performance (AC2 requirement)
+  # Tests image analysis endpoints for throughput and latency
+  - name: vision_api_performance
+    description: Vision API image analysis performance under load (AC2 requirement)
+    executor: ramping-vus
+    phases:
+      - name: warmup
+        duration: 30s
+        target: 20
+      - name: ramp_to_50
+        duration: 1m
+        target: 50
+      - name: sustain_50
+        duration: 2m
+        target: 50
+      - name: ramp_to_100
+        duration: 1m
+        target: 100
+      - name: sustain_100
+        duration: 2m
+        target: 100
+      - name: cooldown
+        duration: 30s
+        target: 0
+    config:
+      endpoints:
+        - /api/ai/vision/analyze
+        - /api/ai/vision/moderate
+      image_sizes:
+        - 512x512
+        - 1024x1024
+        - 2048x2048
+      concurrent_requests_per_vu: 2
+      batch_sizes: [1, 5, 10]
+    actions:
+      - send_vision_analyze_request
+      - measure_end_to_end_latency
+      - verify_analysis_result_structure
+      - send_batch_vision_requests
+      - measure_batch_throughput
+    thresholds:
+      vision_analyze_latency_p50: '<3s'
+      vision_analyze_latency_p95: '<5s'
+      vision_analyze_latency_p99: '<8s'
+      vision_batch_throughput: '>50 img/min at 100 concurrent'
+      vision_success_rate: '>98%'
+      vision_error_rate: '<2%'
+
+  # Scenario 6: Vision API concurrent load
+  # Tests multiple simultaneous vision requests across adapters
+  - name: vision_concurrent_load
+    description: Concurrent Vision API requests across GPT-4V and Claude Vision adapters
+    executor: constant-vus
+    phases:
+      - name: steady_state
+        duration: 3m
+        target: 50
+      - name: spike
+        duration: 1m
+        target: 100
+      - name: settle
+        duration: 2m
+        target: 50
+    config:
+      providers:
+        - gpt-4-vision
+        - claude-3-sonnet-vision
+      image_load_percentage: 30
+      mixed_workload_ratio: 0.3
+    actions:
+      - send_concurrent_vision_requests
+      - monitor_adapter_health
+      - verify_cross_adapter_routing
+      - measure_concurrent_throughput
+    thresholds:
+      concurrent_vision_throughput: '>200 req/min'
+      adapter_success_rate: '>95%'
+      cross_adapter_failover_time: '<2s'
+      memory_leak_rate: '<10MB/min'
+
 global_thresholds:
   # All scenarios must meet these overall requirements
   ai_service_availability: '>99.5%'

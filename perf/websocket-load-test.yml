@@ -167,6 +167,45 @@ scenarios:
       chat_message_loss_rate: '<0.1%'
       chat_throughput: '>2000 msg/min'
 
+  # Scenario 6: Connection reconnection stability (AC1 requirement)
+  # Tests auto-reconnection when connection is dropped
+  - name: connection_reconnection
+    description: Auto-reconnection success rate and reconnection time after connection drop
+    executor: ramping-vus
+    phases:
+      - name: warmup
+        duration: 30s
+        target: 100
+      - name: sustain
+        duration: 2m
+        target: 100
+      - name: drop_connections
+        duration: 30s
+        target: 0
+      - name: reconnect
+        duration: 1m
+        target: 100
+      - name: cooldown
+        duration: 30s
+        target: 0
+    config:
+      reconnect_attempts: 5
+      reconnect_delay_ms: 1000
+      success_threshold: 95
+    actions:
+      - connect_socket
+      - authenticate
+      - simulate_connection_drop
+      - trigger_auto_reconnect
+      - measure_reconnect_time
+      - verify_session_persistence
+    thresholds:
+      reconnection_success_rate: '>95%'
+      reconnection_time_p50: '<2s'
+      reconnection_time_p95: '<5s'
+      session_persistence_rate: '>99%'
+      error_rate: '<2%'
+
 global_thresholds:
   # All scenarios must meet these overall requirements
   connection_drop_rate: '<0.5%'

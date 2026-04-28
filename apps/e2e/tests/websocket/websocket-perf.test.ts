@@ -41,7 +41,7 @@ function createClient(namespace: string = '/'): Promise<ClientSocket> {
       auth: { token: AUTH_TOKEN },
       transports: ['websocket'],
       forceNew: true,
-      reconnection: false,
+      reconnection: true,
     });
 
     socket.on('connect_error', err => {
@@ -509,5 +509,121 @@ describe('WebSocket E2E Performance', () => {
 
       disconnectAll(clients);
     }, 30000);
+  });
+
+  // -----------------------------------------------------------------------
+  // 5. Connection Reconnection Stability (AC1 requirement)
+  // -----------------------------------------------------------------------
+  describe('Connection reconnection stability', () => {
+    it('should reconnect automatically after connection drop and measure reconnect time', async () => {
+      const roomId = uid('reconnect-room');
+
+      // Create client with reconnection enabled
+      const reconnectClient = await new Promise<ClientSocket>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Connection timeout')), 15000);
+        const socket = Client(`${SERVER_URL}/chat`, {
+          auth: { token: AUTH_TOKEN },
+          transports: ['websocket'],
+          forceNew: true,
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+        });
+
+        socket.on('connect', () => {
+          clearTimeout(timeout);
+          resolve(socket);
+        });
+
+        socket.on('connect_error', err => {
+          clearTimeout(timeout);
+          reject(err);
+        });
+      });
+      activeClients.push(reconnectClient);
+
+      // Join a room
+      await new Promise<void>(resolve => {
+        reconnectClient.emit('chat:join', { roomId }, () => resolve());
+      });
+      await new Promise(r => setTimeout(r, 200));
+
+      // Disconnect and measure reconnection
+      reconnectClient.disconnect();
+      await new Promise(r => setTimeout(r, 500));
+
+      // Auto-reconnect should happen
+      const reconnectStart = performance.now();
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Reconnection timeout')), 30000);
+        reconnectClient.on('connect', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+      });
+      const reconnectTime = performance.now() - reconnectStart;
+
+      expect(reconnectTime).toBeLessThan(5000);
+      console.log(`[Perf] Reconnection time: ${reconnectTime.toFixed(2)}ms`);
+    }, 45000);
+
+    it('should verify session persistence after reconnection', async () => {
+      const roomId = uid('reconnect-session');
+      const client = await new Promise<ClientSocket>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Connection timeout')), 15000);
+        const socket = Client(`${SERVER_URL}/chat`, {
+          auth: { token: AUTH_TOKEN },
+          transports: ['websocket'],
+          forceNew: true,
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+        });
+        socket.on('connect', () => {
+          clearTimeout(timeout);
+          resolve(socket);
+        });
+      });
+      activeClients.push(client);
+
+      // Join room
+      await new Promise<void>(resolve => {
+        client.emit('chat:join', { roomId }, () => resolve());
+      });
+      await new Promise(r => setTimeout(r, 200));
+
+      // Drop and reconnect
+      client.disconnect();
+      await new Promise(r => setTimeout(r, 500));
+
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Reconnection timeout')), 30000);
+        client.on('connect', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+      });
+
+      // Verify still in room
+      const memberCount = await new Promise<number>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Member count timeout')), 10000);
+        client.emit(
+          'chat:members',
+          { roomId },
+          (response: { success: boolean; data?: { memberCount?: number } }) => {
+            clearTimeout(timeout);
+            if (response.success) {
+              resolve(response.data?.memberCount ?? 0);
+            } else {
+              reject(new Error('Failed to get member count'));
+            }
+          }
+        );
+      });
+
+      expect(memberCount).toBeGreaterThan(0);
+      console.log(`[Perf] Session persisted: member count after reconnect = ${memberCount}`);
+    }, 45000);
   });
 });
