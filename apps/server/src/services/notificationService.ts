@@ -15,6 +15,8 @@ import {
 
 import { prisma } from '../db/client';
 
+import { pushNotificationService } from './pushNotification';
+
 // 查询选项
 interface NotificationQueryOptions {
   userId: string;
@@ -445,14 +447,18 @@ export class NotificationService {
     let totalSent = 0;
     let totalDelivered = 0;
     let totalFailed = 0;
-    let totalOpened = 0;
-    let totalClicked = 0;
     const byChannel: Record<string, ChannelStats> = {};
 
     for (const notif of notifications) {
       for (const delivery of notif.deliveries) {
         totalSent++;
-        byChannel[delivery.channel] = byChannel[delivery.channel] || { sent: 0, delivered: 0, failed: 0, opened: 0, clicked: 0 };
+        byChannel[delivery.channel] = byChannel[delivery.channel] || {
+          sent: 0,
+          delivered: 0,
+          failed: 0,
+          opened: 0,
+          clicked: 0,
+        };
         byChannel[delivery.channel].sent++;
 
         if (delivery.status === 'SENT' || delivery.status === 'DELIVERED') {
@@ -463,16 +469,10 @@ export class NotificationService {
           byChannel[delivery.channel].failed++;
         }
 
-        // Track opens and clicks if timestamps exist
-        if (delivery.deliveredAt) {
-          totalOpened++;
-          byChannel[delivery.channel].opened++;
-        }
-        // Clicks tracked via readAt as proxy (since clickedAt not in model)
-        if (delivery.sentAt && notif.status === 'READ') {
-          totalClicked++;
-          byChannel[delivery.channel].clicked++;
-        }
+        // TODO: Open and click tracking are unavailable. deliveredAt confirms push
+        // service delivery, not user opens. READ status conflates in-app viewing
+        // with push clicks. Proper tracking requires `openedAt` and `clickedAt`
+        // fields on the NotificationDelivery model (requires DB migration).
       }
     }
 
@@ -481,9 +481,11 @@ export class NotificationService {
       totalDelivered,
       totalFailed,
       deliveryRate: totalSent > 0 ? (totalDelivered / totalSent) * 100 : 0,
-      openRate: totalDelivered > 0 ? (totalOpened / totalDelivered) * 100 : 0,
-      clickRate: totalOpened > 0 ? (totalClicked / totalOpened) * 100 : 0,
-      conversionRate: totalSent > 0 ? (totalClicked / totalSent) * 100 : 0,
+      // TODO: openRate/clickRate/conversionRate set to 0 until proper tracking
+      // fields (openedAt, clickedAt) are added to NotificationDelivery model.
+      openRate: 0,
+      clickRate: 0,
+      conversionRate: 0,
       byChannel,
     };
   }
@@ -516,9 +518,51 @@ export class NotificationService {
             errorMessage: null,
           },
         });
-        retriedCount++;
-      } catch (error) {
+
+        // Actually resend the notification through the delivery's channel
+        const notification = delivery.notification;
+        const result = await pushNotificationService.send({
+          userId: notification.userId,
+          title: notification.title,
+          content: notification.content,
+          type: notification.type,
+          data: (notification.data as Record<string, any>) || {},
+          imageUrl: notification.imageUrl ?? undefined,
+          actionUrl: notification.actionUrl ?? undefined,
+          category: notification.category ?? undefined,
+          priority: notification.priority,
+          channels: [delivery.channel],
+        });
+
+        if (result.success) {
+          await prisma.notificationDelivery.update({
+            where: { id: delivery.id },
+            data: {
+              status: 'SENT',
+              sentAt: new Date(),
+            },
+          });
+          retriedCount++;
+        } else {
+          await prisma.notificationDelivery.update({
+            where: { id: delivery.id },
+            data: {
+              status: 'FAILED',
+              errorMessage: result.errors.join('; ') || 'Retry send failed',
+            },
+          });
+        }
+      } catch (error: any) {
         console.error(`Failed to retry delivery ${delivery.id}:`, error);
+        await prisma.notificationDelivery
+          .update({
+            where: { id: delivery.id },
+            data: {
+              status: 'FAILED',
+              errorMessage: error.message || 'Unknown error during retry',
+            },
+          })
+          .catch(() => {});
       }
     }
 

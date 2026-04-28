@@ -24,14 +24,7 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const {
-      status,
-      type,
-      category,
-      priority,
-      limit = '20',
-      offset = '0',
-    } = req.query;
+    const { status, type, category, priority, limit = '20', offset = '0' } = req.query;
 
     const notifications = await notificationService.getNotifications({
       userId,
@@ -68,10 +61,7 @@ router.get('/unread-count', authenticate, async (req: Request, res: Response) =>
     }
 
     const { category } = req.query;
-    const count = await notificationService.getUnreadCount(
-      userId,
-      category as string
-    );
+    const count = await notificationService.getUnreadCount(userId, category as string);
 
     res.json({
       success: true,
@@ -516,6 +506,12 @@ router.get('/analytics', authenticate, async (req: Request, res: Response) => {
  */
 router.post('/retry-failed', authenticate, async (req: Request, res: Response) => {
   try {
+    if (req.user?.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: admin access required',
+      });
+    }
     const { maxRetries = 3 } = req.body;
     const count = await notificationService.retryFailedDeliveries(maxRetries);
 
