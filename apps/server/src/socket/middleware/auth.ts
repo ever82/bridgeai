@@ -2,6 +2,7 @@
  * Socket.io Authentication Middleware
  *
  * Validates JWT tokens for Socket.io connections.
+ * Implements connection limits per user.
  */
 import type { Socket } from 'socket.io';
 
@@ -10,9 +11,10 @@ import { rbacService } from '../../services/rbacService';
 import { connectionManager } from '../connectionManager';
 
 /**
- * Maximum connections allowed per user (configurable via env)
+ * Connection limit configuration
  */
-const MAX_CONNECTIONS_PER_USER = parseInt(process.env.MAX_SOCKET_CONNECTIONS_PER_USER || '5', 10);
+const MAX_CONNECTIONS_PER_USER = parseInt(process.env.SOCKET_MAX_CONNECTIONS_PER_USER || '5', 10);
+const MAX_TOTAL_CONNECTIONS = parseInt(process.env.SOCKET_MAX_TOTAL_CONNECTIONS || '10000', 10);
 
 /**
  * Extended Socket type with user info
@@ -27,7 +29,31 @@ export interface AuthenticatedSocket extends Socket {
 }
 
 /**
+ * Check connection limits for a user
+ */
+function checkConnectionLimits(userId: string): { allowed: boolean; reason?: string } {
+  const stats = connectionManager.getStats();
+
+  // Check total connection limit
+  if (stats.totalConnections >= MAX_TOTAL_CONNECTIONS) {
+    return { allowed: false, reason: 'Server at maximum capacity' };
+  }
+
+  // Check per-user connection limit
+  const userConnections = connectionManager.getUserConnections(userId).length;
+  if (userConnections >= MAX_CONNECTIONS_PER_USER) {
+    return {
+      allowed: false,
+      reason: `Maximum ${MAX_CONNECTIONS_PER_USER} connections per user exceeded`,
+    };
+  }
+
+  return { allowed: true };
+}
+
+/**
  * Socket.io authentication middleware
+ * Implements JWT verification, permission checking, user association, and connection limits
  */
 export async function socketAuthMiddleware(
   socket: AuthenticatedSocket,
@@ -50,13 +76,20 @@ export async function socketAuthMiddleware(
       return;
     }
 
+    // Check connection limits
+    const limitCheck = checkConnectionLimits(decoded.userId);
+    if (!limitCheck.allowed) {
+      next(new Error(limitCheck.reason));
+      return;
+    }
+
     // Get user roles and permissions
     const [roles, permissions] = await Promise.all([
       rbacService.getUserRoles(decoded.userId),
       rbacService.getUserPermissions(decoded.userId),
     ]);
 
-    // Attach user info to socket
+    // Attach user info to socket (user association)
     socket.user = {
       id: decoded.userId,
       email: decoded.email,
@@ -137,6 +170,13 @@ export async function optionalSocketAuthMiddleware(
     const decoded = await jwtService.verifyToken(token);
 
     if (decoded && decoded.userId) {
+      // Check connection limits for authenticated users
+      const limitCheck = checkConnectionLimits(decoded.userId);
+      if (!limitCheck.allowed) {
+        next(new Error(limitCheck.reason));
+        return;
+      }
+
       const [roles, permissions] = await Promise.all([
         rbacService.getUserRoles(decoded.userId),
         rbacService.getUserPermissions(decoded.userId),

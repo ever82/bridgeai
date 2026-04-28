@@ -1,57 +1,116 @@
 /**
  * JWT Service
  *
- * Provides JWT token verification for Socket.io authentication.
+ * Provides JWT token operations for Socket.io authentication.
  */
-
 import jwt from 'jsonwebtoken';
 
-export interface JwtPayload {
+const JWT_SECRET =
+  process.env.JWT_SECRET || process.env.JWT_SECRET_KEY || 'your-secret-key-change-in-production';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+
+/**
+ * Token payload interface
+ */
+export interface TokenPayload {
   userId: string;
   email: string;
-  role?: string;
-  type?: string;
-  iat?: number;
-  exp?: number;
+  roles?: string[];
+  permissions?: string[];
 }
 
 /**
- * JWT Service singleton
+ * Decoded token interface
  */
-class JwtService {
-  private secret: string;
+export interface DecodedToken extends TokenPayload {
+  iat: number;
+  exp: number;
+  jti?: string;
+}
 
-  constructor() {
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new Error('JWT_SECRET environment variable is required');
-    }
-    this.secret = secret;
-  }
-
-  /**
-   * Verify a JWT token and return the decoded payload
-   */
-  async verifyToken(token: string): Promise<JwtPayload | null> {
-    try {
-      const decoded = jwt.verify(token, this.secret) as JwtPayload;
-      return decoded;
-    } catch {
+/**
+ * Verify JWT token
+ */
+export async function verifyToken(token: string): Promise<DecodedToken | null> {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
+    return decoded;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      console.warn('[JWT Service] Token expired');
       return null;
     }
-  }
-
-  /**
-   * Decode a JWT token without verification (for debugging)
-   */
-  decodeToken(token: string): JwtPayload | null {
-    try {
-      return jwt.decode(token) as JwtPayload;
-    } catch {
+    if (error instanceof jwt.JsonWebTokenError) {
+      console.warn('[JWT Service] Invalid token');
       return null;
     }
+    console.error('[JWT Service] Token verification error:', error);
+    return null;
   }
 }
 
-export const jwtService = new JwtService();
+/**
+ * Decode token without verification (for debugging)
+ */
+export function decodeToken(token: string): DecodedToken | null {
+  try {
+    const decoded = jwt.decode(token) as DecodedToken;
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Generate JWT token
+ */
+export function generateToken(payload: TokenPayload, expiresIn: string = JWT_EXPIRES_IN): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn });
+}
+
+/**
+ * Extract bearer token from auth header
+ */
+export function extractBearerToken(authHeader: string | undefined): string | null {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+  return authHeader.slice(7);
+}
+
+/**
+ * Check if token is expired
+ */
+export function isTokenExpired(token: string): boolean {
+  try {
+    const decoded = jwt.decode(token) as DecodedToken;
+    if (!decoded || !decoded.exp) return true;
+    return decoded.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Get token expiration time in seconds
+ */
+export function getTokenExpiresIn(token: string): number {
+  try {
+    const decoded = jwt.decode(token) as DecodedToken;
+    if (!decoded || !decoded.exp) return 0;
+    return decoded.exp * 1000 - Date.now();
+  } catch {
+    return 0;
+  }
+}
+
+export const jwtService = {
+  verifyToken,
+  decodeToken,
+  generateToken,
+  extractBearerToken,
+  isTokenExpired,
+  getTokenExpiresIn,
+};
+
 export default jwtService;
