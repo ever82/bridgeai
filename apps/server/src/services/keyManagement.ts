@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 
 import { securityConfig } from '../config/security';
+import { secureLogger } from '../middleware/logging';
 
 interface KeyMetadata {
   createdAt: Date;
@@ -8,23 +9,28 @@ interface KeyMetadata {
   version: number;
 }
 
+interface AuditEntry {
+  action: string;
+  timestamp: Date;
+  details: string;
+}
+
 class KeyManagementService {
   private masterKey: Buffer | null = null;
   private dataEncryptionKey: Buffer | null = null;
   private keyMetadata: KeyMetadata = { createdAt: new Date(), version: 1 };
-  private auditLog: Array<{ action: string; timestamp: Date; details: string }> = [];
+  // In-memory buffer for recent entries; full audit trail is persisted via secureLogger
+  private recentAuditLog: AuditEntry[] = [];
+  private readonly maxRecentEntries = 1000;
 
   constructor() {
     this.initializeKeys();
   }
 
   private initializeKeys(): void {
-    // Master key should be stored securely (e.g., AWS KMS, HashiCorp Vault)
-    // For local development, derive from environment variable
     const masterKeyHex = securityConfig.ENCRYPTION_MASTER_KEY;
 
     if (!masterKeyHex) {
-      // Generate a temporary key for development (not for production)
       console.warn('ENCRYPTION_MASTER_KEY not set, generating temporary key');
       this.masterKey = crypto.randomBytes(32);
     } else {
@@ -34,7 +40,6 @@ class KeyManagementService {
       }
     }
 
-    // Derive DEK from master key
     this.dataEncryptionKey = this.deriveDataEncryptionKey();
     this.logAudit('KEY_INITIALIZE', 'Master and DEK keys initialized');
   }
@@ -56,14 +61,16 @@ class KeyManagementService {
   async rotateKeys(): Promise<void> {
     const oldVersion = this.keyMetadata.version;
 
-    // Generate new master key
     this.masterKey = crypto.randomBytes(32);
     this.dataEncryptionKey = this.deriveDataEncryptionKey();
 
     this.keyMetadata.rotatedAt = new Date();
     this.keyMetadata.version = oldVersion + 1;
 
-    this.logAudit('KEY_ROTATE', `Keys rotated from version ${oldVersion} to ${this.keyMetadata.version}`);
+    this.logAudit(
+      'KEY_ROTATE',
+      `Keys rotated from version ${oldVersion} to ${this.keyMetadata.version}`
+    );
   }
 
   getKeyMetadata(): KeyMetadata {
@@ -71,20 +78,20 @@ class KeyManagementService {
   }
 
   private logAudit(action: string, details: string): void {
-    this.auditLog.push({
-      action,
-      timestamp: new Date(),
-      details,
-    });
+    const entry: AuditEntry = { action, timestamp: new Date(), details };
 
-    // Keep only last 1000 entries
-    if (this.auditLog.length > 1000) {
-      this.auditLog.shift();
+    // Persist via secureLogger (writes to console/log service)
+    secureLogger.audit(`key_management.${action}`, { details, version: this.keyMetadata.version });
+
+    // Keep recent buffer for in-process queries
+    this.recentAuditLog.push(entry);
+    if (this.recentAuditLog.length > this.maxRecentEntries) {
+      this.recentAuditLog.shift();
     }
   }
 
-  getAuditLog(): Array<{ action: string; timestamp: Date; details: string }> {
-    return [...this.auditLog];
+  getAuditLog(): AuditEntry[] {
+    return [...this.recentAuditLog];
   }
 
   async checkKeyHealth(): Promise<{
@@ -94,7 +101,9 @@ class KeyManagementService {
     shouldRotate: boolean;
   }> {
     const now = new Date();
-    const keyAge = Math.floor((now.getTime() - this.keyMetadata.createdAt.getTime()) / (1000 * 60 * 60 * 24));
+    const keyAge = Math.floor(
+      (now.getTime() - this.keyMetadata.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+    );
     const daysSinceRotation = this.keyMetadata.rotatedAt
       ? Math.floor((now.getTime() - this.keyMetadata.rotatedAt.getTime()) / (1000 * 60 * 60 * 24))
       : keyAge;
@@ -110,7 +119,6 @@ class KeyManagementService {
   }
 }
 
-// Singleton instance
 const keyManagementService = new KeyManagementService();
 
 export const getDataEncryptionKey = () => keyManagementService.getDataEncryptionKey();

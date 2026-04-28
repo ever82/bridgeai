@@ -31,8 +31,8 @@ describe('Mask Utils', () => {
 
   describe('maskEmail', () => {
     it('should mask email correctly', () => {
-      expect(maskEmail('test@example.com')).toBe('te**@example.com');
-      expect(maskEmail('user123@gmail.com')).toBe('us**23@gmail.com');
+      expect(maskEmail('testuser@example.com')).toBe('te****er@example.com');
+      expect(maskEmail('user1234@gmail.com')).toBe('us****34@gmail.com');
     });
 
     it('should return invalid emails unchanged', () => {
@@ -43,8 +43,8 @@ describe('Mask Utils', () => {
 
   describe('maskIdCard', () => {
     it('should mask ID card correctly', () => {
-      expect(maskIdCard('110101199001011234')).toBe('1101********1234');
-      expect(maskIdCard('31010119850515201X')).toBe('3101********201X');
+      expect(maskIdCard('110101199001011234')).toBe('1101**********1234');
+      expect(maskIdCard('31010119850515201X')).toBe('3101**********201X');
     });
 
     it('should return short strings unchanged', () => {
@@ -54,7 +54,7 @@ describe('Mask Utils', () => {
 
   describe('maskBankCard', () => {
     it('should mask bank card correctly', () => {
-      expect(maskBankCard('6222021234567890123')).toBe('6222*********0123');
+      expect(maskBankCard('6222021234567890123')).toBe('6222***********0123');
       expect(maskBankCard('6222021234567890')).toBe('6222********7890');
     });
 
@@ -65,8 +65,8 @@ describe('Mask Utils', () => {
 
   describe('maskPassport', () => {
     it('should mask passport correctly', () => {
-      expect(maskPassport('E12345678')).toBe('E1******78');
-      expect(maskPassport('G98765432')).toBe('G9******32');
+      expect(maskPassport('E12345678')).toBe('E1*****78');
+      expect(maskPassport('G98765432')).toBe('G9*****32');
     });
 
     it('should return short strings unchanged', () => {
@@ -75,12 +75,14 @@ describe('Mask Utils', () => {
   });
 
   describe('maskString', () => {
-    it('should mask with default options', () => {
-      expect(maskString('1234567890')).toBe('123****890');
+    it('should mask with default options (preserveStart=3, preserveEnd=4)', () => {
+      expect(maskString('1234567890')).toBe('123***7890');
     });
 
     it('should mask with custom options', () => {
-      expect(maskString('1234567890', { preserveStart: 2, preserveEnd: 2, maskChar: '#' })).toBe('12######90');
+      expect(maskString('1234567890', { preserveStart: 2, preserveEnd: 2, maskChar: '#' })).toBe(
+        '12######90'
+      );
     });
 
     it('should handle short strings', () => {
@@ -93,7 +95,7 @@ describe('Mask Utils', () => {
       const obj = {
         name: 'John',
         phone: '13812345678',
-        email: 'john@example.com',
+        email: 'john.doe@example.com',
         idCard: '110101199001011234',
       };
 
@@ -101,8 +103,8 @@ describe('Mask Utils', () => {
 
       expect(masked.name).toBe('John');
       expect(masked.phone).toBe('138****5678');
-      expect(masked.email).toBe('jo**@example.com');
-      expect(masked.idCard).toBe('1101********1234');
+      expect(masked.email).toBe('jo****oe@example.com');
+      expect(masked.idCard).toBe('1101**********1234');
     });
 
     it('should handle nested objects', () => {
@@ -162,20 +164,20 @@ describe('Mask Utils', () => {
 
     it('should mask ID cards in logs', () => {
       const message = 'ID: 110101199001011234';
-      expect(maskLogMessage(message)).toBe('ID: 1101********1234');
+      expect(maskLogMessage(message)).toBe('ID: 1101**********1234');
     });
 
     it('should mask emails in logs', () => {
-      const message = 'Email: test@example.com';
-      expect(maskLogMessage(message)).toBe('Email: te**@example.com');
+      const message = 'Email: testuser@example.com';
+      expect(maskLogMessage(message)).toBe('Email: te****er@example.com');
     });
 
     it('should mask multiple sensitive fields', () => {
-      const message = 'User 13812345678 with ID 110101199001011234 and email test@example.com';
+      const message = 'User 13812345678 with ID 110101199001011234 and email testuser@example.com';
       const masked = maskLogMessage(message);
       expect(masked).toContain('138****5678');
-      expect(masked).toContain('1101********1234');
-      expect(masked).toContain('te**@example.com');
+      expect(masked).toContain('1101**********1234');
+      expect(masked).toContain('te****er@example.com');
     });
   });
 });

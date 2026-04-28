@@ -125,6 +125,12 @@ app.get('/health', (req: Request, res: Response) => {
   );
 });
 
+app.get('/health/encryption', async (req: Request, res: Response) => {
+  const { healthCheckHandler } = await import('./services/monitoring');
+  const result = await healthCheckHandler();
+  res.json(ApiResponse.success(result));
+});
+
 app.get('/ready', (req: Request, res: Response) => {
   res.json(
     ApiResponse.success({
