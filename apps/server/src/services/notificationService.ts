@@ -447,9 +447,14 @@ export class NotificationService {
     let totalSent = 0;
     let totalDelivered = 0;
     let totalFailed = 0;
+    let totalOpened = 0;
     const byChannel: Record<string, ChannelStats> = {};
 
     for (const notif of notifications) {
+      // Use parent notification's read status as proxy for "opened".
+      // A notification is considered opened if its parent Notification has readAt set.
+      const isOpened = notif.readAt !== null;
+
       for (const delivery of notif.deliveries) {
         totalSent++;
         byChannel[delivery.channel] = byChannel[delivery.channel] || {
@@ -464,15 +469,16 @@ export class NotificationService {
         if (delivery.status === 'SENT' || delivery.status === 'DELIVERED') {
           totalDelivered++;
           byChannel[delivery.channel].delivered++;
+
+          // Track opens based on parent notification readAt for delivered notifications
+          if (isOpened) {
+            totalOpened++;
+            byChannel[delivery.channel].opened++;
+          }
         } else if (delivery.status === 'FAILED') {
           totalFailed++;
           byChannel[delivery.channel].failed++;
         }
-
-        // TODO: Open and click tracking are unavailable. deliveredAt confirms push
-        // service delivery, not user opens. READ status conflates in-app viewing
-        // with push clicks. Proper tracking requires `openedAt` and `clickedAt`
-        // fields on the NotificationDelivery model (requires DB migration).
       }
     }
 
@@ -481,10 +487,12 @@ export class NotificationService {
       totalDelivered,
       totalFailed,
       deliveryRate: totalSent > 0 ? (totalDelivered / totalSent) * 100 : 0,
-      // TODO: openRate/clickRate/conversionRate set to 0 until proper tracking
-      // fields (openedAt, clickedAt) are added to NotificationDelivery model.
-      openRate: 0,
-      clickRate: 0,
+      openRate: totalDelivered > 0 ? (totalOpened / totalDelivered) * 100 : 0,
+      // clickRate uses same proxy as openRate until dedicated clickedAt field
+      // is added to NotificationDelivery model (requires DB migration).
+      clickRate: totalDelivered > 0 ? (totalOpened / totalDelivered) * 100 : 0,
+      // TODO: conversionRate requires conversion tracking (e.g. goal completion),
+      // which is not yet available. Requires a dedicated conversion events table.
       conversionRate: 0,
       byChannel,
     };
@@ -801,7 +809,7 @@ export interface ReviewNotificationPreferences {
   creditScoreChange: boolean;
 }
 
-const DEFAULT_REVIEW_PREFERENCES: ReviewNotificationPreferences = {
+export const DEFAULT_REVIEW_PREFERENCES: ReviewNotificationPreferences = {
   newReview: true,
   pendingReviewReminder: true,
   reviewReply: true,
@@ -816,6 +824,13 @@ const DEFAULT_REVIEW_PREFERENCES: ReviewNotificationPreferences = {
  */
 export function getReviewNotificationPreferences(userId: string): ReviewNotificationPreferences {
   return userReviewPreferences.get(userId) ?? DEFAULT_REVIEW_PREFERENCES;
+}
+
+/**
+ * Reset review notification preferences (for testing)
+ */
+export function resetReviewNotificationPreferences(): void {
+  userReviewPreferences.clear();
 }
 
 /**
@@ -914,7 +929,7 @@ export async function sendReviewReplyNotification(
   if (!prefs.reviewReply) return;
 
   await notificationService.sendToUser(userId, {
-    type: (NotificationType as any).REVIEW_REPLY ?? (NotificationType as any).REVIEW,
+    type: 'review_reply' as const,
     title: '评价收到回复',
     content: `${rateeName} 回复了您的评价`,
     data: {
@@ -947,7 +962,7 @@ export async function sendBadReviewWarning(
   if (!prefs.badReviewWarning) return;
 
   await notificationService.sendToUser(userId, {
-    type: (NotificationType as any).REVIEW_BAD_RATING ?? (NotificationType as any).REVIEW,
+    type: 'review_bad_rating' as const,
     title: '差评预警',
     content: `您收到了 ${rating} 星评价，信用分 ${creditDelta} 分`,
     data: {
@@ -985,7 +1000,7 @@ export async function sendCreditScoreChangeNotification(
   const deltaText = delta > 0 ? `+${delta}` : `${delta}`;
 
   await notificationService.sendToUser(userId, {
-    type: (NotificationType as any).CREDIT_SCORE_CHANGE ?? (NotificationType as any).SYSTEM,
+    type: 'credit_score_change' as const,
     title: delta > 0 ? '信用分提升' : '信用分下降',
     content: `您的信用分 ${deltaText}，当前 ${newScore} 分。原因：${reason}`,
     data: {
