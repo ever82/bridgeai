@@ -1,5 +1,19 @@
 import { PhotoStorageService, PhotoMetadata } from '../photoStorage';
 
+jest.mock('../../../db/client', () => ({
+  prisma: {
+    photo: {
+      upsert: jest.fn(),
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      deleteMany: jest.fn(),
+    },
+  },
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const mockPrismaPhoto = require('../../../db/client').prisma.photo;
+
 describe('PhotoStorageService', () => {
   let service: PhotoStorageService;
 
@@ -192,6 +206,115 @@ describe('PhotoStorageService', () => {
     it('should generate thumbnail URL', () => {
       const url = service.getStorageUrl('photo-1', 'thumbnail');
       expect(url).toContain('thumbnail.jpg');
+    });
+  });
+
+  describe('DB persistence (mocked)', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should call prisma.photo.upsert when saving metadata', async () => {
+      const metadata: PhotoMetadata = {
+        id: 'db-test-1',
+        originalName: 'test.jpg',
+        url: 'https://example.com/test.jpg',
+        thumbnailUrl: 'https://example.com/test-thumb.jpg',
+        size: 1024,
+        width: 1920,
+        height: 1080,
+        format: 'jpeg',
+        mimeType: 'image/jpeg',
+        hash: 'abc123',
+        uploadedAt: new Date(),
+        userId: 'user-1',
+      };
+
+      mockPrismaPhoto.upsert.mockResolvedValue(undefined);
+
+      await service.saveMetadata(metadata);
+
+      expect(mockPrismaPhoto.upsert).toHaveBeenCalledTimes(1);
+      expect(mockPrismaPhoto.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'db-test-1' },
+          create: expect.objectContaining({
+            id: 'db-test-1',
+            originalName: 'test.jpg',
+            userId: 'user-1',
+            storageTier: 'hot',
+          }),
+          update: expect.objectContaining({
+            originalName: 'test.jpg',
+            storageTier: 'hot',
+          }),
+        })
+      );
+    });
+
+    it('should call prisma.photo.upsert with correct tier when lifecycle is set', async () => {
+      const metadata: PhotoMetadata = {
+        id: 'db-test-2',
+        originalName: 'test.jpg',
+        url: 'https://example.com/test.jpg',
+        thumbnailUrl: 'https://example.com/test-thumb.jpg',
+        size: 1024,
+        width: 1920,
+        height: 1080,
+        format: 'jpeg',
+        mimeType: 'image/jpeg',
+        hash: 'abc123',
+        uploadedAt: new Date(),
+        userId: 'user-1',
+        lifecycle: {
+          currentTier: 'warm',
+          lastAccessed: new Date(),
+          accessCount: 5,
+        },
+      };
+
+      mockPrismaPhoto.upsert.mockResolvedValue(undefined);
+
+      await service.saveMetadata(metadata);
+
+      const upsertCall = mockPrismaPhoto.upsert.mock.calls[0][0];
+      expect(upsertCall.create.storageTier).toBe('warm');
+      expect(upsertCall.update.storageTier).toBe('warm');
+    });
+
+    it('should call prisma.photo.findUnique when cache miss on getMetadata', async () => {
+      mockPrismaPhoto.findUnique.mockResolvedValue({
+        id: 'db-photo-1',
+        originalName: 'test.jpg',
+        url: 'https://example.com/test.jpg',
+        thumbnailUrl: 'https://example.com/test-thumb.jpg',
+        size: 1024,
+        width: 1920,
+        height: 1080,
+        format: 'jpeg',
+        mimeType: 'image/jpeg',
+        hash: 'abc123',
+        userId: 'user-1',
+        taskId: null,
+        tags: [],
+        description: null,
+        latitude: null,
+        longitude: null,
+        device: null,
+        exif: null,
+        storageTier: 'hot',
+        accessCount: 0,
+        lastAccessed: new Date(),
+        expiresAt: null,
+        createdAt: new Date(),
+      });
+
+      const result = await service.getMetadata('db-photo-1');
+
+      expect(mockPrismaPhoto.findUnique).toHaveBeenCalledTimes(1);
+      expect(mockPrismaPhoto.findUnique).toHaveBeenCalledWith({ where: { id: 'db-photo-1' } });
+      expect(result).toBeDefined();
+      expect(result?.id).toBe('db-photo-1');
     });
   });
 });

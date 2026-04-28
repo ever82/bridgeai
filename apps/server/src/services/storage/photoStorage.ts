@@ -486,8 +486,12 @@ export class PhotoStorageService {
    * Removes metadata from both the database and the in-memory cache.
    * Actual cloud storage deletion is still a placeholder.
    */
+  /**
+   * @limitation Cloud storage (S3) deletion is not yet implemented.
+   *              Only database and in-memory cache entries are removed.
+   */
   async deletePhoto(photoId: string): Promise<boolean> {
-    // TODO: Delete from storage
+    // Cloud storage deletion not yet implemented
     // await s3Client.send(new DeleteObjectCommand({...}));
 
     // Remove from cache
@@ -531,6 +535,10 @@ export class PhotoStorageService {
    * If imageBuffer is provided, generates a real 200x200 JPEG thumbnail using sharp.
    * Otherwise returns the thumbnail storage URL (placeholder until cloud download is implemented).
    */
+  /**
+   * @limitation Thumbnail cloud upload is not yet implemented.
+   *              The thumbnail buffer is generated but not persisted to cloud storage.
+   */
   async createThumbnail(photoId: string, imageBuffer?: Buffer): Promise<string> {
     if (imageBuffer) {
       const thumbnailBuffer = await sharp(imageBuffer)
@@ -538,7 +546,7 @@ export class PhotoStorageService {
         .jpeg({ quality: 80 })
         .toBuffer();
 
-      // TODO: Upload thumbnail buffer to cloud storage
+      // Thumbnail cloud upload not yet implemented
       // await this.uploadThumbnail(photoId, thumbnailBuffer);
       void thumbnailBuffer;
     }
@@ -549,9 +557,13 @@ export class PhotoStorageService {
   /**
    * Index photo for search
    */
+  /**
+   * @limitation Elasticsearch/OpenSearch indexing is not yet implemented.
+   *              Photo metadata is not indexed for search.
+   */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async indexPhoto(_metadata: PhotoMetadata): Promise<void> {
-    // TODO: Index in Elasticsearch/OpenSearch
+    // Elasticsearch/OpenSearch indexing not yet implemented
     // await searchClient.index({
     //   index: 'photos',
     //   id: metadata.id,
@@ -621,11 +633,15 @@ export class PhotoStorageService {
   /**
    * Transition photo to different storage tier
    */
+  /**
+   * @limitation Storage tier transitions are not yet implemented.
+   *              Lifecycle tier transitions (hot/warm/cold) require S3 lifecycle policies.
+   */
   private async transitionStorageTier(
     photoId: string,
     tier: 'hot' | 'warm' | 'cold'
   ): Promise<void> {
-    // TODO: Implement tier transition
+    // Tier transition not yet implemented
     // hot: S3 Standard
     // warm: S3 Intelligent-Tiering or IA
     // cold: S3 Glacier

@@ -7,6 +7,9 @@ jest.mock('../../security/imageSecurity', () => ({
       checkImage: jest.fn(),
       compressImage: jest.fn(),
       createThumbnail: jest.fn(),
+      deIdentifyImage: jest
+        .fn()
+        .mockResolvedValue({ buffer: Buffer.from('deidentified'), metadata: {} }),
     }),
   },
 }));

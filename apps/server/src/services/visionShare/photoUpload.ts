@@ -77,6 +77,10 @@ export class PhotoUploadService {
       processedBuffer = await this.securityService.compressImage(fileBuffer);
     }
 
+    // Apply privacy de-identification
+    const deIdResult = await this.securityService.deIdentifyImage(processedBuffer);
+    processedBuffer = deIdResult.buffer;
+
     // Generate thumbnail
     let thumbnailBuffer: Buffer | undefined;
     if (generateThumbnail) {
