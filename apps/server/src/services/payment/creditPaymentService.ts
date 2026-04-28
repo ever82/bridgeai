@@ -67,20 +67,6 @@ export class CreditPaymentService {
       };
     }
 
-    // Calculate total cost
-    const calculatedTotal = this.calculateTotal(photoIds);
-    if (calculatedTotal !== totalAmount) {
-      return {
-        success: false,
-        remainingBalance: 0,
-        unlockedPhotos: [],
-        error: {
-          code: 'AMOUNT_MISMATCH',
-          message: `Expected ${calculatedTotal}, got ${totalAmount}`,
-        },
-      };
-    }
-
     // Check for already unlocked photos
     const alreadyUnlocked: string[] = [];
     for (const photoId of photoIds) {
@@ -99,16 +85,33 @@ export class CreditPaymentService {
       };
     }
 
+    // Filter out already-unlocked photos so we only charge for payable ones
+    const payableIds = photoIds.filter(id => !alreadyUnlocked.includes(id));
+
+    // Calculate total cost based only on payable photos
+    const calculatedTotal = this.calculateTotal(payableIds);
+    if (calculatedTotal !== totalAmount) {
+      return {
+        success: false,
+        remainingBalance: 0,
+        unlockedPhotos: [],
+        error: {
+          code: 'AMOUNT_MISMATCH',
+          message: `Expected ${calculatedTotal}, got ${totalAmount}`,
+        },
+      };
+    }
+
     // Check user balance
     const balance = await this.getBalance(userId);
-    if (balance.available < totalAmount) {
+    if (balance.available < calculatedTotal) {
       return {
         success: false,
         remainingBalance: balance.available,
         unlockedPhotos: [],
         error: {
           code: 'INSUFFICIENT_BALANCE',
-          message: `Insufficient credits. Available: ${balance.available}, Required: ${totalAmount}`,
+          message: `Insufficient credits. Available: ${balance.available}, Required: ${calculatedTotal}`,
         },
       };
     }
@@ -118,9 +121,9 @@ export class CreditPaymentService {
     const transaction: PaymentTransaction = {
       id: transactionId,
       userId,
-      photoId: photoIds.length === 1 ? photoIds[0] : photoIds.join(','),
+      photoId: payableIds.length === 1 ? payableIds[0] : payableIds.join(','),
       sceneId: SceneCode.VISION_SHARE,
-      amount: totalAmount,
+      amount: calculatedTotal,
       currency: 'credits',
       status: PaymentStatus.PROCESSING,
       type: 'purchase' as PaymentTransaction['type'],
@@ -136,10 +139,10 @@ export class CreditPaymentService {
       const spendResult = await pointsService.spendByRule({
         userId,
         ruleCode: 'VIEW_PHOTO',
-        baseAmount: totalAmount,
+        baseAmount: calculatedTotal,
         metadata: {
           transactionId,
-          photoIds,
+          photoIds: payableIds,
           scene: SceneCode.VISION_SHARE,
         },
       });
@@ -174,7 +177,7 @@ export class CreditPaymentService {
     paymentTransactions.set(transactionId, transaction);
 
     // Unlock photos
-    const unlockedPhotos = await this.unlockPhotosAfterPayment(userId, photoIds);
+    const unlockedPhotos = await this.unlockPhotosAfterPayment(userId, payableIds);
 
     // Get updated balance
     const updatedBalance = await this.getBalance(userId);
@@ -182,8 +185,8 @@ export class CreditPaymentService {
     loggerCtx.info('Payment processed successfully', {
       userId,
       transactionId,
-      photoCount: photoIds.length,
-      amount: totalAmount,
+      photoCount: payableIds.length,
+      amount: calculatedTotal,
     });
 
     return {
@@ -217,11 +220,13 @@ export class CreditPaymentService {
     const transaction = paymentTransactions.get(transactionId);
     if (!transaction) return null;
 
+    const balance = await this.getBalance(transaction.userId);
+
     return {
       transactionId: transaction.id,
       photoCount: transaction.photoId.split(',').length,
       totalAmount: transaction.amount,
-      balanceAfter: 0, // Would need to look up from points account
+      balanceAfter: balance.available,
       timestamp: transaction.completedAt || transaction.createdAt,
     };
   }
