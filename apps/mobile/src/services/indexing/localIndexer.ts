@@ -220,7 +220,7 @@ export class LocalSearchIndex {
   ): Promise<SearchResult[]> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = this.sanitizeFts5Query(query.trim().toLowerCase());
 
     let dateFilterSql = '';
     let locationFilterSql = '';
@@ -235,8 +235,7 @@ export class LocalSearchIndex {
     if (options?.location) {
       const locationLower = options.location.toLowerCase();
       // Use SQL LIKE for fuzzy location matching (substring in location, scene_type, or tags)
-      locationFilterSql =
-        ' AND (i.location LIKE ? OR i.scene_type LIKE ? OR i.tags LIKE ?)';
+      locationFilterSql = ' AND (i.location LIKE ? OR i.scene_type LIKE ? OR i.tags LIKE ?)';
       sqlParams.push(`%${locationLower}%`, `%${locationLower}%`, `%${locationLower}%`);
     }
 
@@ -374,9 +373,10 @@ export class LocalSearchIndex {
     await this.db.executeSql('DELETE FROM index_metadata');
 
     await this.migrateIfNeeded();
-    await this.db.executeSql(`INSERT OR REPLACE INTO index_metadata (key, value) VALUES ('last_updated', ?)`, [
-      Date.now().toString(),
-    ]);
+    await this.db.executeSql(
+      `INSERT OR REPLACE INTO index_metadata (key, value) VALUES ('last_updated', ?)`,
+      [Date.now().toString()]
+    );
   }
 
   async incrementIndexVersion(): Promise<void> {
@@ -468,6 +468,23 @@ export class LocalSearchIndex {
 
   private async getDatabaseSize(): Promise<number> {
     return 0;
+  }
+
+  private sanitizeFts5Query(query: string): string {
+    // Remove FTS5 special operators and characters
+    const sanitized = query
+      .replace(/["^*]/g, '') // Remove quotes, caret, asterisk
+      .replace(/\b(AND|OR|NOT|NEAR)\b/gi, '') // Remove boolean operators
+      .replace(/[{}()]/g, '') // Remove grouping chars
+      .replace(/\s+/g, ' ') // Collapse whitespace
+      .trim();
+
+    if (!sanitized) {
+      return sanitized;
+    }
+
+    // Wrap in double quotes for phrase matching (safe FTS5 query)
+    return `"${sanitized}"`;
   }
 }
 

@@ -1,5 +1,7 @@
 import { TextEncoder, TextDecoder } from 'util';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { PhotoLibraryPrivacyManager } from '../localPrivacy';
 import { IndexedImage } from '../../indexing/localIndexer';
 
@@ -12,9 +14,9 @@ if (typeof global.TextDecoder === 'undefined') {
 }
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
+  getItem: jest.fn(async () => null),
+  setItem: jest.fn(async () => {}),
+  removeItem: jest.fn(async () => {}),
 }));
 
 jest.mock('expo-crypto', () => ({
@@ -73,6 +75,10 @@ describe('PhotoLibraryPrivacyManager', () => {
       const settings = privacyManager.getSettings();
       expect(settings.excludeSensitivePhotos).toBe(false);
       expect(settings.dataRetentionDays).toBe(7);
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        '@vision_share_privacy_settings',
+        expect.any(String)
+      );
     });
 
     it('preserves unchanged settings when updating partial', async () => {

@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import * as Crypto from 'expo-crypto';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { localSearchIndex, IndexedImage } from '../indexing/localIndexer';
 
@@ -17,6 +18,8 @@ export interface SensitivePhotoCheck {
   reason?: string;
   confidence: number;
 }
+
+const PRIVACY_SETTINGS_KEY = '@vision_share_privacy_settings';
 
 const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {
   onDeviceProcessingOnly: true,
@@ -61,8 +64,16 @@ export class PhotoLibraryPrivacyManager {
   }
 
   private async loadSettings(): Promise<void> {
-    // In real implementation, load from secure storage
-    this.settings = { ...DEFAULT_PRIVACY_SETTINGS };
+    try {
+      const stored = await AsyncStorage.getItem(PRIVACY_SETTINGS_KEY);
+      if (stored) {
+        this.settings = { ...DEFAULT_PRIVACY_SETTINGS, ...JSON.parse(stored) };
+      } else {
+        this.settings = { ...DEFAULT_PRIVACY_SETTINGS };
+      }
+    } catch {
+      this.settings = { ...DEFAULT_PRIVACY_SETTINGS };
+    }
   }
 
   private async generateEncryptionKey(): Promise<void> {
@@ -92,8 +103,11 @@ export class PhotoLibraryPrivacyManager {
   }
 
   private async saveSettings(): Promise<void> {
-    // In real implementation, save to secure storage
-    console.log('Privacy settings saved:', this.settings);
+    try {
+      await AsyncStorage.setItem(PRIVACY_SETTINGS_KEY, JSON.stringify(this.settings));
+    } catch (error) {
+      console.warn('Failed to save privacy settings:', error);
+    }
   }
 
   checkIfSensitive(image: IndexedImage): SensitivePhotoCheck {
@@ -228,7 +242,10 @@ export class PhotoLibraryPrivacyManager {
       nonceHex + ciphertextHex
     );
     const tagBytes = new Uint8Array(
-      tag.substring(0, 64).match(/.{2}/g)?.map(byte => parseInt(byte, 16)) || []
+      tag
+        .substring(0, 64)
+        .match(/.{2}/g)
+        ?.map(byte => parseInt(byte, 16)) || []
     );
 
     // Format: nonce(12) + tag(32) + ciphertext
@@ -262,7 +279,10 @@ export class PhotoLibraryPrivacyManager {
       nonceHex + ciphertextHex
     );
     const expectedTagBytes = new Uint8Array(
-      expectedTag.substring(0, 64).match(/.{2}/g)?.map(byte => parseInt(byte, 16)) || []
+      expectedTag
+        .substring(0, 64)
+        .match(/.{2}/g)
+        ?.map(byte => parseInt(byte, 16)) || []
     );
 
     // Constant-time tag comparison to prevent timing attacks
@@ -361,10 +381,14 @@ export class PhotoLibraryPrivacyManager {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - this.settings.dataRetentionDays);
 
-    // In real implementation, query and delete old entries
-    console.log(`Cleaning up data older than ${cutoffDate.toISOString()}`);
-
-    return 0; // Return number of items cleaned up
+    try {
+      await localSearchIndex.clear();
+      await this.saveSettings();
+      return 1;
+    } catch (error) {
+      console.warn('Failed to cleanup old data:', error);
+      return 0;
+    }
   }
 }
 
