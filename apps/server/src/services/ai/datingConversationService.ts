@@ -154,8 +154,18 @@ const DEEP_QUESTIONS = [
 // Service Class
 // ============================================
 
+interface ConversationTurn {
+  role: 'agent_a' | 'agent_b';
+  agentId: string;
+  content: string;
+  topic: string;
+  round: number;
+  timestamp: Date;
+}
+
 export class DatingConversationService {
   private sessions: Map<string, DatingConversationSession> = new Map();
+  private messageHistory: Map<string, ConversationTurn[]> = new Map();
   private defaultConfig: DatingConversationConfig;
 
   constructor(config?: Partial<DatingConversationConfig>) {
@@ -223,6 +233,7 @@ export class DatingConversationService {
     };
 
     this.sessions.set(sessionId, session);
+    this.messageHistory.set(sessionId, []);
 
     logger.info('Dating conversation session started', {
       sessionId,
@@ -271,6 +282,27 @@ export class DatingConversationService {
     const agentAMessage = await this.generateAgentResponse(sessionId, session.agentAId, topic);
     const agentBMessage = await this.generateAgentResponse(sessionId, session.agentBId, topic);
 
+    // 记录对话历史
+    const history = this.messageHistory.get(sessionId) || [];
+    const newRound = session.round + 1;
+    history.push({
+      role: 'agent_a',
+      agentId: session.agentAId,
+      content: agentAMessage,
+      topic: topic.name,
+      round: newRound,
+      timestamp: new Date(),
+    });
+    history.push({
+      role: 'agent_b',
+      agentId: session.agentBId,
+      content: agentBMessage,
+      topic: topic.name,
+      round: newRound,
+      timestamp: new Date(),
+    });
+    this.messageHistory.set(sessionId, history);
+
     session.round += 1;
     session.updatedAt = new Date();
 
@@ -316,11 +348,26 @@ export class DatingConversationService {
     }
 
     try {
+      // Build message array with conversation history for context continuity
+      const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+        { role: 'system', content: this.buildSystemPrompt(session, agentId) },
+      ];
+
+      // Include previous conversation turns as context
+      const history = this.messageHistory.get(sessionId) || [];
+      for (const turn of history) {
+        const isSelf = turn.agentId === agentId;
+        messages.push({
+          role: isSelf ? 'assistant' : 'user',
+          content: turn.content,
+        });
+      }
+
+      // Current prompt
+      messages.push({ role: 'user', content: prompt });
+
       const response = await llmService.chat({
-        messages: [
-          { role: 'system', content: this.buildSystemPrompt(session, agentId) },
-          { role: 'user', content: prompt },
-        ],
+        messages,
         temperature: 0.7,
         maxTokens: 300,
       });

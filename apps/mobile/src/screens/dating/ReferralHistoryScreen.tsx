@@ -10,7 +10,9 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+
+import { apiClient } from '../../services/api/client';
 
 // 枚举定义
 enum ReferralStatus {
@@ -77,99 +79,33 @@ const ReferralHistoryScreen: React.FC = () => {
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [selectedReferral, setSelectedReferral] = useState<ReferralRecord | null>(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [currentUserId] = useState('current_user_id'); // TODO: 从全局状态获取
+  const [currentUserId] = useState('current_user_id'); // 从全局状态获取
 
   // 获取引荐历史
-  const fetchReferralHistory = useCallback(async (isRefresh = false) => {
-    try {
-      if (isRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
+  const fetchReferralHistory = useCallback(
+    async (isRefresh = false) => {
+      try {
+        if (isRefresh) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
+
+        const params = filter !== 'all' ? { status: filter } : {};
+        const response = await apiClient.get('/dating/referrals/history', { params });
+        const data = response.data as { referrals: ReferralRecord[]; stats: ReferralStats };
+
+        setReferrals(data.referrals);
+        setStats(data.stats);
+      } catch (error) {
+        console.error('Failed to fetch referral history:', error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-
-      // TODO: 调用API获取数据
-      // const response = await api.getReferralHistory({ status: filter !== 'all' ? filter : undefined });
-      // setReferrals(response.referrals);
-      // setStats(response.stats);
-
-      // 模拟数据
-      const mockReferrals: ReferralRecord[] = [
-        {
-          id: 'ref_1',
-          userAId: 'current_user_id',
-          userBId: 'user_b_1',
-          status: ReferralStatus.SUCCESS,
-          result: ReferralResult.MUTUAL_ACCEPT,
-          matchData: {
-            matchScore: 88,
-            compatibilityFactors: ['兴趣爱好', '生活方式'],
-            agentConversationSummary: '双方有很多共同话题',
-          },
-          chatRoomId: 'room_1',
-          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-          completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-          viewCount: 5,
-        },
-        {
-          id: 'ref_2',
-          userAId: 'user_a_2',
-          userBId: 'current_user_id',
-          status: ReferralStatus.FAILED,
-          result: ReferralResult.SINGLE_REJECT,
-          matchData: {
-            matchScore: 72,
-            compatibilityFactors: ['价值观'],
-            agentConversationSummary: '价值观有一些差异',
-          },
-          userADecision: { decision: 'reject', decidedAt: new Date().toISOString() },
-          userBDecision: { decision: 'accept', decidedAt: new Date().toISOString() },
-          chatRoomId: null,
-          createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-          completedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-          viewCount: 3,
-        },
-        {
-          id: 'ref_3',
-          userAId: 'current_user_id',
-          userBId: 'user_b_3',
-          status: ReferralStatus.PENDING,
-          result: null,
-          matchData: {
-            matchScore: 85,
-            compatibilityFactors: ['兴趣爱好', '价值观', '生活方式'],
-            agentConversationSummary: '非常匹配的两个人',
-          },
-          chatRoomId: null,
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          completedAt: null,
-          viewCount: 2,
-        },
-      ];
-
-      const mockStats: ReferralStats = {
-        totalReferrals: 15,
-        successfulReferrals: 8,
-        failedReferrals: 6,
-        pendingReferrals: 1,
-        successRate: 53.3,
-      };
-
-      // 根据筛选条件过滤
-      let filteredReferrals = mockReferrals;
-      if (filter !== 'all') {
-        filteredReferrals = mockReferrals.filter(r => r.status === filter);
-      }
-
-      setReferrals(filteredReferrals);
-      setStats(mockStats);
-    } catch (error) {
-      console.error('Failed to fetch referral history:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [filter]);
+    },
+    [filter]
+  );
 
   // 初始加载
   useEffect(() => {
@@ -194,10 +130,14 @@ const ReferralHistoryScreen: React.FC = () => {
   };
 
   // 重新匹配
-  const requestNewMatch = () => {
+  const requestNewMatch = async () => {
     setDetailModalVisible(false);
-    // TODO: 调用API请求新的匹配
-    console.log('Requesting new match...');
+    try {
+      await apiClient.post('/dating/referrals/request-match');
+      fetchReferralHistory(true);
+    } catch (error) {
+      console.error('Failed to request new match:', error);
+    }
   };
 
   // 获取状态显示文本
@@ -283,10 +223,7 @@ const ReferralHistoryScreen: React.FC = () => {
 
   // 渲染引荐项
   const renderReferralItem = ({ item }: { item: ReferralRecord }) => (
-    <TouchableOpacity
-      style={styles.referralItem}
-      onPress={() => viewDetail(item)}
-    >
+    <TouchableOpacity style={styles.referralItem} onPress={() => viewDetail(item)}>
       <View style={styles.referralHeader}>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
           <Text style={styles.statusText}>{getStatusText(item.status, item.result)}</Text>
@@ -310,10 +247,7 @@ const ReferralHistoryScreen: React.FC = () => {
       </View>
 
       {item.status === ReferralStatus.SUCCESS && item.chatRoomId && (
-        <TouchableOpacity
-          style={styles.chatButton}
-          onPress={() => enterChatRoom(item.chatRoomId!)}
-        >
+        <TouchableOpacity style={styles.chatButton} onPress={() => enterChatRoom(item.chatRoomId!)}>
           <Text style={styles.chatButtonText}>进入聊天</Text>
         </TouchableOpacity>
       )}
@@ -352,7 +286,12 @@ const ReferralHistoryScreen: React.FC = () => {
               {/* 状态 */}
               <View style={styles.detailSection}>
                 <Text style={styles.detailLabel}>状态</Text>
-                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(selectedReferral.status) }]}>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    { backgroundColor: getStatusColor(selectedReferral.status) },
+                  ]}
+                >
                   <Text style={styles.statusText}>
                     {getStatusText(selectedReferral.status, selectedReferral.result)}
                   </Text>
@@ -383,20 +322,14 @@ const ReferralHistoryScreen: React.FC = () => {
                       <Text style={styles.timelineValue}>
                         {myDecision.decision === 'accept' ? '✓ 同意' : '✗ 拒绝'}
                       </Text>
-                      <Text style={styles.timelineDate}>
-                        {formatDate(myDecision.decidedAt)}
-                      </Text>
+                      <Text style={styles.timelineDate}>{formatDate(myDecision.decidedAt)}</Text>
                     </View>
                   )}
                   {otherDecision && (
                     <View style={styles.timelineItem}>
                       <Text style={styles.timelineLabel}>对方决策：</Text>
-                      <Text style={styles.timelineValue}>
-                        已决策
-                      </Text>
-                      <Text style={styles.timelineDate}>
-                        {formatDate(otherDecision.decidedAt)}
-                      </Text>
+                      <Text style={styles.timelineValue}>已决策</Text>
+                      <Text style={styles.timelineDate}>{formatDate(otherDecision.decidedAt)}</Text>
                     </View>
                   )}
                 </View>
@@ -404,14 +337,15 @@ const ReferralHistoryScreen: React.FC = () => {
 
               {/* 操作按钮 */}
               <View style={styles.detailActions}>
-                {selectedReferral.status === ReferralStatus.SUCCESS && selectedReferral.chatRoomId && (
-                  <TouchableOpacity
-                    style={styles.modalActionButton}
-                    onPress={() => enterChatRoom(selectedReferral.chatRoomId!)}
-                  >
-                    <Text style={styles.modalActionButtonText}>进入聊天房间</Text>
-                  </TouchableOpacity>
-                )}
+                {selectedReferral.status === ReferralStatus.SUCCESS &&
+                  selectedReferral.chatRoomId && (
+                    <TouchableOpacity
+                      style={styles.modalActionButton}
+                      onPress={() => enterChatRoom(selectedReferral.chatRoomId!)}
+                    >
+                      <Text style={styles.modalActionButtonText}>进入聊天房间</Text>
+                    </TouchableOpacity>
+                  )}
 
                 {(selectedReferral.status === ReferralStatus.FAILED ||
                   selectedReferral.status === ReferralStatus.EXPIRED) && (
@@ -457,11 +391,9 @@ const ReferralHistoryScreen: React.FC = () => {
       {/* 列表 */}
       <FlatList
         data={referrals}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={renderReferralItem}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>

@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
+import { apiClient } from '../../services/api/client';
+
 interface ConversationReport {
   id: string;
   roomId: string;
@@ -38,10 +40,8 @@ const ConversationReportScreen: React.FC = () => {
   const fetchReport = useCallback(async () => {
     try {
       setLoading(true);
-      // TODO: 调用API获取对话报告
-      // const response = await api.getConversationReport(reportId);
-      // setReport(response);
-      setReport(null);
+      const response = await apiClient.get(`/dating/conversation-reports/${reportId}`);
+      setReport(response.data as ConversationReport);
     } catch (error) {
       Alert.alert('错误', '获取对话报告失败');
     } finally {

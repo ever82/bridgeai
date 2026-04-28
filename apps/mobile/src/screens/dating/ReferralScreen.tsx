@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
+import { apiClient } from '../../services/api/client';
+
 // 同意状态枚举
 enum ConsentStatus {
   PENDING = 'pending',
@@ -67,15 +69,6 @@ interface ReferralRecord {
   result: ReferralResult | null;
 }
 
-interface ReferralScreenProps {
-  route: {
-    params: {
-      referralId: string;
-      consentId: string;
-    };
-  };
-}
-
 const ReferralScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
@@ -85,7 +78,7 @@ const ReferralScreen: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [referral, setReferral] = useState<ReferralRecord | null>(null);
   const [consent, setConsent] = useState<MutualConsent | null>(null);
-  const [currentUserId] = useState('current_user_id'); // TODO: 从全局状态获取
+  const [currentUserId] = useState('current_user_id'); // 从全局状态获取
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [otherUserDecided, setOtherUserDecided] = useState(false);
 
@@ -93,55 +86,17 @@ const ReferralScreen: React.FC = () => {
   const fetchReferralData = useCallback(async () => {
     try {
       setLoading(true);
-      // TODO: 调用API获取数据
-      // const response = await api.getReferral(referralId);
-      // setReferral(response.referral);
-      // setConsent(response.consent);
 
-      // 模拟数据
-      const mockConsent: MutualConsent = {
-        id: consentId,
-        referralId,
-        userAId: 'user_a',
-        userBId: 'user_b',
-        userAConsent: {
-          userId: 'user_a',
-          status: ConsentStatus.PENDING,
-          decidedAt: null,
-          changedCount: 0,
-        },
-        userBConsent: {
-          userId: 'user_b',
-          status: ConsentStatus.PENDING,
-          decidedAt: null,
-          changedCount: 0,
-        },
-        createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
-        result: ReferralResult.PENDING,
-        contextSummary: '双方在兴趣爱好、生活方式等方面有较高的匹配度',
-        matchScore: 85,
-      };
-
-      const mockReferral: ReferralRecord = {
-        id: referralId,
-        userAId: 'user_a',
-        userBId: 'user_b',
-        matchData: {
-          matchScore: 85,
-          compatibilityFactors: ['兴趣爱好', '生活方式', '价值观'],
-          agentConversationSummary: '双方在音乐、旅行等方面有很多共同话题',
-          recommendedTopics: ['音乐品味', '旅行经历', '未来规划'],
-        },
-        status: 'pending',
-        result: null,
-      };
-
-      setConsent(mockConsent);
-      setReferral(mockReferral);
+      // 获取引荐详情
+      const referralRes = await apiClient.get(`/dating/referrals/${referralId}`);
+      const referralData = referralRes.data as { referral: ReferralRecord; consent: MutualConsent };
+      setReferral(referralData.referral);
+      setConsent(referralData.consent);
 
       // 检查对方决策状态
-      checkOtherUserDecision(mockConsent);
+      if (referralData.consent) {
+        checkOtherUserDecision(referralData.consent);
+      }
     } catch (error) {
       Alert.alert('错误', '获取引荐信息失败');
     } finally {
@@ -150,11 +105,14 @@ const ReferralScreen: React.FC = () => {
   }, [referralId, consentId]);
 
   // 检查对方决策状态
-  const checkOtherUserDecision = useCallback((consentData: MutualConsent) => {
-    const isUserA = currentUserId === consentData.userAId;
-    const otherConsent = isUserA ? consentData.userBConsent : consentData.userAConsent;
-    setOtherUserDecided(otherConsent.status !== ConsentStatus.PENDING);
-  }, [currentUserId]);
+  const checkOtherUserDecision = useCallback(
+    (consentData: MutualConsent) => {
+      const isUserA = currentUserId === consentData.userAId;
+      const otherConsent = isUserA ? consentData.userBConsent : consentData.userAConsent;
+      setOtherUserDecided(otherConsent.status !== ConsentStatus.PENDING);
+    },
+    [currentUserId]
+  );
 
   // 计算剩余时间
   useEffect(() => {
@@ -196,37 +154,43 @@ const ReferralScreen: React.FC = () => {
   const submitDecision = async (decision: 'accept' | 'reject') => {
     try {
       setSubmitting(true);
-      // TODO: 调用API提交决策
-      // await api.submitReferralDecision(referralId, decision);
 
-      // 模拟提交成功
-      setTimeout(() => {
-        const currentConsent = getCurrentUserConsent();
-        if (currentConsent && consent) {
-          const updatedConsent: MutualConsent = {
-            ...consent,
-            [currentUserId === consent.userAId ? 'userAConsent' : 'userBConsent']: {
-              ...currentConsent,
-              status: decision === 'accept' ? ConsentStatus.ACCEPTED : ConsentStatus.REJECTED,
-              decidedAt: new Date().toISOString(),
+      // 调用API提交决策
+      await apiClient.post(`/dating/referrals/${referralId}/decision`, {
+        decision,
+        consentId,
+      });
+
+      // 更新本地状态
+      const currentConsent = getCurrentUserConsent();
+      if (currentConsent && consent) {
+        const updatedConsent: MutualConsent = {
+          ...consent,
+          [currentUserId === consent.userAId ? 'userAConsent' : 'userBConsent']: {
+            ...currentConsent,
+            status: decision === 'accept' ? ConsentStatus.ACCEPTED : ConsentStatus.REJECTED,
+            decidedAt: new Date().toISOString(),
+          },
+        };
+        setConsent(updatedConsent);
+      }
+
+      Alert.alert(
+        '提交成功',
+        `您已选择${decision === 'accept' ? '同意' : '拒绝'}引荐。等待对方决策...`,
+        [
+          {
+            text: '确定',
+            onPress: () => {
+              if (decision === 'accept') {
+                // 跳转到等待页面
+              } else {
+                navigation.navigate('ReferralHistory' as never);
+              }
             },
-          };
-          setConsent(updatedConsent);
-        }
-
-        Alert.alert(
-          '提交成功',
-          `您已选择${decision === 'accept' ? '同意' : '拒绝'}引荐。等待对方决策...`,
-          [{ text: '确定', onPress: () => {
-            if (decision === 'accept') {
-              // 跳转到等待页面
-            } else {
-              // 跳转到历史页面
-              navigation.navigate('ReferralHistory' as never);
-            }
-          }}]
-        );
-      }, 1000);
+          },
+        ]
+      );
     } catch (error) {
       Alert.alert('错误', '提交决策失败，请重试');
     } finally {
@@ -236,26 +200,18 @@ const ReferralScreen: React.FC = () => {
 
   // 处理同意
   const handleAccept = () => {
-    Alert.alert(
-      '确认同意',
-      '您确定要同意这次引荐吗？双方同意后将会交换联系方式。',
-      [
-        { text: '取消', style: 'cancel' },
-        { text: '确定', onPress: () => submitDecision('accept') },
-      ]
-    );
+    Alert.alert('确认同意', '您确定要同意这次引荐吗？双方同意后将会交换联系方式。', [
+      { text: '取消', style: 'cancel' },
+      { text: '确定', onPress: () => submitDecision('accept') },
+    ]);
   };
 
   // 处理拒绝
   const handleReject = () => {
-    Alert.alert(
-      '确认拒绝',
-      '您确定要拒绝这次引荐吗？拒绝后该用户将不会再次推荐给您。',
-      [
-        { text: '取消', style: 'cancel' },
-        { text: '确定', onPress: () => submitDecision('reject') },
-      ]
-    );
+    Alert.alert('确认拒绝', '您确定要拒绝这次引荐吗？拒绝后该用户将不会再次推荐给您。', [
+      { text: '取消', style: 'cancel' },
+      { text: '确定', onPress: () => submitDecision('reject') },
+    ]);
   };
 
   // 处理变更决策
@@ -271,21 +227,24 @@ const ReferralScreen: React.FC = () => {
       `您已变更决策 ${currentConsent?.changedCount || 0} 次，最多可变更 3 次。确定要变更吗？`,
       [
         { text: '取消', style: 'cancel' },
-        { text: '确定', onPress: () => {
-          // 重置决策状态
-          if (consent) {
-            const updatedConsent: MutualConsent = {
-              ...consent,
-              [currentUserId === consent.userAId ? 'userAConsent' : 'userBConsent']: {
-                ...getCurrentUserConsent()!,
-                status: ConsentStatus.PENDING,
-                decidedAt: null,
-                changedCount: (getCurrentUserConsent()?.changedCount || 0) + 1,
-              },
-            };
-            setConsent(updatedConsent);
-          }
-        }},
+        {
+          text: '确定',
+          onPress: () => {
+            // 重置决策状态
+            if (consent) {
+              const updatedConsent: MutualConsent = {
+                ...consent,
+                [currentUserId === consent.userAId ? 'userAConsent' : 'userBConsent']: {
+                  ...getCurrentUserConsent()!,
+                  status: ConsentStatus.PENDING,
+                  decidedAt: null,
+                  changedCount: (getCurrentUserConsent()?.changedCount || 0) + 1,
+                },
+              };
+              setConsent(updatedConsent);
+            }
+          },
+        },
       ]
     );
   };
@@ -331,18 +290,14 @@ const ReferralScreen: React.FC = () => {
       {/* 对方状态区域 */}
       {otherUserDecided && !hasDecided && (
         <View style={styles.otherStatusContainer}>
-          <Text style={styles.otherStatusText}>
-            对方已做出选择，等待您的决策...
-          </Text>
+          <Text style={styles.otherStatusText}>对方已做出选择，等待您的决策...</Text>
         </View>
       )}
 
       {/* 对话摘要区域 */}
       <View style={styles.summaryContainer}>
         <Text style={styles.sectionTitle}>Agent对话摘要</Text>
-        <Text style={styles.summaryText}>
-          {referral.matchData.agentConversationSummary}
-        </Text>
+        <Text style={styles.summaryText}>{referral.matchData.agentConversationSummary}</Text>
       </View>
 
       {/* 匹配因素区域 */}
@@ -389,9 +344,7 @@ const ReferralScreen: React.FC = () => {
                 onPress={handleAccept}
                 disabled={submitting}
               >
-                <Text style={styles.acceptButtonText}>
-                  {submitting ? '提交中...' : '同意'}
-                </Text>
+                <Text style={styles.acceptButtonText}>{submitting ? '提交中...' : '同意'}</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -401,14 +354,10 @@ const ReferralScreen: React.FC = () => {
           <View style={styles.decisionMadeContainer}>
             <Text style={styles.decisionMadeText}>
               您已{currentConsent?.status === ConsentStatus.ACCEPTED ? '同意' : '拒绝'}引荐
-              {currentConsent?.changedCount > 0 &&
-                `（已变更 ${currentConsent.changedCount} 次）`}
+              {currentConsent?.changedCount > 0 && `（已变更 ${currentConsent.changedCount} 次）`}
             </Text>
             {!isExpired && currentConsent?.changedCount < 3 && (
-              <TouchableOpacity
-                style={styles.changeButton}
-                onPress={handleChangeDecision}
-              >
+              <TouchableOpacity style={styles.changeButton} onPress={handleChangeDecision}>
                 <Text style={styles.changeButtonText}>变更决策</Text>
               </TouchableOpacity>
             )}

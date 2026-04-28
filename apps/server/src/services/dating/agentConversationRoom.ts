@@ -410,6 +410,34 @@ export async function completeRoom(
     `[AgentConversationRoom] Room ${roomId} completed. Quality: ${qualityScore ?? 'N/A'}`
   );
 
+  // 当质量评分达标时，自动触发引荐请求（AC-2 联动）
+  if (qualityScore !== null && qualityScore >= 0.6) {
+    try {
+      const { createReferralFromConversation } = await import('./referralService');
+      const messages = messageStore.get(roomId) || [];
+      const sharedInterests = extractSharedInterests(messages);
+
+      await createReferralFromConversation(
+        roomId,
+        updatedRoom.agentAId,
+        updatedRoom.agentBId,
+        updatedRoom.userIdA,
+        updatedRoom.userIdB,
+        {
+          summary: summary || '',
+          qualityScore,
+          sharedInterests,
+          compatibilityScore: Math.round(qualityScore * 100),
+        }
+      );
+      logger.info(`[AgentConversationRoom] Referral triggered for room ${roomId}`);
+    } catch (error) {
+      logger.error(`[AgentConversationRoom] Failed to trigger referral for room ${roomId}`, {
+        error,
+      });
+    }
+  }
+
   return updatedRoom;
 }
 
@@ -473,6 +501,29 @@ export async function getActiveRoomsByUser(userId: string): Promise<Conversation
 
   // 按创建时间倒序
   return rooms.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+}
+
+/**
+ * 从消息中提取共同兴趣关键词（简单实现）
+ */
+function extractSharedInterests(messages: RoomMessage[]): string[] {
+  const interestKeywords: string[] = [];
+  const agentMessages = messages.filter(m => m.senderType !== 'system');
+  for (const msg of agentMessages) {
+    // 提取消息中可能的兴趣关键词（简单策略：提取2-4字的中文词组）
+    const matches = msg.content.match(/[\u4e00-\u9fa5]{2,4}/g) || [];
+    interestKeywords.push(...matches);
+  }
+  // 返回出现频率最高的前5个
+  const freq = new Map<string, number>();
+  for (const kw of interestKeywords) {
+    freq.set(kw, (freq.get(kw) || 0) + 1);
+  }
+  return [...freq.entries()]
+    .filter(([, count]) => count >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([kw]) => kw);
 }
 
 // ---------------------------------------------------------------------------
