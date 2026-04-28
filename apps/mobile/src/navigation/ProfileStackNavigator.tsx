@@ -25,6 +25,7 @@ import {
   CreateRefundScreen,
   CreateAppealScreen,
 } from '../screens/transaction';
+import { PointsTransactionDetailScreen } from '../screens/points/TransactionDetailScreen';
 import { ProfileStackParamList } from '../types/navigation';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -57,6 +58,7 @@ export const ProfileStackNavigator = () => {
       <Stack.Screen name="CreateAgent" component={CreateAgentScreen} />
       <Stack.Screen name="TransactionList" component={TransactionListScreen} />
       <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
+      <Stack.Screen name="PointsTransactionDetail" component={PointsTransactionDetailScreen} />
       <Stack.Screen name="RefundList" component={RefundListScreen} />
       <Stack.Screen name="RefundDetail" component={RefundDetailScreen} />
       <Stack.Screen name="CreateRefund" component={CreateRefundScreen} />

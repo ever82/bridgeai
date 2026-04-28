@@ -171,7 +171,7 @@ export const PointsWalletScreen: React.FC = () => {
             <TransactionList
               transactions={[item]}
               onTransactionPress={tx => {
-                navigation.navigate('TransactionDetail', { transaction: tx } as never);
+                navigation.navigate('PointsTransactionDetail', { transactionId: tx.id } as never);
               }}
             />
           )}

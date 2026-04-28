@@ -79,6 +79,7 @@ export type ProfileStackParamList = {
   CreateAgent: undefined;
   TransactionList: undefined;
   TransactionDetail: { transactionId: string };
+  PointsTransactionDetail: { transactionId?: string; transaction?: { id: string } };
   RefundList: undefined;
   RefundDetail: { refundId: string };
   CreateRefund: { transactionId: string };
