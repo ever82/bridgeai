@@ -17,12 +17,7 @@ const InputStory = () => {
       <Text style={styles.title}>Input Component</Text>
 
       <Text style={styles.sectionTitle}>Basic</Text>
-      <Input
-        label="Username"
-        placeholder="Enter username"
-        value={text1}
-        onChangeText={setText1}
-      />
+      <Input label="Username" placeholder="Enter username" value={text1} onChangeText={setText1} />
 
       <Text style={styles.sectionTitle}>With Icons</Text>
       <Input
@@ -31,7 +26,7 @@ const InputStory = () => {
         value={email}
         onChangeText={setEmail}
         type="email"
-        leftIcon={<Icon name="email" size={20} color={theme.colors.textSecondary} />}
+        prefix={<Icon name="email" size={20} color={theme.colors.textSecondary} />}
       />
 
       <Text style={styles.sectionTitle}>Password</Text>
@@ -85,12 +80,7 @@ const InputStory = () => {
       />
 
       <Text style={styles.sectionTitle}>Read Only</Text>
-      <Input
-        label="Read Only"
-        value="Read only value"
-        onChangeText={() => {}}
-        state="readonly"
-      />
+      <Input label="Read Only" value="Read only value" onChangeText={() => {}} state="readonly" />
     </ScrollView>
   );
 };

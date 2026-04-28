@@ -160,27 +160,19 @@ export const Modal: React.FC<ModalProps> = ({
           style={styles.backdrop}
           activeOpacity={1}
           onPress={closeOnBackdropPress ? onClose : undefined}
+          testID="modal-backdrop"
         >
-          <Animated.View
-            style={[
-              styles.backdropOverlay,
-              { opacity: fadeAnim },
-            ]}
-          />
+          <Animated.View style={[styles.backdropOverlay, { opacity: fadeAnim }]} />
         </TouchableOpacity>
 
         {/* Modal Content */}
         <Animated.View
-          style={[
-            styles.modal,
-            getSizeStyle(),
-            getAnimationStyle(),
-          ]}
+          style={[styles.modal, getSizeStyle(), getAnimationStyle()]}
           {...panResponder.panHandlers}
         >
           {/* Swipe Handle */}
           {closeOnSwipeDown && size !== 'full' && (
-            <View style={styles.swipeHandle}>
+            <View style={styles.swipeHandle} testID="modal-swipe-handle">
               <View style={styles.swipeHandleBar} />
             </View>
           )}
@@ -191,6 +183,7 @@ export const Modal: React.FC<ModalProps> = ({
               style={styles.closeButton}
               onPress={onClose}
               hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+              testID="modal-close-button"
             >
               <View style={styles.closeIcon}>
                 <View style={[styles.closeIconLine, styles.closeIconLine1]} />
