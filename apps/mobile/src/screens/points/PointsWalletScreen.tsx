@@ -28,6 +28,16 @@ import type { PointsTask } from '../../components/Points/PointsTaskList';
 // Tab types for the wallet screen
 type TabType = 'transactions' | 'tasks';
 
+// Transaction filter types
+type TransactionFilterType = 'all' | 'earn' | 'spend' | 'recharge';
+
+const TRANSACTION_FILTERS: { key: TransactionFilterType; label: string }[] = [
+  { key: 'all', label: '全部' },
+  { key: 'earn', label: '获得' },
+  { key: 'spend', label: '消耗' },
+  { key: 'recharge', label: '充值' },
+];
+
 interface PointsBalanceData extends PointsBalanceResponse {
   availableBalance: number;
 }
@@ -44,6 +54,8 @@ export const PointsWalletScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('transactions');
+  const [activeTransactionFilter, setActiveTransactionFilter] =
+    useState<TransactionFilterType>('all');
 
   const loadData = useCallback(async () => {
     setError(null);
@@ -133,6 +145,37 @@ export const PointsWalletScreen: React.FC = () => {
     </View>
   );
 
+  const renderTransactionFilterRow = () => (
+    <View style={styles.filterRow}>
+      {TRANSACTION_FILTERS.map(filter => (
+        <TouchableOpacity
+          key={filter.key}
+          style={[
+            styles.filterChip,
+            activeTransactionFilter === filter.key && styles.filterChipActive,
+          ]}
+          onPress={() => setActiveTransactionFilter(filter.key)}
+        >
+          <Text
+            style={[
+              styles.filterChipText,
+              activeTransactionFilter === filter.key && styles.filterChipTextActive,
+            ]}
+          >
+            {filter.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+
+  const getFilteredTransactions = () => {
+    if (activeTransactionFilter === 'all') {
+      return transactions;
+    }
+    return transactions.filter(tx => tx.type === activeTransactionFilter);
+  };
+
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
@@ -159,12 +202,13 @@ export const PointsWalletScreen: React.FC = () => {
 
       {activeTab === 'transactions' ? (
         <FlatList
-          data={transactions}
+          data={getFilteredTransactions()}
           keyExtractor={item => item.id}
           ListHeaderComponent={
             <>
               {renderHeader()}
               {renderTabBar()}
+              {renderTransactionFilterRow()}
             </>
           }
           renderItem={({ item }) => (
@@ -338,5 +382,32 @@ const styles = StyleSheet.create({
     fontSize: theme.fonts.sizes.sm,
     color: '#D32F2F',
     textAlign: 'center',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    paddingHorizontal: theme.spacing.base,
+    paddingVertical: theme.spacing.sm,
+    gap: theme.spacing.sm,
+  },
+  filterChip: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: theme.colors.backgroundSecondary,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  filterChipActive: {
+    backgroundColor: theme.colors.primaryLight || theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  filterChipText: {
+    fontSize: theme.fonts.sizes.sm,
+    color: theme.colors.textSecondary,
+    fontWeight: theme.fonts.weights.medium,
+  },
+  filterChipTextActive: {
+    color: '#FFFFFF',
+    fontWeight: theme.fonts.weights.semibold,
   },
 });

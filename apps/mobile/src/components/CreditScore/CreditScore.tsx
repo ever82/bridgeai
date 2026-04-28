@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 
 import { theme } from '../../theme';
 
@@ -110,7 +104,7 @@ export const CreditScore: React.FC<CreditScoreProps> = ({
     if (!showStars) return null;
     return (
       <View style={styles.starsContainer} testID={`${testID}-stars`}>
-        {[1, 2, 3, 4, 5].map((index) => (
+        {[1, 2, 3, 4, 5].map(index => (
           <Text
             key={index}
             style={[
@@ -128,11 +122,7 @@ export const CreditScore: React.FC<CreditScoreProps> = ({
 
   const renderBadge = () => (
     <View
-      style={[
-        styles.badge,
-        dimensions.badge,
-        { backgroundColor: creditColor },
-      ]}
+      style={[styles.badge, dimensions.badge, { backgroundColor: creditColor }]}
       testID={`${testID}-badge`}
     >
       <Text style={styles.badgeText}>{Math.round(score)}</Text>
@@ -140,15 +130,7 @@ export const CreditScore: React.FC<CreditScoreProps> = ({
   );
 
   const content = (
-    <View
-      style={[
-        styles.container,
-        dimensions.container,
-        { borderColor: creditColor },
-        style,
-      ]}
-      testID={testID}
-    >
+    <View style={[styles.container, dimensions.container, { borderColor: creditColor }, style]}>
       {renderBadge()}
       <View style={styles.content}>
         {showStars && renderStars()}
@@ -171,6 +153,7 @@ export const CreditScore: React.FC<CreditScoreProps> = ({
         activeOpacity={0.7}
         accessibilityRole="button"
         accessibilityLabel={`信用分: ${score}, ${creditLabel}`}
+        testID={testID}
       >
         {content}
       </TouchableOpacity>
@@ -179,6 +162,7 @@ export const CreditScore: React.FC<CreditScoreProps> = ({
 
   return (
     <View
+      testID={testID}
       accessibilityLabel={`信用分: ${score}, ${creditLabel}`}
       accessibilityRole="text"
     >
@@ -236,7 +220,6 @@ export const TrustBadge: React.FC<Omit<CreditScoreProps, 'showLabel' | 'showStar
         { backgroundColor: `${creditColor}20`, borderColor: creditColor },
         style,
       ]}
-      testID={testID}
     >
       <Text style={styles.trustIcon}>{getTrustIcon()}</Text>
       <Text style={[styles.trustLabel, dimensions.label, { color: creditColor }]}>
@@ -252,6 +235,7 @@ export const TrustBadge: React.FC<Omit<CreditScoreProps, 'showLabel' | 'showStar
         activeOpacity={0.7}
         accessibilityRole="button"
         accessibilityLabel={`信用等级: ${getTrustLabel()}`}
+        testID={testID}
       >
         {content}
       </TouchableOpacity>
@@ -260,6 +244,7 @@ export const TrustBadge: React.FC<Omit<CreditScoreProps, 'showLabel' | 'showStar
 
   return (
     <View
+      testID={testID}
       accessibilityLabel={`信用等级: ${getTrustLabel()}`}
       accessibilityRole="text"
     >

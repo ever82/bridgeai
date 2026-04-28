@@ -1,12 +1,5 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Switch,
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
@@ -17,6 +10,8 @@ export const SettingsScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { isDarkMode, toggleDarkMode, useSystemTheme, setUseSystemTheme } = useThemeStore();
+  const [pushNotification, setPushNotification] = useState(true);
+  const [emailNotification, setEmailNotification] = useState(false);
 
   const settingsGroups = [
     {
@@ -59,8 +54,33 @@ export const SettingsScreen = () => {
     {
       title: '通知',
       items: [
-        { title: '推送通知', type: 'toggle', value: true, onChange: () => {} },
-        { title: '邮件通知', type: 'toggle', value: false, onChange: () => {} },
+        {
+          title: '推送通知',
+          type: 'toggle',
+          value: pushNotification,
+          onChange: setPushNotification,
+        },
+        {
+          title: '邮件通知',
+          type: 'toggle',
+          value: emailNotification,
+          onChange: setEmailNotification,
+        },
+      ],
+    },
+    {
+      title: '通用',
+      items: [
+        {
+          title: '语言设置',
+          type: 'link',
+          onPress: () => Alert.alert('提示', '语言设置功能即将上线'),
+        },
+        {
+          title: '帮助与FAQ',
+          type: 'link',
+          onPress: () => Alert.alert('提示', '帮助与FAQ页面即将上线'),
+        },
       ],
     },
     {
@@ -76,10 +96,7 @@ export const SettingsScreen = () => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>设置</Text>
@@ -101,17 +118,10 @@ export const SettingsScreen = () => {
                 >
                   <Text style={styles.settingTitle}>{item.title}</Text>
                   {item.type === 'toggle' && (
-                    <Switch
-                      value={item.value}
-                      onValueChange={item.onChange}
-                    />
+                    <Switch value={item.value} onValueChange={item.onChange} />
                   )}
-                  {item.type === 'value' && (
-                    <Text style={styles.settingValue}>{item.value}</Text>
-                  )}
-                  {item.type === 'link' && (
-                    <Text style={styles.settingArrow}>›</Text>
-                  )}
+                  {item.type === 'value' && <Text style={styles.settingValue}>{item.value}</Text>}
+                  {item.type === 'link' && <Text style={styles.settingArrow}>›</Text>}
                 </View>
               ))}
             </View>

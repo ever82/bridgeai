@@ -60,7 +60,7 @@ describe('CreditScore', () => {
 
   it('renders with different sizes', () => {
     const sizes: Array<'sm' | 'md' | 'lg'> = ['sm', 'md', 'lg'];
-    sizes.forEach((size) => {
+    sizes.forEach(size => {
       const { rerender } = render(<CreditScore score={85} size={size} testID="credit" />);
       expect(screen.getByTestId('credit')).toBeTruthy();
       rerender(<></>);
@@ -68,8 +68,8 @@ describe('CreditScore', () => {
   });
 
   it('calls onPress when pressed', () => {
-    render(<CreditScore score={85} onPress={mockOnPress} testID="credit-badge" />);
-    fireEvent.press(screen.getByTestId('credit-badge'));
+    render(<CreditScore score={85} onPress={mockOnPress} testID="credit" />);
+    fireEvent.press(screen.getByTestId('credit'));
     expect(mockOnPress).toHaveBeenCalledTimes(1);
   });
 
@@ -77,14 +77,14 @@ describe('CreditScore', () => {
     render(<CreditScore score={95} testID="credit" />);
     const label = screen.getByTestId('credit-label');
     const styles = Array.isArray(label.props.style) ? label.props.style : [label.props.style];
-    expect(styles).toMatchObject(expect.arrayContaining([{ color: theme.colors.success }]));
+    expect(styles).toEqual(expect.arrayContaining([{ color: theme.colors.success }]));
   });
 
   it('applies correct color for poor credit', () => {
     render(<CreditScore score={30} testID="credit" />);
     const label = screen.getByTestId('credit-label');
     const styles = Array.isArray(label.props.style) ? label.props.style : [label.props.style];
-    expect(styles).toMatchObject(expect.arrayContaining([{ color: theme.colors.error }]));
+    expect(styles).toEqual(expect.arrayContaining([{ color: theme.colors.error }]));
   });
 
   it('has correct accessibility label', () => {
@@ -133,7 +133,7 @@ describe('TrustBadge', () => {
 
   it('renders with different sizes', () => {
     const sizes: Array<'sm' | 'md' | 'lg'> = ['sm', 'md', 'lg'];
-    sizes.forEach((size) => {
+    sizes.forEach(size => {
       const { rerender } = render(<TrustBadge score={85} size={size} testID="trust" />);
       expect(screen.getByTestId('trust')).toBeTruthy();
       rerender(<></>);

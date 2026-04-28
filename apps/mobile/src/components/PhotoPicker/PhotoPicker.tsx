@@ -39,9 +39,16 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
   const [loading, setLoading] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState(false);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    const requestPermission = async () => {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      setPermissionGranted(status === 'granted');
+      if (status === 'granted') {
+        loadPhotos();
+      }
+    };
     requestPermission();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const requestPermission = async () => {

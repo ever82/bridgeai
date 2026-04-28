@@ -76,10 +76,12 @@ export type ProfileStackParamList = {
   TransactionList: undefined;
   TransactionDetail: { transactionId: string };
   PointsTransactionDetail: { transactionId?: string; transaction?: { id: string } };
+  PointsWallet: undefined;
   RefundList: undefined;
   RefundDetail: { refundId: string };
   CreateRefund: { transactionId: string };
   CreateAppeal: { refundId: string };
+  Activity: undefined;
 };
 
 export type MessagesStackParamList = {

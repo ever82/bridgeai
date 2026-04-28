@@ -15,6 +15,7 @@ import { LikedMomentsScreen } from '../screens/profile/LikedMomentsScreen';
 import { MomentDetailScreen } from '../screens/moment/MomentDetailScreen';
 import { UserProfileScreen } from '../screens/user/UserProfileScreen';
 import { ReviewListScreen, ReviewDetailScreen, WriteReviewScreen } from '../screens/Reviews';
+import { ActivityScreen } from '../screens/activity/ActivityScreen';
 import { AgentListScreen } from '../screens/agent/AgentListScreen';
 import { CreateAgentScreen } from '../screens/agent/CreateAgentScreen';
 import { EditAgentScreen } from '../screens/agent/EditAgentScreen';
@@ -27,6 +28,7 @@ import {
   CreateAppealScreen,
 } from '../screens/transaction';
 import { PointsTransactionDetailScreen } from '../screens/points/TransactionDetailScreen';
+import { PointsWalletScreen } from '../screens/points/PointsWalletScreen';
 import { ProfileStackParamList } from '../types/navigation';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -61,10 +63,12 @@ export const ProfileStackNavigator = () => {
       <Stack.Screen name="TransactionList" component={TransactionListScreen} />
       <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
       <Stack.Screen name="PointsTransactionDetail" component={PointsTransactionDetailScreen} />
+      <Stack.Screen name="PointsWallet" component={PointsWalletScreen} />
       <Stack.Screen name="RefundList" component={RefundListScreen} />
       <Stack.Screen name="RefundDetail" component={RefundDetailScreen} />
       <Stack.Screen name="CreateRefund" component={CreateRefundScreen} />
       <Stack.Screen name="CreateAppeal" component={CreateAppealScreen} />
+      <Stack.Screen name="Activity" component={ActivityScreen} />
     </Stack.Navigator>
   );
 };

@@ -16,14 +16,14 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../stores/authStore';
 import { theme } from '../../theme';
 import { api } from '../../services';
-import { uploadAvatar } from '../../api/user';
+import { PhotoPicker, AlbumPhoto } from '../../components/PhotoPicker/PhotoPicker';
 
 export const EditProfileScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { user, setUser } = useAuthStore();
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isPhotoPickerVisible, setIsPhotoPickerVisible] = useState(false);
   const [form, setForm] = useState({
     displayName: user?.displayName || '',
     name: user?.name || '',
@@ -58,20 +58,19 @@ export const EditProfileScreen = () => {
     }
   };
 
-  const handleAvatarUpload = async () => {
-    setIsUploading(true);
-    try {
-      const result = await uploadAvatar(undefined, 'https://example.com/default-avatar.png');
-      if (result?.avatarUrl) {
-        setUser({ ...user!, avatarUrl: result.avatarUrl });
-        Alert.alert('成功', '头像已更新');
-      }
-    } catch (error: unknown) {
-      const err = error as { message?: string };
-      Alert.alert('错误', err.message || '头像上传失败，请重试');
-    } finally {
-      setIsUploading(false);
+  const handleAvatarUpload = () => {
+    setIsPhotoPickerVisible(true);
+  };
+
+  const handlePhotoSelected = (photos: AlbumPhoto[]) => {
+    setIsPhotoPickerVisible(false);
+    if (photos.length > 0) {
+      Alert.alert('提示', `已选择 ${photos.length} 张照片头像上传功能待集成`);
     }
+  };
+
+  const handlePhotoPickerCancel = () => {
+    setIsPhotoPickerVisible(false);
   };
 
   const getAvatarInitial = () => {
@@ -108,16 +107,8 @@ export const EditProfileScreen = () => {
               <Text style={styles.avatarText}>{getAvatarInitial()}</Text>
             </View>
           )}
-          <TouchableOpacity
-            style={styles.changeAvatarButton}
-            onPress={handleAvatarUpload}
-            disabled={isUploading}
-          >
-            {isUploading ? (
-              <ActivityIndicator size="small" color={theme.colors.primary} />
-            ) : (
-              <Text style={styles.changeAvatarText}>更换头像</Text>
-            )}
+          <TouchableOpacity style={styles.changeAvatarButton} onPress={handleAvatarUpload}>
+            <Text style={styles.changeAvatarText}>更换头像</Text>
           </TouchableOpacity>
         </View>
 
@@ -186,6 +177,17 @@ export const EditProfileScreen = () => {
           </Text>
         </View>
       </ScrollView>
+      {isPhotoPickerVisible && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <PhotoPicker
+              onSelect={handlePhotoSelected}
+              onCancel={handlePhotoPickerCancel}
+              maxPhotos={1}
+            />
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -297,5 +299,19 @@ const styles = StyleSheet.create({
     fontSize: theme.fonts.sizes.sm,
     color: theme.colors.textSecondary,
     textAlign: 'center',
+  },
+  modalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    width: '90%',
+    height: '70%',
+    backgroundColor: 'white',
+    borderRadius: theme.borderRadius.lg,
+    overflow: 'hidden',
   },
 });

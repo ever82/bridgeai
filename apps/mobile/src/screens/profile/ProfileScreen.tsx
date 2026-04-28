@@ -2,14 +2,23 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import type { AgentCreditInfo } from '@bridgeai/shared';
 
 import { useAuthStore } from '../../stores/authStore';
 import { theme } from '../../theme';
+import { CreditBadge } from '../../components/Credit';
 
 export const ProfileScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { user, logout } = useAuthStore();
+
+  const creditInfo: AgentCreditInfo = {
+    score: 750,
+    level: 3,
+    trend: 'stable',
+    history: [],
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -43,6 +52,16 @@ export const ProfileScreen = () => {
           <View style={styles.userInfo}>
             <Text style={styles.userName}>{user?.displayName || '未登录用户'}</Text>
             <Text style={styles.userHandle}>@{user?.username || 'unknown'}</Text>
+            <Text style={styles.userId}>ID: {user?.id || '-'}</Text>
+            <Text style={styles.userMeta}>
+              注册于 {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('zh-CN') : '-'}
+            </Text>
+            {user?.bio && <Text style={styles.userBio}>{user.bio}</Text>}
+            {user?.isVerified && (
+              <View style={styles.verifiedBadge}>
+                <Text style={styles.verifiedText}>已认证</Text>
+              </View>
+            )}
           </View>
           <TouchableOpacity
             style={styles.editButton}
@@ -65,6 +84,22 @@ export const ProfileScreen = () => {
             <Text style={styles.statValue}>{user?.followingCount || 0}</Text>
             <Text style={styles.statLabel}>关注</Text>
           </View>
+        </View>
+
+        <View style={styles.creditSection}>
+          <View style={styles.creditSectionHeader}>
+            <Text style={styles.creditSectionLabel}>信用分</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('CreditDetail')}>
+              <Text style={styles.creditDetailLink}>信用详情 ›</Text>
+            </TouchableOpacity>
+          </View>
+          <CreditBadge
+            credit={creditInfo}
+            size="medium"
+            showTrend={true}
+            showLevel={true}
+            onPress={() => navigation.navigate('CreditDetail')}
+          />
         </View>
 
         <View style={styles.menuSection}>
@@ -148,6 +183,34 @@ const styles = StyleSheet.create({
     fontSize: theme.fonts.sizes.base,
     color: theme.colors.textSecondary,
   },
+  userId: {
+    fontSize: theme.fonts.sizes.sm,
+    color: theme.colors.textTertiary,
+    marginTop: 2,
+  },
+  userMeta: {
+    fontSize: theme.fonts.sizes.sm,
+    color: theme.colors.textTertiary,
+    marginTop: 2,
+  },
+  userBio: {
+    fontSize: theme.fonts.sizes.sm,
+    color: theme.colors.text,
+    marginTop: theme.spacing.xs,
+  },
+  verifiedBadge: {
+    marginTop: theme.spacing.xs,
+    alignSelf: 'flex-start',
+    paddingHorizontal: theme.spacing.xs,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: theme.colors.primary,
+  },
+  verifiedText: {
+    fontSize: theme.fonts.sizes.xs,
+    color: theme.colors.textInverse,
+    fontWeight: theme.fonts.weights.semibold,
+  },
   editButton: {
     paddingHorizontal: theme.spacing.base,
     paddingVertical: theme.spacing.xs,
@@ -178,6 +241,27 @@ const styles = StyleSheet.create({
     fontSize: theme.fonts.sizes.sm,
     color: theme.colors.textSecondary,
     marginTop: theme.spacing.xs,
+  },
+  creditSection: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  creditSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.base,
+  },
+  creditSectionLabel: {
+    fontSize: theme.fonts.sizes.base,
+    fontWeight: theme.fonts.weights.semibold,
+    color: theme.colors.text,
+  },
+  creditDetailLink: {
+    fontSize: theme.fonts.sizes.sm,
+    color: theme.colors.primary,
   },
   menuSection: {
     marginTop: theme.spacing.lg,
