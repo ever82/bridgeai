@@ -17,7 +17,7 @@ import {
   updateReferralStatus,
   incrementViewCount,
 } from '../../models/ReferralRecord';
-import { MutualConsent, createMutualConsent } from '../../models/MutualConsent';
+import { MutualConsent, ConsentStatus, createMutualConsent } from '../../models/MutualConsent';
 import { logger } from '../../utils/logger';
 
 import { createHumanChatRoom } from './humanChatRoomService';
@@ -207,12 +207,12 @@ export async function processReferralDecision(
   }
 
   // 更新决策
-  const newStatus = decision === 'accept' ? 'accepted' : 'rejected';
+  const newStatus = decision === 'accept' ? ConsentStatus.ACCEPTED : ConsentStatus.REJECTED;
   const updatedConsent: MutualConsent = {
     ...consent,
     [isUserA ? 'userAConsent' : 'userBConsent']: {
       ...userConsent,
-      status: newStatus as any,
+      status: newStatus,
       decidedAt: now,
       reason: decision === 'reject' ? reason : undefined,
       changedCount:

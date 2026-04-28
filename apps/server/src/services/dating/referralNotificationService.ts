@@ -45,7 +45,7 @@ export interface NotificationPayload {
   type: NotificationType;
   title: string;
   body: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   priority: 'high' | 'normal' | 'low';
   channels: NotificationChannel[];
 }
