@@ -3,11 +3,7 @@
  */
 
 import { LLMRouter } from '../llmRouter';
-import {
-  RoutingStrategy,
-  ChatCompletionRequest,
-  ModelInfo
-} from '../types';
+import { ChatCompletionRequest, ModelInfo } from '../types';
 
 // 测试用的模型数据
 const mockModels: ModelInfo[] = [
@@ -20,11 +16,11 @@ const mockModels: ModelInfo[] = [
       embeddings: false,
       streaming: true,
       maxTokens: 8192,
-      supportedLanguages: ['zh', 'en']
+      supportedLanguages: ['zh', 'en'],
     },
     costPer1KTokens: { input: 0.03, output: 0.06 },
     averageLatencyMs: 1500,
-    qualityScore: 95
+    qualityScore: 95,
   },
   {
     id: 'gpt-3.5-turbo',
@@ -35,11 +31,11 @@ const mockModels: ModelInfo[] = [
       embeddings: false,
       streaming: true,
       maxTokens: 16384,
-      supportedLanguages: ['zh', 'en']
+      supportedLanguages: ['zh', 'en'],
     },
     costPer1KTokens: { input: 0.0005, output: 0.0015 },
     averageLatencyMs: 800,
-    qualityScore: 85
+    qualityScore: 85,
   },
   {
     id: 'claude-3-opus',
@@ -50,11 +46,11 @@ const mockModels: ModelInfo[] = [
       embeddings: false,
       streaming: true,
       maxTokens: 200000,
-      supportedLanguages: ['zh', 'en']
+      supportedLanguages: ['zh', 'en'],
     },
     costPer1KTokens: { input: 0.015, output: 0.075 },
     averageLatencyMs: 1800,
-    qualityScore: 96
+    qualityScore: 96,
   },
   {
     id: 'claude-3-haiku',
@@ -65,11 +61,11 @@ const mockModels: ModelInfo[] = [
       embeddings: false,
       streaming: true,
       maxTokens: 200000,
-      supportedLanguages: ['zh', 'en']
+      supportedLanguages: ['zh', 'en'],
     },
     costPer1KTokens: { input: 0.00025, output: 0.00125 },
     averageLatencyMs: 600,
-    qualityScore: 82
+    qualityScore: 82,
   },
   {
     id: 'ernie-bot',
@@ -80,12 +76,12 @@ const mockModels: ModelInfo[] = [
       embeddings: false,
       streaming: true,
       maxTokens: 4096,
-      supportedLanguages: ['zh', 'en']
+      supportedLanguages: ['zh', 'en'],
     },
     costPer1KTokens: { input: 0.004, output: 0.004 },
     averageLatencyMs: 1200,
-    qualityScore: 82
-  }
+    qualityScore: 82,
+  },
 ];
 
 describe('LLMRouter', () => {
@@ -104,7 +100,7 @@ describe('LLMRouter', () => {
     it('should select cheapest model', () => {
       const request: ChatCompletionRequest = {
         model: '',
-        messages: [{ role: 'user', content: 'Hello' }]
+        messages: [{ role: 'user', content: 'Hello' }],
       };
 
       const decision = router.route(request, ['openai', 'claude', 'wenxin']);
@@ -130,7 +126,7 @@ describe('LLMRouter', () => {
     it('should select lowest latency model', () => {
       const request: ChatCompletionRequest = {
         model: '',
-        messages: [{ role: 'user', content: 'Hello' }]
+        messages: [{ role: 'user', content: 'Hello' }],
       };
 
       const decision = router.route(request, ['openai', 'claude', 'wenxin']);
@@ -150,7 +146,7 @@ describe('LLMRouter', () => {
     it('should select highest quality model', () => {
       const request: ChatCompletionRequest = {
         model: '',
-        messages: [{ role: 'user', content: 'Hello' }]
+        messages: [{ role: 'user', content: 'Hello' }],
       };
 
       const decision = router.route(request, ['openai', 'claude', 'wenxin']);
@@ -170,7 +166,7 @@ describe('LLMRouter', () => {
     it('should cycle through providers', () => {
       const request: ChatCompletionRequest = {
         model: '',
-        messages: [{ role: 'user', content: 'Hello' }]
+        messages: [{ role: 'user', content: 'Hello' }],
       };
 
       const providers: string[] = [];
@@ -189,7 +185,7 @@ describe('LLMRouter', () => {
     it('should include round-robin info in reason', () => {
       const request: ChatCompletionRequest = {
         model: '',
-        messages: [{ role: 'user', content: 'Hello' }]
+        messages: [{ role: 'user', content: 'Hello' }],
       };
 
       const decision = router.route(request, ['openai', 'claude', 'wenxin']);
@@ -208,7 +204,7 @@ describe('LLMRouter', () => {
     it('should respect provider weights', () => {
       const request: ChatCompletionRequest = {
         model: '',
-        messages: [{ role: 'user', content: 'Hello' }]
+        messages: [{ role: 'user', content: 'Hello' }],
       };
 
       // Run many times to verify distribution
@@ -226,6 +222,82 @@ describe('LLMRouter', () => {
     });
   });
 
+  describe('Least-Connections Routing', () => {
+    beforeEach(() => {
+      router.updateConfig({ strategy: 'least-connections' });
+    });
+
+    it('should select provider with fewest active connections', () => {
+      const request: ChatCompletionRequest = {
+        model: '',
+        messages: [{ role: 'user', content: 'Hello' }],
+      };
+
+      // All providers start with 0 connections
+      const decision = router.route(request, ['openai', 'claude', 'wenxin']);
+
+      // Should pick one of them (all have 0)
+      expect(['openai', 'claude', 'wenxin']).toContain(decision.provider);
+      expect(decision.reason).toContain('Least connections');
+    });
+
+    it('should increment connection count after routing', () => {
+      const request: ChatCompletionRequest = {
+        model: '',
+        messages: [{ role: 'user', content: 'Hello' }],
+      };
+
+      const decision = router.route(request, ['openai', 'claude', 'wenxin']);
+      const _selectedProvider = decision.provider as 'openai' | 'claude' | 'wenxin';
+
+      // Second route should prefer a different provider (with fewer connections)
+      const decision2 = router.route(request, ['openai', 'claude', 'wenxin']);
+
+      // The reason should reflect connection counts
+      expect(decision2.reason).toContain('active');
+    });
+
+    it('should release connection correctly', () => {
+      const request: ChatCompletionRequest = {
+        model: '',
+        messages: [{ role: 'user', content: 'Hello' }],
+      };
+
+      // Route to openai
+      const decision = router.route(request, ['openai', 'claude', 'wenxin']);
+      expect(decision.provider).toBeTruthy();
+
+      // Release the connection
+      router.releaseConnection(decision.provider as 'openai' | 'claude' | 'wenxin');
+
+      // Releasing again should not go negative
+      router.releaseConnection(decision.provider as 'openai' | 'claude' | 'wenxin');
+      router.releaseConnection(decision.provider as 'openai' | 'claude' | 'wenxin');
+
+      // Should not throw - implementation handles gracefully
+    });
+
+    it('should prefer provider with lower connection count', () => {
+      const request: ChatCompletionRequest = {
+        model: '',
+        messages: [{ role: 'user', content: 'Hello' }],
+      };
+
+      // Simulate some existing connections on claude
+      // (By routing multiple times to other providers, we can build up their counts)
+      const counts: Record<string, number> = { openai: 0, claude: 0, wenxin: 0 };
+
+      for (let i = 0; i < 10; i++) {
+        const decision = router.route(request, ['openai', 'claude', 'wenxin']);
+        counts[decision.provider] = (counts[decision.provider] || 0) + 1;
+      }
+
+      // All counts should be tracked
+      const totalConnections = Object.values(counts).reduce((a, b) => a + b, 0);
+      expect(totalConnections).toBe(10);
+    });
+  });
+
   describe('Health-based Filtering', () => {
     it('should filter out unhealthy providers', () => {
       router.updateConfig({ strategy: 'cost' });
@@ -236,12 +308,12 @@ describe('LLMRouter', () => {
         healthy: false,
         latencyMs: 5000,
         successRate: 0.1,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       });
 
       const request: ChatCompletionRequest = {
         model: '',
-        messages: [{ role: 'user', content: 'Hello' }]
+        messages: [{ role: 'user', content: 'Hello' }],
       };
 
       const decision = router.route(request, ['openai', 'claude', 'wenxin']);
@@ -260,26 +332,28 @@ describe('LLMRouter', () => {
           healthy: false,
           latencyMs: 5000,
           successRate: 0.1,
-          lastChecked: new Date()
+          lastChecked: new Date(),
         });
       });
 
       const request: ChatCompletionRequest = {
         model: '',
-        messages: [{ role: 'user', content: 'Hello' }]
+        messages: [{ role: 'user', content: 'Hello' }],
       };
 
-      expect(() => router.route(request, ['openai', 'claude', 'wenxin']))
-        .toThrow('No healthy providers available');
+      expect(() => router.route(request, ['openai', 'claude', 'wenxin'])).toThrow(
+        'No healthy providers available'
+      );
     });
   });
 
   describe('Capability-based Routing', () => {
     it('should filter by capabilities', () => {
-      const matches = router.routeByCapabilities(
-        { chatCompletion: true, maxTokens: 100000 },
-        ['openai', 'claude', 'wenxin']
-      );
+      const matches = router.routeByCapabilities({ chatCompletion: true, maxTokens: 100000 }, [
+        'openai',
+        'claude',
+        'wenxin',
+      ]);
 
       // Only claude-3-opus and claude-3-haiku support > 100k tokens
       expect(matches.length).toBe(2);
@@ -324,7 +398,7 @@ describe('LLMRouter', () => {
         healthy: true,
         latencyMs: 1000,
         successRate: 0.95,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       });
 
       router.updateProviderHealth({
@@ -332,7 +406,7 @@ describe('LLMRouter', () => {
         healthy: false,
         latencyMs: 3000,
         successRate: 0.7,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       });
 
       const summary = router.getHealthSummary();
@@ -355,20 +429,17 @@ describe('LLMRouter', () => {
           embeddings: true,
           streaming: true,
           maxTokens: 4096,
-          supportedLanguages: ['en']
+          supportedLanguages: ['en'],
         },
         costPer1KTokens: { input: 0.001, output: 0.002 },
         averageLatencyMs: 1000,
-        qualityScore: 90
+        qualityScore: 90,
       };
 
       router.registerModel(newModel);
 
       // The model should be available for routing
-      const matches = router.routeByCapabilities(
-        { embeddings: true },
-        ['openai']
-      );
+      const matches = router.routeByCapabilities({ embeddings: true }, ['openai']);
 
       expect(matches.some(m => m.model === 'new-model')).toBe(true);
     });

@@ -29,6 +29,7 @@ export interface RouteMatch {
 
 interface NormalizedRoute {
   id: GatewayRoute['id'];
+  originalPath: string;
   methodSet: Set<string>;
   headers: Record<string, string> | null;
   priority: number;
@@ -142,7 +143,7 @@ export class ApiGatewayRouter {
   getRoutes(): GatewayRoute[] {
     return this._routes.map(r => ({
       id: r.id,
-      path: r.matcher.toString(), // Return original pattern (approximation)
+      path: r.originalPath,
       method: [...r.methodSet],
       headers: r.headers ?? undefined,
       priority: r.priority,
@@ -245,6 +246,7 @@ export class ApiGatewayRouter {
 
     return {
       id: route.id,
+      originalPath: pathValue instanceof RegExp ? pathValue.source : pathValue,
       methodSet,
       headers: route.headers ?? null,
       priority: route.priority ?? this._defaultPriority,
@@ -273,7 +275,7 @@ export function createApiGatewayRouter(options?: {
 function toGatewayRoute(r: NormalizedRoute): GatewayRoute {
   return {
     id: r.id,
-    path: '', // original pattern not retained in NormalizedRoute
+    path: r.originalPath,
     method: [...r.methodSet],
     headers: r.headers ?? undefined,
     priority: r.priority,

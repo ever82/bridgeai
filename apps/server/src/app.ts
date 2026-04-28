@@ -20,6 +20,7 @@ import adminRoutes from './routes/admin';
 import { ApiResponse } from './utils/response';
 import { initSentry, Sentry } from './utils/sentry';
 import { initializeSecurityMonitoring } from './services/securityMonitor';
+import { createApiGatewayRouter } from './services/gateway/apiGatewayRouter';
 
 dotenv.config();
 
@@ -148,6 +149,10 @@ app.get('/metrics', (req: Request, res: Response) => {
     })
   );
 });
+
+// API Gateway Router - flexible routing layer for dynamic route table updates
+const apiGatewayRouter = createApiGatewayRouter();
+app.use(apiGatewayRouter.handle.bind(apiGatewayRouter));
 
 // API routes
 app.use('/api', routes);
