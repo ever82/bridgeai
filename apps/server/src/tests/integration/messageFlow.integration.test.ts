@@ -20,32 +20,32 @@ import jwt from 'jsonwebtoken';
 import { Server as SocketServer } from 'socket.io';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
 
-import { initializeSocketServer, emitToUser } from '../../src/socket';
-import { connectionManager } from '../../src/socket/connectionManager';
+import { initializeSocketServer, emitToUser } from '../../socket';
+import { connectionManager } from '../../socket/connectionManager';
 
 // Mock external infrastructure
 jest.mock('expo-server-sdk', () => ({
   Expo: jest.fn(),
 }));
 
-jest.mock('../../src/services/rbacService', () => ({
+jest.mock('../../services/rbacService', () => ({
   rbacService: {
     getUserRoles: jest.fn().mockResolvedValue([{ id: 'role-1', name: 'user' }]),
     getUserPermissions: jest.fn().mockResolvedValue(['chat:send', 'chat:read']),
   },
 }));
 
-jest.mock('../../src/socket/adapter', () => ({
+jest.mock('../../socket/adapter', () => ({
   pubClient: null,
   subClient: null,
 }));
 
-jest.mock('../../src/services/chat/roomService', () => ({
+jest.mock('../../services/chat/roomService', () => ({
   isUserInRoom: jest.fn().mockResolvedValue(true),
   getRoomMembers: jest.fn().mockResolvedValue(['vs-user', 'ad-user', 'job-user', 'date-user']),
 }));
 
-jest.mock('../../src/services/messageService', () => ({
+jest.mock('../../services/messageService', () => ({
   createChatRoomMessage: jest.fn().mockResolvedValue({
     id: 'msg-flow-1',
     conversationId: 'room-flow',
