@@ -76,6 +76,12 @@ export const agentAdL2Schema: L2Schema = {
       max: 1000,
       step: 1,
       defaultValue: { min: 1, max: 10 },
+      dependsOn: 'adType',
+      showWhen: {
+        field: 'adType',
+        operator: 'in',
+        value: ['advertiser', 'agency'],
+      },
     },
     {
       id: 'campaignDuration',

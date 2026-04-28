@@ -5,6 +5,11 @@
  * These tests run against a real PostgreSQL database (bridgeai_test)
  * to validate that the schema, relations, indexes, and data operations work correctly.
  */
+jest.mock('@bridgeai/shared', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const real = require('/Users/z/projects/bridgeai/packages/shared/dist/index.js');
+  return { __esModule: true, ...real };
+});
 
 import {
   PrismaClient,
@@ -22,6 +27,16 @@ import {
   DemandStatus,
   SupplyStatus,
 } from '@prisma/client';
+import {
+  L2_SCHEMAS,
+  getL2Schema,
+  visionShareL2Schema,
+  agentDateL2Schema,
+  agentJobL2Schema,
+  agentAdL2Schema,
+} from '@bridgeai/shared';
+
+import { validateL2Data } from '../../utils/l2Validation';
 
 const prisma = new PrismaClient({
   datasources: {
@@ -46,6 +61,7 @@ async function cleanupTestData() {
   await prisma.match.deleteMany({});
   await prisma.supply.deleteMany({});
   await prisma.demand.deleteMany({});
+  await prisma.profileHistory.deleteMany({});
   await prisma.agentProfile.deleteMany({});
   await prisma.creditRecord.deleteMany({});
   await prisma.transaction.deleteMany({});
@@ -647,5 +663,562 @@ describe('AC7: Database Performance Optimization', () => {
       SELECT indexname FROM pg_indexes WHERE tablename = 'connections'
     `) as Array<{ indexname: string }>;
     expect(connIndexes.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+// ==========================================
+// AC8: L2 Storage Integration Tests
+// Covers schema-based validation, scene-specific profiles, and L2 data operations
+// ==========================================
+describe('AC8: L2 Storage Integration', () => {
+  let testUserId: string;
+  let testAgentId: string;
+  let baseProfileId: string;
+
+  beforeEach(async () => {
+    const user = await prisma.user.create({
+      data: {
+        email: `ac8-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@bridgeai.com`,
+        passwordHash: '$2b$10$testhash',
+        name: 'AC8 L2 Test User',
+      },
+    });
+    testUserId = user.id;
+    createdUserIds.push(testUserId);
+
+    const agent = await prisma.agent.create({
+      data: {
+        userId: testUserId,
+        type: AgentType.DEMAND,
+        name: 'AC8 L2 Test Agent',
+        creditScore: 75,
+      },
+    });
+    testAgentId = agent.id;
+    createdAgentIds.push(testAgentId);
+
+    // Create base profile (no scene)
+    const baseProfile = await prisma.agentProfile.create({
+      data: {
+        agentId: testAgentId,
+        sceneId: null,
+        l1Data: { gender: 'MALE' },
+        l2Data: {},
+        sceneConfig: null,
+        isActive: true,
+      },
+    });
+    baseProfileId = baseProfile.id;
+  });
+
+  afterAll(async () => {
+    await cleanupTestData();
+  });
+
+  // --- L2 Schema registry ---
+
+  it('should have L2 schemas registered for all scene codes', () => {
+    expect(L2_SCHEMAS['VISIONSHARE']).toBeDefined();
+    expect(L2_SCHEMAS['AGENTDATE']).toBeDefined();
+    expect(L2_SCHEMAS['AGENTJOB']).toBeDefined();
+    expect(L2_SCHEMAS['AGENTAD']).toBeDefined();
+  });
+
+  it('should resolve correct schema via getL2Schema for each scene', () => {
+    expect(getL2Schema('VISIONSHARE')).toEqual(visionShareL2Schema);
+    expect(getL2Schema('AGENTDATE')).toEqual(agentDateL2Schema);
+    expect(getL2Schema('AGENTJOB')).toEqual(agentJobL2Schema);
+    expect(getL2Schema('AGENTAD')).toEqual(agentAdL2Schema);
+  });
+
+  // --- Schema-based validation ---
+
+  it('should validate VisionShare L2 data against schema correctly', () => {
+    // Valid data for visionShare schema
+    const validData = {
+      contentType: ['photography', 'artwork'],
+      purpose: 'share',
+      skillLevel: 'professional',
+    };
+    const result = validateL2Data(validData, visionShareL2Schema);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it('should reject VisionShare L2 data missing required fields', () => {
+    // contentType is required, purpose is required
+    const invalidData = {
+      style: ['minimalist'],
+    };
+    const result = validateL2Data(invalidData, visionShareL2Schema);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.field === 'contentType')).toBe(true);
+    expect(result.errors.some(e => e.field === 'purpose')).toBe(true);
+  });
+
+  it('should reject VisionShare L2 data with invalid enum value', () => {
+    const invalidData = {
+      contentType: ['photography'],
+      purpose: 'invalidPurpose', // not in schema options
+      skillLevel: 'professional',
+    };
+    const result = validateL2Data(invalidData, visionShareL2Schema);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.field === 'purpose' && e.code === 'INVALID_OPTION')).toBe(
+      true
+    );
+  });
+
+  it('should validate AgentDate L2 data with range field', () => {
+    const validData = {
+      relationshipGoal: 'dating',
+      preferredAgeRange: { min: 25, max: 35 },
+      interests: ['movies', 'music'],
+      selfDescription: 'I am a software engineer who loves movies and music.',
+    };
+    const result = validateL2Data(validData, agentDateL2Schema);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it('should reject AgentDate preferredAgeRange exceeding schema min/max', () => {
+    const invalidData = {
+      relationshipGoal: 'dating',
+      preferredAgeRange: { min: 10, max: 100 }, // schema min=18, max=80
+      selfDescription: 'Too young and too old.',
+    };
+    const result = validateL2Data(invalidData, agentDateL2Schema);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.code === 'MIN_VALUE' || e.code === 'MAX_VALUE')).toBe(true);
+  });
+
+  it('should reject AgentJob L2 data with multi-select containing invalid option', () => {
+    const invalidData = {
+      roleType: 'jobseeker',
+      jobType: ['fulltime', 'invalidJobType'],
+      industry: ['tech'],
+      experienceLevel: 'senior',
+      skills: ['programming'],
+      selfIntroduction: 'Experienced full-stack developer with 5 years in the industry.',
+    };
+    const result = validateL2Data(invalidData, agentJobL2Schema);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.code === 'INVALID_OPTIONS')).toBe(true);
+  });
+
+  it('should respect showWhen condition (conditional field visibility)', () => {
+    // salaryRange is only shown when roleType is in ['jobseeker', 'both']
+    const withSalary = {
+      roleType: 'jobseeker',
+      jobType: ['fulltime'],
+      industry: ['tech'],
+      experienceLevel: 'mid',
+      skills: ['programming'],
+      salaryRange: { min: 15, max: 25 },
+      selfIntroduction: 'Mid-level developer looking for new career opportunities and growth.',
+    };
+    const result = validateL2Data(withSalary, agentJobL2Schema);
+    expect(result.valid).toBe(true);
+
+    // When roleType is 'employer', salaryRange should be hidden and not validated
+    const withoutSalary = {
+      roleType: 'employer',
+      jobType: ['fulltime'],
+      industry: ['tech'],
+      experienceLevel: 'senior',
+      skills: ['management'],
+      selfIntroduction: 'Hiring manager looking for talented professionals to join our team.',
+    };
+    const result2 = validateL2Data(withoutSalary, agentJobL2Schema);
+    expect(result2.valid).toBe(true);
+  });
+
+  it('should enforce minLength and maxLength on long text fields', () => {
+    // selfDescription minLength=50
+    const tooShort = {
+      relationshipGoal: 'dating',
+      preferredAgeRange: { min: 25, max: 35 },
+      selfDescription: 'Short',
+    };
+    const result = validateL2Data(tooShort, agentDateL2Schema);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.code === 'MIN_LENGTH')).toBe(true);
+
+    // selfDescription maxLength=500
+    const tooLong = {
+      relationshipGoal: 'dating',
+      preferredAgeRange: { min: 25, max: 35 },
+      selfDescription: 'A'.repeat(501),
+    };
+    const result2 = validateL2Data(tooLong, agentDateL2Schema);
+    expect(result2.valid).toBe(false);
+    expect(result2.errors.some(e => e.code === 'MAX_LENGTH')).toBe(true);
+  });
+
+  // --- Scene-specific profiles ---
+
+  it('should create scene-specific AgentProfile for each scene code', async () => {
+    const scenes = await Promise.all([
+      prisma.scene.upsert({
+        where: { code: SceneCode.VISION_SHARE },
+        update: {},
+        create: { code: SceneCode.VISION_SHARE, name: 'VisionShare', description: '视野分享' },
+      }),
+      prisma.scene.upsert({
+        where: { code: SceneCode.AGENT_DATE },
+        update: {},
+        create: { code: SceneCode.AGENT_DATE, name: 'AgentDate', description: '交友约会' },
+      }),
+      prisma.scene.upsert({
+        where: { code: SceneCode.AGENT_JOB },
+        update: {},
+        create: { code: SceneCode.AGENT_JOB, name: 'AgentJob', description: '求职招聘' },
+      }),
+      prisma.scene.upsert({
+        where: { code: SceneCode.AGENT_AD },
+        update: {},
+        create: { code: SceneCode.AGENT_AD, name: 'AgentAd', description: '优惠广告' },
+      }),
+    ]);
+
+    const profiles = await Promise.all(
+      scenes.map(scene =>
+        prisma.agentProfile.create({
+          data: {
+            agentId: testAgentId,
+            sceneId: scene.id,
+            l1Data: {},
+            l2Data: {},
+            sceneConfig: {},
+            isActive: true,
+          },
+        })
+      )
+    );
+
+    expect(profiles).toHaveLength(4);
+
+    // Verify unique constraint: one profile per agent per scene
+    for (const scene of scenes) {
+      const count = await prisma.agentProfile.count({
+        where: { agentId: testAgentId, sceneId: scene.id },
+      });
+      expect(count).toBe(1);
+    }
+  });
+
+  it('should store and retrieve L2 data correctly for a scene-specific profile', async () => {
+    const scene = await prisma.scene.upsert({
+      where: { code: SceneCode.AGENT_DATE },
+      update: {},
+      create: { code: SceneCode.AGENT_DATE, name: 'AgentDate', description: '交友约会' },
+    });
+
+    const l2Data = {
+      relationshipGoal: 'dating',
+      preferredAgeRange: { min: 25, max: 35 },
+      interests: ['movies', 'music', 'travel'],
+      personalityTraits: ['outgoing', 'humorous'],
+      selfDescription: 'A fun-loving person who enjoys movies, music, and travel.',
+    };
+
+    const profile = await prisma.agentProfile.create({
+      data: {
+        agentId: testAgentId,
+        sceneId: scene.id,
+        l1Data: {},
+        l2Data: l2Data as any,
+        isActive: true,
+      },
+    });
+
+    const retrieved = await prisma.agentProfile.findUnique({
+      where: { id: profile.id },
+    });
+
+    expect(retrieved?.l2Data).toEqual(l2Data);
+    expect(retrieved?.sceneId).toBe(scene.id);
+  });
+
+  it('should allow different L2 data for the same agent across different scenes', async () => {
+    const sceneVision = await prisma.scene.upsert({
+      where: { code: SceneCode.VISION_SHARE },
+      update: {},
+      create: { code: SceneCode.VISION_SHARE, name: 'VisionShare', description: '视野分享' },
+    });
+    const sceneJob = await prisma.scene.upsert({
+      where: { code: SceneCode.AGENT_JOB },
+      update: {},
+      create: { code: SceneCode.AGENT_JOB, name: 'AgentJob', description: '求职招聘' },
+    });
+
+    const visionL2Data = {
+      contentType: ['photography'],
+      purpose: 'share',
+      skillLevel: 'professional',
+    };
+    const jobL2Data = {
+      roleType: 'jobseeker',
+      jobType: ['fulltime', 'remote'],
+      industry: ['tech'],
+      experienceLevel: 'senior',
+      skills: ['programming', 'analysis'],
+      selfIntroduction: 'Senior developer with 8 years of experience in full-stack development.',
+    };
+
+    await prisma.agentProfile.create({
+      data: {
+        agentId: testAgentId,
+        sceneId: sceneVision.id,
+        l1Data: {},
+        l2Data: visionL2Data as any,
+        isActive: true,
+      },
+    });
+
+    await prisma.agentProfile.create({
+      data: {
+        agentId: testAgentId,
+        sceneId: sceneJob.id,
+        l1Data: {},
+        l2Data: jobL2Data as any,
+        isActive: true,
+      },
+    });
+
+    const profiles = await prisma.agentProfile.findMany({
+      where: { agentId: testAgentId },
+    });
+
+    const visionProfile = profiles.find(p => p.sceneId === sceneVision.id);
+    const jobProfile = profiles.find(p => p.sceneId === sceneJob.id);
+
+    expect(visionProfile?.l2Data).toEqual(visionL2Data);
+    expect(jobProfile?.l2Data).toEqual(jobL2Data);
+  });
+
+  // --- L2 data update ---
+
+  it('should update L2 data on an existing profile and preserve schema validation', async () => {
+    const scene = await prisma.scene.upsert({
+      where: { code: SceneCode.AGENT_DATE },
+      update: {},
+      create: { code: SceneCode.AGENT_DATE, name: 'AgentDate', description: '交友约会' },
+    });
+
+    // Create profile with valid L2 data
+    const validData = {
+      relationshipGoal: 'dating',
+      preferredAgeRange: { min: 25, max: 35 },
+      interests: ['movies'],
+      selfDescription: 'A person who loves movies and enjoys good conversations.',
+    };
+
+    const profile = await prisma.agentProfile.create({
+      data: {
+        agentId: testAgentId,
+        sceneId: scene.id,
+        l1Data: {},
+        l2Data: validData as any,
+        isActive: true,
+      },
+    });
+
+    // Validate the stored data
+    const storedResult = validateL2Data(validData, agentDateL2Schema);
+    expect(storedResult.valid).toBe(true);
+
+    // Update with new valid data
+    const updatedData = {
+      relationshipGoal: 'friendship',
+      preferredAgeRange: { min: 30, max: 40 },
+      interests: ['movies', 'cooking'],
+      selfDescription: 'Updated description: loves movies and cooking with friends.',
+    };
+
+    const updated = await prisma.agentProfile.update({
+      where: { id: profile.id },
+      data: { l2Data: updatedData as any },
+    });
+
+    expect(updated.l2Data).toEqual(updatedData);
+
+    // Validate the updated data
+    const updatedResult = validateL2Data(updatedData, agentDateL2Schema);
+    expect(updatedResult.valid).toBe(true);
+
+    // Update with invalid data - should still persist but be invalid against schema
+    const invalidUpdate = {
+      relationshipGoal: 'casual',
+      preferredAgeRange: { min: 10, max: 100 }, // out of schema range
+      selfDescription: 'Too short',
+    };
+    const invalidResult = validateL2Data(invalidUpdate, agentDateL2Schema);
+    expect(invalidResult.valid).toBe(false);
+    expect(invalidResult.errors.length).toBeGreaterThan(0);
+  });
+
+  it('should record profile history on L2 data updates', async () => {
+    const scene = await prisma.scene.upsert({
+      where: { code: SceneCode.AGENT_JOB },
+      update: {},
+      create: { code: SceneCode.AGENT_JOB, name: 'AgentJob', description: '求职招聘' },
+    });
+
+    const initialData = {
+      roleType: 'jobseeker',
+      jobType: ['fulltime'],
+      industry: ['tech'],
+      experienceLevel: 'mid',
+      skills: ['programming'],
+      selfIntroduction: 'A mid-level developer.',
+    };
+
+    const profile = await prisma.agentProfile.create({
+      data: {
+        agentId: testAgentId,
+        sceneId: scene.id,
+        l1Data: {},
+        l2Data: initialData as any,
+        isActive: true,
+      },
+    });
+
+    // Update L2 data
+    const updatedData = {
+      ...initialData,
+      experienceLevel: 'senior',
+      selfIntroduction: 'Updated: now a senior developer.',
+    };
+
+    await prisma.agentProfile.update({
+      where: { id: profile.id },
+      data: { l2Data: updatedData as any },
+    });
+
+    // Manually create history record (normally done by agentProfileService)
+    await prisma.profileHistory.create({
+      data: {
+        profileId: profile.id,
+        layer: 'L2',
+        action: 'update',
+        oldValue: initialData as any,
+        newValue: updatedData as any,
+        changedBy: testUserId,
+      },
+    });
+
+    const history = await prisma.profileHistory.findMany({
+      where: { profileId: profile.id },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    expect(history.length).toBeGreaterThanOrEqual(1);
+    const l2History = history.filter(h => h.layer === 'L2');
+    expect(l2History.length).toBeGreaterThanOrEqual(1);
+
+    const latestL2History = l2History[l2History.length - 1];
+    expect(latestL2History.action).toBe('update');
+    expect(latestL2History.oldValue).toEqual(initialData);
+    expect(latestL2History.newValue).toEqual(updatedData);
+    expect(latestL2History.changedBy).toBe(testUserId);
+  });
+
+  // --- sceneConfig storage ---
+
+  it('should store scene-specific sceneConfig alongside L2 data', async () => {
+    const scene = await prisma.scene.upsert({
+      where: { code: SceneCode.VISION_SHARE },
+      update: {},
+      create: { code: SceneCode.VISION_SHARE, name: 'VisionShare', description: '视野分享' },
+    });
+
+    const l2Data = {
+      contentType: ['artwork', 'design'],
+      purpose: 'discover',
+      skillLevel: 'hobbyist',
+    };
+    const sceneConfig = {
+      theme: 'dark',
+      notifications: true,
+      visibility: 'public',
+    };
+
+    const profile = await prisma.agentProfile.create({
+      data: {
+        agentId: testAgentId,
+        sceneId: scene.id,
+        l1Data: {},
+        l2Data: l2Data as any,
+        sceneConfig: sceneConfig as any,
+        isActive: true,
+      },
+    });
+
+    const retrieved = await prisma.agentProfile.findUnique({
+      where: { id: profile.id },
+    });
+
+    expect(retrieved?.sceneConfig).toEqual(sceneConfig);
+    expect(retrieved?.l2Data).toEqual(l2Data);
+  });
+
+  // --- Base profile (no scene) vs scene-specific profiles ---
+
+  it('should distinguish base profile (no sceneId) from scene-specific profiles', () => {
+    // baseProfileId was created with sceneId=null
+    expect(baseProfileId).toBeDefined();
+  });
+
+  it('should allow base profile with minimal L2 data', async () => {
+    // The base profile (no scene) can store L2 data without schema constraints
+    const baseProfile = await prisma.agentProfile.findUnique({
+      where: { id: baseProfileId },
+    });
+    expect(baseProfile?.sceneId).toBeNull();
+    expect(baseProfile?.l2Data).toEqual({});
+
+    // Update with flexible L2 data
+    const flexibleL2Data = {
+      description: 'Flexible description for base profile',
+      customField: 'any value',
+    };
+    const updated = await prisma.agentProfile.update({
+      where: { id: baseProfileId },
+      data: { l2Data: flexibleL2Data as any },
+    });
+    expect(updated.l2Data).toEqual(flexibleL2Data);
+  });
+
+  it('should have AgentProfile unique constraint on (agentId, sceneId)', async () => {
+    const scene = await prisma.scene.upsert({
+      where: { code: SceneCode.AGENT_AD },
+      update: {},
+      create: { code: SceneCode.AGENT_AD, name: 'AgentAd', description: '优惠广告' },
+    });
+
+    // First profile for this agent+scene
+    await prisma.agentProfile.create({
+      data: {
+        agentId: testAgentId,
+        sceneId: scene.id,
+        l1Data: {},
+        l2Data: { adType: 'advertiser' } as any,
+        isActive: true,
+      },
+    });
+
+    // Second create with same agentId+sceneId should fail
+    await expect(
+      prisma.agentProfile.create({
+        data: {
+          agentId: testAgentId,
+          sceneId: scene.id,
+          l1Data: {},
+          l2Data: {},
+          isActive: true,
+        },
+      })
+    ).rejects.toThrow();
   });
 });

@@ -1,12 +1,27 @@
 /**
  * L2 Validation Tests
+ *
+ * The global mock at src/__mocks__/@bridgeai/shared.ts provides stub types.
+ * We load the real shared dist module to access L2 schema functions.
  */
 jest.mock('@bridgeai/shared', () => {
-  const actual = jest.requireActual('@bridgeai/shared');
+  // Load real dist module to access getL2Schema, getAllL2Schemas, L2_SCHEMAS
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const real = require('/Users/z/projects/bridgeai/packages/shared/dist/index.js');
   return {
-    ...actual,
-    // Ensure L2FieldType is always available even if package not built
-    L2FieldType: actual.L2FieldType ?? {
+    __esModule: true,
+    // Real L2 schema functions from dist
+    getL2Schema: real.getL2Schema,
+    getAllL2Schemas: real.getAllL2Schemas,
+    getL2SchemaIds: real.getL2SchemaIds,
+    L2_SCHEMAS: real.L2_SCHEMAS,
+    visionShareL2Schema: real.visionShareL2Schema,
+    agentDateL2Schema: real.agentDateL2Schema,
+    agentJobL2Schema: real.agentJobL2Schema,
+    agentAdL2Schema: real.agentAdL2Schema,
+    agentAdConsumerL2Schema: real.agentAdConsumerL2Schema,
+    // Fallback L2FieldType (real module has it)
+    L2FieldType: real.L2FieldType || {
       TEXT: 'TEXT',
       LONG_TEXT: 'LONG_TEXT',
       NUMBER: 'NUMBER',
@@ -25,13 +40,12 @@ import {
   L2Schema,
   L2FieldType,
   L2Data,
+  getL2Schema,
+  getAllL2Schemas,
+  L2_SCHEMAS,
 } from '@bridgeai/shared';
 
-import {
-  validateL2Data,
-  getFieldValueLabel,
-  calculateL2Completion,
-} from '../l2Validation';
+import { validateL2Data, getFieldValueLabel, calculateL2Completion } from '../l2Validation';
 
 const mockSchema: L2Schema = {
   id: 'test-schema',
@@ -306,4 +320,144 @@ describe('calculateL2Completion', () => {
     expect(result.percentage).toBe(100);
     expect(result.total).toBe(3);
   });
+});
+
+describe('getL2Schema', () => {
+  it('should return correct schema for VISIONSHARE scene', () => {
+    const schema = getL2Schema('VISIONSHARE');
+    expect(schema).toBeDefined();
+    expect(schema!.scene).toBe('VISIONSHARE');
+    expect(schema!.id).toBe('visionshare-l2');
+  });
+
+  it('should return correct schema for AGENTDATE scene', () => {
+    const schema = getL2Schema('AGENTDATE');
+    expect(schema).toBeDefined();
+    expect(schema!.scene).toBe('AGENTDATE');
+    expect(schema!.id).toBe('agentdate-l2');
+  });
+
+  it('should return correct schema for AGENTJOB scene', () => {
+    const schema = getL2Schema('AGENTJOB');
+    expect(schema).toBeDefined();
+    expect(schema!.scene).toBe('AGENTJOB');
+    expect(schema!.id).toBe('agentjob-l2');
+  });
+
+  it('should return correct schema for AGENTAD scene', () => {
+    const schema = getL2Schema('AGENTAD');
+    expect(schema).toBeDefined();
+    expect(schema!.scene).toBe('AGENTAD');
+    expect(schema!.id).toBe('agentad-l2');
+  });
+
+  it('should return consumer schema for AGENTAD with CONSUMER role', () => {
+    const schema = getL2Schema('AGENTAD', 'CONSUMER');
+    expect(schema).toBeDefined();
+    expect(schema!.id).toBe('agentad-consumer-l2');
+  });
+
+  it('should return non-consumer schema for AGENTAD without role', () => {
+    const schema = getL2Schema('AGENTAD');
+    expect(schema).toBeDefined();
+    expect(schema!.id).toBe('agentad-l2');
+  });
+
+  it('should handle case-insensitive scene lookup', () => {
+    const schema = getL2Schema('visionshare');
+    expect(schema).toBeDefined();
+    expect(schema!.scene).toBe('VISIONSHARE');
+  });
+
+  it('should return undefined for unknown scene', () => {
+    const schema = getL2Schema('UNKNOWN_SCENE');
+    expect(schema).toBeUndefined();
+  });
+
+  it('should return undefined for empty string', () => {
+    const schema = getL2Schema('');
+    expect(schema).toBeUndefined();
+  });
+});
+
+describe('getAllL2Schemas', () => {
+  it('should return all registered schemas', () => {
+    const schemas = getAllL2Schemas();
+    const expectedCount = Object.keys(L2_SCHEMAS).length;
+    expect(schemas).toHaveLength(expectedCount);
+  });
+
+  it('should return schemas with correct structure', () => {
+    const schemas = getAllL2Schemas();
+    for (const schema of schemas) {
+      expect(schema).toHaveProperty('id');
+      expect(schema).toHaveProperty('version');
+      expect(schema).toHaveProperty('scene');
+      expect(schema).toHaveProperty('title');
+      expect(schema).toHaveProperty('fields');
+      expect(typeof schema.id).toBe('string');
+      expect(typeof schema.version).toBe('string');
+      expect(typeof schema.scene).toBe('string');
+      expect(typeof schema.title).toBe('string');
+      expect(Array.isArray(schema.fields)).toBe(true);
+      expect(schema.fields.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('Scene schema structure validation', () => {
+  const schemas = getAllL2Schemas();
+
+  it.each(schemas.map(s => [s.scene, s] as const))(
+    'schema for %s should have valid top-level fields',
+    (_scene, schema) => {
+      expect(schema.id).toBeTruthy();
+      expect(schema.version).toMatch(/^\d+\.\d+\.\d+$/);
+      expect(schema.scene).toBeTruthy();
+      expect(schema.title).toBeTruthy();
+      expect(Array.isArray(schema.fields)).toBe(true);
+    }
+  );
+
+  it.each(schemas.map(s => [s.scene, s] as const))(
+    'schema for %s should have fields with required properties',
+    (_scene, schema) => {
+      for (const field of schema.fields) {
+        expect(field).toHaveProperty('id');
+        expect(field).toHaveProperty('type');
+        expect(field).toHaveProperty('label');
+        expect(typeof field.id).toBe('string');
+        expect(typeof field.label).toBe('string');
+        expect(Object.values(L2FieldType)).toContain(field.type);
+      }
+    }
+  );
+
+  it.each(schemas.map(s => [s.scene, s] as const))(
+    'schema for %s should have unique field ids',
+    (_scene, schema) => {
+      const fieldIds = schema.fields.map(f => f.id);
+      const uniqueIds = new Set(fieldIds);
+      expect(uniqueIds.size).toBe(fieldIds.length);
+    }
+  );
+
+  it.each(schemas.map(s => [s.scene, s] as const))(
+    'schema for %s should have enum/multi_select fields with options',
+    (_scene, schema) => {
+      for (const field of schema.fields) {
+        if (field.type === L2FieldType.ENUM || field.type === L2FieldType.MULTI_SELECT) {
+          expect(field.options).toBeDefined();
+          expect(Array.isArray(field.options)).toBe(true);
+          expect(field.options!.length).toBeGreaterThan(0);
+          for (const opt of field.options!) {
+            expect(opt).toHaveProperty('value');
+            expect(opt).toHaveProperty('label');
+            expect(typeof opt.value).toBe('string');
+            expect(typeof opt.label).toBe('string');
+          }
+        }
+      }
+    }
+  );
 });

@@ -111,6 +111,12 @@ export const agentJobL2Schema: L2Schema = {
       max: 100,
       step: 1,
       defaultValue: { min: 10, max: 30 },
+      dependsOn: 'roleType',
+      showWhen: {
+        field: 'roleType',
+        operator: 'in',
+        value: ['jobseeker', 'both'],
+      },
     },
     {
       id: 'workCulture',

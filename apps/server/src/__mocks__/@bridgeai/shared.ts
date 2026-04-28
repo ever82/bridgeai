@@ -1,5 +1,9 @@
 /**
  * Mock for @bridgeai/shared
+ *
+ * Note: This mock provides stub types/functions for tests that don't need
+ * the real module. Tests requiring real L2 schema functions should use
+ * jest.requireActual('@bridgeai/shared') to bypass this mock.
  */
 
 // Disclosure Level Types
@@ -1747,8 +1751,56 @@ export interface AgentProfile {
   l1Data: L1Profile | null;
   l2Data: L2Profile | null;
   l3Description: string | null;
-  sceneConfig: Record<string, any> | null;
+  sceneConfig: Record<string, unknown> | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// ── L2 Schema mocks ─────────────────────────────────────────────────────────
+
+export interface L2SchemaField {
+  id: string;
+  type: string;
+  label: string;
+  description?: string;
+  required?: boolean;
+  options?: Array<{ value: string; label: string }>;
+  min?: number;
+  max?: number;
+  step?: number;
+  minLength?: number;
+  maxLength?: number;
+  maxItems?: number;
+  unit?: string;
+  placeholder?: string;
+  defaultValue?: unknown;
+  dependsOn?: string;
+  showWhen?: { field: string; operator: string; value: unknown };
+  validation?: { pattern?: string; message?: string };
+}
+
+export interface L2Schema {
+  id: string;
+  version: string;
+  scene: string;
+  role?: string;
+  title: string;
+  description?: string;
+  fields: L2SchemaField[];
+  groups?: Array<{ id: string; title: string; fields: string[] }>;
+}
+
+export const L2_SCHEMAS: Record<string, L2Schema> = {};
+
+export function getL2Schema(_scene: string, _role?: string): L2Schema | undefined {
+  return undefined;
+}
+
+export function getAllL2Schemas(): L2Schema[] {
+  return [];
+}
+
+export function getL2SchemaIds(): string[] {
+  return [];
 }

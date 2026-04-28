@@ -234,6 +234,12 @@ export const agentAdConsumerL2Schema: L2Schema = {
       label: '期望开始日期',
       description: '您期望的消费开始日期',
       required: false,
+      dependsOn: 'urgency',
+      showWhen: {
+        field: 'urgency',
+        operator: 'neq',
+        value: 'FLEXIBLE',
+      },
     },
     {
       id: 'flexibleDates',
@@ -242,6 +248,12 @@ export const agentAdConsumerL2Schema: L2Schema = {
       description: '如果日期可以灵活调整',
       required: false,
       defaultValue: false,
+      dependsOn: 'urgency',
+      showWhen: {
+        field: 'urgency',
+        operator: 'neq',
+        value: 'FLEXIBLE',
+      },
     },
     {
       id: 'timeConstraints',

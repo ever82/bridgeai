@@ -567,6 +567,7 @@ model AgentProfile {
   @@unique([agentId, sceneId])
   @@index([agentId])
   @@index([sceneId])
+  @@index([l2Data], type: Gin)
   @@map("agent_profiles")
 }
 
