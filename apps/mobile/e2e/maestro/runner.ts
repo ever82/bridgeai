@@ -176,7 +176,7 @@ function checkSimulator(): boolean {
     });
     const devices = JSON.parse(output);
     const hasDevice = Object.values(devices.devices).some(
-      (list: any) => list.length > 0
+      (list: unknown[]) => list.length > 0
     );
     return hasDevice;
   } catch {

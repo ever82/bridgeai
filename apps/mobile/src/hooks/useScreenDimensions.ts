@@ -5,6 +5,7 @@ import {
   PixelRatio,
   Platform,
   StatusBar,
+  Keyboard,
 } from 'react-native';
 
 interface ScreenDimensions {
@@ -108,14 +109,22 @@ export const useScreenDimensions = (): ScreenInfo => {
  * Hook to detect keyboard visibility
  */
 export const useKeyboard = () => {
-  const [isKeyboardVisible] = useState(false);
-  const [keyboardHeight] = useState(0);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useEffect(() => {
-    // This is a simplified version - in production, you'd use Keyboard.addListener
-    // which requires react-native's Keyboard module
+    const showSubscription = Keyboard.addListener('keyboardDidShow', (e) => {
+      setIsKeyboardVisible(true);
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setIsKeyboardVisible(false);
+      setKeyboardHeight(0);
+    });
+
     return () => {
-      // Cleanup
+      showSubscription.remove();
+      hideSubscription.remove();
     };
   }, []);
 

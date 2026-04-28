@@ -35,7 +35,6 @@ export const KeyboardAvoidingView: React.FC<KeyboardAvoidingViewProps> = ({
   const insets = useSafeAreaInsets();
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const animatedValue = new Animated.Value(0);
 
   useEffect(() => {
     if (!enabled) return;
@@ -46,23 +45,11 @@ export const KeyboardAvoidingView: React.FC<KeyboardAvoidingViewProps> = ({
     const onKeyboardShow = (event: KeyboardEvent) => {
       setKeyboardVisible(true);
       setKeyboardHeight(event.endCoordinates.height);
-
-      Animated.timing(animatedValue, {
-        toValue: event.endCoordinates.height - insets.bottom,
-        duration: 250,
-        useNativeDriver: false,
-      }).start();
     };
 
     const onKeyboardHide = () => {
       setKeyboardVisible(false);
       setKeyboardHeight(0);
-
-      Animated.timing(animatedValue, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: false,
-      }).start();
     };
 
     const showSubscription = Keyboard.addListener(showEvent as KeyboardEvent['key'], onKeyboardShow);

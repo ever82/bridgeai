@@ -1,0 +1,103 @@
+# issue: ISSUE-TASK-001
+# description: VisionShare 任务发布流程
+
+appId: com.bridgeai.mobile
+env:
+  TEST_EMAIL: 'test-${TIMESTAMP}-${RANDOM}@bridgeai.test'
+  TEST_PASSWORD: 'TestPass123!'
+  TASK_TITLE: 'E2E Test Task ${TIMESTAMP}'
+  TASK_DESC: 'Maestro E2E automated task publish test'
+
+---
+# 快速登录
+- launchApp
+- waitForAnimationToEnd
+
+# 额外等待 App 初始化完成
+- waitForAnimationToEnd
+
+# 等待登录表单
+- extendedWaitUntil:
+    visible:
+      id: "login-email-input"
+    timeout: 20000
+
+- tapOn:
+    id: "login-email-input"
+- inputText: '${TEST_EMAIL}'
+- tapOn:
+    id: "login-password-input"
+- inputText: '${TEST_PASSWORD}'
+- tapOn:
+    id: "login-button"
+- waitForAnimationToEnd
+
+# 等待首页
+- extendedWaitUntil:
+    visible:
+      id: "home-header"
+    timeout: 30000
+
+# 导航到 VisionShare 发布页面
+# 从首页或 discover tab 进入发布入口
+- tapOn:
+    label: "discover-tab"
+- waitForAnimationToEnd
+
+# 进入 VisionShare 模块
+- tapOn:
+    text: "VisionShare"
+- waitForAnimationToEnd
+
+# 进入发布页面
+- tapOn:
+    text: "发布任务"
+- waitForAnimationToEnd
+
+# 断言1: 标题输入框可见
+- extendedWaitUntil:
+    visible:
+      id: "title-input"
+    timeout: 10000
+- assertVisible:
+    id: "title-input"
+
+# 填写任务标题
+- tapOn:
+    id: "title-input"
+- inputText: '${TASK_TITLE}'
+
+# 断言2: 描述输入框可见
+- assertVisible:
+    id: "description-input"
+
+# 填写任务描述
+- tapOn:
+    id: "description-input"
+- inputText: '${TASK_DESC}'
+
+# 断言3: 预算类型选择可见
+- assertVisible:
+    id: "budget-type-points"
+
+# 选择积分预算
+- tapOn:
+    id: "budget-type-points"
+
+# 断言4: 金额输入框可见
+- assertVisible:
+    id: "budget-amount-input"
+
+# 输入预算金额
+- tapOn:
+    id: "budget-amount-input"
+- inputText: '100'
+
+# 断言5: 提交按钮可见
+- assertVisible:
+    id: "submit-button"
+
+# 保存草稿
+- tapOn:
+    id: "save-draft-button"
+- waitForAnimationToEnd

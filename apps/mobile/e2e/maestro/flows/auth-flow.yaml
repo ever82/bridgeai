@@ -1,12 +1,16 @@
 # issue: ISSUE-AUTH-001
-# description: 用户登录测试
+# description: 用户注册和登录完整测试
 
 appId: com.bridgeai.mobile
 env:
-  TEST_EMAIL: 'test@bridgeai.test'
+  TEST_EMAIL: 'e2e-reg-${TIMESTAMP}-${RANDOM}@bridgeai.test'
+  TEST_USERNAME: 'e2euser${RANDOM}'
+  TEST_DISPLAYNAME: 'E2E Test User'
   TEST_PASSWORD: 'TestPass123!'
 
 ---
+# ===== 注册流程 =====
+
 # 停止现有 App
 - stopApp
 
@@ -15,10 +19,6 @@ env:
 
 # 等待 App 完全加载
 - waitForAnimationToEnd
-- waitForAnimationToEnd
-- waitForAnimationToEnd
-- waitForAnimationToEnd
-- waitForAnimationToEnd
 
 # 等待登录表单
 - extendedWaitUntil:
@@ -26,22 +26,59 @@ env:
       id: "login-email-input"
     timeout: 30000
 
-# 输入邮箱
-- tapOn:
+# 断言1: 登录表单可见
+- assertVisible:
     id: "login-email-input"
-- inputText: '${TEST_EMAIL}'
 
-# 输入密码
-- tapOn:
-    id: "login-password-input"
-- inputText: '${TEST_PASSWORD}'
-
-# 点击登录
-- tapOn:
+# 断言2: 登录按钮可见
+- assertVisible:
     id: "login-button"
 
-# 等待登录完成
+# 导航到注册页面
+- tapOn:
+    text: "立即注册"
 - waitForAnimationToEnd
+
+# 等待注册表单
+- extendedWaitUntil:
+    visible:
+      id: "register-email-input"
+    timeout: 10000
+
+# 断言3: 注册表单可见
+- assertVisible:
+    id: "register-email-input"
+
+# 填写注册表单
+- tapOn:
+    id: "register-email-input"
+- inputText: '${TEST_EMAIL}'
+
+- tapOn:
+    id: "register-username-input"
+- inputText: '${TEST_USERNAME}'
+
+- tapOn:
+    id: "register-displayname-input"
+- inputText: '${TEST_DISPLAYNAME}'
+
+- tapOn:
+    id: "register-password-input"
+- inputText: '${TEST_PASSWORD}'
+
+- tapOn:
+    id: "register-confirm-password-input"
+- inputText: '${TEST_PASSWORD}'
+
+# 断言4: 注册提交按钮可见
+- assertVisible:
+    id: "register-submit-button"
+
+# 提交注册
+- tapOn:
+    id: "register-submit-button"
+
+# 等待注册完成
 - waitForAnimationToEnd
 
 # 等待首页出现
@@ -50,6 +87,10 @@ env:
       id: "home-header"
     timeout: 30000
 
-# 验证首页内容
+# 断言5: 首页 header 可见（注册成功后自动登录）
+- assertVisible:
+    id: "home-header"
+
+# 断言6: 首页 moments 列表可见
 - assertVisible:
     id: "home-moments-list"

@@ -1,9 +1,9 @@
 # issue: ISSUE-AGENT-001
-# description: Agent 创建流程
+# description: Agent 创建完整流程
 
 appId: com.bridgeai.mobile
 env:
-  TEST_EMAIL: 'test@bridgeai.test'
+  TEST_EMAIL: 'test-${TIMESTAMP}-${RANDOM}@bridgeai.test'
   TEST_PASSWORD: 'TestPass123!'
   AGENT_NAME: 'E2E Test Agent ${TIMESTAMP}'
 
@@ -13,8 +13,6 @@ env:
 - waitForAnimationToEnd
 
 # 额外等待 App 初始化完成
-- waitForAnimationToEnd
-- waitForAnimationToEnd
 - waitForAnimationToEnd
 
 # 等待登录表单
@@ -44,23 +42,86 @@ env:
     label: "profile-tab"
 - waitForAnimationToEnd
 
-# 验证 Profile 页面元素
+# 断言1: Profile 页面可见
 - assertVisible:
     id: "profile-logout-button"
 
-# 验证消息 tab 可切换
+# 导航到 Agent 列表页面（通过 Profile 或直接）
 - tapOn:
-    label: "messages-tab"
+    text: "My Agents"
 - waitForAnimationToEnd
 
-# 验证发现 tab 可切换
-- tapOn:
-    label: "discover-tab"
-- waitForAnimationToEnd
-
-# 返回首页
-- tapOn:
-    label: "home-tab"
-- waitForAnimationToEnd
+# 断言2: Agent 列表页面可见
+- extendedWaitUntil:
+    visible:
+      id: "agent-list-screen"
+    timeout: 10000
 - assertVisible:
-    id: "home-header"
+    id: "agent-list-screen"
+
+# 点击创建按钮（如果有 agent 则点 + 按钮，否则点空状态按钮）
+- tapOn:
+    id: "agent-list-create-button"
+
+# 等待 CreateAgent 页面加载
+- waitForAnimationToEnd
+
+# 断言3: 创建 Agent 步骤指示器可见
+- assertVisible:
+    id: "create-agent-step-indicator"
+
+# Step 1: 填写基本信息
+- extendedWaitUntil:
+    visible:
+      id: "create-agent-name-input"
+    timeout: 10000
+
+- tapOn:
+    id: "create-agent-name-input"
+- inputText: '${AGENT_NAME}'
+
+- tapOn:
+    id: "create-agent-description-input"
+- inputText: 'E2E test agent created by Maestro flow'
+
+# 断言4: 名称输入框包含输入的文本
+- assertVisible:
+    id: "create-agent-name-input"
+
+# 点击 Next 进入 Step 2
+- tapOn:
+    id: "create-agent-next-button"
+- waitForAnimationToEnd
+
+# 断言5: Step 2 - Agent 类型选择可见
+- assertVisible:
+    id: "create-agent-type-VISIONSHARE"
+
+# 选择 Agent 类型 VISIONSHARE
+- tapOn:
+    id: "create-agent-type-VISIONSHARE"
+- waitForAnimationToEnd
+
+# 点击 Next 进入 Step 3
+- tapOn:
+    id: "create-agent-next-button"
+- waitForAnimationToEnd
+
+# 点击 Next 进入 Step 4
+- tapOn:
+    id: "create-agent-next-button"
+- waitForAnimationToEnd
+
+# 点击 Next 进入 Step 5（预览）
+- tapOn:
+    id: "create-agent-next-button"
+- waitForAnimationToEnd
+
+# 断言6: 提交按钮可见
+- assertVisible:
+    id: "create-agent-submit"
+
+# 提交创建 Agent
+- tapOn:
+    id: "create-agent-submit"
+- waitForAnimationToEnd

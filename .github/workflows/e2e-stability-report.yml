@@ -15,7 +15,23 @@ jobs:
         with:
           fetch-depth: 0  # Full history for analysis
 
-      - name: Analyze test history
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download previous stability data
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: stability-data
+          path: apps/mobile/e2e/maestro/reports/
+
+      - name: Analyze test history and detect flaky tests
+        id: stability
         run: |
           echo "# E2E Test Stability Analysis" > report.md
           echo "" >> report.md
@@ -57,11 +73,31 @@ jobs:
             echo "" >> report.md
           fi
 
-          echo "## Recommendations" >> report.md
-          echo "" >> report.md
-          echo "- Review failed runs for patterns" >> report.md
-          echo "- Update timeouts if tests are timing out" >> report.md
-          echo "- Check for environment-related failures" >> report.md
+          # Run StabilityMonitor to detect per-test flakiness and generate detailed report
+          npx ts-node -e "
+            const { StabilityMonitor } = require('./apps/mobile/e2e/support/stability-monitor');
+            const monitor = StabilityMonitor.load();
+            const report = monitor.generateReport();
+            const summary = monitor.generateJsonSummary();
+            require('fs').appendFileSync('report.md', '\n\n' + report);
+            require('fs').writeFileSync('stability-summary.json', JSON.stringify(summary, null, 2));
+            monitor.save();
+
+            // Output summary for CI step outputs
+            const fs = require('fs');
+            fs.writeFileSync('flaky-count.txt', String(summary.flakyCount));
+            fs.writeFileSync('overdue-count.txt', String(summary.overdueCount));
+            fs.writeFileSync('alert-count.txt', String(summary.durationAlertCount));
+
+            console.log('Flaky tests: ' + summary.flakyCount);
+            console.log('SLA overdue: ' + summary.overdueCount);
+            console.log('Duration alerts: ' + summary.durationAlertCount);
+          "
+
+          # Set outputs
+          echo "flaky_count=$(cat flaky-count.txt 2>/dev/null || echo 0)" >> $GITHUB_OUTPUT
+          echo "overdue_count=$(cat overdue-count.txt 2>/dev/null || echo 0)" >> $GITHUB_OUTPUT
+          echo "alert_count=$(cat alert-count.txt 2>/dev/null || echo 0)" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -71,9 +107,74 @@ jobs:
           name: weekly-stability-report
           path: report.md
 
+      - name: Upload stability data
+        uses: actions/upload-artifact@v4
+        with:
+          name: stability-data
+          path: apps/mobile/e2e/maestro/reports/stability-data.json
+          retention-days: 90
+
+      - name: Upload stability summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: stability-summary
+          path: stability-summary.json
+
+      - name: Create GitHub issue for overdue flaky tests
+        if: steps.stability.outputs.overdue_count > 0
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = JSON.parse(fs.readFileSync('stability-summary.json', 'utf8'));
+
+            for (const entry of summary.overdueTests) {
+              const slaDate = new Date(entry.slaDeadline).toISOString().split('T')[0];
+              const body = [
+                `## Flaky Test SLA Overdue`,
+                ``,
+                `- **Test**: ${entry.testName}`,
+                `- **Failure rate**: ${(entry.failureRate * 100).toFixed(1)}%`,
+                `- **Total runs**: ${entry.totalRuns}`,
+                `- **Failed runs**: ${entry.failedRuns}`,
+                `- **Marked flaky since**: ${entry.markedAt.split('T')[0]}`,
+                `- **SLA deadline was**: ${slaDate}`,
+                ``,
+                `This test has exceeded the 3-business-day SLA for flaky test fixes.`,
+                `Please investigate and fix, or quarantine the test.`,
+              ].join('\n');
+
+              // Check if an open issue already exists for this test
+              const existing = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                labels: 'flaky-test',
+                per_page: 100,
+              });
+
+              const alreadyExists = existing.data.some(
+                issue => issue.title === `[FLAKY] ${entry.testName} - SLA overdue`
+              );
+
+              if (!alreadyExists) {
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `[FLAKY] ${entry.testName} - SLA overdue`,
+                  body: body,
+                  labels: ['flaky-test', 'bug', 'priority:high'],
+                });
+                console.log(`Created issue for overdue flaky test: ${entry.testName}`);
+              } else {
+                console.log(`Issue already exists for: ${entry.testName}`);
+              }
+            }
+
       - name: Notify on high flaky rate
-        if: env.SLACK_WEBHOOK_URL != ''
+        if: steps.stability.outputs.flaky_count > 0
         uses: slackapi/slack-github-action@v1
+        continue-on-error: true
         with:
           payload: |
             {
@@ -83,7 +184,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "📊 *Weekly E2E Stability Report Generated*\n\nCheck the artifacts for the full analysis."
+                    "text": "📊 *Weekly E2E Stability Report*\n\nFlaky tests: ${{ steps.stability.outputs.flaky_count }}\nSLA overdue: ${{ steps.stability.outputs.overdue_count }}\nDuration alerts: ${{ steps.stability.outputs.alert_count }}\n\nCheck the artifacts for the full analysis."
                   }
                 }
               ]

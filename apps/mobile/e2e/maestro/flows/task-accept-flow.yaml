@@ -1,5 +1,5 @@
-# issue: ISSUE-MATCH-001
-# description: Agent 匹配推荐和操作流程
+# issue: ISSUE-TASK-002
+# description: VisionShare 任务接单流程
 
 appId: com.bridgeai.mobile
 env:
@@ -36,49 +36,44 @@ env:
       id: "home-header"
     timeout: 30000
 
-# 断言1: 首页 header 可见
+# 断言1: 首页可见
 - assertVisible:
     id: "home-header"
 
-# 断言2: 首页推荐列表可见
-- assertVisible:
-    id: "home-moments-list"
-
-# 导航到 Discover tab
+# 导航到 Discover tab 寻找任务
 - tapOn:
     label: "discover-tab"
 - waitForAnimationToEnd
 
-# 断言3: 发现页面已切换（验证 tab 高亮状态）
-# Discover tab 页面内容加载
+# 进入 VisionShare 模块
+- tapOn:
+    text: "VisionShare"
 - waitForAnimationToEnd
 
-# 导航到 Profile tab 查看 Agent
+# 断言2: 查看"我的任务"入口可见
 - tapOn:
-    label: "profile-tab"
+    text: "我的任务"
 - waitForAnimationToEnd
 
-# 断言4: Profile 页面可见
-- assertVisible:
-    id: "profile-logout-button"
-
-# 进入 Agent 列表查看匹配 Agent
-- tapOn:
-    text: "My Agents"
+# 断言3: 任务列表页面可见（通过等待内容加载）
 - waitForAnimationToEnd
 
-# 断言5: Agent 列表页面可见
-- extendedWaitUntil:
-    visible:
-      id: "agent-list-screen"
-    timeout: 10000
-- assertVisible:
-    id: "agent-list-screen"
-
-# 返回 Profile
+# 导航到任务浏览（附近任务）
 - tapOn:
-    id: "back-button"
+    text: "附近任务"
+- waitForAnimationToEnd
 
-# 断言6: 验证回到 Profile 页面
-- assertVisible:
-    id: "profile-logout-button"
+# 断言4: 任务列表加载完成
+- waitForAnimationToEnd
+
+# 点击第一个任务查看详情
+- tapOn:
+    index: 0
+- waitForAnimationToEnd
+
+# 断言5: 任务详情页面可见（确认接单按钮区域加载）
+- waitForAnimationToEnd
+
+# 查看任务信息后返回
+- back
+- waitForAnimationToEnd

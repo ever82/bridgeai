@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useAuthStore } from '../stores/authStore';
 import { RootStackParamList } from '../types/navigation';
@@ -13,8 +14,11 @@ import { linking } from './linking';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const NAVIGATION_STATE_KEY = 'NAVIGATION_STATE';
+
 export const RootNavigator = () => {
   const { isAuthenticated, isLoading, initialize } = useAuthStore();
+  const routeNameRef = useRef<string | undefined>();
 
   useEffect(() => {
     initialize();
@@ -30,7 +34,22 @@ export const RootNavigator = () => {
   }
 
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer
+      linking={linking}
+      onReady={() => {
+        routeNameRef.current = undefined;
+      }}
+      onStateChange={async (state) => {
+        if (state) {
+          try {
+            const stateJson = JSON.stringify(state);
+            await AsyncStorage.setItem(NAVIGATION_STATE_KEY, stateJson);
+          } catch {
+            // Silently ignore persistence errors
+          }
+        }
+      }}
+    >
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           <>
@@ -44,13 +63,11 @@ export const RootNavigator = () => {
   );
 };
 
-// Import theme after file creation to avoid circular dependency
-
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
   },
 });

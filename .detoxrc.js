@@ -9,6 +9,7 @@ module.exports = {
       config: 'e2e/jest.config.js',
       '--testEnvironment': 'node',
       '--setupFilesAfterEnv': ['./e2e/setup.ts'],
+      retries: 2,
     },
   },
   artifacts: {

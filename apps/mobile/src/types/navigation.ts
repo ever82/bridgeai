@@ -32,11 +32,6 @@ export type MainTabParamList = {
   Profile: undefined;
 };
 
-export type MessagesStackParamList = {
-  MessagesList: undefined;
-  Chat: { conversationId: string };
-};
-
 export type DiscoverStackParamList = {
   DiscoverMain: undefined;
   Search: undefined;

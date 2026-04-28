@@ -13,8 +13,6 @@ env:
 
 # 额外等待 App 初始化完成
 - waitForAnimationToEnd
-- waitForAnimationToEnd
-- waitForAnimationToEnd
 
 # 等待登录表单
 - extendedWaitUntil:

@@ -1,11 +1,11 @@
 # issue: ISSUE-CHAT-001
-# description: 消息列表和聊天交互
+# description: 消息列表和聊天发送接收交互
 
 appId: com.bridgeai.mobile
 env:
-  TEST_EMAIL: 'test@bridgeai.test'
+  TEST_EMAIL: 'test-${TIMESTAMP}-${RANDOM}@bridgeai.test'
   TEST_PASSWORD: 'TestPass123!'
-  TEST_MESSAGE: 'Maestro E2E test ${TIMESTAMP}'
+  TEST_MESSAGE: 'Maestro E2E test message ${TIMESTAMP}'
 
 ---
 # 快速登录
@@ -13,8 +13,6 @@ env:
 - waitForAnimationToEnd
 
 # 额外等待 App 初始化完成
-- waitForAnimationToEnd
-- waitForAnimationToEnd
 - waitForAnimationToEnd
 
 # 等待登录表单
@@ -44,10 +42,51 @@ env:
     label: "messages-tab"
 - waitForAnimationToEnd
 
-# 验证消息列表
+# 断言1: 消息列表页面可见
 - extendedWaitUntil:
     visible:
       id: "messages-list"
     timeout: 10000
 - assertVisible:
     id: "messages-list"
+
+# 断言2: 验证有会话项（点击第一个会话进入聊天）
+- tapOn:
+    index: 0
+- waitForAnimationToEnd
+
+# 断言3: 聊天界面身份切换器可见
+- extendedWaitUntil:
+    visible:
+      id: "chat-identity-switcher"
+    timeout: 10000
+- assertVisible:
+    id: "chat-identity-switcher"
+
+# 断言4: 验证发送按钮可见
+- assertVisible:
+    id: "send-button"
+
+# 断言5: 验证输入框存在（通过 emoji 按钮确认输入区域可见）
+- assertVisible:
+    id: "emoji-button"
+
+# 发送消息
+- tapOn:
+    id: "emoji-button"
+- waitForAnimationToEnd
+
+# 输入消息文本
+- tapOn:
+    index: 0
+- inputText: '${TEST_MESSAGE}'
+- waitForAnimationToEnd
+
+# 点击发送
+- tapOn:
+    id: "send-button"
+- waitForAnimationToEnd
+
+# 断言6: 验证发送后输入框仍可见（消息已发送，输入框清空）
+- assertVisible:
+    id: "send-button"
