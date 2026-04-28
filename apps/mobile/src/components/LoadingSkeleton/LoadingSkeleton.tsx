@@ -8,6 +8,7 @@ interface SkeletonProps {
   height?: number;
   borderRadius?: number;
   style?: ViewStyle;
+  testID?: string;
 }
 
 export const Skeleton: React.FC<SkeletonProps> = ({
@@ -15,9 +16,11 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   height = 16,
   borderRadius = 4,
   style,
+  testID,
 }) => {
   return (
     <View
+      testID={testID}
       style={[
         styles.skeleton,
         { width, height, borderRadius },
@@ -31,12 +34,14 @@ interface LoadingSkeletonProps {
   type?: 'card' | 'list' | 'text' | 'avatar' | 'custom';
   count?: number;
   style?: ViewStyle;
+  testID?: string;
 }
 
 export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   type = 'card',
   count = 1,
   style,
+  testID,
 }) => {
   const renderSkeleton = () => {
     switch (type) {
@@ -83,7 +88,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   };
 
   return (
-    <View style={[styles.container, style]}>
+    <View testID={testID} style={[styles.container, style]}>
       {Array.from({ length: count }).map((_, index) => (
         <View key={index} style={index > 0 ? styles.itemSpacing : undefined}>
           {renderSkeleton()}

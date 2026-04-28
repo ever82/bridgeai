@@ -1,5 +1,11 @@
-import { cleanup } from '@testing-library/react-native';
+import { cleanup, configure } from '@testing-library/react-native';
 import '@testing-library/jest-native/extend-expect';
+
+// Configure testing library for role support
+configure({
+  computedRoleSupportsSelectedState: true,
+  defaultHiddenTextExpectations: true,
+});
 
 // Mock environment variables before importing shared package
 process.env.NODE_ENV = 'test';
@@ -45,11 +51,11 @@ beforeAll(() => {
   // Global setup before all tests
 });
 
-afterEach(() => {
+afterEach(async () => {
   // Clean up after each test
-  cleanup();
+  await cleanup();
   jest.clearAllMocks();
-});
+}, 10000);
 
 afterAll(() => {
   // Global teardown after all tests

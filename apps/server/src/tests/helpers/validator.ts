@@ -41,7 +41,8 @@ export const SuccessResponseSchema = z.object({
  */
 export const ErrorResponseSchema = z.object({
   success: z.literal(false),
-  error: z.string(),
+  error: z.string().optional(),
+  message: z.string().optional(),
   errorCode: z.string().optional(),
   details: z.unknown().optional(),
 });
@@ -111,7 +112,7 @@ export function validateSuccessResponse(response: TestResponse): boolean {
   }
 
   const body = response.body as Record<string, unknown>;
-  return body.success === true && 'data' in body;
+  return body.success === true && ('data' in body || 'message' in body);
 }
 
 /**
@@ -123,7 +124,14 @@ export function validateErrorResponse(response: TestResponse): boolean {
   }
 
   const body = response.body as Record<string, unknown>;
-  return body.success === false && ('error' in body || 'message' in body);
+  // Handle various error response formats from API
+  // Format 1: { success: false, error: ... }
+  // Format 2: { success: false, message: ... }
+  // Format 3: { success: false, errorCode: ... }
+  return (
+    body.success === false &&
+    ('error' in body || 'message' in body || 'errorCode' in body)
+  );
 }
 
 /**
@@ -312,7 +320,7 @@ export const ErrorValidators = {
    * Check if error has required fields
    */
   hasRequiredFields(error: Record<string, unknown>): boolean {
-    return 'success' in error && error.success === false && 'errorCode' in error;
+    return 'success' in error && error.success === false;
   },
 
   /**

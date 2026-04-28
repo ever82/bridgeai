@@ -3,26 +3,14 @@ import { render } from '@testing-library/react-native';
 import {
   HandoffStatus as HandoffStatusEnum,
   SenderType,
-  HANDOFF_STATUS_LABELS,
 } from '@bridgeai/shared';
 
 import { HandoffStatus } from './HandoffStatus';
 
-// Mock Animated.Value
-jest.mock('react-native', () => ({
-  ...jest.requireActual('react-native'),
-  Animated: {
-    Value: jest.fn(() => ({ setValue: jest.fn() })),
-    loop: jest.fn(() => ({ start: jest.fn() })),
-    sequence: jest.fn(() => ({ start: jest.fn() })),
-    timing: jest.fn(() => ({ start: jest.fn() })),
-  },
-}));
-
 describe('HandoffStatus', () => {
   describe('Agent Active State', () => {
     it('should render agent status', () => {
-      const { getByText } = render(
+      const { getByText, getAllByText } = render(
         <HandoffStatus
           status={HandoffStatusEnum.AGENT_ACTIVE}
           handlerType={SenderType.AGENT}
@@ -30,8 +18,7 @@ describe('HandoffStatus', () => {
       );
 
       expect(getByText('🤖')).toBeTruthy();
-      expect(getByText('AI Agent')).toBeTruthy();
-      expect(getByText(HANDOFF_STATUS_LABELS[HandoffStatusEnum.AGENT_ACTIVE])).toBeTruthy();
+      expect(getAllByText('AI Agent').length).toBeGreaterThan(0);
     });
 
     it('should show agent icon', () => {

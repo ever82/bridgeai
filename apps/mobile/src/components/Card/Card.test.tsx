@@ -53,22 +53,22 @@ describe('Card', () => {
   it('is pressable when onPress is provided', () => {
     const mockOnPress = jest.fn();
     render(
-      <Card onPress={mockOnPress}>
+      <Card onPress={mockOnPress} testID="pressable-card">
         <Text>Pressable Card</Text>
       </Card>
     );
-    fireEvent.press(screen.getByRole('button'));
+    fireEvent.press(screen.getByTestId('pressable-card'));
     expect(mockOnPress).toHaveBeenCalledTimes(1);
   });
 
   it('is pressable when pressable prop is true', () => {
-    const mockOnPress = jest.fn();
     render(
-      <Card pressable onPress={mockOnPress}>
+      <Card pressable onPress={jest.fn()} testID="pressable-card">
         <Text>Pressable Card</Text>
       </Card>
     );
-    expect(screen.getByRole('button')).toBeTruthy();
+    const card = screen.getByTestId('pressable-card');
+    expect(card.props.role).toBe('button');
   });
 
   it('renders elevated variant', () => {

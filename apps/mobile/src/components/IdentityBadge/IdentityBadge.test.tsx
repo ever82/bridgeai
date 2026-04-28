@@ -71,16 +71,21 @@ describe('IdentityBadge', () => {
   it('applies border for scene badges', () => {
     render(<IdentityBadge type="scene-vision" testID="badge" />);
     const badge = screen.getByTestId('badge');
-    expect(badge.props.style).toMatchObject({
-      borderWidth: 1,
-      borderColor: theme.colors.primary,
-    });
+    const styles = Array.isArray(badge.props.style)
+      ? badge.props.style.flat(Infinity).filter(Boolean)
+      : [badge.props.style];
+    expect(styles).toMatchObject(expect.arrayContaining([
+      expect.objectContaining({ borderWidth: 1, borderColor: theme.colors.primary })
+    ]));
   });
 
   it('applies custom style prop', () => {
     const customStyle = { marginTop: 10 };
     render(<IdentityBadge type="agent" style={customStyle} testID="badge" />);
     const badge = screen.getByTestId('badge');
-    expect(badge.props.style).toMatchObject(customStyle);
+    const styles = Array.isArray(badge.props.style)
+      ? badge.props.style.flat(Infinity).filter(Boolean)
+      : [badge.props.style];
+    expect(styles).toMatchObject(expect.arrayContaining([customStyle]));
   });
 });

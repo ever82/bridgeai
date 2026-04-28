@@ -69,16 +69,70 @@ export const FlatList = jest.fn((props: any) => {
 });
 export const SectionList = mockComponent('SectionList');
 export const TouchableOpacity = jest.fn((props: any) => {
-  const { children, onPress, disabled, testID, style } = props;
+  const { children, onPress, disabled, testID, style, accessibilityRole, role, accessibilityLabel, ...rest } = props;
   return React.createElement(
     View,
-    { testID, accessibilityState: { disabled: !!disabled }, onPress, style },
+    {
+      testID,
+      role: role || accessibilityRole,
+      accessibilityRole,
+      accessibilityLabel,
+      accessibilityState: { disabled: !!disabled },
+      onPress: disabled ? undefined : onPress,
+      style,
+      ...rest,
+    },
     children
   );
 });
-export const TouchableHighlight = mockComponent('TouchableHighlight');
-export const TouchableWithoutFeedback = mockComponent('TouchableWithoutFeedback');
-export const Pressable = mockComponent('Pressable');
+export const TouchableHighlight = jest.fn((props: any) => {
+  const { children, onPress, disabled, testID, style, accessibilityRole, accessibilityLabel, ...rest } = props;
+  return React.createElement(
+    View,
+    {
+      testID,
+      accessibilityRole,
+      accessibilityLabel,
+      accessibilityState: { disabled: !!disabled },
+      onPress: disabled ? undefined : onPress,
+      style,
+      ...rest,
+    },
+    children
+  );
+});
+export const TouchableWithoutFeedback = jest.fn((props: any) => {
+  const { children, onPress, disabled, testID, style, accessibilityRole, accessibilityLabel, ...rest } = props;
+  return React.createElement(
+    View,
+    {
+      testID,
+      accessibilityRole,
+      accessibilityLabel,
+      accessibilityState: { disabled: !!disabled },
+      onPress: disabled ? undefined : onPress,
+      style,
+      ...rest,
+    },
+    children
+  );
+});
+export const Pressable = jest.fn((props: any) => {
+  const { children, onPress, disabled, testID, style, accessibilityRole, accessibilityLabel, ...rest } = props;
+  return React.createElement(
+    View,
+    {
+      testID,
+      accessibilityRole,
+      accessibilityLabel,
+      accessibilityState: { disabled: !!disabled },
+      onPress: disabled ? undefined : onPress,
+      style,
+      ...rest,
+    },
+    children
+  );
+});
 export const TextInput = mockComponent('TextInput');
 export const Button = mockComponent('Button');
 export const ActivityIndicator = mockComponent('ActivityIndicator');

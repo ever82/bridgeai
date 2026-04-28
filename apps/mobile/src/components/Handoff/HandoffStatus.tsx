@@ -7,7 +7,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import {
-  HandoffStatus,
+  HandoffStatus as HandoffStatusEnum,
   SenderType,
   HANDOFF_STATUS_LABELS,
   SENDER_TYPE_COLORS,
@@ -19,7 +19,7 @@ import { theme } from '../../theme';
 
 export interface HandoffStatusProps {
   /** Current handoff status */
-  status: HandoffStatus;
+  status: HandoffStatusEnum;
   /** Current handler type (AGENT, HUMAN, etc.) */
   handlerType: SenderType;
   /** Current handler name/ID (optional) */
@@ -79,16 +79,16 @@ export const HandoffStatus: React.FC<HandoffStatusProps> = ({
 
   const getStatusColor = () => {
     switch (status) {
-      case HandoffStatus.AGENT_ACTIVE:
+      case HandoffStatusEnum.AGENT_ACTIVE:
         return SENDER_TYPE_COLORS[SenderType.AGENT];
-      case HandoffStatus.HUMAN_ACTIVE:
+      case HandoffStatusEnum.HUMAN_ACTIVE:
         return SENDER_TYPE_COLORS[SenderType.HUMAN];
-      case HandoffStatus.PENDING_TAKEOVER:
-      case HandoffStatus.PENDING_HANDOFF:
+      case HandoffStatusEnum.PENDING_TAKEOVER:
+      case HandoffStatusEnum.PENDING_HANDOFF:
         return theme.colors.warning;
-      case HandoffStatus.TIMEOUT:
+      case HandoffStatusEnum.TIMEOUT:
         return theme.colors.error;
-      case HandoffStatus.CANCELLED:
+      case HandoffStatusEnum.CANCELLED:
         return theme.colors.textSecondary;
       default:
         return theme.colors.textSecondary;

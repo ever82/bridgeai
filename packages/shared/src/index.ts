@@ -48,6 +48,8 @@ export {
   HandoffRequest,
   SENDER_TYPE_COLORS,
   SENDER_TYPE_LABELS,
+  HANDOFF_STATUS_LABELS,
+  isHandoffPending,
 } from './types/handoff';
 // Explicitly re-export dating types (use export not export type for enums)
 export {

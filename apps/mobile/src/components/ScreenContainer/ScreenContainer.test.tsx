@@ -22,14 +22,14 @@ describe('ScreenContainer', () => {
   });
 
   it('applies safe area insets', () => {
-    const { getByTestId } = render(
-      <ScreenContainer testID="container">
+    render(
+      <ScreenContainer>
         <Text>Content</Text>
       </ScreenContainer>
     );
 
-    const container = getByTestId('container');
-    expect(container).toBeTruthy();
+    // Component should render without crashing and apply safe area insets
+    expect(screen.getByText('Content')).toBeTruthy();
   });
 
   it('renders in scrollable mode', () => {

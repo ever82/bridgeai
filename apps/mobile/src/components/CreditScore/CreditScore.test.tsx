@@ -68,21 +68,23 @@ describe('CreditScore', () => {
   });
 
   it('calls onPress when pressed', () => {
-    render(<CreditScore score={85} onPress={mockOnPress} testID="credit" />);
-    fireEvent.press(screen.getByRole('button'));
+    render(<CreditScore score={85} onPress={mockOnPress} testID="credit-badge" />);
+    fireEvent.press(screen.getByTestId('credit-badge'));
     expect(mockOnPress).toHaveBeenCalledTimes(1);
   });
 
   it('applies correct color for excellent credit', () => {
     render(<CreditScore score={95} testID="credit" />);
     const label = screen.getByTestId('credit-label');
-    expect(label.props.style).toMatchObject({ color: theme.colors.success });
+    const styles = Array.isArray(label.props.style) ? label.props.style : [label.props.style];
+    expect(styles).toMatchObject(expect.arrayContaining([{ color: theme.colors.success }]));
   });
 
   it('applies correct color for poor credit', () => {
     render(<CreditScore score={30} testID="credit" />);
     const label = screen.getByTestId('credit-label');
-    expect(label.props.style).toMatchObject({ color: theme.colors.error });
+    const styles = Array.isArray(label.props.style) ? label.props.style : [label.props.style];
+    expect(styles).toMatchObject(expect.arrayContaining([{ color: theme.colors.error }]));
   });
 
   it('has correct accessibility label', () => {
@@ -125,7 +127,7 @@ describe('TrustBadge', () => {
 
   it('calls onPress when pressed', () => {
     render(<TrustBadge score={85} onPress={mockOnPress} testID="trust" />);
-    fireEvent.press(screen.getByRole('button'));
+    fireEvent.press(screen.getByTestId('trust'));
     expect(mockOnPress).toHaveBeenCalledTimes(1);
   });
 

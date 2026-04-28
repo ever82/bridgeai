@@ -77,7 +77,8 @@ function startCleanupInterval(): void {
 }
 
 // Skip in test environment to avoid open handles
-if (process.env.NODE_ENV !== 'test') {
+const isTest = process.env.NODE_ENV === 'test';
+if (!isTest) {
   startCleanupInterval();
 }
 

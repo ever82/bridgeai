@@ -219,29 +219,32 @@ describe('HandoffButton', () => {
 
   describe('Accessibility', () => {
     it('should have correct accessibility role', () => {
-      const { getByRole } = render(
+      const { getByTestId } = render(
         <HandoffButton
           status={HandoffStatus.AGENT_ACTIVE}
           handlerType={SenderType.AGENT}
           canTakeover={true}
           onTakeover={mockOnTakeover}
+          testID="handoff-button"
         />
       );
 
-      expect(getByRole('button')).toBeTruthy();
+      const button = getByTestId('handoff-button');
+      expect(button.props.role).toBe('button');
     });
 
     it('should have correct accessibility label', () => {
-      const { getByLabelText } = render(
+      const { getByTestId } = render(
         <HandoffButton
           status={HandoffStatus.AGENT_ACTIVE}
           handlerType={SenderType.AGENT}
           canTakeover={true}
           onTakeover={mockOnTakeover}
+          testID="handoff-button"
         />
       );
 
-      expect(getByLabelText('Take Over')).toBeTruthy();
+      expect(getByTestId('handoff-button').props.accessibilityLabel).toBe('Take Over');
     });
   });
 });

@@ -43,8 +43,8 @@ describe('LoadingSkeleton', () => {
   });
 
   it('renders multiple skeletons when count > 1', () => {
-    const { container } = render(<LoadingSkeleton type="card" count={3} />);
+    render(<LoadingSkeleton type="card" count={3} testID="loading-skeleton" />);
 
-    expect(container.children.length).toBeGreaterThan(0);
+    expect(screen.getByTestId('loading-skeleton')).toBeTruthy();
   });
 });

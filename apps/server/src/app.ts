@@ -24,11 +24,16 @@ import { createApiGatewayRouter } from './services/gateway/apiGatewayRouter';
 
 dotenv.config();
 
+// Ensure test environment (skip middleware timers in tests)
+const isTestEnv = process.env.NODE_ENV === 'test';
+
 // Initialize Sentry before creating the app
 initSentry();
 
-// Initialize security monitoring
-initializeSecurityMonitoring();
+// Initialize security monitoring (skip timers in test environment)
+if (!isTestEnv) {
+  initializeSecurityMonitoring();
+}
 
 const app: Application = express();
 
@@ -104,7 +109,7 @@ app.use(securityProtection());
 app.use(performanceMonitor);
 
 // Logging middleware
-if (process.env.NODE_ENV !== 'test') {
+if (!isTestEnv) {
   app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'combined'));
 }
 

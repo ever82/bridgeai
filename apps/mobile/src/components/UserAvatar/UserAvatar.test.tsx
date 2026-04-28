@@ -65,10 +65,10 @@ describe('UserAvatar', () => {
   it('applies agent border style for agent user type', () => {
     render(<UserAvatar userType="agent" testID="avatar" />);
     const avatar = screen.getByTestId('avatar');
-    expect(avatar.props.style).toMatchObject({
-      borderWidth: 2,
-      borderColor: theme.colors.secondary,
-    });
+    const styles = Array.isArray(avatar.props.style) ? avatar.props.style : [avatar.props.style];
+    expect(styles).toMatchObject(expect.arrayContaining([
+      expect.objectContaining({ borderWidth: 2, borderColor: theme.colors.secondary })
+    ]));
   });
 
   it('calls onPress when pressed', () => {
@@ -79,19 +79,22 @@ describe('UserAvatar', () => {
 
   it('has correct accessibility role when onPress is provided', () => {
     render(<UserAvatar onPress={mockOnPress} name="Test User" testID="avatar" />);
-    expect(screen.getByRole('button')).toBeTruthy();
+    const avatar = screen.getByTestId('avatar');
+    expect(avatar.props.role).toBe('button');
   });
 
   it('does not have button role when onPress is not provided', () => {
     render(<UserAvatar name="Test User" testID="avatar" />);
     const avatar = screen.getByTestId('avatar');
     expect(avatar.props.accessibilityRole).toBeUndefined();
+    expect(avatar.props.role).toBeUndefined();
   });
 
   it('applies custom style prop', () => {
     const customStyle = { marginTop: 10 };
     render(<UserAvatar style={customStyle} testID="avatar" />);
     const avatar = screen.getByTestId('avatar');
-    expect(avatar.props.style).toMatchObject(customStyle);
+    const styles = Array.isArray(avatar.props.style) ? avatar.props.style : [avatar.props.style];
+    expect(styles).toMatchObject(expect.arrayContaining([customStyle]));
   });
 });

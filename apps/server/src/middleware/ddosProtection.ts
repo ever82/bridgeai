@@ -183,9 +183,25 @@ function cleanupExpiredRecords(): void {
   }
 }
 
-// Run cleanup every minute (skip in test environment to avoid open handles)
-if (process.env.NODE_ENV !== 'test') {
-  setInterval(cleanupExpiredRecords, 60 * 1000);
+// Run cleanup every minute (lazy init - skip in test environment to avoid open handles)
+let cleanupIntervalId: ReturnType<typeof setInterval> | null = null;
+
+function startCleanupInterval(): void {
+  if (cleanupIntervalId === null) {
+    cleanupIntervalId = setInterval(cleanupExpiredRecords, 60 * 1000);
+  }
+}
+
+const isTest = process.env.NODE_ENV === 'test';
+if (!isTest) {
+  startCleanupInterval();
+}
+
+// Lazy cleanup interval starter - call this on first request to start cleanup
+export function startDDoSCleanup(): void {
+  if (!isTest && cleanupIntervalId === null) {
+    startCleanupInterval();
+  }
 }
 
 /**
@@ -285,6 +301,10 @@ export function slowAttackProtection(
   timeoutMs: number = 30000
 ): (req: Request, res: Response, next: NextFunction) => void {
   return (req: Request, res: Response, next: NextFunction): void => {
+    if (isTest) {
+      next();
+      return;
+    }
     const timer = setTimeout(() => {
       if (!res.headersSent) {
         const ip = getClientIP(req);

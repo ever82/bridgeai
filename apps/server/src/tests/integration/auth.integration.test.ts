@@ -7,7 +7,6 @@ import {
   AuthHeaders,
   validateSuccessResponse,
   validateErrorResponse,
-  generateTokens,
   generateExpiredToken,
 } from '../helpers';
 
@@ -85,19 +84,23 @@ describe('Authentication API Integration', () => {
   describe('POST /api/v1/auth/login', () => {
     it('should login with valid credentials', async () => {
       const password = 'SecurePassword123!';
-      const user = await createTestUser({ password });
+      const testUser = await createTestUser({ password });
 
       const response = await Request.post(ApiPaths.auth.login, {
-        email: user.email,
+        email: testUser.email,
         password,
       });
 
       expect(response.status).toBe(200);
       expect(validateSuccessResponse(response)).toBe(true);
       const body = response.body as Record<string, unknown>;
-      expect(body.data).toHaveProperty('accessToken');
-      expect(body.data).toHaveProperty('refreshToken');
-      expect(body.data).toHaveProperty('user');
+      const data = body.data as Record<string, unknown>;
+      expect(data).toHaveProperty('accessToken');
+      expect(data).toHaveProperty('refreshToken');
+      expect(data).toHaveProperty('user');
+      const user = data.user as Record<string, unknown>;
+      expect(user).toHaveProperty('id');
+      expect(user).toHaveProperty('email', testUser.email);
     });
 
     it('should return 401 for invalid credentials', async () => {
@@ -132,8 +135,19 @@ describe('Authentication API Integration', () => {
 
   describe('POST /api/v1/auth/refresh', () => {
     it('should refresh access token with valid refresh token', async () => {
-      const user = await createTestUser();
-      const { refreshToken } = generateTokens(user);
+      const password = 'SecurePassword123!';
+      const user = await createTestUser({ password });
+
+      // Login to get real tokens stored in database
+      const loginResponse = await Request.post(ApiPaths.auth.login, {
+        email: user.email,
+        password,
+      });
+      expect(loginResponse.status).toBe(200);
+
+      const loginBody = loginResponse.body as Record<string, unknown>;
+      const loginData = loginBody.data as Record<string, unknown>;
+      const refreshToken = loginData.refreshToken as string;
 
       const response = await Request.post(ApiPaths.auth.refresh, {
         refreshToken,

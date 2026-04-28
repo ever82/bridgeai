@@ -4,10 +4,13 @@ import { render, screen } from '@testing-library/react-native';
 import { TypingIndicator } from './TypingIndicator';
 
 describe('TypingIndicator', () => {
-  jest.useFakeTimers();
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
 
   afterEach(() => {
     jest.clearAllTimers();
+    jest.useRealTimers();
   });
 
   it('renders correctly with default props', () => {
@@ -39,8 +42,9 @@ describe('TypingIndicator', () => {
   });
 
   it('returns null when not visible', () => {
-    const { container } = render(<TypingIndicator visible={false} testID="typing" />);
-    expect(container.children.length).toBe(0);
+    render(<TypingIndicator visible={false} testID="typing" />);
+    // When not visible, the component should not render testID
+    expect(screen.queryByTestId('typing')).toBeNull();
   });
 
   it('calls onTimeout after specified timeout', () => {
@@ -71,7 +75,8 @@ describe('TypingIndicator', () => {
     const customStyle = { marginTop: 10 };
     render(<TypingIndicator style={customStyle} testID="typing" />);
     const typing = screen.getByTestId('typing');
-    expect(typing.props.style).toMatchObject(customStyle);
+    const styles = Array.isArray(typing.props.style) ? typing.props.style : [typing.props.style];
+    expect(styles).toMatchObject(expect.arrayContaining([customStyle]));
   });
 
   it('clears timeout on unmount', () => {
