@@ -22,7 +22,6 @@ const matchDuration = new Trend('match_duration');
 const chatDuration = new Trend('chat_duration');
 const searchDuration = new Trend('search_duration');
 const scenarioCount = new Counter('scenario_count');
-const _peakMemory = new Gauge('peak_memory_bytes');
 const activeConnections = new Gauge('active_connections');
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3001';
@@ -81,6 +80,7 @@ export function setup() {
 }
 
 export default function (data) {
+  const scenarioStart = Date.now();
   const vu = __VU;
   const vuId = vu % TEST_USERS.length;
   const testUser = TEST_USERS[vuId];
@@ -258,7 +258,7 @@ export default function (data) {
   });
 
   // Record full scenario duration
-  scenarioDuration.add(Date.now() - (scenarioDuration._startTime || 0));
+  scenarioDuration.add(Date.now() - scenarioStart);
 
   // Random think time between scenarios
   sleep(randomIntBetween(3, 8));

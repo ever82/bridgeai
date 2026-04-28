@@ -96,6 +96,7 @@ describe('MobilePerformanceService', () => {
       expect(metrics).not.toBeNull();
       expect(metrics!.totalRequests).toBe(3);
       expect(metrics!.failedRequests).toBe(1);
+      expect(metrics!.avgResponseTimeMs).toBeCloseTo((100 + 200 + 50) / 3);
     });
 
     it('should return null when no requests recorded', () => {

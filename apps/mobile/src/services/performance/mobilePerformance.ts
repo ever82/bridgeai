@@ -11,9 +11,10 @@ import { InteractionManager } from 'react-native';
 // Lazy getter to avoid circular dependency with imageCache
 function getImageCacheStats(): { totalSize: number; totalEntries: number } {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    /* eslint-disable @typescript-eslint/no-var-requires */
     const { imageCache } =
       require('../../utils/imageCache') as typeof import('../../utils/imageCache');
+    /* eslint-enable @typescript-eslint/no-var-requires */
     return imageCache.getStats();
   } catch {
     return { totalSize: 0, totalEntries: 0 };
@@ -344,7 +345,7 @@ class NetworkTracker {
   private cacheMisses = 0;
 
   recordRequest(durationMs: number, bytesReceived: number, success: boolean): void {
-    this.requests.push({ durationMs: bytesReceived, bytes: bytesReceived, success });
+    this.requests.push({ durationMs, bytes: bytesReceived, success });
   }
 
   recordCacheHit(): void {
