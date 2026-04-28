@@ -171,7 +171,6 @@ flowchart TD
     COM002c --> SEC005
     SEC001 --> C001
     C002a --> SEC002
-    SEC003 --> A004
     CR002 --> SEC005
 
     %% 认证层依赖
@@ -360,7 +359,7 @@ flowchart TD
 
 | Issue      | 标题                         | 复杂度 | 关键依赖                |
 | ---------- | ---------------------------- | ------ | ----------------------- |
-| ISSUE-T001 | 单元测试框架搭建(Jest)       | M      | F003, A001, C001              |
+| ISSUE-T001 | 单元测试框架搭建(Jest)       | M      | F003, A001, C001        |
 | ISSUE-T002 | API集成测试框架              | M      | F003                    |
 | ISSUE-T003 | 移动端测试框架               | M      | F004                    |
 | ISSUE-T004 | E2E端到端测试框架 [严格标准] | H      | T001, T002, T003, UI001 |
@@ -382,13 +381,13 @@ flowchart TD
 | ISSUE-A001 | 用户注册与登录系统 | M      | F002, F003 |
 | ISSUE-A002 | JWT认证与API安全   | M      | A001       |
 | ISSUE-A003 | 用户基础资料管理   | **L**  | A002       |
-| ISSUE-A004 | 输入验证与数据校验 | M      | A002, A003 |
+| ISSUE-A004 | 输入验证与数据校验 | M      | A003       |
 
 ### 🤖 Core Agent (Agent核心层)
 
 | Issue       | 标题                  | 复杂度 | 关键依赖       |
 | ----------- | --------------------- | ------ | -------------- |
-| ISSUE-C001  | Agent创建与基础配置   | M      | A003, SEC001         |
+| ISSUE-C001  | Agent创建与基础配置   | M      | A003, SEC001   |
 | ISSUE-C002a | L1基础信息模型        | M      | C001           |
 | ISSUE-C002b | L2结构化信息模型      | M      | C002a          |
 | ISSUE-C002c | L3自然语言信息模型    | M      | C002b          |
@@ -416,7 +415,7 @@ flowchart TD
 | ISSUE-COM001b | 连接管理与房间系统                          | M      | COM001a        |
 | ISSUE-COM002a | 聊天房间基础架构                            | M      | COM001b        |
 | ISSUE-COM002b | 消息持久化与历史记录                        | M      | COM002a        |
-| ISSUE-COM002c | 群聊状态同步与在线状态                      | M      | COM002b        |
+| ISSUE-COM002c | 群聊状态同步与在线状态                      | M      | COM002b, AI004 |
 | ISSUE-COM003  | 人机切换机制                                | M      | COM002c        |
 | ISSUE-COM004  | Agent通信协议定义(消息格式/身份切换/信用分) | M      | COM002c        |
 | ISSUE-COM005  | 私聊建议系统                                | M      | COM002c, AI004 |
@@ -442,15 +441,15 @@ flowchart TD
 
 ### 📷 VisionShare场景
 
-| Issue       | 标题                     | 复杂度 | 关键依赖     |
-| ----------- | ------------------------ | ------ | ------------ |
-| ISSUE-VS001 | VisionShare需求发布      | M      | C006, AI002  |
-| ISSUE-VS002 | 附近任务查询与接单       | M      | C006, M004   |
+| Issue       | 标题                     | 复杂度 | 关键依赖            |
+| ----------- | ------------------------ | ------ | ------------------- |
+| ISSUE-VS001 | VisionShare需求发布      | M      | C006, AI002         |
+| ISSUE-VS002 | 附近任务查询与接单       | M      | C006, M004          |
 | ISSUE-VS003 | 相机拍照与上传           | M      | VS002, F004, SEC004 |
-| ISSUE-VS004 | AI隐私脱敏处理           | H      | VS003, AI005 |
-| ISSUE-VS005 | 照片查看与积分支付       | M      | VS004, CR003 |
-| ISSUE-VS006 | AI相册智能检索与历史查询 | **M**  | VS002, AI005 |
-| ISSUE-VS007 | 本地相册AI智能检索       | M      | VS006, AI005 |
+| ISSUE-VS004 | AI隐私脱敏处理           | H      | VS003, AI005        |
+| ISSUE-VS005 | 照片查看与积分支付       | M      | VS004, CR003        |
+| ISSUE-VS006 | AI相册智能检索与历史查询 | **M**  | VS002, AI005        |
+| ISSUE-VS007 | 本地相册AI智能检索       | M      | VS006, AI005        |
 
 ### 💕 AgentDate场景
 
@@ -481,17 +480,17 @@ flowchart TD
 
 ### 📱 Frontend (前端UI层)
 
-| Issue        | 标题                     | 复杂度 | 关键依赖                          |
-| ------------ | ------------------------ | ------ | --------------------------------- |
-| ISSUE-UI001  | 设计系统与组件库         | M      | F004                              |
-| ISSUE-UI002  | 全局导航与布局           | M      | UI001                             |
-| ISSUE-UI003  | 首页与状态展示           | M      | UI002, C001, M004, VS001, DATE002 |
-| ISSUE-UI004a | 聊天消息组件与输入框     | M      | UI002, COM002c, COM003, COM005    |
-| ISSUE-UI004b | Agent/人类用户状态指示器 | S      | UI002, UI004a                     |
-| ISSUE-UI004c | 聊天记录滚动与分页加载   | M      | UI002, UI004b                     |
-| ISSUE-UI005  | Agent配置界面            | M      | UI002, C001, C006                 |
+| Issue        | 标题                     | 复杂度 | 关键依赖                                      |
+| ------------ | ------------------------ | ------ | --------------------------------------------- |
+| ISSUE-UI001  | 设计系统与组件库         | M      | F004                                          |
+| ISSUE-UI002  | 全局导航与布局           | M      | UI001                                         |
+| ISSUE-UI003  | 首页与状态展示           | M      | UI002, C001, M004, VS001, DATE002             |
+| ISSUE-UI004a | 聊天消息组件与输入框     | M      | UI002, COM002c, COM003, COM005                |
+| ISSUE-UI004b | Agent/人类用户状态指示器 | S      | UI002, UI004a                                 |
+| ISSUE-UI004c | 聊天记录滚动与分页加载   | M      | UI002, UI004b                                 |
+| ISSUE-UI005  | Agent配置界面            | M      | UI002, C001, C006                             |
 | ISSUE-UI006  | 消息中心                 | M      | UI002, COM002c, VS001, DATE001, JOB001, AD001 |
-| ISSUE-UI007  | 个人中心与信用展示       | M      | UI002, CR001, A003                |
+| ISSUE-UI007  | 个人中心与信用展示       | M      | UI002, CR001, A003                            |
 
 ### 🚀 Integration (集成与部署)
 
