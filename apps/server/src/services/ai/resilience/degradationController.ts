@@ -427,5 +427,12 @@ export function getDegradationController(): DegradationController {
 /**
  * @deprecated Prefer getDegradationController() for lazy initialization.
  * Exported for backwards compatibility only.
+ *
+ * Uses a Proxy so that no instantiation occurs at import time — the real
+ * DegradationController is only created when a property is first accessed.
  */
-export const degradationController = getDegradationController();
+export const degradationController: DegradationController = new Proxy({} as DegradationController, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getDegradationController(), prop, receiver);
+  },
+});
