@@ -73,8 +73,7 @@ export class ImageCacheManager {
   }
 
   private calculateCurrentSize(): void {
-    this.currentSize = this.cache.values()
-      .reduce((total, entry) => total + entry.size, 0);
+    this.currentSize = this.cache.values().reduce((total, entry) => total + entry.size, 0);
   }
 
   async getThumbnail(imageUri: string): Promise<string | null> {
@@ -89,11 +88,7 @@ export class ImageCacheManager {
     return null;
   }
 
-  async setThumbnail(
-    imageUri: string,
-    thumbnailUri: string,
-    size: number,
-  ): Promise<void> {
+  async setThumbnail(imageUri: string, thumbnailUri: string, size: number): Promise<void> {
     if (this.currentSize + size > this.config.maxSize * 1024 * 1024) {
       await this.evictOldestEntries(Math.ceil(this.cache.size * 0.2));
     }
@@ -127,9 +122,7 @@ export class ImageCacheManager {
 
   private async evictOldestEntries(count: number): Promise<void> {
     const entries = Array.from(this.cache.entries());
-    entries.sort((a, b) =>
-      a[1].accessedAt.getTime() - b[1].accessedAt.getTime(),
-    );
+    entries.sort((a, b) => a[1].accessedAt.getTime() - b[1].accessedAt.getTime());
 
     const toEvict = entries.slice(0, count);
     for (const [key, entry] of toEvict) {
@@ -213,7 +206,7 @@ export class SearchOptimizationService {
     this.isBackgroundIndexing = true;
 
     try {
-      if (this.batteryOptimizationEnabled && await this.isLowBattery()) {
+      if (this.batteryOptimizationEnabled && (await this.isLowBattery())) {
         console.log('Skipping background indexing due to low battery');
         return;
       }
@@ -221,7 +214,6 @@ export class SearchOptimizationService {
       console.log('Starting background indexing...');
       // Perform incremental indexing of new photos
       // This would integrate with the photo library observer
-
     } catch (error) {
       console.error('Background indexing failed:', error);
     } finally {
@@ -281,10 +273,19 @@ export class SearchOptimizationService {
     this.queryCache.clear();
   }
 
+  private memoryMonitorInterval: ReturnType<typeof setInterval> | null = null;
+
   private startMemoryMonitoring(): void {
-    setInterval(() => {
+    this.memoryMonitorInterval = setInterval(() => {
       this.checkMemoryUsage();
     }, 30000); // Check every 30 seconds
+  }
+
+  stopMemoryMonitoring(): void {
+    if (this.memoryMonitorInterval !== null) {
+      clearInterval(this.memoryMonitorInterval);
+      this.memoryMonitorInterval = null;
+    }
   }
 
   private checkMemoryUsage(): void {
@@ -292,7 +293,8 @@ export class SearchOptimizationService {
       // iOS memory pressure handling
       const usedMemory = this.estimateMemoryUsage();
 
-      if (usedMemory > 150) { // 150MB threshold
+      if (usedMemory > 150) {
+        // 150MB threshold
         this.optimizeMemory();
       }
     }
@@ -364,8 +366,10 @@ export class SearchOptimizationService {
   }
 
   shouldPauseProcessing(): boolean {
-    return this.memoryUsage > 200 || // 200MB
-      (this.batteryOptimizationEnabled && this.isBackgroundIndexing);
+    return (
+      this.memoryUsage > 200 || // 200MB
+      (this.batteryOptimizationEnabled && this.isBackgroundIndexing)
+    );
   }
 }
 

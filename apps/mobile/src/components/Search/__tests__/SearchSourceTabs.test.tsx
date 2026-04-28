@@ -12,12 +12,7 @@ describe('SearchSourceTabs', () => {
 
   describe('Rendering', () => {
     it('renders all three source tabs', () => {
-      render(
-        <SearchSourceTabs
-          activeSource="all"
-          onSourceChange={mockOnSourceChange}
-        />
-      );
+      render(<SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} />);
 
       expect(screen.getByText('All')).toBeTruthy();
       expect(screen.getByText('Local')).toBeTruthy();
@@ -57,11 +52,7 @@ describe('SearchSourceTabs', () => {
 
     it('shows 99+ for counts over 99', () => {
       render(
-        <SearchSourceTabs
-          activeSource="all"
-          onSourceChange={mockOnSourceChange}
-          totalCount={150}
-        />
+        <SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} totalCount={150} />
       );
 
       expect(screen.getByText('99+')).toBeTruthy();
@@ -70,12 +61,7 @@ describe('SearchSourceTabs', () => {
 
   describe('Source Switching', () => {
     it('calls onSourceChange when a tab is pressed', () => {
-      render(
-        <SearchSourceTabs
-          activeSource="all"
-          onSourceChange={mockOnSourceChange}
-        />
-      );
+      render(<SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} />);
 
       const localTab = screen.getByText('Local');
       fireEvent.press(localTab);
@@ -84,12 +70,7 @@ describe('SearchSourceTabs', () => {
     });
 
     it('allows switching to cloud source', () => {
-      render(
-        <SearchSourceTabs
-          activeSource="all"
-          onSourceChange={mockOnSourceChange}
-        />
-      );
+      render(<SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} />);
 
       const cloudTab = screen.getByText('Cloud');
       fireEvent.press(cloudTab);
@@ -98,12 +79,7 @@ describe('SearchSourceTabs', () => {
     });
 
     it('allows switching back to all', () => {
-      render(
-        <SearchSourceTabs
-          activeSource="local"
-          onSourceChange={mockOnSourceChange}
-        />
-      );
+      render(<SearchSourceTabs activeSource="local" onSourceChange={mockOnSourceChange} />);
 
       const allTab = screen.getByText('All');
       fireEvent.press(allTab);
@@ -115,10 +91,7 @@ describe('SearchSourceTabs', () => {
   describe('Active State Styling', () => {
     it('shows active state for selected source', () => {
       const { getByText } = render(
-        <SearchSourceTabs
-          activeSource="local"
-          onSourceChange={mockOnSourceChange}
-        />
+        <SearchSourceTabs activeSource="local" onSourceChange={mockOnSourceChange} />
       );
 
       // Active tab should have different styling (can't easily test styles,
@@ -129,18 +102,10 @@ describe('SearchSourceTabs', () => {
 
     it('updates active state after switching', () => {
       const { rerender, getByText } = render(
-        <SearchSourceTabs
-          activeSource="all"
-          onSourceChange={mockOnSourceChange}
-        />
+        <SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} />
       );
 
-      rerender(
-        <SearchSourceTabs
-          activeSource="cloud"
-          onSourceChange={mockOnSourceChange}
-        />
-      );
+      rerender(<SearchSourceTabs activeSource="cloud" onSourceChange={mockOnSourceChange} />);
 
       expect(getByText('Cloud')).toBeTruthy();
     });
@@ -149,11 +114,7 @@ describe('SearchSourceTabs', () => {
   describe('Disabled State', () => {
     it('does not call onSourceChange when disabled', () => {
       render(
-        <SearchSourceTabs
-          activeSource="all"
-          onSourceChange={mockOnSourceChange}
-          disabled={true}
-        />
+        <SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} disabled={true} />
       );
 
       const localTab = screen.getByText('Local');
@@ -164,11 +125,7 @@ describe('SearchSourceTabs', () => {
 
     it('applies disabled styling when disabled', () => {
       const { getByText } = render(
-        <SearchSourceTabs
-          activeSource="all"
-          onSourceChange={mockOnSourceChange}
-          disabled={true}
-        />
+        <SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} disabled={true} />
       );
 
       // All tabs should be in disabled state
@@ -180,24 +137,34 @@ describe('SearchSourceTabs', () => {
 
   describe('Accessibility', () => {
     it('has correct accessibility role', () => {
-      render(
-        <SearchSourceTabs
-          activeSource="all"
-          onSourceChange={mockOnSourceChange}
-        />
-      );
+      render(<SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} />);
 
       const allTab = screen.getByText('All');
       expect(allTab).toBeTruthy();
     });
 
+    it('has exactly one selected tab at a time', () => {
+      render(<SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} />);
+
+      // Use getAllByA11yState instead of getByA11yState to avoid
+      // "Found multiple elements" errors
+      const selectedTabs = screen.getAllByA11yState({ selected: true });
+      expect(selectedTabs).toHaveLength(1);
+    });
+
+    it('applies disabled accessibility state to all tabs when disabled', () => {
+      render(
+        <SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} disabled={true} />
+      );
+
+      // Use getAllByA11yState to find tabs with disabled: true
+      const disabledTabs = screen.getAllByA11yState({ disabled: true });
+      expect(disabledTabs).toHaveLength(3);
+    });
+
     it('renders without crashing when disabled', () => {
       render(
-        <SearchSourceTabs
-          activeSource="all"
-          onSourceChange={mockOnSourceChange}
-          disabled={true}
-        />
+        <SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} disabled={true} />
       );
 
       expect(screen.getByText('All')).toBeTruthy();
@@ -206,12 +173,7 @@ describe('SearchSourceTabs', () => {
 
   describe('Indicator', () => {
     it('renders indicator dots', () => {
-      render(
-        <SearchSourceTabs
-          activeSource="all"
-          onSourceChange={mockOnSourceChange}
-        />
-      );
+      render(<SearchSourceTabs activeSource="all" onSourceChange={mockOnSourceChange} />);
 
       // Should render without crashing
       expect(screen.getByText('All')).toBeTruthy();

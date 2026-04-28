@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   TextInput,
@@ -43,20 +43,13 @@ interface SearchSourceTabProps {
   count?: number;
 }
 
-const SearchSourceTab: React.FC<SearchSourceTabProps> = ({
-  label,
-  active,
-  onPress,
-  count,
-}) => (
+const SearchSourceTab: React.FC<SearchSourceTabProps> = ({ label, active, onPress, count }) => (
   <TouchableOpacity
     style={[styles.sourceTab, active && styles.sourceTabActive]}
     onPress={onPress}
     activeOpacity={0.7}
   >
-    <Text style={[styles.sourceTabText, active && styles.sourceTabTextActive]}>
-      {label}
-    </Text>
+    <Text style={[styles.sourceTabText, active && styles.sourceTabTextActive]}>{label}</Text>
     {count !== undefined && count > 0 && (
       <View style={styles.countBadge}>
         <Text style={styles.countBadgeText}>{count}</Text>
@@ -88,21 +81,20 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({
     setQuery('');
   }, []);
 
-  const getSourceCount = useCallback((
-    source: SearchSource,
-  ): number | undefined => {
-    if (!results) return undefined;
-    if (source === 'all') return results.length;
-    return results.filter(r => r.source === source).length;
-  }, [results]);
-
-  const filteredResults = results.filter(result =>
-    activeSource === 'all' || result.source === activeSource,
+  const getSourceCount = useCallback(
+    (source: SearchSource): number | undefined => {
+      if (!results) return undefined;
+      if (source === 'all') return results.length;
+      return results.filter(r => r.source === source).length;
+    },
+    [results]
   );
 
-  const sortedResults = filteredResults.sort(
-    (a, b) => b.relevanceScore - a.relevanceScore,
+  const filteredResults = results.filter(
+    result => activeSource === 'all' || result.source === activeSource
   );
+
+  const sortedResults = filteredResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
 
   const renderResult = useCallback(
     ({ item }: { item: UnifiedSearchResult }) => (
@@ -129,13 +121,12 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({
             {item.tags.slice(0, 3).join(', ')}
           </Text>
           <Text style={styles.resultMeta}>
-            Score: {(item.relevanceScore * 100).toFixed(0)}% •{' '}
-            {item.createdAt.toLocaleDateString()}
+            Score: {(item.relevanceScore * 100).toFixed(0)}% • {item.createdAt.toLocaleDateString()}
           </Text>
         </View>
       </TouchableOpacity>
     ),
-    [onResultPress],
+    [onResultPress]
   );
 
   return (
@@ -203,9 +194,7 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({
             query.length > 0 ? (
               <View style={styles.emptyState}>
                 <Icon name="search-off" size={48} color="#ccc" />
-                <Text style={styles.emptyStateText}>
-                  No results found for &quot;{query}&quot;
-                </Text>
+                <Text style={styles.emptyStateText}>No results found for &quot;{query}&quot;</Text>
               </View>
             ) : null
           }

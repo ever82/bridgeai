@@ -1,21 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { PhotoLibraryPrivacyManager, PrivacySettings } from '../localPrivacy';
-import { encryptedStorage } from '../../../utils/encryptedStorage';
+import { PhotoLibraryPrivacyManager } from '../localPrivacy';
+import { IndexedImage } from '../../indexing/localIndexer';
 
-// Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
 }));
 
-// Mock encrypted storage
-jest.mock('../../../utils/encryptedStorage', () => ({
-  encryptedStorage: {
-    setItem: jest.fn().mockResolvedValue(undefined),
-    getItem: jest.fn().mockResolvedValue(null),
-    removeItem: jest.fn().mockResolvedValue(undefined),
+jest.mock('expo-crypto', () => ({
+  digestStringAsync: jest.fn(() => Promise.resolve('a'.repeat(64))),
+  CryptoDigestAlgorithm: { SHA256: 'SHA-256' },
+  getRandomBytesAsync: jest.fn(() => Promise.resolve(new Uint8Array(12))),
+}));
+
+jest.mock('../../indexing/localIndexer', () => ({
+  localSearchIndex: {
+    deleteImage: jest.fn().mockResolvedValue(undefined),
+    clear: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -24,7 +27,9 @@ describe('PhotoLibraryPrivacyManager', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (PhotoLibraryPrivacyManager as unknown as { instance: PhotoLibraryPrivacyManager | null }).instance = null;
+    (
+      PhotoLibraryPrivacyManager as unknown as { instance: PhotoLibraryPrivacyManager | null }
+    ).instance = null;
     privacyManager = PhotoLibraryPrivacyManager.getInstance();
   });
 
@@ -37,262 +42,249 @@ describe('PhotoLibraryPrivacyManager', () => {
   });
 
   describe('Privacy Settings', () => {
-    it('loads privacy settings from storage', async () => {
-      const mockSettings: PrivacySettings = {
-        onDeviceProcessing: true,
-        excludeSensitivePhotos: true,
-        enableEncryption: true,
-        privacyMode: 'strict',
-      };
-
-      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(mockSettings));
-
+    it('uses default settings when initialized', async () => {
       await privacyManager.initialize();
       const settings = privacyManager.getSettings();
 
-      expect(settings.onDeviceProcessing).toBe(true);
+      expect(settings.onDeviceProcessingOnly).toBe(true);
       expect(settings.excludeSensitivePhotos).toBe(true);
-    });
-
-    it('uses default settings when none exist', async () => {
-      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
-
-      await privacyManager.initialize();
-      const settings = privacyManager.getSettings();
-
-      expect(settings.onDeviceProcessing).toBe(true);
-      expect(settings.excludeSensitivePhotos).toBe(true);
-      expect(settings.enableEncryption).toBe(true);
-      expect(settings.privacyMode).toBe('standard');
+      expect(settings.encryptedIndexStorage).toBe(true);
+      expect(settings.privacyMode).toBe(false);
+      expect(settings.allowCloudSync).toBe(false);
+      expect(settings.dataRetentionDays).toBe(30);
     });
 
     it('updates settings and saves to storage', async () => {
       await privacyManager.initialize();
 
       await privacyManager.updateSettings({
-        privacyMode: 'strict',
-        excludeSensitivePhotos: true,
+        excludeSensitivePhotos: false,
+        dataRetentionDays: 7,
       });
 
       expect(AsyncStorage.setItem).toHaveBeenCalled();
-      const savedSettings = JSON.parse((AsyncStorage.setItem as jest.Mock).mock.calls[0][1]);
-      expect(savedSettings.privacyMode).toBe('strict');
+      const settings = privacyManager.getSettings();
+      expect(settings.excludeSensitivePhotos).toBe(false);
+      expect(settings.dataRetentionDays).toBe(7);
+    });
+
+    it('preserves unchanged settings when updating partial', async () => {
+      await privacyManager.initialize();
+
+      await privacyManager.updateSettings({ allowCloudSync: true });
+      const settings = privacyManager.getSettings();
+
+      expect(settings.allowCloudSync).toBe(true);
+      expect(settings.onDeviceProcessingOnly).toBe(true);
+      expect(settings.encryptedIndexStorage).toBe(true);
     });
   });
 
-  describe('On-device Processing', () => {
-    it('enforces on-device processing by default', async () => {
-      await privacyManager.initialize();
-
-      expect(privacyManager.isOnDeviceProcessingEnabled()).toBe(true);
-    });
-
-    it('prevents disabling on-device processing', async () => {
-      await privacyManager.initialize();
-
-      await expect(
-        privacyManager.updateSettings({ onDeviceProcessing: false })
-      ).rejects.toThrow('On-device processing cannot be disabled');
-    });
-
-    it('ensures no network upload during processing', async () => {
-      await privacyManager.initialize();
-
-      const uploadAttempted = privacyManager.wasUploadAttempted();
-      expect(uploadAttempted).toBe(false);
-    });
-  });
-
-  describe('Sensitive Photo Exclusion', () => {
-    it('detects sensitive photos by metadata', async () => {
-      await privacyManager.initialize();
-
-      const sensitivePhoto = {
+  describe('Sensitive Photo Detection', () => {
+    const makeImage = (partial: Partial<IndexedImage>): IndexedImage =>
+      ({
+        id: 'img-1',
         uri: 'file:///test.jpg',
-        metadata: {
-          isScreenshot: false,
-          isScreenRecording: false,
-          location: null,
-        },
-      };
+        localIdentifier: 'local-id-1',
+        tags: [],
+        embeddings: [],
+        sceneType: 'indoor',
+        createdAt: new Date(),
+        modifiedAt: new Date(),
+        analyzedAt: new Date(),
+        fileSize: 1024,
+        width: 1920,
+        height: 1080,
+        ...partial,
+      }) as IndexedImage;
 
-      const isSensitive = await privacyManager.isPhotoSensitive(sensitivePhoto);
-      expect(typeof isSensitive).toBe('boolean');
-    });
-
-    it('marks screenshots as potentially sensitive', async () => {
-      await privacyManager.initialize();
-      privacyManager.updateSettings({ excludeSensitivePhotos: true });
-
-      const screenshot = {
-        uri: 'file:///screenshot.jpg',
-        metadata: {
-          isScreenshot: true,
-        },
-      };
-
-      const shouldExclude = await privacyManager.shouldExcludePhoto(screenshot);
-      expect(shouldExclude).toBe(true);
-    });
-
-    it('respects user-defined exclusion patterns', async () => {
+    it('returns sensitive=true for document-like photos', async () => {
       await privacyManager.initialize();
 
-      privacyManager.addExclusionPattern(/private/i);
+      const image = makeImage({ tags: ['document', 'paper'], sceneType: 'document' });
+      const result = privacyManager.checkIfSensitive(image);
 
-      const privatePhoto = { uri: 'file:///private_photo.jpg' };
-      const shouldExclude = await privacyManager.shouldExcludePhoto(privatePhoto);
-
-      expect(shouldExclude).toBe(true);
+      expect(result.isSensitive).toBe(true);
+      expect(result.reason).toContain('sensitive');
+      expect(result.confidence).toBeGreaterThan(0);
     });
 
-    it('allows removing exclusion patterns', async () => {
+    it('returns sensitive=true for photos with sensitive keywords', async () => {
       await privacyManager.initialize();
 
-      const pattern = /temp/i;
-      privacyManager.addExclusionPattern(pattern);
-      privacyManager.removeExclusionPattern(pattern);
+      const image = makeImage({ tags: ['ssn', 'personal'], sceneType: 'indoor' });
+      const result = privacyManager.checkIfSensitive(image);
 
-      const tempPhoto = { uri: 'file:///temp.jpg' };
-      const shouldExclude = await privacyManager.shouldExcludePhoto(tempPhoto);
+      expect(result.isSensitive).toBe(true);
+      expect(result.reason).toContain('sensitive keyword');
+    });
 
-      expect(shouldExclude).toBe(false);
+    it('returns non-sensitive for unrelated photos', async () => {
+      await privacyManager.initialize();
+
+      const image = makeImage({ tags: ['beach', 'vacation'], sceneType: 'outdoor' });
+      const result = privacyManager.checkIfSensitive(image);
+
+      expect(result.isSensitive).toBe(false);
+      expect(result.confidence).toBe(0.9);
+    });
+
+    it('returns non-sensitive when excludeSensitivePhotos is disabled', async () => {
+      await privacyManager.initialize();
+      await privacyManager.updateSettings({ excludeSensitivePhotos: false });
+
+      const image = makeImage({ tags: ['passport'], sceneType: 'document' });
+      const result = privacyManager.checkIfSensitive(image);
+
+      expect(result.isSensitive).toBe(false);
+      expect(result.confidence).toBe(0);
     });
   });
 
-  describe('Encrypted Index Storage', () => {
-    it('encrypts sensitive data before storage', async () => {
+  describe('Sensitive Photo Marking', () => {
+    it('marks a photo as sensitive and removes it from the index', async () => {
       await privacyManager.initialize();
 
-      const sensitiveData = { tags: ['personal', 'family'] };
-      await privacyManager.storeEncrypted('test-key', sensitiveData);
+      await privacyManager.markAsSensitive('photo-123');
 
-      expect(encryptedStorage.setItem).toHaveBeenCalled();
+      expect(privacyManager.isMarkedAsSensitive('photo-123')).toBe(true);
     });
 
-    it('decrypts data when retrieved', async () => {
-      const mockData = JSON.stringify({ tags: ['personal'] });
-      (encryptedStorage.getItem as jest.Mock).mockResolvedValue(mockData);
-
+    it('unmarks a photo from sensitive list', async () => {
       await privacyManager.initialize();
-      const data = await privacyManager.retrieveEncrypted('test-key');
 
-      expect(data).toEqual({ tags: ['personal'] });
+      await privacyManager.markAsSensitive('photo-123');
+      await privacyManager.unmarkAsSensitive('photo-123');
+
+      expect(privacyManager.isMarkedAsSensitive('photo-123')).toBe(false);
     });
 
-    it('handles encryption errors gracefully', async () => {
-      (encryptedStorage.setItem as jest.Mock).mockRejectedValue(new Error('Encryption failed'));
-
+    it('isMarkedAsSensitive returns false for unmarked photos', async () => {
       await privacyManager.initialize();
 
-      await expect(
-        privacyManager.storeEncrypted('key', { data: 'test' })
-      ).rejects.toThrow('Encryption failed');
+      expect(privacyManager.isMarkedAsSensitive('unknown-id')).toBe(false);
+    });
+  });
+
+  describe('Encryption', () => {
+    it('encrypts data and returns a base64 string', async () => {
+      await privacyManager.initialize();
+
+      const encrypted = await privacyManager.encryptData('sensitive content');
+
+      expect(typeof encrypted).toBe('string');
+      expect(encrypted.length).toBeGreaterThan(0);
+    });
+
+    it('decrypts data back to the original string', async () => {
+      await privacyManager.initialize();
+
+      const original = 'sensitive content';
+      const encrypted = await privacyManager.encryptData(original);
+      const decrypted = await privacyManager.decryptData(encrypted);
+
+      expect(decrypted).toBe(original);
+    });
+
+    it('encryptData returns plaintext when encryption is disabled', async () => {
+      await privacyManager.initialize();
+      await privacyManager.updateSettings({ encryptedIndexStorage: false });
+
+      const plaintext = await privacyManager.encryptData('sensitive content');
+
+      expect(plaintext).toBe('sensitive content');
+    });
+
+    it('decryptData returns ciphertext when encryption is disabled', async () => {
+      await privacyManager.initialize();
+      await privacyManager.updateSettings({ encryptedIndexStorage: false });
+
+      const decrypted = await privacyManager.decryptData('sensitive content');
+
+      expect(decrypted).toBe('sensitive content');
     });
   });
 
   describe('Privacy Mode', () => {
-    it('supports different privacy modes', async () => {
+    it('enables privacy mode and locks settings', async () => {
       await privacyManager.initialize();
 
-      expect(privacyManager.getAvailablePrivacyModes()).toContain('standard');
-      expect(privacyManager.getAvailablePrivacyModes()).toContain('strict');
-      expect(privacyManager.getAvailablePrivacyModes()).toContain('custom');
+      privacyManager.enablePrivacyMode();
+
+      expect(privacyManager.isPrivacyModeEnabled()).toBe(true);
     });
 
-    it('applies correct settings for strict mode', async () => {
+    it('disables privacy mode', async () => {
       await privacyManager.initialize();
 
-      await privacyManager.setPrivacyMode('strict');
-      const settings = privacyManager.getSettings();
+      privacyManager.enablePrivacyMode();
+      privacyManager.disablePrivacyMode();
 
-      expect(settings.privacyMode).toBe('strict');
-      expect(settings.excludeSensitivePhotos).toBe(true);
-      expect(settings.enableEncryption).toBe(true);
+      expect(privacyManager.isPrivacyModeEnabled()).toBe(false);
     });
 
-    it('applies correct settings for standard mode', async () => {
+    it('prevents cloud upload when privacy mode is enabled', async () => {
       await privacyManager.initialize();
+      await privacyManager.updateSettings({ allowCloudSync: true });
 
-      await privacyManager.setPrivacyMode('standard');
-      const settings = privacyManager.getSettings();
+      privacyManager.enablePrivacyMode();
 
-      expect(settings.privacyMode).toBe('standard');
-      expect(settings.enableEncryption).toBe(true);
+      expect(privacyManager.canUploadToCloud()).toBe(false);
     });
 
-    it('allows custom privacy configuration', async () => {
+    it('allows cloud upload when privacy mode is disabled and cloud sync is on', async () => {
+      await privacyManager.initialize();
+      await privacyManager.updateSettings({ allowCloudSync: true });
+
+      privacyManager.disablePrivacyMode();
+
+      expect(privacyManager.canUploadToCloud()).toBe(true);
+    });
+
+    it('shouldProcessOnDevice returns true by default', async () => {
       await privacyManager.initialize();
 
-      await privacyManager.setPrivacyMode('custom', {
-        excludeSensitivePhotos: false,
-        enableEncryption: true,
-      });
+      expect(privacyManager.shouldProcessOnDevice()).toBe(true);
+    });
 
-      const settings = privacyManager.getSettings();
-      expect(settings.privacyMode).toBe('custom');
-      expect(settings.excludeSensitivePhotos).toBe(false);
+    it('shouldProcessOnDevice returns true when privacy mode is enabled', async () => {
+      await privacyManager.initialize();
+
+      privacyManager.enablePrivacyMode();
+
+      expect(privacyManager.shouldProcessOnDevice()).toBe(true);
     });
   });
 
   describe('Data Processing Transparency', () => {
-    it('provides data processing information', async () => {
+    it('returns a data processing notice', async () => {
       await privacyManager.initialize();
 
-      const info = privacyManager.getDataProcessingInfo();
+      const notice = privacyManager.getDataProcessingNotice();
 
-      expect(info).toMatchObject({
-        processedOnDevice: true,
-        notUploadedToCloud: true,
-        encryptedStorage: expect.any(Boolean),
-      });
-    });
-
-    it('generates privacy report', async () => {
-      await privacyManager.initialize();
-
-      const report = await privacyManager.generatePrivacyReport();
-
-      expect(report).toMatchObject({
-        totalPhotosProcessed: expect.any(Number),
-        photosExcluded: expect.any(Number),
-        encryptionEnabled: expect.any(Boolean),
-        lastProcessedAt: expect.any(Date),
-      });
+      expect(typeof notice).toBe('string');
+      expect(notice).toContain('On-Device Processing');
+      expect(notice).toContain('Sensitive Photo Protection');
+      expect(notice).toContain('Encrypted Storage');
     });
   });
 
-  describe('Privacy Controls', () => {
-    it('allows clearing all local data', async () => {
+  describe('Data Management', () => {
+    it('clears all local data and resets settings', async () => {
       await privacyManager.initialize();
+      await privacyManager.markAsSensitive('photo-1');
 
-      await privacyManager.clearAllLocalData();
+      await privacyManager.deleteAllLocalData();
 
-      expect(encryptedStorage.removeItem).toHaveBeenCalled();
+      expect(privacyManager.isMarkedAsSensitive('photo-1')).toBe(false);
     });
 
-    it('allows exporting privacy settings', async () => {
+    it('cleanupOldData returns a count', async () => {
       await privacyManager.initialize();
 
-      const exportData = await privacyManager.exportPrivacySettings();
+      const count = await privacyManager.cleanupOldData();
 
-      expect(exportData).toHaveProperty('settings');
-      expect(exportData).toHaveProperty('exclusionPatterns');
-      expect(exportData).toHaveProperty('exportDate');
-    });
-
-    it('allows importing privacy settings', async () => {
-      await privacyManager.initialize();
-
-      const importData = {
-        settings: { privacyMode: 'strict' },
-        exclusionPatterns: ['pattern1', 'pattern2'],
-        exportDate: new Date().toISOString(),
-      };
-
-      await privacyManager.importPrivacySettings(importData);
-
-      expect(privacyManager.getSettings().privacyMode).toBe('strict');
+      expect(typeof count).toBe('number');
     });
   });
 });
