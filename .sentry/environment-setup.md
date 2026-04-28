@@ -107,7 +107,7 @@ node -e "require('./dist/utils/sentry').captureException(new Error('Test error')
 
 ```bash
 cd apps/mobile
-# Set SENTRY_DSN in .env
+# Set EXPO_PUBLIC_SENTRY_DSN in .env
 # Run app and trigger test error
 # Check Sentry dashboard for error
 ```
