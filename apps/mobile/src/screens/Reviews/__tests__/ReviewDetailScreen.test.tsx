@@ -10,7 +10,8 @@ import { ReviewDetailScreen } from '../ReviewDetailScreen';
 jest.mock('../../../services/api/reviewApi');
 
 jest.mock('../../../stores/authStore', () => ({
-  useAuthStore: () => 'reviewee-1',
+  useAuthStore: (selector: (state: { user: { id: string } }) => unknown) =>
+    selector({ user: { id: 'reviewee-1' } }),
 }));
 
 const mockReview: Review = {
