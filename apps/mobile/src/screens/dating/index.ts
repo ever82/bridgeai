@@ -7,3 +7,4 @@ export { default as ReferralScreen } from './ReferralScreen';
 export { default as MatchSuccessScreen } from './MatchSuccessScreen';
 export { default as ReferralHistoryScreen } from './ReferralHistoryScreen';
 export { default as DatingProfileSetupScreen } from './DatingProfileSetupScreen';
+export { default as RecommendationsScreen } from './RecommendationsScreen';

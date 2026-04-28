@@ -13,6 +13,12 @@ export * from './profileService';
 export * from './profileQualityService';
 export * from './privacyService';
 export * from './conversationStateManager';
+export * from './matchAlgorithm';
+export * from './recommendationService';
+export * from './matchNotificationService';
+export * from './agentInitiatedChat';
+export * from './feedbackService';
+export * from './preferenceLearning';
 
 // 默认导出
 export { default as consentStateManager } from './consentStateManager';
@@ -22,3 +28,9 @@ export { default as referralNotificationService } from './referralNotificationSe
 export { default as referralHistoryService } from './referralHistoryService';
 export { default as humanChatRoomService } from './humanChatRoomService';
 export { default as conversationStateManager } from './conversationStateManager';
+export { default as matchAlgorithm } from './matchAlgorithm';
+export { default as recommendationService } from './recommendationService';
+export { default as matchNotificationService } from './matchNotificationService';
+export { default as agentInitiatedChat } from './agentInitiatedChat';
+export { default as feedbackService } from './feedbackService';
+export { default as preferenceLearning } from './preferenceLearning';

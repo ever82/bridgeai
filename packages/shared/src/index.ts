@@ -2,6 +2,7 @@
 export * from './types';
 export * from './schemas';
 export * from './utils';
+export * from './utils/datingSimilarity';
 export * from './env';
 export * from './config/scenes';
 // Explicitly re-export credit types to ensure tree-shaking doesn't drop them
