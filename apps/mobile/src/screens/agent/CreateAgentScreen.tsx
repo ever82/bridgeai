@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -29,6 +29,8 @@ const AGENT_TYPE_TO_SCENE_ID: Record<string, SceneId> = {
 
 import { agentsApi } from '../../services/api/agents';
 import { ProfileStackParamList } from '../../types/navigation';
+import { useAsyncStorage } from '../../hooks/useAsyncStorage';
+import { AvatarPicker } from '../../components/AvatarPicker';
 
 import { SceneConfigForm } from './components/SceneConfigForm';
 import { AIConfigSection } from './components/AIConfigSection';
@@ -44,17 +46,70 @@ const SCENE_TYPES: AgentType[] = [
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList>;
 
+interface DraftState {
+  name: string;
+  description: string;
+  avatar: string | undefined;
+  selectedType: AgentType | null;
+  sceneConfig: Record<string, string | number | boolean>;
+  aiConfig: Record<string, string | number | boolean>;
+  step: number;
+  isPublic: boolean;
+}
+
+const DRAFT_KEY = 'create_agent_draft';
+
 export const CreateAgentScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(false);
 
+  // Draft storage
+  const {
+    value: draft,
+    setValue: saveDraft,
+    removeValue: clearDraft,
+  } = useAsyncStorage<DraftState | null>(DRAFT_KEY, null);
+
   // Form state
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [avatar, setAvatar] = useState<string | undefined>(undefined);
   const [selectedType, setSelectedType] = useState<AgentType | null>(null);
   const [sceneConfig, setSceneConfig] = useState<Record<string, string | number | boolean>>({});
   const [aiConfig, setAiConfig] = useState<Record<string, string | number | boolean>>({});
+  const [isPublic, setIsPublic] = useState(true);
+
+  // Restore draft on mount
+  useEffect(() => {
+    if (draft) {
+      setName(draft.name);
+      setDescription(draft.description);
+      setAvatar(draft.avatar);
+      setSelectedType(draft.selectedType);
+      setSceneConfig(draft.sceneConfig);
+      setAiConfig(draft.aiConfig);
+      setStep(draft.step);
+      if (draft.isPublic !== undefined) {
+        setIsPublic(draft.isPublic);
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save draft on step change
+  useEffect(() => {
+    const draftState: DraftState = {
+      name,
+      description,
+      avatar,
+      selectedType,
+      sceneConfig,
+      aiConfig,
+      step,
+      isPublic,
+    };
+    saveDraft(draftState);
+  }, [step, name, description, avatar, selectedType, sceneConfig, aiConfig, saveDraft, isPublic]);
 
   const validateStep1 = useCallback(() => {
     if (!name.trim()) {
@@ -101,9 +156,10 @@ export const CreateAgentScreen: React.FC = () => {
     if (step > 1) {
       setStep(step - 1);
     } else {
+      clearDraft();
       navigation.goBack();
     }
-  }, [step, navigation]);
+  }, [step, navigation, clearDraft]);
 
   const handleSubmit = useCallback(async () => {
     if (!selectedType) return;
@@ -115,10 +171,12 @@ export const CreateAgentScreen: React.FC = () => {
         type: selectedType,
         name: name.trim(),
         description: description.trim() || undefined,
+        avatar: avatar,
         config: {
           scene: sceneConfig,
           ai: aiConfig,
         },
+        isPublic: isPublic,
       };
 
       await agentsApi.createAgent(agentData);
@@ -128,17 +186,23 @@ export const CreateAgentScreen: React.FC = () => {
       Alert.alert('Success', 'Agent创建成功！是否继续创建其他场景的Agent？', [
         {
           text: '完成',
-          onPress: () => navigation.navigate('AgentList'),
+          onPress: () => {
+            clearDraft();
+            navigation.navigate('AgentList');
+          },
         },
         {
           text: '继续创建',
           onPress: () => {
+            clearDraft();
             setSelectedType(null);
             setName('');
             setDescription('');
+            setAvatar(undefined);
             setSceneConfig({});
             setAiConfig({});
             setStep(2);
+            setIsPublic(true);
           },
         },
       ]);
@@ -147,12 +211,28 @@ export const CreateAgentScreen: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedType, name, description, sceneConfig, aiConfig, navigation]);
+  }, [
+    selectedType,
+    name,
+    description,
+    sceneConfig,
+    aiConfig,
+    avatar,
+    isPublic,
+    clearDraft,
+    navigation,
+  ]);
 
   const renderStep1 = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.stepTitle}>Step 1: Basic Information</Text>
-      <Text style={styles.stepDescription}>Give your agent a name and description</Text>
+      <Text style={styles.stepDescription}>Give your agent a name, description and avatar</Text>
+
+      {/* Avatar Picker */}
+      <View style={styles.avatarSection}>
+        <Text style={styles.label}>Agent Avatar</Text>
+        <AvatarPicker value={avatar} onChange={setAvatar} size={100} />
+      </View>
 
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Agent Name *</Text>
@@ -182,6 +262,51 @@ export const CreateAgentScreen: React.FC = () => {
           maxLength={500}
         />
         <Text style={styles.characterCount}>{description.length}/500</Text>
+      </View>
+
+      {/* Visibility Toggle */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>Visibility</Text>
+        <View style={styles.visibilityContainer}>
+          <TouchableOpacity
+            style={[styles.visibilityOption, !isPublic && styles.visibilityOptionSelected]}
+            onPress={() => setIsPublic(false)}
+            testID="visibility-private"
+          >
+            <Text
+              style={[
+                styles.visibilityOptionText,
+                !isPublic && styles.visibilityOptionTextSelected,
+              ]}
+            >
+              Private
+            </Text>
+            <Text
+              style={[
+                styles.visibilityOptionDesc,
+                !isPublic && styles.visibilityOptionTextSelected,
+              ]}
+            >
+              Only you can see this agent
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.visibilityOption, isPublic && styles.visibilityOptionSelected]}
+            onPress={() => setIsPublic(true)}
+            testID="visibility-public"
+          >
+            <Text
+              style={[styles.visibilityOptionText, isPublic && styles.visibilityOptionTextSelected]}
+            >
+              Public
+            </Text>
+            <Text
+              style={[styles.visibilityOptionDesc, isPublic && styles.visibilityOptionTextSelected]}
+            >
+              Visible to others
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -254,6 +379,7 @@ export const CreateAgentScreen: React.FC = () => {
       latitude: null,
       longitude: null,
       isActive: false,
+      isPublic: isPublic,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -378,6 +504,7 @@ const styles = StyleSheet.create({
   stepDescription: { fontSize: 16, color: '#666', marginBottom: 24 },
   inputGroup: { marginBottom: 20 },
   label: { fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 8 },
+  avatarSection: { alignItems: 'center', marginBottom: 24 },
   input: {
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -388,6 +515,20 @@ const styles = StyleSheet.create({
   },
   textArea: { height: 100, textAlignVertical: 'top' },
   characterCount: { fontSize: 12, color: '#999', textAlign: 'right', marginTop: 4 },
+  visibilityContainer: { flexDirection: 'row', gap: 12 },
+  visibilityOption: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  visibilityOptionSelected: { borderColor: '#007AFF', backgroundColor: '#f0f7ff' },
+  visibilityOptionText: { fontSize: 16, fontWeight: '600', color: '#666', marginBottom: 4 },
+  visibilityOptionTextSelected: { color: '#007AFF' },
+  visibilityOptionDesc: { fontSize: 12, color: '#999' },
   typeCard: {
     flexDirection: 'row',
     alignItems: 'center',

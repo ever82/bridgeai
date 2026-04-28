@@ -22,6 +22,7 @@ module.exports = {
     '^react-native-reanimated$': '<rootDir>/__mocks__/react-native-reanimated.ts',
     '^react-native-safe-area-context$': '<rootDir>/__mocks__/react-native-safe-area-context.ts',
     '^react-native-screens$': '<rootDir>/__mocks__/react-native-screens.ts',
+    '^@expo/vector-icons$': '<rootDir>/__mocks__/@expo/vector-icons.ts',
     '^nativewind$': '<rootDir>/__mocks__/nativewind.ts',
     '^react-native-sqlite-storage$': '<rootDir>/__mocks__/react-native-sqlite-storage.ts',
     '^react-native-vision-camera$': '<rootDir>/__mocks__/react-native-vision-camera.ts',

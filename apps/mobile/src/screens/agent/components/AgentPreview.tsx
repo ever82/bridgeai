@@ -10,6 +10,7 @@ import { Agent } from '@bridgeai/shared';
 interface AgentPreviewProps {
   agent: Agent;
   onResetDefaults?: () => void;
+  configHistory?: ConfigHistoryEntry[];
 }
 
 interface ChatMessage {
@@ -25,18 +26,15 @@ interface ConfigHistoryEntry {
   summary: string;
 }
 
-export const AgentPreview: React.FC<AgentPreviewProps> = ({ agent, onResetDefaults }) => {
+export const AgentPreview: React.FC<AgentPreviewProps> = ({
+  agent,
+  onResetDefaults,
+  configHistory = [],
+}) => {
   const [activeTab, setActiveTab] = useState<'preview' | 'chat' | 'history'>('preview');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const chatRef = useRef<FlatList>(null);
-
-  // Mock config history
-  const configHistory: ConfigHistoryEntry[] = [
-    { id: '1', changedAt: new Date(), summary: '更新温度参数为 0.7' },
-    { id: '2', changedAt: new Date(Date.now() - 86400000), summary: '切换模型为 GPT-4' },
-    { id: '3', changedAt: new Date(Date.now() - 172800000), summary: '修改回复风格为友好' },
-  ];
 
   // Helper to format config objects into readable key-value pairs
   const renderConfigEntries = (config: Record<string, unknown>) => {

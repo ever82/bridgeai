@@ -72,6 +72,7 @@ export type ProfileStackParamList = {
   };
   AgentList: undefined;
   CreateAgent: undefined;
+  EditAgent: { agentId: string };
   TransactionList: undefined;
   TransactionDetail: { transactionId: string };
   PointsTransactionDetail: { transactionId?: string; transaction?: { id: string } };

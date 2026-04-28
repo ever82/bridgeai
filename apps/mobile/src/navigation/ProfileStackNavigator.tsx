@@ -17,6 +17,7 @@ import { UserProfileScreen } from '../screens/user/UserProfileScreen';
 import { ReviewListScreen, ReviewDetailScreen, WriteReviewScreen } from '../screens/Reviews';
 import { AgentListScreen } from '../screens/agent/AgentListScreen';
 import { CreateAgentScreen } from '../screens/agent/CreateAgentScreen';
+import { EditAgentScreen } from '../screens/agent/EditAgentScreen';
 import {
   TransactionListScreen,
   TransactionDetailScreen,
@@ -56,6 +57,7 @@ export const ProfileStackNavigator = () => {
       <Stack.Screen name="WriteReview" component={WriteReviewScreen} />
       <Stack.Screen name="AgentList" component={AgentListScreen} />
       <Stack.Screen name="CreateAgent" component={CreateAgentScreen} />
+      <Stack.Screen name="EditAgent" component={EditAgentScreen} />
       <Stack.Screen name="TransactionList" component={TransactionListScreen} />
       <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
       <Stack.Screen name="PointsTransactionDetail" component={PointsTransactionDetailScreen} />

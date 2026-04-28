@@ -18,7 +18,7 @@ interface AIConfigSectionProps {
   config: {
     model?: string;
     temperature?: number;
-    replyStyle?: 'direct' | 'indirect' | 'detailed' | 'concise';
+    replyStyle?: 'formal' | 'friendly' | 'humorous';
     autoReply?: boolean;
     handoffTrigger?: string;
   };
@@ -33,10 +33,9 @@ const MODELS = [
 ];
 
 const REPLY_STYLES = [
-  { id: 'direct', name: '直接', description: '直截了当的表达' },
-  { id: 'indirect', name: '委婉', description: '委婉含蓄的交流' },
-  { id: 'detailed', name: '详细', description: '详尽全面的回复' },
-  { id: 'concise', name: '简洁', description: '简明扼要的回答' },
+  { id: 'formal', name: '正式', description: '专业严谨的表达' },
+  { id: 'friendly', name: '友好', description: '亲切温和的交流' },
+  { id: 'humorous', name: '幽默', description: '轻松诙谐的回复' },
 ];
 
 const HANDOVER_TRIGGERS = [

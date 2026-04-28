@@ -29,6 +29,7 @@ export interface Agent {
   latitude: number | null;
   longitude: number | null;
   isActive: boolean;
+  isPublic: boolean;
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
 }
@@ -37,17 +38,21 @@ export interface CreateAgentRequest {
   type: AgentType;
   name: string;
   description?: string;
+  avatar?: string;
   config?: Record<string, any>;
   latitude?: number;
   longitude?: number;
+  isPublic?: boolean;
 }
 
 export interface UpdateAgentRequest {
   name?: string;
   description?: string;
+  avatar?: string;
   config?: Record<string, any>;
   latitude?: number;
   longitude?: number;
+  isPublic?: boolean;
 }
 
 export interface UpdateAgentStatusRequest {
