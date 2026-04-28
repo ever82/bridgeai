@@ -11,11 +11,7 @@ import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
 import type { PaymentRequest } from '../../../shared/types/payment.types';
 
-import type {
-  ValidationResult,
-  FraudRiskResult,
-  SecurityEvent,
-} from './types';
+import type { ValidationResult, FraudRiskResult, SecurityEvent } from './types';
 
 // ============================================================================
 // Configuration
@@ -28,8 +24,8 @@ const RISK_CONFIG = {
   maxPaymentsPerDay: 50,
 
   // Amount limits
-  maxSinglePaymentAmount: 10000,   // 单笔最大积分
-  maxDailyPaymentAmount: 50000,    // 单日最大积分
+  maxSinglePaymentAmount: 10000, // 单笔最大积分
+  maxDailyPaymentAmount: 50000, // 单日最大积分
   maxMonthlyPaymentAmount: 200000, // 单月最大积分
 
   // Suspicious amount thresholds (same amount repeated)
@@ -49,12 +45,81 @@ const RISK_CONFIG = {
   maxFailuresBeforeCooldown: 3,
 } as const;
 
-// In-memory stores for real-time tracking
-const paymentAttempts = new Map<string, number[]>();      // userId -> timestamps
-const failedAttempts = new Map<string, number[]>();       // userId -> timestamps
-const amountHistory = new Map<string, number[]>();        // userId -> recent amounts
+// In-memory caches for read-through performance (backed by database)
+const paymentAttempts = new Map<string, number[]>(); // userId -> timestamps
+const failedAttempts = new Map<string, number[]>(); // userId -> timestamps
+const amountHistory = new Map<string, number[]>(); // userId -> recent amounts
 const securityEventLog: PaymentSecurityEvent[] = [];
 const MAX_EVENT_LOG = 5000;
+
+// Category constants for database persistence
+type RiskStateCategory = 'payment_attempts' | 'failed_attempts' | 'amount_history';
+
+// Map category to the corresponding in-memory cache
+function getCacheForCategory(category: RiskStateCategory): Map<string, number[]> {
+  switch (category) {
+    case 'payment_attempts':
+      return paymentAttempts;
+    case 'failed_attempts':
+      return failedAttempts;
+    case 'amount_history':
+      return amountHistory;
+  }
+}
+
+/**
+ * Load risk state from database. Falls back to in-memory cache if DB read fails.
+ * Populates the in-memory cache on successful DB read.
+ */
+async function loadState(userId: string, category: RiskStateCategory): Promise<number[]> {
+  const cache = getCacheForCategory(category);
+
+  // Return cache if already populated (avoids DB round-trip)
+  if (cache.has(userId)) {
+    return cache.get(userId)!;
+  }
+
+  try {
+    const record = await prisma.paymentRiskState.findUnique({
+      where: { userId_category: { userId, category } },
+    });
+    const data = record ? (record.data as number[]) : [];
+    cache.set(userId, data);
+    return data;
+  } catch (dbError) {
+    logger.error('[PaymentSecurity] Failed to load risk state from database', {
+      userId,
+      category,
+      error: dbError instanceof Error ? dbError.message : String(dbError),
+    });
+    // Fall back to whatever is in the in-memory cache
+    return cache.get(userId) || [];
+  }
+}
+
+/**
+ * Save risk state to both in-memory cache and database.
+ * DB write is fire-and-forget (non-blocking) to maintain performance.
+ */
+function saveState(userId: string, category: RiskStateCategory, data: number[]): void {
+  const cache = getCacheForCategory(category);
+  cache.set(userId, data);
+
+  // Persist to database asynchronously (fire-and-forget)
+  prisma.paymentRiskState
+    .upsert({
+      where: { userId_category: { userId, category } },
+      update: { data },
+      create: { userId, category, data },
+    })
+    .catch((dbError: unknown) => {
+      logger.error('[PaymentSecurity] Failed to persist risk state to database', {
+        userId,
+        category,
+        error: dbError instanceof Error ? dbError.message : String(dbError),
+      });
+    });
+}
 
 // ============================================================================
 // Types
@@ -62,9 +127,15 @@ const MAX_EVENT_LOG = 5000;
 
 export interface PaymentSecurityEvent {
   id: string;
-  type: 'PAYMENT_BLOCKED' | 'FRAUD_DETECTED' | 'LIMIT_EXCEEDED'
-    | 'VELOCITY_WARNING' | 'AMOUNT_ANOMALY' | 'SUSPICIOUS_PATTERN'
-    | 'PAYMENT_ALLOWED' | 'COOLDOWN_ACTIVE';
+  type:
+    | 'PAYMENT_BLOCKED'
+    | 'FRAUD_DETECTED'
+    | 'LIMIT_EXCEEDED'
+    | 'VELOCITY_WARNING'
+    | 'AMOUNT_ANOMALY'
+    | 'SUSPICIOUS_PATTERN'
+    | 'PAYMENT_ALLOWED'
+    | 'COOLDOWN_ACTIVE';
   userId: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
   riskScore: number;
@@ -113,9 +184,9 @@ function generateId(): string {
 /**
  * Check payment velocity (frequency of payment attempts)
  */
-function checkVelocity(userId: string): RiskCheckResult {
+async function checkVelocity(userId: string): Promise<RiskCheckResult> {
   const now = Date.now();
-  const timestamps = paymentAttempts.get(userId) || [];
+  const timestamps = await loadState(userId, 'payment_attempts');
 
   // Clean old entries
   const recent = timestamps.filter(t => now - t < 86_400_000); // 24h
@@ -184,8 +255,8 @@ function checkAmountLimits(
 /**
  * Check for amount anomaly (same amount repeated)
  */
-function checkAmountAnomaly(userId: string, amount: number): RiskCheckResult {
-  const history = amountHistory.get(userId) || [];
+async function checkAmountAnomaly(userId: string, amount: number): Promise<RiskCheckResult> {
+  const history = await loadState(userId, 'amount_history');
   const sameAmountCount = history.filter(a => a === amount).length;
 
   let score = 0;
@@ -207,9 +278,9 @@ function checkAmountAnomaly(userId: string, amount: number): RiskCheckResult {
 /**
  * Check failure cooldown
  */
-function checkFailureCooldown(userId: string): RiskCheckResult {
+async function checkFailureCooldown(userId: string): Promise<RiskCheckResult> {
   const now = Date.now();
-  const failures = failedAttempts.get(userId) || [];
+  const failures = await loadState(userId, 'failed_attempts');
   const recentFailures = failures.filter(t => now - t < RISK_CONFIG.failureCooldownMs);
 
   let score = 0;
@@ -267,31 +338,114 @@ async function checkAccountAge(userId: string, amount: number): Promise<RiskChec
 }
 
 /**
- * Check device and IP diversity (multiple devices/IPs = higher risk)
+ * Simple deterministic hash for fingerprinting device identifiers.
+ * Produces a hex string from the input.
  */
-async function checkDeviceDiversity(userId: string): Promise<RiskCheckResult> {
+function simpleFingerprintHash(input: string): string {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const ch = input.charCodeAt(i);
+    hash = ((hash << 5) - hash + ch) | 0; // |0 keeps it as 32-bit int
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
+}
+
+/**
+ * Check device fingerprint (设备指纹识别)
+ *
+ * Collects device records, builds fingerprint hashes from device identifiers,
+ * and checks for suspicious patterns such as:
+ * - Shared device fraud (same deviceId used by multiple users)
+ * - Unknown devices not in user's history
+ * - Multiple device types in a short timeframe
+ * Also retains the original device count risk logic.
+ */
+async function checkDeviceFingerprint(userId: string): Promise<RiskCheckResult> {
   try {
-    const deviceCount = await prisma.userDevice.count({
+    const since = new Date(Date.now() - 86_400_000); // last 24 hours
+
+    const devices = await prisma.userDevice.findMany({
       where: {
         userId,
-        lastActiveAt: { gte: new Date(Date.now() - 86_400_000) },
+        lastActiveAt: { gte: since },
+      },
+      select: {
+        deviceId: true,
+        deviceType: true,
+        osVersion: true,
       },
     });
 
+    const deviceCount = devices.length;
     let score = 0;
-    let reason: string | undefined;
+    const reasons: string[] = [];
 
+    // --- Existing device count risk ---
     if (deviceCount > 5) {
-      score = 30;
-      reason = `24小时内使用${deviceCount}台不同设备`;
+      score += 30;
+      reasons.push(`24小时内使用${deviceCount}台不同设备`);
     } else if (deviceCount > 3) {
-      score = 15;
-      reason = `24小时内使用${deviceCount}台不同设备`;
+      score += 15;
+      reasons.push(`24小时内使用${deviceCount}台不同设备`);
     }
 
-    return { check: 'device_diversity', passed: score < RISK_CONFIG.highRiskThreshold, score, reason };
+    // --- Fingerprint hash per device (for future matching) ---
+    const _deviceFingerprints = devices.map(d =>
+      simpleFingerprintHash(`${d.deviceId}|${d.deviceType}|${d.osVersion}`)
+    );
+
+    // Check for shared device fraud: same deviceId used by other users
+    if (devices.length > 0) {
+      const deviceIds = devices.map(d => d.deviceId);
+      const sharedCount = await prisma.userDevice.groupBy({
+        by: ['deviceId'],
+        where: {
+          deviceId: { in: deviceIds },
+          userId: { not: userId },
+          lastActiveAt: { gte: since },
+        },
+        _count: { userId: true },
+        having: { userId: { _count: { gt: 0 } } },
+      });
+
+      if (sharedCount.length > 0) {
+        score += 40;
+        reasons.push(`检测到${sharedCount.length}个设备被其他用户共享使用`);
+      }
+    }
+
+    // Check for multiple device types in short timeframe (suspicious rapid switching)
+    const deviceTypes = new Set(devices.map(d => d.deviceType));
+    if (deviceTypes.size > 2 && deviceCount >= 3) {
+      score += 25;
+      reasons.push(`短时间内使用${deviceTypes.size}种不同设备类型，可能存在异常`);
+    }
+
+    // Check for unknown / new devices (devices with no prior history before 24h window)
+    if (devices.length > 0) {
+      const knownDeviceCount = await prisma.userDevice.count({
+        where: {
+          userId,
+          createdAt: { lt: since },
+        },
+      });
+      const newDeviceCount = deviceCount - Math.min(knownDeviceCount, deviceCount);
+      if (newDeviceCount > 2) {
+        score += 20;
+        reasons.push(`24小时内出现${newDeviceCount}台全新设备`);
+      }
+    }
+
+    const combinedReason = reasons.length > 0 ? reasons.join('; ') : undefined;
+
+    return {
+      check: 'device_fingerprint',
+      passed: score < RISK_CONFIG.highRiskThreshold,
+      score,
+      reason: combinedReason,
+    };
   } catch {
-    return { check: 'device_diversity', passed: true, score: 0 };
+    return { check: 'device_fingerprint', passed: true, score: 0 };
   }
 }
 
@@ -310,6 +464,29 @@ function logEvent(event: Omit<PaymentSecurityEvent, 'id' | 'timestamp'>): void {
     securityEventLog.shift();
   }
 
+  // Persist to database for reliable audit logging (支付日志审计)
+  prisma.auditLog
+    .create({
+      data: {
+        userId: fullEvent.userId,
+        action: fullEvent.type,
+        resource: 'payment_security',
+        resourceId: fullEvent.id,
+        details: {
+          severity: fullEvent.severity,
+          riskScore: fullEvent.riskScore,
+          ...fullEvent.details,
+        },
+        timestamp: fullEvent.timestamp,
+      },
+    })
+    .catch((dbError: unknown) => {
+      logger.error('[PaymentSecurity] Failed to persist audit log to database', {
+        eventId: fullEvent.id,
+        error: dbError instanceof Error ? dbError.message : String(dbError),
+      });
+    });
+
   if (event.severity === 'high' || event.severity === 'critical') {
     logger.warn(`[PaymentSecurity] ${event.type}`, {
       userId: event.userId,
@@ -324,26 +501,22 @@ function recordPaymentAttempt(userId: string, amount: number): void {
   const timestamps = paymentAttempts.get(userId) || [];
   timestamps.push(now);
   // Keep only last 24h
-  paymentAttempts.set(
-    userId,
-    timestamps.filter(t => now - t < 86_400_000)
-  );
+  const recentTimestamps = timestamps.filter(t => now - t < 86_400_000);
+  saveState(userId, 'payment_attempts', recentTimestamps);
 
   const amounts = amountHistory.get(userId) || [];
   amounts.push(amount);
   // Keep only last 50 amounts
   if (amounts.length > 50) amounts.shift();
-  amountHistory.set(userId, amounts);
+  saveState(userId, 'amount_history', amounts);
 }
 
 function recordFailure(userId: string): void {
   const now = Date.now();
   const failures = failedAttempts.get(userId) || [];
   failures.push(now);
-  failedAttempts.set(
-    userId,
-    failures.filter(t => now - t < RISK_CONFIG.failureCooldownMs)
-  );
+  const recentFailures = failures.filter(t => now - t < RISK_CONFIG.failureCooldownMs);
+  saveState(userId, 'failed_attempts', recentFailures);
 }
 
 // ============================================================================
@@ -390,14 +563,20 @@ export async function validatePaymentRequest(
  */
 export async function checkFraudRisk(
   userId: string,
-  photoIds: string[]
+  photoIds: string[],
+  amount?: number
 ): Promise<FraudRiskResult> {
-  const assessment = await assessRisk(userId, 0);
+  const assessment = await assessRisk(userId, amount ?? 0);
 
   logEvent({
     type: assessment.allowed ? 'PAYMENT_ALLOWED' : 'FRAUD_DETECTED',
     userId,
-    severity: assessment.riskLevel === 'high' ? 'high' : assessment.riskLevel === 'medium' ? 'medium' : 'low',
+    severity:
+      assessment.riskLevel === 'high'
+        ? 'high'
+        : assessment.riskLevel === 'medium'
+          ? 'medium'
+          : 'low',
     riskScore: assessment.riskScore,
     details: {
       photoCount: photoIds.length,
@@ -415,16 +594,13 @@ export async function checkFraudRisk(
 /**
  * Full risk assessment for a payment
  */
-export async function assessRisk(
-  userId: string,
-  amount: number
-): Promise<PaymentRiskAssessment> {
+export async function assessRisk(userId: string, amount: number): Promise<PaymentRiskAssessment> {
   const checks: RiskCheckResult[] = [];
   const reasons: string[] = [];
   let totalScore = 0;
 
   // 1. Velocity check
-  const velocityCheck = checkVelocity(userId);
+  const velocityCheck = await checkVelocity(userId);
   checks.push(velocityCheck);
   totalScore += velocityCheck.score;
   if (velocityCheck.reason) reasons.push(velocityCheck.reason);
@@ -443,14 +619,14 @@ export async function assessRisk(
     if (limitCheck.reason) reasons.push(limitCheck.reason);
 
     // 3. Amount anomaly check
-    const anomalyCheck = checkAmountAnomaly(userId, amount);
+    const anomalyCheck = await checkAmountAnomaly(userId, amount);
     checks.push(anomalyCheck);
     totalScore += anomalyCheck.score;
     if (anomalyCheck.reason) reasons.push(anomalyCheck.reason);
   }
 
   // 4. Failure cooldown check
-  const failureCheck = checkFailureCooldown(userId);
+  const failureCheck = await checkFailureCooldown(userId);
   checks.push(failureCheck);
   totalScore += failureCheck.score;
   if (failureCheck.reason) reasons.push(failureCheck.reason);
@@ -461,8 +637,8 @@ export async function assessRisk(
   totalScore += ageCheck.score;
   if (ageCheck.reason) reasons.push(ageCheck.reason);
 
-  // 6. Device diversity check
-  const deviceCheck = await checkDeviceDiversity(userId);
+  // 6. Device fingerprint check (设备指纹识别)
+  const deviceCheck = await checkDeviceFingerprint(userId);
   checks.push(deviceCheck);
   totalScore += deviceCheck.score;
   if (deviceCheck.reason) reasons.push(deviceCheck.reason);
@@ -470,11 +646,12 @@ export async function assessRisk(
   // Cap total score at 100
   totalScore = Math.min(100, totalScore);
 
-  const riskLevel = totalScore >= RISK_CONFIG.highRiskThreshold
-    ? 'high'
-    : totalScore >= RISK_CONFIG.mediumRiskThreshold
-      ? 'medium'
-      : 'low';
+  const riskLevel =
+    totalScore >= RISK_CONFIG.highRiskThreshold
+      ? 'high'
+      : totalScore >= RISK_CONFIG.mediumRiskThreshold
+        ? 'medium'
+        : 'low';
 
   const blocked = totalScore >= RISK_CONFIG.highRiskThreshold;
 
@@ -539,8 +716,18 @@ async function getSpentAmounts(userId: string): Promise<{ daily: number; monthly
  */
 export function recordSuccessfulPayment(userId: string, amount: number): void {
   recordPaymentAttempt(userId, amount);
-  // Clear failure history on success
+  // Clear failure history on success (both cache and database)
   failedAttempts.delete(userId);
+  prisma.paymentRiskState
+    .deleteMany({
+      where: { userId, category: 'failed_attempts' },
+    })
+    .catch((dbError: unknown) => {
+      logger.error('[PaymentSecurity] Failed to clear failure state from database', {
+        userId,
+        error: dbError instanceof Error ? dbError.message : String(dbError),
+      });
+    });
 }
 
 /**
@@ -642,6 +829,16 @@ export function clearUserData(userId: string): void {
   paymentAttempts.delete(userId);
   failedAttempts.delete(userId);
   amountHistory.delete(userId);
+  prisma.paymentRiskState
+    .deleteMany({
+      where: { userId },
+    })
+    .catch((dbError: unknown) => {
+      logger.error('[PaymentSecurity] Failed to clear user risk state from database', {
+        userId,
+        error: dbError instanceof Error ? dbError.message : String(dbError),
+      });
+    });
 }
 
 /**
@@ -652,29 +849,41 @@ export function clearAllData(): void {
   failedAttempts.clear();
   amountHistory.clear();
   securityEventLog.length = 0;
+  prisma.paymentRiskState.deleteMany({}).catch((dbError: unknown) => {
+    logger.error('[PaymentSecurity] Failed to clear all risk state from database', {
+      error: dbError instanceof Error ? dbError.message : String(dbError),
+    });
+  });
 }
 
 // ============================================================================
 // Mappers
 // ============================================================================
 
-function mapEventType(
-  type: SecurityEvent['type']
-): PaymentSecurityEvent['type'] {
+function mapEventType(type: SecurityEvent['type']): PaymentSecurityEvent['type'] {
   switch (type) {
-    case 'payment_attempt': return 'PAYMENT_ALLOWED';
-    case 'payment_success': return 'PAYMENT_ALLOWED';
-    case 'payment_failure': return 'SUSPICIOUS_PATTERN';
-    case 'download': return 'PAYMENT_ALLOWED';
-    case 'refund_request': return 'FRAUD_DETECTED';
-    default: return 'SUSPICIOUS_PATTERN';
+    case 'payment_attempt':
+      return 'PAYMENT_ALLOWED';
+    case 'payment_success':
+      return 'PAYMENT_ALLOWED';
+    case 'payment_failure':
+      return 'SUSPICIOUS_PATTERN';
+    case 'download':
+      return 'PAYMENT_ALLOWED';
+    case 'refund_request':
+      return 'FRAUD_DETECTED';
+    default:
+      return 'SUSPICIOUS_PATTERN';
   }
 }
 
 function mapSeverity(type: SecurityEvent['type']): PaymentSecurityEvent['severity'] {
   switch (type) {
-    case 'payment_failure': return 'medium';
-    case 'refund_request': return 'medium';
-    default: return 'low';
+    case 'payment_failure':
+      return 'medium';
+    case 'refund_request':
+      return 'medium';
+    default:
+      return 'low';
   }
 }

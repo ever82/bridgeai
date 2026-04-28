@@ -74,6 +74,7 @@ model User {
   photos               Photo[]
   violations           UserViolation[]
   appeals              Appeal[]
+  paymentRiskStates    PaymentRiskState[]
 
   @@map("users")
 }
@@ -2208,4 +2209,24 @@ model SensitiveWord {
   @@index([category])
   @@index([isActive])
   @@map("sensitive_words")
+}
+
+// ============================================
+// 支付风控状态 (Payment Risk State)
+// ============================================
+
+model PaymentRiskState {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  category  String   // 'payment_attempts' | 'failed_attempts' | 'amount_history'
+  data      Json     // stores the array of timestamps or amounts
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+  @@index([userId])
+  @@index([category])
+  @@map("payment_risk_states")
 }

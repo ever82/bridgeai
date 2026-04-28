@@ -10,9 +10,19 @@ jest.mock('../../../db/client', () => ({
     },
     userDevice: {
       count: jest.fn(),
+      findMany: jest.fn(),
+      groupBy: jest.fn(),
     },
     pointsTransaction: {
       aggregate: jest.fn(),
+    },
+    auditLog: {
+      create: jest.fn().mockResolvedValue({}),
+    },
+    paymentRiskState: {
+      findUnique: jest.fn().mockResolvedValue(null),
+      upsert: jest.fn().mockResolvedValue({}),
+      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
     },
   },
 }));
@@ -33,12 +43,16 @@ import {
 import { prisma } from '../../../db/client';
 
 // Define locally to avoid import type issues with Babel
-interface PaymentRequest {
+type PaymentRequest = {
   photoIds: string[];
   totalAmount: number;
   password: string;
-  metadata?: { source: 'gallery' | 'preview' | 'cart'; couponCode?: string; discountAmount?: number };
-}
+  metadata?: {
+    source: 'gallery' | 'preview' | 'cart';
+    couponCode?: string;
+    discountAmount?: number;
+  };
+};
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 
@@ -52,7 +66,11 @@ describe('PaymentSecurityService', () => {
       id: 'user-1',
       createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
     });
+    (mockPrisma.userDevice.findMany as jest.Mock).mockResolvedValue([
+      { deviceId: 'dev-1', deviceType: 'ios', osVersion: '17.0' },
+    ]);
     (mockPrisma.userDevice.count as jest.Mock).mockResolvedValue(1);
+    (mockPrisma.userDevice.groupBy as jest.Mock).mockResolvedValue([]);
     (mockPrisma.pointsTransaction.aggregate as jest.Mock).mockResolvedValue({
       _sum: { amount: 0 },
     });
@@ -214,8 +232,8 @@ describe('PaymentSecurityService', () => {
       const config = getRiskConfig();
 
       (mockPrisma.pointsTransaction.aggregate as jest.Mock)
-        .mockResolvedValueOnce({ _sum: { amount: config.maxDailyPaymentAmount } })  // daily
-        .mockResolvedValueOnce({ _sum: { amount: 0 } });                            // monthly
+        .mockResolvedValueOnce({ _sum: { amount: config.maxDailyPaymentAmount } }) // daily
+        .mockResolvedValueOnce({ _sum: { amount: 0 } }); // monthly
 
       const result = await assessRisk('user-1', 100);
 
@@ -226,7 +244,7 @@ describe('PaymentSecurityService', () => {
       const config = getRiskConfig();
 
       (mockPrisma.pointsTransaction.aggregate as jest.Mock)
-        .mockResolvedValueOnce({ _sum: { amount: 0 } })                              // daily
+        .mockResolvedValueOnce({ _sum: { amount: 0 } }) // daily
         .mockResolvedValueOnce({ _sum: { amount: config.maxMonthlyPaymentAmount } }); // monthly
 
       const result = await assessRisk('user-1', 100);
@@ -345,22 +363,31 @@ describe('PaymentSecurityService', () => {
   // assessRisk - Device diversity
   // ==========================================================================
 
-  describe('assessRisk - device diversity', () => {
+  describe('assessRisk - device fingerprint', () => {
     it('should flag many devices', async () => {
-      (mockPrisma.userDevice.count as jest.Mock).mockResolvedValue(6);
+      (mockPrisma.userDevice.findMany as jest.Mock).mockResolvedValue([
+        { deviceId: 'dev-1', deviceType: 'ios', osVersion: '17.0' },
+        { deviceId: 'dev-2', deviceType: 'android', osVersion: '14.0' },
+        { deviceId: 'dev-3', deviceType: 'web', osVersion: '' },
+        { deviceId: 'dev-4', deviceType: 'ios', osVersion: '16.0' },
+        { deviceId: 'dev-5', deviceType: 'android', osVersion: '13.0' },
+        { deviceId: 'dev-6', deviceType: 'ios', osVersion: '15.0' },
+      ]);
 
       const result = await assessRisk('user-1', 100);
 
-      const deviceCheck = result.checks.find(c => c.check === 'device_diversity');
+      const deviceCheck = result.checks.find(c => c.check === 'device_fingerprint');
       expect(deviceCheck?.score).toBeGreaterThan(0);
     });
 
     it('should allow reasonable device count', async () => {
-      (mockPrisma.userDevice.count as jest.Mock).mockResolvedValue(1);
+      (mockPrisma.userDevice.findMany as jest.Mock).mockResolvedValue([
+        { deviceId: 'dev-1', deviceType: 'ios', osVersion: '17.0' },
+      ]);
 
       const result = await assessRisk('user-1', 100);
 
-      const deviceCheck = result.checks.find(c => c.check === 'device_diversity');
+      const deviceCheck = result.checks.find(c => c.check === 'device_fingerprint');
       expect(deviceCheck?.score).toBe(0);
     });
   });
