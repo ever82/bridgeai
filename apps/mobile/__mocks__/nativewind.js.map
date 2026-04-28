@@ -1,0 +1,1 @@
+{"version":3,"file":"nativewind.js","sourceRoot":"","sources":["nativewind.ts"],"names":[],"mappings":";;;AAAA,kBAAkB;AACL,QAAA,WAAW,GAAG,IAAI,CAAC,EAAE,CAAC,GAAG,EAAE,CAAC,CAAC;IACxC,SAAS,EAAE,CAAC,UAAkB,EAAE,EAAE,CAAC,CAAC;QAClC,KAAK,EAAE,EAAE;KACV,CAAC;CACH,CAAC,CAAC,CAAC;AAEJ,kBAAe;IACb,WAAW,EAAX,mBAAW;CACZ,CAAC"}

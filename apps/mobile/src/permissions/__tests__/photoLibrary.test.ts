@@ -249,6 +249,7 @@ describe('PhotoLibraryPermissionManager', () => {
 
       expect(state.status).toBe('granted');
       expect(request).toHaveBeenCalledWith(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
+      expect(request).toHaveBeenCalledWith(PERMISSIONS.ANDROID.READ_MEDIA_VIDEO);
     });
 
     it('requests external storage permission on older Android', async () => {

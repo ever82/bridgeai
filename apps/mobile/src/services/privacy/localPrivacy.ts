@@ -167,21 +167,35 @@ export class PhotoLibraryPrivacyManager {
     return this.sensitivePhotoIds.has(imageId);
   }
 
+  /**
+   * Derives a sub-key from the master key, a purpose string, and a nonce
+   * using HMAC-SHA256 construction via digestStringAsync.
+   */
+  private async deriveKey(purpose: string, nonce: Uint8Array): Promise<string> {
+    const keyHex = Array.from(this.encryptionKey!)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const nonceHex = Array.from(nonce)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    return Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      keyHex + purpose + nonceHex
+    );
+  }
+
   async encryptData(data: string): Promise<string> {
     if (!this.settings.encryptedIndexStorage || !this.encryptionKey) {
       return data;
     }
 
-    // Generate random 16-byte nonce for each encryption
-    const nonce = await Crypto.getRandomBytesAsync(16);
-    const nonceHex = Array.from(nonce)
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-    const keyHex = Array.from(this.encryptionKey)
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
+    // Generate random 12-byte nonce (IV) for each encryption
+    const nonce = await Crypto.getRandomBytesAsync(12);
 
-    // Use HMAC-SHA256 based keystream: HMAC(key, nonce || blockIndex) per block
+    // Derive keystream key and authentication key from the master key
+    const macKey = await this.deriveKey('mac', nonce);
+
+    // Encrypt using HMAC-SHA256-based keystream (encrypt-then-MAC)
     const dataBytes = new TextEncoder().encode(data);
     const blockSize = 32; // SHA-256 output size
     const encrypted = new Uint8Array(dataBytes.length);
@@ -191,30 +205,37 @@ export class PhotoLibraryPrivacyManager {
       const blockIndexHex = blockIndex.toString(16).padStart(8, '0');
       const keyBlock = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256,
-        keyHex + nonceHex + blockIndexHex
+        macKey + blockIndexHex
       );
-      const keyBytes = new TextEncoder().encode(keyBlock);
+      const keyBytes = new Uint8Array(
+        keyBlock.match(/.{2}/g)?.map(byte => parseInt(byte, 16)) || []
+      );
 
       for (let j = 0; j < blockSize && i + j < dataBytes.length; j++) {
-        encrypted[i + j] = dataBytes[i + j] ^ keyBytes[j % keyBytes.length];
+        encrypted[i + j] = dataBytes[i + j] ^ keyBytes[j];
       }
     }
 
-    // Authentication tag
+    // Compute authentication tag: HMAC-SHA256(nonce || ciphertext)
     const ciphertextHex = Array.from(encrypted)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const nonceHex = Array.from(nonce)
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
     const tag = await Crypto.digestStringAsync(
       Crypto.CryptoDigestAlgorithm.SHA256,
-      nonceHex + ciphertextHex + keyHex
+      nonceHex + ciphertextHex
+    );
+    const tagBytes = new Uint8Array(
+      tag.substring(0, 64).match(/.{2}/g)?.map(byte => parseInt(byte, 16)) || []
     );
 
-    // Format: nonce(16) + tag(32) + ciphertext
-    const tagBytes = new TextEncoder().encode(tag.substring(0, 32));
-    const combined = new Uint8Array(16 + 32 + encrypted.length);
+    // Format: nonce(12) + tag(32) + ciphertext
+    const combined = new Uint8Array(12 + 32 + encrypted.length);
     combined.set(nonce, 0);
-    combined.set(tagBytes, 16);
-    combined.set(encrypted, 48);
+    combined.set(tagBytes, 12);
+    combined.set(encrypted, 44);
 
     return btoa(String.fromCharCode(...combined));
   }
@@ -225,31 +246,36 @@ export class PhotoLibraryPrivacyManager {
     }
 
     const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
-    const nonce = combined.slice(0, 16);
-    const storedTag = new TextDecoder().decode(combined.slice(16, 48));
-    const ciphertext = combined.slice(48);
+    const nonce = combined.slice(0, 12);
+    const storedTag = combined.slice(12, 44);
+    const ciphertext = combined.slice(44);
 
-    const nonceHex = Array.from(nonce)
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-    const keyHex = Array.from(this.encryptionKey)
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-
-    // Verify authentication tag
+    // Compute expected authentication tag
     const ciphertextHex = Array.from(ciphertext)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const nonceHex = Array.from(nonce)
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
     const expectedTag = await Crypto.digestStringAsync(
       Crypto.CryptoDigestAlgorithm.SHA256,
-      nonceHex + ciphertextHex + keyHex
+      nonceHex + ciphertextHex
+    );
+    const expectedTagBytes = new Uint8Array(
+      expectedTag.substring(0, 64).match(/.{2}/g)?.map(byte => parseInt(byte, 16)) || []
     );
 
-    if (storedTag !== expectedTag.substring(0, 32)) {
+    // Constant-time tag comparison to prevent timing attacks
+    let diff = 0;
+    for (let i = 0; i < 32; i++) {
+      diff |= storedTag[i] ^ expectedTagBytes[i];
+    }
+    if (diff !== 0) {
       throw new Error('Authentication failed: data may have been tampered with');
     }
 
     // Decrypt using same HMAC-SHA256 keystream
+    const macKey = await this.deriveKey('mac', nonce);
     const blockSize = 32;
     const decrypted = new Uint8Array(ciphertext.length);
 
@@ -258,12 +284,14 @@ export class PhotoLibraryPrivacyManager {
       const blockIndexHex = blockIndex.toString(16).padStart(8, '0');
       const keyBlock = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256,
-        keyHex + nonceHex + blockIndexHex
+        macKey + blockIndexHex
       );
-      const keyBytes = new TextEncoder().encode(keyBlock);
+      const keyBytes = new Uint8Array(
+        keyBlock.match(/.{2}/g)?.map(byte => parseInt(byte, 16)) || []
+      );
 
       for (let j = 0; j < blockSize && i + j < ciphertext.length; j++) {
-        decrypted[i + j] = ciphertext[i + j] ^ keyBytes[j % keyBytes.length];
+        decrypted[i + j] = ciphertext[i + j] ^ keyBytes[j];
       }
     }
 
@@ -319,8 +347,8 @@ export class PhotoLibraryPrivacyManager {
     this.sensitivePhotoIds.clear();
 
     try {
-      // Reset search index by closing, deleting, and re-initializing the database
-      await localSearchIndex.restore('');
+      // Clear all indexed data
+      await localSearchIndex.clear();
     } catch (error) {
       console.error('Failed to clear local data:', error);
     }

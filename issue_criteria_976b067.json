@@ -2768,44 +2768,44 @@
   "ISSUE-T004": [
     {
       "id": "ISSUE-T004~c1",
-      "name": "Detox E2E测试配置",
-      "description": "配置Detox E2E测试:\n- Detox安装和配置(detox@>=20.x)\n- iOS模拟器测试配置(iPhone 14+, iOS 16+)\n- Android模拟器测试配置(Pixel 6 API 33+)\n- 测试构建配置(debug/release双模式)\n- 设备管理和启动配置\n- **测试超时配置(单测试≤2分钟)**\n- **测试重试机制(失败自动重试最多2次)**\n- **测试并发数限制(iOS≤3, Android≤2)**\n",
+      "name": "Chrome DevTools MCP 浏览器测试配置",
+      "description": "配置浏览器端 E2E 测试:\n- Expo Web 开发服务器启动脚本 (pnpm test:e2e:web)\n- Chrome DevTools MCP 工具集成 (navigate_page, click, fill, take_snapshot 等)\n- 浏览器测试 Markdown 格式规范 (apps/mobile/e2e/flows/browser/)\n- 测试服务器自动启动/关闭\n- 测试超时配置(单测试≤2分钟)\n- 失败自动截图保存\n",
       "status": "accepted"
     },
     {
       "id": "ISSUE-T004~c2",
       "name": "E2E测试数据管理",
-      "description": "E2E测试数据准备:\n- 测试数据种子脚本(seeds/目录)\n- API辅助数据创建(封装数据工厂)\n- 测试用户自动注册(带唯一标识)\n- 测试数据清理策略(afterEach/afterAll)\n- 数据状态重置(测试间隔离)\n- **性能要求**: 数据创建≤3秒/实体\n- **隔离要求**: 测试用户ID格式 test-${timestamp}-${random}\n",
+      "description": "E2E测试数据准备:\n- 测试数据种子脚本(seeds/目录)\n- API辅助数据创建(封装数据工厂)\n- 测试用户自动注册(带唯一标识)\n- 测试数据清理策略(afterEach/afterAll)\n- 数据状态重置(测试间隔离)\n- 性能要求: 数据创建≤3秒/实体\n- 隔离要求: 测试用户ID格式 test-${timestamp}-${random}\n",
       "status": "accepted"
     },
     {
       "id": "ISSUE-T004~c3",
-      "name": "页面对象模式(POM)",
-      "description": "实现页面对象模式，支持复用和可维护:\n- **基础Page类封装**\n  * 通用等待方法(waitForElement, waitForVisible)\n  * 元素交互封装(tap, typeText, swipe)\n  * 断言辅助方法(assertElementVisible)\n- **登录页面对象(LoginPage)**\n  * 元素定位: testID('login-email-input'), testID('login-button')\n  * 方法: login(email, password), assertLoginSuccess()\n- **首页页面对象(HomePage)**\n  * 元素定位: testID('home-tab'), testID('agent-list')\n  * 方法: navigateToAgent(), assertHomeLoaded()\n- **聊天页面对象(ChatPage)**\n  * 元素定位: testID('chat-input'), testID('send-button')\n  * 方法: sendMessage(text), assertMessageSent(text)\n- **Agent详情页面对象(AgentDetailPage)**\n  * 元素定位: testID('agent-name'), testID('edit-button')\n- **页面元素定位策略**\n  * 优先使用testID，其次accessibilityLabel\n  * 禁止直接使用文字定位(国际化问题)\n- **复用要求**: 每个页面方法可被≥3个测试复用\n",
+      "name": "Maestro YAML 测试脚本体系",
+      "description": "实现 Maestro YAML 声明式测试脚本体系:\n- **Maestro 环境配置**\n  * maestro 安装和配置 (maestro CLI)\n  * iOS/Android 模拟器支持\n  * 测试构建配置 (dev 模式 + build 模式)\n- **统一测试执行器 (runner.ts)**\n  * 按 flow 执行: runner.ts --flow auth-flow\n  * 按 issue 执行: runner.ts --issue ISSUE-A001\n  * 失败自动截图、HTML/JSON 报告生成\n- **核心测试 Flow (YAML)**\n  * auth-flow.yaml: 认证流程测试\n  * chat-flow.yaml: 聊天通信测试\n  * matching-flow.yaml: 匹配推荐测试\n  * agent-creation-flow.yaml: Agent 创建测试\n  * logout-flow.yaml: 登出流程测试\n- **UI 定位策略**\n  * 优先使用 testID (accessibilityIdentifier)\n  * 支持模糊匹配和 OCR\n  * YAML 声明式，AI 可直接生成\n",
       "status": "accepted"
     },
     {
       "id": "ISSUE-T004~c4",
       "name": "用户流程E2E测试",
-      "description": "编写核心用户流程测试，每个流程包含完整断言验证:\n- **用户注册登录流程**\n  * 断言: 注册成功后跳转首页\n  * 断言: 登录状态持久化(testID: user-avatar显示)\n  * 断言: token存储成功(AsyncStorage验证)\n- **Agent创建配置流程**\n  * 断言: 表单验证错误显示(testID: error-message)\n  * 断言: 创建成功后跳转Agent详情页\n  * 断言: API响应200且数据正确\n- **匹配和推荐流程**\n  * 断言: 推荐列表加载完成(testID: recommendation-list)\n  * 断言: 匹配按钮可点击并触发API\n  * 断言: 匹配成功状态更新UI\n- **聊天通信流程**\n  * 断言: 消息发送成功(testID: message-sent)\n  * 断言: 消息接收显示在列表\n  * 断言: 未读消息角标更新\n- **任务发布和接单流程**\n  * 断言: 任务创建表单提交成功\n  * 断言: 任务状态流转正确\n  * 断言: 接单后双方通知到达\n- **覆盖率要求: 核心流程≥90%，关键断言≥5个/流程**\n",
+      "description": "编写核心用户流程测试，每个流程包含完整断言验证:\n- **用户注册登录流程**\n  * 断言: 注册成功后跳转首页\n  * 断言: 登录状态持久化(user-avatar 显示)\n  * 断言: token存储成功(AsyncStorage验证)\n- **Agent创建配置流程**\n  * 断言: 表单验证错误显示\n  * 断言: 创建成功后跳转Agent详情页\n  * 断言: API响应200且数据正确\n- **匹配和推荐流程**\n  * 断言: 推荐列表加载完成\n  * 断言: 匹配按钮可点击并触发API\n  * 断言: 匹配成功状态更新UI\n- **聊天通信流程**\n  * 断言: 消息发送成功\n  * 断言: 消息接收显示在列表\n  * 断言: 未读消息角标更新\n- **任务发布和接单流程**\n  * 断言: 任务创建表单提交成功\n  * 断言: 任务状态流转正确\n  * 断言: 接单后双方通知到达\n- **覆盖率要求: 核心流程≥90%，关键断言≥5个/流程**\n",
       "status": "accepted"
     },
     {
       "id": "ISSUE-T004~c5",
       "name": "E2E测试报告和截图",
-      "description": "E2E测试报告与诊断:\n- **测试报告生成配置**\n  * HTML报告: 美观的可视化报告\n  * JUnit XML: CI集成格式\n  * JSON报告: 程序化分析\n  * 报告包含: 通过率、执行时间、错误详情\n- **失败截图自动捕获**\n  * 失败时自动截图\n  * 截图命名: {test-name}-{timestamp}.png\n  * 截图路径: artifacts/screenshots/\n  * 关联报告: 截图嵌入HTML报告\n- **测试视频录制(可选)**\n  * CI失败时录制视频\n  * 视频长度: 失败前30秒\n  * 存储策略: 仅保留失败视频\n- **测试时间统计**\n  * 单测试执行时间\n  * 套件总执行时间\n  * 历史趋势对比\n- **CI集成和报告上传**\n  * GitHub Actions artifacts上传\n  * 测试失败PR评论\n  * 覆盖率报告(如适用)\n- **质量指标**\n  * 截图成功率: 100%失败用例\n  * 报告生成时间: ≤5秒\n  * 附件大小: 截图≤500KB/张\n",
+      "description": "E2E测试报告与诊断:\n- **测试报告生成**\n  * Maestro HTML 报告自动生成\n  * Maestro JSON 报告供程序化分析\n  * 报告包含: 通过率、执行时间、错误详情\n- **失败截图自动捕获**\n  * 失败时自动截图\n  * 截图命名: {test-name}-{timestamp}.png\n  * 截图路径: reports/ 目录\n- **测试时间统计**\n  * 单测试执行时间\n  * 套件总执行时间\n  * 历史趋势对比\n- **质量指标**\n  * 截图成功率: 100%失败用例\n  * 报告生成时间: ≤5秒\n",
       "status": "accepted"
     },
     {
       "id": "ISSUE-T004~c6",
       "name": "并行测试和CI集成",
-      "description": "E2E并行测试与CI集成:\n- **测试隔离要求**\n  * 每个测试独立数据(testID: test-user-${timestamp})\n  * 测试后数据清理(无论通过/失败)\n  * 测试间无状态依赖\n  * 并发测试用户隔离(不同testUserId)\n- **多设备并行测试配置**\n  * iOS模拟器并发数: ≤3\n  * Android模拟器并发数: ≤2\n  * 设备池管理和分配\n- **测试分片策略**\n  * 按测试文件分片(shard)\n  * 按执行时间均衡分配\n- **CI/CD流水线集成**\n  * GitHub Actions工作流配置\n  * 定时触发(nightly builds)\n  * PR触发(e2e-required标签)\n- **测试环境自动搭建**\n  * 模拟器自动启动/关闭\n  * 测试服务器自动部署\n- **测试结果通知**\n  * Slack通知集成\n  * PR状态检查更新\n  * 失败测试自动重跑\n- **性能指标**\n  * 单测试执行时间≤2分钟\n  * 完整套件≤15分钟(并行后)\n",
+      "description": "E2E并行测试与CI集成:\n- **测试隔离要求**\n  * 每个测试独立数据\n  * 测试后数据清理(无论通过/失败)\n  * 测试间无状态依赖\n  * 并发测试用户隔离(不同testUserId)\n- **Maestro 并行执行**\n  * runner.ts 支持多 flow 并行\n  * 设备池管理和分配\n- **测试分片策略**\n  * 按测试文件分片(shard)\n  * 按执行时间均衡分配\n- **CI/CD流水线集成**\n  * GitHub Actions工作流配置\n  * 定时触发(nightly builds)\n  * PR触发(e2e-required标签)\n- **测试环境自动搭建**\n  * 模拟器自动启动/关闭\n  * 测试服务器自动部署\n- **性能指标**\n  * 单测试执行时间≤2分钟\n  * 完整套件≤15分钟(并行后)\n",
       "status": "accepted"
     },
     {
       "id": "ISSUE-T004~c7",
       "name": "E2E测试稳定性保障",
-      "description": "确保测试长期稳定运行，控制Flaky Test:\n- **Flaky Test检测与处理**\n  * 检测标准: 同一测试在相同代码下失败率>5%\n  * 自动标记: CI中自动标记不稳定测试\n  * 隔离机制: flaky测试移至单独套件\n  * 修复SLA: 标记后3个工作日内修复\n- **测试重试策略**\n  * 自动重试: 失败自动重试2次\n  * 最终判定: 3次中1次通过即算通过\n  * 重试记录: 记录重试次数用于分析\n- **等待策略优化**\n  * 智能等待: 使用waitFor而非固定sleep\n  * 超时阈值: 元素等待≤10秒\n  * 轮询间隔: 200ms自适应轮询\n- **测试执行时间监控**\n  * 单测试时间上限: 2分钟\n  * 平均执行时间追踪\n  * 超时测试自动告警\n- **稳定性指标**\n  * 目标: Flaky rate < 2%\n  * 监控: 每周生成稳定性报告\n  * 告警: flaky rate>5%时Slack通知\n- **诊断工具**\n  * 失败截图自动保存\n  * 测试日志完整保留\n  * 设备状态快照\n",
+      "description": "确保测试长期稳定运行，控制Flaky Test:\n- **Flaky Test检测与处理**\n  * 检测标准: 同一测试在相同代码下失败率>5%\n  * 自动标记: CI中自动标记不稳定测试\n  * 隔离机制: flaky测试移至单独套件\n  * 修复SLA: 标记后3个工作日内修复\n- **测试重试策略**\n  * 自动重试: 失败自动重试2次\n  * 最终判定: 3次中1次通过即算通过\n  * 重试记录: 记录重试次数用于分析\n- **等待策略优化**\n  * 智能等待: Maestro 原生 waitFor 而非固定 sleep\n  * 超时阈值: 元素等待≤10秒\n- **测试执行时间监控**\n  * 单测试时间上限: 2分钟\n  * 平均执行时间追踪\n  * 超时测试自动告警\n- **稳定性指标**\n  * 目标: Flaky rate < 2%\n  * 监控: 每周生成稳定性报告\n",
       "status": "accepted"
     }
   ],

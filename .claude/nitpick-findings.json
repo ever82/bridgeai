@@ -1,0 +1,26 @@
+[
+  {
+    "category": "consistency",
+    "severity": "warning",
+    "description": "performanceHeaders implementation differs between .ts and .js files",
+    "evidence": ".ts uses res.end override pattern; .js uses res.on('finish') pattern. The .ts file sets header synchronously in the overridden end(), while .js sets it asynchronously via finish event.",
+    "recommendation": "Rebuild server dist to ensure .ts and .js are in sync. The .ts implementation is correct; .js needs rebuild.",
+    "file_path": "apps/server/src/middleware/performance.ts vs performance.js"
+  },
+  {
+    "category": "test_coverage",
+    "severity": "warning",
+    "description": "No integration tests for Sentry error tracking",
+    "evidence": "AC c1 requires coverage_integration=required, but no integration tests found for sentry.ts",
+    "recommendation": "Add integration test that exercises Sentry captureException, addBreadcrumb, withTransaction in a real HTTP flow",
+    "file_path": "apps/server/src/utils/sentry.ts"
+  },
+  {
+    "category": "code_quality",
+    "severity": "warning",
+    "description": "Mobile app has 211 ESLint errors and 32 warnings",
+    "evidence": "lint output shows 243 problems (211 errors, 32 warnings) in apps/mobile",
+    "recommendation": "Fix ESLint errors in mobile app, especially in sentry.ts (any types) and stub files",
+    "file_path": "apps/mobile/src"
+  }
+]

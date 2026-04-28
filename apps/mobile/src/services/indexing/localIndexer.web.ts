@@ -82,6 +82,10 @@ export class LocalSearchIndex {
     throw new Error('Local search index is not available on web');
   }
 
+  async clear(): Promise<void> {
+    // No-op on web
+  }
+
   async incrementIndexVersion(): Promise<void> {
     // No-op on web
   }

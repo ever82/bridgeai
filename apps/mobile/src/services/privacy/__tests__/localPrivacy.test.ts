@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { LocalPrivacyManager, PrivacySettings } from '../localPrivacy';
+import { PhotoLibraryPrivacyManager, PrivacySettings } from '../localPrivacy';
 import { encryptedStorage } from '../../../utils/encryptedStorage';
 
 // Mock AsyncStorage
@@ -19,19 +19,19 @@ jest.mock('../../../utils/encryptedStorage', () => ({
   },
 }));
 
-describe('LocalPrivacyManager', () => {
-  let privacyManager: LocalPrivacyManager;
+describe('PhotoLibraryPrivacyManager', () => {
+  let privacyManager: PhotoLibraryPrivacyManager;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (LocalPrivacyManager as unknown as { instance: LocalPrivacyManager | null }).instance = null;
-    privacyManager = LocalPrivacyManager.getInstance();
+    (PhotoLibraryPrivacyManager as unknown as { instance: PhotoLibraryPrivacyManager | null }).instance = null;
+    privacyManager = PhotoLibraryPrivacyManager.getInstance();
   });
 
   describe('Singleton Pattern', () => {
     it('returns the same instance', () => {
-      const instance1 = LocalPrivacyManager.getInstance();
-      const instance2 = LocalPrivacyManager.getInstance();
+      const instance1 = PhotoLibraryPrivacyManager.getInstance();
+      const instance2 = PhotoLibraryPrivacyManager.getInstance();
       expect(instance1).toBe(instance2);
     });
   });

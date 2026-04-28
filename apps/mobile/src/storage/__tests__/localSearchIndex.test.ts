@@ -251,9 +251,11 @@ describe('LocalSearchIndexStorage', () => {
     it('returns compression statistics', async () => {
       let pragmaCount = 0;
       mockDb.executeSql.mockImplementation((sql: string) => {
-        if (sql.includes('pragma_page_count')) {
+        if (sql.includes('pragma_page_count') && sql.includes('pragma_page_size')) {
           pragmaCount++;
-          return [{ rows: { item: () => ({ size: pragmaCount === 1 ? 50000 : 40000 }) } }];
+          return [
+            { rows: { length: 1, item: () => ({ size: pragmaCount === 1 ? 50000 : 40000 }) } },
+          ];
         }
         if (sql === 'VACUUM') {
           return [];
@@ -274,9 +276,6 @@ describe('LocalSearchIndexStorage', () => {
   describe('Backup and Restore', () => {
     it('creates a backup with metadata', async () => {
       mockDb.executeSql.mockImplementation((sql: string) => {
-        if (sql.includes('pragma_page_count')) {
-          return [{ rows: { item: () => ({ size: 100000 }) } }];
-        }
         if (sql.includes('index_metadata') && sql.includes('SELECT')) {
           return [{ rows: { length: 0, item: jest.fn() } }];
         }
@@ -291,7 +290,7 @@ describe('LocalSearchIndexStorage', () => {
       expect(backup).toMatchObject({
         id: expect.stringContaining('backup_'),
         createdAt: expect.any(Date),
-        size: 100000,
+        size: expect.any(Number),
         checksum: expect.any(String),
       });
     });
@@ -319,6 +318,33 @@ describe('LocalSearchIndexStorage', () => {
     });
 
     it('restores from backup by id', async () => {
+      // Use a static exportedAt so checksum is deterministic
+      const backupJson = JSON.stringify({
+        version: 1,
+        exportedAt: 1234567890000,
+        index_metadata: {},
+        images: [],
+        fts_index: [],
+        incremental_changes: [],
+      });
+
+      // Compute checksum for the fixed backup JSON using the same algorithm as computeChecksum
+      const computeChecksum = (data: string): string => {
+        let hash = 0;
+        for (let i = 0; i < data.length; i++) {
+          const char = data.charCodeAt(i);
+          hash = ((hash << 5) - hash + char) | 0;
+        }
+        const hashHex = Math.abs(hash).toString(16).padStart(8, '0');
+        let hash2 = 0;
+        for (let i = data.length - 1; i >= 0; i--) {
+          const char = data.charCodeAt(i);
+          hash2 = ((hash2 << 5) - hash2 + char) | 0;
+        }
+        return `${hashHex}-${Math.abs(hash2).toString(16).padStart(8, '0')}`;
+      };
+      const expectedChecksum = computeChecksum(backupJson);
+
       mockDb.executeSql.mockImplementation((sql: string, params: unknown[]) => {
         if (sql.includes('index_backups') && params?.[0] === 'backup-123') {
           return [
@@ -327,13 +353,16 @@ describe('LocalSearchIndexStorage', () => {
                 length: 1,
                 item: () => ({
                   id: 'backup-123',
-                  created_at: Date.now(),
+                  created_at: 1234567890000,
                   size: 100000,
-                  checksum: 'abc123',
+                  checksum: expectedChecksum,
                 }),
               },
             },
           ];
+        }
+        if (sql.includes('backup_data') && params?.[0] === 'backup-123') {
+          return [{ rows: { length: 1, item: () => ({ data: backupJson }) } }];
         }
         if (sql.includes('index_metadata') && sql.includes('SELECT')) {
           return [{ rows: { length: 0, item: jest.fn() } }];
@@ -380,7 +409,7 @@ describe('LocalSearchIndexStorage', () => {
           return [{ rows: { length: 1, item: () => ({ count: 0 }) } }];
         }
         if (sql.includes('pragma_page_count')) {
-          return [{ rows: { item: () => ({ size: 0 }) } }];
+          return [{ rows: { length: 1, item: () => ({ size: 0 }) } }];
         }
         return [{ rows: { length: 0, item: jest.fn() } }];
       });

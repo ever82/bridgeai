@@ -1,0 +1,1 @@
+{"version":3,"file":"expo-document-picker.js","sourceRoot":"","sources":["expo-document-picker.ts"],"names":[],"mappings":";;AAAA,kBAAe;IACb,gBAAgB,EAAE,IAAI,CAAC,EAAE,CAAC,KAAK,IAAI,EAAE,CAAC,CAAC;QACrC,QAAQ,EAAE,KAAK;QACf,MAAM,EAAE;YACN;gBACE,GAAG,EAAE,mBAAmB;gBACxB,IAAI,EAAE,mBAAmB;gBACzB,QAAQ,EAAE,iBAAiB;gBAC3B,IAAI,EAAE,IAAI;aACX;SACF;KACF,CAAC,CAAC;CACJ,CAAC"}

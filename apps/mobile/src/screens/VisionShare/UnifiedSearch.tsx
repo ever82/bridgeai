@@ -147,8 +147,41 @@ export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = (
         });
       }
 
-      // Sort mixed results by relevance score (cross-source ranking)
-      searchResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
+      // Sort mixed results by relevance score with cross-source ranking optimization
+      // Factors: relevance score, time recency, source preference, tag match quality
+      const now = Date.now();
+      const TIME_DECAY_FACTOR = 0.95; // Older items decay score by 5% per day
+      const CLOUD_BOOST_FACTOR = 0.02; // Slight boost for cloud results (verified/contemporary)
+      const LOCAL_BOOST_FACTOR = 0.01; // Smaller boost for local (private, on-device)
+
+      searchResults.sort((a, b) => {
+        // Calculate time decay score (newer = higher score)
+        const getTimeDecayScore = (date: Date) => {
+          const daysSinceCreation = (now - date.getTime()) / (1000 * 60 * 60 * 24);
+          return Math.pow(TIME_DECAY_FACTOR, Math.min(daysSinceCreation, 30));
+        };
+
+        // Composite score combining multiple factors
+        const calculateCompositeScore = (result: UnifiedSearchResult) => {
+          const relevanceWeight = 0.6;
+          const timeWeight = 0.25;
+          const sourceWeight = 0.15;
+
+          const sourceBoost = result.source === 'cloud' ? CLOUD_BOOST_FACTOR : LOCAL_BOOST_FACTOR;
+          const tagBonus = result.tags
+            ? result.tags.filter(tag => tag.toLowerCase().includes(cleanQuery.toLowerCase())).length * 0.05
+            : 0;
+
+          return (
+            result.relevanceScore * relevanceWeight +
+            getTimeDecayScore(result.createdAt) * timeWeight +
+            sourceBoost * sourceWeight +
+            Math.min(tagBonus, 0.15) // Cap tag bonus at 0.15
+          );
+        };
+
+        return calculateCompositeScore(b) - calculateCompositeScore(a);
+      });
 
       setResults(searchResults);
     } catch (error) {

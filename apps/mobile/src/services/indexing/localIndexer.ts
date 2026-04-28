@@ -234,7 +234,9 @@ export class LocalSearchIndex {
 
     if (options?.location) {
       const locationLower = options.location.toLowerCase();
-      locationFilterSql = ' AND (i.location LIKE ? OR i.scene_type LIKE ? OR t.tag_content LIKE ?)';
+      // Use SQL LIKE for fuzzy location matching (substring in location, scene_type, or tags)
+      locationFilterSql =
+        ' AND (i.location LIKE ? OR i.scene_type LIKE ? OR i.tags LIKE ?)';
       sqlParams.push(`%${locationLower}%`, `%${locationLower}%`, `%${locationLower}%`);
     }
 
@@ -361,6 +363,20 @@ export class LocalSearchIndex {
     await SQLite.deleteDatabase({ name: DB_NAME, location: 'default' });
 
     await this.initialize();
+  }
+
+  async clear(): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    await this.db.executeSql('DELETE FROM indexed_images');
+    await this.db.executeSql('DELETE FROM image_tags');
+    await this.db.executeSql('DELETE FROM incremental_sync');
+    await this.db.executeSql('DELETE FROM index_metadata');
+
+    await this.migrateIfNeeded();
+    await this.db.executeSql(`INSERT OR REPLACE INTO index_metadata (key, value) VALUES ('last_updated', ?)`, [
+      Date.now().toString(),
+    ]);
   }
 
   async incrementIndexVersion(): Promise<void> {

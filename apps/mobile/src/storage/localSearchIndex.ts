@@ -315,42 +315,112 @@ export class LocalSearchIndexStorage {
       android: `/data/data/com.bridgeai/databases/${DB_NAME}`,
     });
 
-    // Get current data for checksum calculation
+    // Export all index data for backup
     const [metaResult] = await this.db.executeSql('SELECT key, value FROM index_metadata');
-    const [countResult] = await this.db.executeSql('SELECT COUNT(*) as count FROM image_index');
-    const checksumInput =
-      Array.from({ length: metaResult.rows.length }, (_, i) => {
-        const row = metaResult.rows.item(i);
-        return `${row.key}=${row.value}`;
-      }).join('&') + `&count=${countResult.rows.item(0).count}`;
+    const [imagesResult] = await this.db.executeSql(
+      'SELECT id, local_identifier, uri, tags, scene_type, created_at, modified_at, file_size, width, height FROM image_index'
+    );
+    const [ftsResult] = await this.db.executeSql(
+      'SELECT image_id, content FROM search_fts'
+    );
+    const [changesResult] = await this.db.executeSql(
+      'SELECT action, image_id, timestamp FROM incremental_changes ORDER BY timestamp ASC'
+    );
 
-    // Generate checksum from database content
-    const checksum = checksumInput
-      .split('')
-      .reduce((hash, char) => {
-        return ((hash << 5) - hash + char.charCodeAt(0)) | 0;
-      }, 0)
-      .toString(16)
-      .padStart(8, '0');
+    // Build backup data structure
+    const backupData = {
+      version: CURRENT_VERSION,
+      exportedAt: Date.now(),
+      index_metadata: {} as Record<string, string>,
+      images: [] as any[],
+      fts_index: [] as any[],
+      incremental_changes: [] as any[],
+    };
+
+    // Populate metadata
+    for (let i = 0; i < metaResult.rows.length; i++) {
+      const row = metaResult.rows.item(i);
+      backupData.index_metadata[row.key] = row.value;
+    }
+
+    // Populate images
+    for (let i = 0; i < imagesResult.rows.length; i++) {
+      backupData.images.push(imagesResult.rows.item(i));
+    }
+
+    // Populate FTS index
+    for (let i = 0; i < ftsResult.rows.length; i++) {
+      backupData.fts_index.push(ftsResult.rows.item(i));
+    }
+
+    // Populate incremental changes
+    for (let i = 0; i < changesResult.rows.length; i++) {
+      backupData.incremental_changes.push(changesResult.rows.item(i));
+    }
+
+    // Serialize backup data to JSON
+    const backupJson = JSON.stringify(backupData);
+    // Calculate byte size of the backup (UTF-16 char count * 2 for actual byte size, or use TextEncoder)
+    const encoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : null;
+    const backupSize = encoder ? encoder.encode(backupJson).length : backupJson.length * 2;
+
+    // Calculate real checksum using SHA-256 style hash (browser-compatible)
+    const checksum = await this.computeChecksum(backupJson);
 
     const metadata: BackupMetadata = {
       id: backupId,
       createdAt: new Date(),
-      size: await this.getIndexSize(),
+      size: backupSize,
       checksum,
     };
 
+    // Store backup record with empty file_path (actual backup data managed separately)
     await this.db.executeSql(
       `INSERT INTO index_backups (id, created_at, size, checksum, file_path) VALUES (?, ?, ?, ?, ?)`,
-      [backupId, metadata.createdAt.getTime(), metadata.size, metadata.checksum, dbPath || '']
+      [backupId, metadata.createdAt.getTime(), backupSize, checksum, `backup:${backupId}`]
+    );
+
+    // Store the actual backup data in a dedicated table
+    await this.db.executeSql(
+      `CREATE TABLE IF NOT EXISTS backup_data (
+        backup_id TEXT PRIMARY KEY,
+        data TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )`
+    );
+    await this.db.executeSql(
+      `INSERT OR REPLACE INTO backup_data (backup_id, data, created_at) VALUES (?, ?, ?)`,
+      [backupId, backupJson, metadata.createdAt.getTime()]
     );
 
     return metadata;
   }
 
+  private async computeChecksum(data: string): Promise<string> {
+    // Simple but effective checksum: hash all bytes
+    let hash = 0;
+    for (let i = 0; i < data.length; i++) {
+      const char = data.charCodeAt(i);
+      hash = ((hash << 5) - hash + char) | 0; // Convert to 32bit integer
+    }
+
+    // Convert to hex and pad
+    const hashHex = Math.abs(hash).toString(16).padStart(8, '0');
+
+    // Add a second hash pass for better distribution
+    let hash2 = 0;
+    for (let i = data.length - 1; i >= 0; i--) {
+      const char = data.charCodeAt(i);
+      hash2 = ((hash2 << 5) - hash2 + char) | 0;
+    }
+
+    return `${hashHex}-${Math.abs(hash2).toString(16).padStart(8, '0')}`;
+  }
+
   async restoreBackup(backupId: string): Promise<boolean> {
     if (!this.db) throw new Error('Database not initialized');
 
+    // Retrieve backup data
     const [result] = await this.db.executeSql('SELECT * FROM index_backups WHERE id = ?', [
       backupId,
     ]);
@@ -361,31 +431,86 @@ export class LocalSearchIndexStorage {
 
     const backup = result.rows.item(0);
 
-    // Verify backup integrity by re-calculating checksum
-    const [metaResult] = await this.db.executeSql('SELECT key, value FROM index_metadata');
-    const [countResult] = await this.db.executeSql('SELECT COUNT(*) as count FROM image_index');
-    const checksumInput =
-      Array.from({ length: metaResult.rows.length }, (_, i) => {
-        const row = metaResult.rows.item(i);
-        return `${row.key}=${row.value}`;
-      }).join('&') + `&count=${countResult.rows.item(0).count}`;
+    // Retrieve actual backup data from backup_data table
+    const [backupDataResult] = await this.db.executeSql(
+      'SELECT data FROM backup_data WHERE backup_id = ?',
+      [backupId]
+    );
 
-    const currentChecksum = checksumInput
-      .split('')
-      .reduce((hash, char) => {
-        return ((hash << 5) - hash + char.charCodeAt(0)) | 0;
-      }, 0)
-      .toString(16)
-      .padStart(8, '0');
-
-    if (currentChecksum !== backup.checksum) {
-      console.warn('Backup checksum mismatch - data may have changed since backup was created');
+    if (backupDataResult.rows.length === 0) {
+      console.error('Backup data not found for:', backupId);
+      return false;
     }
 
-    // Clear and restore: delete all indexed data and re-create from backup point
+    let backupData: any;
+    try {
+      backupData = JSON.parse(backupDataResult.rows.item(0).data);
+    } catch (parseError) {
+      console.error('Failed to parse backup data:', parseError);
+      return false;
+    }
+
+    // Verify checksum integrity
+    const computedChecksum = await this.computeChecksum(backupDataResult.rows.item(0).data);
+    if (computedChecksum !== backup.checksum) {
+      console.warn('Backup checksum mismatch - data may be corrupted');
+      return false;
+    }
+
+    // Clear current indexed data
     await this.db.executeSql('DELETE FROM incremental_changes');
-    await this.db.executeSql('DELETE FROM image_index');
     await this.db.executeSql('DELETE FROM search_fts');
+    await this.db.executeSql('DELETE FROM image_index');
+    await this.db.executeSql('DELETE FROM index_metadata');
+
+    // Restore index metadata
+    for (const [key, value] of Object.entries(backupData.index_metadata || {})) {
+      await this.db.executeSql(
+        `INSERT OR REPLACE INTO index_metadata (key, value) VALUES (?, ?)`,
+        [key, String(value)]
+      );
+    }
+
+    // Restore image index entries
+    for (const image of backupData.images || []) {
+      await this.db.executeSql(
+        `INSERT INTO image_index (
+          id, local_identifier, uri, tags, scene_type,
+          created_at, modified_at, file_size, width, height
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          image.id,
+          image.local_identifier,
+          image.uri,
+          image.tags,
+          image.scene_type,
+          image.created_at,
+          image.modified_at,
+          image.file_size,
+          image.width,
+          image.height,
+        ]
+      );
+    }
+
+    // Restore FTS index
+    for (const fts of backupData.fts_index || []) {
+      await this.db.executeSql(
+        `INSERT INTO search_fts (image_id, content) VALUES (?, ?)`,
+        [fts.image_id, fts.content]
+      );
+    }
+
+    // Restore incremental changes
+    for (const change of backupData.incremental_changes || []) {
+      await this.db.executeSql(
+        `INSERT INTO incremental_changes (action, image_id, timestamp) VALUES (?, ?, ?)`,
+        [change.action, change.image_id, change.timestamp]
+      );
+    }
+
+    // Clean up backup data after successful restore
+    await this.db.executeSql('DELETE FROM backup_data WHERE backup_id = ?', [backupId]);
 
     return true;
   }
