@@ -44,6 +44,7 @@ export interface PointsTransaction {
   description?: string;
   scene?: SceneCode;
   referenceId?: string;
+  /** JSON string serialized from Record<string, unknown> */
   metadata?: string;
   createdAt: Date;
 }
@@ -106,6 +107,7 @@ export interface CreatePointsTransactionRequest {
   description?: string;
   scene?: SceneCode;
   referenceId?: string;
+  /** Object form — serialized to JSON string via JSON.stringify() before storage */
   metadata?: Record<string, unknown>;
 }
 
