@@ -56,27 +56,33 @@ export class EncryptedStorage {
       await this.ensureEncryptionKey();
     }
 
-    // Generate random nonce for each encryption
+    // Generate random 16-byte nonce for each encryption
     const nonce = await Crypto.getRandomBytesAsync(16);
     const nonceHex = Array.from(nonce)
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
 
-    // Derive a per-message key using SHA-256
-    const messageKey = await Crypto.digestStringAsync(
-      Crypto.CryptoDigestAlgorithm.SHA256,
-      this.encryptionKey! + nonceHex
-    );
-
-    // Encrypt using derived key stream
+    // Use HMAC-SHA256 based keystream: HMAC(key, nonce || index) for each block
     const dataBytes = new TextEncoder().encode(data);
-    const keyBytes = new TextEncoder().encode(messageKey);
+    const blockSize = 32; // SHA-256 output size
     const encrypted = new Uint8Array(dataBytes.length);
-    for (let i = 0; i < dataBytes.length; i++) {
-      encrypted[i] = dataBytes[i] ^ keyBytes[i % keyBytes.length];
+
+    // Generate keystream blocks using HMAC(key, nonce + blockIndex)
+    for (let i = 0; i < dataBytes.length; i += blockSize) {
+      const blockIndex = Math.floor(i / blockSize);
+      const blockIndexHex = blockIndex.toString(16).padStart(8, '0');
+      const keyBlock = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        this.encryptionKey! + nonceHex + blockIndexHex
+      );
+      const keyBytes = new TextEncoder().encode(keyBlock);
+
+      for (let j = 0; j < blockSize && i + j < dataBytes.length; j++) {
+        encrypted[i + j] = dataBytes[i + j] ^ keyBytes[j % keyBytes.length];
+      }
     }
 
-    // Compute authentication tag
+    // Compute authentication tag using HMAC-SHA256
     const ciphertextHex = Array.from(encrypted)
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
@@ -110,10 +116,6 @@ export class EncryptedStorage {
     const nonceHex = Array.from(nonce)
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
-    const messageKey = await Crypto.digestStringAsync(
-      Crypto.CryptoDigestAlgorithm.SHA256,
-      this.encryptionKey! + nonceHex
-    );
 
     // Verify authentication tag
     const ciphertextHex = Array.from(ciphertext)
@@ -128,11 +130,22 @@ export class EncryptedStorage {
       throw new Error('Authentication failed: data may have been tampered with');
     }
 
-    // Decrypt using derived key stream
-    const keyBytes = new TextEncoder().encode(messageKey);
+    // Decrypt using same HMAC-SHA256 keystream
+    const blockSize = 32;
     const decrypted = new Uint8Array(ciphertext.length);
-    for (let i = 0; i < ciphertext.length; i++) {
-      decrypted[i] = ciphertext[i] ^ keyBytes[i % keyBytes.length];
+
+    for (let i = 0; i < ciphertext.length; i += blockSize) {
+      const blockIndex = Math.floor(i / blockSize);
+      const blockIndexHex = blockIndex.toString(16).padStart(8, '0');
+      const keyBlock = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        this.encryptionKey! + nonceHex + blockIndexHex
+      );
+      const keyBytes = new TextEncoder().encode(keyBlock);
+
+      for (let j = 0; j < blockSize && i + j < ciphertext.length; j++) {
+        decrypted[i + j] = ciphertext[i + j] ^ keyBytes[j % keyBytes.length];
+      }
     }
 
     return new TextDecoder().decode(decrypted);

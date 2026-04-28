@@ -36,6 +36,7 @@ export interface IndexedImage {
   tags: string[];
   embeddings: number[];
   sceneType: string;
+  location?: string;
   createdAt: Date;
   modifiedAt: Date;
   analyzedAt: Date;
@@ -71,6 +72,7 @@ const CREATE_TABLES_SQL = `
     tags TEXT NOT NULL,
     embeddings BLOB,
     scene_type TEXT,
+    location TEXT,
     created_at INTEGER NOT NULL,
     modified_at INTEGER NOT NULL,
     analyzed_at INTEGER,
@@ -80,6 +82,7 @@ const CREATE_TABLES_SQL = `
   );
 
   CREATE INDEX IF NOT EXISTS idx_scene_type ON indexed_images(scene_type);
+  CREATE INDEX IF NOT EXISTS idx_location ON indexed_images(location);
   CREATE INDEX IF NOT EXISTS idx_analyzed_at ON indexed_images(analyzed_at);
   CREATE INDEX IF NOT EXISTS idx_modified_at ON indexed_images(modified_at);
 
@@ -142,9 +145,9 @@ export class LocalSearchIndex {
 
     await this.db.executeSql(
       `INSERT OR REPLACE INTO indexed_images
-       (id, uri, local_identifier, tags, embeddings, scene_type,
+       (id, uri, local_identifier, tags, embeddings, scene_type, location,
         created_at, modified_at, analyzed_at, file_size, width, height)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         image.id,
         image.uri,
@@ -152,6 +155,7 @@ export class LocalSearchIndex {
         tagsJson,
         embeddingsBlob,
         image.sceneType,
+        image.location || null,
         image.createdAt.getTime(),
         image.modifiedAt.getTime(),
         image.analyzedAt.getTime(),
@@ -175,9 +179,9 @@ export class LocalSearchIndex {
 
         tx.executeSql(
           `INSERT OR REPLACE INTO indexed_images
-           (id, uri, local_identifier, tags, embeddings, scene_type,
+           (id, uri, local_identifier, tags, embeddings, scene_type, location,
             created_at, modified_at, analyzed_at, file_size, width, height)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             image.id,
             image.uri,
@@ -185,6 +189,7 @@ export class LocalSearchIndex {
             tagsJson,
             embeddingsBlob,
             image.sceneType,
+            image.location || null,
             image.createdAt.getTime(),
             image.modifiedAt.getTime(),
             image.analyzedAt.getTime(),
@@ -211,19 +216,26 @@ export class LocalSearchIndex {
   async search(
     query: string,
     limit: number = 50,
-    options?: { dateRange?: { start: Date; end: Date } }
+    options?: { dateRange?: { start: Date; end: Date }; location?: string }
   ): Promise<SearchResult[]> {
     if (!this.db) throw new Error('Database not initialized');
 
     const normalizedQuery = query.trim().toLowerCase();
 
     let dateFilterSql = '';
+    let locationFilterSql = '';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sqlParams: any[] = [];
 
     if (options?.dateRange) {
       dateFilterSql = ' AND i.created_at >= ? AND i.created_at <= ?';
       sqlParams.push(options.dateRange.start.getTime(), options.dateRange.end.getTime());
+    }
+
+    if (options?.location) {
+      const locationLower = options.location.toLowerCase();
+      locationFilterSql = ' AND (i.location LIKE ? OR i.scene_type LIKE ? OR t.tag_content LIKE ?)';
+      sqlParams.push(`%${locationLower}%`, `%${locationLower}%`, `%${locationLower}%`);
     }
 
     sqlParams.push(normalizedQuery, limit);
@@ -233,7 +245,7 @@ export class LocalSearchIndex {
               1.0 as relevance_score
        FROM indexed_images i
        JOIN image_tags t ON i.id = t.image_id
-       WHERE t.tag_content MATCH ?${dateFilterSql}
+       WHERE t.tag_content MATCH ?${dateFilterSql}${locationFilterSql}
        ORDER BY relevance_score DESC
        LIMIT ?`,
       sqlParams

@@ -249,16 +249,16 @@ describe('LocalSearchIndexStorage', () => {
     });
 
     it('returns compression statistics', async () => {
-      let pragmaCallCount = 0;
+      let pragmaCount = 0;
       mockDb.executeSql.mockImplementation((sql: string) => {
         if (sql.includes('pragma_page_count')) {
-          pragmaCallCount++;
-          return [{ rows: { item: () => ({ size: pragmaCallCount === 1 ? 50000 : 40000 }) } }];
+          pragmaCount++;
+          return [{ rows: { item: () => ({ size: pragmaCount === 1 ? 50000 : 40000 }) } }];
         }
         if (sql === 'VACUUM') {
           return [];
         }
-        return [{ rows: { item: () => ({ size: 40000 }) } }];
+        return [{ rows: { length: 0, item: jest.fn() } }];
       });
 
       const stats = await storage.compressIndex();
@@ -388,6 +388,7 @@ describe('LocalSearchIndexStorage', () => {
       const metadata = await storage.getMetadata();
 
       expect(metadata.version).toBe(1);
+      expect(metadata.totalImages).toBe(0);
     });
   });
 });

@@ -68,11 +68,29 @@ export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = (
     return undefined;
   };
 
-  const stripDateFilters = (query: string): string => {
+  const parseLocation = (query: string): string | undefined => {
+    // Match "location:Tokyo" format
+    const locationMatch = query.match(/location:(\w+)/i);
+    if (locationMatch) {
+      return locationMatch[1];
+    }
+
+    // Match "in Tokyo" or "at Tokyo" patterns
+    const prepositionMatch = query.match(/\b(?:in|at|near)\s+(\w+)/i);
+    if (prepositionMatch) {
+      return prepositionMatch[1];
+    }
+
+    return undefined;
+  };
+
+  const stripAllFilters = (query: string): string => {
     return query
       .replace(/after:\d{4}-\d{2}-\d{2}/gi, '')
       .replace(/before:\d{4}-\d{2}-\d{2}/gi, '')
       .replace(/\d{4}-\d{2}/g, '')
+      .replace(/location:\w+/gi, '')
+      .replace(/\b(?:in|at|near)\s+\w+/gi, '')
       .trim();
   };
 
@@ -84,10 +102,11 @@ export const VisionShareSearchScreen: React.FC<VisionShareSearchScreenProps> = (
 
       // Parse date range from query (e.g., "beach 2024-01" or "after:2024-01-01 before:2024-06-01")
       const dateRange = parseDateRange(query);
-      const cleanQuery = stripDateFilters(query);
+      const location = parseLocation(query);
+      const cleanQuery = stripAllFilters(query);
 
       if (source === 'all' || source === 'local') {
-        const localResults = await localSearchIndex.search(cleanQuery, 50, { dateRange });
+        const localResults = await localSearchIndex.search(cleanQuery, 50, { dateRange, location });
 
         localResults.forEach(result => {
           // Calculate relevance score based on tag match quality
