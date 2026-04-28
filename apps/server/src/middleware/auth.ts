@@ -160,5 +160,4 @@ export async function optionalAuth(
 export default {
   authenticate,
   optionalAuth,
-  requireAdmin,
 };

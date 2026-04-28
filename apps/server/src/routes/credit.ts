@@ -7,7 +7,8 @@ import { z } from 'zod';
 
 import { creditScoreService } from '../services/creditScoreService';
 import { getCreditLevelConfigByScore } from '../config/creditLevels';
-import { authenticate, requireAdmin } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
+import { requireRole } from '../middleware/rbac';
 import { validate } from '../middleware/validation';
 
 const router: Router = Router();
@@ -161,7 +162,7 @@ router.get('/level', authenticate, async (req, res, next) => {
 router.post(
   '/recalculate',
   authenticate,
-  requireAdmin,
+  requireRole('admin'),
   validate({ body: recalculateSchema }),
   async (req, res, next) => {
     try {

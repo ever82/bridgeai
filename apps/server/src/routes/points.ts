@@ -10,7 +10,8 @@ import { SceneCode } from '@bridgeai/shared';
 import { pointsService } from '../services/pointsService';
 import { visionSharePaymentService } from '../services/visionSharePaymentService';
 import { photoUnlockService } from '../services/photoUnlockService';
-import { authenticate, requireAdmin } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
+import { requireRole } from '../middleware/rbac';
 import { validate } from '../middleware/validation';
 
 const router = Router();
@@ -566,7 +567,7 @@ router.get('/config/limits', authenticate, async (_req, res, next) => {
 router.post(
   '/admin/deduct',
   authenticate,
-  requireAdmin,
+  requireRole('admin'),
   validate({ body: deductSchema }),
   async (req, res, next) => {
     try {
@@ -590,7 +591,7 @@ router.post(
 router.post(
   '/admin/add',
   authenticate,
-  requireAdmin,
+  requireRole('admin'),
   validate({ body: manualAddSchema }),
   async (req, res, next) => {
     try {
@@ -614,7 +615,7 @@ router.post(
 router.post(
   '/admin/batch-reward',
   authenticate,
-  requireAdmin,
+  requireRole('admin'),
   validate({ body: batchRewardSchema }),
   async (req, res, next) => {
     try {
