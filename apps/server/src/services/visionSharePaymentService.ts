@@ -389,8 +389,8 @@ export class VisionSharePaymentService {
     // Persist token so validateToken in photoUnlockService can find it
     try {
       await this.prisma.$executeRawUnsafe(
-        `INSERT INTO points_freezes (id, account_id, reference_id, status, reason, expires_at, created_at)
-         VALUES ($1, $2, $3, 'USED', 'photo_unlock', $4, NOW())`,
+        `INSERT INTO points_freezes (id, account_id, amount, reference_id, status, reason, expires_at, created_at)
+         VALUES ($1, $2, 0, $3, 'USED', 'photo_unlock', $4, NOW())`,
         token,
         `account-${userId}`,
         photoId,

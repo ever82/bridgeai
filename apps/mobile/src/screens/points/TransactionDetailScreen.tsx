@@ -41,7 +41,7 @@ interface RouteParams {
   transactionId?: string;
 }
 
-export const TransactionDetailScreen: React.FC = () => {
+export const PointsTransactionDetailScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute();
