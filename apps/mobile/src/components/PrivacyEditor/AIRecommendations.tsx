@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 
 interface Detection {
   id: string;
@@ -63,9 +57,9 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({
   if (recommendations.length === 0) return null;
 
   // Group by priority
-  const criticalRecs = recommendations.filter((r) => r.priority === 'critical');
-  const highRecs = recommendations.filter((r) => r.priority === 'high');
-  const otherRecs = recommendations.filter((r) => r.priority !== 'critical' && r.priority !== 'high');
+  const criticalRecs = recommendations.filter(r => r.priority === 'critical');
+  const highRecs = recommendations.filter(r => r.priority === 'high');
+  const otherRecs = recommendations.filter(r => r.priority !== 'critical' && r.priority !== 'high');
 
   return (
     <View style={styles.container}>
@@ -100,12 +94,8 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({
             <Text style={[styles.sectionTitle, { color: PRIORITY_COLORS.critical }]}>
               Critical ({criticalRecs.length})
             </Text>
-            {criticalRecs.map((rec) => (
-              <RecommendationCard
-                key={rec.id}
-                recommendation={rec}
-                onApply={onApply}
-              />
+            {criticalRecs.map(rec => (
+              <RecommendationCard key={rec.id} recommendation={rec} onApply={onApply} />
             ))}
           </View>
         )}
@@ -116,12 +106,8 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({
             <Text style={[styles.sectionTitle, { color: PRIORITY_COLORS.high }]}>
               High Priority ({highRecs.length})
             </Text>
-            {highRecs.map((rec) => (
-              <RecommendationCard
-                key={rec.id}
-                recommendation={rec}
-                onApply={onApply}
-              />
+            {highRecs.map(rec => (
+              <RecommendationCard key={rec.id} recommendation={rec} onApply={onApply} />
             ))}
           </View>
         )}
@@ -132,12 +118,8 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({
             <Text style={[styles.sectionTitle, { color: PRIORITY_COLORS.medium }]}>
               Suggestions ({otherRecs.length})
             </Text>
-            {otherRecs.map((rec) => (
-              <RecommendationCard
-                key={rec.id}
-                recommendation={rec}
-                onApply={onApply}
-              />
+            {otherRecs.map(rec => (
+              <RecommendationCard key={rec.id} recommendation={rec} onApply={onApply} />
             ))}
           </View>
         )}
@@ -151,10 +133,7 @@ interface RecommendationCardProps {
   onApply: (recommendation: AIRecommendation) => void;
 }
 
-const RecommendationCard: React.FC<RecommendationCardProps> = ({
-  recommendation,
-  onApply,
-}) => {
+const RecommendationCard: React.FC<RecommendationCardProps> = ({ recommendation, onApply }) => {
   const color = PRIORITY_COLORS[recommendation.priority];
   const icon = PRIORITY_ICONS[recommendation.priority];
 
@@ -184,6 +163,115 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
   );
 };
 
+interface SceneConfig {
+  title: string;
+  description: string;
+  templateId: string;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  confidence: number;
+}
+
+const SCENE_CONFIGS: Record<string, SceneConfig> = {
+  indoor: {
+    title: 'Indoor Scene Detected',
+    description: 'Private indoor environment. Consider moderate privacy protection.',
+    templateId: 'template-moderate',
+    priority: 'low',
+    confidence: 0.78,
+  },
+  street: {
+    title: 'Street Scene Detected',
+    description: 'Public outdoor area. Standard privacy protection recommended.',
+    templateId: 'template-standard',
+    priority: 'medium',
+    confidence: 0.82,
+  },
+  portrait: {
+    title: 'Portrait Detected',
+    description: 'Individual or group portrait. Face-focused privacy protection suggested.',
+    templateId: 'template-portrait',
+    priority: 'medium',
+    confidence: 0.85,
+  },
+  vehicle: {
+    title: 'Vehicle Scene Detected',
+    description: 'Vehicle or traffic scene with license plates. Blur vehicle identifiers.',
+    templateId: 'template-vehicle',
+    priority: 'high',
+    confidence: 0.88,
+  },
+  document: {
+    title: 'Document Detected',
+    description: 'Text-heavy content. Review text for sensitive information.',
+    templateId: 'template-document',
+    priority: 'medium',
+    confidence: 0.8,
+  },
+  crowded: {
+    title: 'Crowded Scene Detected',
+    description: 'Multiple people in public space. Privacy blur for all detected faces.',
+    templateId: 'template-crowded',
+    priority: 'high',
+    confidence: 0.87,
+  },
+  mixed: {
+    title: 'Mixed Content Detected',
+    description: 'Various content types detected. Apply targeted protection per element.',
+    templateId: 'template-mixed',
+    priority: 'medium',
+    confidence: 0.75,
+  },
+};
+
+const buildSceneRecommendation = (detections: Detection[]): AIRecommendation | null => {
+  if (detections.length === 0) {
+    return {
+      id: 'rec-1',
+      type: 'scene',
+      priority: 'low',
+      title: 'No Objects Detected',
+      description: 'No privacy-sensitive content detected. Image appears safe for sharing.',
+      action: { type: 'review_manual', payload: {} },
+      confidence: 0.95,
+    };
+  }
+
+  const faces = detections.filter(d => d.type === 'face');
+  const plates = detections.filter(d => d.type === 'license_plate');
+  const texts = detections.filter(d => d.type === 'text');
+
+  let sceneKey: string;
+  if (plates.length > 0 && faces.length > 0) {
+    sceneKey = 'street';
+  } else if (plates.length > 0 && faces.length === 0) {
+    sceneKey = 'vehicle';
+  } else if (faces.length > 2) {
+    sceneKey = 'crowded';
+  } else if (faces.length > 0 && texts.length === 0 && plates.length === 0) {
+    sceneKey = 'portrait';
+  } else if (texts.length > 0 && faces.length === 0 && plates.length === 0) {
+    sceneKey = 'document';
+  } else if (faces.length === 0 && plates.length === 0 && texts.length === 0) {
+    sceneKey = 'indoor';
+  } else {
+    sceneKey = 'mixed';
+  }
+
+  const config = SCENE_CONFIGS[sceneKey];
+  return {
+    id: 'rec-1',
+    type: 'scene',
+    priority: config.priority,
+    title: config.title,
+    description: config.description,
+    action: {
+      type: 'apply_template',
+      payload: { templateId: config.templateId },
+    },
+    confidence: config.confidence,
+  };
+};
+
 const getActionLabel = (actionType: string): string => {
   const labels: Record<string, string> = {
     apply_template: 'Apply Template',
@@ -198,22 +286,14 @@ const getActionLabel = (actionType: string): string => {
 const generateRecommendations = (detections: Detection[]): AIRecommendation[] => {
   const recommendations: AIRecommendation[] = [];
 
-  // Scene-based recommendation
-  recommendations.push({
-    id: 'rec-1',
-    type: 'scene',
-    priority: 'medium',
-    title: 'Street Scene Detected',
-    description: 'Public area with multiple faces and a license plate. Standard privacy protection recommended.',
-    action: {
-      type: 'apply_template',
-      payload: { templateId: 'template-standard' },
-    },
-    confidence: 0.85,
-  });
+  // Scene-based recommendation - dynamically determined from detection types
+  const sceneRec = buildSceneRecommendation(detections);
+  if (sceneRec) {
+    recommendations.push(sceneRec);
+  }
 
   // Face recommendations
-  const faces = detections.filter((d) => d.type === 'face');
+  const faces = detections.filter(d => d.type === 'face');
   if (faces.length > 0) {
     recommendations.push({
       id: 'rec-face',
@@ -233,7 +313,7 @@ const generateRecommendations = (detections: Detection[]): AIRecommendation[] =>
   }
 
   // License plate recommendation
-  const plates = detections.filter((d) => d.type === 'license_plate');
+  const plates = detections.filter(d => d.type === 'license_plate');
   if (plates.length > 0) {
     recommendations.push({
       id: 'rec-plate',
@@ -250,7 +330,7 @@ const generateRecommendations = (detections: Detection[]): AIRecommendation[] =>
   }
 
   // Text recommendation
-  const texts = detections.filter((d) => d.type === 'text');
+  const texts = detections.filter(d => d.type === 'text');
   if (texts.length > 0) {
     recommendations.push({
       id: 'rec-text',
@@ -409,5 +489,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
-export default AIRecommendations;

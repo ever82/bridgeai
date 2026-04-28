@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../stores/authStore';
 import { RootStackParamList } from '../types/navigation';
 import { theme } from '../theme';
+import { PrivacyEditor } from '../screens/VisionShare/PrivacyEditor';
 
 import { AuthNavigator } from './AuthNavigator';
 import { DrawerNavigator } from './DrawerNavigator';
@@ -39,7 +40,7 @@ export const RootNavigator = () => {
       onReady={() => {
         routeNameRef.current = undefined;
       }}
-      onStateChange={async (state) => {
+      onStateChange={async state => {
         if (state) {
           try {
             const stateJson = JSON.stringify(state);
@@ -54,6 +55,7 @@ export const RootNavigator = () => {
         {isAuthenticated ? (
           <>
             <Stack.Screen name="Main" component={DrawerNavigator} />
+            <Stack.Screen name="PrivacyEditor" component={PrivacyEditor} />
           </>
         ) : (
           <Stack.Screen name="Auth" component={AuthNavigator} />

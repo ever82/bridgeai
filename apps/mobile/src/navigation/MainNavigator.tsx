@@ -6,6 +6,7 @@ import { UserProfileScreen } from '../screens/user/UserProfileScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { EditProfileScreen } from '../screens/settings/EditProfileScreen';
 import { ChatScreen } from '../screens/messages/ChatScreen';
+import { PrivacyEditor } from '../screens/VisionShare/PrivacyEditor';
 import { RootStackParamList } from '../types/navigation';
 
 import { DrawerNavigator } from './DrawerNavigator';
@@ -30,6 +31,7 @@ export const MainNavigator = () => {
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} />
         <Stack.Screen name="Chat" component={ChatScreen} />
+        <Stack.Screen name="PrivacyEditor" component={PrivacyEditor} />
       </Stack.Group>
     </Stack.Navigator>
   );

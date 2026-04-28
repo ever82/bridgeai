@@ -7,6 +7,8 @@ import sharp from 'sharp';
 import {
   getImageMetadata,
   resizeImage,
+  compareImages,
+  calculateImageHash,
   convertImageFormat,
   optimizeImage,
   cropImage,
@@ -98,6 +100,37 @@ describe('Image Processing Utilities', () => {
     });
   });
 
+  describe('compareImages', () => {
+    it('should return 1.0 for identical images', async () => {
+      const buffer = await createTestImage(100, 100);
+      const similarity = await compareImages(buffer, buffer);
+      expect(similarity).toBe(1.0);
+    });
+
+    it('should return 0.0 for different images', async () => {
+      const buffer1 = await createTestImage(100, 100);
+      const buffer2 = await createTestImage(50, 50);
+      const similarity = await compareImages(buffer1, buffer2);
+      expect(similarity).toBe(0.0);
+    });
+  });
+
+  describe('calculateImageHash', () => {
+    it('should return a base64 string', async () => {
+      const buffer = await createTestImage(100, 100);
+      const hash = calculateImageHash(buffer);
+      expect(typeof hash).toBe('string');
+      expect(hash.length).toBeGreaterThan(0);
+    });
+
+    it('should return same hash for same image', async () => {
+      const buffer = await createTestImage(100, 100);
+      const hash1 = calculateImageHash(buffer);
+      const hash2 = calculateImageHash(buffer);
+      expect(hash1).toBe(hash2);
+    });
+  });
+
   describe('convertImageFormat', () => {
     it('should convert JPEG to PNG', async () => {
       const buffer = await createTestImage();
@@ -154,7 +187,6 @@ describe('Image Processing Utilities', () => {
       const blurred = await applyBlur(buffer, 10, { x: 50, y: 50, width: 100, height: 100 });
 
       expect(blurred).toBeInstanceOf(Buffer);
-      // Blurred region image should be different from original
       expect(blurred.length).toBeGreaterThan(0);
     });
   });

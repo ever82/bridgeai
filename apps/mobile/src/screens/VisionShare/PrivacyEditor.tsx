@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -17,13 +18,7 @@ import { DesensitizationControls } from '../../components/PrivacyEditor/Desensit
 import { DetectionOverlay } from '../../components/PrivacyEditor/DetectionOverlay';
 import { AIRecommendations } from '../../components/PrivacyEditor/AIRecommendations';
 import { visionShareApi } from '../../services/api/visionShare';
-
-export type RootStackParamList = {
-  PrivacyEditor: {
-    imageUri: string;
-    imageId?: string;
-  };
-};
+import { RootStackParamList } from '../../types/navigation';
 
 type PrivacyEditorNavigationProp = StackNavigationProp<RootStackParamList, 'PrivacyEditor'>;
 type PrivacyEditorRouteProp = RouteProp<RootStackParamList, 'PrivacyEditor'>;
@@ -73,6 +68,7 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [detections, setDetections] = useState<DetectionRegion[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [previewUri, setPreviewUri] = useState<string | null>(null);
@@ -243,22 +239,16 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
     setIsProcessing(true);
 
     try {
+      // Send each detection region with its own method and intensity
       const regions = detections.map(d => ({
-        type: d.type,
         boundingBox: d.boundingBox,
-        confidence: d.confidence,
+        method: d.method || getMethodForType(d.type),
+        intensity: d.intensity ?? getIntensityForType(d.type),
       }));
 
-      // Get the method and intensity from the first selected region or defaults
-      const selected = selectedRegion ? detections.find(r => r.id === selectedRegion) : null;
-      const method = selected?.method || 'blur';
-      const intensity = selected?.intensity || 70;
-
-      const response = await visionShareApi.desensitizeImage({
+      const response = await visionShareApi.multiDesensitizeImage({
         imageUri,
-        detections: regions,
-        method,
-        intensity,
+        regions,
       });
 
       if (response.success && response.data.processedImage) {
@@ -274,13 +264,32 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
     } finally {
       setIsProcessing(false);
     }
-  }, [imageUri, detections, selectedRegion]);
+  }, [imageUri, detections]);
 
   // Save processed image
-  const saveImage = useCallback(() => {
-    // Navigate back or to next screen
-    navigation.goBack();
-  }, [navigation]);
+  const saveImage = useCallback(async () => {
+    if (!previewUri) {
+      Alert.alert('Error', 'No processed image to save');
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const response = await visionShareApi.uploadPrivacyImage(previewUri, _imageId);
+
+      if (response.success) {
+        navigation.goBack({ imageId: response.data.imageId, imageUrl: response.data.url });
+      } else {
+        Alert.alert('Error', response.error || 'Failed to save image. Please try again.');
+      }
+    } catch (err) {
+      console.error('Failed to save image:', err);
+      Alert.alert('Error', 'Failed to save image. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [previewUri, _imageId, navigation]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -290,8 +299,10 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
           <Text style={styles.headerButton}>Cancel</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Privacy Editor</Text>
-        <TouchableOpacity onPress={saveImage}>
-          <Text style={[styles.headerButton, styles.saveButton]}>Save</Text>
+        <TouchableOpacity onPress={saveImage} disabled={isSaving}>
+          <Text style={[styles.headerButton, styles.saveButton, isSaving && styles.disabledButton]}>
+            {isSaving ? 'Saving...' : 'Save'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -340,11 +351,11 @@ export const PrivacyEditor: React.FC<PrivacyEditorProps> = ({ navigation, route 
           />
 
           {/* Loading Overlay */}
-          {(isAnalyzing || isProcessing) && (
+          {(isAnalyzing || isProcessing || isSaving) && (
             <View style={styles.loadingOverlay}>
               <ActivityIndicator size="large" color="#fff" />
               <Text style={styles.loadingText}>
-                {isAnalyzing ? 'Analyzing...' : 'Processing...'}
+                {isSaving ? 'Saving...' : isAnalyzing ? 'Analyzing...' : 'Processing...'}
               </Text>
             </View>
           )}

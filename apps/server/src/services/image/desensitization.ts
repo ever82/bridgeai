@@ -410,7 +410,7 @@ export async function previewDesensitization(
   intensity: number
 ): Promise<Buffer> {
   // Use reduced intensity for faster preview
-  const previewIntensity = Math.min(intensity, 50);
+  const previewIntensity = Math.min(intensity, 80);
 
   switch (method) {
     case 'blur':

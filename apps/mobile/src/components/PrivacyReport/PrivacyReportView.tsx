@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 
 interface DetectedItem {
   id: string;
@@ -135,14 +129,9 @@ export const PrivacyReportView: React.FC<PrivacyReportViewProps> = ({
           <View style={styles.summaryHeader}>
             <Text style={styles.summaryTitle}>Summary</Text>
             <View
-              style={[
-                styles.riskBadge,
-                { backgroundColor: RISK_COLORS[report.summary.riskLevel] },
-              ]}
+              style={[styles.riskBadge, { backgroundColor: RISK_COLORS[report.summary.riskLevel] }]}
             >
-              <Text style={styles.riskBadgeText}>
-                {report.summary.riskLevel.toUpperCase()}
-              </Text>
+              <Text style={styles.riskBadgeText}>{report.summary.riskLevel.toUpperCase()}</Text>
             </View>
           </View>
 
@@ -152,18 +141,9 @@ export const PrivacyReportView: React.FC<PrivacyReportViewProps> = ({
               value={`${report.summary.riskScore}/100`}
               color={RISK_COLORS[report.summary.riskLevel]}
             />
-            <SummaryItem
-              label="Detections"
-              value={report.summary.totalDetections.toString()}
-            />
-            <SummaryItem
-              label="Processed"
-              value={report.summary.processedRegions.toString()}
-            />
-            <SummaryItem
-              label="Time"
-              value={`${report.summary.processingTime}ms`}
-            />
+            <SummaryItem label="Detections" value={report.summary.totalDetections.toString()} />
+            <SummaryItem label="Processed" value={report.summary.processedRegions.toString()} />
+            <SummaryItem label="Time" value={`${report.summary.processingTime}ms`} />
           </View>
         </View>
 
@@ -202,7 +182,7 @@ export const PrivacyReportView: React.FC<PrivacyReportViewProps> = ({
         {/* Detected Items */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Detected Items</Text>
-          {report.detectedItems.map((item) => (
+          {report.detectedItems.map(item => (
             <DetectedItemRow key={item.id} item={item} />
           ))}
         </View>
@@ -289,12 +269,7 @@ const RiskBreakdownRow: React.FC<{ item: RiskBreakdown }> = ({ item }) => (
     <View style={styles.breakdownRight}>
       <Text style={styles.breakdownScore}>{item.score}</Text>
       <View style={styles.weightBar}>
-        <View
-          style={[
-            styles.weightFill,
-            { width: `${item.weight * 100}%` },
-          ]}
-        />
+        <View style={[styles.weightFill, { width: `${item.weight * 100}%` }]} />
       </View>
     </View>
   </View>
@@ -312,8 +287,8 @@ const RecommendationRow: React.FC<{ recommendation: RiskRecommendation }> = ({
             recommendation.priority === 'high'
               ? '#FF4444'
               : recommendation.priority === 'medium'
-              ? '#FFCC00'
-              : '#888',
+                ? '#FFCC00'
+                : '#888',
         },
       ]}
     />
@@ -645,5 +620,3 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 });
-
-export default PrivacyReportView;

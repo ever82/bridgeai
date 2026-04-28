@@ -5,6 +5,7 @@
 
 import { Router } from 'express';
 import multer from 'multer';
+import { z } from 'zod';
 
 import { authenticate as authenticateToken } from '../../middleware/auth';
 import { asyncHandler } from '../../middleware/common';
@@ -22,6 +23,59 @@ import {
   calculateDefaultIntensity,
   DesensitizationMethod,
 } from '../../services/image/desensitization';
+import {
+  getPredefinedTemplates,
+  createDefaultPolicy,
+  updatePolicy,
+  type PolicyConfiguration,
+} from '../../services/privacy/desensitizationPolicy';
+
+// Allowed sensitive types
+const ALLOWED_SENSITIVE_TYPES = [
+  'face',
+  'license_plate',
+  'text',
+  'address',
+  'sensitive_object',
+  'qr_code',
+  'barcode',
+] as const;
+
+// Zod schema for bounding box validation
+const boundingBoxSchema = z.object({
+  x: z.number().min(0, 'x must be >= 0'),
+  y: z.number().min(0, 'y must be >= 0'),
+  width: z.number().positive('width must be positive'),
+  height: z.number().positive('height must be positive'),
+});
+
+// Zod schema for a single detection
+const detectionSchema = z.object({
+  type: z.enum(ALLOWED_SENSITIVE_TYPES, {
+    errorMap: () => ({ message: `type must be one of: ${ALLOWED_SENSITIVE_TYPES.join(', ')}` }),
+  }),
+  boundingBox: boundingBoxSchema,
+  confidence: z.number().min(0, 'confidence must be >= 0').max(1, 'confidence must be <= 1'),
+  metadata: z.record(z.unknown()).optional(),
+});
+
+// Zod schema for detection array
+const detectionsArraySchema = z.array(detectionSchema);
+
+// Allowed desensitization methods
+const ALLOWED_METHODS = ['blur', 'pixelate', 'blackout', 'mask', 'redact'] as const;
+
+// Zod schema for desensitization region (multi-desensitize)
+const regionSchema = z.object({
+  boundingBox: boundingBoxSchema,
+  method: z.enum(ALLOWED_METHODS, {
+    errorMap: () => ({ message: `method must be one of: ${ALLOWED_METHODS.join(', ')}` }),
+  }),
+  intensity: z.number().int().min(1).max(100),
+});
+
+// Zod schema for regions array
+const regionsArraySchema = z.array(regionSchema);
 
 const router: Router = Router();
 
@@ -109,35 +163,45 @@ router.post(
     }
 
     const imageBuffer = req.file.buffer;
-    const detections =
-      typeof req.body.detections === 'string'
-        ? JSON.parse(req.body.detections)
-        : req.body.detections;
-    const method = (req.body.method as string) || 'blur';
-    const intensity = parseInt(req.body.intensity, 10) || 70;
-
-    if (!Array.isArray(detections) || detections.length === 0) {
-      return res.status(400).json({ success: false, error: 'No detections provided' });
+    let rawDetections = req.body.detections;
+    if (typeof rawDetections === 'string') {
+      try {
+        rawDetections = JSON.parse(rawDetections);
+      } catch {
+        return res.status(400).json({ success: false, error: 'Invalid JSON in detections' });
+      }
     }
+    const method = (req.body.method as string) || 'blur';
+    const intensity = req.body.intensity !== undefined ? parseInt(req.body.intensity, 10) : 70;
+
+    // Validate detections schema
+    const validationResult = detectionsArraySchema.safeParse(rawDetections);
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+      return res
+        .status(400)
+        .json({ success: false, error: `Invalid detections: ${errors.join('; ')}` });
+    }
+    const detections = validationResult.data;
 
     // Strip EXIF first
     const { cleanedBuffer } = await stripExifFromImage(imageBuffer);
 
     // Apply desensitization
-    const result = await desensitizeImage(cleanedBuffer, detections, {
+    const desensitizationResult = await desensitizeImage(cleanedBuffer, detections, {
       method: method as DesensitizationMethod,
       intensity,
     });
 
     // Return base64 encoded processed image
-    const processedBase64 = result.processedImageBuffer.toString('base64');
+    const processedBase64 = desensitizationResult.processedImageBuffer.toString('base64');
 
     res.json({
       success: true,
       data: {
         processedImage: `data:image/jpeg;base64,${processedBase64}`,
-        appliedRegions: result.appliedRegions,
-        processingTimeMs: result.processingTime,
+        appliedRegions: desensitizationResult.appliedRegions,
+        processingTimeMs: desensitizationResult.processingTime,
       },
     });
   })
@@ -157,12 +221,24 @@ router.post(
     }
 
     const imageBuffer = req.file.buffer;
-    const regions =
-      typeof req.body.regions === 'string' ? JSON.parse(req.body.regions) : req.body.regions;
-
-    if (!Array.isArray(regions) || regions.length === 0) {
-      return res.status(400).json({ success: false, error: 'No regions provided' });
+    let rawRegions = req.body.regions;
+    if (typeof rawRegions === 'string') {
+      try {
+        rawRegions = JSON.parse(rawRegions);
+      } catch {
+        return res.status(400).json({ success: false, error: 'Invalid JSON in regions' });
+      }
     }
+
+    // Validate regions schema
+    const regionsResult = regionsArraySchema.safeParse(rawRegions);
+    if (!regionsResult.success) {
+      const errors = regionsResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+      return res
+        .status(400)
+        .json({ success: false, error: `Invalid regions: ${errors.join('; ')}` });
+    }
+    const regions = regionsResult.data;
 
     // Strip EXIF first
     const { cleanedBuffer } = await stripExifFromImage(imageBuffer);
@@ -200,16 +276,26 @@ router.post(
     }
 
     const imageBuffer = req.file.buffer;
-    const boundingBox =
-      typeof req.body.boundingBox === 'string'
-        ? JSON.parse(req.body.boundingBox)
-        : req.body.boundingBox;
-    const method = (req.body.method as string) || 'blur';
-    const intensity = parseInt(req.body.intensity, 10) || 50;
-
-    if (!boundingBox) {
-      return res.status(400).json({ success: false, error: 'No boundingBox provided' });
+    let rawBoundingBox = req.body.boundingBox;
+    if (typeof rawBoundingBox === 'string') {
+      try {
+        rawBoundingBox = JSON.parse(rawBoundingBox);
+      } catch {
+        return res.status(400).json({ success: false, error: 'Invalid JSON in boundingBox' });
+      }
     }
+
+    // Validate boundingBox schema
+    const bboxResult = boundingBoxSchema.safeParse(rawBoundingBox);
+    if (!bboxResult.success) {
+      const errors = bboxResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+      return res
+        .status(400)
+        .json({ success: false, error: `Invalid boundingBox: ${errors.join('; ')}` });
+    }
+    const boundingBox = bboxResult.data;
+    const method = (req.body.method as string) || 'blur';
+    const intensity = req.body.intensity !== undefined ? parseInt(req.body.intensity, 10) : 50;
 
     const previewBuffer = await previewDesensitization(
       imageBuffer,
@@ -276,6 +362,88 @@ router.get(
         recommendedMethod: method,
         recommendedIntensity: intensity,
       },
+    });
+  })
+);
+
+// In-memory store for user policy configurations (replace with DB in production)
+const userPolicies = new Map<string, PolicyConfiguration>();
+
+/**
+ * GET /api/v1/ai/privacy/policy/templates
+ * Get all available desensitization templates
+ */
+router.get(
+  '/policy/templates',
+  authenticateToken,
+  asyncHandler(async (req, res) => {
+    const templates = getPredefinedTemplates();
+    res.json({
+      success: true,
+      data: { templates },
+    });
+  })
+);
+
+/**
+ * GET /api/v1/ai/privacy/policy
+ * Get current user's desensitization policy configuration
+ */
+router.get(
+  '/policy',
+  authenticateToken,
+  asyncHandler(async (req, res) => {
+    const userId = (req as any).user?.userId || (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    let policy = userPolicies.get(userId);
+    if (!policy) {
+      policy = createDefaultPolicy(userId);
+      userPolicies.set(userId, policy);
+    }
+
+    res.json({
+      success: true,
+      data: { policy },
+    });
+  })
+);
+
+/**
+ * PUT /api/v1/ai/privacy/policy
+ * Update current user's desensitization policy configuration
+ */
+router.put(
+  '/policy',
+  authenticateToken,
+  asyncHandler(async (req, res) => {
+    const userId = (req as any).user?.userId || (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    let policy = userPolicies.get(userId);
+    if (!policy) {
+      policy = createDefaultPolicy(userId);
+    }
+
+    const { activeTemplateId, customRules, whitelist, autoDesensitize, defaultMethod } = req.body;
+
+    const updatedPolicy = updatePolicy(policy, {
+      ...(activeTemplateId !== undefined && { activeTemplateId }),
+      ...(customRules !== undefined && { customRules }),
+      ...(whitelist !== undefined && { whitelist }),
+      ...(autoDesensitize !== undefined && { autoDesensitize }),
+      ...(defaultMethod !== undefined && { defaultMethod }),
+    });
+
+    userPolicies.set(userId, updatedPolicy);
+
+    res.json({
+      success: true,
+      data: { policy: updatedPolicy },
     });
   })
 );

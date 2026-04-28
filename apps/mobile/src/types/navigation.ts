@@ -17,6 +17,10 @@ export type RootStackParamList = {
     raterType: 'CONSUMER' | 'MERCHANT';
     merchantName: string;
   };
+  PrivacyEditor: {
+    imageUri: string;
+    imageId?: string;
+  };
   MerchantRedeem: undefined;
 };
 

@@ -170,7 +170,46 @@ Respond ONLY with the JSON array, no other text. If nothing is detected, respond
 }
 
 /**
- * Detect sensitive content in an image using AI vision analysis
+ * Perform a single AI detection attempt with timeout.
+ * Throws on failure so the caller can retry.
+ */
+async function runDetectionAttempt(
+  imageBuffer: Buffer,
+  metadata: sharp.Metadata,
+  imageWidth: number,
+  imageHeight: number,
+  timeoutMs: number,
+  types: SensitiveType[],
+  minConfidence: number
+): Promise<DetectionResult[]> {
+  const adapter = getDetectionAdapter();
+  await adapter.initialize();
+
+  const imageInput: ImageInput = {
+    type: 'base64',
+    data: imageBuffer.toString('base64'),
+    mimeType: `image/${metadata.format ?? 'jpeg'}`,
+  };
+
+  const prompt = buildDetectionPrompt(types);
+
+  // Apply timeout around AI call
+  const detectionPromise = adapter.analyzeImage(imageInput, prompt);
+  const timeoutPromise = new Promise<string>((_, reject) =>
+    setTimeout(() => reject(new Error('Detection timeout')), timeoutMs)
+  );
+
+  const response = await Promise.race([detectionPromise, timeoutPromise]);
+
+  let detections = parseDetectionResponse(response, types, imageWidth, imageHeight);
+  detections = detections.filter(d => d.confidence >= minConfidence);
+
+  return detections;
+}
+
+/**
+ * Detect sensitive content in an image using AI vision analysis.
+ * Includes timeout, retry (max 1 retry), and graceful degradation.
  */
 export async function detectSensitiveContent(
   imageBuffer: Buffer,
@@ -181,50 +220,48 @@ export async function detectSensitiveContent(
 ): Promise<VisionAnalysisResult> {
   const startTime = Date.now();
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const MAX_RETRIES = 1;
 
   // Get real image dimensions
   const metadata = await sharp(imageBuffer).metadata();
   const imageWidth = metadata.width ?? 0;
   const imageHeight = metadata.height ?? 0;
 
-  // Check EXIF data
-  const hadGps = await hasGpsExif(imageBuffer);
+  // Strip EXIF data (GPS coordinates, camera model, date/time) before AI analysis
+  const { cleanedBuffer, hadGpsData } = await stripExifFromImage(imageBuffer);
 
   let detections: DetectionResult[] = [];
+  let lastError: Error | null = null;
 
-  try {
-    // Attempt real AI detection
-    const adapter = getDetectionAdapter();
-    await adapter.initialize();
+  // Retry loop: attempt detection up to MAX_RETRIES on transient failure
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      detections = await runDetectionAttempt(
+        cleanedBuffer,
+        metadata,
+        imageWidth,
+        imageHeight,
+        timeoutMs,
+        options.types,
+        options.minConfidence
+      );
+      // Success — break out of retry loop
+      break;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown detection error');
+      if (attempt < MAX_RETRIES) {
+        console.warn(
+          `[SensitiveContentDetection] Attempt ${attempt + 1} failed: ${lastError.message}. Retrying...`
+        );
+      }
+    }
+  }
 
-    const imageInput: ImageInput = {
-      type: 'base64',
-      data: imageBuffer.toString('base64'),
-      mimeType: `image/${metadata.format ?? 'jpeg'}`,
-    };
-
-    const prompt = buildDetectionPrompt(options.types);
-
-    // Apply timeout
-    const detectionPromise = adapter.analyzeImage(imageInput, prompt);
-    const timeoutPromise = new Promise<string>((_, reject) =>
-      setTimeout(() => reject(new Error('Detection timeout')), timeoutMs)
-    );
-
-    const response = await Promise.race([detectionPromise, timeoutPromise]);
-
-    detections = parseDetectionResponse(response, options.types, imageWidth, imageHeight);
-
-    // Filter by minimum confidence
-    detections = detections.filter(d => d.confidence >= options.minConfidence);
-  } catch (error) {
-    // Graceful degradation: if AI service fails, return empty detections
-    // In production, this should log to monitoring
-    const errorMsg = error instanceof Error ? error.message : 'Unknown detection error';
+  // Graceful degradation: if all attempts failed, return empty detections with warning
+  if (detections.length === 0 && lastError !== null) {
     console.warn(
-      `[SensitiveContentDetection] AI detection failed, returning empty results: ${errorMsg}`
+      `[SensitiveContentDetection] All AI detection attempts failed (${MAX_RETRIES + 1} tries), returning empty results: ${lastError.message}`
     );
-    detections = [];
   }
 
   // Sort by confidence and limit results
@@ -238,8 +275,8 @@ export async function detectSensitiveContent(
     imageWidth,
     imageHeight,
     processingTime: Date.now() - startTime,
-    exifStripped: false, // Caller should strip EXIF separately
-    hadGpsData: hadGps,
+    exifStripped: true,
+    hadGpsData,
   };
 }
 

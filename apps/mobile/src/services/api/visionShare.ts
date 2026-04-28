@@ -459,6 +459,44 @@ export const visionShareApi = {
   },
 
   /**
+   * Apply different desensitization methods to different regions
+   */
+  multiDesensitizeImage: async (params: {
+    imageUri: string;
+    regions: Array<{
+      boundingBox: { x: number; y: number; width: number; height: number };
+      method: string;
+      intensity: number;
+    }>;
+  }): Promise<{
+    success: boolean;
+    data: {
+      processedImage: string;
+      appliedRegions: Array<{
+        boundingBox: { x: number; y: number; width: number; height: number };
+        method: string;
+        intensity: number;
+      }>;
+      processingTimeMs: number;
+    };
+  }> => {
+    const formData = new FormData();
+    formData.append('image', {
+      uri: params.imageUri,
+      type: 'image/jpeg',
+      name: 'image.jpg',
+    } as unknown as Blob);
+    formData.append('regions', JSON.stringify(params.regions));
+
+    const response = await apiClient.post('/api/v1/ai/privacy/multi-desensitize', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  /**
    * Preview desensitization effect on a region
    */
   previewDesensitization: async (params: {
@@ -503,6 +541,39 @@ export const visionShareApi = {
     const response = await api.get(
       `/ai/privacy/recommendations/${contentType}?${params.toString()}`
     );
+    return response.data;
+  },
+
+  /**
+   * Upload the privacy-processed image
+   */
+  uploadPrivacyImage: async (
+    imageUri: string,
+    imageId?: string
+  ): Promise<{
+    success: boolean;
+    data: {
+      imageId: string;
+      url: string;
+      thumbnailUrl?: string;
+    };
+    error?: string;
+  }> => {
+    const formData = new FormData();
+    formData.append('image', {
+      uri: imageUri,
+      type: 'image/jpeg',
+      name: 'privacy-processed.jpg',
+    } as unknown as Blob);
+    if (imageId) {
+      formData.append('originalImageId', imageId);
+    }
+
+    const response = await apiClient.post('/api/v1/ai/privacy/save', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 
