@@ -21,6 +21,19 @@ import {
 } from '../../ai/prompts/resumeScreening';
 
 // ---------------------------------------------------------------------------
+// Custom errors
+// ---------------------------------------------------------------------------
+
+export class LLMResponseParseError extends Error {
+  public readonly rawResponse: string;
+  constructor(message: string, rawResponse: string) {
+    super(message);
+    this.name = 'LLMResponseParseError';
+    this.rawResponse = rawResponse;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Input/Output types
 // ---------------------------------------------------------------------------
 
@@ -372,28 +385,12 @@ export class ResumeScreeningService {
         followUpQuestions: data.followUpQuestions ?? [],
       };
     } catch (error) {
-      logger.warn('Failed to parse screening result, using fallback', {
-        error: error instanceof Error ? error.message : 'Parse error',
-      });
-      return {
-        screeningScore: 50,
-        recommendation: 'HOLD',
-        dimensions: {
-          explicitSkillsMatch: { score: 50, details: 'Parse error, manual review needed' },
-          implicitSkillsInferred: { score: 50, skills: [], details: '' },
-          experienceRelevance: { score: 50, details: '' },
-          educationFit: { score: 50, details: '' },
-          culturalFit: { score: 50, details: '' },
-          salaryFit: { score: 50, details: '' },
-        },
-        matchedSkills: [],
-        missingSkills: [],
-        inferredSkills: [],
-        concerns: ['Failed to parse LLM response'],
-        strengths: [],
-        screeningNotes: text.substring(0, 500),
-        followUpQuestions: [],
-      };
+      const parseError = error instanceof Error ? error.message : 'Parse error';
+      logger.warn('Failed to parse screening result', { error: parseError });
+      throw new LLMResponseParseError(
+        `Failed to parse screening result as valid JSON: ${parseError}`,
+        text
+      );
     }
   }
 
@@ -418,17 +415,13 @@ export class ResumeScreeningService {
         concerns: r.concerns ?? [],
         screeningNotes: r.screeningNotes ?? '',
       }));
-    } catch {
-      logger.warn('Failed to parse batch result');
-      return resumes.map(r => ({
-        resumeId: r.id,
-        screeningScore: 50,
-        recommendation: 'HOLD' as const,
-        matchedSkills: [] as string[],
-        missingSkills: [] as string[],
-        concerns: ['Parse error'] as string[],
-        screeningNotes: '' as string,
-      }));
+    } catch (error) {
+      const parseError = error instanceof Error ? error.message : 'Parse error';
+      logger.warn('Failed to parse batch result', { error: parseError });
+      throw new LLMResponseParseError(
+        `Failed to parse batch result as valid JSON: ${parseError}`,
+        text
+      );
     }
   }
 
@@ -439,14 +432,13 @@ export class ResumeScreeningService {
         throw new Error('No JSON found');
       }
       return JSON.parse(jsonMatch[0]);
-    } catch {
-      return {
-        summary: text.substring(0, 300),
-        matchingReasons: [],
-        skillAlignment: { matched: [], gaps: [] },
-        careerFit: '',
-        recommendedNextSteps: [],
-      };
+    } catch (error) {
+      const parseError = error instanceof Error ? error.message : 'Parse error';
+      logger.warn('Failed to parse explanation result', { error: parseError });
+      throw new LLMResponseParseError(
+        `Failed to parse explanation as valid JSON: ${parseError}`,
+        text
+      );
     }
   }
 

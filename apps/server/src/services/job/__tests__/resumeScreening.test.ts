@@ -6,6 +6,7 @@ import {
   ResumeScreeningService,
   ResumeScreeningRequest,
   BatchScreeningRequest,
+  LLMResponseParseError,
 } from '../resumeScreening';
 import { llmService } from '../../ai/llmService';
 
@@ -165,12 +166,8 @@ describe('ResumeScreeningService', () => {
         jobCriteria: sampleJobCriteria,
       };
 
-      const result = await service.screen(request);
-
-      // Fallback values
-      expect(result.screeningScore).toBe(50);
-      expect(result.recommendation).toBe('HOLD');
-      expect(result.concerns).toContain('Failed to parse LLM response');
+      await expect(service.screen(request)).rejects.toThrow(LLMResponseParseError);
+      await expect(service.screen(request)).rejects.toThrow('Failed to parse');
     });
 
     it('should use custom provider when specified', async () => {
@@ -364,14 +361,13 @@ describe('ResumeScreeningService', () => {
         latencyMs: 300,
       });
 
-      const result = await service.explainRecommendation(
-        { skills: ['React'], experienceYears: 3 },
-        { title: 'Engineer', requiredSkills: ['React'] },
-        70
-      );
-
-      expect(result.summary).toBe('Plain text response');
-      expect(result.matchingReasons).toEqual([]);
+      await expect(
+        service.explainRecommendation(
+          { skills: ['React'], experienceYears: 3 },
+          { title: 'Engineer', requiredSkills: ['React'] },
+          70
+        )
+      ).rejects.toThrow(LLMResponseParseError);
     });
   });
 });
