@@ -30,8 +30,8 @@ jest.mock('expo-server-sdk', () => ({
 
 jest.mock('../../services/rbacService', () => ({
   rbacService: {
-    getUserRoles: jest.fn().mockResolvedValue([{ id: 'role-1', name: 'user' }]),
-    getUserPermissions: jest.fn().mockResolvedValue(['chat:send', 'chat:read']),
+    getUserRoles: jest.fn().mockResolvedValue([{ role: { name: 'user', id: 'role-1' } }]),
+    getUserPermissions: jest.fn().mockResolvedValue([{ name: 'chat:send' }, { name: 'chat:read' }]),
   },
 }));
 

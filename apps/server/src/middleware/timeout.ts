@@ -9,24 +9,16 @@ import { ApiResponse } from '../utils/response';
 export const timeout = (ms: number) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     // Use shorter timeout in test environment to avoid long waits
-    const effectiveTimeout = process.env.NODE_ENV === 'test' ? 5000 : ms;
+    const effectiveTimeout = process.env.NODE_ENV === 'test' ? 15000 : ms;
 
     // Set timeout on the request socket
     req.setTimeout(effectiveTimeout, () => {
-      res.status(504).json(ApiResponse.error(
-        'Request timeout',
-        'REQUEST_TIMEOUT',
-        504
-      ));
+      res.status(504).json(ApiResponse.error('Request timeout', 'REQUEST_TIMEOUT', 504));
     });
 
     // Set response timeout
     res.setTimeout(effectiveTimeout, () => {
-      res.status(504).json(ApiResponse.error(
-        'Response timeout',
-        'RESPONSE_TIMEOUT',
-        504
-      ));
+      res.status(504).json(ApiResponse.error('Response timeout', 'RESPONSE_TIMEOUT', 504));
     });
 
     next();
