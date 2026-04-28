@@ -276,10 +276,14 @@ export const ApiPaths = {
     resetPassword: '/api/v1/auth/reset-password',
   },
   users: {
-    list: '/api/v1/users',
-    detail: (id: string) => `/api/v1/users/${id}`,
-    update: (id: string) => `/api/v1/users/${id}`,
-    delete: (id: string) => `/api/v1/users/${id}`,
+    me: '/api/v1/users/me',
+    privacy: '/api/v1/users/privacy',
+    avatar: '/api/v1/users/avatar',
+    password: '/api/v1/users/password',
+    phone: '/api/v1/users/phone',
+    email: '/api/v1/users/email',
+    devices: '/api/v1/users/devices',
+    block: '/api/v1/users/block',
   },
   agents: {
     list: '/api/v1/agents',

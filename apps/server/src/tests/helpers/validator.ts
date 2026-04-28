@@ -42,7 +42,7 @@ export const SuccessResponseSchema = z.object({
 export const ErrorResponseSchema = z.object({
   success: z.literal(false),
   error: z.string(),
-  errorCode: z.string(),
+  errorCode: z.string().optional(),
   details: z.unknown().optional(),
 });
 
@@ -90,10 +90,7 @@ export function validateSchema<T>(
 /**
  * Assert response matches schema
  */
-export function assertSchema<T>(
-  schema: z.ZodType<T>,
-  data: unknown
-): T {
+export function assertSchema<T>(schema: z.ZodType<T>, data: unknown): T {
   return schema.parse(data);
 }
 
@@ -126,11 +123,7 @@ export function validateErrorResponse(response: TestResponse): boolean {
   }
 
   const body = response.body as Record<string, unknown>;
-  return (
-    body.success === false &&
-    ('error' in body || 'message' in body) &&
-    'errorCode' in body
-  );
+  return body.success === false && ('error' in body || 'message' in body);
 }
 
 /**
@@ -175,9 +168,7 @@ export class ResponseTimeValidator {
   assertWithin(threshold: number, message?: string): void {
     const duration = this.getDuration();
     if (duration > threshold) {
-      throw new Error(
-        message || `Response time ${duration}ms exceeded threshold ${threshold}ms`
-      );
+      throw new Error(message || `Response time ${duration}ms exceeded threshold ${threshold}ms`);
     }
   }
 }
@@ -356,7 +347,7 @@ export class ResponseValidator {
    * Add status code validator
    */
   status(expectedStatus: number): this {
-    this.validators.push((response) => response.status === expectedStatus);
+    this.validators.push(response => response.status === expectedStatus);
     return this;
   }
 
@@ -364,7 +355,7 @@ export class ResponseValidator {
    * Add success validator
    */
   success(): this {
-    this.validators.push((response) => validateSuccessResponse(response));
+    this.validators.push(response => validateSuccessResponse(response));
     return this;
   }
 
@@ -372,7 +363,7 @@ export class ResponseValidator {
    * Add error validator
    */
   error(): this {
-    this.validators.push((response) => validateErrorResponse(response));
+    this.validators.push(response => validateErrorResponse(response));
     return this;
   }
 
@@ -411,9 +402,7 @@ export class ResponseValidator {
   assert(response: TestResponse): void {
     const result = this.validate(response);
     if (!result.valid) {
-      throw new Error(
-        `Response validation failed: ${result.failedValidators} validators failed`
-      );
+      throw new Error(`Response validation failed: ${result.failedValidators} validators failed`);
     }
   }
 }

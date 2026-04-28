@@ -76,7 +76,10 @@ function startCleanupInterval(): void {
   }
 }
 
-startCleanupInterval();
+// Skip in test environment to avoid open handles
+if (process.env.NODE_ENV !== 'test') {
+  startCleanupInterval();
+}
 
 /**
  * Get rate limit headers for response based on token bucket state.
@@ -310,16 +313,11 @@ export const reportLimiter = rateLimit({
     return userId ? `report:user:${userId}` : `report:ip:${ip}`;
   },
   handler: (req: RateLimitRequest, res: Response) => {
-    res
-      .status(429)
-      .json(
-        ApiResponse.error(
-          rateLimitConfigs.reports.message!,
-          'REPORT_RATE_LIMIT_EXCEEDED',
-          429,
-          { retryAfter: Math.ceil(rateLimitConfigs.reports.windowMs / 1000) }
-        )
-      );
+    res.status(429).json(
+      ApiResponse.error(rateLimitConfigs.reports.message!, 'REPORT_RATE_LIMIT_EXCEEDED', 429, {
+        retryAfter: Math.ceil(rateLimitConfigs.reports.windowMs / 1000),
+      })
+    );
   },
   skip: () => {
     return process.env.NODE_ENV === 'test';
@@ -378,14 +376,16 @@ export function falseReportPenaltyCheck(
     .then(([generalDismissed, reviewDismissed]) => {
       const dismissedCount = generalDismissed + reviewDismissed;
       if (dismissedCount >= 3) {
-        res.status(429).json(
-          ApiResponse.error(
-            'Your report privileges are temporarily restricted due to previous false reports.',
-            'FALSE_REPORT_PENALTY',
-            429,
-            { dismissedRecent: dismissedCount }
-          )
-        );
+        res
+          .status(429)
+          .json(
+            ApiResponse.error(
+              'Your report privileges are temporarily restricted due to previous false reports.',
+              'FALSE_REPORT_PENALTY',
+              429,
+              { dismissedRecent: dismissedCount }
+            )
+          );
       } else {
         next();
       }

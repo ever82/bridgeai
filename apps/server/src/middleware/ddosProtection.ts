@@ -183,8 +183,10 @@ function cleanupExpiredRecords(): void {
   }
 }
 
-// Run cleanup every minute
-setInterval(cleanupExpiredRecords, 60 * 1000);
+// Run cleanup every minute (skip in test environment to avoid open handles)
+if (process.env.NODE_ENV !== 'test') {
+  setInterval(cleanupExpiredRecords, 60 * 1000);
+}
 
 /**
  * DDoS Protection Middleware
