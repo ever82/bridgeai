@@ -6,7 +6,11 @@ import { ScreenContainer } from '../../components/ScreenContainer';
 import { Header } from '../../components/Header';
 import { MessagesStackParamList } from '../../types/navigation';
 import { theme } from '../../theme';
-import { type Notification, NotificationType } from '../../services/notificationApi';
+import {
+  type Notification,
+  NotificationType,
+  getNotificationDetail,
+} from '../../services/notificationApi';
 
 type Props = NativeStackScreenProps<MessagesStackParamList, 'NotificationDetail'>;
 
@@ -30,9 +34,9 @@ export const NotificationDetailScreen: React.FC<Props> = ({ route }) => {
   const [notification, setNotification] = useState<Notification | null>(null);
 
   useEffect(() => {
-    // In a real app, fetch notification detail from API
-    // For now, we display a placeholder
-    setNotification(null);
+    getNotificationDetail(notificationId)
+      .then(setNotification)
+      .catch(() => setNotification(null));
   }, [notificationId]);
 
   const category = notification ? getCategoryFromType(notification.type) : 'system';
@@ -53,9 +57,7 @@ export const NotificationDetailScreen: React.FC<Props> = ({ route }) => {
             : '刚刚'}
         </Text>
         <View style={styles.divider} />
-        <Text style={styles.body}>
-          {notification?.content || `通知 ID: ${notificationId}\n\n这是通知详情内容。`}
-        </Text>
+        <Text style={styles.body}>{notification?.content || '加载中...'}</Text>
         {notification?.data && Object.keys(notification.data).length > 0 && (
           <TouchableOpacity style={styles.actionButton}>
             <Text style={styles.actionButtonText}>查看详情</Text>
