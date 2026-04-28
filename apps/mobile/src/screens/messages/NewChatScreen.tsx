@@ -20,6 +20,7 @@ import { useMessageStore } from '../../stores/messageStore';
 import { MessagesStackParamList } from '../../types/navigation';
 import { theme } from '../../theme';
 import { agentsApi } from '../../services/api/agents';
+import { createRoom } from '../../services/chatApi';
 import { formatRelativeDate } from '../../utils/format';
 
 type NavigationProp = NativeStackNavigationProp<MessagesStackParamList, 'NewChat'>;
@@ -113,14 +114,11 @@ export const NewChatScreen: React.FC = () => {
 
     setIsCreatingGroup(true);
     try {
-      // TODO: Replace with actual API call once backend supports group chat creation
-      // const newRoom = await createRoom({
-      //   type: 'GROUP',
-      //   participantIds: selectedContactIds,
-      //   metadata: { name: groupName.trim() },
-      // });
-      // console.log('Group chat created:', newRoom);
-      console.log('Create group:', { name: groupName.trim(), participants: selectedContactIds });
+      await createRoom({
+        type: 'GROUP',
+        participantIds: selectedContactIds,
+        metadata: { name: groupName.trim() },
+      });
       // Reset state and go back
       setIsGroupMode(false);
       setSelectedContactIds([]);
