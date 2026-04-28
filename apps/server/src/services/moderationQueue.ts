@@ -77,7 +77,7 @@ export async function addToQueue(item: ICreateQueueItem): Promise<ModerationQueu
       const moderationResult = await reviewModerationService.moderateContent(item.content);
       aiScore = moderationResult.score;
       if (moderationResult.matchedWords) {
-        aiFlags = moderationResult.matchedWords.map((m) => m.word);
+        aiFlags = moderationResult.matchedWords.map(m => m.word);
       }
       if (moderationResult.reason) {
         aiFlags.push(...moderationResult.reason.split('; '));
@@ -136,10 +136,17 @@ export async function getQueue(
 
   const skip = (page - 1) * limit;
 
+  // Priority ordering: PENDING items sorted by aiScore desc (highest risk first),
+  // then by createdAt asc (oldest first); other statuses by createdAt
+  const orderBy =
+    !status || status === 'PENDING'
+      ? [{ aiScore: 'desc' as const }, { createdAt: 'asc' as const }]
+      : [{ createdAt: 'asc' as const }];
+
   const [items, total] = await Promise.all([
     prisma.moderationQueueItem.findMany({
       where,
-      orderBy: [{ status: 'asc' }, { createdAt: 'asc' }],
+      orderBy,
       skip,
       take: limit,
     }),
@@ -166,10 +173,7 @@ export async function getItemById(id: string): Promise<ModerationQueueItem | nul
  * @param moderatorId Moderator user ID
  * @returns Updated queue item
  */
-export async function assignItem(
-  id: string,
-  moderatorId: string
-): Promise<ModerationQueueItem> {
+export async function assignItem(id: string, moderatorId: string): Promise<ModerationQueueItem> {
   const item = await prisma.moderationQueueItem.findUnique({
     where: { id },
   });
@@ -532,4 +536,163 @@ export async function addMessageReportToQueue(
     reportedBy: reporterId,
     reportReason: reason,
   });
+}
+
+/**
+ * Add user report to queue
+ * @param userId User ID
+ * @param reporterId Reporter user ID
+ * @param reason Report reason
+ */
+export async function addUserReportToQueue(
+  userId: string,
+  reporterId: string,
+  reason: string
+): Promise<ModerationQueueItem> {
+  return addToQueue({
+    contentType: 'user',
+    contentId: userId,
+    reportedBy: reporterId,
+    reportReason: reason,
+  });
+}
+
+/**
+ * Claim next pending item for a moderator
+ * Picks the highest-priority item (highest aiScore, oldest first as tiebreaker)
+ * and assigns it to the requesting moderator.
+ * @param moderatorId Moderator user ID
+ * @param contentType Optional content type filter
+ * @returns Claimed queue item or null if queue empty
+ */
+export async function claimNext(
+  moderatorId: string,
+  contentType?: string
+): Promise<ModerationQueueItem | null> {
+  const where: Record<string, unknown> = {
+    status: 'PENDING',
+  };
+
+  if (contentType) {
+    where.contentType = contentType;
+  }
+
+  // Find the highest-priority pending item
+  // Priority: highest aiScore first, then oldest createdAt
+  const candidates = await prisma.moderationQueueItem.findMany({
+    where,
+    orderBy: [{ aiScore: 'desc' }, { createdAt: 'asc' }],
+    take: 1,
+  });
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  const item = candidates[0];
+
+  // Use a transaction to avoid race conditions on claim
+  const claimed = await prisma.$transaction(async tx => {
+    // Re-check status within transaction
+    const current = await tx.moderationQueueItem.findUnique({
+      where: { id: item.id },
+    });
+
+    if (!current || current.status !== 'PENDING') {
+      return null;
+    }
+
+    return tx.moderationQueueItem.update({
+      where: { id: item.id },
+      data: {
+        assignedTo: moderatorId,
+        status: 'IN_PROGRESS',
+      },
+    });
+  });
+
+  if (claimed) {
+    logger.info('Queue item claimed', {
+      queueItemId: claimed.id,
+      moderatorId,
+      aiScore: claimed.aiScore,
+    });
+  }
+
+  return claimed;
+}
+
+/**
+ * Reopen a resolved queue item
+ * Returns the item to PENDING status for re-review
+ * @param id Queue item ID
+ * @param note Reopen reason
+ * @param moderatorId Moderator who reopens
+ * @returns Updated queue item
+ */
+export async function reopenItem(
+  id: string,
+  note?: string,
+  moderatorId?: string
+): Promise<ModerationQueueItem> {
+  const item = await prisma.moderationQueueItem.findUnique({
+    where: { id },
+  });
+
+  if (!item) {
+    throw new Error('Queue item not found');
+  }
+
+  if (item.status !== 'RESOLVED' && item.status !== 'ESCALATED') {
+    throw new Error('Only resolved or escalated items can be reopened');
+  }
+
+  const updated = await prisma.moderationQueueItem.update({
+    where: { id },
+    data: {
+      status: 'PENDING',
+      action: null,
+      actionNote: note ? `[REOPENED] ${note}` : '[REOPENED]',
+      assignedTo: moderatorId || null,
+    },
+  });
+
+  logger.info('Queue item reopened', {
+    queueItemId: id,
+    moderatorId,
+  });
+
+  return updated;
+}
+
+/**
+ * Batch resolve multiple queue items with the same action
+ * @param ids Queue item IDs
+ * @param action Resolution action
+ * @param note Optional note applied to all
+ * @param moderatorId Moderator user ID
+ * @returns Number of items resolved
+ */
+export async function batchResolve(
+  ids: string[],
+  action: 'APPROVE' | 'HIDE' | 'WARN' | 'BAN',
+  note?: string,
+  moderatorId?: string
+): Promise<{ resolved: number; failed: number }> {
+  let resolved = 0;
+  let failed = 0;
+
+  for (const id of ids) {
+    try {
+      await resolveItem(id, action, note, moderatorId);
+      resolved++;
+    } catch (error) {
+      logger.error('Batch resolve failed for item', { id, error: (error as Error).message });
+      failed++;
+    }
+  }
+
+  logger.info('Batch resolve completed', { resolved, failed, action, moderatorId });
+
+  return { resolved, failed };
 }

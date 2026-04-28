@@ -2,12 +2,15 @@
  * Moderation Queue Routes
  * 审核队列路由
  *
- * GET  /api/v1/moderation/queue        - List queue items (admin only)
- * GET  /api/v1/moderation/queue/stats - Queue statistics (admin only)
- * GET  /api/v1/moderation/queue/:id    - Get single item (admin only)
- * POST /api/v1/moderation/queue/:id/assign    - Assign to moderator (admin only)
- * POST /api/v1/moderation/queue/:id/resolve   - Resolve with action (admin only)
+ * GET  /api/v1/moderation/queue                - List queue items (admin only)
+ * GET  /api/v1/moderation/queue/stats          - Queue statistics (admin only)
+ * GET  /api/v1/moderation/queue/:id            - Get single item (admin only)
+ * POST /api/v1/moderation/queue/:id/assign     - Assign to moderator (admin only)
+ * POST /api/v1/moderation/queue/:id/resolve    - Resolve with action (admin only)
  * POST /api/v1/moderation/queue/:id/escalate   - Escalate item (admin only)
+ * POST /api/v1/moderation/queue/claim          - Claim next priority item (admin only)
+ * POST /api/v1/moderation/queue/:id/reopen     - Reopen resolved item (admin only)
+ * POST /api/v1/moderation/queue/batch-resolve  - Batch resolve items (admin only)
  */
 
 import { Router, Response } from 'express';
@@ -49,7 +52,12 @@ router.get(
   '/queue',
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const contentType = req.query.contentType as string | undefined;
-    const status = req.query.status as 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'ESCALATED' | undefined;
+    const status = req.query.status as
+      | 'PENDING'
+      | 'IN_PROGRESS'
+      | 'RESOLVED'
+      | 'ESCALATED'
+      | undefined;
     const assignedTo = req.query.assignedTo as string | undefined;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
@@ -148,12 +156,7 @@ router.post(
       );
     }
 
-    const item = await moderationQueueService.resolveItem(
-      id,
-      action,
-      note,
-      req.user?.id
-    );
+    const item = await moderationQueueService.resolveItem(id, action, note, req.user?.id);
 
     res.json(ApiResponse.success(item, 'Item resolved successfully'));
   })
@@ -173,6 +176,76 @@ router.post(
     const item = await moderationQueueService.escalateItem(id, note, req.user?.id);
 
     res.json(ApiResponse.success(item, 'Item escalated successfully'));
+  })
+);
+
+/**
+ * @route POST /api/v1/moderation/queue/claim
+ * @desc Claim the next highest-priority pending item
+ * @access Admin only
+ */
+router.post(
+  '/queue/claim',
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const contentType = req.body.contentType as string | undefined;
+
+    const item = await moderationQueueService.claimNext(req.user!.id, contentType);
+
+    if (!item) {
+      res.json(ApiResponse.success(null, 'No pending items in queue'));
+      return;
+    }
+
+    res.json(ApiResponse.success(item, 'Item claimed successfully'));
+  })
+);
+
+/**
+ * @route POST /api/v1/moderation/queue/:id/reopen
+ * @desc Reopen a resolved or escalated item for re-review
+ * @access Admin only
+ */
+router.post(
+  '/queue/:id/reopen',
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params;
+    const { note } = req.body;
+
+    const item = await moderationQueueService.reopenItem(id, note, req.user?.id);
+
+    res.json(ApiResponse.success(item, 'Item reopened successfully'));
+  })
+);
+
+/**
+ * @route POST /api/v1/moderation/queue/batch-resolve
+ * @desc Batch resolve multiple items with the same action
+ * @access Admin only
+ */
+router.post(
+  '/queue/batch-resolve',
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { ids, action, note } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new AppError('ids must be a non-empty array', 'INVALID_REQUEST', 400);
+    }
+
+    if (!action || !['APPROVE', 'HIDE', 'WARN', 'BAN'].includes(action)) {
+      throw new AppError(
+        'Valid action is required (APPROVE, HIDE, WARN, BAN)',
+        'INVALID_REQUEST',
+        400
+      );
+    }
+
+    if (ids.length > 100) {
+      throw new AppError('Batch size cannot exceed 100 items', 'INVALID_REQUEST', 400);
+    }
+
+    const result = await moderationQueueService.batchResolve(ids, action, note, req.user?.id);
+
+    res.json(ApiResponse.success(result, 'Batch resolve completed'));
   })
 );
 

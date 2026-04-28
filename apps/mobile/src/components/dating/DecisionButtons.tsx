@@ -8,14 +8,12 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 interface DecisionButtonsProps {
   onAccept: () => void;
   onDecline: () => void;
-  onReport?: () => void;
   loading?: boolean;
 }
 
 const DecisionButtons: React.FC<DecisionButtonsProps> = ({
   onAccept,
   onDecline,
-  onReport,
   loading = false,
 }) => {
   return (
@@ -35,12 +33,6 @@ const DecisionButtons: React.FC<DecisionButtonsProps> = ({
       >
         <Text style={styles.declineButtonText}>暂时不感兴趣</Text>
       </TouchableOpacity>
-
-      {onReport && (
-        <TouchableOpacity style={styles.reportButton} onPress={onReport} disabled={loading}>
-          <Text style={styles.reportButtonText}>举报不当行为</Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 };

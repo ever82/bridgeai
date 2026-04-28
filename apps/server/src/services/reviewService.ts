@@ -723,6 +723,19 @@ export async function reportReview(
     throw new Error('您已经举报过该评价');
   }
 
+  // 举报频率限制：每分钟最多5次
+  const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+  const recentReportCount = await prisma.reviewReport.count({
+    where: {
+      reporterId,
+      createdAt: { gte: oneMinuteAgo },
+    },
+  });
+
+  if (recentReportCount >= 5) {
+    throw new Error('举报过于频繁，请稍后再试');
+  }
+
   await prisma.reviewReport.create({
     data: {
       reviewId,
@@ -789,6 +802,30 @@ export async function handleReport(
       where: { id: report.reviewId },
       data: { status: 'HIDDEN' },
     });
+  }
+
+  // 如果驳回举报，记录恶意举报惩罚
+  if (action === 'DISMISS' && report.reporterId) {
+    const dismissedCount = await prisma.reviewReport.count({
+      where: {
+        reporterId: report.reporterId,
+        status: 'DISMISSED',
+      },
+    });
+
+    // 被驳回3次以上视为恶意举报者
+    if (dismissedCount >= 3) {
+      await prisma.userViolation.create({
+        data: {
+          userId: report.reporterId,
+          type: 'OTHER',
+          severity: 1,
+          description: `恶意举报，被驳回${dismissedCount}次`,
+          reportId: reportId,
+          moderatorId: handlerId,
+        },
+      });
+    }
   }
 
   logger.info('Report handled', {
