@@ -132,9 +132,9 @@ export const PhotoGalleryScreen: React.FC<PhotoGalleryProps> = ({
         page: 1,
       };
       setState(prev => ({ ...prev, filter: newFilter }));
-      loadPhotos(newFilter, true);
+      // loadPhotos is triggered by useEffect on state.filter change
     },
-    [state.filter, loadPhotos]
+    [state.filter]
   );
 
   // Handle photo press

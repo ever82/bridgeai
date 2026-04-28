@@ -15,11 +15,11 @@ export const PhotoMetadataDisplay: React.FC<PhotoMetadataDisplayProps> = ({
   showSettings,
 }) => {
   const formatDate = (dateStr?: string) => {
-    if (!dateStr) return null;
+    if (!dateStr) return undefined;
     return new Date(dateStr).toLocaleDateString('zh-CN', {
       year: 'numeric',
       month: 'long',
-      day: 'long',
+      day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
     });
