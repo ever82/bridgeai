@@ -127,7 +127,7 @@ describe('Points API Integration', () => {
       expect(body.data).toHaveProperty('totalEarned');
       expect(body.data).toHaveProperty('totalSpent');
       expect(body.data).toHaveProperty('frozenAmount');
-      expect(body.data).toHaveProperty('availableBalance');
+      expect(body.data).toHaveProperty('balance');
 
       await cleanupPointsData(user.id);
     });
@@ -155,7 +155,7 @@ describe('Points API Integration', () => {
       expect(response.status).toBe(200);
       expect(validateSuccessResponse(response)).toBe(true);
       const body = response.body as Record<string, unknown>;
-      expect(body.data).toHaveProperty('availableBalance');
+      expect(body.data).toHaveProperty('balance');
 
       await cleanupPointsData(user.id);
     });
@@ -220,7 +220,7 @@ describe('Points API Integration', () => {
       expect(body.data).toHaveProperty('totalEarned');
       expect(body.data).toHaveProperty('totalSpent');
       expect(body.data).toHaveProperty('frozenAmount');
-      expect(body.data).toHaveProperty('availableBalance');
+      expect(body.data).toHaveProperty('balance');
       expect(body.data).toHaveProperty('byType');
       expect(body.data).toHaveProperty('recentStats');
 

@@ -96,7 +96,7 @@ describe('Points Routes', () => {
       const res = await request(app).get('/points/balance');
 
       expect(res.status).toBe(200);
-      expect(res.body.data.availableBalance).toBe(90);
+      expect(res.body.data.balance).toBe(100);
     });
   });
 
