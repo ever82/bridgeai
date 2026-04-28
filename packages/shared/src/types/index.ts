@@ -32,8 +32,53 @@ export * from './scene';
 export * from './agentAdConsumer';
 export * from './disclosure';
 export * from './visionShare';
-export * from './jobSeeker';
-export * from './resume';
+// Explicitly re-export from jobSeeker, excluding types that conflict with jobPosting/employer
+export {
+  // Unique types
+  type WorkExperience,
+  type Education,
+  type SkillTag,
+  type SalaryExpectation,
+  type JobPreferences,
+  type ContactInfo,
+  type JobSeekerProfile,
+  type CreateJobSeekerProfileRequest,
+  type UpdateJobSeekerProfileRequest,
+  type JobSeekerProfileListResponse,
+  type MaskingRule,
+  type ResumeQualityReport,
+  type WorkTimeline,
+  type WorkTimelineItem,
+  // Unique enums and consts
+  SkillLevel,
+  ResumeVisibility,
+  MaskingType,
+  DEFAULT_MASKING_RULES,
+  SKILL_LEVEL_LABELS,
+  RESUME_VISIBILITY_LABELS,
+} from './jobSeeker';
+// Explicitly re-export from resume to avoid export * resolution issues
+export {
+  type ResumeDelivery,
+  DeliveryStatus,
+  type DeliveryHistoryEntry,
+  DeliveryAction,
+  type DisclosureRecord,
+  type BatchDeliveryRequest,
+  type BatchDeliveryResult,
+  type BatchDeliveryResponse,
+  type DeliveryStats,
+  type CreateDeliveryRequest,
+  type UpdateDeliveryStatusRequest,
+  type WithdrawDeliveryRequest,
+  type DeliveryFilterOptions,
+  type DeliveryListResponse,
+  type DisclosureChangeNotification,
+  type DisclosureFieldChange,
+  DELIVERY_STATUS_LABELS,
+  DELIVERY_STATUS_COLORS,
+  DELIVERY_ACTION_LABELS,
+} from './resume';
 export * from './handoff';
 export * from '../schemas/l2';
 export * from '../schemas/sceneFields';

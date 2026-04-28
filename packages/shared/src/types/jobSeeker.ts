@@ -295,7 +295,7 @@ export const SKILL_LEVEL_LABELS: Record<SkillLevel, string> = {
   [SkillLevel.EXPERT]: '专家',
 };
 
-export const VISIBILITY_LABELS: Record<ResumeVisibility, string> = {
+export const RESUME_VISIBILITY_LABELS: Record<ResumeVisibility, string> = {
   [ResumeVisibility.PUBLIC]: '公开',
   [ResumeVisibility.APPLICATION_ONLY]: '仅投递可见',
   [ResumeVisibility.HIDDEN]: '隐藏',

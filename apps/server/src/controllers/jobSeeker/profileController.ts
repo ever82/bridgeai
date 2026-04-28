@@ -4,7 +4,7 @@
  * HTTP handlers for job seeker profile management
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 
 import {
   createProfile,
@@ -19,15 +19,10 @@ import {
   listProfiles,
   exportToMarkdown,
   maskProfileData,
+  calculateQualityScore,
 } from '../../services/jobSeeker/profileService';
 import { AppError } from '../../errors';
-
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    agentId?: string;
-  };
-}
+import { AuthenticatedRequest } from '../../middleware/auth';
 
 /**
  * Create a new job seeker profile
@@ -42,7 +37,11 @@ export async function create(
       throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
 
-    const profile = await createProfile(req.user.id, req.user.agentId || req.user.id, req.body);
+    const profile = await createProfile(
+      req.user.id,
+      (req.user.agentId as string) || req.user.id,
+      req.body
+    );
 
     res.status(201).json({
       success: true,
@@ -320,6 +319,45 @@ export async function parseResume(
     const result = await extractFromNaturalLanguage(text);
 
     res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Get profile stats for current user
+ */
+export async function getStats(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
+    }
+
+    const profiles = await getProfilesByUserId(req.user.id);
+    const primary = profiles.find(p => p.isPrimary) || profiles[0];
+
+    const stats = {
+      totalProfiles: profiles.length,
+      hasPrimary: profiles.some(p => p.isPrimary),
+      averageQuality: 0,
+      completionRate: 0,
+      skillCount: 0,
+      experienceCount: 0,
+    };
+
+    if (primary) {
+      const report = calculateQualityScore(primary);
+      stats.averageQuality = report.overallScore;
+      stats.completionRate = report.completenessScore;
+      stats.skillCount = primary.skills?.length || 0;
+      stats.experienceCount = primary.workExperiences?.length || 0;
+    }
+
+    res.json({ success: true, data: stats });
   } catch (error) {
     next(error);
   }

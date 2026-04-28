@@ -171,6 +171,55 @@ export {
   getFilterSchemaForScene,
   getFilterableFieldsForScene,
 } from './types/attributeFilter';
+// Explicitly re-export job seeker types (enums need explicit export for tsup)
+export {
+  SkillLevel,
+  ResumeVisibility,
+  MaskingType,
+  SKILL_LEVEL_LABELS,
+  RESUME_VISIBILITY_LABELS,
+  DEFAULT_MASKING_RULES,
+} from './types/jobSeeker';
+// Explicitly re-export resume delivery types
+export {
+  DeliveryStatus,
+  DeliveryAction,
+  DELIVERY_STATUS_LABELS,
+  DELIVERY_STATUS_COLORS,
+  DELIVERY_ACTION_LABELS,
+} from './types/resume';
+export type {
+  ResumeDelivery,
+  DeliveryHistoryEntry,
+  DisclosureRecord,
+  BatchDeliveryRequest,
+  BatchDeliveryResult,
+  BatchDeliveryResponse,
+  DeliveryStats,
+  CreateDeliveryRequest,
+  UpdateDeliveryStatusRequest,
+  WithdrawDeliveryRequest,
+  DeliveryFilterOptions,
+  DeliveryListResponse,
+  DisclosureChangeNotification,
+  DisclosureFieldChange,
+} from './types/resume';
+export type {
+  WorkExperience,
+  Education,
+  SkillTag,
+  SalaryExpectation,
+  JobPreferences,
+  ContactInfo,
+  JobSeekerProfile,
+  CreateJobSeekerProfileRequest,
+  UpdateJobSeekerProfileRequest,
+  JobSeekerProfileListResponse,
+  MaskingRule,
+  ResumeQualityReport,
+  WorkTimeline,
+  WorkTimelineItem,
+} from './types/jobSeeker';
 
 // Re-export geo fencing service functions
 export {

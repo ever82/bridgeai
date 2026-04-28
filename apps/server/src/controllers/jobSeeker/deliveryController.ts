@@ -4,7 +4,7 @@
  * HTTP handlers for resume delivery management
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { DeliveryStatus } from '@bridgeai/shared';
 
 import {
@@ -23,14 +23,7 @@ import {
   revokeDisclosure,
 } from '../../services/jobSeeker/deliveryService';
 import { AppError } from '../../errors';
-
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    agentId?: string;
-    type?: string;
-  };
-}
+import { AuthenticatedRequest } from '../../middleware/auth';
 
 /**
  * Create a new delivery
@@ -51,7 +44,7 @@ export async function deliver(
       resumeId,
       jobId,
       req.user.id,
-      req.user.agentId || req.user.id,
+      (req.user.agentId as string) || req.user.id,
       coverLetter,
       customAnswers,
       referralCode
@@ -82,7 +75,7 @@ export async function batchDeliverResume(
       resumeId,
       jobIds,
       req.user.id,
-      req.user.agentId || req.user.id,
+      (req.user.agentId as string) || req.user.id,
       coverLetter
     );
 

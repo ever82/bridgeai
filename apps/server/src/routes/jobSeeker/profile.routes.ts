@@ -11,6 +11,7 @@ import {
   get,
   getMyProfiles,
   getMyPrimaryProfile,
+  getStats,
   update,
   remove,
   updatePrivacy,
@@ -34,7 +35,7 @@ router.post('/parse', authenticate, parseResume);
 router.post('/', authenticate, create);
 router.get('/me', authenticate, getMyProfiles);
 router.get('/me/primary', authenticate, getMyPrimaryProfile);
-router.get('/me/stats', authenticate, getMyPrimaryProfile); // Alias
+router.get('/me/stats', authenticate, getStats);
 
 router.get('/:id', authenticate, get);
 router.put('/:id', authenticate, update);

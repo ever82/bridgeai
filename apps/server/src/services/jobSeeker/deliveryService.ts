@@ -112,11 +112,11 @@ export async function createDelivery(
   // Create history entry
   addHistoryEntry(delivery, DeliveryAction.DELIVERED, seekerId, 'SEEKER', now);
 
-  // Record disclosure for public profiles
+  // Record disclosure for all deliveries (visibility controls what's visible, not tracking)
+  // Note: In current model, profile === resume (profileId == resumeId).
+  // TODO: When Resume entity is separated, fetch the associated profile via resume.profileId
   const profile = await getProfile(resumeId);
-  if (profile.visibility === 'PUBLIC') {
-    recordDisclosures(id, profile);
-  }
+  recordDisclosures(id, profile);
 
   return delivery;
 }
@@ -573,14 +573,24 @@ export async function batchDeliver(
 /**
  * Notify seeker of disclosure change
  */
-export function notifyDisclosureChange(
+export async function notifyDisclosureChange(
   deliveryId: string,
   seekerId: string,
   changedFields: string[]
-): void {
-  // In production, this would send a push notification or email
-  // For now, just log it
-  console.log(`Disclosure change notification for seeker ${seekerId}:`, changedFields);
+): Promise<void> {
+  try {
+    const { notificationService } = await import('../notificationService');
+    await notificationService.sendToUser(seekerId, {
+      type: 'DISCLOSURE_CHANGE',
+      title: '隐私信息变更通知',
+      content: `您的简历联系方式可见性已变更，涉及字段：${changedFields.join('、')}`,
+      data: { deliveryId, changedFields },
+      category: 'job_seeker',
+    });
+  } catch (err) {
+    // Fallback to log if notification service is unavailable
+    console.warn(`Failed to send disclosure notification to ${seekerId}:`, err);
+  }
 }
 
 /**

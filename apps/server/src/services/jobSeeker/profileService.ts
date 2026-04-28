@@ -17,6 +17,10 @@ import {
   type ResumeVisibility,
   type ContactInfo,
   type MaskingType,
+  type SkillTag,
+  type WorkExperience,
+  type Education,
+  type JobPreferences,
   ResumeVisibility as Visibility,
   MaskingType as MT,
   DEFAULT_MASKING_RULES,
@@ -284,26 +288,26 @@ export async function createProfile(
     location: validated.location,
     currentTitle: validated.currentTitle,
     summary: validated.summary,
-    skills: validated.skills || [],
+    skills: (validated.skills || []) as SkillTag[],
     workExperiences: (validated.workExperiences || []).map(e => ({
       ...e,
       id: e.id || uuidv4(),
-    })),
+    })) as WorkExperience[],
     educations: (validated.educations || []).map(e => ({
       ...e,
       id: e.id || uuidv4(),
-    })),
+    })) as Education[],
     certifications: validated.certifications || [],
     languages: validated.languages || [],
-    preferences: validated.preferences || {
+    preferences: (validated.preferences || {
       preferredJobTypes: ['FULL_TIME'],
       preferredWorkModes: ['ONSITE'],
       preferredLocations: [],
       willingToRelocate: false,
       remoteOnly: false,
-    },
-    contactInfo: validated.contactInfo || {},
-    visibility: validated.visibility,
+    }) as JobPreferences,
+    contactInfo: (validated.contactInfo || {}) as ContactInfo,
+    visibility: validated.visibility as ResumeVisibility,
     maskedFields: [],
     resumeUrl: validated.resumeUrl,
     resumeFileName: validated.resumeFileName,
@@ -406,7 +410,7 @@ export async function updateProfile(
         validated.resumeUrl) !== undefined
         ? profile.resumeVersion + 1
         : profile.resumeVersion,
-    aiExtracted: false,
+    aiExtracted: profile.aiExtracted, // Preserve AI extraction flag; only reset on re-parse
     qualityScore: undefined,
     updatedAt: now,
   };
@@ -434,9 +438,11 @@ export async function deleteProfile(profileId: string, userId: string): Promise<
 
   profiles.delete(profileId);
 
-  // If deleted was primary, promote another if available
+  // If deleted was primary, promote the most recently updated profile
   if (profile.isPrimary) {
-    const remaining = Array.from(profiles.values()).filter(p => p.userId === userId);
+    const remaining = Array.from(profiles.values())
+      .filter(p => p.userId === userId)
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     if (remaining.length > 0) {
       profiles.set(remaining[0].id, { ...remaining[0], isPrimary: true });
     }

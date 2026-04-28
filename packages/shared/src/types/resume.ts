@@ -240,7 +240,7 @@ export const DELIVERY_ACTION_LABELS: Record<DeliveryAction, string> = {
   [DeliveryAction.OFFER_DECLINED]: '拒绝了offer',
   [DeliveryAction.HIRED]: '已入职',
   [DeliveryAction.WITHDRAWN]: '撤回了投递',
-  [DeliveryStatus.EXPIRED]: '投递已过期',
+  [DeliveryAction.EXPIRED]: '投递已过期',
   [DeliveryAction.STATUS_UPDATED]: '状态更新',
   [DeliveryAction.NOTE_ADDED]: '添加了备注',
 };
