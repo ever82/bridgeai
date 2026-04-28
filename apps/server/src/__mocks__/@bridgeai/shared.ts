@@ -1303,6 +1303,12 @@ export interface HandoffRequest {
   reason?: string;
 }
 
+// Agent Ad Consumer types
+export enum AgentAdRole {
+  CONSUMER = 'CONSUMER',
+  MERCHANT = 'MERCHANT',
+}
+
 export enum HandoffErrorCode {
   UNAUTHORIZED = 'UNAUTHORIZED',
   RATE_LIMITED = 'RATE_LIMITED',

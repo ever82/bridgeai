@@ -165,6 +165,9 @@ export function initializeSecurityMonitoring(): void {
   });
 
   // Start periodic tasks
+  // Skip in test environment to avoid open handles
+  if (process.env.NODE_ENV === 'test') return;
+
   if (config.reports.hourlySummary) {
     setInterval(generateHourlySummary, 60 * 60 * 1000);
   }
