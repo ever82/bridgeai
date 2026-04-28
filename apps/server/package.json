@@ -37,7 +37,10 @@
     "migration:diff": "tsx scripts/migration-workflow.ts diff",
     "migration:backup": "tsx scripts/migration-workflow.ts backup",
     "migration:deploy:safe": "tsx scripts/migration-workflow.ts deploy:safe",
-    "migration:detect-destructive": "tsx scripts/migration-workflow.ts detect-destructive"
+    "migration:detect-destructive": "tsx scripts/migration-workflow.ts detect-destructive",
+    "migration:rollback": "tsx scripts/migration-workflow.ts rollback",
+    "migration:restore": "tsx scripts/migration-workflow.ts restore",
+    "migration:audit-log": "tsx scripts/migration-workflow.ts audit-log"
   },
   "dependencies": {
     "@aws-sdk/client-rekognition": "^3.1038.0",

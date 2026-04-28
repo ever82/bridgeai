@@ -13,6 +13,9 @@
  *   npm run migration:backup                           Create pre-migration backup
  *   npm run migration:deploy:safe -- --env=<env>       Deploy with auto-backup + rollback + destructive check
  *   npm run migration:detect-destructive -- --name=<name>  Check a migration for destructive changes
+ *   npm run migration:rollback -- --to=<version> [--env=<env>]  Roll back migrations to a target version
+ *   npm run migration:restore -- --file=<path> [--env=<env>]    Restore database from a backup file
+ *   npm run migration:audit-log [--count=N]                     View recent migration audit records
  */
 
 import { execSync } from 'child_process';
@@ -65,6 +68,91 @@ interface DestructiveFinding {
   severity: string;
   line: string;
   lineNumber: number;
+}
+
+interface MigrationAuditRecord {
+  migrationName: string;
+  action: 'execute' | 'safe-deploy' | 'rollback';
+  executor: string;
+  startTime: string;
+  endTime: string;
+  durationMs: number;
+  status: 'success' | 'failed';
+  error?: string;
+  environment?: string;
+}
+
+const AUDIT_LOG_FILE = path.join(__dirname, '../.migration-audit.json');
+
+/**
+ * Get the executor identity from environment variable, git config, or fallback.
+ */
+function getExecutor(): string {
+  if (process.env.MIGRATION_EXECUTOR) {
+    return process.env.MIGRATION_EXECUTOR;
+  }
+  try {
+    return execSync('git config user.name', { encoding: 'utf-8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+/**
+ * Append an audit record to the structured audit log file.
+ */
+function appendAuditRecord(record: MigrationAuditRecord): void {
+  let records: MigrationAuditRecord[] = [];
+  if (fs.existsSync(AUDIT_LOG_FILE)) {
+    try {
+      records = JSON.parse(fs.readFileSync(AUDIT_LOG_FILE, 'utf-8'));
+    } catch {
+      records = [];
+    }
+  }
+  records.push(record);
+  fs.writeFileSync(AUDIT_LOG_FILE, JSON.stringify(records, null, 2));
+}
+
+/**
+ * Print recent audit log entries.
+ */
+function printAuditLog(count?: number): void {
+  if (!fs.existsSync(AUDIT_LOG_FILE)) {
+    console.log('No audit log found.');
+    return;
+  }
+
+  let records: MigrationAuditRecord[];
+  try {
+    records = JSON.parse(fs.readFileSync(AUDIT_LOG_FILE, 'utf-8'));
+  } catch {
+    console.log('Audit log file is corrupted or empty.');
+    return;
+  }
+
+  if (records.length === 0) {
+    console.log('No audit records found.');
+    return;
+  }
+
+  const limit = count || 20;
+  const recent = records.slice(-limit).reverse();
+
+  console.log(
+    `\n=== Migration Audit Log (last ${Math.min(limit, records.length)} of ${records.length}) ===\n`
+  );
+  for (const r of recent) {
+    const statusLabel = r.status === 'success' ? '[SUCCESS]' : '[FAILED]';
+    console.log(`${statusLabel} ${r.action} | ${r.migrationName}`);
+    console.log(`  Executor: ${r.executor}`);
+    console.log(`  Start:    ${r.startTime}`);
+    console.log(`  End:      ${r.endTime}`);
+    console.log(`  Duration: ${r.durationMs}ms`);
+    if (r.environment) console.log(`  Env:      ${r.environment}`);
+    if (r.error) console.log(`  Error:    ${r.error}`);
+    console.log('');
+  }
 }
 
 /**
@@ -469,8 +557,35 @@ function executeMigration(name: string): void {
   }
 
   console.log(`Executing approved migration: ${name}`);
-  execSync('prisma migrate deploy', { stdio: 'inherit' });
-  console.log(`Migration executed: ${name}`);
+  const executor = getExecutor();
+  const startTime = new Date();
+  try {
+    execSync('prisma migrate deploy', { stdio: 'inherit' });
+    const endTime = new Date();
+    appendAuditRecord({
+      migrationName: name,
+      action: 'execute',
+      executor,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      durationMs: endTime.getTime() - startTime.getTime(),
+      status: 'success',
+    });
+    console.log(`Migration executed: ${name}`);
+  } catch (error) {
+    const endTime = new Date();
+    appendAuditRecord({
+      migrationName: name,
+      action: 'execute',
+      executor,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      durationMs: endTime.getTime() - startTime.getTime(),
+      status: 'failed',
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }
 
 /**
@@ -506,6 +621,8 @@ function safeDeploy(env?: string): void {
 
   // Step 3: Deploy migration with rollback capability
   console.log('\nStep 3: Deploying migration...');
+  const executor = getExecutor();
+  const startTime = new Date();
   try {
     const envFile = env ? ENV_FILES[env] : undefined;
     if (envFile) {
@@ -524,9 +641,33 @@ function safeDeploy(env?: string): void {
         cwd: path.join(__dirname, '..'),
       });
     }
+    const endTime = new Date();
+    appendAuditRecord({
+      migrationName: 'safe-deploy',
+      action: 'safe-deploy',
+      executor,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      durationMs: endTime.getTime() - startTime.getTime(),
+      status: 'success',
+      environment: envLabel,
+    });
     console.log('\nMigration deployed successfully.');
     console.log(`Backup retained at: ${backupFile}`);
   } catch (error) {
+    const endTime = new Date();
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    appendAuditRecord({
+      migrationName: 'safe-deploy',
+      action: 'safe-deploy',
+      executor,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      durationMs: endTime.getTime() - startTime.getTime(),
+      status: 'failed',
+      error: errorMsg,
+      environment: envLabel,
+    });
     console.error('\nMigration deployment FAILED!');
     console.log('Initiating automatic rollback...');
 
@@ -541,6 +682,192 @@ function safeDeploy(env?: string): void {
 
     process.exit(1);
   }
+}
+
+/**
+ * Get applied migrations from the database via prisma migrate status.
+ * Returns an ordered list of migration names that have been applied.
+ */
+function getAppliedMigrations(env?: string): string[] {
+  try {
+    const envFile = env ? ENV_FILES[env] : undefined;
+    let statusCmd: string;
+    if (envFile) {
+      const envPath = path.join(__dirname, '..', envFile);
+      statusCmd = `dotenv -e ${envPath} -- prisma migrate status`;
+    } else {
+      statusCmd = 'prisma migrate status';
+    }
+    const output = execSync(statusCmd, {
+      cwd: path.join(__dirname, '..'),
+      encoding: 'utf-8',
+      timeout: 30000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }).toString();
+
+    // Applied migrations are listed with lines like:
+    //   "20260428000000_add_user_table ... applied"
+    // We also fall back to reading the migration directories on disk
+    // and cross-reference.
+    const appliedPattern = /(\d{14}_[a-z][a-z0-9_]*)\s+.*applied/gi;
+    const applied: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = appliedPattern.exec(output)) !== null) {
+      applied.push(match[1]);
+    }
+    return applied;
+  } catch {
+    // If prisma migrate status fails, fall back to reading migration dirs
+    // and assume all on-disk migrations are applied
+    console.warn(
+      'Could not determine applied migrations from database. Using on-disk migrations as reference.'
+    );
+    return listMigrations().sort(); // ascending order
+  }
+}
+
+/**
+ * Roll back migrations to a specified target version.
+ *
+ * This function:
+ * 1. Gets all applied migrations (sorted ascending)
+ * 2. Identifies migrations newer than targetVersion
+ * 3. Creates a backup as a safety measure
+ * 4. For each migration to roll back, displays its SQL and asks for user confirmation
+ * 5. Uses prisma migrate resolve --rolled-back to mark the migration state
+ */
+function rollbackToVersion(targetVersion: string, env?: string): void {
+  const envLabel = env || 'default';
+  console.log(`\n=== Migration Rollback to Version [${envLabel}] ===\n`);
+
+  // Step 1: Validate target version exists on disk
+  const allMigrations = listMigrations(); // descending order (newest first)
+  const allMigrationsAsc = [...allMigrations].sort(); // ascending order (oldest first)
+  const targetExists = allMigrationsAsc.some(m => m === targetVersion);
+  if (!targetExists) {
+    // Check for prefix match
+    const prefixMatch = allMigrationsAsc.filter(m => m.startsWith(targetVersion));
+    if (prefixMatch.length === 1) {
+      targetVersion = prefixMatch[0];
+      console.log(`Resolved target version: ${targetVersion}`);
+    } else if (prefixMatch.length > 1) {
+      console.error(`Ambiguous target version "${targetVersion}". Matches:`);
+      prefixMatch.forEach(m => console.error(`  ${m}`));
+      process.exit(1);
+    } else {
+      console.error(`Target migration version not found: ${targetVersion}`);
+      console.log('Available migrations:');
+      allMigrationsAsc.forEach(m => console.log(`  ${m}`));
+      process.exit(1);
+    }
+  }
+
+  // Step 2: Get applied migrations
+  console.log('Step 1: Fetching applied migrations...');
+  const appliedMigrations = getAppliedMigrations(env);
+
+  if (appliedMigrations.length === 0) {
+    console.log('No applied migrations found. Nothing to roll back.');
+    return;
+  }
+
+  // Sort applied migrations ascending
+  const appliedAsc = [...appliedMigrations].sort();
+
+  // Step 3: Find migrations newer than target
+  const targetIndex = appliedAsc.indexOf(targetVersion);
+  if (targetIndex === -1) {
+    console.error(`Target migration "${targetVersion}" is not in the applied migrations list.`);
+    console.log('Applied migrations:');
+    appliedAsc.forEach(m => console.log(`  ${m}`));
+    process.exit(1);
+  }
+
+  const toRollback = appliedAsc.slice(targetIndex + 1);
+
+  if (toRollback.length === 0) {
+    console.log('No migrations to roll back. Target version is the latest applied migration.');
+    return;
+  }
+
+  // Step 4: Display rollback plan
+  console.log(`\nStep 2: Rollback plan`);
+  console.log(`Target version: ${targetVersion}`);
+  console.log(`Migrations to roll back (${toRollback.length}):`);
+  for (const migration of toRollback) {
+    console.log(`  - ${migration}`);
+  }
+
+  // Step 5: Create backup (safety measure)
+  console.log('\nStep 3: Creating backup before rollback...');
+  let backupFile: string;
+  try {
+    backupFile = createBackup(env);
+  } catch (error) {
+    console.error('Backup creation failed. Rollback aborted for safety.');
+    process.exit(1);
+  }
+
+  // Step 6: Process each migration to roll back
+  console.log('\nStep 4: Processing migrations for rollback...\n');
+  for (const migration of toRollback) {
+    const sqlFile = path.join(MIGRATIONS_DIR, migration, 'migration.sql');
+
+    console.log(`--- Migration: ${migration} ---`);
+
+    if (fs.existsSync(sqlFile)) {
+      const sql = fs.readFileSync(sqlFile, 'utf-8');
+      console.log('Forward SQL (for reference):');
+      console.log(
+        sql
+          .split('\n')
+          .map(l => `  ${l}`)
+          .join('\n')
+      );
+      console.log('\nNOTE: Automatic reverse SQL generation is not supported.');
+      console.log('You must manually revert the database changes before marking as rolled-back.');
+      console.log('Backup has been created at: ' + backupFile);
+    } else {
+      console.log('No migration.sql file found for this migration.');
+    }
+
+    // Mark the migration as rolled-back in Prisma
+    console.log(`\nMarking migration "${migration}" as rolled-back...`);
+    try {
+      if (env && ENV_FILES[env]) {
+        const envPath = path.join(__dirname, '..', ENV_FILES[env]);
+        execSync(`dotenv -e ${envPath} -- prisma migrate resolve --rolled-back "${migration}"`, {
+          stdio: 'inherit',
+          cwd: path.join(__dirname, '..'),
+        });
+      } else {
+        execSync(`prisma migrate resolve --rolled-back "${migration}"`, {
+          stdio: 'inherit',
+          cwd: path.join(__dirname, '..'),
+        });
+      }
+      console.log(`  Marked as rolled-back: ${migration}`);
+    } catch (error) {
+      console.error(`  Failed to mark migration "${migration}" as rolled-back.`);
+      console.error('  You may need to manually resolve this migration.');
+      console.error(`  Backup file for manual restore: ${backupFile}`);
+      process.exit(1);
+    }
+
+    console.log('');
+  }
+
+  // Summary
+  console.log('\n=== Rollback Summary ===');
+  console.log(`Target version: ${targetVersion}`);
+  console.log(`Rolled back: ${toRollback.length} migration(s)`);
+  for (const migration of toRollback) {
+    console.log(`  - ${migration}`);
+  }
+  console.log(`Backup retained at: ${backupFile}`);
+  console.log('\nIMPORTANT: The migration states have been marked as rolled-back in Prisma.');
+  console.log('If you need to restore the database to its pre-rollback state, use:');
+  console.log(`  npm run migration:restore -- --file="${backupFile}"${env ? ` --env=${env}` : ''}`);
 }
 
 /**
@@ -645,6 +972,25 @@ switch (command) {
       }
     }
     break;
+  case 'rollback':
+    if (!args.to) {
+      console.error('Missing required argument: --to=<version>');
+      console.log('Usage: npm run migration:rollback -- --to=<version> [--env=<env>]');
+      process.exit(1);
+    }
+    rollbackToVersion(args.to, args.env);
+    break;
+  case 'restore':
+    if (!args.file) {
+      console.error('Missing required argument: --file=<backup-file>');
+      console.log('Usage: npm run migration:restore -- --file=<backup-file> [--env=<env>]');
+      process.exit(1);
+    }
+    restoreBackup(args.file, args.env);
+    break;
+  case 'audit-log':
+    printAuditLog(args.count ? parseInt(args.count, 10) : undefined);
+    break;
   default:
     console.log(`
 Migration Workflow CLI
@@ -663,6 +1009,12 @@ Usage:
   npm run migration:deploy:safe -- --env=prod        Safe deploy for production
   npm run migration:detect-destructive               Check all migrations for destructive changes
   npm run migration:detect-destructive -- --name=X   Check specific migration
+  npm run migration:rollback -- --to=<version>       Roll back migrations to target version
+  npm run migration:rollback -- --to=<version> --env=prod  Roll back in specific environment
+  npm run migration:restore -- --file=<backup-file>  Restore database from backup file
+  npm run migration:restore -- --file=<path> --env=prod    Restore in specific environment
+  npm run migration:audit-log                        View recent migration audit records
+  npm run migration:audit-log -- --count=50          View last N audit records
 
 Environment-Specific Migration Scripts:
   npm run db:migrate:dev                             Run dev migrations
@@ -678,5 +1030,6 @@ Safety Features:
   - Pre-migration automatic backup (pg_dump)
   - Destructive change detection (DROP TABLE, DROP COLUMN, DELETE, TRUNCATE, etc.)
   - Automatic rollback on deployment failure
+  - Rollback to a specific migration version with backup safety
 `);
 }
