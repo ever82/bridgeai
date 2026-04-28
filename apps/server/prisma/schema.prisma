@@ -15,63 +15,65 @@ datasource db {
 // ============================================
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  passwordHash  String    @map("password_hash")
-  name          String?
-  displayName   String?   @map("display_name")
-  avatarUrl     String?   @map("avatar_url")
-  bio           String?   @db.Text
-  website       String?
-  location      String?
-  phone         String?
-  emailVerified Boolean   @default(false) @map("email_verified")
-  phoneVerified Boolean   @default(false) @map("phone_verified")
-  privacySettings Json?   @map("privacy_settings")
-  status                UserStatus @default(ACTIVE)
-  failedLoginAttempts   Int        @default(0) @map("failed_login_attempts")
-  lockedUntil            DateTime? @map("locked_until")
-  createdAt              DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id                  String     @id @default(uuid())
+  email               String     @unique
+  passwordHash        String     @map("password_hash")
+  name                String?
+  displayName         String?    @map("display_name")
+  avatarUrl           String?    @map("avatar_url")
+  bio                 String?    @db.Text
+  website             String?
+  location            String?
+  phone               String?
+  emailVerified       Boolean    @default(false) @map("email_verified")
+  phoneVerified       Boolean    @default(false) @map("phone_verified")
+  privacySettings     Json?      @map("privacy_settings")
+  status              UserStatus @default(ACTIVE)
+  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime?  @map("locked_until")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
 
   // Relations
-  agents        Agent[]
-  sentMessages  Message[] @relation("SentMessages")
-  ratingsGiven  Rating[]  @relation("Rater")
-  ratingsReceived Rating[] @relation("Ratee")
-  creditRecords CreditRecord[]
-  transactions  Transaction[]
-  refunds       Refund[]
-  connections   Connection[]
-  devices       UserDevice[]
-  blockedUsers  BlockedUser[] @relation("BlockingUser")
-  blockedBy     BlockedUser[] @relation("BlockedByUser")
-  roles         UserRole[]  // RBAC roles
-  pointsAccount PointsAccount?
-  notifications Notification[]
-  notificationPrefs NotificationPreference?
-  pushTokens    PushToken[]
-  savedFilters  SavedFilter[]
-  sceneTemplates SceneTemplate[]
+  agents               Agent[]
+  sentMessages         Message[]               @relation("SentMessages")
+  ratingsGiven         Rating[]                @relation("Rater")
+  ratingsReceived      Rating[]                @relation("Ratee")
+  creditRecords        CreditRecord[]
+  transactions         Transaction[]
+  refunds              Refund[]
+  connections          Connection[]
+  devices              UserDevice[]
+  blockedUsers         BlockedUser[]           @relation("BlockingUser")
+  blockedBy            BlockedUser[]           @relation("BlockedByUser")
+  roles                UserRole[] // RBAC roles
+  pointsAccount        PointsAccount?
+  notifications        Notification[]
+  notificationPrefs    NotificationPreference?
+  pushTokens           PushToken[]
+  savedFilters         SavedFilter[]
+  sceneTemplates       SceneTemplate[]
   // Review relations
-  reviewsGiven  Review[]    @relation("ReviewReviewer")
-  reviewsReceived Review[]  @relation("ReviewReviewee")
-  reviewReplies  ReviewReply[] @relation("ReviewReplyAuthor")
-  reviewStats    ReviewStats[] @relation("ReviewStatsUser")
-  refreshTokens  RefreshToken[]
-  creditHistories CreditHistory[]
-  creditScores   CreditScore[]
-  roomParticipants RoomParticipant[]
-  oauthConnections OAuthConnection[]
-  visionShareTasks VisionShareTask[]
-  couponTransactions CouponTransaction[]
-  couponRatings   CouponRating[]
-  offlineMessages  OfflineMessage[]
-  readReceipts     ReadReceipt[]
-  chatReadReceipts ChatReadReceipt[]
-  datingProfiles   DatingProfile[]
+  reviewsGiven         Review[]                @relation("ReviewReviewer")
+  reviewsReceived      Review[]                @relation("ReviewReviewee")
+  reviewReplies        ReviewReply[]           @relation("ReviewReplyAuthor")
+  reviewStats          ReviewStats[]           @relation("ReviewStatsUser")
+  refreshTokens        RefreshToken[]
+  creditHistories      CreditHistory[]
+  creditScores         CreditScore[]
+  roomParticipants     RoomParticipant[]
+  oauthConnections     OAuthConnection[]
+  visionShareTasks     VisionShareTask[]
+  couponTransactions   CouponTransaction[]
+  couponRatings        CouponRating[]
+  offlineMessages      OfflineMessage[]
+  readReceipts         ReadReceipt[]
+  chatReadReceipts     ChatReadReceipt[]
+  datingProfiles       DatingProfile[]
   webPushSubscriptions WebPushSubscription[]
-  photos           Photo[]
+  photos               Photo[]
+  violations           UserViolation[]
+  appeals              Appeal[]
 
   @@map("users")
 }
@@ -80,6 +82,7 @@ enum UserStatus {
   ACTIVE
   INACTIVE
   SUSPENDED
+  BANNED
 }
 
 // ============================================
@@ -102,14 +105,14 @@ model Agent {
   updatedAt   DateTime    @updatedAt @map("updated_at")
 
   // Relations
-  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  demands     Demand[]
-  supplies    Supply[]
-  profiles    AgentProfile[]
-  merchant    Merchant?
-  statusHistory AgentStatusHistory[]
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  demands            Demand[]
+  supplies           Supply[]
+  profiles           AgentProfile[]
+  merchant           Merchant?
+  statusHistory      AgentStatusHistory[]
   disclosureSettings DisclosureSettings?
-  datingProfiles DatingProfile[]
+  datingProfiles     DatingProfile[]
 
   @@index([userId])
   @@index([type])
@@ -126,7 +129,7 @@ model AgentStatusHistory {
   createdAt DateTime    @default(now()) @map("created_at")
 
   // Relations
-  agent     Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
   @@index([agentId])
   @@index([createdAt])
@@ -168,8 +171,8 @@ model Demand {
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
   // Relations
-  agent       Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  matches     Match[]
+  agent   Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  matches Match[]
 
   @@index([agentId])
   @@index([status])
@@ -188,22 +191,22 @@ enum DemandStatus {
 // ============================================
 
 model Supply {
-  id          String        @id @default(uuid())
-  agentId     String        @map("agent_id")
-  title       String
-  description String?
-  skills      String[]
-  hourlyRate  Decimal?      @map("hourly_rate") @db.Decimal(10, 2)
-  latitude    Float?
-  longitude   Float?
+  id           String       @id @default(uuid())
+  agentId      String       @map("agent_id")
+  title        String
+  description  String?
+  skills       String[]
+  hourlyRate   Decimal?     @map("hourly_rate") @db.Decimal(10, 2)
+  latitude     Float?
+  longitude    Float?
   availability Json?
-  status      SupplyStatus  @default(AVAILABLE)
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
+  status       SupplyStatus @default(AVAILABLE)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
 
   // Relations
-  agent       Agent         @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  matches     Match[]
+  agent   Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  matches Match[]
 
   @@index([agentId])
   @@index([status])
@@ -222,20 +225,20 @@ enum SupplyStatus {
 // ============================================
 
 model Match {
-  id          String      @id @default(uuid())
-  demandId    String      @map("demand_id")
-  supplyId    String      @map("supply_id")
-  score       Decimal     @db.Decimal(5, 2)
-  status      MatchStatus @default(PENDING)
-  metadata    Json?
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
+  id        String      @id @default(uuid())
+  demandId  String      @map("demand_id")
+  supplyId  String      @map("supply_id")
+  score     Decimal     @db.Decimal(5, 2)
+  status    MatchStatus @default(PENDING)
+  metadata  Json?
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
 
   // Relations
-  demand      Demand      @relation(fields: [demandId], references: [id], onDelete: Cascade)
-  supply      Supply      @relation(fields: [supplyId], references: [id], onDelete: Cascade)
+  demand       Demand        @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  supply       Supply        @relation(fields: [supplyId], references: [id], onDelete: Cascade)
   conversation Conversation?
-  ratings     Rating[]
+  ratings      Rating[]
 
   @@unique([demandId, supplyId])
   @@index([demandId])
@@ -256,15 +259,15 @@ enum MatchStatus {
 // ============================================
 
 model Conversation {
-  id            String    @id @default(uuid())
-  matchId       String    @unique @map("match_id")
+  id             String    @id @default(uuid())
+  matchId        String    @unique @map("match_id")
   participantIds String[]  @map("participant_ids")
-  lastMessageAt DateTime? @map("last_message_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  lastMessageAt  DateTime? @map("last_message_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   // Relations
-  match         Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  messages      Message[]
+  match    Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  messages Message[]
 
   @@index([matchId])
   @@index([lastMessageAt])
@@ -272,22 +275,22 @@ model Conversation {
 }
 
 model Message {
-  id              String        @id @default(uuid())
-  conversationId  String        @map("conversation_id")
-  senderId        String        @map("sender_id")
-  content         String
-  type            MessageType   @default(TEXT)
-  status          MessageStatus @default(SENT)
-  attachments     Json?
-  sequenceId      Int?          @default(autoincrement()) @map("sequence_id")
-  metadata        Json?
-  editedAt        DateTime?     @map("edited_at")
-  createdAt       DateTime      @default(now()) @map("created_at")
+  id             String        @id @default(uuid())
+  conversationId String        @map("conversation_id")
+  senderId       String        @map("sender_id")
+  content        String
+  type           MessageType   @default(TEXT)
+  status         MessageStatus @default(SENT)
+  attachments    Json?
+  sequenceId     Int?          @default(autoincrement()) @map("sequence_id")
+  metadata       Json?
+  editedAt       DateTime?     @map("edited_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
 
   // Relations
-  conversation    Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender          User          @relation("SentMessages", fields: [senderId], references: [id])
-  readReceipts    ReadReceipt[]
+  conversation Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User          @relation("SentMessages", fields: [senderId], references: [id])
+  readReceipts ReadReceipt[]
 
   @@index([conversationId])
   @@index([createdAt])
@@ -296,14 +299,14 @@ model Message {
 
 // Read Receipt for messages
 model ReadReceipt {
-  id           String   @id @default(uuid())
-  messageId    String   @map("message_id")
-  userId       String   @map("user_id")
-  readAt       DateTime @default(now()) @map("read_at")
+  id        String   @id @default(uuid())
+  messageId String   @map("message_id")
+  userId    String   @map("user_id")
+  readAt    DateTime @default(now()) @map("read_at")
 
   // Relations
-  message      Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId])
   @@index([messageId])
@@ -338,9 +341,9 @@ model Rating {
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
-  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  rater     User     @relation("Rater", fields: [raterId], references: [id])
-  ratee     User     @relation("Ratee", fields: [rateeId], references: [id])
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  rater User  @relation("Rater", fields: [raterId], references: [id])
+  ratee User  @relation("Ratee", fields: [rateeId], references: [id])
 
   @@index([matchId])
   @@index([rateeId])
@@ -352,18 +355,18 @@ model Rating {
 // ============================================
 
 enum ReviewSceneType {
-  VISION_SHARE  @map("vision_share")
-  AGENT_DATE    @map("agent_date")
-  AGENT_JOB     @map("agent_job")
-  AGENT_AD      @map("agent_ad")
+  VISION_SHARE @map("vision_share")
+  AGENT_DATE   @map("agent_date")
+  AGENT_JOB    @map("agent_job")
+  AGENT_AD     @map("agent_ad")
 }
 
 enum ReviewStatus {
-  PENDING   @map("pending")
-  APPROVED  @map("approved")
-  REJECTED  @map("rejected")
-  HIDDEN    @map("hidden")
-  DELETED   @map("deleted")
+  PENDING  @map("pending")
+  APPROVED @map("approved")
+  REJECTED @map("rejected")
+  HIDDEN   @map("hidden")
+  DELETED  @map("deleted")
 }
 
 enum ModerationStatus {
@@ -374,31 +377,31 @@ enum ModerationStatus {
 }
 
 model Review {
-  id               String           @id @default(uuid())
-  matchId          String           @map("match_id")
-  reviewerId       String           @map("reviewer_id")
-  revieweeId       String           @map("reviewee_id")
-  sceneType        ReviewSceneType? @map("scene_type")
-  rating           Int              // 1-5 (overall rating)
-  honestyRating          Int?       @map("honesty_rating")        // 1-5
-  politenessRating       Int?       @map("politeness_rating")     // 1-5
-  responsivenessRating   Int?       @map("responsiveness_rating") // 1-5
-  satisfactionRating     Int?       @map("satisfaction_rating")   // 1-5
-  title            String?
-  content          String
-  tags             String[]         @default([])
-  status           ReviewStatus     @default(PENDING)
-  moderationStatus ModerationStatus @default(PENDING)
-  isVerified       Boolean          @default(false) @map("is_verified")
-  createdAt        DateTime         @default(now()) @map("created_at")
-  updatedAt        DateTime         @updatedAt @map("updated_at")
+  id                   String           @id @default(uuid())
+  matchId              String           @map("match_id")
+  reviewerId           String           @map("reviewer_id")
+  revieweeId           String           @map("reviewee_id")
+  sceneType            ReviewSceneType? @map("scene_type")
+  rating               Int // 1-5 (overall rating)
+  honestyRating        Int?             @map("honesty_rating") // 1-5
+  politenessRating     Int?             @map("politeness_rating") // 1-5
+  responsivenessRating Int?             @map("responsiveness_rating") // 1-5
+  satisfactionRating   Int?             @map("satisfaction_rating") // 1-5
+  title                String?
+  content              String
+  tags                 String[]         @default([])
+  status               ReviewStatus     @default(PENDING)
+  moderationStatus     ModerationStatus @default(PENDING)
+  isVerified           Boolean          @default(false) @map("is_verified")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
 
   // Relations
-  reviewer         User             @relation("ReviewReviewer", fields: [reviewerId], references: [id])
-  reviewee         User             @relation("ReviewReviewee", fields: [revieweeId], references: [id])
-  replies          ReviewReply[]
-  reports          ReviewReport[]
-  moderationLogs   ReviewModerationLog[]
+  reviewer       User                  @relation("ReviewReviewer", fields: [reviewerId], references: [id])
+  reviewee       User                  @relation("ReviewReviewee", fields: [revieweeId], references: [id])
+  replies        ReviewReply[]
+  reports        ReviewReport[]
+  moderationLogs ReviewModerationLog[]
 
   @@index([matchId])
   @@index([reviewerId])
@@ -418,8 +421,8 @@ model ReviewReply {
   createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
-  review     Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  author     User     @relation("ReviewReplyAuthor", fields: [authorId], references: [id])
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  author User   @relation("ReviewReplyAuthor", fields: [authorId], references: [id])
 
   @@index([reviewId])
   @@index([authorId])
@@ -438,6 +441,7 @@ enum ReportStatus {
   PENDING   @map("pending")
   RESOLVED  @map("resolved")
   DISMISSED @map("dismissed")
+  APPEALED  @map("appealed")
 }
 
 model ReviewReport {
@@ -453,7 +457,7 @@ model ReviewReport {
   createdAt   DateTime     @default(now()) @map("created_at")
 
   // Relations
-  review      Review       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
   @@index([reviewId])
   @@index([reporterId])
@@ -475,7 +479,7 @@ model ReviewStats {
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user           User     @relation("ReviewStatsUser", fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("ReviewStatsUser", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("review_stats")
@@ -484,14 +488,14 @@ model ReviewStats {
 model ReviewModerationLog {
   id          String   @id @default(uuid())
   reviewId    String   @map("review_id")
-  action      String   // APPROVED, BLOCKED, FLAGGED, HIDDEN
+  action      String // APPROVED, BLOCKED, FLAGGED, HIDDEN
   reason      String?
   triggeredBy String   @map("triggered_by") // system or moderator userId
   metadata    Json?
   createdAt   DateTime @default(now()) @map("created_at")
 
   // Relations
-  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
   @@index([reviewId])
   @@index([action])
@@ -504,16 +508,16 @@ model ReviewModerationLog {
 // ============================================
 
 model Scene {
-  id          String     @id @default(uuid())
-  code        SceneCode  @unique
+  id          String    @id @default(uuid())
+  code        SceneCode @unique
   name        String
   description String?
   icon        String?
   color       String?
-  isActive    Boolean    @default(true) @map("is_active")
-  config      Json?      // 场景专属配置
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  isActive    Boolean   @default(true) @map("is_active")
+  config      Json? // 场景专属配置
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Relations
   agentProfiles AgentProfile[]
@@ -523,10 +527,10 @@ model Scene {
 }
 
 enum SceneCode {
-  VISION_SHARE  @map("vision_share")
-  AGENT_DATE    @map("agent_date")
-  AGENT_JOB     @map("agent_job")
-  AGENT_AD      @map("agent_ad")
+  VISION_SHARE @map("vision_share")
+  AGENT_DATE   @map("agent_date")
+  AGENT_JOB    @map("agent_job")
+  AGENT_AD     @map("agent_ad")
 }
 
 // ============================================
@@ -534,31 +538,31 @@ enum SceneCode {
 // ============================================
 
 model AgentProfile {
-  id        String   @id @default(uuid())
-  agentId   String   @map("agent_id")
-  sceneId   String?  @map("scene_id")
+  id      String  @id @default(uuid())
+  agentId String  @map("agent_id")
+  sceneId String? @map("scene_id")
 
   // L1 - 基础信息（系统可查询）
-  l1Data    Json     @map("l1_data")  // age, gender, location, occupation, education
+  l1Data Json @map("l1_data") // age, gender, location, occupation, education
 
   // L2 - 结构化信息（Agent可读的自然语言）
-  l2Data    Json     @map("l2_data")  // description, requirements, capabilities
+  l2Data Json @map("l2_data") // description, requirements, capabilities
 
   // L3 - 自然语言描述（完整描述）
   l3Description String? @map("l3_description")
-  l3MediaUrls   Json?    @map("l3_media_urls")
+  l3MediaUrls   Json?   @map("l3_media_urls")
 
   // 场景专属配置
-  sceneConfig   Json?    @map("scene_config")
+  sceneConfig Json? @map("scene_config")
 
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  scene     Scene?   @relation(fields: [sceneId], references: [id], onDelete: Cascade)
-  history   ProfileHistory[]
+  agent   Agent            @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  scene   Scene?           @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  history ProfileHistory[]
 
   @@unique([agentId, sceneId])
   @@index([agentId])
@@ -567,16 +571,16 @@ model AgentProfile {
 }
 
 model ProfileHistory {
-  id         String   @id @default(uuid())
-  profileId  String   @map("profile_id")
-  layer      String   // 'L1', 'L2', or 'L3'
-  action     String   // 'update', 'create', 'delete'
-  oldValue   Json?    @map("old_value")
-  newValue   Json?    @map("new_value")
-  changedBy  String   @map("changed_by")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  layer     String // 'L1', 'L2', or 'L3'
+  action    String // 'update', 'create', 'delete'
+  oldValue  Json?    @map("old_value")
+  newValue  Json?    @map("new_value")
+  changedBy String   @map("changed_by")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  profile    AgentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile AgentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@index([profileId])
   @@index([layer])
@@ -589,22 +593,22 @@ model ProfileHistory {
 // ============================================
 
 model ChatRoom {
-  id            String        @id @default(uuid())
-  sceneId       String?       @map("scene_id")
-  matchId       String?       @unique @map("match_id")
-  type          ChatRoomType  @default(QUAD)
-  status        ChatRoomStatus @default(ACTIVE)
-  participantIds String[]     @map("participant_ids")  // 存储 userIds
-  metadata      Json?
-  lastMessageAt DateTime?     @map("last_message_at")
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
+  id             String         @id @default(uuid())
+  sceneId        String?        @map("scene_id")
+  matchId        String?        @unique @map("match_id")
+  type           ChatRoomType   @default(QUAD)
+  status         ChatRoomStatus @default(ACTIVE)
+  participantIds String[]       @map("participant_ids") // 存储 userIds
+  metadata       Json?
+  lastMessageAt  DateTime?      @map("last_message_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
   // Relations
-  scene         Scene?        @relation(fields: [sceneId], references: [id])
-  messages      ChatMessage[]
-  connections   Connection[]
-  participants  RoomParticipant[]
+  scene        Scene?            @relation(fields: [sceneId], references: [id])
+  messages     ChatMessage[]
+  connections  Connection[]
+  participants RoomParticipant[]
 
   @@index([sceneId])
   @@index([matchId])
@@ -614,31 +618,31 @@ model ChatRoom {
 }
 
 enum ChatRoomType {
-  QUAD       @map("quad")       // 四人群聊（默认）
-  PRIVATE    @map("private")    // 私聊
-  GROUP      @map("group")      // 多人群聊
+  QUAD    @map("quad") // 四人群聊（默认）
+  PRIVATE @map("private") // 私聊
+  GROUP   @map("group") // 多人群聊
 }
 
 enum ChatRoomStatus {
-  ACTIVE     @map("active")
-  INACTIVE   @map("inactive")
-  CLOSED     @map("closed")
+  ACTIVE   @map("active")
+  INACTIVE @map("inactive")
+  CLOSED   @map("closed")
 }
 
 model ChatMessage {
-  id           String       @id @default(uuid())
-  chatRoomId   String       @map("chat_room_id")
-  senderId     String       @map("sender_id")
-  senderType   SenderType   @map("sender_type")  // USER 或 AGENT
-  content      String
-  type         MessageType  @default(TEXT)
-  status       MessageStatus @default(SENT)
-  attachments  Json?
-  metadata     Json?        // 包含私聊建议标记等
-  createdAt    DateTime     @default(now()) @map("created_at")
+  id          String        @id @default(uuid())
+  chatRoomId  String        @map("chat_room_id")
+  senderId    String        @map("sender_id")
+  senderType  SenderType    @map("sender_type") // USER 或 AGENT
+  content     String
+  type        MessageType   @default(TEXT)
+  status      MessageStatus @default(SENT)
+  attachments Json?
+  metadata    Json? // 包含私聊建议标记等
+  createdAt   DateTime      @default(now()) @map("created_at")
 
   // Relations
-  chatRoom     ChatRoom         @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  chatRoom     ChatRoom          @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
   readReceipts ChatReadReceipt[]
 
   @@index([chatRoomId])
@@ -649,14 +653,14 @@ model ChatMessage {
 
 // Read Receipt for ChatMessages
 model ChatReadReceipt {
-  id           String   @id @default(uuid())
-  chatMessageId String  @map("chat_message_id")
-  userId       String   @map("user_id")
-  readAt       DateTime @default(now()) @map("read_at")
+  id            String   @id @default(uuid())
+  chatMessageId String   @map("chat_message_id")
+  userId        String   @map("user_id")
+  readAt        DateTime @default(now()) @map("read_at")
 
   // Relations
-  chatMessage  ChatMessage @relation(fields: [chatMessageId], references: [id], onDelete: Cascade)
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatMessage ChatMessage @relation(fields: [chatMessageId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([chatMessageId, userId])
   @@index([chatMessageId])
@@ -665,8 +669,8 @@ model ChatReadReceipt {
 }
 
 enum SenderType {
-  USER   @map("user")
-  AGENT  @map("agent")
+  USER  @map("user")
+  AGENT @map("agent")
 }
 
 // ============================================
@@ -686,8 +690,8 @@ model Connection {
   updatedAt  DateTime         @updatedAt @map("updated_at")
 
   // Relations
-  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  chatRoom   ChatRoom?        @relation(fields: [chatRoomId], references: [id], onDelete: SetNull)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatRoom ChatRoom? @relation(fields: [chatRoomId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([chatRoomId])
@@ -697,10 +701,10 @@ model Connection {
 }
 
 enum ConnectionStatus {
-  ONLINE      @map("online")
-  AWAY        @map("away")
-  BUSY        @map("busy")
-  OFFLINE     @map("offline")
+  ONLINE  @map("online")
+  AWAY    @map("away")
+  BUSY    @map("busy")
+  OFFLINE @map("offline")
 }
 
 // ============================================
@@ -708,18 +712,18 @@ enum ConnectionStatus {
 // ============================================
 
 model CreditRecord {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  score       Int      // 当前信用分
-  delta       Int      // 变化值
-  reason      String   // 变化原因
-  sourceType  String   @map("source_type")  // RATING, TRANSACTION, COMPLAINT 等
-  sourceId    String?  @map("source_id")    // 关联记录ID
-  metadata    Json?
-  createdAt   DateTime @default(now()) @map("created_at")
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  score      Int // 当前信用分
+  delta      Int // 变化值
+  reason     String // 变化原因
+  sourceType String   @map("source_type") // RATING, TRANSACTION, COMPLAINT 等
+  sourceId   String?  @map("source_id") // 关联记录ID
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
@@ -727,20 +731,20 @@ model CreditRecord {
 }
 
 model Transaction {
-  id          String          @id @default(uuid())
-  userId      String          @map("user_id")
-  amount      Decimal         @db.Decimal(10, 2)
+  id          String            @id @default(uuid())
+  userId      String            @map("user_id")
+  amount      Decimal           @db.Decimal(10, 2)
   type        TransactionType
   status      TransactionStatus @default(PENDING)
   description String?
-  referenceId String?         @map("reference_id")  // 关联订单/匹配ID
+  referenceId String?           @map("reference_id") // 关联订单/匹配ID
   metadata    Json?
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
 
   // Relations
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  refund      Refund?
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refund Refund?
 
   @@index([userId])
   @@index([type])
@@ -754,24 +758,25 @@ model Transaction {
 // ============================================
 
 model Refund {
-  id              String        @id @default(uuid())
-  transactionId   String        @unique @map("transaction_id")
-  userId          String        @map("user_id")
-  reason          String
-  details         String?
-  evidence        Json?         // URL array for evidence images
-  status          RefundStatus  @default(PENDING)
-  refundAmount    Decimal       @map("refund_amount") @db.Decimal(10, 2)
-  pointsRefunded  Boolean       @default(false) @map("points_refunded")
-  reviewedBy      String?       @map("reviewed_by")
-  reviewNote      String?       @map("review_note")
-  reviewedAt      DateTime?     @map("reviewed_at")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
+  id             String       @id @default(uuid())
+  transactionId  String       @unique @map("transaction_id")
+  userId         String       @map("user_id")
+  reason         String
+  details        String?
+  evidence       Json? // URL array for evidence images
+  status         RefundStatus @default(PENDING)
+  refundAmount   Decimal      @map("refund_amount") @db.Decimal(10, 2)
+  pointsRefunded Boolean      @default(false) @map("points_refunded")
+  reviewedBy     String?      @map("reviewed_by")
+  reviewNote     String?      @map("review_note")
+  reviewedAt     DateTime?    @map("reviewed_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
 
   // Relations
-  transaction     Transaction   @relation(fields: [transactionId], references: [id], onDelete: Cascade)
-  appeals         RefundAppeal[]
+  transaction Transaction    @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [userId], references: [id])
+  appeals     RefundAppeal[]
 
   @@index([userId])
   @@index([status])
@@ -780,20 +785,20 @@ model Refund {
 }
 
 model RefundAppeal {
-  id          String          @id @default(uuid())
-  refundId    String          @map("refund_id")
-  userId      String          @map("user_id")
-  reason      String
-  evidence    Json?           // URL array for appeal evidence
-  status      AppealStatus    @default(PENDING)
-  reviewedBy  String?         @map("reviewed_by")
-  reviewNote  String?         @map("review_note")
-  reviewedAt  DateTime?       @map("reviewed_at")
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
+  id         String       @id @default(uuid())
+  refundId   String       @map("refund_id")
+  userId     String       @map("user_id")
+  reason     String
+  evidence   Json? // URL array for appeal evidence
+  status     AppealStatus @default(PENDING)
+  reviewedBy String?      @map("reviewed_by")
+  reviewNote String?      @map("review_note")
+  reviewedAt DateTime?    @map("reviewed_at")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
 
   // Relations
-  refund      Refund          @relation(fields: [refundId], references: [id], onDelete: Cascade)
+  refund Refund @relation(fields: [refundId], references: [id], onDelete: Cascade)
 
   @@index([refundId])
   @@index([userId])
@@ -802,31 +807,32 @@ model RefundAppeal {
 }
 
 enum RefundStatus {
-  PENDING     @map("pending")
-  APPROVED    @map("approved")
-  REJECTED    @map("rejected")
-  CANCELLED   @map("cancelled")
+  PENDING   @map("pending")
+  APPROVED  @map("approved")
+  REJECTED  @map("rejected")
+  CANCELLED @map("cancelled")
 }
 
 enum AppealStatus {
-  PENDING     @map("pending")
-  APPROVED    @map("approved")
-  REJECTED    @map("rejected")
+  PENDING   @map("pending")
+  APPROVED  @map("approved")
+  REJECTED  @map("rejected")
+  WITHDRAWN @map("withdrawn")
 }
 
 enum TransactionType {
-  RECHARGE    @map("recharge")     // 充值
-  REWARD      @map("reward")       // 奖励
-  DEDUCT      @map("deduct")       // 扣除
-  REFUND      @map("refund")       // 退款
-  TRANSFER    @map("transfer")     // 转账
+  RECHARGE @map("recharge") // 充值
+  REWARD   @map("reward") // 奖励
+  DEDUCT   @map("deduct") // 扣除
+  REFUND   @map("refund") // 退款
+  TRANSFER @map("transfer") // 转账
 }
 
 enum TransactionStatus {
-  PENDING     @map("pending")
-  SUCCESS     @map("success")
-  FAILED      @map("failed")
-  CANCELLED   @map("cancelled")
+  PENDING   @map("pending")
+  SUCCESS   @map("success")
+  FAILED    @map("failed")
+  CANCELLED @map("cancelled")
 }
 
 // ============================================
@@ -834,40 +840,40 @@ enum TransactionStatus {
 // ============================================
 
 model PointsAccount {
-  id            String   @id @default(uuid())
-  userId        String   @unique @map("user_id")
-  balance       Int      @default(0)
-  totalEarned   Int      @default(0) @map("total_earned")
-  totalSpent    Int      @default(0) @map("total_spent")
-  frozenAmount  Int      @default(0) @map("frozen_amount")
-  version       Int      @default(0)
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(uuid())
+  userId       String   @unique @map("user_id")
+  balance      Int      @default(0)
+  totalEarned  Int      @default(0) @map("total_earned")
+  totalSpent   Int      @default(0) @map("total_spent")
+  frozenAmount Int      @default(0) @map("frozen_amount")
+  version      Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions  PointsTransaction[]
-  freezes       PointsFreeze[]
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions PointsTransaction[]
+  freezes      PointsFreeze[]
 
   @@index([userId])
   @@map("points_accounts")
 }
 
 model PointsTransaction {
-  id            String                @id @default(uuid())
-  accountId     String                @map("account_id")
-  userId        String                @map("user_id")
-  type          PointsTransactionType
-  amount        Int
-  balanceAfter  Int                   @map("balance_after")
-  description   String?
-  scene         SceneCode?
-  referenceId   String?               @map("reference_id")
-  metadata      String?               @db.Text
-  createdAt     DateTime              @default(now()) @map("created_at")
+  id           String                @id @default(uuid())
+  accountId    String                @map("account_id")
+  userId       String                @map("user_id")
+  type         PointsTransactionType
+  amount       Int
+  balanceAfter Int                   @map("balance_after")
+  description  String?
+  scene        SceneCode?
+  referenceId  String?               @map("reference_id")
+  metadata     String?               @db.Text
+  createdAt    DateTime              @default(now()) @map("created_at")
 
   // Relations
-  account       PointsAccount         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account PointsAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@index([accountId])
   @@index([userId])
@@ -878,19 +884,19 @@ model PointsTransaction {
 }
 
 model PointsFreeze {
-  id            String       @id @default(uuid())
-  accountId     String       @map("account_id")
-  amount        Int
-  reason        String
-  scene         SceneCode?
-  referenceId   String?      @map("reference_id")
-  status        FreezeStatus @default(FROZEN)
-  expiresAt     DateTime?    @map("expires_at")
-  createdAt     DateTime     @default(now()) @map("created_at")
-  updatedAt     DateTime     @updatedAt @map("updated_at")
+  id          String       @id @default(uuid())
+  accountId   String       @map("account_id")
+  amount      Int
+  reason      String
+  scene       SceneCode?
+  referenceId String?      @map("reference_id")
+  status      FreezeStatus @default(FROZEN)
+  expiresAt   DateTime?    @map("expires_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
 
   // Relations
-  account       PointsAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account PointsAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@index([accountId])
   @@index([status])
@@ -899,19 +905,19 @@ model PointsFreeze {
 }
 
 enum PointsTransactionType {
-  EARN        @map("earn")
-  SPEND       @map("spend")
-  FROZEN      @map("frozen")
-  UNFROZEN    @map("unfrozen")
-  TRANSFER_IN @map("transfer_in")
+  EARN         @map("earn")
+  SPEND        @map("spend")
+  FROZEN       @map("frozen")
+  UNFROZEN     @map("unfrozen")
+  TRANSFER_IN  @map("transfer_in")
   TRANSFER_OUT @map("transfer_out")
 }
 
 enum FreezeStatus {
-  FROZEN      @map("frozen")      // 冻结中
-  USED        @map("used")         // 已使用（完成交易）
-  RELEASED    @map("released")     // 已释放（取消交易）
-  EXPIRED     @map("expired")      // 已过期
+  FROZEN   @map("frozen") // 冻结中
+  USED     @map("used") // 已使用（完成交易）
+  RELEASED @map("released") // 已释放（取消交易）
+  EXPIRED  @map("expired") // 已过期
 }
 
 // ============================================
@@ -919,21 +925,21 @@ enum FreezeStatus {
 // ============================================
 
 model UserDevice {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  deviceId    String    @unique @map("device_id")
-  deviceName  String?   @map("device_name")
-  deviceType  String?   @map("device_type") // ios, android, web
-  osVersion   String?   @map("os_version")
-  appVersion  String?   @map("app_version")
-  pushToken   String?   @map("push_token")
-  ipAddress   String?   @map("ip_address")
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  deviceId     String   @unique @map("device_id")
+  deviceName   String?  @map("device_name")
+  deviceType   String?  @map("device_type") // ios, android, web
+  osVersion    String?  @map("os_version")
+  appVersion   String?  @map("app_version")
+  pushToken    String?  @map("push_token")
+  ipAddress    String?  @map("ip_address")
   lastActiveAt DateTime @default(now()) @map("last_active_at")
-  isCurrent   Boolean  @default(false) @map("is_current")
-  createdAt   DateTime @default(now()) @map("created_at")
+  isCurrent    Boolean  @default(false) @map("is_current")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   // Relations
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([deviceId])
@@ -945,15 +951,15 @@ model UserDevice {
 // ============================================
 
 model BlockedUser {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  blockedUserId String @map("blocked_user_id")
-  reason      String?
-  createdAt   DateTime @default(now()) @map("created_at")
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  blockedUserId String   @map("blocked_user_id")
+  reason        String?
+  createdAt     DateTime @default(now()) @map("created_at")
 
   // Relations
-  user        User     @relation("BlockingUser", fields: [userId], references: [id], onDelete: Cascade)
-  blockedUser User     @relation("BlockedByUser", fields: [blockedUserId], references: [id], onDelete: Cascade)
+  user        User @relation("BlockingUser", fields: [userId], references: [id], onDelete: Cascade)
+  blockedUser User @relation("BlockedByUser", fields: [blockedUserId], references: [id], onDelete: Cascade)
 
   @@unique([userId, blockedUserId])
   @@index([userId])
@@ -967,11 +973,11 @@ model BlockedUser {
 
 model Role {
   id          String   @id @default(uuid())
-  name        String   @unique  // user, admin, moderator
-  displayName String   @map("display_name")  // 显示名称
-  description String?  // 角色描述
-  level       Int      @default(0)  // 角色层级，用于继承
-  isSystem    Boolean  @default(false) @map("is_system")  // 系统角色不可删除
+  name        String   @unique // user, admin, moderator
+  displayName String   @map("display_name") // 显示名称
+  description String? // 角色描述
+  level       Int      @default(0) // 角色层级，用于继承
+  isSystem    Boolean  @default(false) @map("is_system") // 系统角色不可删除
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -986,15 +992,15 @@ model Role {
 
 model Permission {
   id          String   @id @default(uuid())
-  resource    String   // 资源，如 users, agents, posts
-  action      String   // 操作，如 read, write, delete, admin
-  name        String   @unique  // users:read, users:write
-  description String?  // 权限描述
+  resource    String // 资源，如 users, agents, posts
+  action      String // 操作，如 read, write, delete, admin
+  name        String   @unique // users:read, users:write
+  description String? // 权限描述
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  roles       RolePermission[]
+  roles RolePermission[]
 
   @@unique([resource, action])
   @@index([resource])
@@ -1009,8 +1015,8 @@ model RolePermission {
   createdAt    DateTime @default(now()) @map("created_at")
 
   // Relations
-  role         Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@unique([roleId, permissionId])
   @@index([roleId])
@@ -1019,17 +1025,17 @@ model RolePermission {
 }
 
 model UserRole {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  roleId    String   @map("role_id")
-  grantedBy String?  @map("granted_by")  // 谁授予的角色
-  expiresAt DateTime? @map("expires_at")  // 角色过期时间（可选）
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  roleId    String    @map("role_id")
+  grantedBy String?   @map("granted_by") // 谁授予的角色
+  expiresAt DateTime? @map("expires_at") // 角色过期时间（可选）
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([userId, roleId])
   @@index([userId])
@@ -1042,23 +1048,23 @@ model UserRole {
 // ============================================
 
 model Merchant {
-  id          String    @id @default(uuid())
-  agentId     String    @unique @map("agent_id")
-  name        String    // 店名
-  address     String?   // 门店地址
-  phone       String?   // 联系电话
-  businessHours Json?   @map("business_hours") // 营业时间
-  description String?   // 商家描述
-  logoUrl     String?   @map("logo_url") // 商家logo
-  category    String?   // 经营类目
-  status      MerchantStatus @default(ACTIVE)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id            String         @id @default(uuid())
+  agentId       String         @unique @map("agent_id")
+  name          String // 店名
+  address       String? // 门店地址
+  phone         String? // 联系电话
+  businessHours Json?          @map("business_hours") // 营业时间
+  description   String? // 商家描述
+  logoUrl       String?        @map("logo_url") // 商家logo
+  category      String? // 经营类目
+  status        MerchantStatus @default(ACTIVE)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
 
   // Relations
-  agent       Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  offers      Offer[]
-  coupons     Coupon[]
+  agent   Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  offers  Offer[]
+  coupons Coupon[]
 
   @@index([agentId])
   @@index([status])
@@ -1074,48 +1080,48 @@ enum MerchantStatus {
 model Offer {
   id          String    @id @default(uuid())
   merchantId  String    @map("merchant_id")
-  title       String    // 优惠标题
-  description String?   // 详细描述
+  title       String // 优惠标题
+  description String? // 详细描述
   type        OfferType // 优惠类型
 
   // 优惠力度
-  discountValue     Decimal?  @map("discount_value") @db.Decimal(5, 2) // 折扣值或减免金额
-  minPurchaseAmount Decimal?  @map("min_purchase_amount") @db.Decimal(10, 2) // 最低消费金额
-  maxDiscountAmount Decimal?  @map("max_discount_amount") @db.Decimal(10, 2) // 最高减免金额
+  discountValue     Decimal? @map("discount_value") @db.Decimal(5, 2) // 折扣值或减免金额
+  minPurchaseAmount Decimal? @map("min_purchase_amount") @db.Decimal(10, 2) // 最低消费金额
+  maxDiscountAmount Decimal? @map("max_discount_amount") @db.Decimal(10, 2) // 最高减免金额
 
   // 适用范围
-  applicableScope   Json?     @map("applicable_scope") // {products: [], excludedProducts: [], timeRanges: [], storeIds: [], userGroups: []}
+  applicableScope Json? @map("applicable_scope") // {products: [], excludedProducts: [], timeRanges: [], storeIds: [], userGroups: []}
 
   // 有效期
-  validFrom   DateTime  @map("valid_from")
-  validUntil  DateTime  @map("valid_until")
+  validFrom  DateTime @map("valid_from")
+  validUntil DateTime @map("valid_until")
 
   // 库存管理
-  totalStock  Int       @map("total_stock") // 总库存数量
-  dailyLimit  Int?      @map("daily_limit") // 每日限额
-  remainingStock Int    @default(0) @map("remaining_stock") // 剩余库存
-  stockAlertThreshold Int @default(10) @map("stock_alert_threshold") // 库存预警阈值
+  totalStock          Int  @map("total_stock") // 总库存数量
+  dailyLimit          Int? @map("daily_limit") // 每日限额
+  remainingStock      Int  @default(0) @map("remaining_stock") // 剩余库存
+  stockAlertThreshold Int  @default(10) @map("stock_alert_threshold") // 库存预警阈值
 
   // 状态管理
-  status      OfferStatus @default(DRAFT)
-  publishType OfferPublishType @default(MANUAL) @map("publish_type") // 发布类型
-  scheduledPublishAt DateTime? @map("scheduled_publish_at") // 定时发布时间
+  status             OfferStatus      @default(DRAFT)
+  publishType        OfferPublishType @default(MANUAL) @map("publish_type") // 发布类型
+  scheduledPublishAt DateTime?        @map("scheduled_publish_at") // 定时发布时间
 
   // AI提取相关
-  aiExtracted       Boolean   @default(false) @map("ai_extracted") // 是否AI提取
-  aiExtractionData  Json?     @map("ai_extraction_data") // AI提取的原始数据
-  aiConfidence      Float?    @map("ai_confidence") // AI提取置信度
+  aiExtracted      Boolean @default(false) @map("ai_extracted") // 是否AI提取
+  aiExtractionData Json?   @map("ai_extraction_data") // AI提取的原始数据
+  aiConfidence     Float?  @map("ai_confidence") // AI提取置信度
 
   // 统计
-  usageCount  Int       @default(0) @map("usage_count") // 使用次数
-  viewCount   Int       @default(0) @map("view_count") // 浏览次数
+  usageCount Int @default(0) @map("usage_count") // 使用次数
+  viewCount  Int @default(0) @map("view_count") // 浏览次数
 
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  merchant    Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  coupons     Coupon[]
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  coupons  Coupon[]
 
   @@index([merchantId])
   @@index([status])
@@ -1126,45 +1132,45 @@ model Offer {
 }
 
 enum OfferType {
-  DISCOUNT      @map("discount")      // 折扣 (如8折)
-  REDUCTION     @map("reduction")     // 满减 (如满100减20)
-  GIFT          @map("gift")          // 赠品
-  PACKAGE       @map("package")       // 套餐
-  PERCENTAGE    @map("percentage")    // 百分比折扣
-  FIXED_AMOUNT  @map("fixed_amount")  // 固定金额优惠
+  DISCOUNT     @map("discount") // 折扣 (如8折)
+  REDUCTION    @map("reduction") // 满减 (如满100减20)
+  GIFT         @map("gift") // 赠品
+  PACKAGE      @map("package") // 套餐
+  PERCENTAGE   @map("percentage") // 百分比折扣
+  FIXED_AMOUNT @map("fixed_amount") // 固定金额优惠
 }
 
 enum OfferStatus {
-  DRAFT       @map("draft")       // 草稿
-  PENDING     @map("pending")      // 待审核
-  ACTIVE      @map("active")       // 生效中
-  PAUSED      @map("paused")       // 暂停
-  EXPIRED     @map("expired")      // 已过期
-  SOLD_OUT    @map("sold_out")     // 已售罄
-  DISABLED    @map("disabled")     // 已下架
+  DRAFT    @map("draft") // 草稿
+  PENDING  @map("pending") // 待审核
+  ACTIVE   @map("active") // 生效中
+  PAUSED   @map("paused") // 暂停
+  EXPIRED  @map("expired") // 已过期
+  SOLD_OUT @map("sold_out") // 已售罄
+  DISABLED @map("disabled") // 已下架
 }
 
 enum OfferPublishType {
-  MANUAL      @map("manual")       // 手动发布
-  SCHEDULED   @map("scheduled")    // 定时发布
-  IMMEDIATE   @map("immediate")    // 立即发布
+  MANUAL    @map("manual") // 手动发布
+  SCHEDULED @map("scheduled") // 定时发布
+  IMMEDIATE @map("immediate") // 立即发布
 }
 
 model SavedFilter {
   id          String   @id @default(uuid())
   userId      String   @map("user_id")
-  name        String   // 筛选器名称
-  description String?  // 筛选器描述
-  category    String?  // 分类
-  filter      Json     // FilterDSL JSON
-  isPublic    Boolean  @default(false) @map("is_public")  // 是否公开
-  usageCount  Int      @default(0) @map("usage_count")     // 使用次数
-  shareToken   String?                                  // 分享令牌
+  name        String // 筛选器名称
+  description String? // 筛选器描述
+  category    String? // 分类
+  filter      Json // FilterDSL JSON
+  isPublic    Boolean  @default(false) @map("is_public") // 是否公开
+  usageCount  Int      @default(0) @map("usage_count") // 使用次数
+  shareToken  String? // 分享令牌
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([category])
@@ -1178,20 +1184,20 @@ model SavedFilter {
 
 model SceneTemplate {
   id          String   @id @default(uuid())
-  userId      String?  @map("user_id")  // null for preset templates
+  userId      String?  @map("user_id") // null for preset templates
   sceneId     String   @map("scene_id") // visionshare, agentdate, agentjob, agentad
-  name        String   // 模板名称
-  description String?  // 模板描述
-  isPreset    Boolean  @default(false) @map("is_preset")  // 是否是预设模板
+  name        String // 模板名称
+  description String? // 模板描述
+  isPreset    Boolean  @default(false) @map("is_preset") // 是否是预设模板
   isDefault   Boolean  @default(false) @map("is_default") // 是否用户默认模板
-  fieldValues Json     // 字段默认值
-  isPublic    Boolean  @default(false) @map("is_public")  // 是否公开
-  usageCount  Int      @default(0) @map("usage_count")    // 使用次数
+  fieldValues Json // 字段默认值
+  isPublic    Boolean  @default(false) @map("is_public") // 是否公开
+  usageCount  Int      @default(0) @map("usage_count") // 使用次数
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([sceneId])
@@ -1206,27 +1212,27 @@ model SceneTemplate {
 
 // 通知记录
 model Notification {
-  id          String           @id @default(uuid())
-  userId      String           @map("user_id")
-  type        NotificationType // 通知类型
-  title       String           // 通知标题
-  content     String           // 通知内容
-  data        Json?            // 额外数据（如matchId等）
-  imageUrl    String?          @map("image_url") // 通知图片
-  actionUrl   String?          @map("action_url") // 点击跳转URL
-  category    String?          // 通知分类
-  priority    PriorityLevel    @default(NORMAL) // 优先级
-  channel     NotificationChannel @default(IN_APP) // 推送渠道
-  status      NotificationStatus @default(UNREAD) // 状态
-  sentAt      DateTime?        @map("sent_at")   // 发送时间
-  readAt      DateTime?        @map("read_at")   // 已读时间
-  expiresAt   DateTime?        @map("expires_at") // 过期时间
-  createdAt   DateTime         @default(now()) @map("created_at")
-  updatedAt   DateTime         @updatedAt @map("updated_at")
+  id        String              @id @default(uuid())
+  userId    String              @map("user_id")
+  type      NotificationType // 通知类型
+  title     String // 通知标题
+  content   String // 通知内容
+  data      Json? // 额外数据（如matchId等）
+  imageUrl  String?             @map("image_url") // 通知图片
+  actionUrl String?             @map("action_url") // 点击跳转URL
+  category  String? // 通知分类
+  priority  PriorityLevel       @default(NORMAL) // 优先级
+  channel   NotificationChannel @default(IN_APP) // 推送渠道
+  status    NotificationStatus  @default(UNREAD) // 状态
+  sentAt    DateTime?           @map("sent_at") // 发送时间
+  readAt    DateTime?           @map("read_at") // 已读时间
+  expiresAt DateTime?           @map("expires_at") // 过期时间
+  createdAt DateTime            @default(now()) @map("created_at")
+  updatedAt DateTime            @updatedAt @map("updated_at")
 
   // Relations
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  deliveries  NotificationDelivery[]
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries NotificationDelivery[]
 
   @@index([userId])
   @@index([userId, status])
@@ -1238,57 +1244,61 @@ model Notification {
 }
 
 enum NotificationType {
-  MATCH_NEW           @map("match_new")           // 新匹配
-  MATCH_ACCEPTED      @map("match_accepted")      // 匹配被接受
-  MATCH_REJECTED      @map("match_rejected")      // 匹配被拒绝
-  MATCH_COMPLETED     @map("match_completed")     // 匹配完成
-  MESSAGE_NEW         @map("message_new")         // 新消息
-  RATING_RECEIVED     @map("rating_received")     // 收到评分
-  REVIEW_RATING       @map("review_rating")       // 收到评价
-  REVIEW_REMINDER     @map("review_reminder")     // 评价提醒
-  SYSTEM_ANNOUNCEMENT @map("system_announcement") // 系统公告
-  PROMOTION           @map("promotion")           // 促销活动
-  REMINDER            @map("reminder")            // 提醒
+  MATCH_NEW           @map("match_new") // 新匹配
+  MATCH_ACCEPTED      @map("match_accepted") // 匹配被接受
+  MATCH_REJECTED      @map("match_rejected") // 匹配被拒绝
+  MATCH_COMPLETED     @map("match_completed") // 匹配完成
+  MESSAGE_NEW         @map("message_new") // 新消息
+  RATING_RECEIVED     @map("rating_received") // 收到评分
+  REVIEW_RATING       @map("review_rating") // 收到评价
+  REVIEW_REMINDER      @map("review_reminder") // 评价提醒
+  VIOLATION_WARNING    @map("violation_warning") // 违规警告
+  VIOLATION_BAN        @map("violation_ban") // 违规封禁
+  VIOLATION_MUTE       @map("violation_mute") // 违规禁言
+  VIOLATION_SUSPEND    @map("violation_suspend") // 违规暂停
+  SYSTEM_ANNOUNCEMENT  @map("system_announcement") // 系统公告
+  PROMOTION           @map("promotion") // 促销活动
+  REMINDER            @map("reminder") // 提醒
 }
 
 enum NotificationChannel {
-  IN_APP  @map("in_app")   // 应用内
-  PUSH    @map("push")     // 推送
-  EMAIL   @map("email")    // 邮件
-  SMS     @map("sms")      // 短信
+  IN_APP @map("in_app") // 应用内
+  PUSH   @map("push") // 推送
+  EMAIL  @map("email") // 邮件
+  SMS    @map("sms") // 短信
 }
 
 enum NotificationStatus {
-  UNREAD    @map("unread")
-  READ      @map("read")
-  ARCHIVED  @map("archived")
-  DELETED   @map("deleted")
+  UNREAD   @map("unread")
+  READ     @map("read")
+  ARCHIVED @map("archived")
+  DELETED  @map("deleted")
 }
 
 enum PriorityLevel {
-  LOW       @map("low")
-  NORMAL    @map("normal")
-  HIGH      @map("high")
-  URGENT    @map("urgent")
+  LOW    @map("low")
+  NORMAL @map("normal")
+  HIGH   @map("high")
+  URGENT @map("urgent")
 }
 
 // 通知投递记录
 model NotificationDelivery {
-  id              String    @id @default(uuid())
-  notificationId  String    @map("notification_id")
-  channel         NotificationChannel // 投递渠道
-  status          DeliveryStatus @default(PENDING) // 投递状态
-  sentAt          DateTime? @map("sent_at")
-  deliveredAt     DateTime? @map("delivered_at")
-  failedAt        DateTime? @map("failed_at")
-  errorMessage    String?   @map("error_message")
-  retryCount      Int       @default(0) @map("retry_count")
-  externalId      String?   @map("external_id") // 外部服务ID（如Expo push receipt）
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id             String              @id @default(uuid())
+  notificationId String              @map("notification_id")
+  channel        NotificationChannel // 投递渠道
+  status         DeliveryStatus      @default(PENDING) // 投递状态
+  sentAt         DateTime?           @map("sent_at")
+  deliveredAt    DateTime?           @map("delivered_at")
+  failedAt       DateTime?           @map("failed_at")
+  errorMessage   String?             @map("error_message")
+  retryCount     Int                 @default(0) @map("retry_count")
+  externalId     String?             @map("external_id") // 外部服务ID（如Expo push receipt）
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
 
   // Relations
-  notification    Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 
   @@index([notificationId])
   @@index([channel, status])
@@ -1297,39 +1307,39 @@ model NotificationDelivery {
 }
 
 enum DeliveryStatus {
-  PENDING     @map("pending")
-  SENT        @map("sent")
-  DELIVERED   @map("delivered")
-  FAILED      @map("failed")
-  RETRYING    @map("retrying")
+  PENDING   @map("pending")
+  SENT      @map("sent")
+  DELIVERED @map("delivered")
+  FAILED    @map("failed")
+  RETRYING  @map("retrying")
 }
 
 // 用户通知偏好设置
 model NotificationPreference {
-  id                String    @id @default(uuid())
-  userId            String    @unique @map("user_id")
+  id                     String   @id @default(uuid())
+  userId                 String   @unique @map("user_id")
   // 推送开关
-  pushEnabled       Boolean   @default(true) @map("push_enabled")
-  emailEnabled      Boolean   @default(true) @map("email_enabled")
-  smsEnabled        Boolean   @default(false) @map("sms_enabled")
-  inAppEnabled      Boolean   @default(true) @map("in_app_enabled")
+  pushEnabled            Boolean  @default(true) @map("push_enabled")
+  emailEnabled           Boolean  @default(true) @map("email_enabled")
+  smsEnabled             Boolean  @default(false) @map("sms_enabled")
+  inAppEnabled           Boolean  @default(true) @map("in_app_enabled")
   // 通知类型偏好
-  matchNotifications    Boolean @default(true) @map("match_notifications")
-  messageNotifications  Boolean @default(true) @map("message_notifications")
-  ratingNotifications   Boolean @default(true) @map("rating_notifications")
-  systemNotifications   Boolean @default(true) @map("system_notifications")
-  promotionNotifications Boolean @default(false) @map("promotion_notifications")
+  matchNotifications     Boolean  @default(true) @map("match_notifications")
+  messageNotifications   Boolean  @default(true) @map("message_notifications")
+  ratingNotifications    Boolean  @default(true) @map("rating_notifications")
+  systemNotifications    Boolean  @default(true) @map("system_notifications")
+  promotionNotifications Boolean  @default(false) @map("promotion_notifications")
   // 频率控制
-  dailyLimit        Int       @default(100) @map("daily_limit") // 每日通知上限
-  quietHoursStart   String?   @map("quiet_hours_start") // 免打扰开始时间 (HH:mm)
-  quietHoursEnd     String?   @map("quiet_hours_end")   // 免打扰结束时间 (HH:mm)
-  quietHoursEnabled Boolean   @default(false) @map("quiet_hours_enabled")
+  dailyLimit             Int      @default(100) @map("daily_limit") // 每日通知上限
+  quietHoursStart        String?  @map("quiet_hours_start") // 免打扰开始时间 (HH:mm)
+  quietHoursEnd          String?  @map("quiet_hours_end") // 免打扰结束时间 (HH:mm)
+  quietHoursEnabled      Boolean  @default(false) @map("quiet_hours_enabled")
   // 元数据
-  updatedAt         DateTime  @updatedAt @map("updated_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+  createdAt              DateTime @default(now()) @map("created_at")
 
   // Relations
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("notification_preferences")
@@ -1337,20 +1347,20 @@ model NotificationPreference {
 
 // 推送令牌管理 (Expo Push Token)
 model PushToken {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  token       String    @unique // Expo Push Token
-  deviceId    String?   @map("device_id") // 设备ID
-  deviceType  String    @map("device_type") // ios, android
-  appVersion  String?   @map("app_version")
-  osVersion   String?   @map("os_version")
-  isActive    Boolean   @default(true) @map("is_active")
-  lastUsedAt  DateTime  @default(now()) @map("last_used_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  token      String   @unique // Expo Push Token
+  deviceId   String?  @map("device_id") // 设备ID
+  deviceType String   @map("device_type") // ios, android
+  appVersion String?  @map("app_version")
+  osVersion  String?  @map("os_version")
+  isActive   Boolean  @default(true) @map("is_active")
+  lastUsedAt DateTime @default(now()) @map("last_used_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([token])
@@ -1360,17 +1370,17 @@ model PushToken {
 
 // Web Push 订阅管理
 model WebPushSubscription {
-  id              String    @id @default(uuid())
-  userId          String    @map("user_id")
-  endpoint        String    @unique // Push subscription endpoint
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  endpoint         String   @unique // Push subscription endpoint
   subscriptionJson String   @map("subscription_json") // Full subscription object
-  isActive        Boolean   @default(true) @map("is_active")
-  lastUsedAt      DateTime  @default(now()) @map("last_used_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  isActive         Boolean  @default(true) @map("is_active")
+  lastUsedAt       DateTime @default(now()) @map("last_used_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([endpoint])
@@ -1380,24 +1390,24 @@ model WebPushSubscription {
 
 // 邮件队列
 model EmailQueue {
-  id          String    @id @default(uuid())
-  toEmail     String    @map("to_email")
-  toName      String?   @map("to_name")
-  templateId  String    @map("template_id") // 模板ID
-  subject     String    // 邮件主题
-  content     String?   // 邮件内容（HTML）
-  variables   Json?     // 模板变量
-  status      EmailStatus @default(PENDING)
-  priority    Int       @default(0) // 优先级
-  sentAt      DateTime? @map("sent_at")
-  deliveredAt DateTime? @map("delivered_at")
-  openedAt    DateTime? @map("opened_at")
-  clickedAt   DateTime? @map("clicked_at")
-  errorMessage String?  @map("error_message")
-  retryCount  Int       @default(0) @map("retry_count")
-  messageId   String?   @map("message_id") // 邮件服务商返回的ID
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id           String      @id @default(uuid())
+  toEmail      String      @map("to_email")
+  toName       String?     @map("to_name")
+  templateId   String      @map("template_id") // 模板ID
+  subject      String // 邮件主题
+  content      String? // 邮件内容（HTML）
+  variables    Json? // 模板变量
+  status       EmailStatus @default(PENDING)
+  priority     Int         @default(0) // 优先级
+  sentAt       DateTime?   @map("sent_at")
+  deliveredAt  DateTime?   @map("delivered_at")
+  openedAt     DateTime?   @map("opened_at")
+  clickedAt    DateTime?   @map("clicked_at")
+  errorMessage String?     @map("error_message")
+  retryCount   Int         @default(0) @map("retry_count")
+  messageId    String?     @map("message_id") // 邮件服务商返回的ID
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
 
   @@index([status, priority])
   @@index([toEmail])
@@ -1418,22 +1428,22 @@ enum EmailStatus {
 
 // 短信队列
 model SMSQueue {
-  id          String    @id @default(uuid())
-  phoneNumber String    @map("phone_number")
-  templateId  String    @map("template_id")
-  content     String    // 短信内容
-  variables   Json?     // 模板变量
-  status      SMSStatus @default(PENDING)
-  priority    Int       @default(0)
-  sentAt      DateTime? @map("sent_at")
-  deliveredAt DateTime? @map("delivered_at")
-  errorMessage String?  @map("error_message")
-  retryCount  Int       @default(0) @map("retry_count")
-  messageId   String?   @map("message_id") // 短信服务商返回的ID
-  segments    Int       @default(1) // 短信分段数
-  cost        Decimal?  @db.Decimal(10, 4) // 短信成本
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id           String    @id @default(uuid())
+  phoneNumber  String    @map("phone_number")
+  templateId   String    @map("template_id")
+  content      String // 短信内容
+  variables    Json? // 模板变量
+  status       SMSStatus @default(PENDING)
+  priority     Int       @default(0)
+  sentAt       DateTime? @map("sent_at")
+  deliveredAt  DateTime? @map("delivered_at")
+  errorMessage String?   @map("error_message")
+  retryCount   Int       @default(0) @map("retry_count")
+  messageId    String?   @map("message_id") // 短信服务商返回的ID
+  segments     Int       @default(1) // 短信分段数
+  cost         Decimal?  @db.Decimal(10, 4) // 短信成本
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   @@index([status, priority])
   @@index([phoneNumber])
@@ -1450,12 +1460,12 @@ enum SMSStatus {
 }
 
 enum CouponStatus {
-  ACTIVE      @map("active")
-  INACTIVE    @map("inactive")
-  EXPIRED     @map("expired")
-  USED        @map("used")
+  ACTIVE        @map("active")
+  INACTIVE      @map("inactive")
+  EXPIRED       @map("expired")
+  USED          @map("used")
   REMINDER_SENT @map("reminder_sent")
-  CANCELLED   @map("cancelled")
+  CANCELLED     @map("cancelled")
 }
 
 // ============================================
@@ -1463,25 +1473,25 @@ enum CouponStatus {
 // ============================================
 
 enum ParticipantRole {
-  OWNER     @map("owner")
-  ADMIN     @map("admin")
-  MEMBER    @map("member")
-  GUEST     @map("guest")
+  OWNER  @map("owner")
+  ADMIN  @map("admin")
+  MEMBER @map("member")
+  GUEST  @map("guest")
 }
 
 model RefreshToken {
-  id          String    @id @default(uuid())
-  token       String    @unique
-  userId      String    @map("user_id")
-  deviceInfo  Json?     @map("device_info")
-  ipAddress   String?   @map("ip_address")
-  expiresAt   DateTime  @map("expires_at")
-  revokedAt   DateTime? @map("revoked_at")
-  revokedBy   String?   @map("revoked_by")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id         String    @id @default(uuid())
+  token      String    @unique
+  userId     String    @map("user_id")
+  deviceInfo Json?     @map("device_info")
+  ipAddress  String?   @map("ip_address")
+  expiresAt  DateTime  @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+  revokedBy  String?   @map("revoked_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
 
   // Relations
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([token])
@@ -1494,24 +1504,24 @@ model RefreshToken {
 // ============================================
 
 model RoomParticipant {
-  id          String         @id @default(uuid())
-  roomId      String         @map("room_id")
-  userId      String         @map("user_id")
-  role        ParticipantRole @default(MEMBER)
-  permissions Json?          // 参与者权限配置
-  isActive    Boolean        @default(true) @map("is_active")
-  joinedAt    DateTime       @default(now()) @map("joined_at")
-  addedBy     String?        @map("added_by")
-  lastActiveAt DateTime?     @map("last_active_at")
-  unreadCount Int            @default(0) @map("unread_count")
-  lastReadAt  DateTime?      @map("last_read_at")
-  leftAt      DateTime?      @map("left_at")
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
+  id           String          @id @default(uuid())
+  roomId       String          @map("room_id")
+  userId       String          @map("user_id")
+  role         ParticipantRole @default(MEMBER)
+  permissions  Json? // 参与者权限配置
+  isActive     Boolean         @default(true) @map("is_active")
+  joinedAt     DateTime        @default(now()) @map("joined_at")
+  addedBy      String?         @map("added_by")
+  lastActiveAt DateTime?       @map("last_active_at")
+  unreadCount  Int             @default(0) @map("unread_count")
+  lastReadAt   DateTime?       @map("last_read_at")
+  leftAt       DateTime?       @map("left_at")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
 
   // Relations
-  room        ChatRoom       @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([roomId, userId])
   @@index([roomId])
@@ -1524,18 +1534,18 @@ model RoomParticipant {
 // ============================================
 
 model CreditHistory {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  score       Int      // 当前信用分
-  delta       Int      // 变化值
-  reason      String   // 变化原因
-  sourceType  String   @map("source_type")
-  sourceId    String? @map("source_id")
-  metadata    Json?
-  createdAt   DateTime @default(now()) @map("created_at")
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  score      Int // 当前信用分
+  delta      Int // 变化值
+  reason     String // 变化原因
+  sourceType String   @map("source_type")
+  sourceId   String?  @map("source_id")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
@@ -1547,21 +1557,21 @@ model CreditHistory {
 // ============================================
 
 model CreditScore {
-  id          String   @id @default(uuid())
-  userId      String   @unique @map("user_id")
-  score       Int      @default(600)
-  level       String   @default("general")
-  lastUpdated DateTime @default(now()) @map("last_updated")
-  updatedBy   String?  @map("updated_by")
-  reason      String?  // 更新原因
+  id           String    @id @default(uuid())
+  userId       String    @unique @map("user_id")
+  score        Int       @default(600)
+  level        String    @default("general")
+  lastUpdated  DateTime  @default(now()) @map("last_updated")
+  updatedBy    String?   @map("updated_by")
+  reason       String? // 更新原因
   nextUpdateAt DateTime? @map("next_update_at")
-  metadata    Json?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  metadata     Json?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  factors     CreditFactor[]
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  factors CreditFactor[]
 
   @@index([userId])
   @@map("credit_scores")
@@ -1570,16 +1580,16 @@ model CreditScore {
 model CreditFactor {
   id            String   @id @default(uuid())
   creditScoreId String   @map("credit_score_id")
-  factorType    String   @map("factor_type")  // profile, behavior, transaction, social
+  factorType    String   @map("factor_type") // profile, behavior, transaction, social
   subFactor     String   @map("sub_factor")
   score         Int
   weight        Float
-  weightedScore Float   @map("weighted_score")
+  weightedScore Float    @map("weighted_score")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
-  creditScore   CreditScore @relation(fields: [creditScoreId], references: [id], onDelete: Cascade)
+  creditScore CreditScore @relation(fields: [creditScoreId], references: [id], onDelete: Cascade)
 
   @@index([creditScoreId])
   @@index([factorType])
@@ -1595,7 +1605,7 @@ model GeoFence {
   name         String
   description  String?
   type         String   @default("POLYGON") // POLYGON, CIRCLE, RECTANGLE
-  coordinates  Json?    // GeoJSON Polygon coordinates
+  coordinates  Json? // GeoJSON Polygon coordinates
   centerLat    Float?   @map("center_lat")
   centerLng    Float?   @map("center_lng")
   radiusMeters Float?   @map("radius_meters")
@@ -1616,20 +1626,20 @@ model GeoFence {
 // ============================================
 
 model OAuthConnection {
-  id               String    @id @default(uuid())
-  userId           String    @map("user_id")
-  provider         String    // google, apple, wechat, etc.
-  providerUserId   String    @map("provider_user_id")
-  accessToken      String?   @map("access_token")
-  refreshToken     String?   @map("refresh_token")
-  expiresAt        DateTime? @map("expires_at")
-  scope            String?
-  metadata         Json?
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  provider       String // google, apple, wechat, etc.
+  providerUserId String    @map("provider_user_id")
+  accessToken    String?   @map("access_token")
+  refreshToken   String?   @map("refresh_token")
+  expiresAt      DateTime? @map("expires_at")
+  scope          String?
+  metadata       Json?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerUserId])
   @@index([userId])
@@ -1645,37 +1655,37 @@ model VisionShareTask {
   id                   String    @id @default(uuid())
   userId               String    @map("user_id")
   title                String
-  description           String?
-  budgetType            String?   @map("budget_type")
-  budgetAmount          Float?    @map("budget_amount")
-  budgetCurrency        String?   @map("budget_currency")
-  latitude              Float?
-  longitude             Float?
-  locationName          String?   @map("location_name")
-  locationAddress       String?   @map("location_address")
-  startTime             DateTime? @map("start_time")
-  endTime               DateTime? @map("end_time")
-  timeType              String?   @map("time_type")
-  validHours            Int       @default(24) @map("valid_hours")
-  expiresAt             DateTime  @map("expires_at")
-  category              String?
-  tags                  String[]  @default([])
-  aiGeneratedTags       String[]  @default([]) @map("ai_generated_tags")
-  aiRefinedDescription  String?   @map("ai_refined_description")
-  qualityScore          Float?    @map("quality_score")
-  status                String    @default("DRAFT")
-  creditChecked         Boolean   @default(false) @map("credit_checked")
-  contentFiltered       Boolean   @default(false) @map("content_filtered")
-  viewCount             Int       @default(0) @map("view_count")
-  matchCount            Int       @default(0) @map("match_count")
-  shareCount            Int       @default(0) @map("share_count")
-  publishCount          Int       @default(0) @map("publish_count")
-  dailyLimitHit         Boolean   @default(false) @map("daily_limit_hit")
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
+  description          String?
+  budgetType           String?   @map("budget_type")
+  budgetAmount         Float?    @map("budget_amount")
+  budgetCurrency       String?   @map("budget_currency")
+  latitude             Float?
+  longitude            Float?
+  locationName         String?   @map("location_name")
+  locationAddress      String?   @map("location_address")
+  startTime            DateTime? @map("start_time")
+  endTime              DateTime? @map("end_time")
+  timeType             String?   @map("time_type")
+  validHours           Int       @default(24) @map("valid_hours")
+  expiresAt            DateTime  @map("expires_at")
+  category             String?
+  tags                 String[]  @default([])
+  aiGeneratedTags      String[]  @default([]) @map("ai_generated_tags")
+  aiRefinedDescription String?   @map("ai_refined_description")
+  qualityScore         Float?    @map("quality_score")
+  status               String    @default("DRAFT")
+  creditChecked        Boolean   @default(false) @map("credit_checked")
+  contentFiltered      Boolean   @default(false) @map("content_filtered")
+  viewCount            Int       @default(0) @map("view_count")
+  matchCount           Int       @default(0) @map("match_count")
+  shareCount           Int       @default(0) @map("share_count")
+  publishCount         Int       @default(0) @map("publish_count")
+  dailyLimitHit        Boolean   @default(false) @map("daily_limit_hit")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
@@ -1702,38 +1712,38 @@ model VisionShareTaskHistory {
 // ============================================
 
 model Coupon {
-  id              String    @id @default(uuid())
-  code            String    @unique
-  name            String
-  description     String?
-  offerId         String?   @map("offer_id")
-  merchantId      String?   @map("merchant_id")
-  consumerId      String?   @map("consumer_id")
-  originalPrice   Float?    @map("original_price")
-  discountPrice   Float?    @map("discount_price")
-  discountType     String    @map("discount_type") // PERCENTAGE, FIXED_AMOUNT
-  discountValue    Float     @map("discount_value")
-  minOrderAmount   Float?    @map("min_order_amount")
-  maxDiscountAmount Float?   @map("max_discount_amount")
-  validFrom       DateTime  @map("valid_from")
-  validUntil      DateTime  @map("valid_until")
-  totalCount      Int       @default(0) @map("total_count")
-  remainingCount  Int       @default(0) @map("remaining_count")
-  perUserLimit    Int       @default(1) @map("per_user_limit")
-  usedCount       Int       @default(0) @map("used_count")
-  maxUsageCount   Int       @default(1) @map("max_usage_count")
-  usedAt          DateTime? @map("used_at")
-  reminderSent    Boolean   @default(false) @map("reminder_sent")
-  status          CouponStatus @default(ACTIVE)
-  redeemedBy      String?   @map("redeemed_by")
-  metadata        Json?
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id                String       @id @default(uuid())
+  code              String       @unique
+  name              String
+  description       String?
+  offerId           String?      @map("offer_id")
+  merchantId        String?      @map("merchant_id")
+  consumerId        String?      @map("consumer_id")
+  originalPrice     Float?       @map("original_price")
+  discountPrice     Float?       @map("discount_price")
+  discountType      String       @map("discount_type") // PERCENTAGE, FIXED_AMOUNT
+  discountValue     Float        @map("discount_value")
+  minOrderAmount    Float?       @map("min_order_amount")
+  maxDiscountAmount Float?       @map("max_discount_amount")
+  validFrom         DateTime     @map("valid_from")
+  validUntil        DateTime     @map("valid_until")
+  totalCount        Int          @default(0) @map("total_count")
+  remainingCount    Int          @default(0) @map("remaining_count")
+  perUserLimit      Int          @default(1) @map("per_user_limit")
+  usedCount         Int          @default(0) @map("used_count")
+  maxUsageCount     Int          @default(1) @map("max_usage_count")
+  usedAt            DateTime?    @map("used_at")
+  reminderSent      Boolean      @default(false) @map("reminder_sent")
+  status            CouponStatus @default(ACTIVE)
+  redeemedBy        String?      @map("redeemed_by")
+  metadata          Json?
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
 
-  transactions    CouponTransaction[]
-  ratings         CouponRating[]
-  offer           Offer?    @relation(fields: [offerId], references: [id])
-  merchant        Merchant? @relation(fields: [merchantId], references: [id])
+  transactions CouponTransaction[]
+  ratings      CouponRating[]
+  offer        Offer?              @relation(fields: [offerId], references: [id])
+  merchant     Merchant?           @relation(fields: [merchantId], references: [id])
 
   @@index([code])
   @@index([status])
@@ -1743,18 +1753,18 @@ model Coupon {
 }
 
 model CouponTransaction {
-  id          String   @id @default(uuid())
-  couponId    String   @map("coupon_id")
-  userId      String   @map("user_id")
-  type        String   // ISSUE, USE, EXPIRE, CANCEL
-  amount      Float?
-  orderId     String?  @map("order_id")
-  metadata    Json?
-  createdAt   DateTime @default(now()) @map("created_at")
+  id        String   @id @default(uuid())
+  couponId  String   @map("coupon_id")
+  userId    String   @map("user_id")
+  type      String // ISSUE, USE, EXPIRE, CANCEL
+  amount    Float?
+  orderId   String?  @map("order_id")
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
-  coupon      Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([couponId])
   @@index([userId])
@@ -1762,17 +1772,17 @@ model CouponTransaction {
 }
 
 model CouponRating {
-  id          String   @id @default(uuid())
-  couponId    String   @map("coupon_id")
-  userId      String   @map("user_id")
-  rating      Int      // 1-5
-  comment     String?
-  isUseful    Boolean  @default(false) @map("is_useful")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id        String   @id @default(uuid())
+  couponId  String   @map("coupon_id")
+  userId    String   @map("user_id")
+  rating    Int // 1-5
+  comment   String?
+  isUseful  Boolean  @default(false) @map("is_useful")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
-  coupon      Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([couponId, userId])
   @@index([couponId])
@@ -1785,15 +1795,15 @@ model CouponRating {
 // ============================================
 
 model OfflineMessage {
-  id              String    @id @default(uuid())
-  userId          String    @map("user_id")
-  messageId       String    @map("message_id")
-  conversationId  String    @map("conversation_id")
-  deliveredAt     DateTime? @map("delivered_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  messageId      String    @map("message_id")
+  conversationId String    @map("conversation_id")
+  deliveredAt    DateTime? @map("delivered_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   // Relations
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([userId, deliveredAt])
@@ -1807,9 +1817,9 @@ model OfflineMessage {
 model AgentLocationPrivacy {
   id              String   @id @default(uuid())
   agentId         String   @unique @map("agent_id")
-  showExactCoords  Boolean @default(true) @map("show_exact_coords")
-  hideFromPublic  Boolean @default(false) @map("hide_from_public")
-  maxDistanceKm    Int     @default(50) @map("max_distance_km")
+  showExactCoords Boolean  @default(true) @map("show_exact_coords")
+  hideFromPublic  Boolean  @default(false) @map("hide_from_public")
+  maxDistanceKm   Int      @default(50) @map("max_distance_km")
   privacyLevel    String?  @map("privacy_level")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
@@ -1819,14 +1829,14 @@ model AgentLocationPrivacy {
 }
 
 model DisclosureSettings {
-  id                String   @id @default(uuid())
-  agentId           String   @unique @map("agent_id")
-  userId            String   @map("user_id")
-  fieldDisclosures  Json     @map("field_disclosures")
-  defaultLevel      String   @map("default_level")
-  strictMode        Boolean  @default(false) @map("strict_mode")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(uuid())
+  agentId          String   @unique @map("agent_id")
+  userId           String   @map("user_id")
+  fieldDisclosures Json     @map("field_disclosures")
+  defaultLevel     String   @map("default_level")
+  strictMode       Boolean  @default(false) @map("strict_mode")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
@@ -1835,14 +1845,14 @@ model DisclosureSettings {
 }
 
 model DisclosureChange {
-  id                String   @id @default(uuid())
-  agentId           String   @map("agent_id")
-  fieldName         String   @map("field_name")
-  previousLevel     String   @map("previous_level")
-  newLevel          String   @map("new_level")
-  changedBy         String   @map("changed_by")
-  changedAt         DateTime @default(now()) @map("changed_at")
-  notificationSent  Boolean  @default(false) @map("notification_sent")
+  id               String   @id @default(uuid())
+  agentId          String   @map("agent_id")
+  fieldName        String   @map("field_name")
+  previousLevel    String   @map("previous_level")
+  newLevel         String   @map("new_level")
+  changedBy        String   @map("changed_by")
+  changedAt        DateTime @default(now()) @map("changed_at")
+  notificationSent Boolean  @default(false) @map("notification_sent")
 
   @@index([agentId])
   @@index([changedAt])
@@ -1866,18 +1876,18 @@ model DisclosureAccessLog {
 
 // Agent Dialog Session (ISSUE-AI004)
 model DialogSessionRecord {
-  id            String   @id @default(uuid())
-  type          String   // agent_to_agent | agent_to_user | negotiation | matching
-  participants  Json     // Array of participant objects
-  scene         String?
-  context       Json     // DialogContext JSON
-  messages      Json     // Array of DialogMessage JSON
-  status        String   @default("active") // active | completed | archived
-  dialogPhase   String?  @map("dialog_phase") // intro | exploring | negotiating | closing
-  summary       String?  // LLM-generated conversation summary
-  metadata      Json?
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(uuid())
+  type         String // agent_to_agent | agent_to_user | negotiation | matching
+  participants Json // Array of participant objects
+  scene        String?
+  context      Json // DialogContext JSON
+  messages     Json // Array of DialogMessage JSON
+  status       String   @default("active") // active | completed | archived
+  dialogPhase  String?  @map("dialog_phase") // intro | exploring | negotiating | closing
+  summary      String? // LLM-generated conversation summary
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@index([status])
   @@index([createdAt])
@@ -1889,17 +1899,17 @@ model DialogSessionRecord {
 // ============================================
 
 model MigrationHistory {
-  id          String             @id @default(uuid())
-  agentId     String             @map("agent_id")
-  fromScene   SceneCode          @map("from_scene")
-  toScene     SceneCode          @map("to_scene")
-  status      MigrationStatus    @default(PENDING)
-  newProfileId String?            @map("new_profile_id")
-  migratedFields Json?            @map("migrated_fields")
-  lostFields    Json?             @map("lost_fields")
-  errorMessage  String?           @map("error_message")
-  metadata      Json?
-  createdAt   DateTime           @default(now()) @map("created_at")
+  id             String          @id @default(uuid())
+  agentId        String          @map("agent_id")
+  fromScene      SceneCode       @map("from_scene")
+  toScene        SceneCode       @map("to_scene")
+  status         MigrationStatus @default(PENDING)
+  newProfileId   String?         @map("new_profile_id")
+  migratedFields Json?           @map("migrated_fields")
+  lostFields     Json?           @map("lost_fields")
+  errorMessage   String?         @map("error_message")
+  metadata       Json?
+  createdAt      DateTime        @default(now()) @map("created_at")
 
   @@index([agentId])
   @@index([status])
@@ -1908,9 +1918,9 @@ model MigrationHistory {
 }
 
 enum MigrationStatus {
-  PENDING     @map("pending")
-  COMPLETED   @map("completed")
-  FAILED      @map("failed")
+  PENDING   @map("pending")
+  COMPLETED @map("completed")
+  FAILED    @map("failed")
 }
 
 // ============================================
@@ -1918,42 +1928,42 @@ enum MigrationStatus {
 // ============================================
 
 model DatingProfile {
-  id                     String    @id @default(uuid())
-  agentId                String    @unique @map("agent_id")
-  userId                 String    @map("user_id")
+  id      String @id @default(uuid())
+  agentId String @unique @map("agent_id")
+  userId  String @map("user_id")
 
   // Profile data stored as JSON
-  basicConditions        Json?     @map("basic_conditions")
-  personality            Json?     @map("personality")
-  interests              Json?     @map("interests")
-  lifestyle              Json?     @map("lifestyle")
-  expectations           Json?     @map("expectations")
+  basicConditions Json? @map("basic_conditions")
+  personality     Json? @map("personality")
+  interests       Json? @map("interests")
+  lifestyle       Json? @map("lifestyle")
+  expectations    Json? @map("expectations")
 
   // Natural language description
-  description            String?   @db.Text @map("description")
+  description String? @map("description") @db.Text
 
   // AI extracted data
-  aiExtractedData        Json?     @map("ai_extracted_data")
-  aiExtractionConfidence Float?    @map("ai_extraction_confidence")
+  aiExtractedData        Json?  @map("ai_extracted_data")
+  aiExtractionConfidence Float? @map("ai_extraction_confidence")
 
   // Privacy settings
-  privacySettings        Json      @map("privacy_settings")
+  privacySettings Json @map("privacy_settings")
 
   // Quality metrics
-  completenessScore      Int       @default(0) @map("completeness_score")
-  qualityScore           Float?    @map("quality_score")
+  completenessScore Int    @default(0) @map("completeness_score")
+  qualityScore      Float? @map("quality_score")
 
   // Status
-  isActive               Boolean   @default(true) @map("is_active")
-  isComplete             Boolean   @default(false) @map("is_complete")
+  isActive   Boolean @default(true) @map("is_active")
+  isComplete Boolean @default(false) @map("is_complete")
 
   // Timestamps
-  createdAt              DateTime  @default(now()) @map("created_at")
-  updatedAt              DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  agent                  Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([agentId])
   @@index([userId])
@@ -1963,19 +1973,96 @@ model DatingProfile {
 }
 
 // ============================================
+// 用户违规系统 (User Violation System)
+// ============================================
+
+enum ViolationType {
+  SPAM
+  HARASSMENT
+  INAPPROPRIATE_CONTENT
+  FAKE_REVIEW
+  SCAM
+  OTHER
+}
+
+enum ViolationAction {
+  WARNING
+  MUTE
+  SUSPEND
+  BAN
+}
+
+model UserViolation {
+  id          String         @id @default(uuid())
+  userId      String        @map("user_id")
+  type        ViolationType @map("violation_type")
+  severity    Int            @default(1) @map("severity") // 1-10
+  description String?        @map("description")
+  action      ViolationAction? @map("action")
+  actionUntil DateTime?      @map("action_until") // For temporary mute/suspend
+  reportId    String?        @map("report_id")
+  moderatorId String?        @map("moderator_id")
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([action])
+  @@index([createdAt])
+  @@map("user_violations")
+}
+
+// ============================================
+// 审核队列 (Moderation Queue)
+// ============================================
+
+enum ModerationQueueStatus {
+  PENDING   @map("pending")
+  IN_PROGRESS @map("in_progress")
+  RESOLVED  @map("resolved")
+  ESCALATED @map("escalated")
+}
+
+model ModerationQueueItem {
+  id            String                @id @default(uuid())
+  contentType   String                @map("content_type") // 'review' | 'message' | 'user'
+  contentId     String                @map("content_id")
+  content       String? // cached content text
+  reportedBy    String                @map("reported_by")
+  reportReason  String?               @map("report_reason")
+  status        ModerationQueueStatus @default(PENDING)
+  aiScore       Int?                  @map("ai_score")
+  aiFlags       String[]              @default([]) @map("ai_flags")
+  assignedTo    String?               @map("assigned_to")
+  action        String? // 'APPROVE' | 'HIDE' | 'WARN' | 'BAN'
+  actionNote    String?               @map("action_note")
+  createdAt     DateTime              @default(now()) @map("created_at")
+  updatedAt     DateTime              @updatedAt @map("updated_at")
+
+  @@index([contentType])
+  @@index([contentId])
+  @@index([status])
+  @@index([assignedTo])
+  @@index([createdAt])
+  @@map("moderation_queue_items")
+}
+
+// ============================================
 // 审计日志 (Audit Log)
 // ============================================
 
 model AuditLog {
-  id          String   @id @default(uuid())
-  userId      String?  @map("user_id")
-  action      String   // e.g., PERMISSION_GRANT, PERMISSION_REVOKE, ROLE_ASSIGN
-  resource    String   // e.g., user, role, permission
-  resourceId  String?  @map("resource_id")
-  details     Json?    // Additional context (old/new values, metadata)
-  ipAddress   String?  @map("ip_address")
-  userAgent   String?  @map("user_agent")
-  timestamp   DateTime @default(now()) @map("timestamp")
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  action     String // e.g., PERMISSION_GRANT, PERMISSION_REVOKE, ROLE_ASSIGN
+  resource   String // e.g., user, role, permission
+  resourceId String?  @map("resource_id")
+  details    Json? // Additional context (old/new values, metadata)
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  timestamp  DateTime @default(now()) @map("timestamp")
 
   @@index([userId])
   @@index([action])
@@ -1985,39 +2072,139 @@ model AuditLog {
 }
 
 // ============================================
+// 通用举报系统 (General Report)
+// ============================================
+
+model Report {
+  id          String           @id @default(uuid())
+  reporterId  String           @map("reporter_id")
+  targetType  ReportTargetType @map("target_type")
+  targetId    String           @map("target_id")
+  reason      ReportReason
+  description String?
+  evidence    Json? // Array of file paths
+  status      ReportStatus     @default(PENDING)
+  handledBy   String?          @map("handled_by")
+  handledAt   DateTime?        @map("handled_at")
+  resolution  String?
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  @@index([reporterId])
+  @@index([targetType])
+  @@index([targetId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("reports")
+}
+
+enum ReportTargetType {
+  MESSAGE @map("message")
+  USER    @map("user")
+  CONTENT @map("content")
+}
+
+// ============================================
+// 通用申诉系统 (General Appeal System)
+// ============================================
+
+enum AppealType {
+  MODERATION @map("moderation")
+  VIOLATION  @map("violation")
+  WARNING    @map("warning")
+  OTHER      @map("other")
+}
+
+model Appeal {
+  id          String       @id @default(uuid())
+  appealType  AppealType   @map("appeal_type")
+  userId      String       @map("user_id")
+  targetId    String       @map("target_id") // ID of the thing being appealed (reportId, violationId, etc.)
+  targetType  String       @map("target_type") // 'report' | 'violation' | 'warning'
+  reason      String
+  evidence    Json? // Array of file paths or text
+  status      AppealStatus @default(PENDING)
+  reviewedBy  String?      @map("reviewed_by")
+  reviewNote  String?      @map("review_note")
+  reviewedAt  DateTime?    @map("reviewed_at")
+  resolution  String? // What was decided
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([targetId])
+  @@index([targetType])
+  @@index([status])
+  @@index([appealType])
+  @@index([createdAt])
+  @@map("appeals")
+}
+
+// ============================================
 // 照片存储 (Photo Storage)
 // ============================================
 
 model Photo {
-  id            String   @id @default(uuid())
-  originalName  String   @map("original_name")
-  url           String
-  thumbnailUrl  String   @map("thumbnail_url")
-  size          Int
-  width         Int
-  height        Int
-  format        String
-  mimeType      String   @map("mime_type")
-  hash          String
-  userId        String   @map("user_id")
-  taskId        String?  @map("task_id")
-  tags          String[] @default([])
-  description   String?
-  latitude      Float?
-  longitude     Float?
-  device        Json?
-  exif          Json?
-  storageTier   String   @default("hot") @map("storage_tier")
-  accessCount   Int      @default(0) @map("access_count")
-  lastAccessed  DateTime @default(now()) @map("last_accessed")
-  expiresAt     DateTime? @map("expires_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id           String    @id @default(uuid())
+  originalName String    @map("original_name")
+  url          String
+  thumbnailUrl String    @map("thumbnail_url")
+  size         Int
+  width        Int
+  height       Int
+  format       String
+  mimeType     String    @map("mime_type")
+  hash         String
+  userId       String    @map("user_id")
+  taskId       String?   @map("task_id")
+  tags         String[]  @default([])
+  description  String?
+  latitude     Float?
+  longitude    Float?
+  device       Json?
+  exif         Json?
+  storageTier  String    @default("hot") @map("storage_tier")
+  accessCount  Int       @default(0) @map("access_count")
+  lastAccessed DateTime  @default(now()) @map("last_accessed")
+  expiresAt    DateTime? @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([taskId])
   @@index([createdAt])
   @@map("photos")
+}
+
+// ============================================
+// 敏感词过滤 (Sensitive Word Filter)
+// ============================================
+
+enum SensitiveLevel {
+  WARNING // warn but allow
+  REPLACE // replace with replacement text
+  BLOCK   // block the message entirely
+}
+
+model SensitiveWord {
+  id          String         @id @default(uuid())
+  word        String         @unique
+  category    String? // profanity, scam, harassment, political, etc.
+  level       SensitiveLevel @default(WARNING)
+  isActive    Boolean        @default(true)
+  replacement String? // optional replacement text (e.g., ***)
+  regex       String? // optional regex pattern for complex matching
+  createdBy   String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  @@index([word])
+  @@index([category])
+  @@index([isActive])
+  @@map("sensitive_words")
 }

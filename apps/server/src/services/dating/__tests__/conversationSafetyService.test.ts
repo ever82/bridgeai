@@ -16,6 +16,27 @@ jest.mock('../../ai/llmService', () => ({
   llmService: null,
 }));
 
+jest.mock('../../../db/client', () => ({
+  prisma: {
+    report: {
+      create: jest.fn().mockResolvedValue({
+        id: 'test-report-id',
+        reporterId: 'user-a',
+        targetType: 'CONTENT',
+        targetId: 'room-123',
+        reason: 'INAPPROPRIATE',
+        description: 'Inappropriate behavior',
+        evidence: ['evidence message 1', 'evidence message 2'],
+        status: 'PENDING',
+        createdAt: new Date(),
+      }),
+    },
+    match: {
+      findUnique: jest.fn().mockResolvedValue(null),
+    },
+  },
+}));
+
 import {
   checkMessageSafety,
   detectSensitiveTopics,

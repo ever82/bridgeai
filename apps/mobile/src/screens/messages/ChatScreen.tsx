@@ -12,6 +12,7 @@ import { QuickReply, QuickReplyItem } from '../../components/Chat/QuickReply';
 import { TypingIndicator } from '../../components/TypingIndicator';
 import { AttachmentPicker, AttachmentData } from '../../components/Chat/AttachmentPicker';
 import { getRoomMessages, sendMessage } from '../../services/chatApi';
+import { createReport, ReportReason } from '../../services/api/reportApi';
 import { socketClient } from '../../services/socketClient';
 import { theme } from '../../theme';
 import { useAuthStore } from '../../stores/authStore';
@@ -170,6 +171,39 @@ export const ChatScreen = ({ route }: Props) => {
     Alert.alert('Voice Input', 'Voice input is not yet implemented.');
   }, []);
 
+  // Handle message report
+  const handleReportMessage = useCallback(
+    async (message: ChatMessage) => {
+      Alert.alert(
+        '举报消息',
+        '请选择举报原因',
+        [
+          { text: '垃圾信息', onPress: () => submitReport(message.id, 'SPAM') },
+          { text: '不当内容', onPress: () => submitReport(message.id, 'INAPPROPRIATE') },
+          { text: '虚假信息', onPress: () => submitReport(message.id, 'FALSE') },
+          { text: '骚扰', onPress: () => submitReport(message.id, 'HARASSMENT') },
+          { text: '其他', onPress: () => submitReport(message.id, 'OTHER') },
+          { text: '取消', style: 'cancel' },
+        ],
+        { cancelable: true }
+      );
+    },
+    []
+  );
+
+  const submitReport = useCallback(async (messageId: string, reason: ReportReason) => {
+    try {
+      await createReport({
+        targetType: 'MESSAGE',
+        targetId: messageId,
+        reason,
+      });
+      Alert.alert('举报成功', '感谢您的反馈，我们会尽快处理。');
+    } catch {
+      Alert.alert('举报失败', '请稍后重试。');
+    }
+  }, []);
+
   // Load more messages (pagination)
   const handleLoadMore = useCallback(async () => {
     if (isLoading || !hasMore || messages.length === 0) return;
@@ -210,6 +244,7 @@ export const ChatScreen = ({ route }: Props) => {
           isLoading={isLoading}
           hasMore={hasMore}
           onLoadMore={handleLoadMore}
+          onReport={handleReportMessage}
         />
 
         {isTyping && (

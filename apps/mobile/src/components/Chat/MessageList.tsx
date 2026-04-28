@@ -24,6 +24,8 @@ export interface MessageListProps {
   onMessagePress?: (message: ChatMessage) => void;
   onMessageLongPress?: (message: ChatMessage) => void;
   onImagePress?: (attachment: MessageAttachment) => void;
+  onDelete?: (message: ChatMessage) => void;
+  onReport?: (message: ChatMessage) => void;
   ListHeaderComponent?: React.ReactElement;
   ListFooterComponent?: React.ReactElement;
   style?: ViewStyle;
@@ -39,6 +41,8 @@ export const MessageList: React.FC<MessageListProps> = ({
   onMessagePress,
   onMessageLongPress,
   onImagePress,
+  onDelete,
+  onReport,
   ListHeaderComponent,
   ListFooterComponent,
   style,
@@ -96,6 +100,8 @@ export const MessageList: React.FC<MessageListProps> = ({
           onPress={onMessagePress}
           onLongPress={onMessageLongPress}
           onImagePress={onImagePress}
+          onDelete={onDelete}
+          onReport={onReport}
         />
       </View>
     );

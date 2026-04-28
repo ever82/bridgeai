@@ -181,11 +181,15 @@ export class CreditScoreService {
     const ratingCountScore = Math.min(ratings.length * 10, 100);
     subFactors.push({ name: 'rating_count', score: ratingCountScore });
 
-    // 被举报次数 (负向指标)
-    // TODO: 当 Complaint model 添加到 Prisma schema 后，替换为实际查询
-    // const complaintCount = await prisma.complaint.count({ where: { targetUserId: userId } });
-    // const complaintScore = Math.max(0, 100 - complaintCount * 10);
-    const complaintScore = 100; // 默认满分，有举报时扣分
+    // 被举报次数 (负向指标: 包含评价举报 + 通用举报)
+    const reviewReportCount = await prisma.reviewReport.count({
+      where: { review: { reviewerId: userId } },
+    });
+    const generalReportCount = await prisma.report.count({
+      where: { targetId: userId, targetType: 'USER' },
+    });
+    const complaintCount = reviewReportCount + generalReportCount;
+    const complaintScore = Math.max(0, 100 - complaintCount * 10);
     subFactors.push({ name: 'complaint_count', score: complaintScore });
 
     // 连接数评分

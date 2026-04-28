@@ -10,9 +10,9 @@
  * - 纠纷举报管理
  */
 
-import { v4 as uuidv4 } from 'uuid';
-
 import { logger } from '../../utils/logger';
+import { DEFAULT_SENSITIVE_WORDS } from '../../config/sensitiveWords';
+import { prisma } from '../../db/client';
 
 /**
  * 安全等级类型
@@ -47,20 +47,6 @@ export interface SafetyFlag {
 }
 
 /**
- * 纠纷举报接口
- */
-export interface DisputeReport {
-  id: string;
-  roomId: string;
-  reporterId: string;
-  reportedUserId: string;
-  reason: string;
-  evidence: string[];
-  status: 'pending' | 'reviewing' | 'resolved';
-  createdAt: Date;
-}
-
-/**
  * 安全配置接口
  */
 export interface SafetyConfig {
@@ -70,10 +56,6 @@ export interface SafetyConfig {
   autoTerminateThreshold: SafetyLevel;
 }
 
-// 内存存储
-const reports: Map<string, ConversationReport> = new Map();
-const disputeStore: Map<string, DisputeReport> = new Map();
-
 // 默认安全配置
 const safetyConfig: SafetyConfig = {
   enableContentFilter: true,
@@ -81,26 +63,6 @@ const safetyConfig: SafetyConfig = {
   enablePersonalInfoProtection: true,
   autoTerminateThreshold: 'critical',
 };
-
-/**
- * 会话报告接口（用于纠纷记录）
- */
-interface ConversationReport {
-  id: string;
-  roomId: string;
-  agentAId: string;
-  agentBId: string;
-  userIdA: string;
-  userIdB: string;
-  messages: Array<{
-    id: string;
-    senderId: string;
-    content: string;
-    timestamp: Date;
-  }>;
-  status: string;
-  createdAt: Date;
-}
 
 // 敏感话题关键词库
 const SENSITIVE_TOPICS = {
@@ -118,17 +80,24 @@ const SENSITIVE_TOPICS = {
 
 /**
  * 不当内容模式库
+ * 从集中敏感词配置构建，按 category 分组为正则模式
  */
-const INAPPROPRIATE_PATTERNS = [
-  // 色情低俗
-  /色情|淫秽|黄色|裸体|性暗示/i,
-  // 骚扰威胁
-  /威胁|恐吓|骚扰|跟踪/i,
-  // 欺诈相关
-  /诈骗|骗子|假冒|钓鱼/i,
-  // 歧视言论
-  /歧视|偏见|种族主义/i,
-];
+const INAPPROPRIATE_PATTERNS: RegExp[] = (() => {
+  // 按 category 分组，每个 category 合并为一个正则
+  const categoryMap = new Map<string, string[]>();
+  for (const w of DEFAULT_SENSITIVE_WORDS) {
+    const existing = categoryMap.get(w.category) || [];
+    existing.push(w.word);
+    categoryMap.set(w.category, existing);
+  }
+  // 为每个 category 创建一条正则
+  const patterns: RegExp[] = [];
+  for (const [, words] of categoryMap) {
+    const escaped = words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    patterns.push(new RegExp(escaped.join('|'), 'i'));
+  }
+  return patterns;
+})();
 
 /**
  * 个人隐私信息模式
@@ -353,21 +322,10 @@ function determineAction(level: SafetyLevel): 'allow' | 'warn' | 'block' | 'term
 export async function handleAbnormalInterruption(roomId: string, reason: string): Promise<void> {
   logger.warn('检测到会话异常中断', { roomId, reason });
 
-  // 查找相关会话
-  let conversation: ConversationReport | undefined;
-  for (const report of reports.values()) {
-    if (report.roomId === roomId) {
-      conversation = report;
-      break;
-    }
-  }
-
   // 记录异常中断事件
   logger.info('会话异常中断事件', {
     roomId,
     reason,
-    conversationId: conversation?.id,
-    participants: conversation ? [conversation.agentAId, conversation.agentBId] : [],
     timestamp: new Date().toISOString(),
   });
 
@@ -386,19 +344,6 @@ export async function emergencyTerminate(
 ): Promise<void> {
   logger.warn('执行紧急会话终止', { roomId, initiatorId, reason });
 
-  // 查找相关会话
-  let conversation: ConversationReport | undefined;
-  for (const report of reports.values()) {
-    if (report.roomId === roomId) {
-      conversation = report;
-      break;
-    }
-  }
-
-  if (!conversation) {
-    logger.warn('未找到会话记录', { roomId });
-  }
-
   // 执行终止操作
   // 在生产环境中应该:
   // 1. 通知双方用户
@@ -410,8 +355,6 @@ export async function emergencyTerminate(
     roomId,
     initiatorId,
     reason,
-    conversationId: conversation?.id,
-    participants: conversation ? [conversation.agentAId, conversation.agentBId] : [],
     terminatedAt: new Date().toISOString(),
     action: 'emergency_terminate',
   };
@@ -427,43 +370,50 @@ export async function emergencyTerminate(
 /**
  * 创建纠纷举报
  * 用户可以对会话中的不当行为进行举报
+ * 持久化到数据库 Report 表
  */
 export async function createDisputeReport(
   roomId: string,
   reporterId: string,
   reason: string,
   evidence: string[]
-): Promise<DisputeReport> {
+): Promise<{ id: string; roomId: string; reporterId: string; reportedUserId: string; reason: string; evidence: string[]; status: string; createdAt: Date }> {
   logger.info('创建纠纷举报', { roomId, reporterId, reason });
 
-  // 查找被举报用户
+  // 尝试从匹配记录中获取被举报用户（roomId 即 matchId）
   let reportedUserId = 'unknown';
-
-  // 尝试从会话记录中获取被举报用户
-  for (const report of reports.values()) {
-    if (report.roomId === roomId) {
-      // 假设reporterId是其中一方
-      if (report.userIdA !== reporterId && report.userIdB !== reporterId) {
-        reportedUserId = report.userIdB;
-      } else {
-        reportedUserId = report.userIdA === reporterId ? report.userIdB : report.userIdA;
+  try {
+    const match = await prisma.match.findUnique({
+      where: { id: roomId },
+      include: {
+        demand: { include: { agent: { select: { userId: true } } } },
+        supply: { include: { agent: { select: { userId: true } } } },
+      },
+    });
+    if (match) {
+      const demandUserId = match.demand?.agent?.userId;
+      const supplyUserId = match.supply?.agent?.userId;
+      if (reporterId === demandUserId) {
+        reportedUserId = supplyUserId || 'unknown';
+      } else if (reporterId === supplyUserId) {
+        reportedUserId = demandUserId || 'unknown';
       }
-      break;
     }
+  } catch {
+    // If match lookup fails, proceed with 'unknown'
   }
 
-  const report: DisputeReport = {
-    id: `dispute-${uuidv4()}`,
-    roomId,
-    reporterId,
-    reportedUserId,
-    reason,
-    evidence,
-    status: 'pending',
-    createdAt: new Date(),
-  };
-
-  disputeStore.set(report.id, report);
+  // 持久化到数据库
+  const report = await prisma.report.create({
+    data: {
+      reporterId,
+      targetType: 'CONTENT',
+      targetId: roomId,
+      reason: 'INAPPROPRIATE',
+      description: reason,
+      evidence: evidence as unknown as string[],
+    },
+  });
 
   logger.info('纠纷举报已创建', {
     disputeId: report.id,
@@ -472,7 +422,16 @@ export async function createDisputeReport(
     reportedUserId,
   });
 
-  return report;
+  return {
+    id: report.id,
+    roomId,
+    reporterId,
+    reportedUserId,
+    reason,
+    evidence,
+    status: report.status.toLowerCase(),
+    createdAt: report.createdAt,
+  };
 }
 
 /**

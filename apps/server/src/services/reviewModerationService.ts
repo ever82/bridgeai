@@ -5,27 +5,16 @@
  * 敏感词过滤、AI内容审核、异常评价标记
  */
 
-import { ReviewModerationLog } from '@prisma/client';
+import { ReviewModerationLog, ViolationType } from '@prisma/client';
 
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
+import { DEFAULT_SENSITIVE_WORDS } from '../config/sensitiveWords';
 
-// 敏感词列表（简化版，实际应该使用更完善的词库）
-const SENSITIVE_WORDS = [
-  '垃圾',
-  '骗子',
-  '诈骗',
-  '傻逼',
-  '他妈的',
-  '操',
-  '滚',
-  '去死',
-  '垃圾平台',
-  '骗钱',
-  '虚假宣传',
-  '无良商家',
-  '黑心',
-];
+import { violationHandler, ViolationRecord } from './violationHandler';
+
+// 从集中配置构建敏感词列表
+const SENSITIVE_WORDS: string[] = DEFAULT_SENSITIVE_WORDS.map((w) => w.word);
 
 // 敏感词匹配类型
 interface ISensitiveWordMatch {
@@ -454,7 +443,7 @@ export async function moderateReview(reviewId: string): Promise<IModerationResul
       },
     });
 
-    // 记录审核日志
+// 记录审核日志
     await prisma.reviewModerationLog.create({
       data: {
         reviewId,
@@ -467,6 +456,25 @@ export async function moderateReview(reviewId: string): Promise<IModerationResul
         } as unknown as import('@prisma/client').Prisma.InputJsonValue,
       },
     });
+
+    // 触发违规处理：记录违规并联动处罚、信用分扣减、通知用户
+    if (review) {
+      try {
+        const severity = Math.min(Math.floor(result.score / 10), 10);
+        const violationRecord: ViolationRecord = {
+          type: ViolationType.INAPPROPRIATE_CONTENT,
+          severity,
+          description: result.reason,
+          reportId: reviewId,
+        };
+        await violationHandler.handleViolation(review.reviewerId, violationRecord, {
+          notifyUser: true,
+          creditDeduct: true,
+        });
+      } catch (error) {
+        logger.error(`Failed to handle violation for review ${reviewId}:`, error as Error);
+      }
+    }
   } else if (result.flagged) {
     await prisma.review.update({
       where: { id: reviewId },

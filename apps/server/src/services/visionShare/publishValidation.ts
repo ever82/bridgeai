@@ -7,6 +7,7 @@ import type { PublishValidationResult } from '@bridgeai/shared/types/visionShare
 
 import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
+import { DEFAULT_SENSITIVE_WORDS } from '../../config/sensitiveWords';
 
 interface ValidationOptions {
   userId: string;
@@ -205,11 +206,8 @@ export class PublishValidationService {
       issues.push('任务描述不能超过1000个字符');
     }
 
-    // 敏感词检查
-    const sensitiveWords = [
-      '色情', '赌博', '毒品', '诈骗', '洗钱',
-      'porn', 'gambling', 'drugs', 'fraud', 'money laundering',
-    ];
+    // 敏感词检查 - 使用集中配置
+    const sensitiveWords = DEFAULT_SENSITIVE_WORDS.map((w) => w.word);
 
     const content = description?.toLowerCase() || '';
     for (const word of sensitiveWords) {

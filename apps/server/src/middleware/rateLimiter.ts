@@ -293,6 +293,110 @@ export const uploadLimiter = rateLimit({
 });
 
 /**
+ * Report creation rate limiter with false-report penalty tracking.
+ *
+ * Normal users: up to 5 reports per minute (from rateLimitConfigs.reports).
+ * Penalty: users with 3+ dismissed reports in the past 30 days are
+ * restricted to 1 report per minute.
+ */
+export const reportLimiter = rateLimit({
+  windowMs: rateLimitConfigs.reports.windowMs,
+  max: rateLimitConfigs.reports.maxRequests,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: RateLimitRequest): string => {
+    const userId = req.user?.id;
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    return userId ? `report:user:${userId}` : `report:ip:${ip}`;
+  },
+  handler: (req: RateLimitRequest, res: Response) => {
+    res
+      .status(429)
+      .json(
+        ApiResponse.error(
+          rateLimitConfigs.reports.message!,
+          'REPORT_RATE_LIMIT_EXCEEDED',
+          429,
+          { retryAfter: Math.ceil(rateLimitConfigs.reports.windowMs / 1000) }
+        )
+      );
+  },
+  skip: () => {
+    return process.env.NODE_ENV === 'test';
+  },
+});
+
+/**
+ * Check whether a user has accumulated false-report penalties.
+ * Must be called AFTER authentication middleware.
+ *
+ * Returns true (and throws 429) when the user has 3 or more dismissed
+ * reports within the last 30 days, effectively reducing their allowance
+ * to 1 report per minute.
+ */
+export function falseReportPenaltyCheck(
+  req: RateLimitRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  if (process.env.NODE_ENV === 'test') {
+    next();
+    return;
+  }
+
+  const userId = req.user?.id;
+  if (!userId) {
+    next();
+    return;
+  }
+
+  // Dynamic import avoided — prisma is already available at module level via
+  // lazy evaluation of this middleware (it runs per-request).
+  // We import it inline to keep this file decoupled from the DB module at
+  // the top level (rateLimiter is a general-purpose middleware).
+  import('../db/client')
+    .then(({ prisma }) => {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      // Count dismissed reports across both general reports and review reports
+      return Promise.all([
+        prisma.report.count({
+          where: {
+            reporterId: userId,
+            status: 'DISMISSED',
+            handledAt: { gte: thirtyDaysAgo },
+          },
+        }),
+        prisma.reviewReport.count({
+          where: {
+            reporterId: userId,
+            status: 'DISMISSED',
+            handledAt: { gte: thirtyDaysAgo },
+          },
+        }),
+      ]);
+    })
+    .then(([generalDismissed, reviewDismissed]) => {
+      const dismissedCount = generalDismissed + reviewDismissed;
+      if (dismissedCount >= 3) {
+        res.status(429).json(
+          ApiResponse.error(
+            'Your report privileges are temporarily restricted due to previous false reports.',
+            'FALSE_REPORT_PENALTY',
+            429,
+            { dismissedRecent: dismissedCount }
+          )
+        );
+      } else {
+        next();
+      }
+    })
+    .catch(() => {
+      // If DB lookup fails, allow the request through rather than blocking
+      next();
+    });
+}
+
+/**
  * Search rate limiter
  */
 export const searchLimiter = rateLimit({

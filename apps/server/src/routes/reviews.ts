@@ -18,6 +18,7 @@ import { Router, Response } from 'express';
 
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/common';
+import { reportLimiter, falseReportPenaltyCheck } from '../middleware/rateLimiter';
 import { ApiResponse } from '../utils/response';
 import { AppError } from '../errors/AppError';
 import * as reviewService from '../services/reviewService';
@@ -342,6 +343,8 @@ router.delete(
 router.post(
   '/:id/report',
   authenticate,
+  reportLimiter,
+  falseReportPenaltyCheck,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);

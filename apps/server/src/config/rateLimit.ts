@@ -59,6 +59,13 @@ export const rateLimitConfigs = {
     message: 'Admin API rate limit exceeded.',
   } as RateLimitConfig,
 
+  // Report creation (per-user, strict to prevent abuse)
+  reports: {
+    windowMs: 60 * 1000, // 1 minute
+    maxRequests: 5,
+    message: 'Report submission rate limit exceeded. Please wait before submitting another report.',
+  } as RateLimitConfig,
+
   // Strict limit for sensitive operations
   sensitive: {
     windowMs: 60 * 60 * 1000, // 1 hour
