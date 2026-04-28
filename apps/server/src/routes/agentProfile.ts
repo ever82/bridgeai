@@ -102,7 +102,7 @@ router.get(
 
 /**
  * @route GET /api/v1/agents/:id/profile/l2
- * @desc Get L2 profile for an agent
+ * @desc Get L2 profile for an agent (optionally filtered by scene)
  * @access Private
  */
 router.get(
@@ -121,28 +121,42 @@ router.get(
 );
 
 /**
- * @route PUT /api/v1/agents/:id/profile/l2
- * @desc Update L2 profile for an agent
+ * @route GET /api/v1/agents/:id/profile/l2/:sceneId
+ * @desc Get L2 profile for an agent by scene
  * @access Private
  */
-router.put(
-  '/:id/profile/l2',
+router.get(
+  '/:id/profile/l2/:sceneId',
   authenticate,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
     }
 
-    const { id } = req.params;
-    const { description, requirements, capabilities, preferences, constraints } = req.body;
+    const { id, sceneId } = req.params;
+    const l2Profile = await agentProfileService.getL2ProfileByScene(id, req.user.id, sceneId);
 
-    const l2Profile = await agentProfileService.updateL2Profile(id, req.user.id, {
-      description,
-      requirements,
-      capabilities,
-      preferences,
-      constraints,
-    });
+    res.json(ApiResponse.success({ profile: l2Profile }));
+  })
+);
+
+/**
+ * @route PUT /api/v1/agents/:id/profile/l2/:sceneId
+ * @desc Update L2 profile for an agent (schema-driven by sceneId)
+ * @access Private
+ */
+router.put(
+  '/:id/profile/l2/:sceneId',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const { id, sceneId } = req.params;
+    const body: Record<string, any> = req.body;
+
+    const l2Profile = await agentProfileService.updateL2Profile(id, req.user.id, body, sceneId);
 
     res.json(ApiResponse.success({ profile: l2Profile }, 'L2 profile updated successfully'));
   })

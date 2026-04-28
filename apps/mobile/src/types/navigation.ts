@@ -74,6 +74,7 @@ export type ProfileStackParamList = {
   AgentList: undefined;
   CreateAgent: { agent?: Agent } | undefined;
   EditAgent: { agentId: string };
+  L2Profile: { agentId: string; scene: string };
   TransactionList: undefined;
   TransactionDetail: { transactionId: string };
   PointsTransactionDetail: { transactionId?: string; transaction?: { id: string } };

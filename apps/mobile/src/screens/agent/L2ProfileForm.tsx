@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -33,6 +34,47 @@ const ProgressBar: React.FC<{ percentage: number }> = ({ percentage }) => (
     <Text style={styles.progressText}>{percentage}% 完成</Text>
   </View>
 );
+
+// Preview panel for real-time L2Data display
+const PreviewPanel: React.FC<{ data: L2Data; schema: L2Schema }> = ({ data, schema }) => {
+  const formatValue = (field: L2SchemaField, value: unknown): string => {
+    if (value === undefined || value === null || value === '') return '-';
+    if (field.type === L2FieldType.MULTI_SELECT || field.type === L2FieldType.TAGS) {
+      return Array.isArray(value)
+        ? value.map(v => field.options?.find(o => o.value === v)?.label || v).join(', ')
+        : String(value);
+    }
+    if (field.type === L2FieldType.RANGE) {
+      const rv = value as { min?: number; max?: number };
+      return `${rv.min ?? '-'}${field.unit || ''} - ${rv.max ?? '-'}${field.unit || ''}`;
+    }
+    if (field.type === L2FieldType.BOOLEAN) {
+      return value ? '是' : '否';
+    }
+    if (field.options?.length) {
+      return field.options.find(o => o.value === value)?.label || String(value);
+    }
+    return String(value);
+  };
+
+  const previewFields = schema.fields.filter(f => f.type !== L2FieldType.LONG_TEXT);
+
+  return (
+    <View style={styles.previewContainer}>
+      <Text style={styles.previewTitle}>实时预览</Text>
+      <ScrollView style={styles.previewScroll} nestedScrollEnabled>
+        {previewFields.map(field => (
+          <View key={field.id} style={styles.previewRow}>
+            <Text style={styles.previewLabel}>{field.label}</Text>
+            <Text style={styles.previewValue} numberOfLines={1}>
+              {formatValue(field, data[field.id])}
+            </Text>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
+};
 
 // Single select picker
 interface SinglePickerProps {
@@ -488,6 +530,28 @@ export const L2ProfileForm: React.FC<L2ProfileFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<L2Data>(initialData);
   const [currentStep, setCurrentStep] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
+  const lastSavedRef = useRef<string>('');
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-save draft with throttling
+  useEffect(() => {
+    const draftKey = `@l2_draft_${schema.id || 'profile'}`;
+    const serialized = JSON.stringify(formData);
+    if (serialized === lastSavedRef.current) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        await AsyncStorage.setItem(draftKey, serialized);
+        lastSavedRef.current = serialized;
+      } catch (_e) {
+        // Draft save failure is non-critical
+      }
+    }, 1500);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [formData, schema.id]);
 
   const steps = schema.steps || [
     { id: 'default', title: '填写', fields: schema.fields.map(f => f.id) },
@@ -514,9 +578,31 @@ export const L2ProfileForm: React.FC<L2ProfileFormProps> = ({
   }, [formData, onSubmit]);
 
   const currentStepData = steps[currentStep] || steps[0];
-  const currentFields = currentStepData?.fields
-    .map(fieldId => schema.fields.find(f => f.id === fieldId))
-    .filter(Boolean) as L2SchemaField[];
+  const currentFields = (
+    currentStepData?.fields
+      .map(fieldId => schema.fields.find(f => f.id === fieldId))
+      .filter(Boolean) as L2SchemaField[]
+  ).filter(field => {
+    if (!field.showWhen) return true;
+    const { field: depField, operator, value: expectedValue } = field.showWhen;
+    const actualValue = formData[depField];
+    switch (operator) {
+      case 'eq':
+        return actualValue === expectedValue;
+      case 'neq':
+        return actualValue !== expectedValue;
+      case 'in':
+        return Array.isArray(expectedValue)
+          ? expectedValue.includes(actualValue)
+          : actualValue === expectedValue;
+      case 'contains':
+        return Array.isArray(actualValue)
+          ? actualValue.includes(expectedValue)
+          : String(actualValue).includes(String(expectedValue));
+      default:
+        return true;
+    }
+  });
 
   const isLastStep = currentStep === steps.length - 1;
   const isFirstStep = currentStep === 0;
@@ -545,6 +631,15 @@ export const L2ProfileForm: React.FC<L2ProfileFormProps> = ({
           ))}
         </View>
       )}
+
+      {/* Preview toggle */}
+      <View style={styles.previewToggleRow}>
+        <TouchableOpacity style={styles.previewToggle} onPress={() => setShowPreview(p => !p)}>
+          <Text style={styles.previewToggleText}>{showPreview ? '收起预览' : '实时预览'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {showPreview && <PreviewPanel data={formData} schema={schema} />}
 
       <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
@@ -973,6 +1068,56 @@ const styles = StyleSheet.create({
   },
   submitButtonTextSecondary: {
     color: '#fff',
+  },
+  previewToggleRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#fff',
+  },
+  previewToggle: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#007AFF',
+    borderRadius: 16,
+  },
+  previewToggleText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  previewContainer: {
+    backgroundColor: '#f8f8f8',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  previewTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  previewScroll: {
+    maxHeight: 200,
+  },
+  previewRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  previewLabel: {
+    fontSize: 13,
+    color: '#666',
+    flex: 1,
+  },
+  previewValue: {
+    fontSize: 13,
+    color: '#333',
+    flex: 2,
+    textAlign: 'right',
   },
   unsupportedType: {
     fontSize: 14,
