@@ -78,7 +78,7 @@ const mockUpdateAgentStatus = jest.fn().mockResolvedValue({
   data: {
     data: {
       ...mockAgents[0],
-      status: AgentStatus.INACTIVE,
+      status: AgentStatus.PAUSED,
     },
   },
 });

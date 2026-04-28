@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   Agent,
@@ -18,6 +18,7 @@ import {
   AGENT_TYPE_LABELS,
   AGENT_TYPE_COLORS,
   CreateAgentRequest,
+  UpdateAgentRequest,
 } from '@bridgeai/shared';
 
 const AGENT_TYPE_TO_SCENE_ID: Record<string, SceneId> = {
@@ -45,6 +46,7 @@ const SCENE_TYPES: AgentType[] = [
 ];
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList>;
+type CreateAgentRouteProp = RouteProp<ProfileStackParamList, 'CreateAgent'>;
 
 interface DraftState {
   name: string;
@@ -61,6 +63,8 @@ const DRAFT_KEY = 'create_agent_draft';
 
 export const CreateAgentScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<CreateAgentRouteProp>();
+  const editingAgent = route.params?.agent ?? null;
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(false);
 
@@ -80,9 +84,20 @@ export const CreateAgentScreen: React.FC = () => {
   const [aiConfig, setAiConfig] = useState<Record<string, string | number | boolean>>({});
   const [isPublic, setIsPublic] = useState(true);
 
-  // Restore draft on mount
+  // Restore draft on mount, or pre-fill from editing agent
   useEffect(() => {
-    if (draft) {
+    if (editingAgent) {
+      setName(editingAgent.name || '');
+      setDescription(editingAgent.description || '');
+      setAvatar(undefined);
+      setSelectedType(editingAgent.type || null);
+      setSceneConfig(
+        (editingAgent.config?.scene as Record<string, string | number | boolean>) || {}
+      );
+      setAiConfig((editingAgent.config?.ai as Record<string, string | number | boolean>) || {});
+      setIsPublic(editingAgent.isPublic ?? true);
+      setStep(1);
+    } else if (draft) {
       setName(draft.name);
       setDescription(draft.description);
       setAvatar(draft.avatar);
@@ -96,8 +111,9 @@ export const CreateAgentScreen: React.FC = () => {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-save draft on step change
+  // Auto-save draft on step change (only in create mode)
   useEffect(() => {
+    if (editingAgent) return;
     const draftState: DraftState = {
       name,
       description,
@@ -109,7 +125,18 @@ export const CreateAgentScreen: React.FC = () => {
       isPublic,
     };
     saveDraft(draftState);
-  }, [step, name, description, avatar, selectedType, sceneConfig, aiConfig, saveDraft, isPublic]);
+  }, [
+    step,
+    name,
+    description,
+    avatar,
+    selectedType,
+    sceneConfig,
+    aiConfig,
+    saveDraft,
+    isPublic,
+    editingAgent,
+  ]);
 
   const validateStep1 = useCallback(() => {
     if (!name.trim()) {
@@ -167,47 +194,74 @@ export const CreateAgentScreen: React.FC = () => {
     try {
       setLoading(true);
 
-      const agentData: CreateAgentRequest = {
-        type: selectedType,
-        name: name.trim(),
-        description: description.trim() || undefined,
-        avatar: avatar,
-        config: {
-          scene: sceneConfig,
-          ai: aiConfig,
-        },
-        isPublic: isPublic,
-      };
-
-      await agentsApi.createAgent(agentData);
-
-      // NP-269: Allow user to create multiple agents (one per scene) without
-      // architectural changes — addresses the "multi-select scenes" AC.
-      Alert.alert('Success', 'Agent创建成功！是否继续创建其他场景的Agent？', [
-        {
-          text: '完成',
-          onPress: () => {
-            clearDraft();
-            navigation.navigate('AgentList');
+      if (editingAgent) {
+        // Update existing agent
+        const updateData: UpdateAgentRequest = {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          avatar: avatar,
+          config: {
+            scene: sceneConfig,
+            ai: aiConfig,
           },
-        },
-        {
-          text: '继续创建',
-          onPress: () => {
-            clearDraft();
-            setSelectedType(null);
-            setName('');
-            setDescription('');
-            setAvatar(undefined);
-            setSceneConfig({});
-            setAiConfig({});
-            setStep(2);
-            setIsPublic(true);
+          isPublic: isPublic,
+        };
+
+        await agentsApi.updateAgent(editingAgent.id, updateData);
+
+        Alert.alert('成功', 'Agent已更新', [
+          {
+            text: '确定',
+            onPress: () => {
+              clearDraft();
+              navigation.navigate('AgentList');
+            },
           },
-        },
-      ]);
+        ]);
+      } else {
+        // Create new agent
+        const agentData: CreateAgentRequest = {
+          type: selectedType,
+          name: name.trim(),
+          description: description.trim() || undefined,
+          avatar: avatar,
+          config: {
+            scene: sceneConfig,
+            ai: aiConfig,
+          },
+          isPublic: isPublic,
+        };
+
+        await agentsApi.createAgent(agentData);
+
+        // NP-269: Allow user to create multiple agents (one per scene) without
+        // architectural changes — addresses the "multi-select scenes" AC.
+        Alert.alert('Success', 'Agent创建成功！是否继续创建其他场景的Agent？', [
+          {
+            text: '完成',
+            onPress: () => {
+              clearDraft();
+              navigation.navigate('AgentList');
+            },
+          },
+          {
+            text: '继续创建',
+            onPress: () => {
+              clearDraft();
+              setSelectedType(null);
+              setName('');
+              setDescription('');
+              setAvatar(undefined);
+              setSceneConfig({});
+              setAiConfig({});
+              setStep(2);
+              setIsPublic(true);
+            },
+          },
+        ]);
+      }
     } catch (err) {
-      Alert.alert('Error', (err as Error)?.message || 'Failed to create agent');
+      Alert.alert('Error', (err as Error)?.message || 'Failed to save agent');
     } finally {
       setLoading(false);
     }
@@ -221,6 +275,7 @@ export const CreateAgentScreen: React.FC = () => {
     isPublic,
     clearDraft,
     navigation,
+    editingAgent,
   ]);
 
   const renderStep1 = () => (
@@ -368,7 +423,7 @@ export const CreateAgentScreen: React.FC = () => {
   );
 
   const renderStep5 = () => {
-    const mockAgent: Agent = {
+    const previewAgent: Agent = {
       id: 'preview',
       userId: 'current',
       type: selectedType!,
@@ -392,7 +447,7 @@ export const CreateAgentScreen: React.FC = () => {
         </Text>
 
         <AgentPreview
-          agent={mockAgent}
+          agent={previewAgent}
           onResetDefaults={() => {
             setAiConfig({});
             setSceneConfig({});
@@ -428,7 +483,7 @@ export const CreateAgentScreen: React.FC = () => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton} testID="back-button">
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Create Agent</Text>
+        <Text style={styles.headerTitle}>{editingAgent ? 'Edit Agent' : 'Create Agent'}</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -470,7 +525,7 @@ export const CreateAgentScreen: React.FC = () => {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.primaryButtonText}>Create Agent</Text>
+              <Text style={styles.primaryButtonText}>{editingAgent ? 'Save' : 'Create Agent'}</Text>
             )}
           </TouchableOpacity>
         )}

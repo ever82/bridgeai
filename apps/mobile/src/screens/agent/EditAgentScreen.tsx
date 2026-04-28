@@ -126,8 +126,7 @@ export const EditAgentScreen: React.FC = () => {
         <TouchableOpacity
           style={[styles.button, styles.editButton]}
           onPress={() => {
-            // TODO: Navigate to edit form (reuse CreateAgent screen with agent data)
-            Alert.alert('编辑功能', '编辑功能即将上线');
+            navigation.navigate('CreateAgent', { agent });
           }}
         >
           <Text style={styles.editButtonText}>编辑 Agent</Text>

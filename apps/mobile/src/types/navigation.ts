@@ -3,6 +3,7 @@
  */
 
 import { NavigationProp } from '@react-navigation/native';
+import { Agent } from '@bridgeai/shared';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -71,7 +72,7 @@ export type ProfileStackParamList = {
     matchTitle: string;
   };
   AgentList: undefined;
-  CreateAgent: undefined;
+  CreateAgent: { agent?: Agent } | undefined;
   EditAgent: { agentId: string };
   TransactionList: undefined;
   TransactionDetail: { transactionId: string };
