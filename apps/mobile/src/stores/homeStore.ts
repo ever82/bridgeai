@@ -233,7 +233,7 @@ export const useHomeStore = create<HomeState>()((set, get) => ({
 
     set({ isLoading: true, error: null });
     try {
-      // TODO: Replace with real API calls
+      // Phase 1: Using mock data; will be replaced by real API integration in a future phase
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 300));
 
