@@ -3395,4 +3395,4 @@ const options: swaggerJsdoc.Options = {
   },
 };
 
-export const serveOpenApiSpec = swaggerJsdoc({ ...options, apis: [] });
+export const serveOpenApiSpec = swaggerJsdoc({ ...options, apis: ['./src/docs/*.docs.ts'] });
