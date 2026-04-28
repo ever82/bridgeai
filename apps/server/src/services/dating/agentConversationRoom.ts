@@ -153,9 +153,9 @@ function clearRoomTimeout(roomId: string): void {
 async function addSystemMessage(
   roomId: string,
   content: string,
-  round: number
+  _round: number
 ): Promise<RoomMessage> {
-  return addMessage(roomId, 'system', 'system', content, round);
+  return addMessage(roomId, 'system', 'system', content);
 }
 
 // ---------------------------------------------------------------------------

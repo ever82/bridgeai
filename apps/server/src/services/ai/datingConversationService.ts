@@ -264,8 +264,8 @@ export class DatingConversationService {
 
     // 标记话题为已探索
     topic.explored = true;
-    session.discussedTopics = session.discussedTopics || [];
-    session.discussedTopics.push(topic.name);
+    session.context.discussedTopics = session.context.discussedTopics || [];
+    session.context.discussedTopics.push(topic.name);
 
     // 生成双方消息
     const agentAMessage = await this.generateAgentResponse(sessionId, session.agentAId, topic);
