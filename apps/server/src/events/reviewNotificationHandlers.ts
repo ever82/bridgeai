@@ -36,17 +36,17 @@ export enum ReviewNotificationType {
  */
 export async function handleReviewCreatedNotification(ratingId: string): Promise<void> {
   try {
-    const rating = await prisma.rating.findUnique({
+    const review = await prisma.review.findUnique({
       where: { id: ratingId },
       include: {
-        rater: {
+        reviewer: {
           select: {
             id: true,
             name: true,
             avatarUrl: true,
           },
         },
-        ratee: {
+        reviewee: {
           select: {
             id: true,
             name: true,
@@ -77,25 +77,25 @@ export async function handleReviewCreatedNotification(ratingId: string): Promise
       },
     });
 
-    if (!rating) {
-      console.warn(`[NOTIFICATION] Rating ${ratingId} not found`);
+    if (!review) {
+      console.warn(`[NOTIFICATION] Review ${ratingId} not found`);
       return;
     }
 
-    const raterName = rating.rater?.name || '匿名用户';
+    const raterName = review.reviewer?.name || '匿名用户';
 
-    // Send notification to ratee
-    await sendNewReviewNotification(rating.rateeId, raterName, rating.score, ratingId);
+    // Send notification to reviewee
+    await sendNewReviewNotification(review.revieweeId, raterName, review.rating, ratingId);
 
     // Emit event
     notificationEvents.emit(ReviewNotificationType.REVIEW_CREATED, {
       ratingId,
-      rateeId: rating.rateeId,
-      raterId: rating.raterId,
-      score: rating.score,
+      rateeId: review.revieweeId,
+      raterId: review.reviewerId,
+      score: review.rating,
     });
 
-    console.log(`[NOTIFICATION] Review created notification sent for rating ${ratingId}`);
+    console.log(`[NOTIFICATION] Review created notification sent for review ${ratingId}`);
   } catch (error) {
     console.error(`[NOTIFICATION] Error handling review created notification:`, error);
     throw error;
@@ -113,16 +113,16 @@ export async function handleReviewReplyNotification(
   replyContent: string
 ): Promise<void> {
   try {
-    const rating = await prisma.rating.findUnique({
+    const review = await prisma.review.findUnique({
       where: { id: ratingId },
       include: {
-        rater: {
+        reviewer: {
           select: {
             id: true,
             name: true,
           },
         },
-        ratee: {
+        reviewee: {
           select: {
             id: true,
             name: true,
@@ -131,25 +131,25 @@ export async function handleReviewReplyNotification(
       },
     });
 
-    if (!rating) {
-      console.warn(`[NOTIFICATION] Rating ${ratingId} not found`);
+    if (!review) {
+      console.warn(`[NOTIFICATION] Review ${ratingId} not found`);
       return;
     }
 
-    const rateeName = rating.ratee?.name || '对方';
+    const rateeName = review.reviewee?.name || '对方';
 
-    // Send notification to the original rater
-    await sendReviewReplyNotification(rating.raterId, rateeName, ratingId);
+    // Send notification to the original reviewer
+    await sendReviewReplyNotification(review.reviewerId, rateeName, ratingId);
 
     // Emit event
     notificationEvents.emit(ReviewNotificationType.REVIEW_REPLIED, {
       ratingId,
-      raterId: rating.raterId,
-      rateeId: rating.rateeId,
+      raterId: review.reviewerId,
+      rateeId: review.revieweeId,
       replyContent,
     });
 
-    console.log(`[NOTIFICATION] Review reply notification sent for rating ${ratingId}`);
+    console.log(`[NOTIFICATION] Review reply notification sent for review ${ratingId}`);
   } catch (error) {
     console.error(`[NOTIFICATION] Error handling review reply notification:`, error);
     throw error;
@@ -170,14 +170,14 @@ export async function handlePendingReviewReminder(
 ): Promise<void> {
   try {
     // Check if user has already rated this match
-    const existingRating = await prisma.rating.findFirst({
+    const existingReview = await prisma.review.findFirst({
       where: {
         matchId,
-        raterId: userId,
+        reviewerId: userId,
       },
     });
 
-    if (existingRating) {
+    if (existingReview) {
       console.log(`[NOTIFICATION] User ${userId} already rated match ${matchId}`);
       return;
     }
@@ -212,10 +212,10 @@ export async function handleBadReviewWarningNotification(
   creditDelta: number
 ): Promise<void> {
   try {
-    const rating = await prisma.rating.findUnique({
+    const review = await prisma.review.findUnique({
       where: { id: ratingId },
       include: {
-        ratee: {
+        reviewee: {
           select: {
             id: true,
             name: true,
@@ -224,28 +224,28 @@ export async function handleBadReviewWarningNotification(
       },
     });
 
-    if (!rating) {
-      console.warn(`[NOTIFICATION] Rating ${ratingId} not found`);
+    if (!review) {
+      console.warn(`[NOTIFICATION] Review ${ratingId} not found`);
       return;
     }
 
     // Only send for bad reviews (<= 2 stars)
-    if (rating.score > 2) {
+    if (review.rating > 2) {
       return;
     }
 
-    await sendBadReviewWarning(rating.rateeId, rating.score, creditDelta, ratingId);
+    await sendBadReviewWarning(review.revieweeId, review.rating, creditDelta, ratingId);
 
     // Emit event
     notificationEvents.emit(ReviewNotificationType.REVIEW_CREATED, {
       ratingId,
-      rateeId: rating.rateeId,
-      score: rating.score,
+      rateeId: review.revieweeId,
+      score: review.rating,
       creditDelta,
       isBadReview: true,
     });
 
-    console.log(`[NOTIFICATION] Bad review warning sent for rating ${ratingId}`);
+    console.log(`[NOTIFICATION] Bad review warning sent for review ${ratingId}`);
   } catch (error) {
     console.error(`[NOTIFICATION] Error handling bad review warning:`, error);
     throw error;

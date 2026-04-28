@@ -9,6 +9,9 @@ import { Review, ReviewReply, Prisma } from '@prisma/client';
 
 import { prisma } from '../db/client';
 import { logger } from '../utils/logger';
+import { triggerRatingSubmitted } from '../events/reviewEventHandlers';
+
+import { sendReviewReplyNotification } from './notificationService';
 
 // 评价创建数据接口
 export interface ICreateReviewData {
@@ -203,6 +206,17 @@ export async function createReview(data: ICreateReviewData): Promise<Review> {
 
   // 异步更新评价统计
   await updateReviewStats(revieweeId);
+
+  // 触发评价事件（信用分更新、通知等）
+  await triggerRatingSubmitted({
+    ratingId: review.id,
+    matchId,
+    raterId: reviewerId,
+    rateeId: revieweeId,
+    score: rating,
+  }).catch(err => {
+    logger.error('Failed to trigger rating submitted event', { reviewId: review.id, error: err });
+  });
 
   return review;
 }
@@ -485,6 +499,14 @@ export async function replyToReview(data: ICreateReplyData): Promise<ReviewReply
     reviewId,
     authorId,
   });
+
+  // Send reply notification to the original reviewer
+  const author = await prisma.user.findUnique({ where: { id: authorId } });
+  await sendReviewReplyNotification(review.reviewerId, author?.name || '对方', reviewId).catch(
+    err => {
+      logger.error('Failed to send review reply notification', { replyId: reply.id, error: err });
+    }
+  );
 
   return reply;
 }

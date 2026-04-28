@@ -27,6 +27,9 @@ jest.mock('../db/client', () => ({
     rating: {
       findMany: jest.fn(),
     },
+    review: {
+      findMany: jest.fn(),
+    },
     user: {
       findUnique: jest.fn(),
     },
@@ -45,6 +48,12 @@ jest.mock('../db/client', () => ({
     },
     conversation: {
       findMany: jest.fn(),
+    },
+    reviewReport: {
+      count: jest.fn(),
+    },
+    report: {
+      count: jest.fn(),
     },
   },
 }));
@@ -133,8 +142,11 @@ describe('Credit Score Service', () => {
       (prisma.match.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.match.count as jest.Mock).mockResolvedValue(0);
       (prisma.rating.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.review.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.connection.count as jest.Mock).mockResolvedValue(0);
       (prisma.conversation.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.reviewReport.count as jest.Mock).mockResolvedValue(0);
+      (prisma.report.count as jest.Mock).mockResolvedValue(0);
 
       const score = await getUserCreditScore('user-1');
 
@@ -211,13 +223,14 @@ describe('Credit Score Service', () => {
 
   describe('recalculateCreditScore', () => {
     it('should recalculate score based on all ratings', async () => {
-      const ratings = [
-        { score: 5 }, // good review
-        { score: 5 }, // good review
-        { score: 2 }, // bad review
+      const reviews = [
+        { rating: 5, replies: [] }, // good review
+        { rating: 5, replies: [] }, // good review
+        { rating: 2, replies: [] }, // bad review
       ];
 
-      (prisma.rating.findMany as jest.Mock).mockResolvedValue(ratings);
+      (prisma.rating.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.review.findMany as jest.Mock).mockResolvedValue(reviews);
       (prisma.creditScore.findUnique as jest.Mock).mockResolvedValue({ score: 100 });
       (prisma.creditScore.upsert as jest.Mock).mockResolvedValue({
         score: 100,
@@ -242,6 +255,8 @@ describe('Credit Score Service', () => {
       (prisma.match.count as jest.Mock).mockResolvedValue(0);
       (prisma.connection.count as jest.Mock).mockResolvedValue(0);
       (prisma.conversation.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.reviewReport.count as jest.Mock).mockResolvedValue(0);
+      (prisma.report.count as jest.Mock).mockResolvedValue(0);
 
       const newScore = await recalculateCreditScore('user-1');
 
@@ -252,6 +267,7 @@ describe('Credit Score Service', () => {
 
     it('should handle no ratings', async () => {
       (prisma.rating.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.review.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.creditScore.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.creditScore.upsert as jest.Mock).mockResolvedValue({
         score: 600,
@@ -276,6 +292,8 @@ describe('Credit Score Service', () => {
       (prisma.match.count as jest.Mock).mockResolvedValue(0);
       (prisma.connection.count as jest.Mock).mockResolvedValue(0);
       (prisma.conversation.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.reviewReport.count as jest.Mock).mockResolvedValue(0);
+      (prisma.report.count as jest.Mock).mockResolvedValue(0);
 
       const newScore = await recalculateCreditScore('user-1');
 

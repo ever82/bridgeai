@@ -167,18 +167,19 @@ export class CreditScoreService {
     const subFactors: { name: string; score: number }[] = [];
 
     // 获取评价
-    const ratings = await prisma.rating.findMany({
-      where: { rateeId: userId },
+    const reviews = await prisma.review.findMany({
+      where: { revieweeId: userId, status: 'APPROVED' },
+      include: { replies: true },
     });
 
     // 评价分数
     const avgRating =
-      ratings.length > 0 ? ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length : 0;
+      reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
     const ratingScore = avgRating * 20; // 5分制转百分制
     subFactors.push({ name: 'rating_score', score: ratingScore });
 
     // 评价数量评分
-    const ratingCountScore = Math.min(ratings.length * 10, 100);
+    const ratingCountScore = Math.min(reviews.length * 10, 100);
     subFactors.push({ name: 'rating_count', score: ratingCountScore });
 
     // 被举报次数 (负向指标: 包含评价举报 + 通用举报)
@@ -198,6 +199,11 @@ export class CreditScoreService {
     });
     const connectionScore = Math.min(connectionCount * 5, 100);
     subFactors.push({ name: 'connection_count', score: connectionScore });
+
+    // 评价回复率评分
+    const repliedReviews = reviews.filter(r => r.replies && r.replies.length > 0).length;
+    const replyRateScore = calculateReplyRateBonus(reviews.length, repliedReviews) > 0 ? 100 : 0;
+    subFactors.push({ name: 'reply_rate', score: replyRateScore });
 
     return this.buildFactorScores(CreditFactorType.SOCIAL, subFactors);
   }
@@ -571,6 +577,7 @@ export class CreditScoreService {
         rating_count: '评价数量',
         complaint_count: '被举报次数',
         connection_count: '连接数',
+        reply_rate: '评价回复率',
       },
     };
 
@@ -739,18 +746,18 @@ export async function getCreditScoreStats(userId: string): Promise<{
 }> {
   const currentScore = await getUserCreditScore(userId);
 
-  const ratings = await prisma.rating.findMany({
-    where: { rateeId: userId },
+  const reviews = await prisma.review.findMany({
+    where: { revieweeId: userId, status: 'APPROVED' },
   });
 
-  const goodReviews = ratings.filter(r => r.score >= 4).length;
-  const badReviews = ratings.filter(r => r.score <= 2).length;
+  const goodReviews = reviews.filter(r => r.rating >= 4).length;
+  const badReviews = reviews.filter(r => r.rating <= 2).length;
   const averageRating =
-    ratings.length > 0 ? ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length : 0;
+    reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
 
   return {
     currentScore,
-    totalReviews: ratings.length,
+    totalReviews: reviews.length,
     goodReviews,
     badReviews,
     averageRating: Math.round(averageRating * 10) / 10,

@@ -19,6 +19,7 @@ jest.mock('../db/client', () => ({
     review: {
       findUnique: jest.fn(),
       findFirst: jest.fn(),
+      findMany: jest.fn(),
     },
     rating: {
       findUnique: jest.fn(),
@@ -84,56 +85,56 @@ describe('Review Notification Handlers', () => {
 
   describe('handleReviewCreatedNotification', () => {
     it('should send notification for new review', async () => {
-      const mockRating = {
+      const mockReview = {
         id: 'rating-1',
-        raterId: 'user-1',
-        rateeId: 'user-2',
-        score: 5,
-        rater: { id: 'user-1', name: 'Test User', avatarUrl: null },
-        ratee: { id: 'user-2', name: 'Recipient' },
+        reviewerId: 'user-1',
+        revieweeId: 'user-2',
+        rating: 5,
+        reviewer: { id: 'user-1', name: 'Test User', avatarUrl: null },
+        reviewee: { id: 'user-2', name: 'Recipient' },
         match: {
           demand: { agent: { user: { id: 'user-2' } } },
           supply: { agent: { user: { id: 'user-1' } } },
         },
       };
 
-      (prisma.rating.findUnique as jest.Mock).mockResolvedValue(mockRating);
+      (prisma.review.findUnique as jest.Mock).mockResolvedValue(mockReview);
 
       const eventListener = jest.fn();
       reviewNotificationEvents.once(ReviewNotificationType.REVIEW_CREATED, eventListener);
 
       await handleReviewCreatedNotification('rating-1');
 
-      expect(prisma.rating.findUnique).toHaveBeenCalledWith({
+      expect(prisma.review.findUnique).toHaveBeenCalledWith({
         where: { id: 'rating-1' },
         include: expect.any(Object),
       });
     });
 
     it('should handle missing rating gracefully', async () => {
-      (prisma.rating.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.review.findUnique as jest.Mock).mockResolvedValue(null);
 
       await handleReviewCreatedNotification('rating-1');
 
-      expect(prisma.rating.findUnique).toHaveBeenCalled();
+      expect(prisma.review.findUnique).toHaveBeenCalled();
     });
   });
 
   describe('handleReviewReplyNotification', () => {
     it('should send notification for review reply', async () => {
-      const mockRating = {
+      const mockReview = {
         id: 'rating-1',
-        raterId: 'user-1',
-        rateeId: 'user-2',
-        rater: { id: 'user-1', name: 'Test User' },
-        ratee: { id: 'user-2', name: 'Responder' },
+        reviewerId: 'user-1',
+        revieweeId: 'user-2',
+        reviewer: { id: 'user-1', name: 'Test User' },
+        reviewee: { id: 'user-2', name: 'Responder' },
       };
 
-      (prisma.rating.findUnique as jest.Mock).mockResolvedValue(mockRating);
+      (prisma.review.findUnique as jest.Mock).mockResolvedValue(mockReview);
 
       await handleReviewReplyNotification('rating-1', 'Thank you for your review!');
 
-      expect(prisma.rating.findUnique).toHaveBeenCalledWith({
+      expect(prisma.review.findUnique).toHaveBeenCalledWith({
         where: { id: 'rating-1' },
         include: expect.any(Object),
       });
@@ -142,59 +143,59 @@ describe('Review Notification Handlers', () => {
 
   describe('handlePendingReviewReminder', () => {
     it('should send reminder when user has not rated', async () => {
-      (prisma.rating.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.review.findFirst as jest.Mock).mockResolvedValue(null);
 
       await handlePendingReviewReminder('match-1', 'user-1', 'Partner Name');
 
-      expect(prisma.rating.findFirst).toHaveBeenCalledWith({
+      expect(prisma.review.findFirst).toHaveBeenCalledWith({
         where: {
           matchId: 'match-1',
-          raterId: 'user-1',
+          reviewerId: 'user-1',
         },
       });
     });
 
     it('should skip reminder when user already rated', async () => {
-      (prisma.rating.findFirst as jest.Mock).mockResolvedValue({ id: 'rating-1' });
+      (prisma.review.findFirst as jest.Mock).mockResolvedValue({ id: 'rating-1' });
 
       await handlePendingReviewReminder('match-1', 'user-1', 'Partner Name');
 
-      expect(prisma.rating.findFirst).toHaveBeenCalled();
+      expect(prisma.review.findFirst).toHaveBeenCalled();
     });
   });
 
   describe('handleBadReviewWarningNotification', () => {
     it('should send warning for bad reviews', async () => {
-      const mockRating = {
+      const mockReview = {
         id: 'rating-1',
-        rateeId: 'user-2',
-        score: 1,
-        ratee: { id: 'user-2', name: 'Recipient' },
+        revieweeId: 'user-2',
+        rating: 1,
+        reviewee: { id: 'user-2', name: 'Recipient' },
       };
 
-      (prisma.rating.findUnique as jest.Mock).mockResolvedValue(mockRating);
+      (prisma.review.findUnique as jest.Mock).mockResolvedValue(mockReview);
 
       await handleBadReviewWarningNotification('rating-1', -10);
 
-      expect(prisma.rating.findUnique).toHaveBeenCalledWith({
+      expect(prisma.review.findUnique).toHaveBeenCalledWith({
         where: { id: 'rating-1' },
         include: expect.any(Object),
       });
     });
 
     it('should skip warning for good reviews', async () => {
-      const mockRating = {
+      const mockReview = {
         id: 'rating-1',
-        rateeId: 'user-2',
-        score: 5,
-        ratee: { id: 'user-2', name: 'Recipient' },
+        revieweeId: 'user-2',
+        rating: 5,
+        reviewee: { id: 'user-2', name: 'Recipient' },
       };
 
-      (prisma.rating.findUnique as jest.Mock).mockResolvedValue(mockRating);
+      (prisma.review.findUnique as jest.Mock).mockResolvedValue(mockReview);
 
       await handleBadReviewWarningNotification('rating-1', 5);
 
-      expect(prisma.rating.findUnique).toHaveBeenCalled();
+      expect(prisma.review.findUnique).toHaveBeenCalled();
     });
   });
 

@@ -21,6 +21,8 @@ import docsRoutes from './routes/docs';
 import { ApiResponse } from './utils/response';
 import { initSentry, Sentry } from './utils/sentry';
 import { initializeSecurityMonitoring } from './services/securityMonitor';
+import { initializeReviewEventHandlers } from './events/reviewEventHandlers';
+import { initializeReviewNotificationHandlers } from './events/reviewNotificationHandlers';
 import { createApiGatewayRouter } from './services/gateway/apiGatewayRouter';
 
 dotenv.config();
@@ -35,6 +37,10 @@ initSentry();
 if (!isTestEnv) {
   initializeSecurityMonitoring();
 }
+
+// Initialize review event and notification handlers
+initializeReviewEventHandlers();
+initializeReviewNotificationHandlers();
 
 const app: Application = express();
 
