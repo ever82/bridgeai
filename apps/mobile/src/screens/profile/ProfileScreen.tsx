@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { AgentCreditInfo } from '@bridgeai/shared';
 
 import { useAuthStore } from '../../stores/authStore';
+import { creditApi } from '../../services/api/credit';
 import { theme } from '../../theme';
 import { CreditBadge } from '../../components/Credit';
 
@@ -12,13 +13,36 @@ export const ProfileScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { user, logout } = useAuthStore();
+  const [creditInfo, setCreditInfo] = useState<AgentCreditInfo | null>(null);
 
-  const creditInfo: AgentCreditInfo = {
-    score: 750,
-    level: 3,
-    trend: 'stable',
-    history: [],
-  };
+  useEffect(() => {
+    creditApi
+      .getCreditScore()
+      .then(data => {
+        // Map CreditLevel to AgentCreditInfo level (1-5)
+        const levelMap: Record<string, number> = {
+          excellent: 5,
+          good: 4,
+          general: 3,
+          poor: 2,
+        };
+        setCreditInfo({
+          score: data.score,
+          level: levelMap[data.level] ?? 1,
+          trend: 'stable',
+          history: [],
+        });
+      })
+      .catch(() => {
+        // Fallback to default on error
+        setCreditInfo({
+          score: 0,
+          level: 1,
+          trend: 'stable',
+          history: [],
+        });
+      });
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -93,13 +117,15 @@ export const ProfileScreen = () => {
               <Text style={styles.creditDetailLink}>信用详情 ›</Text>
             </TouchableOpacity>
           </View>
-          <CreditBadge
-            credit={creditInfo}
-            size="medium"
-            showTrend={true}
-            showLevel={true}
-            onPress={() => navigation.navigate('CreditDetail')}
-          />
+          {creditInfo && (
+            <CreditBadge
+              credit={creditInfo}
+              size="medium"
+              showTrend={true}
+              showLevel={true}
+              onPress={() => navigation.navigate('CreditDetail')}
+            />
+          )}
         </View>
 
         <View style={styles.menuSection}>

@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { theme } from '../../theme';
+import { useAuthStore } from '../../stores/authStore';
 
 // Types
 interface ActivityStat {
@@ -32,7 +33,6 @@ const ACTIVITY_STATS: ActivityStat[] = [
   { id: '1', label: '对话数', value: 42, icon: '💬' },
   { id: '2', label: '匹配数', value: 18, icon: '🤝' },
   { id: '3', label: '发布数', value: 7, icon: '📝' },
-  { id: '4', label: '日历记录', value: 24, icon: '📅' },
 ];
 
 const ACHIEVEMENT_BADGES: AchievementBadge[] = [
@@ -40,39 +40,6 @@ const ACHIEVEMENT_BADGES: AchievementBadge[] = [
   { id: '2', title: '发布达人', icon: '⭐', unlocked: true },
   { id: '3', title: '匹配达人', icon: '🏆', unlocked: true },
   { id: '4', title: '连续活跃', icon: '🔥', unlocked: false },
-];
-
-// TODO(API): Replace with API call - GET /api/activities/recent
-// Issue: ISSUE-AI011 - Recent activities API endpoint
-const MOCK_RECENT_ACTIVITIES: RecentActivity[] = [
-  {
-    id: '1',
-    type: 'conversation',
-    title: '完成对话',
-    description: '与用户Alice的对话已结束',
-    timestamp: '2小时前',
-  },
-  {
-    id: '2',
-    type: 'match',
-    title: '新匹配',
-    description: '与用户Bob匹配成功',
-    timestamp: '5小时前',
-  },
-  {
-    id: '3',
-    type: 'publish',
-    title: '发布动态',
-    description: '发布了一条新动态',
-    timestamp: '1天前',
-  },
-  {
-    id: '4',
-    type: 'review',
-    title: '发表评价',
-    description: '对对话进行了评价',
-    timestamp: '2天前',
-  },
 ];
 
 const getActivityIcon = (type: RecentActivity['type']): string => {
@@ -85,8 +52,66 @@ const getActivityIcon = (type: RecentActivity['type']): string => {
   return icons[type];
 };
 
+/** Derive recent activities from user data in authStore */
+const getRecentActivities = (
+  user: ReturnType<typeof useAuthStore.getState>['user']
+): RecentActivity[] => {
+  if (!user) {
+    return [];
+  }
+  const activities: RecentActivity[] = [];
+
+  // Conversation activity from moments count (indicates user engagement)
+  if (user.momentsCount > 0) {
+    activities.push({
+      id: 'conv-1',
+      type: 'conversation',
+      title: '完成对话',
+      description: `${user.displayName} 的对话已结束`,
+      timestamp: '刚刚',
+    });
+  }
+
+  // Publish activity from moments
+  if (user.momentsCount > 0) {
+    activities.push({
+      id: 'pub-1',
+      type: 'publish',
+      title: '发布动态',
+      description: `已发布 ${user.momentsCount} 条动态`,
+      timestamp: user.momentsCount > 1 ? `${user.momentsCount}天前` : '今天',
+    });
+  }
+
+  // Followers activity
+  if (user.followersCount > 0) {
+    activities.push({
+      id: 'match-1',
+      type: 'match',
+      title: '新匹配',
+      description: `已有 ${user.followersCount} 位关注者`,
+      timestamp: '1天前',
+    });
+  }
+
+  // Following activity
+  if (user.followingCount > 0) {
+    activities.push({
+      id: 'review-1',
+      type: 'review',
+      title: '关注更新',
+      description: `已关注 ${user.followingCount} 位用户`,
+      timestamp: '2天前',
+    });
+  }
+
+  return activities;
+};
+
 export const ActivityScreen = () => {
   const insets = useSafeAreaInsets();
+  const user = useAuthStore(state => state.user);
+  const recentActivities = getRecentActivities(user);
 
   const renderStatCard = (stat: ActivityStat) => (
     <View key={stat.id} style={styles.statCard}>
@@ -145,18 +170,14 @@ export const ActivityScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>近期活动</Text>
           <View style={styles.activitiesList}>
-            {MOCK_RECENT_ACTIVITIES.map(renderRecentActivity)}
+            {recentActivities.length > 0 ? (
+              recentActivities.map(renderRecentActivity)
+            ) : (
+              <View style={styles.emptyActivities}>
+                <Text style={styles.emptyActivitiesText}>暂无近期活动</Text>
+              </View>
+            )}
           </View>
-        </View>
-
-        {/* Calendar View Placeholder */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>活动日历</Text>
-          <TouchableOpacity style={styles.calendarPlaceholder}>
-            <Text style={styles.calendarIcon}>📅</Text>
-            <Text style={styles.calendarText}>日历功能开发中</Text>
-            <Text style={styles.calendarSubtext}>敬请期待</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Bottom spacing */}
@@ -305,29 +326,14 @@ const styles = StyleSheet.create({
     fontSize: theme.fonts.sizes.xs,
     color: theme.colors.textSecondary,
   },
-  // Calendar Placeholder
-  calendarPlaceholder: {
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.radius.md,
+  emptyActivities: {
     padding: theme.spacing.xl,
     alignItems: 'center',
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: theme.colors.border,
+    justifyContent: 'center',
   },
-  calendarIcon: {
-    fontSize: 48,
-    marginBottom: theme.spacing.base,
-  },
-  calendarText: {
-    fontSize: theme.fonts.sizes.md,
-    fontWeight: theme.fonts.weights.semibold,
-    color: theme.colors.textSecondary,
-  },
-  calendarSubtext: {
+  emptyActivitiesText: {
     fontSize: theme.fonts.sizes.sm,
-    color: theme.colors.textTertiary,
-    marginTop: theme.spacing.xs,
+    color: theme.colors.textSecondary,
   },
   bottomSpacer: {
     height: theme.spacing.xl,

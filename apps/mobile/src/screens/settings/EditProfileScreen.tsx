@@ -62,10 +62,30 @@ export const EditProfileScreen = () => {
     setIsPhotoPickerVisible(true);
   };
 
-  const handlePhotoSelected = (photos: AlbumPhoto[]) => {
+  const handlePhotoSelected = async (photos: AlbumPhoto[]) => {
     setIsPhotoPickerVisible(false);
     if (photos.length > 0) {
-      Alert.alert('提示', `已选择 ${photos.length} 张照片头像上传功能待集成`);
+      const photo = photos[0];
+      try {
+        const formData = new FormData();
+        formData.append('avatar', {
+          uri: photo.uri,
+          type: photo.type || 'image/jpeg',
+          name: photo.filename || 'avatar.jpg',
+        } as unknown as Blob);
+        const response = await api.post('/users/me/avatar', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        if (response.data?.avatarUrl) {
+          setUser({ ...user, avatarUrl: response.data.avatarUrl });
+          Alert.alert('成功', '头像已更新');
+        }
+      } catch (error: unknown) {
+        const err = error as { response?: { data?: { message?: string } } };
+        Alert.alert('错误', err.response?.data?.message || '头像上传失败，请重试');
+      }
     }
   };
 
