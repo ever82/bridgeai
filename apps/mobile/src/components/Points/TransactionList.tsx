@@ -40,7 +40,7 @@ interface TransactionListProps {
   limit?: number;
 }
 
-const formatTime = (dateStr: string): string => {
+const formatTime = (dateStr: string | Date): string => {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();

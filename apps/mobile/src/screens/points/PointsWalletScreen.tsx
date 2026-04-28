@@ -8,11 +8,11 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   RefreshControl,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -38,6 +38,59 @@ const TRANSACTION_FILTERS: { key: TransactionFilterType; label: string }[] = [
   { key: 'recharge', label: '充值' },
 ];
 
+// Static task list for the "获取积分" tab (UI stub — replace with API call when available)
+const DEFAULT_TASKS: PointsTask[] = [
+  {
+    id: 'daily-sign-in',
+    name: '每日签到',
+    description: '每天登录即可获得积分奖励',
+    points: 10,
+    icon: '✅',
+    repeatable: true,
+    dailyLimit: 1,
+    completedCount: 0,
+  },
+  {
+    id: 'upload-photo',
+    name: '上传照片',
+    description: '上传一张高质量照片获得积分',
+    points: 20,
+    icon: '📸',
+    repeatable: true,
+    dailyLimit: 5,
+    completedCount: 0,
+  },
+  {
+    id: 'share-vision',
+    name: '分享视觉',
+    description: '将照片分享到视觉社区获得积分',
+    points: 15,
+    icon: '🔗',
+    repeatable: true,
+    dailyLimit: 3,
+    completedCount: 0,
+  },
+  {
+    id: 'invite-friend',
+    name: '邀请好友',
+    description: '成功邀请一位好友注册获得积分',
+    points: 50,
+    icon: '👥',
+    repeatable: true,
+    dailyLimit: 10,
+    completedCount: 0,
+  },
+  {
+    id: 'complete-profile',
+    name: '完善资料',
+    description: '首次完善个人资料获得积分',
+    points: 30,
+    icon: '👤',
+    repeatable: false,
+    completedCount: 0,
+  },
+];
+
 interface PointsBalanceData extends PointsBalanceResponse {
   availableBalance: number;
 }
@@ -49,7 +102,7 @@ export const PointsWalletScreen: React.FC = () => {
 
   const [balance, setBalance] = useState<PointsBalanceData | null>(null);
   const [transactions, setTransactions] = useState<PointsTransaction[]>([]);
-  const [tasks, _setTasks] = useState<PointsTask[]>([]);
+  const [tasks, setTasks] = useState<PointsTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +123,8 @@ export const PointsWalletScreen: React.FC = () => {
         availableBalance: balanceData.balance,
       });
       setTransactions(txData.transactions ?? []);
+      // Load static task list (replace with API call when available)
+      setTasks(DEFAULT_TASKS);
     } catch (_error: unknown) {
       setError('加载失败，请下拉刷新重试');
       setBalance(null);
@@ -201,32 +256,26 @@ export const PointsWalletScreen: React.FC = () => {
       )}
 
       {activeTab === 'transactions' ? (
-        <FlatList
-          data={getFilteredTransactions()}
-          keyExtractor={item => item.id}
-          ListHeaderComponent={
-            <>
-              {renderHeader()}
-              {renderTabBar()}
-              {renderTransactionFilterRow()}
-            </>
-          }
-          renderItem={({ item }) => (
+        <ScrollView
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          contentContainerStyle={styles.listContent}
+        >
+          {renderHeader()}
+          {renderTabBar()}
+          {renderTransactionFilterRow()}
+          {getFilteredTransactions().length > 0 ? (
             <TransactionList
-              transactions={[item]}
+              transactions={getFilteredTransactions()}
               onTransactionPress={tx => {
                 navigation.navigate('PointsTransactionDetail', { transactionId: tx.id } as never);
               }}
             />
-          )}
-          ListEmptyComponent={
+          ) : (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>暂无交易记录</Text>
             </View>
-          }
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          contentContainerStyle={styles.listContent}
-        />
+          )}
+        </ScrollView>
       ) : (
         <View style={styles.container}>
           {renderHeader()}

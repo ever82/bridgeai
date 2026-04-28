@@ -10,6 +10,7 @@ import { SceneCode } from '@bridgeai/shared';
 import { pointsService } from '../services/pointsService';
 import { visionSharePaymentService } from '../services/visionSharePaymentService';
 import { photoUnlockService } from '../services/photoUnlockService';
+import { prisma } from '../db/client';
 import { authenticate } from '../middleware/auth';
 import { requireRole } from '../middleware/rbac';
 import { validate } from '../middleware/validation';
@@ -113,13 +114,25 @@ router.get('/account', authenticate, async (req, res, next) => {
 
 /**
  * GET /api/v1/points/balance
- * 获取可用余额
+ * 获取可用余额（完整账户数据）
  */
 router.get('/balance', authenticate, async (req, res, next) => {
   try {
     const userId = req.user!.id;
-    const availableBalance = await pointsService.getAvailableBalance(userId);
-    res.json({ success: true, data: { availableBalance } });
+    const account = await pointsService.getOrCreateAccount(userId);
+    const dbAccount = await prisma.pointsAccount.findUnique({
+      where: { userId },
+      select: { updatedAt: true },
+    });
+    res.json({
+      success: true,
+      data: {
+        balance: account.balance,
+        totalEarned: account.totalEarned,
+        totalSpent: account.totalSpent,
+        lastUpdatedAt: dbAccount?.updatedAt?.toISOString() ?? null,
+      },
+    });
   } catch (error) {
     next(error);
   }

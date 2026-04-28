@@ -49,19 +49,25 @@ export const PointsTransactionDetailScreen: React.FC = () => {
 
   const [detail, setDetail] = useState<TransactionDetailResponse | null>(passedTransaction ?? null);
   const [loading, setLoading] = useState(!passedTransaction);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchDetail = useCallback(async () => {
     const id = transactionId || passedTransaction?.id;
     if (!id) return;
+    setLoading(true);
+    setError(null);
     try {
       const data = await pointsApi.getTransaction(id);
       setDetail(data);
     } catch {
       // If API fails and we have passed data, keep it
+      if (!detail) {
+        setError('无法加载交易详情，请检查网络连接');
+      }
     } finally {
       setLoading(false);
     }
-  }, [transactionId, passedTransaction?.id]);
+  }, [transactionId, passedTransaction?.id, detail]);
 
   useEffect(() => {
     if (!passedTransaction) {
@@ -80,7 +86,16 @@ export const PointsTransactionDetailScreen: React.FC = () => {
   if (!detail) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }, styles.centered]}>
-        <Text style={styles.emptyText}>交易记录不存在</Text>
+        {error ? (
+          <>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={fetchDetail}>
+              <Text style={styles.retryButtonText}>重试</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <Text style={styles.emptyText}>交易记录不存在</Text>
+        )}
       </View>
     );
   }
@@ -261,5 +276,22 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: theme.fonts.sizes.base,
     color: theme.colors.textTertiary,
+  },
+  errorText: {
+    fontSize: theme.fonts.sizes.base,
+    color: theme.colors.error,
+    textAlign: 'center',
+    marginBottom: theme.spacing.base,
+  },
+  retryButton: {
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+  },
+  retryButtonText: {
+    fontSize: theme.fonts.sizes.base,
+    color: theme.colors.background,
+    fontWeight: theme.fonts.weights.semibold,
   },
 });
