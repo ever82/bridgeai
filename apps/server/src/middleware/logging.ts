@@ -1,4 +1,5 @@
 import { maskLogMessage, maskObject } from '../utils/mask';
+import { logger } from '../utils/logger';
 
 interface LogEntry {
   level: string;
@@ -36,8 +37,8 @@ export class SecureLogger {
       metadata: sanitizedMetadata,
     };
 
-    // Output to console (in production, this would go to a logging service)
-    console.log(JSON.stringify(entry));
+    // Output to structured logger
+    logger.info(entry.message, entry);
   }
 
   info(message: string, metadata?: Record<string, any>): void {
@@ -66,7 +67,7 @@ export class SecureLogger {
       timestamp: new Date(),
     };
 
-    console.log(JSON.stringify(entry));
+    logger.info(`[AUDIT] ${entry.action}`, entry);
   }
 }
 

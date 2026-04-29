@@ -35,6 +35,8 @@ if (process.env.NODE_ENV === 'production') {
       filename: 'logs/error.log',
       level: 'error',
       format: combine(timestamp(), json()),
+      maxsize: 10 * 1024 * 1024, // 10MB
+      maxFiles: 7,
     })
   );
 
@@ -42,6 +44,8 @@ if (process.env.NODE_ENV === 'production') {
     new winston.transports.File({
       filename: 'logs/combined.log',
       format: combine(timestamp(), json()),
+      maxsize: 10 * 1024 * 1024, // 10MB
+      maxFiles: 7,
     })
   );
 }

@@ -6,6 +6,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 // 日志级别
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
@@ -150,7 +151,7 @@ class MobileLogger {
    */
   private formatArgs(args: unknown[]): string {
     return args
-      .map((arg) => {
+      .map(arg => {
         if (typeof arg === 'string') return arg;
         if (arg instanceof Error) return `${arg.name}: ${arg.message}`;
         try {
@@ -235,7 +236,7 @@ class MobileLogger {
     this.saveCrashReport(report);
 
     // 通知监听器
-    this.crashHandlers.forEach((handler) => handler(report));
+    this.crashHandlers.forEach(handler => handler(report));
 
     // 如果启用上传，上传到服务器
     if (this.config.uploadEnabled) {
@@ -253,11 +254,9 @@ class MobileLogger {
 
       // 清理旧报告（保留最近10个）
       const keys = await AsyncStorage.getAllKeys();
-      const crashKeys = keys.filter((k) => k.startsWith('@logger:crash:'));
+      const crashKeys = keys.filter(k => k.startsWith('@logger:crash:'));
       if (crashKeys.length > 10) {
-        const toRemove = crashKeys
-          .sort()
-          .slice(0, crashKeys.length - 10);
+        const toRemove = crashKeys.sort().slice(0, crashKeys.length - 10);
         await AsyncStorage.multiRemove(toRemove);
       }
     } catch (e) {
@@ -270,11 +269,11 @@ class MobileLogger {
    */
   private getDeviceInfo(): Record<string, unknown> {
     return {
-      platform: 'mobile',
-      os: '', // 可以从 Platform 获取
-      version: '', // App 版本
-      buildNumber: '',
-      deviceId: '',
+      platform: Platform.OS,
+      os: Platform.Version,
+      version: '', // App 版本需从 app.json 或原生模块获取
+      buildNumber: '', // Build Number 需从原生模块获取
+      deviceId: '', // DeviceId 需从原生模块获取
     };
   }
 
@@ -391,7 +390,7 @@ class MobileLogger {
   exportLogs(): string {
     return this.logs
       .map(
-        (log) =>
+        log =>
           `[${log.timestamp}] [${log.level.toUpperCase()}]${log.tag ? ` [${log.tag}]` : ''} ${log.message}${log.data ? ` ${JSON.stringify(log.data)}` : ''}`
       )
       .join('\n');

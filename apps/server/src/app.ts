@@ -5,6 +5,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 
+import { morganStream } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { requestId } from './middleware/requestId';
 import { requestContextMiddleware } from './middleware/requestContext';
@@ -117,7 +118,9 @@ app.use(performanceMonitor);
 
 // Logging middleware
 if (!isTestEnv) {
-  app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'combined'));
+  app.use(
+    morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'combined', { stream: morganStream })
+  );
 }
 
 // Health check endpoint (before API routes)
