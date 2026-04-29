@@ -190,12 +190,14 @@ async function createOfflineMessages(
 
 /**
  * Create offline message entries for ChatRoom participants not currently online
- * Returns the list of offline participants (user IDs) so we can send push notifications.
+ * and send push notifications to offline users.
  */
 async function createChatRoomOfflineMessages(
   chatRoomId: string,
   messageId: string,
   senderId: string,
+  sender: { id: string; name: string | null; avatarUrl: string | null } | null,
+  messageContent: string,
   tx?: Prisma.TransactionClient
 ): Promise<{ userId: string }[]> {
   const client = tx || prisma;
@@ -217,6 +219,16 @@ async function createChatRoomOfflineMessages(
   );
 
   await Promise.all(offlinePromises);
+
+  // Send push notifications to offline users (best-effort, non-blocking)
+  sendOfflinePushNotifications(offlineParticipants, sender, messageContent, chatRoomId).catch(
+    err => {
+      console.error(
+        '[MessageService] Push notification error in createChatRoomOfflineMessages:',
+        err
+      );
+    }
+  );
 
   return offlineParticipants;
 }
@@ -846,11 +858,14 @@ export async function createChatRoomMessage(input: CreateChatRoomMessageInput) {
       },
     });
 
-    // Create offline message entries for offline participants
-    const offlineParticipants = await createChatRoomOfflineMessages(
+    // Create offline message entries for offline participants (also sends push notifications)
+    // Note: return value is intentionally unused - push notifications are sent internally
+    await createChatRoomOfflineMessages(
       input.chatRoomId,
       chatMessage.id,
       input.senderId,
+      sender,
+      input.content,
       tx
     );
 
@@ -859,14 +874,10 @@ export async function createChatRoomMessage(input: CreateChatRoomMessageInput) {
       content: input.content, // Return decrypted content for sender
       sender,
       conversationId: input.chatRoomId, // Alias for compatibility with chat handler
-      offlineParticipants,
     };
   });
 
-  // Send push notifications to offline users (outside transaction, after commit)
-  // This ensures push failures don't affect message creation and socket delivery handles online users
-  const { offlineParticipants, sender, ...chatMessage } = result;
-  await sendOfflinePushNotifications(offlineParticipants, sender, input.content, input.chatRoomId);
+  const { sender, ...chatMessage } = result;
 
   return { ...chatMessage, sender };
 }

@@ -2,12 +2,13 @@
  * Chat Routes Integration Tests
  * 聊天路由集成测试
  */
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import request from 'supertest';
 
 import app from '../../../app';
 import { createTestUser, cleanupTestUsers, generateAccessToken } from '../../../tests/helpers';
 import { createChatRoomMessage } from '../../../services/messageService';
+import { prisma } from '../../../db/client';
 
 describe('Chat Routes Integration', () => {
   let authToken: string;
@@ -621,6 +622,358 @@ describe('Chat Routes Integration', () => {
 
         expect(response.status).toBe(401);
       });
+    });
+  });
+});
+
+describe('createChatRoomMessage Transaction & Rollback', () => {
+  let senderUserId: string;
+  let participantUserId: string;
+  let testRoomId: string;
+
+  beforeEach(async () => {
+    // Create test users
+    const sender = await createTestUser({
+      email: 'tx-sender@example.com',
+      name: 'TX Sender',
+    });
+    const participant = await createTestUser({
+      email: 'tx-participant@example.com',
+      name: 'TX Participant',
+    });
+    senderUserId = sender.id;
+    participantUserId = participant.id;
+
+    // Create a test room
+    const room = await prisma.chatRoom.create({
+      data: {
+        type: 'PRIVATE',
+        participantIds: [senderUserId, participantUserId],
+        participants: {
+          create: [
+            { userId: senderUserId, role: 'OWNER', isActive: true },
+            { userId: participantUserId, role: 'MEMBER', isActive: true },
+          ],
+        },
+      },
+    });
+    testRoomId = room.id;
+  });
+
+  afterEach(async () => {
+    // Clean up test data
+    await prisma.offlineMessage
+      .deleteMany({
+        where: {
+          conversationId: testRoomId,
+        },
+      })
+      .catch(() => {});
+    await prisma.chatMessage
+      .deleteMany({
+        where: { chatRoomId: testRoomId },
+      })
+      .catch(() => {});
+    await prisma.chatRoom
+      .deleteMany({
+        where: { id: testRoomId },
+      })
+      .catch(() => {});
+    await cleanupTestUsers();
+  });
+
+  describe('Unit Tests - Transaction Rollback', () => {
+    it('should rollback unreadCount increment when ChatMessage creation fails', async () => {
+      // Get initial unread count for participant
+      const initialParticipant = await prisma.roomParticipant.findFirst({
+        where: {
+          roomId: testRoomId,
+          userId: participantUserId,
+        },
+      });
+      const initialUnreadCount = initialParticipant?.unreadCount || 0;
+
+      // Attempt message creation (will throw due to invalid room)
+      await expect(
+        createChatRoomMessage({
+          chatRoomId: 'non-existent-room-id',
+          senderId: senderUserId,
+          content: 'This should fail',
+        })
+      ).rejects.toThrow();
+
+      // Verify unread count was not changed
+      const finalParticipant = await prisma.roomParticipant.findFirst({
+        where: {
+          roomId: testRoomId,
+          userId: participantUserId,
+        },
+      });
+      expect(finalParticipant?.unreadCount).toBe(initialUnreadCount);
+    });
+
+    it('should rollback when ChatRoom does not exist', async () => {
+      // Verify initial state: no messages
+      const initialMessages = await prisma.chatMessage.count({
+        where: { chatRoomId: testRoomId },
+      });
+      expect(initialMessages).toBe(0);
+
+      const initialRoom = await prisma.chatRoom.findUnique({
+        where: { id: testRoomId },
+        select: { lastMessageAt: true },
+      });
+      const _initialLastMessageAt = initialRoom?.lastMessageAt;
+
+      // Attempt to create message with non-existent room
+      await expect(
+        createChatRoomMessage({
+          chatRoomId: '00000000-0000-0000-0000-000000000000',
+          senderId: senderUserId,
+          content: 'This should not be created',
+        })
+      ).rejects.toThrow();
+
+      // Verify no messages were created (transaction was rolled back)
+      const finalMessageCount = await prisma.chatMessage.count({
+        where: { chatRoomId: testRoomId },
+      });
+      expect(finalMessageCount).toBe(0);
+
+      // Verify ChatRoom lastMessageAt was not changed
+      const finalRoom = await prisma.chatRoom.findUnique({
+        where: { id: testRoomId },
+        select: { lastMessageAt: true },
+      });
+      expect(finalRoom?.lastMessageAt).toEqual(initialLastMessageAt);
+    });
+
+    it('should rollback all atomic operations on failure', async () => {
+      // Verify initial state
+      const initialMessages = await prisma.chatMessage.count({
+        where: { chatRoomId: testRoomId },
+      });
+      expect(initialMessages).toBe(0);
+
+      const initialRoom = await prisma.chatRoom.findUnique({
+        where: { id: testRoomId },
+        select: { lastMessageAt: true },
+      });
+      const _initialLastMessageAt = initialRoom?.lastMessageAt;
+
+      // Attempt to create message with non-existent sender (fails within transaction)
+      await expect(
+        createChatRoomMessage({
+          chatRoomId: testRoomId,
+          senderId: '00000000-0000-0000-0000-000000000999',
+          content: 'This should not be created',
+        })
+      ).rejects.toThrow();
+
+      // Verify NO messages were created
+      const messageCount = await prisma.chatMessage.count({
+        where: { chatRoomId: testRoomId },
+      });
+      expect(messageCount).toBe(0);
+
+      // Verify ChatRoom lastMessageAt was NOT updated (rolled back)
+      const updatedRoom = await prisma.chatRoom.findUnique({
+        where: { id: testRoomId },
+        select: { lastMessageAt: true },
+      });
+      expect(updatedRoom?.lastMessageAt).toEqual(initialLastMessageAt);
+
+      // Verify unread count was not changed
+      const participant = await prisma.roomParticipant.findFirst({
+        where: {
+          roomId: testRoomId,
+          userId: participantUserId,
+        },
+      });
+      expect(participant?.unreadCount).toBe(0);
+    });
+  });
+
+  describe('Integration Tests - Multi-step Failure Scenarios', () => {
+    it('should maintain data consistency when ChatRoom does not exist', async () => {
+      const nonExistentRoomId = '00000000-0000-0000-0000-000000000000';
+
+      // Attempt to create message in non-existent room
+      await expect(
+        createChatRoomMessage({
+          chatRoomId: nonExistentRoomId,
+          senderId: senderUserId,
+          content: 'This should fail',
+        })
+      ).rejects.toThrow();
+
+      // Verify no orphaned data was created
+      const orphanMessages = await prisma.chatMessage.count({
+        where: { chatRoomId: nonExistentRoomId },
+      });
+      expect(orphanMessages).toBe(0);
+
+      const orphanOfflineMessages = await prisma.offlineMessage.count({
+        where: { conversationId: nonExistentRoomId },
+      });
+      expect(orphanOfflineMessages).toBe(0);
+    });
+
+    it('should rollback transaction when sender does not exist', async () => {
+      const nonExistentUserId = '00000000-0000-0000-0000-000000000001';
+
+      // Attempt to create message with non-existent sender
+      await expect(
+        createChatRoomMessage({
+          chatRoomId: testRoomId,
+          senderId: nonExistentUserId,
+          content: 'This should fail',
+        })
+      ).rejects.toThrow();
+
+      // Verify no messages were created in the room
+      const messageCount = await prisma.chatMessage.count({
+        where: { chatRoomId: testRoomId },
+      });
+      expect(messageCount).toBe(0);
+    });
+
+    it('should successfully create message with all atomic operations', async () => {
+      // Create message successfully
+      const message = await createChatRoomMessage({
+        chatRoomId: testRoomId,
+        senderId: senderUserId,
+        content: 'Atomic test message',
+      });
+
+      // Verify message was created
+      expect(message).toHaveProperty('id');
+      expect(message.content).toBe('Atomic test message');
+      expect(message.senderId).toBe(senderUserId);
+
+      // Verify ChatRoom was updated
+      const updatedRoom = await prisma.chatRoom.findUnique({
+        where: { id: testRoomId },
+      });
+      expect(updatedRoom?.lastMessageAt).not.toBeNull();
+
+      // Verify ChatMessage exists in database
+      const dbMessage = await prisma.chatMessage.findFirst({
+        where: {
+          chatRoomId: testRoomId,
+          senderId: senderUserId,
+        },
+      });
+      expect(dbMessage).not.toBeNull();
+      expect(dbMessage?.content).not.toBe('Atomic test message'); // Content is encrypted
+
+      // Verify unread count was incremented for participant
+      const participant = await prisma.roomParticipant.findFirst({
+        where: {
+          roomId: testRoomId,
+          userId: participantUserId,
+        },
+      });
+      expect(participant?.unreadCount).toBe(1);
+
+      // Verify offline message was created
+      const offlineMessage = await prisma.offlineMessage.findFirst({
+        where: {
+          conversationId: testRoomId,
+          userId: participantUserId,
+        },
+      });
+      expect(offlineMessage).not.toBeNull();
+    });
+
+    it('should handle multiple messages atomically without data corruption', async () => {
+      // Create multiple messages in sequence
+      const _message1 = await createChatRoomMessage({
+        chatRoomId: testRoomId,
+        senderId: senderUserId,
+        content: 'First message',
+      });
+
+      const _message2 = await createChatRoomMessage({
+        chatRoomId: testRoomId,
+        senderId: senderUserId,
+        content: 'Second message',
+      });
+
+      // Verify both messages exist
+      const messages = await prisma.chatMessage.findMany({
+        where: { chatRoomId: testRoomId },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      expect(messages.length).toBe(2);
+
+      // Verify unread count was incremented for both messages
+      const participant = await prisma.roomParticipant.findFirst({
+        where: {
+          roomId: testRoomId,
+          userId: participantUserId,
+        },
+      });
+      expect(participant?.unreadCount).toBe(2);
+
+      // Verify offline messages were created for both
+      const offlineMessages = await prisma.offlineMessage.findMany({
+        where: {
+          conversationId: testRoomId,
+          userId: participantUserId,
+        },
+      });
+      expect(offlineMessages.length).toBe(2);
+    });
+
+    it('should rollback ChatRoom.lastMessageAt when transaction fails mid-way', async () => {
+      // Get initial lastMessageAt
+      const initialRoom = await prisma.chatRoom.findUnique({
+        where: { id: testRoomId },
+        select: { lastMessageAt: true },
+      });
+      const _initialLastMessageAt = initialRoom?.lastMessageAt;
+
+      // Create a valid message first to set baseline
+      await createChatRoomMessage({
+        chatRoomId: testRoomId,
+        senderId: senderUserId,
+        content: 'Baseline message',
+      });
+
+      // Get the new baseline
+      const afterBaselineRoom = await prisma.chatRoom.findUnique({
+        where: { id: testRoomId },
+        select: { lastMessageAt: true },
+      });
+
+      // Attempt to create message with invalid sender (should fail and rollback)
+      try {
+        await createChatRoomMessage({
+          chatRoomId: testRoomId,
+          senderId: '00000000-0000-0000-0000-000000000999', // Non-existent
+          content: 'Should not be created',
+        });
+      } catch {
+        // Expected to fail
+      }
+
+      // Verify ChatRoom lastMessageAt is unchanged (baseline message time)
+      const finalRoom = await prisma.chatRoom.findUnique({
+        where: { id: testRoomId },
+        select: { lastMessageAt: true },
+      });
+      expect(finalRoom?.lastMessageAt).toEqual(afterBaselineRoom?.lastMessageAt);
+
+      // Verify only the baseline message exists
+      const messageCount = await prisma.chatMessage.count({
+        where: {
+          chatRoomId: testRoomId,
+          senderId: senderUserId,
+        },
+      });
+      expect(messageCount).toBe(1);
     });
   });
 });

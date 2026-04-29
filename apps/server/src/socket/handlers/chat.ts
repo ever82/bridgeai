@@ -458,7 +458,10 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
     }
   );
 
-  // User came online - deliver offline messages
+  // User came online - deliver offline messages via socket
+  // Note: Push notifications (Expo Push / Web Push) are already sent at message creation time
+  // via messageService.createChatRoomMessage -> createChatRoomOfflineMessages -> sendOfflinePushNotifications
+  // for users who were offline. This handler delivers the messages via socket now that the user is online.
   socket.on('user:online', async callback => {
     try {
       if (!socket.user?.id) {
@@ -520,7 +523,9 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
 }
 
 /**
- * Deliver offline messages for a specific room
+ * Deliver offline messages for a specific room via socket.
+ * Push notifications for these messages were already sent when the messages were created
+ * (via messageService.createChatRoomOfflineMessages -> sendOfflinePushNotifications).
  */
 async function deliverOfflineMessages(socket: AuthenticatedSocket, roomId: string): Promise<void> {
   if (!socket.user?.id) return;
