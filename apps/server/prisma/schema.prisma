@@ -2249,3 +2249,20 @@ model UserPreference {
   @@index([userId])
   @@map("user_preferences")
 }
+
+// ============================================
+// 搜索历史 (Search History)
+// ============================================
+
+model SearchHistory {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  query       String   @default("")
+  filters     Json?
+  resultCount Int      @default(0) @map("result_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("search_history")
+}

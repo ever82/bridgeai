@@ -7,3 +7,5 @@ export * from './jobPostingService';
 export * from './companyVerification';
 export * from './resumeScreening';
 export * from './jobRecommendation';
+export * from './jobSearchService';
+export * from './jobMatchNotifications';
