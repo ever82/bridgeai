@@ -11,9 +11,20 @@ import { SenderType } from '@bridgeai/shared';
 
 import { ChatMessage, MessageAttachment } from '../../types/chat';
 import { theme } from '../../theme';
+import { DateSeparator } from '../DateSeparator';
 
 import { MessageBubble } from './MessageBubble';
 import { SenderChangeIndicator } from './SenderIndicator';
+
+function isDifferentDay(date1: string, date2: string): boolean {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  return (
+    d1.getFullYear() !== d2.getFullYear() ||
+    d1.getMonth() !== d2.getMonth() ||
+    d1.getDate() !== d2.getDate()
+  );
+}
 
 export interface MessageListProps {
   messages: ChatMessage[];
@@ -84,8 +95,11 @@ export const MessageList: React.FC<MessageListProps> = ({
     const isConsecutive = prevMessage?.senderId === item.senderId;
     const showSenderChange = prevMessage && prevMessage.senderId !== item.senderId;
 
+    const showDateSeparator = prevMessage && isDifferentDay(item.createdAt, prevMessage.createdAt);
+
     return (
       <View>
+        {showDateSeparator && <DateSeparator date={new Date(item.createdAt)} />}
         {showSenderChange && (
           <SenderChangeIndicator
             fromType={getSenderType(prevMessage)}

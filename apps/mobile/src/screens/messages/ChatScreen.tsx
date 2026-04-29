@@ -14,6 +14,8 @@ import { AttachmentPicker, AttachmentData } from '../../components/Chat/Attachme
 import { getRoomMessages, sendMessage } from '../../services/chatApi';
 import { createReport, ReportReason } from '../../services/api/reportApi';
 import { socketClient } from '../../services/socketClient';
+import { ScrollToBottom } from '../../components/ScrollToBottom';
+import { ChatSearch } from '../../components/ChatSearch';
 import { theme } from '../../theme';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -30,6 +32,9 @@ export const ChatScreen = ({ route }: Props) => {
   const [quickReplies, setQuickReplies] = useState<QuickReplyItem[]>([]);
   const [currentIdentity, setCurrentIdentity] = useState<'USER' | 'AGENT'>('AGENT');
   const [showAttachmentPicker, setShowAttachmentPicker] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [newMessageCount, setNewMessageCount] = useState(0);
+  const [showSearch, setShowSearch] = useState(false);
 
   // Load messages
   const loadMessages = useCallback(async () => {
@@ -57,6 +62,7 @@ export const ChatScreen = ({ route }: Props) => {
         setMessages(prev => [...prev, data.message]);
         setIsTyping(false);
         setQuickReplies([]);
+        setNewMessageCount(prev => prev + 1);
       }
     };
 
@@ -139,6 +145,15 @@ export const ChatScreen = ({ route }: Props) => {
     [handleSend]
   );
 
+  const handleScrollToBottom = useCallback(() => {
+    setNewMessageCount(0);
+    setShowScrollToBottom(false);
+  }, []);
+
+  const handleScrollToMessage = useCallback((_messageId: string) => {
+    // Scroll to message by ID - can be enhanced with useScrollPosition
+  }, []);
+
   // Handle attachment selection via AttachmentPicker
   const handleAttachmentPress = useCallback(() => {
     setShowAttachmentPicker(true);
@@ -172,24 +187,21 @@ export const ChatScreen = ({ route }: Props) => {
   }, []);
 
   // Handle message report
-  const handleReportMessage = useCallback(
-    async (message: ChatMessage) => {
-      Alert.alert(
-        '举报消息',
-        '请选择举报原因',
-        [
-          { text: '垃圾信息', onPress: () => submitReport(message.id, 'SPAM') },
-          { text: '不当内容', onPress: () => submitReport(message.id, 'INAPPROPRIATE') },
-          { text: '虚假信息', onPress: () => submitReport(message.id, 'FALSE') },
-          { text: '骚扰', onPress: () => submitReport(message.id, 'HARASSMENT') },
-          { text: '其他', onPress: () => submitReport(message.id, 'OTHER') },
-          { text: '取消', style: 'cancel' },
-        ],
-        { cancelable: true }
-      );
-    },
-    []
-  );
+  const handleReportMessage = useCallback(async (message: ChatMessage) => {
+    Alert.alert(
+      '举报消息',
+      '请选择举报原因',
+      [
+        { text: '垃圾信息', onPress: () => submitReport(message.id, 'SPAM') },
+        { text: '不当内容', onPress: () => submitReport(message.id, 'INAPPROPRIATE') },
+        { text: '虚假信息', onPress: () => submitReport(message.id, 'FALSE') },
+        { text: '骚扰', onPress: () => submitReport(message.id, 'HARASSMENT') },
+        { text: '其他', onPress: () => submitReport(message.id, 'OTHER') },
+        { text: '取消', style: 'cancel' },
+      ],
+      { cancelable: true }
+    );
+  }, []);
 
   const submitReport = useCallback(async (messageId: string, reason: ReportReason) => {
     try {
@@ -254,6 +266,12 @@ export const ChatScreen = ({ route }: Props) => {
         )}
 
         <QuickReply replies={quickReplies} onSelect={handleQuickReply} />
+
+        <ScrollToBottom
+          visible={showScrollToBottom}
+          onPress={handleScrollToBottom}
+          unreadCount={newMessageCount}
+        />
       </View>
 
       <ChatInput
@@ -267,6 +285,14 @@ export const ChatScreen = ({ route }: Props) => {
         onClose={() => setShowAttachmentPicker(false)}
         onSend={handleAttachmentSend}
       />
+
+      {showSearch && (
+        <ChatSearch
+          messages={messages.map(m => ({ id: m.id, content: m.content }))}
+          onScrollToMessage={handleScrollToMessage}
+          onClose={() => setShowSearch(false)}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 };
