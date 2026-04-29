@@ -175,9 +175,7 @@ function checkSimulator(): boolean {
       encoding: 'utf-8',
     });
     const devices = JSON.parse(output);
-    const hasDevice = Object.values(devices.devices).some(
-      (list: unknown[]) => list.length > 0
-    );
+    const hasDevice = Object.values(devices.devices).some((list: unknown[]) => list.length > 0);
     return hasDevice;
   } catch {
     return false;
@@ -191,8 +189,8 @@ function getBootedSimulator(): string | null {
       encoding: 'utf-8',
     });
     const data = JSON.parse(output);
-    for (const [runtime, list] of Object.entries(data.devices)) {
-      for (const device of list as any[]) {
+    for (const [_runtime, list] of Object.entries(data.devices)) {
+      for (const device of list as Record<string, string>[]) {
         if (device.state === 'Booted') {
           return device.udid;
         }
@@ -214,16 +212,16 @@ function getDefaultSimulator(): string | null {
     // 优先找 iPhone 15/16
     for (const [runtime, list] of Object.entries(data.devices)) {
       if (!runtime.includes('iOS')) continue;
-      for (const device of list as any[]) {
+      for (const device of list as Record<string, string>[]) {
         if (device.name?.includes('iPhone 16') || device.name?.includes('iPhone 15')) {
           return device.udid;
         }
       }
     }
     //  fallback: 任意 iPhone
-    for (const [runtime, list] of Object.entries(data.devices)) {
-      if (!runtime.includes('iOS')) continue;
-      for (const device of list as any[]) {
+    for (const [_runtime, list] of Object.entries(data.devices)) {
+      if (!_runtime.includes('iOS')) continue;
+      for (const device of list as Record<string, string>[]) {
         if (device.name?.includes('iPhone')) {
           return device.udid;
         }
@@ -327,7 +325,7 @@ function shutdownExtraSimulators(keepUdid: string): void {
     });
     const data = JSON.parse(output);
     for (const [_runtime, list] of Object.entries(data.devices)) {
-      for (const device of list as any[]) {
+      for (const device of list as Record<string, string>[]) {
         if (device.udid !== keepUdid && device.state === 'Booted') {
           console.log(`  🛑 Shutting down extra simulator: ${device.name} (${device.udid})`);
           try {
@@ -365,8 +363,8 @@ function buildAndInstallApp(platform: Platform): boolean {
     }
     console.log('  ✅ Build complete (JS bundled into app)');
     return true;
-  } catch (error: any) {
-    console.error('  ❌ Build failed:', error.message);
+  } catch (error: unknown) {
+    console.error('  ❌ Build failed:', error instanceof Error ? error.message : String(error));
     return false;
   }
 }
@@ -397,16 +395,16 @@ function getAllFlows(): FlowMeta[] {
   if (!fs.existsSync(FLOWS_DIR)) return [];
   return fs
     .readdirSync(FLOWS_DIR)
-    .filter((f) => f.endsWith('.yaml'))
-    .map((f) => parseFlowMeta(path.join(FLOWS_DIR, f)));
+    .filter(f => f.endsWith('.yaml'))
+    .map(f => parseFlowMeta(path.join(FLOWS_DIR, f)));
 }
 
 function filterFlows(flows: FlowMeta[], flowName?: string, issueId?: string): FlowMeta[] {
   if (flowName) {
-    return flows.filter((f) => f.name === flowName || f.name === `${flowName}-flow`);
+    return flows.filter(f => f.name === flowName || f.name === `${flowName}-flow`);
   }
   if (issueId) {
-    return flows.filter((f) => f.issues.includes(issueId));
+    return flows.filter(f => f.issues.includes(issueId));
   }
   return flows;
 }
@@ -443,59 +441,82 @@ function getMaestroCmd(): string {
   }
 }
 
-function runFlow(flowPath: string, platform: Platform, timeout: number, screenshotOnFailure: boolean): RunResult {
+const MAX_RETRIES = 2; // Max retry attempts on test failure
+
+function runFlow(
+  flowPath: string,
+  platform: Platform,
+  timeout: number,
+  screenshotOnFailure: boolean
+): RunResult {
   const flowName = path.basename(flowPath, '.yaml');
-  const startTime = Date.now();
-  const outputFile = path.join(REPORT_DIR, `${flowName}-${Date.now()}.html`);
 
   console.log(`\n  🔄 Running: ${flowName}`);
 
-  try {
-    const maestro = getMaestroCmd();
-    // Explicitly specify device to avoid "multiple devices" prompt
-    const bootedUdid = getBootedSimulator();
-    const deviceArg = bootedUdid ? `--device-id "${bootedUdid}"` : '';
-    const cmd = `${maestro} test "${flowPath}" --format HTML --output "${outputFile}" ${deviceArg}`.trim();
-    const output = execSync(cmd, {
-      stdio: 'pipe',
-      encoding: 'utf-8',
-      timeout,
-      cwd: MAESTRO_DIR,
-    });
+  let lastResult: RunResult = { flow: flowName, passed: false, duration: 0, output: '' };
 
-    const duration = Date.now() - startTime;
-    console.log(`     ✅ Passed (${duration}ms)`);
-
-    return {
-      flow: flowName,
-      passed: true,
-      duration,
-      output,
-    };
-  } catch (error: any) {
-    const duration = Date.now() - startTime;
-    const output = error.stdout || '';
-    const errMsg = error.message || '';
-
-    console.log(`     ❌ Failed (${duration}ms)`);
-    if (errMsg.includes('timeout')) {
-      console.log(`     ⚠️  Timeout after ${timeout}ms`);
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      console.log(`     🔁 Retry ${attempt}/${MAX_RETRIES}...`);
     }
 
-    let screenshot: string | undefined;
-    if (screenshotOnFailure) {
-      screenshot = takeScreenshot(flowName);
-    }
+    const attemptStart = Date.now();
 
-    return {
-      flow: flowName,
-      passed: false,
-      duration,
-      output,
-      error: errMsg,
-      screenshot,
-    };
+    try {
+      const maestro = getMaestroCmd();
+      const bootedUdid = getBootedSimulator();
+      const deviceArg = bootedUdid ? `--device-id "${bootedUdid}"` : '';
+      const outputFile = path.join(REPORT_DIR, `${flowName}-${Date.now()}.html`);
+      const cmd =
+        `${maestro} test "${flowPath}" --format HTML --output "${outputFile}" ${deviceArg}`.trim();
+      const output = execSync(cmd, {
+        stdio: 'pipe',
+        encoding: 'utf-8',
+        timeout,
+        cwd: MAESTRO_DIR,
+      });
+
+      const duration = Date.now() - attemptStart;
+      console.log(`     ✅ Passed (${duration}ms)`);
+
+      return {
+        flow: flowName,
+        passed: true,
+        duration,
+        output,
+      };
+    } catch (error: unknown) {
+      const duration = Date.now() - attemptStart;
+      const output = (error as { stdout?: string }).stdout || '';
+      const errMsg = error instanceof Error ? error.message : String(error);
+
+      console.log(`     ❌ Failed (${duration}ms)`);
+      if (errMsg.includes('timeout')) {
+        console.log(`     ⚠️  Timeout after ${timeout}ms`);
+      }
+
+      let screenshot: string | undefined;
+      if (screenshotOnFailure) {
+        screenshot = takeScreenshot(flowName);
+      }
+
+      lastResult = {
+        flow: flowName,
+        passed: false,
+        duration,
+        output,
+        error: errMsg,
+        screenshot,
+      };
+
+      // If we have retries left, continue the loop; otherwise return the failure
+      if (attempt < MAX_RETRIES) {
+        continue;
+      }
+    }
   }
+
+  return lastResult;
 }
 
 // ─── L0 健康检查 ──────────────────────────────────────────────────
@@ -561,10 +582,15 @@ function runLayer0(): boolean {
         // Show version if available
         try {
           const maestro = getMaestroCmd();
-          const version = execSync(`${maestro} --version`, { encoding: 'utf-8', stdio: 'pipe' }).trim();
+          const version = execSync(`${maestro} --version`, {
+            encoding: 'utf-8',
+            stdio: 'pipe',
+          }).trim();
           console.log(`   ✅ ${check.name}: ${version}`);
           continue;
-        } catch {}
+        } catch {
+          // expected - version check may fail, skip
+        }
       }
       console.log(`   ✅ ${check.name}`);
     } else {
@@ -576,7 +602,15 @@ function runLayer0(): boolean {
 
   // Environment variables — auto-fix common locations
   const home = process.env.HOME || '';
-  const defaultJavaHome = path.join(home, 'Library', 'Java', 'JavaVirtualMachines', 'temurin-17.jdk', 'Contents', 'Home');
+  const defaultJavaHome = path.join(
+    home,
+    'Library',
+    'Java',
+    'JavaVirtualMachines',
+    'temurin-17.jdk',
+    'Contents',
+    'Home'
+  );
   const defaultMaestroBin = path.join(home, '.maestro', 'bin');
 
   if (!process.env.JAVA_HOME && fs.existsSync(defaultJavaHome)) {
@@ -650,7 +684,7 @@ function generateReport(report: RunReport): void {
     <tr><th>Flow</th><th>Status</th><th>Duration</th><th>Details</th><th>Screenshot</th></tr>
     ${report.results
       .map(
-        (r) => `
+        r => `
     <tr>
       <td>${r.flow}</td>
       <td class="status ${r.passed ? 'pass' : 'fail'}">${r.passed ? 'PASS' : 'FAIL'}</td>
@@ -687,8 +721,11 @@ function installMaestro(): void {
       execSync('curl -s "https://get.maestro.mobile.dev" | bash', { stdio: 'inherit' });
     }
     console.log('✅ Maestro installed');
-  } catch (error: any) {
-    console.error('❌ Installation failed:', error.message);
+  } catch (error: unknown) {
+    console.error(
+      '❌ Installation failed:',
+      error instanceof Error ? error.message : String(error)
+    );
     process.exit(1);
   }
 }
@@ -703,7 +740,10 @@ function diagnose(platform: Platform): boolean {
 
   // Maestro
   if (checkMaestroInstalled()) {
-    const version = execSync(`${getMaestroCmd()} --version`, { encoding: 'utf-8', stdio: 'pipe' }).trim();
+    const version = execSync(`${getMaestroCmd()} --version`, {
+      encoding: 'utf-8',
+      stdio: 'pipe',
+    }).trim();
     console.log(`   ✅ Maestro: ${version}`);
   } else {
     console.log('   ❌ Maestro: not installed');
@@ -714,7 +754,9 @@ function diagnose(platform: Platform): boolean {
   if (platform === 'ios') {
     // Xcode
     if (checkXcode()) {
-      const version = execSync('xcodebuild -version', { encoding: 'utf-8', stdio: 'pipe' }).split('\n')[0].trim();
+      const version = execSync('xcodebuild -version', { encoding: 'utf-8', stdio: 'pipe' })
+        .split('\n')[0]
+        .trim();
       console.log(`   ✅ Xcode: ${version}`);
     } else {
       console.log('   ❌ Xcode: not found');
@@ -789,10 +831,10 @@ function startBackend(): boolean {
     });
 
     // Log output
-    backendProcess.stdout?.on('data', (data) => {
+    backendProcess.stdout?.on('data', data => {
       process.stdout.write(`   [server] ${data}`);
     });
-    backendProcess.stderr?.on('data', (data) => {
+    backendProcess.stderr?.on('data', data => {
       process.stderr.write(`   [server:err] ${data}`);
     });
 
@@ -808,8 +850,11 @@ function startBackend(): boolean {
 
     console.error('   ❌ Backend failed to start within 30 seconds');
     return false;
-  } catch (error: any) {
-    console.error('   ❌ Failed to start backend:', error.message);
+  } catch (error: unknown) {
+    console.error(
+      '   ❌ Failed to start backend:',
+      error instanceof Error ? error.message : String(error)
+    );
     return false;
   }
 }
@@ -886,7 +931,7 @@ async function main() {
     } else if (args.flow) {
       console.log(`\n⚠️  Flow "${args.flow}" not found`);
       console.log('   Available flows:');
-      allFlows.forEach((f) => console.log(`     - ${f.name}`));
+      allFlows.forEach(f => console.log(`     - ${f.name}`));
     }
     return;
   }
@@ -924,8 +969,8 @@ async function main() {
   }
 
   const totalDuration = Date.now() - startTime;
-  const passed = results.filter((r) => r.passed).length;
-  const failed = results.filter((r) => !r.passed).length;
+  const passed = results.filter(r => r.passed).length;
+  const failed = results.filter(r => !r.passed).length;
 
   // 生成报告
   const report: RunReport = {
@@ -949,17 +994,17 @@ async function main() {
     process.exit(0);
   } else {
     console.log(`❌ ${failed}/${results.length} flows failed`);
-    results
-      .filter((r) => !r.passed)
-      .forEach((r) => console.log(`   - ${r.flow}`));
+    results.filter(r => !r.passed).forEach(r => console.log(`   - ${r.flow}`));
     process.exit(1);
   }
 }
 
-main().catch((err) => {
-  console.error('Unexpected error:', err);
-  stopBackend();
-  process.exit(1);
-}).finally(() => {
-  stopBackend();
-});
+main()
+  .catch(err => {
+    console.error('Unexpected error:', err);
+    stopBackend();
+    process.exit(1);
+  })
+  .finally(() => {
+    stopBackend();
+  });

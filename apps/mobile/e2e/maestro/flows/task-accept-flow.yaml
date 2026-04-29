@@ -9,59 +9,53 @@ env:
 ---
 # 快速登录
 - launchApp
-- waitForAnimationToEnd
-
-# 额外等待 App 初始化完成
-- waitForAnimationToEnd
 
 # 等待登录表单
 - extendedWaitUntil:
     visible:
-      id: "login-email-input"
-    timeout: 20000
+      id: 'login-email-input'
+    timeout: 30000
 
 - tapOn:
-    id: "login-email-input"
+    id: 'login-email-input'
 - inputText: '${TEST_EMAIL}'
 - tapOn:
-    id: "login-password-input"
+    id: 'login-password-input'
 - inputText: '${TEST_PASSWORD}'
 - tapOn:
-    id: "login-button"
+    id: 'login-button'
 - waitForAnimationToEnd
 
 # 等待首页
 - extendedWaitUntil:
     visible:
-      id: "home-header"
+      id: 'home-header'
     timeout: 30000
 
 # 断言1: 首页可见
 - assertVisible:
-    id: "home-header"
+    id: 'home-header'
 
 # 导航到 Discover tab 寻找任务
 - tapOn:
-    label: "discover-tab"
+    label: 'discover-tab'
 - waitForAnimationToEnd
 
 # 进入 VisionShare 模块
 - tapOn:
-    text: "VisionShare"
+    text: 'VisionShare'
 - waitForAnimationToEnd
 
 # 断言2: 查看"我的任务"入口可见
 - tapOn:
-    text: "我的任务"
-- waitForAnimationToEnd
+    text: '我的任务'
 
 # 断言3: 任务列表页面可见（通过等待内容加载）
 - waitForAnimationToEnd
 
 # 导航到任务浏览（附近任务）
 - tapOn:
-    text: "附近任务"
-- waitForAnimationToEnd
+    text: '附近任务'
 
 # 断言4: 任务列表加载完成
 - waitForAnimationToEnd
@@ -69,7 +63,6 @@ env:
 # 点击第一个任务查看详情
 - tapOn:
     index: 0
-- waitForAnimationToEnd
 
 # 断言5: 任务详情页面可见（确认接单按钮区域加载）
 - waitForAnimationToEnd

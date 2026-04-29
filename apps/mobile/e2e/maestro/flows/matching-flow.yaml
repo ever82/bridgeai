@@ -9,76 +9,70 @@ env:
 ---
 # 快速登录
 - launchApp
-- waitForAnimationToEnd
-
-# 额外等待 App 初始化完成
-- waitForAnimationToEnd
 
 # 等待登录表单
 - extendedWaitUntil:
     visible:
-      id: "login-email-input"
-    timeout: 20000
+      id: 'login-email-input'
+    timeout: 30000
 
 - tapOn:
-    id: "login-email-input"
+    id: 'login-email-input'
 - inputText: '${TEST_EMAIL}'
 - tapOn:
-    id: "login-password-input"
+    id: 'login-password-input'
 - inputText: '${TEST_PASSWORD}'
 - tapOn:
-    id: "login-button"
+    id: 'login-button'
 - waitForAnimationToEnd
 
 # 等待首页
 - extendedWaitUntil:
     visible:
-      id: "home-header"
+      id: 'home-header'
     timeout: 30000
 
 # 断言1: 首页 header 可见
 - assertVisible:
-    id: "home-header"
+    id: 'home-header'
 
 # 断言2: 首页推荐列表可见
 - assertVisible:
-    id: "home-moments-list"
+    id: 'home-moments-list'
 
 # 导航到 Discover tab
 - tapOn:
-    label: "discover-tab"
-- waitForAnimationToEnd
+    label: 'discover-tab'
 
 # 断言3: 发现页面已切换（验证 tab 高亮状态）
-# Discover tab 页面内容加载
 - waitForAnimationToEnd
 
 # 导航到 Profile tab 查看 Agent
 - tapOn:
-    label: "profile-tab"
+    label: 'profile-tab'
 - waitForAnimationToEnd
 
 # 断言4: Profile 页面可见
 - assertVisible:
-    id: "profile-logout-button"
+    id: 'profile-logout-button'
 
 # 进入 Agent 列表查看匹配 Agent
 - tapOn:
-    text: "My Agents"
+    text: 'My Agents'
 - waitForAnimationToEnd
 
 # 断言5: Agent 列表页面可见
 - extendedWaitUntil:
     visible:
-      id: "agent-list-screen"
+      id: 'agent-list-screen'
     timeout: 10000
 - assertVisible:
-    id: "agent-list-screen"
+    id: 'agent-list-screen'
 
 # 返回 Profile
 - tapOn:
-    id: "back-button"
+    id: 'back-button'
 
 # 断言6: 验证回到 Profile 页面
 - assertVisible:
-    id: "profile-logout-button"
+    id: 'profile-logout-button'

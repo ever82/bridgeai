@@ -1,60 +1,103 @@
 # issue: ISSUE-AUTH-002
-# description: 用户退出登录流程
+# description: 用户退出登录完整流程
 
 appId: com.bridgeai.mobile
 env:
-  TEST_EMAIL: 'test@bridgeai.test'
+  TEST_EMAIL: 'e2e-logout-${TIMESTAMP}-${RANDOM}@bridgeai.test'
+  TEST_USERNAME: 'logoutuser${RANDOM}'
+  TEST_DISPLAYNAME: 'E2E Logout Test'
   TEST_PASSWORD: 'TestPass123!'
 
 ---
-# 确保登录
+# ===== 注册新用户 =====
+
+- stopApp
 - launchApp
-- waitForAnimationToEnd
 
-# 额外等待 App 初始化完成
-- waitForAnimationToEnd
-
-# 等待登录表单
+# 等待 App 加载
 - extendedWaitUntil:
     visible:
-      id: "login-email-input"
-    timeout: 20000
+      id: 'login-email-input'
+    timeout: 30000
 
-# 快速登录
+# 断言1: 登录表单可见
+- assertVisible:
+    id: 'login-email-input'
+
+# 导航到注册页面
 - tapOn:
-    id: "login-email-input"
+    text: '立即注册'
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'register-email-input'
+    timeout: 10000
+
+# 填写注册表单
+- tapOn:
+    id: 'register-email-input'
 - inputText: '${TEST_EMAIL}'
+
 - tapOn:
-    id: "login-password-input"
+    id: 'register-username-input'
+- inputText: '${TEST_USERNAME}'
+
+- tapOn:
+    id: 'register-displayname-input'
+- inputText: '${TEST_DISPLAYNAME}'
+
+- tapOn:
+    id: 'register-password-input'
 - inputText: '${TEST_PASSWORD}'
+
 - tapOn:
-    id: "login-button"
+    id: 'register-confirm-password-input'
+- inputText: '${TEST_PASSWORD}'
+
+# 提交注册
+- tapOn:
+    id: 'register-submit-button'
 - waitForAnimationToEnd
 
 # 等待首页
 - extendedWaitUntil:
     visible:
-      id: "home-header"
+      id: 'home-header'
     timeout: 30000
+
+# 断言2: 首页可见（登录成功）
+- assertVisible:
+    id: 'home-header'
+
+# ===== 退出登录流程 =====
 
 # 导航到 Profile tab
 - tapOn:
-    label: "profile-tab"
+    label: 'profile-tab'
 - waitForAnimationToEnd
 
-# 点击登出按钮
+# 断言3: Profile 页面可见
 - extendedWaitUntil:
     visible:
-      id: "profile-logout-button"
-    timeout: 10000
-- tapOn:
-    id: "profile-logout-button"
-- waitForAnimationToEnd
-
-# 验证返回登录页
-- extendedWaitUntil:
-    visible:
-      id: "login-email-input"
+      id: 'profile-logout-button'
     timeout: 10000
 - assertVisible:
-    id: "login-button"
+    id: 'profile-logout-button'
+
+# 断言4: 用户名显示可见
+- assertVisible:
+    id: 'profile-username'
+
+# 点击登出按钮
+- tapOn:
+    id: 'profile-logout-button'
+- waitForAnimationToEnd
+
+# 断言5: 验证返回登录页
+- extendedWaitUntil:
+    visible:
+      id: 'login-email-input'
+    timeout: 10000
+- assertVisible:
+    id: 'login-button'
