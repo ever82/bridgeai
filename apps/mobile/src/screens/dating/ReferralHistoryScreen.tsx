@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import { apiClient } from '../../services/api/client';
+import apiClient from '../../services/api/client';
 
 // 枚举定义
 enum ReferralStatus {

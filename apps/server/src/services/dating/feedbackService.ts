@@ -146,7 +146,7 @@ export function getFeedbackSummary(userId: string): FeedbackSummary {
       const count = skipReasonCounts.get(f.skipReason!) ?? 0;
       skipReasonCounts.set(f.skipReason!, count + 1);
     });
-  const topSkipReasons = [...skipReasonCounts.entries()]
+  const topSkipReasons = Array.from(skipReasonCounts.entries())
     .map(([reason, count]) => ({ reason, count }))
     .sort((a, b) => b.count - a.count);
 

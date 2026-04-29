@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import { apiClient } from '../../services/api/client';
+import apiClient from '../../services/api/client';
 import MatchCard, { type MatchCardData } from '../../components/dating/MatchCard';
 
 // 推荐数据接口

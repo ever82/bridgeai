@@ -140,7 +140,7 @@ function getExcludedProfileIds(userId: string): string[] {
     }
   }
 
-  return [...excluded];
+  return Array.from(excluded);
 }
 
 /**
@@ -308,7 +308,7 @@ export function getUserFeedbackHistory(userId: string): UserFeedbackRecord[] {
  */
 export function invalidateCache(userId?: string): void {
   if (userId) {
-    for (const key of dailyRecommendationCache.keys()) {
+    for (const key of Array.from(dailyRecommendationCache.keys())) {
       if (key.startsWith(`${userId}:`)) {
         dailyRecommendationCache.delete(key);
       }

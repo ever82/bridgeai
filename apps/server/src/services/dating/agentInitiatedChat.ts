@@ -296,11 +296,8 @@ export function getChatSession(sessionId: string): ChatSession | undefined {
  * 获取用户的所有活跃对话
  */
 export function getActiveChatsForUser(userId: string): ChatSession[] {
-  return [...sessionStore.values()].filter(
-    s =>
-      ((s.sourceUserId === userId || s.targetUserId === userId) &&
-        s.status === ChatStatus.ACTIVE) ||
-      s.status === ChatStatus.PAUSED
+  return Array.from(sessionStore.values()).filter(
+    s => s.sourceUserId === userId || s.targetUserId === userId
   );
 }
 
@@ -308,7 +305,7 @@ export function getActiveChatsForUser(userId: string): ChatSession[] {
  * 获取用户的所有对话历史
  */
 export function getChatHistoryForUser(userId: string): ChatSession[] {
-  return [...sessionStore.values()].filter(
+  return Array.from(sessionStore.values()).filter(
     s => s.sourceUserId === userId || s.targetUserId === userId
   );
 }

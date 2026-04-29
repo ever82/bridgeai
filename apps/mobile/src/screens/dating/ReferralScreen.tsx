@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-import { apiClient } from '../../services/api/client';
+import apiClient from '../../services/api/client';
 
 // 同意状态枚举
 enum ConsentStatus {

@@ -124,7 +124,7 @@ export function learnFromFeedback(input: LearningInput): LearnedPreferences {
     }
   }
 
-  for (const [reason, count] of skipReasonCounts.entries()) {
+  for (const [reason, count] of Array.from(skipReasonCounts.entries())) {
     const weight = Math.max(-0.3, (current.skipReasonWeights[reason] ?? 0) - count * 0.02);
     current.skipReasonWeights[reason] = weight;
   }
@@ -140,10 +140,12 @@ export function learnFromFeedback(input: LearningInput): LearnedPreferences {
       const entries = Object.entries(weights) as Array<[keyof SimilarityWeights, number]>;
       entries.sort((a, b) => b[1] - a[1]);
 
-      const maxDim = entries[0][0];
-      const minDim = entries[entries.length - 1][0];
-      current.dimensionAdjustments[maxDim] = (current.dimensionAdjustments[maxDim] ?? 0) - 0.02;
-      current.dimensionAdjustments[minDim] = (current.dimensionAdjustments[minDim] ?? 0) + 0.02;
+      const maxDim = entries[0][0] as string;
+      const minDim = entries[entries.length - 1][0] as string;
+      current.dimensionAdjustments[maxDim] =
+        ((current.dimensionAdjustments[maxDim] ?? 0) as number) - 0.02;
+      current.dimensionAdjustments[minDim] =
+        ((current.dimensionAdjustments[minDim] ?? 0) as number) + 0.02;
     }
   }
 
@@ -191,7 +193,7 @@ export function getAdjustedWeights(userId: string): SimilarityWeights {
     }
   }
 
-  const total = Object.values(base).reduce((a, b) => a + b, 0);
+  const total = (Object.values(base) as number[]).reduce((a, b) => a + b, 0);
   if (total > 0) {
     for (const key of Object.keys(base) as Array<keyof SimilarityWeights>) {
       base[key] = base[key] / total;
