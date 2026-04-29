@@ -22,48 +22,48 @@ export declare const matchQuerySchema: z.ZodObject<{
     limit: z.ZodOptional<z.ZodDefault<z.ZodPipeline<z.ZodEffects<z.ZodString, number, string>, z.ZodNumber>>>;
     offset: z.ZodOptional<z.ZodDefault<z.ZodPipeline<z.ZodEffects<z.ZodString, number, string>, z.ZodNumber>>>;
 }, "strip", z.ZodTypeAny, {
-    status?: "PENDING" | "REJECTED" | "ACCEPTED" | "COMPLETED" | undefined;
-    limit?: number | undefined;
-    sortOrder?: "desc" | "asc" | undefined;
-    minScore?: number | undefined;
-    maxScore?: number | undefined;
-    offset?: number | undefined;
-    sortBy?: "score" | "createdAt" | "creditScore" | undefined;
-    demandId?: string | undefined;
-    supplyId?: string | undefined;
-    excludeLowCredit?: boolean | undefined;
-    creditWeight?: number | undefined;
+    status?: "PENDING" | "ACCEPTED" | "REJECTED" | "COMPLETED";
+    demandId?: string;
+    supplyId?: string;
+    limit?: number;
+    maxScore?: number;
+    sortBy?: "createdAt" | "score" | "creditScore";
+    sortOrder?: "asc" | "desc";
+    offset?: number;
+    minScore?: number;
+    excludeLowCredit?: boolean;
+    creditWeight?: number;
 }, {
-    status?: "PENDING" | "REJECTED" | "ACCEPTED" | "COMPLETED" | undefined;
-    limit?: string | undefined;
-    sortOrder?: "desc" | "asc" | undefined;
-    minScore?: string | undefined;
-    maxScore?: string | undefined;
-    offset?: string | undefined;
-    sortBy?: "score" | "createdAt" | "creditScore" | undefined;
-    demandId?: string | undefined;
-    supplyId?: string | undefined;
-    excludeLowCredit?: string | undefined;
-    creditWeight?: string | undefined;
+    status?: "PENDING" | "ACCEPTED" | "REJECTED" | "COMPLETED";
+    demandId?: string;
+    supplyId?: string;
+    limit?: string;
+    maxScore?: string;
+    sortBy?: "createdAt" | "score" | "creditScore";
+    sortOrder?: "asc" | "desc";
+    offset?: string;
+    minScore?: string;
+    excludeLowCredit?: string;
+    creditWeight?: string;
 }>;
 export type MatchQueryInput = z.infer<typeof matchQuerySchema>;
 export declare const matchActionSchema: z.ZodObject<{
     action: z.ZodEnum<["accept", "reject", "complete"]>;
 }, "strip", z.ZodTypeAny, {
-    action: "accept" | "reject" | "complete";
+    action?: "complete" | "accept" | "reject";
 }, {
-    action: "accept" | "reject" | "complete";
+    action?: "complete" | "accept" | "reject";
 }>;
 export type MatchAction = z.infer<typeof matchActionSchema>;
 export declare const matchNotificationPrefSchema: z.ZodObject<{
     matchNotifications: z.ZodOptional<z.ZodBoolean>;
     pushEnabled: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    pushEnabled?: boolean | undefined;
-    matchNotifications?: boolean | undefined;
+    pushEnabled?: boolean;
+    matchNotifications?: boolean;
 }, {
-    pushEnabled?: boolean | undefined;
-    matchNotifications?: boolean | undefined;
+    pushEnabled?: boolean;
+    matchNotifications?: boolean;
 }>;
 export type MatchNotificationPrefInput = z.infer<typeof matchNotificationPrefSchema>;
 //# sourceMappingURL=matchSchemas.d.ts.map

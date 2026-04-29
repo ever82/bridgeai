@@ -13,21 +13,21 @@ export declare const privacySettingsSchema: z.ZodObject<{
     allowSearchByEmail: z.ZodOptional<z.ZodBoolean>;
     showLastSeen: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    profileVisibility?: "public" | "friends" | "private" | undefined;
-    onlineStatusVisibility?: "friends" | "everyone" | "nobody" | undefined;
-    phoneVisibility?: "hidden" | "public" | "friends" | undefined;
-    emailVisibility?: "hidden" | "public" | "friends" | undefined;
-    allowSearchByPhone?: boolean | undefined;
-    allowSearchByEmail?: boolean | undefined;
-    showLastSeen?: boolean | undefined;
+    profileVisibility?: "public" | "friends" | "private";
+    onlineStatusVisibility?: "friends" | "everyone" | "nobody";
+    phoneVisibility?: "public" | "friends" | "hidden";
+    emailVisibility?: "public" | "friends" | "hidden";
+    allowSearchByPhone?: boolean;
+    allowSearchByEmail?: boolean;
+    showLastSeen?: boolean;
 }, {
-    profileVisibility?: "public" | "friends" | "private" | undefined;
-    onlineStatusVisibility?: "friends" | "everyone" | "nobody" | undefined;
-    phoneVisibility?: "hidden" | "public" | "friends" | undefined;
-    emailVisibility?: "hidden" | "public" | "friends" | undefined;
-    allowSearchByPhone?: boolean | undefined;
-    allowSearchByEmail?: boolean | undefined;
-    showLastSeen?: boolean | undefined;
+    profileVisibility?: "public" | "friends" | "private";
+    onlineStatusVisibility?: "friends" | "everyone" | "nobody";
+    phoneVisibility?: "public" | "friends" | "hidden";
+    emailVisibility?: "public" | "friends" | "hidden";
+    allowSearchByPhone?: boolean;
+    allowSearchByEmail?: boolean;
+    showLastSeen?: boolean;
 }>;
 export default router;
 //# sourceMappingURL=userPrivacy.d.ts.map

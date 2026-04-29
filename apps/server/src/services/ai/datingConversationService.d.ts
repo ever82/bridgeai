@@ -84,6 +84,7 @@ export interface DatingConversationSession {
 }
 export declare class DatingConversationService {
     private sessions;
+    private messageHistory;
     private defaultConfig;
     constructor(config?: Partial<DatingConversationConfig>);
     /**

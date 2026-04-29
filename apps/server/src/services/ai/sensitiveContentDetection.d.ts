@@ -31,7 +31,8 @@ export interface VisionAnalysisResult {
     hadGpsData: boolean;
 }
 /**
- * Detect sensitive content in an image using AI vision analysis
+ * Detect sensitive content in an image using AI vision analysis.
+ * Includes timeout, retry (max 1 retry), and graceful degradation.
  */
 export declare function detectSensitiveContent(imageBuffer: Buffer, options?: DetectionOptions): Promise<VisionAnalysisResult>;
 /**

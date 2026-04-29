@@ -32,26 +32,26 @@ interface CreateCouponParams {
  */
 export declare function createCoupon(params: CreateCouponParams): Promise<{
     qrCodeData: string;
-    code: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    name: string;
-    status: import(".prisma/client").$Enums.CouponStatus;
-    merchantId: string | null;
-    createdAt: Date;
     description: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
-    discountPrice: number | null;
-    originalPrice: number | null;
-    totalCount: number;
-    validUntil: Date;
-    validFrom: Date;
+    status: import(".prisma/client").$Enums.CouponStatus;
+    code: string;
+    merchantId: string | null;
     discountValue: number;
     maxDiscountAmount: number | null;
+    validFrom: Date;
+    validUntil: Date;
     offerId: string | null;
     consumerId: string | null;
+    originalPrice: number | null;
+    discountPrice: number | null;
     discountType: string;
     minOrderAmount: number | null;
+    totalCount: number;
     remainingCount: number;
     perUserLimit: number;
     usedCount: number;
@@ -63,59 +63,59 @@ export declare function createCoupon(params: CreateCouponParams): Promise<{
 /**
  * Get coupon by ID
  */
-export declare function getCouponById(couponId: string): Promise<({
-    merchant: {
-        address: string | null;
-        id: string;
-        name: string;
-        phone: string | null;
-        logoUrl: string | null;
-    } | null;
+export declare function getCouponById(couponId: string): Promise<{
     transactions: {
-        metadata: Prisma.JsonValue | null;
-        id: string;
         userId: string;
+        amount: number | null;
+        id: string;
         type: string;
+        metadata: Prisma.JsonValue | null;
         createdAt: Date;
         couponId: string;
-        amount: number | null;
         orderId: string | null;
     }[];
-    ratings: {
+    merchant: {
         id: string;
+        name: string;
+        phone: string;
+        address: string;
+        logoUrl: string;
+    };
+    offer: {
+        id: string;
+        description: string;
+        title: string;
+    };
+    ratings: {
         userId: string;
-        rating: number;
+        id: string;
         createdAt: Date;
+        rating: number;
         comment: string | null;
         couponId: string;
         isUseful: boolean;
     }[];
-    offer: {
-        title: string;
-        id: string;
-        description: string | null;
-    } | null;
 } & {
-    code: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    name: string;
-    status: import(".prisma/client").$Enums.CouponStatus;
-    merchantId: string | null;
-    createdAt: Date;
     description: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
-    discountPrice: number | null;
-    originalPrice: number | null;
-    totalCount: number;
-    validUntil: Date;
-    validFrom: Date;
+    status: import(".prisma/client").$Enums.CouponStatus;
+    code: string;
+    merchantId: string | null;
     discountValue: number;
     maxDiscountAmount: number | null;
+    validFrom: Date;
+    validUntil: Date;
     offerId: string | null;
     consumerId: string | null;
+    originalPrice: number | null;
+    discountPrice: number | null;
     discountType: string;
     minOrderAmount: number | null;
+    totalCount: number;
     remainingCount: number;
     perUserLimit: number;
     usedCount: number;
@@ -123,42 +123,41 @@ export declare function getCouponById(couponId: string): Promise<({
     usedAt: Date | null;
     reminderSent: boolean;
     redeemedBy: string | null;
-}) | null>;
+}>;
 /**
  * Get coupon by code
  */
-export declare function getCouponByCode(code: string): Promise<({
+export declare function getCouponByCode(code: string): Promise<{
     merchant: {
-        address: string | null;
         id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.MerchantStatus;
-        createdAt: Date;
-        phone: string | null;
-        agentId: string;
         description: string | null;
-        updatedAt: Date;
+        createdAt: Date;
+        name: string;
         category: string | null;
+        updatedAt: Date;
+        phone: string | null;
+        status: import(".prisma/client").$Enums.MerchantStatus;
+        agentId: string;
+        address: string | null;
         businessHours: Prisma.JsonValue | null;
         logoUrl: string | null;
-    } | null;
+    };
     offer: {
-        title: string;
         id: string;
-        status: import(".prisma/client").$Enums.OfferStatus;
-        merchantId: string;
         type: import(".prisma/client").$Enums.OfferType;
-        createdAt: Date;
         description: string | null;
+        createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.OfferStatus;
         dailyLimit: number | null;
-        validUntil: Date;
-        viewCount: number;
-        validFrom: Date;
+        title: string;
+        merchantId: string;
         discountValue: Prisma.Decimal | null;
         minPurchaseAmount: Prisma.Decimal | null;
         maxDiscountAmount: Prisma.Decimal | null;
         applicableScope: Prisma.JsonValue | null;
+        validFrom: Date;
+        validUntil: Date;
         totalStock: number;
         remainingStock: number;
         stockAlertThreshold: number;
@@ -168,28 +167,29 @@ export declare function getCouponByCode(code: string): Promise<({
         aiExtractionData: Prisma.JsonValue | null;
         aiConfidence: number | null;
         usageCount: number;
-    } | null;
+        viewCount: number;
+    };
 } & {
-    code: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    name: string;
-    status: import(".prisma/client").$Enums.CouponStatus;
-    merchantId: string | null;
-    createdAt: Date;
     description: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
-    discountPrice: number | null;
-    originalPrice: number | null;
-    totalCount: number;
-    validUntil: Date;
-    validFrom: Date;
+    status: import(".prisma/client").$Enums.CouponStatus;
+    code: string;
+    merchantId: string | null;
     discountValue: number;
     maxDiscountAmount: number | null;
+    validFrom: Date;
+    validUntil: Date;
     offerId: string | null;
     consumerId: string | null;
+    originalPrice: number | null;
+    discountPrice: number | null;
     discountType: string;
     minOrderAmount: number | null;
+    totalCount: number;
     remainingCount: number;
     perUserLimit: number;
     usedCount: number;
@@ -197,53 +197,53 @@ export declare function getCouponByCode(code: string): Promise<({
     usedAt: Date | null;
     reminderSent: boolean;
     redeemedBy: string | null;
-}) | null>;
+}>;
 /**
  * Get consumer's coupons
  */
 export declare function getConsumerCoupons(consumerId: string, status?: CouponStatus): Promise<({
-    merchant: {
-        address: string | null;
-        id: string;
-        name: string;
-        logoUrl: string | null;
-    } | null;
     transactions: {
-        metadata: Prisma.JsonValue | null;
-        id: string;
         userId: string;
+        amount: number | null;
+        id: string;
         type: string;
+        metadata: Prisma.JsonValue | null;
         createdAt: Date;
         couponId: string;
-        amount: number | null;
         orderId: string | null;
     }[];
-    offer: {
-        title: string;
+    merchant: {
         id: string;
-        description: string | null;
-    } | null;
+        name: string;
+        address: string;
+        logoUrl: string;
+    };
+    offer: {
+        id: string;
+        description: string;
+        title: string;
+    };
 } & {
-    code: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    name: string;
-    status: import(".prisma/client").$Enums.CouponStatus;
-    merchantId: string | null;
-    createdAt: Date;
     description: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
-    discountPrice: number | null;
-    originalPrice: number | null;
-    totalCount: number;
-    validUntil: Date;
-    validFrom: Date;
+    status: import(".prisma/client").$Enums.CouponStatus;
+    code: string;
+    merchantId: string | null;
     discountValue: number;
     maxDiscountAmount: number | null;
+    validFrom: Date;
+    validUntil: Date;
     offerId: string | null;
     consumerId: string | null;
+    originalPrice: number | null;
+    discountPrice: number | null;
     discountType: string;
     minOrderAmount: number | null;
+    totalCount: number;
     remainingCount: number;
     perUserLimit: number;
     usedCount: number;
@@ -257,30 +257,30 @@ export declare function getConsumerCoupons(consumerId: string, status?: CouponSt
  */
 export declare function getMerchantCoupons(merchantId: string, status?: CouponStatus): Promise<({
     offer: {
-        title: string;
         id: string;
-    } | null;
+        title: string;
+    };
 } & {
-    code: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    name: string;
-    status: import(".prisma/client").$Enums.CouponStatus;
-    merchantId: string | null;
-    createdAt: Date;
     description: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
-    discountPrice: number | null;
-    originalPrice: number | null;
-    totalCount: number;
-    validUntil: Date;
-    validFrom: Date;
+    status: import(".prisma/client").$Enums.CouponStatus;
+    code: string;
+    merchantId: string | null;
     discountValue: number;
     maxDiscountAmount: number | null;
+    validFrom: Date;
+    validUntil: Date;
     offerId: string | null;
     consumerId: string | null;
+    originalPrice: number | null;
+    discountPrice: number | null;
     discountType: string;
     minOrderAmount: number | null;
+    totalCount: number;
     remainingCount: number;
     perUserLimit: number;
     usedCount: number;
@@ -301,26 +301,26 @@ export declare function validateCoupon(couponId: string, merchantId: string): Pr
  * Redeem coupon (offline mode)
  */
 export declare function redeemCoupon(couponId: string, merchantId: string): Promise<{
-    code: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    name: string;
-    status: import(".prisma/client").$Enums.CouponStatus;
-    merchantId: string | null;
-    createdAt: Date;
     description: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
-    discountPrice: number | null;
-    originalPrice: number | null;
-    totalCount: number;
-    validUntil: Date;
-    validFrom: Date;
+    status: import(".prisma/client").$Enums.CouponStatus;
+    code: string;
+    merchantId: string | null;
     discountValue: number;
     maxDiscountAmount: number | null;
+    validFrom: Date;
+    validUntil: Date;
     offerId: string | null;
     consumerId: string | null;
+    originalPrice: number | null;
+    discountPrice: number | null;
     discountType: string;
     minOrderAmount: number | null;
+    totalCount: number;
     remainingCount: number;
     perUserLimit: number;
     usedCount: number;
@@ -334,26 +334,26 @@ export declare function redeemCoupon(couponId: string, merchantId: string): Prom
  */
 export declare function useCouponOnline(couponId: string, paymentMethod: string, pointsUsed?: number): Promise<{
     coupon: {
-        code: string;
-        metadata: Prisma.JsonValue | null;
         id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.CouponStatus;
-        merchantId: string | null;
-        createdAt: Date;
         description: string | null;
+        metadata: Prisma.JsonValue | null;
+        createdAt: Date;
+        name: string;
         updatedAt: Date;
-        discountPrice: number | null;
-        originalPrice: number | null;
-        totalCount: number;
-        validUntil: Date;
-        validFrom: Date;
+        status: import(".prisma/client").$Enums.CouponStatus;
+        code: string;
+        merchantId: string | null;
         discountValue: number;
         maxDiscountAmount: number | null;
+        validFrom: Date;
+        validUntil: Date;
         offerId: string | null;
         consumerId: string | null;
+        originalPrice: number | null;
+        discountPrice: number | null;
         discountType: string;
         minOrderAmount: number | null;
+        totalCount: number;
         remainingCount: number;
         perUserLimit: number;
         usedCount: number;
@@ -363,13 +363,13 @@ export declare function useCouponOnline(couponId: string, paymentMethod: string,
         redeemedBy: string | null;
     };
     transaction: {
-        metadata: Prisma.JsonValue | null;
-        id: string;
         userId: string;
+        amount: number | null;
+        id: string;
         type: string;
+        metadata: Prisma.JsonValue | null;
         createdAt: Date;
         couponId: string;
-        amount: number | null;
         orderId: string | null;
     };
 }>;
@@ -377,26 +377,26 @@ export declare function useCouponOnline(couponId: string, paymentMethod: string,
  * Expire coupon
  */
 export declare function expireCoupon(couponId: string): Promise<{
-    code: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    name: string;
-    status: import(".prisma/client").$Enums.CouponStatus;
-    merchantId: string | null;
-    createdAt: Date;
     description: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
-    discountPrice: number | null;
-    originalPrice: number | null;
-    totalCount: number;
-    validUntil: Date;
-    validFrom: Date;
+    status: import(".prisma/client").$Enums.CouponStatus;
+    code: string;
+    merchantId: string | null;
     discountValue: number;
     maxDiscountAmount: number | null;
+    validFrom: Date;
+    validUntil: Date;
     offerId: string | null;
     consumerId: string | null;
+    originalPrice: number | null;
+    discountPrice: number | null;
     discountType: string;
     minOrderAmount: number | null;
+    totalCount: number;
     remainingCount: number;
     perUserLimit: number;
     usedCount: number;
@@ -409,26 +409,26 @@ export declare function expireCoupon(couponId: string): Promise<{
  * Cancel coupon
  */
 export declare function cancelCoupon(couponId: string, consumerId: string): Promise<{
-    code: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    name: string;
-    status: import(".prisma/client").$Enums.CouponStatus;
-    merchantId: string | null;
-    createdAt: Date;
     description: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
-    discountPrice: number | null;
-    originalPrice: number | null;
-    totalCount: number;
-    validUntil: Date;
-    validFrom: Date;
+    status: import(".prisma/client").$Enums.CouponStatus;
+    code: string;
+    merchantId: string | null;
     discountValue: number;
     maxDiscountAmount: number | null;
+    validFrom: Date;
+    validUntil: Date;
     offerId: string | null;
     consumerId: string | null;
+    originalPrice: number | null;
+    discountPrice: number | null;
     discountType: string;
     minOrderAmount: number | null;
+    totalCount: number;
     remainingCount: number;
     perUserLimit: number;
     usedCount: number;
@@ -444,31 +444,31 @@ export declare function getExpiringCoupons(hoursBeforeExpiry?: number): Promise<
     merchant: {
         id: string;
         name: string;
-    } | null;
+    };
     offer: {
         title: string;
-    } | null;
+    };
 } & {
-    code: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    name: string;
-    status: import(".prisma/client").$Enums.CouponStatus;
-    merchantId: string | null;
-    createdAt: Date;
     description: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
-    discountPrice: number | null;
-    originalPrice: number | null;
-    totalCount: number;
-    validUntil: Date;
-    validFrom: Date;
+    status: import(".prisma/client").$Enums.CouponStatus;
+    code: string;
+    merchantId: string | null;
     discountValue: number;
     maxDiscountAmount: number | null;
+    validFrom: Date;
+    validUntil: Date;
     offerId: string | null;
     consumerId: string | null;
+    originalPrice: number | null;
+    discountPrice: number | null;
     discountType: string;
     minOrderAmount: number | null;
+    totalCount: number;
     remainingCount: number;
     perUserLimit: number;
     usedCount: number;
@@ -481,26 +481,26 @@ export declare function getExpiringCoupons(hoursBeforeExpiry?: number): Promise<
  * Mark reminder as sent
  */
 export declare function markReminderSent(couponId: string): Promise<{
-    code: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    name: string;
-    status: import(".prisma/client").$Enums.CouponStatus;
-    merchantId: string | null;
-    createdAt: Date;
     description: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
-    discountPrice: number | null;
-    originalPrice: number | null;
-    totalCount: number;
-    validUntil: Date;
-    validFrom: Date;
+    status: import(".prisma/client").$Enums.CouponStatus;
+    code: string;
+    merchantId: string | null;
     discountValue: number;
     maxDiscountAmount: number | null;
+    validFrom: Date;
+    validUntil: Date;
     offerId: string | null;
     consumerId: string | null;
+    originalPrice: number | null;
+    discountPrice: number | null;
     discountType: string;
     minOrderAmount: number | null;
+    totalCount: number;
     remainingCount: number;
     perUserLimit: number;
     usedCount: number;
@@ -521,10 +521,10 @@ interface CreateRatingParams {
  * Create rating for a coupon transaction
  */
 export declare function createRating(params: CreateRatingParams): Promise<{
-    id: string;
     userId: string;
-    rating: number;
+    id: string;
     createdAt: Date;
+    rating: number;
     comment: string | null;
     couponId: string;
     isUseful: boolean;
@@ -533,10 +533,10 @@ export declare function createRating(params: CreateRatingParams): Promise<{
  * Get ratings for a coupon
  */
 export declare function getCouponRatings(couponId: string): Promise<{
-    id: string;
     userId: string;
-    rating: number;
+    id: string;
     createdAt: Date;
+    rating: number;
     comment: string | null;
     couponId: string;
     isUseful: boolean;
@@ -545,10 +545,10 @@ export declare function getCouponRatings(couponId: string): Promise<{
  * Get ratings by ratee
  */
 export declare function getRateeRatings(userId: string): Promise<{
-    id: string;
     userId: string;
-    rating: number;
+    id: string;
     createdAt: Date;
+    rating: number;
     comment: string | null;
     couponId: string;
     isUseful: boolean;

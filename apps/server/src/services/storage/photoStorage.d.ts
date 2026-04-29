@@ -168,6 +168,10 @@ export declare class PhotoStorageService {
      * Removes metadata from both the database and the in-memory cache.
      * Actual cloud storage deletion is still a placeholder.
      */
+    /**
+     * @limitation Cloud storage (S3) deletion is not yet implemented.
+     *              Only database and in-memory cache entries are removed.
+     */
     deletePhoto(photoId: string): Promise<boolean>;
     /**
      * Get storage statistics
@@ -178,9 +182,17 @@ export declare class PhotoStorageService {
      * If imageBuffer is provided, generates a real 200x200 JPEG thumbnail using sharp.
      * Otherwise returns the thumbnail storage URL (placeholder until cloud download is implemented).
      */
+    /**
+     * @limitation Thumbnail cloud upload is not yet implemented.
+     *              The thumbnail buffer is generated but not persisted to cloud storage.
+     */
     createThumbnail(photoId: string, imageBuffer?: Buffer): Promise<string>;
     /**
      * Index photo for search
+     */
+    /**
+     * @limitation Elasticsearch/OpenSearch indexing is not yet implemented.
+     *              Photo metadata is not indexed for search.
      */
     private indexPhoto;
     /**
@@ -189,6 +201,10 @@ export declare class PhotoStorageService {
     private rowToMetadata;
     /**
      * Transition photo to different storage tier
+     */
+    /**
+     * @limitation Storage tier transitions are not yet implemented.
+     *              Lifecycle tier transitions (hot/warm/cold) require S3 lifecycle policies.
      */
     private transitionStorageTier;
     /**

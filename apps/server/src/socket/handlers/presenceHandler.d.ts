@@ -17,7 +17,7 @@ export declare function getPresenceState(userId: string): {
     userId: string;
     status: PresenceStatus;
     lastSeen: Date;
-    customMessage: string | undefined;
+    customMessage: string;
 };
 declare const _default: {
     registerPresenceHandlers: typeof registerPresenceHandlers;

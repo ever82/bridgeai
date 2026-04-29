@@ -20,7 +20,7 @@ export declare const securityHeaders: {
             frameAncestors: string[];
             formAction: string[];
             baseUri: string[];
-            upgradeInsecureRequests: never[];
+            upgradeInsecureRequests: any[];
         };
     };
     crossOriginEmbedderPolicy: boolean;

@@ -48,21 +48,21 @@ export declare const registerUserSchema: z.ZodObject<{
     avatarUrl: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
     bio: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
 }, "strip", z.ZodTypeAny, {
-    email: string;
-    password: string;
-    username: string;
-    displayName?: string | undefined;
-    phone?: string | undefined;
-    bio?: string | undefined;
-    avatarUrl?: string | undefined;
+    email?: string;
+    displayName?: string;
+    avatarUrl?: string;
+    bio?: string;
+    phone?: string;
+    password?: string;
+    username?: string;
 }, {
-    email: string;
-    password: string;
-    username: string;
-    displayName?: string | undefined;
-    phone?: string | undefined;
-    bio?: string | undefined;
-    avatarUrl?: string | undefined;
+    email?: string;
+    displayName?: string;
+    avatarUrl?: string;
+    bio?: string;
+    phone?: string;
+    password?: string;
+    username?: string;
 }>;
 export type RegisterUserInput = z.infer<typeof registerUserSchema>;
 /**
@@ -73,13 +73,13 @@ export declare const loginUserSchema: z.ZodObject<{
     password: z.ZodString;
     rememberMe: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
 }, "strip", z.ZodTypeAny, {
-    email: string;
-    password: string;
-    rememberMe: boolean;
+    email?: string;
+    password?: string;
+    rememberMe?: boolean;
 }, {
-    email: string;
-    password: string;
-    rememberMe?: boolean | undefined;
+    email?: string;
+    password?: string;
+    rememberMe?: boolean;
 }>;
 export type LoginUserInput = z.infer<typeof loginUserSchema>;
 /**
@@ -91,15 +91,15 @@ export declare const updateUserSchema: z.ZodObject<{
     avatarUrl: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
     bio: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
 }, "strip", z.ZodTypeAny, {
-    displayName?: string | undefined;
-    phone?: string | undefined;
-    bio?: string | undefined;
-    avatarUrl?: string | undefined;
+    displayName?: string;
+    avatarUrl?: string;
+    bio?: string;
+    phone?: string;
 }, {
-    displayName?: string | undefined;
-    phone?: string | undefined;
-    bio?: string | undefined;
-    avatarUrl?: string | undefined;
+    displayName?: string;
+    avatarUrl?: string;
+    bio?: string;
+    phone?: string;
 }>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 /**
@@ -110,21 +110,21 @@ export declare const changePasswordSchema: z.ZodEffects<z.ZodObject<{
     newPassword: z.ZodString;
     confirmPassword: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
+    currentPassword?: string;
+    newPassword?: string;
+    confirmPassword?: string;
 }, {
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
+    currentPassword?: string;
+    newPassword?: string;
+    confirmPassword?: string;
 }>, {
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
+    currentPassword?: string;
+    newPassword?: string;
+    confirmPassword?: string;
 }, {
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
+    currentPassword?: string;
+    newPassword?: string;
+    confirmPassword?: string;
 }>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 /**
@@ -133,9 +133,9 @@ export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export declare const resetPasswordSchema: z.ZodObject<{
     email: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    email: string;
+    email?: string;
 }, {
-    email: string;
+    email?: string;
 }>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 /**
@@ -146,21 +146,21 @@ export declare const setNewPasswordSchema: z.ZodEffects<z.ZodObject<{
     newPassword: z.ZodString;
     confirmPassword: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    token: string;
-    newPassword: string;
-    confirmPassword: string;
+    token?: string;
+    newPassword?: string;
+    confirmPassword?: string;
 }, {
-    token: string;
-    newPassword: string;
-    confirmPassword: string;
+    token?: string;
+    newPassword?: string;
+    confirmPassword?: string;
 }>, {
-    token: string;
-    newPassword: string;
-    confirmPassword: string;
+    token?: string;
+    newPassword?: string;
+    confirmPassword?: string;
 }, {
-    token: string;
-    newPassword: string;
-    confirmPassword: string;
+    token?: string;
+    newPassword?: string;
+    confirmPassword?: string;
 }>;
 export type SetNewPasswordInput = z.infer<typeof setNewPasswordSchema>;
 /**
@@ -169,9 +169,9 @@ export type SetNewPasswordInput = z.infer<typeof setNewPasswordSchema>;
 export declare const userIdParamsSchema: z.ZodObject<{
     userId: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    userId: string;
+    userId?: string;
 }, {
-    userId: string;
+    userId?: string;
 }>;
 export type UserIdParams = z.infer<typeof userIdParamsSchema>;
 /**
@@ -180,9 +180,9 @@ export type UserIdParams = z.infer<typeof userIdParamsSchema>;
 export declare const usernameParamsSchema: z.ZodObject<{
     username: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    username: string;
+    username?: string;
 }, {
-    username: string;
+    username?: string;
 }>;
 export type UsernameParams = z.infer<typeof usernameParamsSchema>;
 /**
@@ -197,21 +197,21 @@ export declare const listUsersQuerySchema: z.ZodObject<{
     role: z.ZodOptional<z.ZodEnum<["user", "admin", "moderator"]>>;
     isActive: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    page: number;
-    limit: number;
-    sortOrder: "desc" | "asc";
-    sortBy: "createdAt" | "displayName" | "username";
-    search?: string | undefined;
-    role?: "user" | "admin" | "moderator" | undefined;
-    isActive?: boolean | undefined;
+    search?: string;
+    role?: "user" | "admin" | "moderator";
+    isActive?: boolean;
+    limit?: number;
+    page?: number;
+    sortBy?: "createdAt" | "displayName" | "username";
+    sortOrder?: "asc" | "desc";
 }, {
-    search?: string | undefined;
-    page?: number | undefined;
-    limit?: number | undefined;
-    role?: "user" | "admin" | "moderator" | undefined;
-    sortOrder?: "desc" | "asc" | undefined;
-    isActive?: boolean | undefined;
-    sortBy?: "createdAt" | "displayName" | "username" | undefined;
+    search?: string;
+    role?: "user" | "admin" | "moderator";
+    isActive?: boolean;
+    limit?: number;
+    page?: number;
+    sortBy?: "createdAt" | "displayName" | "username";
+    sortOrder?: "asc" | "desc";
 }>;
 export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
 /**
@@ -222,13 +222,13 @@ export declare const searchUsersQuerySchema: z.ZodObject<{
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
-    q: string;
-    page: number;
-    limit: number;
+    limit?: number;
+    page?: number;
+    q?: string;
 }, {
-    q: string;
-    page?: number | undefined;
-    limit?: number | undefined;
+    limit?: number;
+    page?: number;
+    q?: string;
 }>;
 export type SearchUsersQuery = z.infer<typeof searchUsersQuerySchema>;
 //# sourceMappingURL=userSchemas.d.ts.map

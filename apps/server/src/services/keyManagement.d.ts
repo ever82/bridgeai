@@ -3,14 +3,15 @@ interface KeyMetadata {
     rotatedAt?: Date;
     version: number;
 }
-export declare const getDataEncryptionKey: () => Promise<Buffer<ArrayBufferLike>>;
-export declare const rotateKeys: () => Promise<void>;
-export declare const getKeyMetadata: () => KeyMetadata;
-export declare const getKeyAuditLog: () => {
+interface AuditEntry {
     action: string;
     timestamp: Date;
     details: string;
-}[];
+}
+export declare const getDataEncryptionKey: () => Promise<Buffer<ArrayBufferLike>>;
+export declare const rotateKeys: () => Promise<void>;
+export declare const getKeyMetadata: () => KeyMetadata;
+export declare const getKeyAuditLog: () => AuditEntry[];
 export declare const checkKeyHealth: () => Promise<{
     healthy: boolean;
     message: string;

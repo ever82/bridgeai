@@ -3,7 +3,7 @@
  * Handles generation and verification of JWT tokens
  */
 import { UserRole } from '../../types';
-export declare const JWT_SECRET: string | undefined;
+export declare const JWT_SECRET: string;
 export interface TokenPayload {
     userId: string;
     email: string;

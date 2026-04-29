@@ -36,21 +36,21 @@ export declare const fileAttachmentSchema: z.ZodObject<{
     mimeType: z.ZodString;
     thumbnailUrl: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    id: string;
-    name: string;
-    type: "audio" | "code" | "video" | "image" | "file";
-    size: number;
-    url: string;
-    mimeType: string;
-    thumbnailUrl?: string | undefined;
+    id?: string;
+    type?: "code" | "image" | "video" | "audio" | "file";
+    name?: string;
+    url?: string;
+    thumbnailUrl?: string;
+    size?: number;
+    mimeType?: string;
 }, {
-    id: string;
-    name: string;
-    type: "audio" | "code" | "video" | "image" | "file";
-    size: number;
-    url: string;
-    mimeType: string;
-    thumbnailUrl?: string | undefined;
+    id?: string;
+    type?: "code" | "image" | "video" | "audio" | "file";
+    name?: string;
+    url?: string;
+    thumbnailUrl?: string;
+    size?: number;
+    mimeType?: string;
 }>;
 export type FileAttachment = z.infer<typeof fileAttachmentSchema>;
 /**
@@ -63,17 +63,17 @@ export declare const codeAttachmentSchema: z.ZodObject<{
     code: z.ZodString;
     filename: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    code: string;
-    id: string;
-    type: "code";
-    language: string;
-    filename?: string | undefined;
+    id?: string;
+    type?: "code";
+    code?: string;
+    filename?: string;
+    language?: string;
 }, {
-    code: string;
-    id: string;
-    type: "code";
-    language: string;
-    filename?: string | undefined;
+    id?: string;
+    type?: "code";
+    code?: string;
+    filename?: string;
+    language?: string;
 }>;
 export type CodeAttachment = z.infer<typeof codeAttachmentSchema>;
 /**
@@ -88,21 +88,21 @@ export declare const attachmentSchema: z.ZodUnion<[z.ZodObject<{
     mimeType: z.ZodString;
     thumbnailUrl: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    id: string;
-    name: string;
-    type: "audio" | "code" | "video" | "image" | "file";
-    size: number;
-    url: string;
-    mimeType: string;
-    thumbnailUrl?: string | undefined;
+    id?: string;
+    type?: "code" | "image" | "video" | "audio" | "file";
+    name?: string;
+    url?: string;
+    thumbnailUrl?: string;
+    size?: number;
+    mimeType?: string;
 }, {
-    id: string;
-    name: string;
-    type: "audio" | "code" | "video" | "image" | "file";
-    size: number;
-    url: string;
-    mimeType: string;
-    thumbnailUrl?: string | undefined;
+    id?: string;
+    type?: "code" | "image" | "video" | "audio" | "file";
+    name?: string;
+    url?: string;
+    thumbnailUrl?: string;
+    size?: number;
+    mimeType?: string;
 }>, z.ZodObject<{
     id: z.ZodString;
     type: z.ZodLiteral<"code">;
@@ -110,17 +110,17 @@ export declare const attachmentSchema: z.ZodUnion<[z.ZodObject<{
     code: z.ZodString;
     filename: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    code: string;
-    id: string;
-    type: "code";
-    language: string;
-    filename?: string | undefined;
+    id?: string;
+    type?: "code";
+    code?: string;
+    filename?: string;
+    language?: string;
 }, {
-    code: string;
-    id: string;
-    type: "code";
-    language: string;
-    filename?: string | undefined;
+    id?: string;
+    type?: "code";
+    code?: string;
+    filename?: string;
+    language?: string;
 }>]>;
 export type Attachment = z.infer<typeof attachmentSchema>;
 /**
@@ -131,13 +131,13 @@ export declare const createConversationSchema: z.ZodObject<{
     title: z.ZodOptional<z.ZodString>;
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, "strip", z.ZodTypeAny, {
-    agentId: string;
-    title?: string | undefined;
-    metadata?: Record<string, unknown> | undefined;
+    metadata?: Record<string, unknown>;
+    agentId?: string;
+    title?: string;
 }, {
-    agentId: string;
-    title?: string | undefined;
-    metadata?: Record<string, unknown> | undefined;
+    metadata?: Record<string, unknown>;
+    agentId?: string;
+    title?: string;
 }>;
 export type CreateConversationInput = z.infer<typeof createConversationSchema>;
 /**
@@ -156,21 +156,21 @@ export declare const sendMessageRequestSchema: z.ZodObject<{
         mimeType: z.ZodString;
         thumbnailUrl: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        id: string;
-        name: string;
-        type: "audio" | "code" | "video" | "image" | "file";
-        size: number;
-        url: string;
-        mimeType: string;
-        thumbnailUrl?: string | undefined;
+        id?: string;
+        type?: "code" | "image" | "video" | "audio" | "file";
+        name?: string;
+        url?: string;
+        thumbnailUrl?: string;
+        size?: number;
+        mimeType?: string;
     }, {
-        id: string;
-        name: string;
-        type: "audio" | "code" | "video" | "image" | "file";
-        size: number;
-        url: string;
-        mimeType: string;
-        thumbnailUrl?: string | undefined;
+        id?: string;
+        type?: "code" | "image" | "video" | "audio" | "file";
+        name?: string;
+        url?: string;
+        thumbnailUrl?: string;
+        size?: number;
+        mimeType?: string;
     }>, z.ZodObject<{
         id: z.ZodString;
         type: z.ZodLiteral<"code">;
@@ -178,59 +178,59 @@ export declare const sendMessageRequestSchema: z.ZodObject<{
         code: z.ZodString;
         filename: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        code: string;
-        id: string;
-        type: "code";
-        language: string;
-        filename?: string | undefined;
+        id?: string;
+        type?: "code";
+        code?: string;
+        filename?: string;
+        language?: string;
     }, {
-        code: string;
-        id: string;
-        type: "code";
-        language: string;
-        filename?: string | undefined;
+        id?: string;
+        type?: "code";
+        code?: string;
+        filename?: string;
+        language?: string;
     }>]>, "many">>;
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, "strip", z.ZodTypeAny, {
-    content: string;
-    role: "user" | "assistant" | "system" | "tool";
-    metadata?: Record<string, unknown> | undefined;
+    metadata?: Record<string, unknown>;
+    role?: "user" | "system" | "assistant" | "tool";
+    content?: string;
     attachments?: ({
-        id: string;
-        name: string;
-        type: "audio" | "code" | "video" | "image" | "file";
-        size: number;
-        url: string;
-        mimeType: string;
-        thumbnailUrl?: string | undefined;
+        id?: string;
+        type?: "code" | "image" | "video" | "audio" | "file";
+        name?: string;
+        url?: string;
+        thumbnailUrl?: string;
+        size?: number;
+        mimeType?: string;
     } | {
-        code: string;
-        id: string;
-        type: "code";
-        language: string;
-        filename?: string | undefined;
-    })[] | undefined;
-    parentMessageId?: string | undefined;
+        id?: string;
+        type?: "code";
+        code?: string;
+        filename?: string;
+        language?: string;
+    })[];
+    parentMessageId?: string;
 }, {
-    content: string;
-    metadata?: Record<string, unknown> | undefined;
-    role?: "user" | "assistant" | "system" | "tool" | undefined;
+    metadata?: Record<string, unknown>;
+    role?: "user" | "system" | "assistant" | "tool";
+    content?: string;
     attachments?: ({
-        id: string;
-        name: string;
-        type: "audio" | "code" | "video" | "image" | "file";
-        size: number;
-        url: string;
-        mimeType: string;
-        thumbnailUrl?: string | undefined;
+        id?: string;
+        type?: "code" | "image" | "video" | "audio" | "file";
+        name?: string;
+        url?: string;
+        thumbnailUrl?: string;
+        size?: number;
+        mimeType?: string;
     } | {
-        code: string;
-        id: string;
-        type: "code";
-        language: string;
-        filename?: string | undefined;
-    })[] | undefined;
-    parentMessageId?: string | undefined;
+        id?: string;
+        type?: "code";
+        code?: string;
+        filename?: string;
+        language?: string;
+    })[];
+    parentMessageId?: string;
 }>;
 export type SendMessageRequest = z.infer<typeof sendMessageRequestSchema>;
 /**
@@ -240,11 +240,11 @@ export declare const updateMessageSchema: z.ZodObject<{
     content: z.ZodOptional<z.ZodString>;
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, "strip", z.ZodTypeAny, {
-    metadata?: Record<string, unknown> | undefined;
-    content?: string | undefined;
+    metadata?: Record<string, unknown>;
+    content?: string;
 }, {
-    metadata?: Record<string, unknown> | undefined;
-    content?: string | undefined;
+    metadata?: Record<string, unknown>;
+    content?: string;
 }>;
 export type UpdateMessageInput = z.infer<typeof updateMessageSchema>;
 /**
@@ -253,9 +253,9 @@ export type UpdateMessageInput = z.infer<typeof updateMessageSchema>;
 export declare const messageReactionSchema: z.ZodObject<{
     emoji: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    emoji: string;
+    emoji?: string;
 }, {
-    emoji: string;
+    emoji?: string;
 }>;
 export type MessageReactionInput = z.infer<typeof messageReactionSchema>;
 /**
@@ -264,9 +264,9 @@ export type MessageReactionInput = z.infer<typeof messageReactionSchema>;
 export declare const conversationIdParamsSchema: z.ZodObject<{
     conversationId: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    conversationId: string;
+    conversationId?: string;
 }, {
-    conversationId: string;
+    conversationId?: string;
 }>;
 export type ConversationIdParams = z.infer<typeof conversationIdParamsSchema>;
 /**
@@ -275,9 +275,9 @@ export type ConversationIdParams = z.infer<typeof conversationIdParamsSchema>;
 export declare const messageIdParamsSchema: z.ZodObject<{
     messageId: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    messageId: string;
+    messageId?: string;
 }, {
-    messageId: string;
+    messageId?: string;
 }>;
 export type MessageIdParams = z.infer<typeof messageIdParamsSchema>;
 /**
@@ -290,17 +290,17 @@ export declare const listMessagesQuerySchema: z.ZodObject<{
     after: z.ZodOptional<z.ZodString>;
     includeDeleted: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    page: number;
-    limit: number;
-    includeDeleted: boolean;
-    before?: string | undefined;
-    after?: string | undefined;
+    limit?: number;
+    page?: number;
+    before?: string;
+    after?: string;
+    includeDeleted?: boolean;
 }, {
-    page?: number | undefined;
-    limit?: number | undefined;
-    before?: string | undefined;
-    after?: string | undefined;
-    includeDeleted?: boolean | undefined;
+    limit?: number;
+    page?: number;
+    before?: string;
+    after?: string;
+    includeDeleted?: boolean;
 }>;
 export type ListMessagesQuery = z.infer<typeof listMessagesQuerySchema>;
 /**
@@ -315,21 +315,21 @@ export declare const listConversationsQuerySchema: z.ZodObject<{
     sortOrder: z.ZodDefault<z.ZodEnum<["asc", "desc"]>>;
     isArchived: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    page: number;
-    limit: number;
-    sortOrder: "desc" | "asc";
-    sortBy: "createdAt" | "updatedAt" | "lastMessageAt";
-    search?: string | undefined;
-    agentId?: string | undefined;
-    isArchived?: boolean | undefined;
+    search?: string;
+    agentId?: string;
+    limit?: number;
+    page?: number;
+    sortBy?: "createdAt" | "updatedAt" | "lastMessageAt";
+    sortOrder?: "asc" | "desc";
+    isArchived?: boolean;
 }, {
-    search?: string | undefined;
-    page?: number | undefined;
-    limit?: number | undefined;
-    agentId?: string | undefined;
-    sortOrder?: "desc" | "asc" | undefined;
-    sortBy?: "createdAt" | "updatedAt" | "lastMessageAt" | undefined;
-    isArchived?: boolean | undefined;
+    search?: string;
+    agentId?: string;
+    limit?: number;
+    page?: number;
+    sortBy?: "createdAt" | "updatedAt" | "lastMessageAt";
+    sortOrder?: "asc" | "desc";
+    isArchived?: boolean;
 }>;
 export type ListConversationsQuery = z.infer<typeof listConversationsQuerySchema>;
 /**
@@ -341,15 +341,15 @@ export declare const searchMessagesQuerySchema: z.ZodObject<{
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
-    q: string;
-    page: number;
-    limit: number;
-    conversationId?: string | undefined;
+    conversationId?: string;
+    limit?: number;
+    page?: number;
+    q?: string;
 }, {
-    q: string;
-    page?: number | undefined;
-    limit?: number | undefined;
-    conversationId?: string | undefined;
+    conversationId?: string;
+    limit?: number;
+    page?: number;
+    q?: string;
 }>;
 export type SearchMessagesQuery = z.infer<typeof searchMessagesQuerySchema>;
 //# sourceMappingURL=messageSchemas.d.ts.map

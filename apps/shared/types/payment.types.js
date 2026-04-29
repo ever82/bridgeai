@@ -1,12 +1,9 @@
-"use strict";
 /**
  * VisionShare Payment Types
  * Shared types for credit payment and transaction functionality
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TransactionType = exports.PaymentStatus = void 0;
 /** Payment status enum */
-var PaymentStatus;
+export var PaymentStatus;
 (function (PaymentStatus) {
     PaymentStatus["PENDING"] = "pending";
     PaymentStatus["PROCESSING"] = "processing";
@@ -14,13 +11,13 @@ var PaymentStatus;
     PaymentStatus["FAILED"] = "failed";
     PaymentStatus["REFUNDED"] = "refunded";
     PaymentStatus["DISPUTED"] = "disputed";
-})(PaymentStatus || (exports.PaymentStatus = PaymentStatus = {}));
+})(PaymentStatus || (PaymentStatus = {}));
 /** Transaction type enum */
-var TransactionType;
+export var TransactionType;
 (function (TransactionType) {
     TransactionType["PURCHASE"] = "purchase";
     TransactionType["REFUND"] = "refund";
     TransactionType["BONUS"] = "bonus";
     TransactionType["ADJUSTMENT"] = "adjustment";
-})(TransactionType || (exports.TransactionType = TransactionType = {}));
+})(TransactionType || (TransactionType = {}));
 //# sourceMappingURL=payment.types.js.map

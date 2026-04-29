@@ -180,12 +180,17 @@ export interface ReviewNotificationPreferences {
     badReviewWarning: boolean;
     creditScoreChange: boolean;
 }
+export declare const DEFAULT_REVIEW_PREFERENCES: ReviewNotificationPreferences;
 /**
  * Get user's review notification preferences
  * @param userId - User ID
  * @returns Notification preferences
  */
 export declare function getReviewNotificationPreferences(userId: string): ReviewNotificationPreferences;
+/**
+ * Reset review notification preferences (for testing)
+ */
+export declare function resetReviewNotificationPreferences(): void;
 /**
  * Update user's review notification preferences
  * @param userId - User ID

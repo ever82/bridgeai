@@ -5,33 +5,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
-// Define enums locally to avoid build dependency issues
-var PointsTransactionType;
-(function (PointsTransactionType) {
-    PointsTransactionType["EARN"] = "earn";
-    PointsTransactionType["SPEND"] = "spend";
-    PointsTransactionType["RECHARGE"] = "recharge";
-    PointsTransactionType["REFUND"] = "refund";
-    PointsTransactionType["FROZEN"] = "frozen";
-    PointsTransactionType["UNFROZEN"] = "unfrozen";
-    PointsTransactionType["DEDUCT"] = "deduct";
-    PointsTransactionType["TRANSFER_IN"] = "transfer_in";
-    PointsTransactionType["TRANSFER_OUT"] = "transfer_out";
-})(PointsTransactionType || (PointsTransactionType = {}));
-var FreezeStatus;
-(function (FreezeStatus) {
-    FreezeStatus["FROZEN"] = "frozen";
-    FreezeStatus["USED"] = "used";
-    FreezeStatus["RELEASED"] = "released";
-    FreezeStatus["EXPIRED"] = "expired";
-})(FreezeStatus || (FreezeStatus = {}));
-var SceneCode;
-(function (SceneCode) {
-    SceneCode["VISION_SHARE"] = "vision_share";
-    SceneCode["AGENT_DATE"] = "agent_date";
-    SceneCode["AGENT_JOB"] = "agent_job";
-    SceneCode["AGENT_AD"] = "agent_ad";
-})(SceneCode || (SceneCode = {}));
+const shared_1 = require("@bridgeai/shared");
 // Mock Prisma
 jest.mock('@prisma/client', () => ({
     PrismaClient: jest.fn().mockImplementation(() => ({
@@ -148,11 +122,11 @@ describe('Points Account Data Models', () => {
                 id: 'trans-1',
                 accountId: 'account-1',
                 userId: 'user-123',
-                type: PointsTransactionType.EARN,
+                type: shared_1.PointsTransactionType.EARN,
                 amount: 100,
                 balanceAfter: 100,
                 description: '注册奖励',
-                scene: SceneCode.VISION_SHARE,
+                scene: shared_1.SceneCode.VISION_SHARE,
                 referenceId: 'ref-1',
                 metadata: { source: 'signup' },
                 createdAt: new Date(),
@@ -162,30 +136,30 @@ describe('Points Account Data Models', () => {
                 data: {
                     accountId: 'account-1',
                     userId: 'user-123',
-                    type: PointsTransactionType.EARN,
+                    type: shared_1.PointsTransactionType.EARN,
                     amount: 100,
                     balanceAfter: 100,
                     description: '注册奖励',
-                    scene: SceneCode.VISION_SHARE,
+                    scene: shared_1.SceneCode.VISION_SHARE,
                     referenceId: 'ref-1',
                     metadata: { source: 'signup' },
                 },
             });
             expect(result).toBeDefined();
-            expect(result.type).toBe(PointsTransactionType.EARN);
+            expect(result.type).toBe(shared_1.PointsTransactionType.EARN);
             expect(result.amount).toBe(100);
             expect(result.balanceAfter).toBe(100);
-            expect(result.scene).toBe(SceneCode.VISION_SHARE);
+            expect(result.scene).toBe(shared_1.SceneCode.VISION_SHARE);
         });
         it('should support all transaction types', async () => {
-            const transactionTypes = Object.values(PointsTransactionType);
+            const transactionTypes = Object.values(shared_1.PointsTransactionType);
             for (const type of transactionTypes) {
                 const mockTransaction = {
                     id: `trans-${type}`,
                     accountId: 'account-1',
                     userId: 'user-123',
                     type,
-                    amount: type.includes('OUT') || type === 'spend' || type === 'deduct' || type === 'frozen' ? -50 : 50,
+                    amount: type.includes('OUT') || type === 'SPEND' || type === 'FROZEN' ? -50 : 50,
                     balanceAfter: 100,
                     createdAt: new Date(),
                 };
@@ -219,25 +193,25 @@ describe('Points Account Data Models', () => {
         });
         it('should filter transactions by type', async () => {
             mockPrisma.pointsTransaction.findMany.mockResolvedValue([
-                { id: 'trans-1', type: PointsTransactionType.EARN },
+                { id: 'trans-1', type: shared_1.PointsTransactionType.EARN },
             ]);
             const transactions = await mockPrisma.pointsTransaction.findMany({
                 where: {
                     accountId: 'account-1',
-                    type: PointsTransactionType.EARN,
+                    type: shared_1.PointsTransactionType.EARN,
                 },
             });
             expect(transactions).toHaveLength(1);
-            expect(transactions[0].type).toBe(PointsTransactionType.EARN);
+            expect(transactions[0].type).toBe(shared_1.PointsTransactionType.EARN);
         });
         it('should filter transactions by scene', async () => {
             mockPrisma.pointsTransaction.findMany.mockResolvedValue([
-                { id: 'trans-1', scene: SceneCode.VISION_SHARE },
-                { id: 'trans-2', scene: SceneCode.VISION_SHARE },
+                { id: 'trans-1', scene: shared_1.SceneCode.VISION_SHARE },
+                { id: 'trans-2', scene: shared_1.SceneCode.VISION_SHARE },
             ]);
             const transactions = await mockPrisma.pointsTransaction.findMany({
                 where: {
-                    scene: SceneCode.VISION_SHARE,
+                    scene: shared_1.SceneCode.VISION_SHARE,
                 },
             });
             expect(transactions).toHaveLength(2);
@@ -251,9 +225,9 @@ describe('Points Account Data Models', () => {
                 transactionId: null,
                 amount: 100,
                 reason: 'VisionShare任务担保',
-                scene: SceneCode.VISION_SHARE,
+                scene: shared_1.SceneCode.VISION_SHARE,
                 referenceId: 'task-1',
-                status: FreezeStatus.FROZEN,
+                status: shared_1.FreezeStatus.FROZEN,
                 expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -264,17 +238,17 @@ describe('Points Account Data Models', () => {
                     accountId: 'account-1',
                     amount: 100,
                     reason: 'VisionShare任务担保',
-                    scene: SceneCode.VISION_SHARE,
+                    scene: shared_1.SceneCode.VISION_SHARE,
                     referenceId: 'task-1',
                     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
                 },
             });
             expect(result).toBeDefined();
-            expect(result.status).toBe(FreezeStatus.FROZEN);
+            expect(result.status).toBe(shared_1.FreezeStatus.FROZEN);
             expect(result.amount).toBe(100);
         });
         it('should support all freeze statuses', async () => {
-            const statuses = Object.values(FreezeStatus);
+            const statuses = Object.values(shared_1.FreezeStatus);
             for (const status of statuses) {
                 const mockFreeze = {
                     id: `freeze-${status}`,
@@ -301,29 +275,29 @@ describe('Points Account Data Models', () => {
                 id: 'freeze-1',
                 accountId: 'account-1',
                 amount: 100,
-                status: FreezeStatus.USED,
+                status: shared_1.FreezeStatus.USED,
                 updatedAt: new Date(),
             };
             mockPrisma.pointsFreeze.update.mockResolvedValue(mockFreeze);
             const result = await mockPrisma.pointsFreeze.update({
                 where: { id: 'freeze-1' },
-                data: { status: FreezeStatus.USED },
+                data: { status: shared_1.FreezeStatus.USED },
             });
-            expect(result.status).toBe(FreezeStatus.USED);
+            expect(result.status).toBe(shared_1.FreezeStatus.USED);
         });
         it('should filter freezes by status', async () => {
             mockPrisma.pointsFreeze.findMany.mockResolvedValue([
-                { id: 'freeze-1', status: FreezeStatus.FROZEN },
-                { id: 'freeze-2', status: FreezeStatus.FROZEN },
+                { id: 'freeze-1', status: shared_1.FreezeStatus.FROZEN },
+                { id: 'freeze-2', status: shared_1.FreezeStatus.FROZEN },
             ]);
             const freezes = await mockPrisma.pointsFreeze.findMany({
                 where: {
                     accountId: 'account-1',
-                    status: FreezeStatus.FROZEN,
+                    status: shared_1.FreezeStatus.FROZEN,
                 },
             });
             expect(freezes).toHaveLength(2);
-            expect(freezes[0].status).toBe(FreezeStatus.FROZEN);
+            expect(freezes[0].status).toBe(shared_1.FreezeStatus.FROZEN);
         });
         it('should filter expired freezes', async () => {
             const now = new Date();
@@ -334,7 +308,7 @@ describe('Points Account Data Models', () => {
             const expiredFreezes = await mockPrisma.pointsFreeze.findMany({
                 where: {
                     accountId: 'account-1',
-                    status: FreezeStatus.FROZEN,
+                    status: shared_1.FreezeStatus.FROZEN,
                     expiresAt: { lt: now },
                 },
             });
@@ -415,28 +389,23 @@ describe('Points Account Data Models', () => {
     });
     describe('Type Definitions', () => {
         it('should have correct transaction type values', () => {
-            expect(PointsTransactionType.EARN).toBe('earn');
-            expect(PointsTransactionType.SPEND).toBe('spend');
-            expect(PointsTransactionType.RECHARGE).toBe('recharge');
-            expect(PointsTransactionType.REFUND).toBe('refund');
-            expect(PointsTransactionType.FROZEN).toBe('frozen');
-            expect(PointsTransactionType.UNFROZEN).toBe('unfrozen');
-            expect(PointsTransactionType.DEDUCT).toBe('deduct');
-            expect(PointsTransactionType.TRANSFER_IN).toBe('transfer_in');
-            expect(PointsTransactionType.TRANSFER_OUT).toBe('transfer_out');
+            expect(shared_1.PointsTransactionType.EARN).toBe('EARN');
+            expect(shared_1.PointsTransactionType.SPEND).toBe('SPEND');
+            expect(shared_1.PointsTransactionType.FROZEN).toBe('FROZEN');
+            expect(shared_1.PointsTransactionType.UNFROZEN).toBe('UNFROZEN');
+            expect(shared_1.PointsTransactionType.TRANSFER_IN).toBe('TRANSFER_IN');
+            expect(shared_1.PointsTransactionType.TRANSFER_OUT).toBe('TRANSFER_OUT');
         });
         it('should have correct freeze status values', () => {
-            expect(FreezeStatus.FROZEN).toBe('frozen');
-            expect(FreezeStatus.USED).toBe('used');
-            expect(FreezeStatus.RELEASED).toBe('released');
-            expect(FreezeStatus.EXPIRED).toBe('expired');
+            expect(shared_1.FreezeStatus.FROZEN).toBe('FROZEN');
+            expect(shared_1.FreezeStatus.USED).toBe('USED');
+            expect(shared_1.FreezeStatus.RELEASED).toBe('RELEASED');
         });
         it('should have correct scene code values', () => {
-            expect(SceneCode.VISION_SHARE).toBe('vision_share');
-            expect(SceneCode.AGENT_DATE).toBe('agent_date');
-            expect(SceneCode.AGENT_JOB).toBe('agent_job');
-            expect(SceneCode.AGENT_AD).toBe('agent_ad');
+            expect(shared_1.SceneCode.VISION_SHARE).toBe('vision_share');
+            expect(shared_1.SceneCode.AGENT_DATE).toBe('agent_date');
+            expect(shared_1.SceneCode.AGENT_JOB).toBe('agent_job');
+            expect(shared_1.SceneCode.AGENT_AD).toBe('agent_ad');
         });
     });
 });
-//# sourceMappingURL=points.test.js.map

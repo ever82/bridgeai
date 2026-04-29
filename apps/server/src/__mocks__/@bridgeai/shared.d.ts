@@ -1,5 +1,9 @@
 /**
  * Mock for @bridgeai/shared
+ *
+ * Note: This mock provides stub types/functions for tests that don't need
+ * the real module. Tests requiring real L2 schema functions should use
+ * jest.requireActual('@bridgeai/shared') to bypass this mock.
  */
 export declare enum DisclosureLevel {
     PUBLIC = "PUBLIC",
@@ -300,7 +304,7 @@ declare function makeVisionShareConfig(): {
         description: string;
         enabled: boolean;
         version: string;
-        dependencies: never[];
+        dependencies: any[];
         config: {
             maxFileSize: number;
             maxDuration: number;
@@ -325,12 +329,12 @@ declare function makeVisionShareConfig(): {
         };
     }[];
     validation: {
-        rules: never[];
+        rules: any[];
         preventSubmitOnError: boolean;
         showWarnings: boolean;
     };
     ui: {
-        sections: never[];
+        sections: any[];
         layout: "tabs";
     };
 };
@@ -362,7 +366,7 @@ export declare function getAllSceneConfigs(): {
         description: string;
         enabled: boolean;
         version: string;
-        dependencies: never[];
+        dependencies: any[];
         config: {
             maxFileSize: number;
             maxDuration: number;
@@ -387,12 +391,12 @@ export declare function getAllSceneConfigs(): {
         };
     }[];
     validation: {
-        rules: never[];
+        rules: any[];
         preventSubmitOnError: boolean;
         showWarnings: boolean;
     };
     ui: {
-        sections: never[];
+        sections: any[];
         layout: "tabs";
     };
 }[];
@@ -423,7 +427,7 @@ export declare function getActiveSceneConfigs(): {
         description: string;
         enabled: boolean;
         version: string;
-        dependencies: never[];
+        dependencies: any[];
         config: {
             maxFileSize: number;
             maxDuration: number;
@@ -448,12 +452,12 @@ export declare function getActiveSceneConfigs(): {
         };
     }[];
     validation: {
-        rules: never[];
+        rules: any[];
         preventSubmitOnError: boolean;
         showWarnings: boolean;
     };
     ui: {
-        sections: never[];
+        sections: any[];
         layout: "tabs";
     };
 }[];
@@ -466,7 +470,7 @@ export declare function getSceneInfo(sceneId: string): {
     isActive: boolean;
     fieldCount: number;
     capabilityCount: number;
-} | null;
+};
 export declare function hasScene(sceneId: string): boolean;
 export declare const SCENE_IDS: readonly string[];
 export declare function serializeMessage(message: AgentMessage): string;
@@ -704,6 +708,10 @@ export interface HandoffRequest {
     status: HandoffRequestStatus;
     timeoutAt: string;
     reason?: string;
+}
+export declare enum AgentAdRole {
+    CONSUMER = "CONSUMER",
+    MERCHANT = "MERCHANT"
 }
 export declare enum HandoffErrorCode {
     UNAUTHORIZED = "UNAUTHORIZED",
@@ -946,10 +954,361 @@ export interface AgentProfile {
     l1Data: L1Profile | null;
     l2Data: L2Profile | null;
     l3Description: string | null;
-    sceneConfig: Record<string, any> | null;
+    sceneConfig: Record<string, unknown> | null;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
+}
+export interface L2SchemaField {
+    id: string;
+    type: string;
+    label: string;
+    description?: string;
+    required?: boolean;
+    options?: Array<{
+        value: string;
+        label: string;
+    }>;
+    min?: number;
+    max?: number;
+    step?: number;
+    minLength?: number;
+    maxLength?: number;
+    maxItems?: number;
+    unit?: string;
+    placeholder?: string;
+    defaultValue?: unknown;
+    dependsOn?: string;
+    showWhen?: {
+        field: string;
+        operator: string;
+        value: unknown;
+    };
+    validation?: {
+        pattern?: string;
+        message?: string;
+    };
+}
+export interface L2Schema {
+    id: string;
+    version: string;
+    scene: string;
+    role?: string;
+    title: string;
+    description?: string;
+    fields: L2SchemaField[];
+    groups?: Array<{
+        id: string;
+        title: string;
+        fields: string[];
+    }>;
+}
+export declare const L2_SCHEMAS: Record<string, L2Schema>;
+export declare function getL2Schema(_scene: string, _role?: string): L2Schema | undefined;
+export declare function getAllL2Schemas(): L2Schema[];
+export declare function getL2SchemaIds(): string[];
+export declare enum AgeRangePreference {
+    UNDER_20 = "UNDER_20",
+    AGE_20_25 = "AGE_20_25",
+    AGE_26_30 = "AGE_26_30",
+    AGE_31_35 = "AGE_31_35",
+    AGE_36_40 = "AGE_36_40",
+    AGE_41_50 = "AGE_41_50",
+    OVER_50 = "OVER_50",
+    NO_PREFERENCE = "NO_PREFERENCE"
+}
+export declare enum HeightRange {
+    BELOW_150 = "BELOW_150",
+    HEIGHT_150_160 = "HEIGHT_150_160",
+    HEIGHT_160_170 = "HEIGHT_160_170",
+    HEIGHT_170_180 = "HEIGHT_170_180",
+    HEIGHT_180_190 = "HEIGHT_180_190",
+    ABOVE_190 = "ABOVE_190",
+    NO_PREFERENCE = "NO_PREFERENCE"
+}
+export declare enum IncomeRange {
+    BELOW_5K = "BELOW_5K",
+    INCOME_5K_10K = "INCOME_5K_10K",
+    INCOME_10K_20K = "INCOME_10K_20K",
+    INCOME_20K_50K = "INCOME_20K_50K",
+    ABOVE_50K = "ABOVE_50K",
+    NO_PREFERENCE = "NO_PREFERENCE"
+}
+export declare enum MBTIType {
+    INTJ = "INTJ",
+    INTP = "INTP",
+    ENTJ = "ENTJ",
+    ENTP = "ENTP",
+    INFJ = "INFJ",
+    INFP = "INFP",
+    ENFJ = "ENFJ",
+    ENFP = "ENFP",
+    ISTJ = "ISTJ",
+    ISFJ = "ISFJ",
+    ESTJ = "ESTJ",
+    ESFJ = "ESFJ",
+    ISTP = "ISTP",
+    ISFP = "ISFP",
+    ESTP = "ESTP",
+    ESFP = "ESFP",
+    NO_PREFERENCE = "NO_PREFERENCE"
+}
+export declare enum SleepSchedule {
+    EARLY_BIRD = "EARLY_BIRD",
+    NIGHT_OWL = "NIGHT_OWL",
+    FLEXIBLE = "FLEXIBLE",
+    REGULAR = "REGULAR"
+}
+export declare enum SmokingHabit {
+    NEVER = "NEVER",
+    OCCASIONALLY = "OCCASIONALLY",
+    REGULARLY = "REGULARLY",
+    QUITTING = "QUITTING",
+    NO_PREFERENCE = "NO_PREFERENCE"
+}
+export declare enum DrinkingHabit {
+    NEVER = "NEVER",
+    SOCIALLY = "SOCIALLY",
+    REGULARLY = "REGULARLY",
+    NO_PREFERENCE = "NO_PREFERENCE"
+}
+export declare enum PetPreference {
+    DOGS = "DOGS",
+    CATS = "CATS",
+    OTHER = "OTHER",
+    NO_PETS = "NO_PETS",
+    ALLERGIC = "ALLERGIC",
+    NO_PREFERENCE = "NO_PREFERENCE"
+}
+export declare enum ExerciseFrequency {
+    NEVER = "NEVER",
+    OCCASIONALLY = "OCCASIONALLY",
+    REGULARLY = "REGULARLY",
+    DAILY = "DAILY",
+    NO_PREFERENCE = "NO_PREFERENCE"
+}
+export declare enum DietPreference {
+    OMNIVORE = "OMNIVORE",
+    VEGETARIAN = "VEGETARIAN",
+    VEGAN = "VEGAN",
+    HALAL = "HALAL",
+    KOSHER = "KOSHER",
+    GLUTEN_FREE = "GLUTEN_FREE",
+    NO_PREFERENCE = "NO_PREFERENCE"
+}
+export declare enum RelationshipPace {
+    TAKE_IT_SLOW = "TAKE_IT_SLOW",
+    MODERATE = "MODERATE",
+    READY_TO_COMMIT = "READY_TO_COMMIT"
+}
+export declare enum LivingArrangement {
+    LIVE_ALONE = "LIVE_ALONE",
+    WITH_FAMILY = "WITH_FAMILY",
+    WITH_ROOMMATES = "WITH_ROOMMATES",
+    OPEN_TO_MOVE = "OPEN_TO_MOVE"
+}
+export declare enum FamilyPlan {
+    WANT_CHILDREN = "WANT_CHILDREN",
+    DO_NOT_WANT_CHILDREN = "DO_NOT_WANT_CHILDREN",
+    OPEN_MINDED = "OPEN_MINDED",
+    HAVE_CHILDREN = "HAVE_CHILDREN",
+    NOT_SURE = "NOT_SURE"
+}
+export interface BasicConditions {
+    ageRange?: AgeRangePreference;
+    heightRange?: HeightRange;
+    education?: EducationPreference;
+    income?: IncomeRange;
+    location?: LocationPreference;
+    hasPhoto?: boolean;
+    isVerified?: boolean;
+}
+export interface LocationPreference {
+    province?: string;
+    city?: string;
+    district?: string;
+    radiusKm?: number;
+    sameCity?: boolean;
+    sameProvince?: boolean;
+}
+export interface PersonalityPreferences {
+    mbti?: MBTIType[];
+    traits?: PersonalityTrait[];
+    preferredTraits?: PersonalityTrait[];
+    dislikedTraits?: PersonalityTrait[];
+}
+export interface Interest {
+    category: InterestCategory;
+    name: string;
+    level?: 'casual' | 'regular' | 'passionate';
+}
+export interface InterestPreferences {
+    interests: Interest[];
+    customInterests?: string[];
+    preferredInPartner?: InterestCategory[];
+    sharedInterests?: InterestCategory[];
+}
+export interface Lifestyle {
+    sleepSchedule?: SleepSchedule;
+    smoking?: SmokingHabit;
+    drinking?: DrinkingHabit;
+    pets?: PetPreference;
+    exercise?: ExerciseFrequency;
+    diet?: DietPreference;
+    workLifeBalance?: 'work_focused' | 'balanced' | 'life_focused';
+    socialFrequency?: 'homebody' | 'moderate' | 'social_butterfly';
+}
+export interface RelationshipExpectations {
+    purpose: DatingPurpose;
+    pace?: RelationshipPace;
+    living?: LivingArrangement;
+    familyPlan?: FamilyPlan;
+    marriageTimeline?: 'within_1_year' | '1_3_years' | '3_5_years' | 'no_rush';
+    longDistance?: 'acceptable' | 'not_preferred' | 'deal_breaker';
+}
+export interface FieldVisibility {
+    basicInfo?: VisibilityLevel;
+    photos?: VisibilityLevel;
+    income?: VisibilityLevel;
+    location?: VisibilityLevel;
+    contactInfo?: VisibilityLevel;
+    personalDetails?: VisibilityLevel;
+}
+export interface PrivacySettings {
+    profileVisibility: VisibilityLevel;
+    fieldVisibility: FieldVisibility;
+    disclosureStages?: Array<{
+        stage: string;
+        fields: string[];
+    }>;
+    allowScreenshot?: boolean;
+    showOnlineStatus?: boolean;
+    hideFromSearch?: boolean;
+}
+export interface DatingProfile {
+    id: string;
+    agentId: string;
+    userId: string;
+    basicConditions?: BasicConditions;
+    personality?: PersonalityPreferences;
+    interests?: InterestPreferences;
+    lifestyle?: Lifestyle;
+    expectations?: RelationshipExpectations;
+    description?: string;
+    aiExtractedData?: Record<string, any>;
+    aiExtractionConfidence?: number;
+    privacySettings: PrivacySettings;
+    completenessScore?: number;
+    qualityScore?: number;
+    isActive: boolean;
+    isComplete: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+export interface SimilarityWeights {
+    basicConditions: number;
+    personality: number;
+    interests: number;
+    lifestyle: number;
+    expectations: number;
+    complementary: number;
+    geoProximity: number;
+}
+export declare const DEFAULT_SIMILARITY_WEIGHTS: SimilarityWeights;
+export declare function calculateDatingSimilarity(_profileA: DatingProfile, _profileB: DatingProfile, _weights?: Partial<SimilarityWeights>): {
+    totalScore: number;
+    dimensions: {
+        dimension: string;
+        score: number;
+        weight: number;
+        weightedScore: number;
+        details: any[];
+    }[];
+    highlights: string[];
+    warnings: any[];
+};
+export declare const DATING_AGE_RANGE_LABELS: Record<string, string>;
+export declare const HEIGHT_RANGE_LABELS: Record<string, string>;
+export declare const DATING_EDUCATION_LABELS: Record<string, string>;
+export declare const INCOME_LABELS: Record<string, string>;
+export declare const DATING_PURPOSE_LABELS: Record<string, string>;
+export declare const VISIBILITY_LABELS: Record<string, string>;
+export declare enum EducationPreference {
+    HIGH_SCHOOL = "HIGH_SCHOOL",
+    ASSOCIATE = "ASSOCIATE",
+    BACHELOR = "BACHELOR",
+    MASTER = "MASTER",
+    DOCTORATE = "DOCTORATE",
+    NO_PREFERENCE = "NO_PREFERENCE"
+}
+export interface CreateDatingProfileRequest {
+    agentId: string;
+    basicConditions?: BasicConditions;
+    personality?: PersonalityPreferences;
+    interests?: InterestPreferences;
+    lifestyle?: Lifestyle;
+    expectations?: RelationshipExpectations;
+    description?: string;
+    privacySettings?: Partial<PrivacySettings>;
+}
+export interface UpdateDatingProfileRequest {
+    basicConditions?: BasicConditions;
+    personality?: PersonalityPreferences;
+    interests?: InterestPreferences;
+    lifestyle?: Lifestyle;
+    expectations?: RelationshipExpectations;
+    description?: string;
+    privacySettings?: Partial<PrivacySettings>;
+}
+export interface DatingProfileResponse {
+    profile: DatingProfile;
+    quality?: any;
+    completion: {
+        percentage: number;
+        filledSections: number;
+        totalSections: number;
+    };
+}
+export interface ProfileQualityMetrics {
+    completenessScore: number;
+    richnessScore: number;
+    matchPotentialScore: number;
+    missingCriticalFields: string[];
+    suggestions: string[];
+}
+export interface ProfileQualityResult {
+    overallScore: number;
+    metrics: ProfileQualityMetrics;
+    recommendations: Array<{
+        field: string;
+        priority: string;
+        suggestion: string;
+    }>;
+}
+export interface AIExtractedPreference {
+    category: string;
+    value: any;
+    confidence: number;
+    source: 'explicit' | 'implicit' | 'inferred';
+}
+export interface AIExtractionResult {
+    basicConditions?: Partial<BasicConditions>;
+    personality?: Partial<PersonalityPreferences>;
+    interests?: Partial<InterestPreferences>;
+    lifestyle?: Partial<Lifestyle>;
+    expectations?: Partial<RelationshipExpectations>;
+    extracted: AIExtractedPreference[];
+    confidence: number;
+    suggestions: string[];
+}
+export interface ExtractFromDescriptionRequest {
+    description: string;
+    currentProfile?: Partial<DatingProfile>;
+}
+export interface ExtractFromDescriptionResponse {
+    extracted: AIExtractionResult;
+    profile: Partial<DatingProfile>;
+    confidence: number;
 }
 export {};
 //# sourceMappingURL=shared.d.ts.map

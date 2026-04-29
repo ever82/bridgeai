@@ -45,14 +45,14 @@ export declare class CreditScoreService {
      * 获取或创建用户信用分记录
      */
     getOrCreateCreditScore(userId: string): Promise<{} & {
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        id: string;
         userId: string;
-        score: number;
+        id: string;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
         createdAt: Date;
-        level: string;
         updatedAt: Date;
+        score: number;
         reason: string | null;
+        level: string;
         lastUpdated: Date;
         updatedBy: string | null;
         nextUpdateAt: Date | null;
@@ -78,11 +78,11 @@ export declare class CreditScoreService {
      */
     getCreditHistory(userId: string, page?: number, pageSize?: number): Promise<{
         histories: {
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
-            id: string;
             userId: string;
-            score: number;
+            id: string;
+            metadata: import("@prisma/client/runtime/library").JsonValue | null;
             createdAt: Date;
+            score: number;
             reason: string;
             delta: number;
             sourceType: string;

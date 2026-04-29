@@ -95,8 +95,14 @@ export declare function resetStats(): void;
 /**
  * Cache decorator for functions
  * Automatically caches function results
+ *
+ * Usage:
+ *   class UserService {
+ *     @cached('user', (id) => id, 300)
+ *     async getUser(id: string): Promise<User> { ... }
+ *   }
  */
-export declare function cached<T>(namespace: string, keyGenerator: (...args: unknown[]) => string, ttl?: number): (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
+export declare function cached(namespace: string, keyGenerator: (...args: unknown[]) => string, ttl?: number): (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
 /**
  * Invalidate cache by namespace
  */

@@ -151,7 +151,7 @@ export declare class PointsService {
     /**
      * 获取规则详情
      */
-    getRuleDetail(ruleCode: string): import("../config/pointsRules").PointsRule | undefined;
+    getRuleDetail(ruleCode: string): import("../config/pointsRules").PointsRule;
     /**
      * 检查规则限制
      */

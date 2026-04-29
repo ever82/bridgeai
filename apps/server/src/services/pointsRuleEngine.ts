@@ -118,29 +118,30 @@ export class PointsRuleEngine {
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay());
 
-    // 查询今日/本周的交易次数
+    // 查询今日/本周的交易次数（通过 metadata.ruleCode 精确匹配）
+    const transactionWhere = {
+      userId,
+      type: rule.type === 'earn' ? PointsTransactionType.EARN : PointsTransactionType.SPEND,
+      metadata: {
+        path: ['ruleCode'],
+        equals: ruleCode,
+      },
+    };
+
     const [dailyCount, weeklyCount] = await Promise.all([
       this.prisma.pointsTransaction.count({
         where: {
-          userId,
-          type: rule.type === 'earn' ? PointsTransactionType.EARN : PointsTransactionType.SPEND,
+          ...transactionWhere,
           createdAt: {
             gte: today,
-          },
-          description: {
-            contains: ruleCode,
           },
         },
       }),
       this.prisma.pointsTransaction.count({
         where: {
-          userId,
-          type: rule.type === 'earn' ? PointsTransactionType.EARN : PointsTransactionType.SPEND,
+          ...transactionWhere,
           createdAt: {
             gte: weekStart,
-          },
-          description: {
-            contains: ruleCode,
           },
         },
       }),
@@ -185,11 +186,7 @@ export class PointsRuleEngine {
       const cooldownTime = new Date(now.getTime() - rule.cooldownMinutes * 60 * 1000);
       const recentTransaction = await this.prisma.pointsTransaction.findFirst({
         where: {
-          userId,
-          type: rule.type === 'earn' ? PointsTransactionType.EARN : PointsTransactionType.SPEND,
-          description: {
-            contains: ruleCode,
-          },
+          ...transactionWhere,
           createdAt: {
             gte: cooldownTime,
           },

@@ -1,0 +1,190 @@
+import { EventEmitter } from 'events';
+import { prisma } from '../db/client';
+import { creditScoreEvents, creditScoreService, calculateRatingCreditDelta, recalculateCreditScore, } from '../services/creditScoreService';
+import { sendNewReviewNotification, sendBadReviewWarning, sendCreditScoreChangeNotification, scheduleReviewReminders, } from '../services/notificationService';
+// Review Event Types
+export var ReviewEventType;
+(function (ReviewEventType) {
+    ReviewEventType["RATING_SUBMITTED"] = "RATING_SUBMITTED";
+    ReviewEventType["RATING_DELETED"] = "RATING_DELETED";
+    ReviewEventType["RATING_UPDATED"] = "RATING_UPDATED";
+    ReviewEventType["MATCH_COMPLETED"] = "MATCH_COMPLETED";
+})(ReviewEventType || (ReviewEventType = {}));
+// Review Events Emitter
+export const reviewEvents = new EventEmitter();
+/**
+ * Handle rating submitted event
+ * Updates credit score and sends notifications
+ * @param payload - Rating submitted payload
+ */
+export async function handleRatingSubmitted(payload) {
+    const { ratingId, raterId, rateeId, score } = payload;
+    try {
+        // Get rater info for notification
+        const rater = await prisma.user.findUnique({
+            where: { id: raterId },
+        });
+        // 1. Update credit score for the ratee — use class method for unified system
+        await creditScoreService.updateCreditScore(rateeId, 'RATING', ratingId);
+        // 2. Send new review notification to ratee
+        await sendNewReviewNotification(rateeId, rater?.name || '匿名用户', score, ratingId);
+        // 3. If it's a bad review (<= 2 stars), send warning
+        if (score <= 2) {
+            const creditDelta = calculateRatingCreditDelta(score);
+            await sendBadReviewWarning(rateeId, score, creditDelta, ratingId);
+        }
+        // Emit event for other handlers
+        reviewEvents.emit(ReviewEventType.RATING_SUBMITTED, {
+            ...payload,
+            processed: true,
+        });
+        console.log(`[REVIEW_EVENT] Rating ${ratingId} processed successfully`);
+    }
+    catch (error) {
+        console.error(`[REVIEW_EVENT] Error processing rating ${ratingId}:`, error);
+        throw error;
+    }
+}
+/**
+ * Handle rating deleted event
+ * Recalculates credit score
+ * @param payload - Rating deleted payload
+ */
+export async function handleRatingDeleted(payload) {
+    const { ratingId, rateeId, score: _score } = payload;
+    try {
+        // Recalculate credit score for the ratee
+        const newScore = await recalculateCreditScore(rateeId);
+        // Emit event
+        reviewEvents.emit(ReviewEventType.RATING_DELETED, {
+            ...payload,
+            newCreditScore: newScore,
+            processed: true,
+        });
+        console.log(`[REVIEW_EVENT] Rating ${ratingId} deletion processed, new score: ${newScore}`);
+    }
+    catch (error) {
+        console.error(`[REVIEW_EVENT] Error processing rating deletion ${ratingId}:`, error);
+        throw error;
+    }
+}
+/**
+ * Handle rating updated event
+ * Adjusts credit score based on score change
+ * @param payload - Rating updated payload
+ */
+export async function handleRatingUpdated(payload) {
+    const { ratingId, rateeId, oldScore, newScore } = payload;
+    try {
+        // Calculate the credit delta difference
+        const oldDelta = calculateRatingCreditDelta(oldScore);
+        const newDelta = calculateRatingCreditDelta(newScore);
+        const adjustment = newDelta - oldDelta;
+        if (adjustment !== 0) {
+            // Update credit score with the adjustment — use class method for unified system
+            await creditScoreService.updateCreditScore(rateeId, 'RATING_UPDATE', ratingId);
+        }
+        // Emit event
+        reviewEvents.emit(ReviewEventType.RATING_UPDATED, {
+            ...payload,
+            creditAdjustment: adjustment,
+            processed: true,
+        });
+        console.log(`[REVIEW_EVENT] Rating ${ratingId} update processed, adjustment: ${adjustment}`);
+    }
+    catch (error) {
+        console.error(`[REVIEW_EVENT] Error processing rating update ${ratingId}:`, error);
+        throw error;
+    }
+}
+/**
+ * Handle match completed event
+ * Schedules review reminders
+ * @param payload - Match completed payload
+ */
+export async function handleMatchCompleted(payload) {
+    const { matchId, completedAt } = payload;
+    try {
+        // Schedule review reminders for 24 hours later
+        await scheduleReviewReminders(matchId, completedAt);
+        // Emit event
+        reviewEvents.emit(ReviewEventType.MATCH_COMPLETED, {
+            ...payload,
+            remindersScheduled: true,
+        });
+        console.log(`[REVIEW_EVENT] Match ${matchId} completed, reminders scheduled`);
+    }
+    catch (error) {
+        console.error(`[REVIEW_EVENT] Error processing match completion ${matchId}:`, error);
+        throw error;
+    }
+}
+/**
+ * Setup credit score event listeners
+ * Listens to events from creditScoreService
+ */
+export function setupCreditScoreListeners() {
+    // Listen for credit score updates
+    creditScoreEvents.on('creditScoreUpdated', async (data) => {
+        console.log(`[CREDIT_EVENT] User ${data.userId} score changed: ${data.previousScore} -> ${data.newScore}`);
+        // Send notification for significant changes
+        if (Math.abs(data.delta) >= 5) {
+            await sendCreditScoreChangeNotification(data.userId, data.previousScore, data.newScore, data.reason);
+        }
+    });
+    // Listen for rating submissions
+    creditScoreEvents.on('ratingSubmitted', async (data) => {
+        console.log(`[CREDIT_EVENT] Rating ${data.ratingId} submitted, delta: ${data.delta}`);
+    });
+}
+/**
+ * Initialize all review event handlers
+ * Sets up event listeners and handlers
+ */
+export function initializeReviewEventHandlers() {
+    // Setup credit score event listeners
+    setupCreditScoreListeners();
+    // Setup review event listeners
+    reviewEvents.on(ReviewEventType.RATING_SUBMITTED, (payload) => {
+        console.log(`[EVENT] Rating submitted: ${payload.ratingId}`);
+    });
+    reviewEvents.on(ReviewEventType.RATING_DELETED, (payload) => {
+        console.log(`[EVENT] Rating deleted: ${payload.ratingId}`);
+    });
+    reviewEvents.on(ReviewEventType.RATING_UPDATED, (payload) => {
+        console.log(`[EVENT] Rating updated: ${payload.ratingId}`);
+    });
+    reviewEvents.on(ReviewEventType.MATCH_COMPLETED, (payload) => {
+        console.log(`[EVENT] Match completed: ${payload.matchId}`);
+    });
+    console.log('[REVIEW_EVENT] Review event handlers initialized');
+}
+/**
+ * Trigger rating submitted event programmatically
+ * @param payload - Rating submitted payload
+ */
+export async function triggerRatingSubmitted(payload) {
+    await handleRatingSubmitted(payload);
+}
+/**
+ * Trigger rating deleted event programmatically
+ * @param payload - Rating deleted payload
+ */
+export async function triggerRatingDeleted(payload) {
+    await handleRatingDeleted(payload);
+}
+/**
+ * Trigger rating updated event programmatically
+ * @param payload - Rating updated payload
+ */
+export async function triggerRatingUpdated(payload) {
+    await handleRatingUpdated(payload);
+}
+/**
+ * Trigger match completed event programmatically
+ * @param payload - Match completed payload
+ */
+export async function triggerMatchCompleted(payload) {
+    await handleMatchCompleted(payload);
+}
+//# sourceMappingURL=reviewEventHandlers.js.map

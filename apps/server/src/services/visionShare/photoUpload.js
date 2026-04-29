@@ -1,0 +1,244 @@
+import { v4 as uuidv4 } from 'uuid';
+import { ImageSecurityService } from '../security/imageSecurity';
+import { PhotoStorageService } from '../storage/photoStorage';
+export class PhotoUploadService {
+    static instance;
+    uploads = new Map();
+    securityService;
+    constructor() {
+        this.securityService = ImageSecurityService.getInstance();
+    }
+    static getInstance() {
+        if (!PhotoUploadService.instance) {
+            PhotoUploadService.instance = new PhotoUploadService();
+        }
+        return PhotoUploadService.instance;
+    }
+    /**
+     * Upload a single photo
+     */
+    async uploadPhoto(fileBuffer, options) {
+        const { taskId, userId, compress = true, generateThumbnail = true } = options;
+        // Security check
+        const securityResult = await this.securityService.checkImage(fileBuffer);
+        if (!securityResult.passed) {
+            throw new Error(`Security check failed: ${securityResult.violations.join(', ')}`);
+        }
+        // Compress if needed
+        let processedBuffer = fileBuffer;
+        if (compress) {
+            processedBuffer = await this.securityService.compressImage(fileBuffer);
+        }
+        // Apply privacy de-identification
+        const deIdResult = await this.securityService.deIdentifyImage(processedBuffer);
+        processedBuffer = deIdResult.buffer;
+        // Generate thumbnail
+        let thumbnailBuffer;
+        if (generateThumbnail) {
+            thumbnailBuffer = await this.securityService.createThumbnail(fileBuffer, {
+                width: 200,
+                height: 200,
+            });
+        }
+        // Upload to storage
+        const uploadId = uuidv4();
+        const result = await this.saveToStorage(processedBuffer, thumbnailBuffer, {
+            uploadId,
+            userId,
+            taskId,
+            metadata: securityResult.metadata,
+        });
+        return {
+            id: uploadId,
+            originalName: 'photo.jpg',
+            url: result.url,
+            thumbnailUrl: result.thumbnailUrl,
+            size: processedBuffer.length,
+            width: securityResult.metadata.width,
+            height: securityResult.metadata.height,
+            format: securityResult.metadata.format,
+            uploadedAt: new Date(),
+            taskId,
+            securityCheck: {
+                passed: true,
+                warnings: securityResult.warnings,
+            },
+        };
+    }
+    /**
+     * Upload multiple photos in batch
+     */
+    async uploadBatch(files, options) {
+        const results = [];
+        const total = files.length;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            // Report progress
+            if (options.onProgress) {
+                options.onProgress({
+                    total,
+                    uploaded: i,
+                    currentFile: file.name,
+                    percentage: Math.round((i / total) * 100),
+                });
+            }
+            try {
+                const result = await this.uploadPhoto(file.buffer, {
+                    ...options,
+                    onProgress: undefined, // Don't report individual file progress
+                });
+                results.push(result);
+            }
+            catch (error) {
+                console.error(`Failed to upload ${file.name}:`, error);
+                // Continue with other files
+            }
+        }
+        // Final progress update
+        if (options.onProgress) {
+            options.onProgress({
+                total,
+                uploaded: total,
+                currentFile: '',
+                percentage: 100,
+            });
+        }
+        return results;
+    }
+    /**
+     * Initialize chunked upload
+     */
+    initChunkedUpload(originalName, fileSize, totalChunks) {
+        const uploadId = uuidv4();
+        const session = {
+            id: uploadId,
+            originalName,
+            fileSize,
+            totalChunks,
+            receivedChunks: new Set(),
+            chunks: [],
+            createdAt: new Date(),
+        };
+        this.uploads.set(uploadId, session);
+        return uploadId;
+    }
+    /**
+     * Upload a chunk
+     */
+    async uploadChunk(uploadId, chunkIndex, chunkBuffer) {
+        const session = this.uploads.get(uploadId);
+        if (!session) {
+            throw new Error('Upload session not found');
+        }
+        session.chunks[chunkIndex] = chunkBuffer;
+        session.receivedChunks.add(chunkIndex);
+        const isComplete = session.receivedChunks.size === session.totalChunks;
+        if (isComplete) {
+            // Combine chunks
+            const combined = Buffer.concat(session.chunks);
+            // Validate combined file size
+            if (combined.length !== session.fileSize) {
+                throw new Error('File size mismatch after combining chunks');
+            }
+            // Clean up session
+            this.uploads.delete(uploadId);
+        }
+        return {
+            complete: isComplete,
+            received: session.receivedChunks.size,
+            total: session.totalChunks,
+        };
+    }
+    /**
+     * Get upload progress
+     */
+    getUploadProgress(uploadId) {
+        const session = this.uploads.get(uploadId);
+        if (!session) {
+            throw new Error('Upload session not found');
+        }
+        return {
+            received: session.receivedChunks.size,
+            total: session.totalChunks,
+            percentage: Math.round((session.receivedChunks.size / session.totalChunks) * 100),
+        };
+    }
+    /**
+     * Cancel upload
+     */
+    cancelUpload(uploadId) {
+        return this.uploads.delete(uploadId);
+    }
+    /**
+     * Get upload queue status
+     */
+    getQueueStatus() {
+        return {
+            active: this.uploads.size,
+            pending: 0, // Would track actual queue if implemented
+        };
+    }
+    /**
+     * Save to storage using PhotoStorageService for real S3 uploads.
+     * Falls back to mock URLs when S3 is not configured.
+     */
+    async saveToStorage(fileBuffer, thumbnailBuffer, metadata) {
+        const storageService = PhotoStorageService.getInstance();
+        try {
+            // Get a presigned upload URL for the original photo
+            const { uploadUrl, photoId } = await storageService.generatePresignedUploadUrl(metadata.userId, { contentType: 'image/jpeg' });
+            // Upload the original file to the presigned URL
+            await fetch(uploadUrl, {
+                method: 'PUT',
+                body: new Uint8Array(fileBuffer),
+                headers: { 'Content-Type': 'image/jpeg' },
+            });
+            // Upload the thumbnail if available
+            let thumbnailUrl;
+            if (thumbnailBuffer) {
+                const thumbResult = await storageService.generatePresignedUploadUrl(metadata.userId, {
+                    contentType: 'image/jpeg',
+                });
+                await fetch(thumbResult.uploadUrl, {
+                    method: 'PUT',
+                    body: new Uint8Array(thumbnailBuffer),
+                    headers: { 'Content-Type': 'image/jpeg' },
+                });
+                thumbnailUrl = storageService.getStorageUrl(thumbResult.photoId, 'thumbnail');
+            }
+            else {
+                thumbnailUrl = storageService.getStorageUrl(photoId, 'original');
+            }
+            const url = storageService.getStorageUrl(photoId, 'original');
+            // Persist metadata to the database
+            await storageService.saveMetadata({
+                id: photoId,
+                originalName: 'photo.jpg',
+                url,
+                thumbnailUrl,
+                size: fileBuffer.length,
+                width: metadata.metadata?.width ?? 0,
+                height: metadata.metadata?.height ?? 0,
+                format: metadata.metadata?.format ?? 'jpeg',
+                mimeType: 'image/jpeg',
+                hash: metadata.metadata?.hash ?? '',
+                uploadedAt: new Date(),
+                userId: metadata.userId,
+                taskId: metadata.taskId,
+            });
+            return { url, thumbnailUrl };
+        }
+        catch (error) {
+            console.error('[PhotoUploadService] S3 upload failed, falling back to mock URLs:', error);
+            // Fallback: generate mock URLs when S3 is not configured or upload failed
+            const baseUrl = process.env.STORAGE_BASE_URL || 'https://storage.example.com';
+            const url = `${baseUrl}/photos/${metadata.userId}/${metadata.uploadId}/original.jpg`;
+            const thumbnailUrl = thumbnailBuffer
+                ? `${baseUrl}/photos/${metadata.userId}/${metadata.uploadId}/thumbnail.jpg`
+                : url;
+            return { url, thumbnailUrl };
+        }
+    }
+}
+export default PhotoUploadService.getInstance();
+//# sourceMappingURL=photoUpload.js.map

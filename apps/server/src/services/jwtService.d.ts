@@ -1,31 +1,51 @@
 /**
- * JWT Service
- *
- * Provides JWT token verification for Socket.io authentication.
+ * Token payload interface
  */
-export interface JwtPayload {
+export interface TokenPayload {
     userId: string;
     email: string;
-    role?: string;
-    type?: string;
-    iat?: number;
-    exp?: number;
+    roles?: string[];
+    permissions?: string[];
 }
 /**
- * JWT Service singleton
+ * Decoded token interface
  */
-declare class JwtService {
-    private secret;
-    constructor();
-    /**
-     * Verify a JWT token and return the decoded payload
-     */
-    verifyToken(token: string): Promise<JwtPayload | null>;
-    /**
-     * Decode a JWT token without verification (for debugging)
-     */
-    decodeToken(token: string): JwtPayload | null;
+export interface DecodedToken extends TokenPayload {
+    iat: number;
+    exp: number;
+    jti?: string;
 }
-export declare const jwtService: JwtService;
+/**
+ * Verify JWT token
+ */
+export declare function verifyToken(token: string): Promise<DecodedToken | null>;
+/**
+ * Decode token without verification (for debugging)
+ */
+export declare function decodeToken(token: string): DecodedToken | null;
+/**
+ * Generate JWT token
+ */
+export declare function generateToken(payload: TokenPayload, expiresIn?: string): string;
+/**
+ * Extract bearer token from auth header
+ */
+export declare function extractBearerToken(authHeader: string | undefined): string | null;
+/**
+ * Check if token is expired
+ */
+export declare function isTokenExpired(token: string): boolean;
+/**
+ * Get token expiration time in seconds
+ */
+export declare function getTokenExpiresIn(token: string): number;
+export declare const jwtService: {
+    verifyToken: typeof verifyToken;
+    decodeToken: typeof decodeToken;
+    generateToken: typeof generateToken;
+    extractBearerToken: typeof extractBearerToken;
+    isTokenExpired: typeof isTokenExpired;
+    getTokenExpiresIn: typeof getTokenExpiresIn;
+};
 export default jwtService;
 //# sourceMappingURL=jwtService.d.ts.map

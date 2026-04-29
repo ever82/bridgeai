@@ -43,19 +43,19 @@ export declare const createAgentSchema: z.ZodObject<{
     latitude: z.ZodOptional<z.ZodNumber>;
     longitude: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
-    name: string;
-    type: "VISIONSHARE" | "AGENTDATE" | "AGENTJOB" | "AGENTAD" | "DEMAND" | "SUPPLY";
-    latitude?: number | undefined;
-    longitude?: number | undefined;
-    description?: string | undefined;
-    config?: Record<string, unknown> | undefined;
+    type?: "DEMAND" | "SUPPLY" | "VISIONSHARE" | "AGENTDATE" | "AGENTJOB" | "AGENTAD";
+    description?: string;
+    name?: string;
+    config?: Record<string, unknown>;
+    latitude?: number;
+    longitude?: number;
 }, {
-    name: string;
-    type: "VISIONSHARE" | "AGENTDATE" | "AGENTJOB" | "AGENTAD" | "DEMAND" | "SUPPLY";
-    latitude?: number | undefined;
-    longitude?: number | undefined;
-    description?: string | undefined;
-    config?: Record<string, unknown> | undefined;
+    type?: "DEMAND" | "SUPPLY" | "VISIONSHARE" | "AGENTDATE" | "AGENTJOB" | "AGENTAD";
+    description?: string;
+    name?: string;
+    config?: Record<string, unknown>;
+    latitude?: number;
+    longitude?: number;
 }>;
 export type CreateAgentInput = z.infer<typeof createAgentSchema>;
 /**
@@ -73,27 +73,27 @@ export declare const updateAgentSchema: z.ZodObject<{
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
     isActive: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    metadata?: Record<string, unknown> | undefined;
-    name?: string | undefined;
-    description?: string | undefined;
-    model?: "gpt-4" | "gpt-3.5-turbo" | "gpt-4-turbo" | "claude-3-opus" | "claude-3-sonnet" | "claude-3-haiku" | "gemini-pro" | "gemini-ultra" | undefined;
-    maxTokens?: number | undefined;
-    systemPrompt?: string | undefined;
-    temperature?: number | undefined;
-    isActive?: boolean | undefined;
-    isPublic?: boolean | undefined;
-    allowedTools?: string[] | undefined;
+    description?: string;
+    metadata?: Record<string, unknown>;
+    name?: string;
+    model?: "gpt-4" | "gpt-4-turbo" | "gpt-3.5-turbo" | "claude-3-opus" | "claude-3-sonnet" | "claude-3-haiku" | "gemini-pro" | "gemini-ultra";
+    isActive?: boolean;
+    isPublic?: boolean;
+    maxTokens?: number;
+    temperature?: number;
+    systemPrompt?: string;
+    allowedTools?: string[];
 }, {
-    metadata?: Record<string, unknown> | undefined;
-    name?: string | undefined;
-    description?: string | undefined;
-    model?: "gpt-4" | "gpt-3.5-turbo" | "gpt-4-turbo" | "claude-3-opus" | "claude-3-sonnet" | "claude-3-haiku" | "gemini-pro" | "gemini-ultra" | undefined;
-    maxTokens?: number | undefined;
-    systemPrompt?: string | undefined;
-    temperature?: number | undefined;
-    isActive?: boolean | undefined;
-    isPublic?: boolean | undefined;
-    allowedTools?: string[] | undefined;
+    description?: string;
+    metadata?: Record<string, unknown>;
+    name?: string;
+    model?: "gpt-4" | "gpt-4-turbo" | "gpt-3.5-turbo" | "claude-3-opus" | "claude-3-sonnet" | "claude-3-haiku" | "gemini-pro" | "gemini-ultra";
+    isActive?: boolean;
+    isPublic?: boolean;
+    maxTokens?: number;
+    temperature?: number;
+    systemPrompt?: string;
+    allowedTools?: string[];
 }>;
 export type UpdateAgentInput = z.infer<typeof updateAgentSchema>;
 /**
@@ -108,35 +108,35 @@ export declare const sendMessageSchema: z.ZodObject<{
         url: z.ZodString;
         name: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        name: string;
-        type: "audio" | "video" | "image" | "file";
-        url: string;
+        type?: "image" | "video" | "audio" | "file";
+        name?: string;
+        url?: string;
     }, {
-        name: string;
-        type: "audio" | "video" | "image" | "file";
-        url: string;
+        type?: "image" | "video" | "audio" | "file";
+        name?: string;
+        url?: string;
     }>, "many">>;
     stream: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    content: string;
-    stream: boolean;
+    conversationId?: string;
+    content?: string;
     attachments?: {
-        name: string;
-        type: "audio" | "video" | "image" | "file";
-        url: string;
-    }[] | undefined;
-    conversationId?: string | undefined;
-    parentMessageId?: string | undefined;
+        type?: "image" | "video" | "audio" | "file";
+        name?: string;
+        url?: string;
+    }[];
+    parentMessageId?: string;
+    stream?: boolean;
 }, {
-    content: string;
+    conversationId?: string;
+    content?: string;
     attachments?: {
-        name: string;
-        type: "audio" | "video" | "image" | "file";
-        url: string;
-    }[] | undefined;
-    conversationId?: string | undefined;
-    stream?: boolean | undefined;
-    parentMessageId?: string | undefined;
+        type?: "image" | "video" | "audio" | "file";
+        name?: string;
+        url?: string;
+    }[];
+    parentMessageId?: string;
+    stream?: boolean;
 }>;
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 /**
@@ -145,9 +145,9 @@ export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export declare const agentIdParamsSchema: z.ZodObject<{
     agentId: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    agentId: string;
+    agentId?: string;
 }, {
-    agentId: string;
+    agentId?: string;
 }>;
 export type AgentIdParams = z.infer<typeof agentIdParamsSchema>;
 /**
@@ -163,23 +163,23 @@ export declare const listAgentsQuerySchema: z.ZodObject<{
     sortBy: z.ZodDefault<z.ZodEnum<["createdAt", "name", "usageCount"]>>;
     sortOrder: z.ZodDefault<z.ZodEnum<["asc", "desc"]>>;
 }, "strip", z.ZodTypeAny, {
-    page: number;
-    limit: number;
-    sortOrder: "desc" | "asc";
-    sortBy: "name" | "createdAt" | "usageCount";
-    search?: string | undefined;
-    model?: "gpt-4" | "gpt-3.5-turbo" | "gpt-4-turbo" | "claude-3-opus" | "claude-3-sonnet" | "claude-3-haiku" | "gemini-pro" | "gemini-ultra" | undefined;
-    isPublic?: boolean | undefined;
-    ownerId?: string | undefined;
+    search?: string;
+    model?: "gpt-4" | "gpt-4-turbo" | "gpt-3.5-turbo" | "claude-3-opus" | "claude-3-sonnet" | "claude-3-haiku" | "gemini-pro" | "gemini-ultra";
+    isPublic?: boolean;
+    ownerId?: string;
+    limit?: number;
+    page?: number;
+    sortBy?: "createdAt" | "name" | "usageCount";
+    sortOrder?: "asc" | "desc";
 }, {
-    search?: string | undefined;
-    page?: number | undefined;
-    limit?: number | undefined;
-    sortOrder?: "desc" | "asc" | undefined;
-    model?: "gpt-4" | "gpt-3.5-turbo" | "gpt-4-turbo" | "claude-3-opus" | "claude-3-sonnet" | "claude-3-haiku" | "gemini-pro" | "gemini-ultra" | undefined;
-    sortBy?: "name" | "createdAt" | "usageCount" | undefined;
-    isPublic?: boolean | undefined;
-    ownerId?: string | undefined;
+    search?: string;
+    model?: "gpt-4" | "gpt-4-turbo" | "gpt-3.5-turbo" | "claude-3-opus" | "claude-3-sonnet" | "claude-3-haiku" | "gemini-pro" | "gemini-ultra";
+    isPublic?: boolean;
+    ownerId?: string;
+    limit?: number;
+    page?: number;
+    sortBy?: "createdAt" | "name" | "usageCount";
+    sortOrder?: "asc" | "desc";
 }>;
 export type ListAgentsQuery = z.infer<typeof listAgentsQuerySchema>;
 /**
@@ -190,13 +190,13 @@ export declare const agentStatsQuerySchema: z.ZodObject<{
     endDate: z.ZodOptional<z.ZodDate>;
     granularity: z.ZodDefault<z.ZodEnum<["hour", "day", "week", "month"]>>;
 }, "strip", z.ZodTypeAny, {
-    granularity: "hour" | "month" | "day" | "week";
-    startDate?: Date | undefined;
-    endDate?: Date | undefined;
+    startDate?: Date;
+    endDate?: Date;
+    granularity?: "week" | "day" | "hour" | "month";
 }, {
-    startDate?: Date | undefined;
-    endDate?: Date | undefined;
-    granularity?: "hour" | "month" | "day" | "week" | undefined;
+    startDate?: Date;
+    endDate?: Date;
+    granularity?: "week" | "day" | "hour" | "month";
 }>;
 export type AgentStatsQuery = z.infer<typeof agentStatsQuerySchema>;
 //# sourceMappingURL=agentSchemas.d.ts.map

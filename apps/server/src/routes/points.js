@@ -1,0 +1,717 @@
+/**
+ * 积分 API 路由
+ * 提供积分账户、交易、冻结、规则查询等 HTTP 接口
+ */
+import { Router } from 'express';
+import { z } from 'zod';
+import { SceneCode } from '@bridgeai/shared';
+import { pointsService } from '../services/pointsService';
+import { updatePointsLimitConfig, updatePointsValueConfig, updateTransferConfig, updateFreezeConfig, } from '../config/pointsRules';
+import { visionSharePaymentService } from '../services/visionSharePaymentService';
+import { photoUnlockService } from '../services/photoUnlockService';
+import { prisma } from '../db/client';
+import { authenticate } from '../middleware/auth';
+import { requireRole } from '../middleware/rbac';
+import { validate } from '../middleware/validation';
+const router = Router();
+// ==================== 验证模式 ====================
+const paginationSchema = z.object({
+    page: z.string().transform(Number).pipe(z.number().int().min(1)).default('1'),
+    pageSize: z.string().transform(Number).pipe(z.number().int().min(1).max(100)).default('20'),
+});
+const earnByRuleSchema = z.object({
+    ruleCode: z.string().min(1),
+    baseAmount: z.number().int().positive().optional(),
+    metadata: z.record(z.unknown()).optional(),
+});
+const spendByRuleSchema = z.object({
+    ruleCode: z.string().min(1),
+    baseAmount: z.number().int().positive().optional(),
+    metadata: z.record(z.unknown()).optional(),
+});
+const viewPhotoSchema = z.object({
+    photoId: z.string().min(1),
+    ownerId: z.string().min(1),
+});
+const freezeSchema = z.object({
+    amount: z.number().int().positive(),
+    reason: z.string().min(1).max(500),
+    scene: z.nativeEnum(SceneCode).optional(),
+    referenceId: z.string().optional(),
+    expiresAt: z.string().datetime().optional(),
+});
+const transferSchema = z.object({
+    toUserId: z.string().min(1),
+    amount: z.number().int().positive(),
+    description: z.string().max(500).optional(),
+    metadata: z.record(z.unknown()).optional(),
+});
+const rechargeSchema = z.object({
+    rmbAmount: z.number().positive(),
+    description: z.string().max(500).optional(),
+    metadata: z.record(z.unknown()).optional(),
+});
+const deductSchema = z.object({
+    userId: z.string().min(1),
+    amount: z.number().int().positive(),
+    reason: z.string().min(1).max(500),
+});
+const manualAddSchema = z.object({
+    userId: z.string().min(1),
+    amount: z.number().int().positive(),
+    reason: z.string().min(1).max(500),
+});
+const batchRewardSchema = z.object({
+    userIds: z.array(z.string().min(1)).min(1).max(100),
+    amount: z.number().int().positive(),
+    reason: z.string().min(1).max(500),
+});
+const freezeIdParamSchema = z.object({
+    freezeId: z.string().min(1),
+});
+const transactionIdParamSchema = z.object({
+    transactionId: z.string().min(1),
+});
+const ruleCodeParamSchema = z.object({
+    ruleCode: z.string().min(1),
+});
+const sceneParamSchema = z.object({
+    scene: z.nativeEnum(SceneCode),
+});
+const limitConfigSchema = z.object({
+    dailyEarnLimit: z.number().int().positive().optional(),
+    weeklyEarnLimit: z.number().int().positive().optional(),
+    dailySpendLimit: z.number().int().positive().optional(),
+    weeklySpendLimit: z.number().int().positive().optional(),
+});
+const valueConfigSchema = z.object({
+    rmbToPointsRate: z.number().positive().optional(),
+    pointsToRmbRate: z.number().positive().optional(),
+    minRechargeAmount: z.number().positive().optional(),
+    minWithdrawAmount: z.number().positive().optional(),
+});
+const transferConfigSchema = z.object({
+    enabled: z.boolean().optional(),
+    minAmount: z.number().int().positive().optional(),
+    maxAmount: z.number().int().positive().optional(),
+    feeRate: z.number().min(0).max(1).optional(),
+    feeMin: z.number().int().nonnegative().optional(),
+    feeMax: z.number().int().positive().optional(),
+    dailyLimit: z.number().int().positive().optional(),
+});
+const freezeConfigSchema = z.object({
+    defaultExpireHours: z.number().int().positive().optional(),
+    maxFreezeAmount: z.number().min(0).max(1).optional(),
+});
+// ==================== 账户管理 ====================
+/**
+ * GET /api/v1/points/account
+ * 获取当前用户积分账户
+ */
+router.get('/account', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const account = await pointsService.getOrCreateAccount(userId);
+        res.json({ success: true, data: account });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * GET /api/v1/points/balance
+ * 获取可用余额（完整账户数据）
+ */
+router.get('/balance', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const account = await pointsService.getOrCreateAccount(userId);
+        const dbAccount = await prisma.pointsAccount.findUnique({
+            where: { userId },
+            select: { updatedAt: true },
+        });
+        res.json({
+            success: true,
+            data: {
+                balance: account.balance,
+                totalEarned: account.totalEarned,
+                totalSpent: account.totalSpent,
+                lastUpdatedAt: dbAccount?.updatedAt?.toISOString() ?? null,
+            },
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+// ==================== 积分获取 ====================
+/**
+ * POST /api/v1/points/earn
+ * 按规则获取积分
+ */
+router.post('/earn', authenticate, validate({ body: earnByRuleSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { ruleCode, baseAmount, metadata } = req.body;
+        const result = await pointsService.earnByRule({ userId, ruleCode, baseAmount, metadata });
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error });
+        }
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * POST /api/v1/points/recharge
+ * 充值积分
+ */
+router.post('/recharge', authenticate, validate({ body: rechargeSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { rmbAmount, description, metadata } = req.body;
+        const result = await pointsService.recharge(userId, { rmbAmount, description, metadata });
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error });
+        }
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * POST /api/v1/points/checkin
+ * 签到
+ */
+router.post('/checkin', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const continuousDays = typeof req.body?.continuousDays === 'number' ? req.body.continuousDays : 0;
+        const result = await pointsService.checkIn(userId, continuousDays);
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error });
+        }
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+// ==================== 积分消耗 ====================
+/**
+ * POST /api/v1/points/spend
+ * 按规则消耗积分
+ */
+router.post('/spend', authenticate, validate({ body: spendByRuleSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { ruleCode, baseAmount, metadata } = req.body;
+        const result = await pointsService.spendByRule({ userId, ruleCode, baseAmount, metadata });
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error });
+        }
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * POST /api/v1/points/view-photo
+ * 查看照片（消耗积分）
+ */
+router.post('/view-photo', authenticate, validate({ body: viewPhotoSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { photoId, ownerId } = req.body;
+        const result = await pointsService.viewPhoto(userId, photoId, ownerId);
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error });
+        }
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+// ==================== 积分冻结/解冻 ====================
+/**
+ * POST /api/v1/points/freeze
+ * 冻结积分
+ */
+router.post('/freeze', authenticate, validate({ body: freezeSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { amount, reason, scene, referenceId, expiresAt } = req.body;
+        const result = await pointsService.freezePoints(userId, amount, {
+            amount,
+            reason,
+            scene,
+            referenceId,
+            expiresAt,
+        });
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error });
+        }
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * POST /api/v1/points/freeze/:freezeId/unfreeze
+ * 解冻积分
+ */
+router.post('/freeze/:freezeId/unfreeze', authenticate, validate({ params: freezeIdParamSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { freezeId } = req.params;
+        const result = await pointsService.unfreezePoints(userId, freezeId);
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error });
+        }
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * POST /api/v1/points/freeze/:freezeId/confirm
+ * 确认使用冻结积分
+ */
+router.post('/freeze/:freezeId/confirm', authenticate, validate({ params: freezeIdParamSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { freezeId } = req.params;
+        const result = await pointsService.confirmFreeze(userId, freezeId);
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error });
+        }
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * GET /api/v1/points/freezes
+ * 获取冻结记录列表
+ */
+router.get('/freezes', authenticate, validate({ query: paginationSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const page = Number(req.query.page) || 1;
+        const pageSize = Number(req.query.pageSize) || 20;
+        const result = await pointsService.getFreezeList(userId, { page, pageSize });
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+// ==================== 积分转账 ====================
+/**
+ * POST /api/v1/points/transfer
+ * 转账积分
+ */
+router.post('/transfer', authenticate, validate({ body: transferSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { toUserId, amount, description, metadata } = req.body;
+        const result = await pointsService.transfer(userId, toUserId, amount, {
+            description,
+            metadata,
+        });
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error });
+        }
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+// ==================== 交易记录查询 ====================
+/**
+ * GET /api/v1/points/transactions
+ * 获取交易记录列表
+ */
+router.get('/transactions', authenticate, validate({ query: paginationSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const page = Number(req.query.page) || 1;
+        const pageSize = Number(req.query.pageSize) || 20;
+        const filter = {};
+        if (req.query.type)
+            filter.type = req.query.type;
+        if (req.query.scene)
+            filter.scene = req.query.scene;
+        if (req.query.startDate)
+            filter.startDate = new Date(req.query.startDate);
+        if (req.query.endDate)
+            filter.endDate = new Date(req.query.endDate);
+        const result = await pointsService.getTransactionList(userId, filter, { page, pageSize });
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * GET /api/v1/points/transactions/export
+ * 导出交易记录
+ */
+router.get('/transactions/export', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const format = String(req.query.format || 'csv');
+        if (format !== 'csv' && format !== 'xlsx') {
+            return res.status(400).json({ success: false, error: 'Unsupported format' });
+        }
+        const filter = {};
+        if (req.query.type)
+            filter.type = req.query.type;
+        if (req.query.scene)
+            filter.scene = req.query.scene;
+        if (req.query.startDate)
+            filter.startDate = new Date(String(req.query.startDate));
+        if (req.query.endDate)
+            filter.endDate = new Date(String(req.query.endDate));
+        const csvContent = await pointsService.exportTransactions(userId, filter);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="points-transactions.csv"');
+        res.send(csvContent);
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * GET /api/v1/points/transactions/:transactionId
+ * 获取交易详情
+ */
+router.get('/transactions/:transactionId', authenticate, validate({ params: transactionIdParamSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { transactionId } = req.params;
+        const transaction = await pointsService.getTransactionDetail(userId, transactionId);
+        if (!transaction) {
+            return res.status(404).json({ success: false, error: 'Transaction not found' });
+        }
+        res.json({ success: true, data: transaction });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * GET /api/v1/points/stats
+ * 获取积分统计（按类型分类）
+ */
+router.get('/stats', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const stats = await pointsService.getTransactionStats(userId);
+        res.json({ success: true, data: stats });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+// ==================== 规则查询 ====================
+/**
+ * GET /api/v1/points/rules
+ * 获取所有可用规则
+ */
+router.get('/rules', authenticate, async (_req, res, next) => {
+    try {
+        const rules = pointsService.getAllRules();
+        res.json({ success: true, data: { rules } });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * GET /api/v1/points/rules/scene/:scene
+ * 获取场景规则
+ */
+router.get('/rules/scene/:scene', authenticate, validate({ params: sceneParamSchema }), async (req, res, next) => {
+    try {
+        const { scene } = req.params;
+        const rules = pointsService.getRulesByScene(scene);
+        res.json({ success: true, data: { rules } });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * GET /api/v1/points/rules/:ruleCode
+ * 获取规则详情
+ */
+router.get('/rules/:ruleCode', authenticate, validate({ params: ruleCodeParamSchema }), async (req, res, next) => {
+    try {
+        const { ruleCode } = req.params;
+        const rule = pointsService.getRuleDetail(ruleCode);
+        if (!rule) {
+            return res.status(404).json({ success: false, error: 'Rule not found' });
+        }
+        res.json({ success: true, data: rule });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * POST /api/v1/points/rules/:ruleCode/check-limits
+ * 检查规则限制
+ */
+router.post('/rules/:ruleCode/check-limits', authenticate, validate({ params: ruleCodeParamSchema }), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { ruleCode } = req.params;
+        const result = await pointsService.checkRuleLimits(userId, ruleCode);
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+// ==================== 配置查询 ====================
+/**
+ * GET /api/v1/points/config/value
+ * 获取积分价值配置
+ */
+router.get('/config/value', authenticate, async (_req, res, next) => {
+    try {
+        const config = pointsService.getValueConfig();
+        res.json({ success: true, data: config });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * GET /api/v1/points/config/limits
+ * 获取积分限制配置
+ */
+router.get('/config/limits', authenticate, async (_req, res, next) => {
+    try {
+        const config = pointsService.getLimitConfig();
+        res.json({ success: true, data: config });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+// ==================== 管理功能 ====================
+/**
+ * POST /api/v1/points/admin/deduct
+ * 扣除积分（管理员）
+ */
+router.post('/admin/deduct', authenticate, requireRole('admin'), validate({ body: deductSchema }), async (req, res, next) => {
+    try {
+        const { userId, amount, reason } = req.body;
+        const adminId = req.user.id;
+        const result = await pointsService.deductPoints(userId, amount, reason, adminId);
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error });
+        }
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * POST /api/v1/points/admin/add
+ * 手动增加积分（管理员）
+ */
+router.post('/admin/add', authenticate, requireRole('admin'), validate({ body: manualAddSchema }), async (req, res, next) => {
+    try {
+        const { userId, amount, reason } = req.body;
+        const adminId = req.user.id;
+        const result = await pointsService.manualAddPoints(userId, amount, reason, adminId);
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error });
+        }
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * POST /api/v1/points/admin/batch-reward
+ * 批量发放积分（管理员）
+ */
+router.post('/admin/batch-reward', authenticate, requireRole('admin'), validate({ body: batchRewardSchema }), async (req, res, next) => {
+    try {
+        const { userIds, amount, reason } = req.body;
+        const result = await pointsService.batchReward(userIds, amount, reason);
+        res.json({ success: true, data: result });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * PUT /api/v1/points/admin/config/limits
+ * 更新积分限制配置（管理员）
+ */
+router.put('/admin/config/limits', authenticate, requireRole('admin'), validate({ body: limitConfigSchema }), async (req, res, next) => {
+    try {
+        updatePointsLimitConfig(req.body);
+        const config = pointsService.getLimitConfig();
+        res.json({ success: true, data: config });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * PUT /api/v1/points/admin/config/value
+ * 更新积分价值配置（管理员）
+ */
+router.put('/admin/config/value', authenticate, requireRole('admin'), validate({ body: valueConfigSchema }), async (req, res, next) => {
+    try {
+        updatePointsValueConfig(req.body);
+        const config = pointsService.getValueConfig();
+        res.json({ success: true, data: config });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * PUT /api/v1/points/admin/config/transfer
+ * 更新转账配置（管理员）
+ */
+router.put('/admin/config/transfer', authenticate, requireRole('admin'), validate({ body: transferConfigSchema }), async (req, res, next) => {
+    try {
+        updateTransferConfig(req.body);
+        res.json({ success: true, data: req.body });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * PUT /api/v1/points/admin/config/freeze
+ * 更新冻结配置（管理员）
+ */
+router.put('/admin/config/freeze', authenticate, requireRole('admin'), validate({ body: freezeConfigSchema }), async (req, res, next) => {
+    try {
+        updateFreezeConfig(req.body);
+        res.json({ success: true, data: req.body });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+// ==================== VisionShare Payment Endpoints ====================
+/**
+ * GET /api/v1/points/vs/balance-check
+ * Check if user has sufficient balance for viewing a photo
+ */
+router.get('/vs/balance-check', authenticate, validate({
+    query: z.object({
+        photoId: z.string().uuid(),
+    }),
+}), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { photoId } = req.query;
+        const result = await visionSharePaymentService.checkBalance(userId, photoId);
+        res.json({
+            success: true,
+            data: result,
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * POST /api/v1/points/vs/pay-photo
+ * Pay for a photo using points
+ */
+router.post('/vs/pay-photo', authenticate, validate({
+    body: z.object({
+        photoId: z.string().uuid(),
+        photographerUserId: z.string().uuid(),
+        points: z.number().int().positive().optional(),
+    }),
+}), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { photoId, photographerUserId } = req.body;
+        const result = await visionSharePaymentService.processPayment({
+            buyerUserId: userId,
+            photoId,
+            photographerUserId,
+        });
+        if (!result.success) {
+            return res.status(400).json({
+                success: false,
+                error: result.error,
+            });
+        }
+        res.json({
+            success: true,
+            data: {
+                transactionId: result.transactionId,
+                pointsCharged: result.pointsCharged,
+                photographerPoints: result.photographerPoints,
+                platformCommission: result.platformCommission,
+            },
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+/**
+ * POST /api/v1/points/vs/unlock-photo
+ * Unlock a photo (handles payment + unlock)
+ */
+router.post('/vs/unlock-photo', authenticate, validate({
+    body: z.object({
+        photoId: z.string().uuid(),
+        photographerUserId: z.string().uuid(),
+    }),
+}), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { photoId, photographerUserId } = req.body;
+        const result = await photoUnlockService.unlockPhoto({
+            userId,
+            photoId,
+            photographerUserId,
+        });
+        if (!result.success) {
+            return res.status(400).json({
+                success: false,
+                error: result.error,
+            });
+        }
+        res.json({
+            success: true,
+            data: {
+                photoUrl: result.photoUrl,
+                unlockToken: result.unlockToken,
+                expiresAt: result.expiresAt,
+            },
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+export default router;
+//# sourceMappingURL=points.js.map

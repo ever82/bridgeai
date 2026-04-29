@@ -1,0 +1,473 @@
+/**
+ * Auth Service
+ * 认证服务
+ *
+ * 用户注册、登录、密码管理、令牌生成
+ */
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { logger } from '../utils/logger';
+import { prisma } from '../db/client';
+import { cacheGet, cacheSet, cacheDel } from './cache';
+import * as refreshTokenService from './auth/refreshToken';
+import { JWT_SECRET, generateTokens, verifyToken as verifyJwtToken } from './auth/jwt';
+// 登录重试限制配置
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MINUTES = 30;
+// 验证码配置
+const VERIFICATION_CODE_TTL = 300; // 5分钟
+const VERIFICATION_CODE_PREFIX = 'verification:code:';
+/**
+ * 验证密码强度
+ * @param password 密码
+ * @returns 验证结果
+ */
+export function validatePasswordStrength(password) {
+    const errors = [];
+    let score = 0;
+    // 长度检查
+    if (password.length < 8) {
+        errors.push('密码长度至少为8位');
+    }
+    else if (password.length >= 12) {
+        score += 1;
+    }
+    // 大写字母
+    if (!/[A-Z]/.test(password)) {
+        errors.push('密码必须包含大写字母');
+    }
+    else {
+        score += 1;
+    }
+    // 小写字母
+    if (!/[a-z]/.test(password)) {
+        errors.push('密码必须包含小写字母');
+    }
+    else {
+        score += 1;
+    }
+    // 数字
+    if (!/\d/.test(password)) {
+        errors.push('密码必须包含数字');
+    }
+    else {
+        score += 1;
+    }
+    // 特殊字符
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        errors.push('密码必须包含特殊字符');
+    }
+    else {
+        score += 1;
+    }
+    // 最大4分
+    score = Math.min(score, 4);
+    return {
+        valid: errors.length === 0,
+        score,
+        errors,
+    };
+}
+/**
+ * 生成并存储验证码（Redis TTL 5分钟）
+ * @param identifier 手机号或邮箱
+ * @returns 验证码
+ */
+export function generateVerificationCode(identifier) {
+    const code = Math.random().toString().slice(2, 8);
+    const key = `${VERIFICATION_CODE_PREFIX}${identifier}`;
+    cacheSet(key, code, VERIFICATION_CODE_TTL);
+    return code;
+}
+/**
+ * 验证验证码
+ * @param identifier 手机号或邮箱
+ * @param code 用户输入的验证码
+ * @returns 是否验证通过
+ */
+export async function verifyVerificationCode(identifier, code) {
+    const key = `${VERIFICATION_CODE_PREFIX}${identifier}`;
+    const stored = await cacheGet(key);
+    if (!stored || stored !== code) {
+        return false;
+    }
+    // 验证通过后删除，防止重复使用
+    await cacheDel(key);
+    return true;
+}
+/**
+ * 生成访问令牌
+ * @param payload 令牌载荷
+ * @returns 访问令牌
+ */
+export function generateAccessToken(payload) {
+    const tokens = generateTokens(payload.userId, payload.email || '', payload.role);
+    return tokens.accessToken;
+}
+/**
+ * 生成刷新令牌
+ * @param userId 用户ID
+ * @returns 刷新令牌
+ */
+export function generateRefreshToken(userId) {
+    const tokens = generateTokens(userId, '', 'user');
+    return tokens.refreshToken;
+}
+/**
+ * 验证令牌
+ * @param token 令牌
+ * @returns 解码后的载荷
+ */
+export function verifyToken(token) {
+    const decoded = verifyJwtToken(token);
+    return {
+        userId: decoded.userId,
+        email: decoded.email,
+        role: decoded.role,
+    };
+}
+/**
+ * 哈希密码
+ * @param password 明文密码
+ * @returns 哈希后的密码
+ */
+export async function hashPassword(password) {
+    const saltRounds = 12;
+    return bcrypt.hash(password, saltRounds);
+}
+/**
+ * 比较密码
+ * @param password 明文密码
+ * @param hash 哈希密码
+ * @returns 是否匹配
+ */
+export async function comparePassword(password, hash) {
+    return bcrypt.compare(password, hash);
+}
+/**
+ * 检查用户是否存在
+ * @param email 邮箱
+ * @param phone 手机号
+ * @returns 是否存在
+ */
+export async function checkUserExists(email, phone) {
+    if (!email && !phone)
+        return false;
+    const user = await prisma.user.findFirst({
+        where: {
+            OR: [...(email ? [{ email }] : []), ...(phone ? [{ phone }] : [])],
+        },
+    });
+    return !!user;
+}
+/**
+ * 注册用户
+ * @param data 注册数据
+ * @returns 认证响应
+ */
+export async function registerUser(data) {
+    const { email, phone, password, name, verificationCode } = data;
+    // 验证必要字段
+    if (!email && !phone) {
+        throw new Error('邮箱或手机号至少需要一个');
+    }
+    if (!password) {
+        throw new Error('密码不能为空');
+    }
+    // 验证密码强度
+    const passwordCheck = validatePasswordStrength(password);
+    if (!passwordCheck.valid) {
+        throw new Error(`密码强度不足: ${passwordCheck.errors.join(', ')}`);
+    }
+    // 检查用户是否已存在
+    const exists = await checkUserExists(email, phone);
+    if (exists) {
+        throw new Error('用户已存在');
+    }
+    // 验证验证码（从Redis中获取并验证）
+    if (verificationCode) {
+        const identifier = email || phone || '';
+        const valid = await verifyVerificationCode(identifier, verificationCode);
+        if (!valid) {
+            throw new Error('验证码错误或已过期');
+        }
+    }
+    // 哈希密码
+    const passwordHash = await hashPassword(password);
+    // 创建用户
+    const user = await prisma.user.create({
+        data: {
+            email: email,
+            phone,
+            name,
+            displayName: name,
+            passwordHash,
+            status: 'ACTIVE',
+        },
+    });
+    logger.info('User registered', { userId: user.id, email, phone });
+    // 生成令牌
+    const accessToken = generateAccessToken({
+        userId: user.id,
+        email: user.email || undefined,
+        phone: user.phone || undefined,
+        role: 'user',
+    });
+    const refreshToken = generateRefreshToken(user.id);
+    // Store refresh token in database
+    await refreshTokenService.createRefreshToken({ userId: user.id, token: refreshToken });
+    // 移除敏感字段
+    const { passwordHash: _ph, ...userWithoutPassword } = user;
+    return {
+        user: userWithoutPassword,
+        accessToken,
+        refreshToken,
+        expiresIn: 7 * 24 * 60 * 60, // 7天（秒）
+    };
+}
+/**
+ * 用户登录
+ * @param data 登录数据
+ * @returns 认证响应
+ */
+export async function loginUser(data) {
+    const { email, phone, password, verificationCode } = data;
+    if (!email && !phone) {
+        throw new Error('邮箱或手机号至少需要一个');
+    }
+    // 查找用户
+    const user = await prisma.user.findFirst({
+        where: {
+            OR: [...(email ? [{ email }] : []), ...(phone ? [{ phone }] : [])],
+        },
+    });
+    if (!user) {
+        throw new Error('邮箱/手机号或密码错误');
+    }
+    // 检查账户是否被锁定（DB-based tracking）
+    if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
+        const remainingMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+        throw new Error(`账户已被锁定，请${remainingMinutes}分钟后重试`);
+    }
+    let loginSuccess = false;
+    // 验证码登录（从Redis中验证）
+    if (verificationCode) {
+        const identifier = email || phone || '';
+        const valid = await verifyVerificationCode(identifier, verificationCode);
+        if (!valid) {
+            throw new Error('验证码错误或已过期');
+        }
+        loginSuccess = true;
+    }
+    // 密码登录
+    else if (password) {
+        const passwordValid = await comparePassword(password, user.passwordHash);
+        if (!passwordValid) {
+            const failedAttempts = (user.failedLoginAttempts || 0) + 1;
+            // 如果超过最大重试次数，锁定账户
+            if (failedAttempts >= MAX_LOGIN_ATTEMPTS) {
+                const lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60000);
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: { failedLoginAttempts: failedAttempts, lockedUntil },
+                });
+                logger.warn('User account locked due to failed login attempts', {
+                    userId: user.id,
+                    failedAttempts,
+                });
+                throw new Error(`密码错误次数过多，账户已锁定${LOCKOUT_DURATION_MINUTES}分钟`);
+            }
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { failedLoginAttempts: failedAttempts },
+            });
+            logger.warn('Failed login attempt', {
+                userId: user.id,
+                attempts: failedAttempts,
+            });
+            throw new Error(`密码错误，还剩${MAX_LOGIN_ATTEMPTS - failedAttempts}次机会`);
+        }
+        loginSuccess = true;
+    }
+    else {
+        throw new Error('密码或验证码至少需要一个');
+    }
+    // 登录成功，重置失败次数
+    if (loginSuccess) {
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { failedLoginAttempts: 0, lockedUntil: null },
+        });
+    }
+    logger.info('User logged in', { userId: user.id });
+    // 生成令牌
+    const accessToken = generateAccessToken({
+        userId: user.id,
+        email: user.email || undefined,
+        phone: user.phone || undefined,
+        role: 'user',
+    });
+    const refreshToken = generateRefreshToken(user.id);
+    // Store refresh token in database
+    await refreshTokenService.createRefreshToken({ userId: user.id, token: refreshToken });
+    // 移除敏感字段
+    const { passwordHash: _ph, ...userWithoutPassword } = user;
+    return {
+        user: userWithoutPassword,
+        accessToken,
+        refreshToken,
+        expiresIn: 7 * 24 * 60 * 60,
+    };
+}
+/**
+ * 刷新访问令牌
+ * @param refreshToken 刷新令牌
+ * @returns 新的认证响应
+ */
+export async function refreshAccessToken(refreshToken) {
+    let decoded;
+    try {
+        const decodedJwt = verifyJwtToken(refreshToken);
+        decoded = { userId: decodedJwt.userId, type: decodedJwt.type };
+    }
+    catch {
+        throw new Error('刷新令牌无效或已过期');
+    }
+    if (decoded.type !== 'refresh') {
+        throw new Error('无效的刷新令牌');
+    }
+    // Check refresh token in database
+    const isValid = await refreshTokenService.isRefreshTokenValid(refreshToken);
+    if (!isValid) {
+        throw new Error('刷新令牌无效或已过期');
+    }
+    const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+    });
+    if (!user) {
+        throw new Error('用户不存在');
+    }
+    if (user.status !== 'ACTIVE') {
+        throw new Error('账户已被禁用');
+    }
+    const accessToken = generateAccessToken({
+        userId: user.id,
+        email: user.email || undefined,
+        phone: user.phone || undefined,
+        role: user.role,
+    });
+    const newRefreshToken = generateRefreshToken(user.id);
+    // Rotate: revoke old, create new in database
+    await refreshTokenService.rotateRefreshToken(refreshToken, newRefreshToken, user.id);
+    const { passwordHash: _ph, ...userWithoutPassword } = user;
+    return {
+        user: userWithoutPassword,
+        accessToken,
+        refreshToken: newRefreshToken,
+        expiresIn: 7 * 24 * 60 * 60,
+    };
+}
+/**
+ * 申请密码重置
+ * @param email 邮箱
+ * @param phone 手机号
+ * @returns 重置令牌（实际应该发送到邮箱/手机）
+ */
+export async function requestPasswordReset(email, phone) {
+    if (!email && !phone) {
+        throw new Error('邮箱或手机号至少需要一个');
+    }
+    const user = await prisma.user.findFirst({
+        where: {
+            OR: [...(email ? [{ email }] : []), ...(phone ? [{ phone }] : [])],
+        },
+    });
+    if (!user) {
+        // 不暴露用户是否存在的具体信息，直接返回成功
+        return 'no-reset-needed';
+    }
+    // 生成重置令牌（15分钟有效）
+    const resetToken = jwt.sign({ userId: user.id, type: 'password-reset' }, JWT_SECRET, {
+        expiresIn: '15m',
+        algorithm: 'HS256',
+    });
+    logger.info('Password reset requested', { userId: user.id });
+    // 实际应该发送邮件或短信
+    return resetToken;
+}
+/**
+ * 重置密码
+ * @param resetToken 重置令牌
+ * @param newPassword 新密码
+ */
+export async function resetPassword(resetToken, newPassword) {
+    // 验证密码强度
+    const passwordCheck = validatePasswordStrength(newPassword);
+    if (!passwordCheck.valid) {
+        throw new Error(`密码强度不足: ${passwordCheck.errors.join(', ')}`);
+    }
+    try {
+        const decoded = jwt.verify(resetToken, JWT_SECRET, { algorithms: ['HS256'] });
+        if (decoded.type !== 'password-reset') {
+            throw new Error('无效的重置令牌');
+        }
+        const passwordHash = await hashPassword(newPassword);
+        await prisma.user.update({
+            where: { id: decoded.userId },
+            data: { passwordHash, failedLoginAttempts: 0, lockedUntil: null },
+        });
+        // Revoke all refresh tokens to force re-login on all devices
+        await refreshTokenService.revokeAllUserRefreshTokens(decoded.userId);
+        logger.info('Password reset successful', { userId: decoded.userId });
+    }
+    catch (error) {
+        throw new Error('重置令牌无效或已过期');
+    }
+}
+/**
+ * 修改密码
+ * @param userId 用户ID
+ * @param oldPassword 旧密码
+ * @param newPassword 新密码
+ */
+export async function changePassword(userId, oldPassword, newPassword) {
+    // 验证密码强度
+    const passwordCheck = validatePasswordStrength(newPassword);
+    if (!passwordCheck.valid) {
+        throw new Error(`密码强度不足: ${passwordCheck.errors.join(', ')}`);
+    }
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+    });
+    if (!user) {
+        throw new Error('用户不存在');
+    }
+    const passwordValid = await comparePassword(oldPassword, user.passwordHash);
+    if (!passwordValid) {
+        throw new Error('旧密码错误');
+    }
+    const passwordHash = await hashPassword(newPassword);
+    await prisma.user.update({
+        where: { id: userId },
+        data: { passwordHash },
+    });
+    // Revoke all refresh tokens to force re-login on all devices
+    await refreshTokenService.revokeAllUserRefreshTokens(userId);
+    logger.info('Password changed', { userId });
+}
+/**
+ * 获取当前用户
+ * @param userId 用户ID
+ * @returns 用户信息
+ */
+export async function getCurrentUser(userId) {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+    });
+    if (!user) {
+        throw new Error('用户不存在');
+    }
+    const { passwordHash: _ph, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+}
+//# sourceMappingURL=authService.js.map

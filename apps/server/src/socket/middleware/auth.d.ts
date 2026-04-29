@@ -2,6 +2,7 @@
  * Socket.io Authentication Middleware
  *
  * Validates JWT tokens for Socket.io connections.
+ * Implements connection limits per user.
  */
 import type { Socket } from 'socket.io';
 /**
@@ -17,6 +18,7 @@ export interface AuthenticatedSocket extends Socket {
 }
 /**
  * Socket.io authentication middleware
+ * Implements JWT verification, permission checking, user association, and connection limits
  */
 export declare function socketAuthMiddleware(socket: AuthenticatedSocket, next: (err?: Error) => void): Promise<void>;
 /**

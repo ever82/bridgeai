@@ -22,16 +22,16 @@ export declare function createRefreshToken(input: CreateRefreshTokenInput): Prom
  * Find a refresh token by its token string
  */
 export declare function findRefreshToken(token: string): Promise<{
-    id: string;
-    token: string;
     userId: string;
+    id: string;
     createdAt: Date;
+    ipAddress: string | null;
     deviceInfo: import("@prisma/client/runtime/library").JsonValue | null;
     expiresAt: Date;
-    ipAddress: string | null;
+    token: string;
     revokedAt: Date | null;
     revokedBy: string | null;
-} | null>;
+}>;
 /**
  * Revoke a refresh token
  */
@@ -52,13 +52,13 @@ export declare function cleanupExpiredTokens(): Promise<number>;
  * Get user's active refresh tokens
  */
 export declare function getUserActiveTokens(userId: string): Promise<{
-    id: string;
-    token: string;
     userId: string;
+    id: string;
     createdAt: Date;
+    ipAddress: string | null;
     deviceInfo: import("@prisma/client/runtime/library").JsonValue | null;
     expiresAt: Date;
-    ipAddress: string | null;
+    token: string;
     revokedAt: Date | null;
     revokedBy: string | null;
 }[]>;

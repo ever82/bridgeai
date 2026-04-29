@@ -1,4 +1,4 @@
-import type { L1Profile, L2Profile, UpdateL1ProfileRequest, UpdateL2ProfileRequest, UpdateL3ProfileRequest } from '@bridgeai/shared';
+import type { L1Profile, L2Data, L2Profile, UpdateL1ProfileRequest, UpdateL3ProfileRequest } from '@bridgeai/shared';
 export { calculateL1Completion } from '../utils/profileCompletion';
 export interface AgentProfile {
     id: string;
@@ -30,9 +30,13 @@ export declare function updateL1Profile(agentId: string, userId: string, data: U
  */
 export declare function getL2Profile(agentId: string, userId: string): Promise<L2Profile | null>;
 /**
+ * Get L2 profile for an agent by scene
+ */
+export declare function getL2ProfileByScene(agentId: string, userId: string, sceneId: string): Promise<L2Profile | null>;
+/**
  * Update L2 profile
  */
-export declare function updateL2Profile(agentId: string, userId: string, data: UpdateL2ProfileRequest): Promise<L2Profile>;
+export declare function updateL2Profile(agentId: string, userId: string, data: L2Data, sceneId?: string): Promise<L2Profile>;
 /**
  * Get L3 profile for an agent
  */

@@ -39,11 +39,20 @@ export interface DeIdentificationResult {
 export declare class ImageSecurityService {
     private static instance;
     private rekognitionClient;
+    private visionAdapter;
     /**
      * Lazily create a Rekognition client from environment variables.
      * Returns null if required credentials are not configured.
      */
     private getRekognitionClient;
+    /**
+     * Lazily create an ImageModerationService backed by a Vision adapter
+     * (Claude Vision or GPT-4 Vision) from environment variables.
+     * Returns null if no Vision API credentials are configured.
+     *
+     * Priority: ANTHROPIC_API_KEY (Claude Vision) > OPENAI_API_KEY (GPT-4 Vision)
+     */
+    private getVisionModerationService;
     static getInstance(): ImageSecurityService;
     /**
      * Perform comprehensive security check on an image
@@ -59,14 +68,15 @@ export declare class ImageSecurityService {
      * Detect sensitive / policy-violating content using AWS Rekognition
      * Content Moderation (DetectModerationLabels).
      *
-     * Falls back to basic sharp-based histogram analysis when Rekognition is
-     * not configured (missing credentials) so the method always produces a
-     * result regardless of environment.
+     * Falls back to Claude/GPT-4 Vision-powered ImageModerationService when
+     * Rekognition is unavailable, and finally to basic sharp histogram analysis
+     * as a last resort (degenerate-image-only detection).
      */
     private checkSensitiveContent;
     /**
      * Minimal sharp-based fallback that detects only degenerate images
-     * (all-black or all-white). Used when Rekognition is unavailable.
+     * (all-black or all-white). Used as the absolute last resort when neither
+     * Rekognition nor Vision moderation is configured.
      */
     private checkSensitiveContentFallback;
     /**

@@ -16,6 +16,7 @@ export declare const rateLimitConfigs: {
     search: RateLimitConfig;
     webhook: RateLimitConfig;
     admin: RateLimitConfig;
+    reports: RateLimitConfig;
     sensitive: RateLimitConfig;
 };
 export declare const userTierLimits: {
@@ -42,7 +43,7 @@ export declare const endpointRateLimits: Array<{
 }>;
 export declare function getRateLimitConfig(path: string): RateLimitConfig;
 export declare const rateLimitEnv: {
-    redisUrl: string | undefined;
+    redisUrl: string;
     useRedis: boolean;
     defaultWindowMinutes: number;
     defaultMaxRequests: number;

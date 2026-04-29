@@ -1,0 +1,335 @@
+/**
+ * VisionShare Payment Service
+ * Handles points-based photo payment in VisionShare scenario
+ * Including balance check, payment processing, platform commission, and refund
+ */
+import { AppError } from '../errors/AppError';
+import { prisma } from '../db/client';
+// VisionShare payment configuration
+const VISION_SHARE_CONFIG = {
+    viewPhotoRuleCode: 'VIEW_PHOTO',
+    platformCommissionRate: 0.1, // 10% platform commission
+    unlockTokenExpiryHours: 24,
+};
+export class VisionSharePaymentService {
+    prisma;
+    constructor(prismaClient = prisma) {
+        this.prisma = prismaClient;
+    }
+    // ==================== Balance Check ====================
+    /**
+     * Check if user has sufficient balance for viewing a photo
+     */
+    async checkBalance(userId, photoId) {
+        const account = await this.prisma.pointsAccount.findUnique({
+            where: { userId },
+        });
+        if (!account) {
+            return {
+                sufficient: false,
+                currentBalance: 0,
+                requiredPoints: 50,
+                photoId,
+            };
+        }
+        const requiredPoints = 50; // Default cost per photo view
+        return {
+            sufficient: account.balance >= requiredPoints,
+            currentBalance: account.balance,
+            requiredPoints,
+            photoId,
+        };
+    }
+    // ==================== Payment Processing ====================
+    /**
+     * Process photo payment: deduct points from buyer, give to photographer, take platform commission
+     */
+    async processPayment(request) {
+        const { buyerUserId, photoId, photographerUserId } = request;
+        if (buyerUserId === photographerUserId) {
+            return {
+                success: false,
+                error: 'Cannot pay for your own photo',
+                pointsCharged: 0,
+                photographerPoints: 0,
+                platformCommission: 0,
+            };
+        }
+        // Check balance first
+        const balanceCheck = await this.checkBalance(buyerUserId, photoId);
+        if (!balanceCheck.sufficient) {
+            return {
+                success: false,
+                error: 'Insufficient points',
+                pointsCharged: 0,
+                photographerPoints: 0,
+                platformCommission: 0,
+            };
+        }
+        const totalCost = balanceCheck.requiredPoints;
+        const commissionRate = VISION_SHARE_CONFIG.platformCommissionRate;
+        const platformCommission = Math.floor(totalCost * commissionRate);
+        const photographerPoints = totalCost - platformCommission;
+        try {
+            // Execute payment in a database transaction
+            const result = await this.prisma.$transaction(async (tx) => {
+                // 1. Deduct from buyer
+                const buyerAccount = await tx.pointsAccount.findUnique({
+                    where: { userId: buyerUserId },
+                });
+                if (!buyerAccount) {
+                    throw new AppError('Buyer points account not found', 'ACCOUNT_NOT_FOUND', 404);
+                }
+                const newBuyerBalance = buyerAccount.balance - totalCost;
+                if (newBuyerBalance < 0) {
+                    throw new AppError('Insufficient points', 'INSUFFICIENT_POINTS', 400);
+                }
+                await tx.pointsAccount.update({
+                    where: { userId: buyerUserId, version: buyerAccount.version },
+                    data: {
+                        balance: newBuyerBalance,
+                        totalSpent: buyerAccount.totalSpent + totalCost,
+                        version: buyerAccount.version + 1,
+                    },
+                });
+                const buyerTx = await tx.pointsTransaction.create({
+                    data: {
+                        accountId: buyerAccount.id,
+                        userId: buyerUserId,
+                        type: 'SPEND',
+                        amount: -totalCost,
+                        balanceAfter: newBuyerBalance,
+                        description: `查看照片支付 - ${photoId}`,
+                        scene: 'VISION_SHARE',
+                        referenceId: photoId,
+                        metadata: JSON.stringify({
+                            photoId,
+                            photographerUserId,
+                            totalCost,
+                            platformCommission,
+                            photographerPoints,
+                        }),
+                    },
+                });
+                // 2. Credit photographer
+                let photographerTx;
+                const photographerAccount = await tx.pointsAccount.findUnique({
+                    where: { userId: photographerUserId },
+                });
+                if (photographerAccount) {
+                    const newPhotographerBalance = photographerAccount.balance + photographerPoints;
+                    await tx.pointsAccount.update({
+                        where: { userId: photographerUserId, version: photographerAccount.version },
+                        data: {
+                            balance: newPhotographerBalance,
+                            totalEarned: photographerAccount.totalEarned + photographerPoints,
+                            version: photographerAccount.version + 1,
+                        },
+                    });
+                    photographerTx = await tx.pointsTransaction.create({
+                        data: {
+                            accountId: photographerAccount.id,
+                            userId: photographerUserId,
+                            type: 'EARN',
+                            amount: photographerPoints,
+                            balanceAfter: newPhotographerBalance,
+                            description: '照片被查看奖励',
+                            scene: 'VISION_SHARE',
+                            referenceId: photoId,
+                            metadata: JSON.stringify({
+                                photoId,
+                                buyerUserId,
+                                commission: platformCommission,
+                            }),
+                        },
+                    });
+                }
+                return {
+                    buyerTransactionId: buyerTx.id,
+                    photographerTransactionId: photographerTx?.id,
+                };
+            }, {
+                isolationLevel: 'Serializable',
+                maxWait: 5000,
+                timeout: 15000,
+            });
+            return {
+                success: true,
+                transactionId: result.buyerTransactionId,
+                photographerTransactionId: result.photographerTransactionId,
+                pointsCharged: totalCost,
+                photographerPoints,
+                platformCommission,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                error: error.message || 'Payment processing failed',
+                pointsCharged: 0,
+                photographerPoints: 0,
+                platformCommission: 0,
+            };
+        }
+    }
+    // ==================== Refund ====================
+    /**
+     * Process refund for a failed photo payment
+     */
+    async processRefund(buyerUserId, photoId, originalTransactionId) {
+        try {
+            const originalTx = await this.prisma.pointsTransaction.findUnique({
+                where: { id: originalTransactionId },
+            });
+            if (!originalTx) {
+                return {
+                    success: false,
+                    refundAmount: 0,
+                    error: 'Original transaction not found',
+                };
+            }
+            const refundAmount = Math.abs(originalTx.amount);
+            await this.prisma.$transaction(async (tx) => {
+                const account = await tx.pointsAccount.findUnique({
+                    where: { userId: buyerUserId },
+                });
+                if (!account) {
+                    throw new AppError('Points account not found', 'ACCOUNT_NOT_FOUND', 404);
+                }
+                await tx.pointsAccount.update({
+                    where: { userId: buyerUserId, version: account.version },
+                    data: {
+                        balance: account.balance + refundAmount,
+                        totalEarned: account.totalEarned + refundAmount,
+                        version: account.version + 1,
+                    },
+                });
+                await tx.pointsTransaction.create({
+                    data: {
+                        accountId: account.id,
+                        userId: buyerUserId,
+                        type: 'REFUND',
+                        amount: refundAmount,
+                        balanceAfter: account.balance + refundAmount,
+                        description: `照片支付退款 - ${photoId}`,
+                        scene: 'VISION_SHARE',
+                        referenceId: photoId,
+                        metadata: JSON.stringify({
+                            originalTransactionId,
+                            photoId,
+                            type: 'payment_refund',
+                        }),
+                    },
+                });
+                // Deduct photographer earnings that were credited from the original payment
+                try {
+                    const originalMetadata = originalTx.metadata
+                        ? JSON.parse(originalTx.metadata)
+                        : null;
+                    if (originalMetadata?.photographerUserId && originalMetadata?.photographerPoints) {
+                        const { photographerUserId, photographerPoints } = originalMetadata;
+                        if (photographerPoints > 0) {
+                            const photographerAccount = await tx.pointsAccount.findUnique({
+                                where: { userId: photographerUserId },
+                            });
+                            if (photographerAccount) {
+                                if (photographerAccount.balance >= photographerPoints) {
+                                    const newPhotographerBalance = photographerAccount.balance - photographerPoints;
+                                    await tx.pointsAccount.update({
+                                        where: {
+                                            userId: photographerUserId,
+                                            version: photographerAccount.version,
+                                        },
+                                        data: {
+                                            balance: newPhotographerBalance,
+                                            totalSpent: photographerAccount.totalSpent + photographerPoints,
+                                            version: photographerAccount.version + 1,
+                                        },
+                                    });
+                                    await tx.pointsTransaction.create({
+                                        data: {
+                                            accountId: photographerAccount.id,
+                                            userId: photographerUserId,
+                                            type: 'REFUND_DEDUCTION',
+                                            amount: -photographerPoints,
+                                            balanceAfter: newPhotographerBalance,
+                                            description: `照片退款扣减 - ${photoId}`,
+                                            scene: 'VISION_SHARE',
+                                            referenceId: photoId,
+                                            metadata: JSON.stringify({
+                                                originalTransactionId,
+                                                photoId,
+                                                buyerUserId,
+                                                type: 'photographer_refund_deduction',
+                                            }),
+                                        },
+                                    });
+                                }
+                                else {
+                                    console.warn(`[processRefund] Photographer ${photographerUserId} has insufficient balance (${photographerAccount.balance}) for deduction (${photographerPoints}). Skipping photographer deduction.`);
+                                }
+                            }
+                            else {
+                                console.warn(`[processRefund] Photographer points account not found for user ${photographerUserId}. Skipping photographer deduction.`);
+                            }
+                        }
+                    }
+                }
+                catch (metadataError) {
+                    console.warn(`[processRefund] Failed to process photographer deduction for refund of ${originalTransactionId}: ${metadataError}. Skipping photographer deduction.`);
+                }
+            });
+            return {
+                success: true,
+                refundAmount,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                refundAmount: 0,
+                error: error.message || 'Refund processing failed',
+            };
+        }
+    }
+    // ==================== Unlock Token ====================
+    /**
+     * Generate a temporary unlock token for a purchased photo
+     */
+    async generateUnlockToken(userId, photoId) {
+        const token = `unlock-${userId}-${photoId}-${Date.now()}`;
+        const expiresAt = new Date(Date.now() + VISION_SHARE_CONFIG.unlockTokenExpiryHours * 3600000).toISOString();
+        // Persist token so validateToken in photoUnlockService can find it
+        try {
+            await this.prisma.$executeRawUnsafe(`INSERT INTO points_freezes (id, account_id, amount, reference_id, status, reason, expires_at, created_at)
+         VALUES ($1, $2, 0, $3, 'USED', 'photo_unlock', $4, NOW())`, token, `account-${userId}`, photoId, expiresAt);
+        }
+        catch (err) {
+            console.warn('Failed to persist unlock token to points_freezes:', err);
+        }
+        return {
+            token,
+            expiresAt,
+        };
+    }
+    // ==================== Payment History ====================
+    /**
+     * Get user's payment history for VisionShare
+     */
+    async getPaymentHistory(userId, limit = 50) {
+        const transactions = await this.prisma.pointsTransaction.findMany({
+            where: {
+                userId,
+                scene: 'VISION_SHARE',
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+            take: limit,
+        });
+        return transactions;
+    }
+}
+// Singleton instance
+export const visionSharePaymentService = new VisionSharePaymentService();
+//# sourceMappingURL=visionSharePaymentService.js.map

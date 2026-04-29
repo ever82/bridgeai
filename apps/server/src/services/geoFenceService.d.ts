@@ -30,15 +30,15 @@ export interface UpdateGeoFenceInput {
  * Create a new geo-fence
  */
 export declare function createGeoFence(input: CreateGeoFenceInput): Promise<{
-    metadata: import("@prisma/client/runtime/library").JsonValue | null;
     id: string;
-    name: string;
     type: string;
-    createdAt: Date;
-    color: string | null;
     description: string | null;
+    metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
     isActive: boolean;
+    color: string | null;
     coordinates: import("@prisma/client/runtime/library").JsonValue | null;
     centerLat: number | null;
     centerLng: number | null;
@@ -49,21 +49,21 @@ export declare function createGeoFence(input: CreateGeoFenceInput): Promise<{
  * Get geo-fence by ID
  */
 export declare function getGeoFence(id: string): Promise<{
-    metadata: import("@prisma/client/runtime/library").JsonValue | null;
     id: string;
-    name: string;
     type: string;
-    createdAt: Date;
-    color: string | null;
     description: string | null;
+    metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
     isActive: boolean;
+    color: string | null;
     coordinates: import("@prisma/client/runtime/library").JsonValue | null;
     centerLat: number | null;
     centerLng: number | null;
     radiusMeters: number | null;
     createdBy: string | null;
-} | null>;
+}>;
 /**
  * List all geo-fences (optionally filtered by creator)
  */
@@ -71,15 +71,15 @@ export declare function listGeoFences(options?: {
     createdBy?: string;
     activeOnly?: boolean;
 }): Promise<{
-    metadata: import("@prisma/client/runtime/library").JsonValue | null;
     id: string;
-    name: string;
     type: string;
-    createdAt: Date;
-    color: string | null;
     description: string | null;
+    metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
     isActive: boolean;
+    color: string | null;
     coordinates: import("@prisma/client/runtime/library").JsonValue | null;
     centerLat: number | null;
     centerLng: number | null;
@@ -90,15 +90,15 @@ export declare function listGeoFences(options?: {
  * Update geo-fence
  */
 export declare function updateGeoFence(id: string, input: UpdateGeoFenceInput): Promise<{
-    metadata: import("@prisma/client/runtime/library").JsonValue | null;
     id: string;
-    name: string;
     type: string;
-    createdAt: Date;
-    color: string | null;
     description: string | null;
+    metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
     isActive: boolean;
+    color: string | null;
     coordinates: import("@prisma/client/runtime/library").JsonValue | null;
     centerLat: number | null;
     centerLng: number | null;
@@ -109,15 +109,15 @@ export declare function updateGeoFence(id: string, input: UpdateGeoFenceInput): 
  * Delete geo-fence
  */
 export declare function deleteGeoFence(id: string): Promise<{
-    metadata: import("@prisma/client/runtime/library").JsonValue | null;
     id: string;
-    name: string;
     type: string;
-    createdAt: Date;
-    color: string | null;
     description: string | null;
+    metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
     isActive: boolean;
+    color: string | null;
     coordinates: import("@prisma/client/runtime/library").JsonValue | null;
     centerLat: number | null;
     centerLng: number | null;
@@ -136,15 +136,15 @@ export declare function checkMultipleFences(point: GeoCoordinates, fenceIds: str
  * Find all fences containing a point
  */
 export declare function findContainingFences(point: GeoCoordinates): Promise<{
-    metadata: import("@prisma/client/runtime/library").JsonValue | null;
     id: string;
-    name: string;
     type: string;
-    createdAt: Date;
-    color: string | null;
     description: string | null;
+    metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
     isActive: boolean;
+    color: string | null;
     coordinates: import("@prisma/client/runtime/library").JsonValue | null;
     centerLat: number | null;
     centerLng: number | null;
@@ -160,15 +160,15 @@ export declare function createCircularFence(name: string, center: GeoCoordinates
     segments?: number;
     color?: string;
 }): Promise<{
-    metadata: import("@prisma/client/runtime/library").JsonValue | null;
     id: string;
-    name: string;
     type: string;
-    createdAt: Date;
-    color: string | null;
     description: string | null;
+    metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    createdAt: Date;
+    name: string;
     updatedAt: Date;
     isActive: boolean;
+    color: string | null;
     coordinates: import("@prisma/client/runtime/library").JsonValue | null;
     centerLat: number | null;
     centerLng: number | null;

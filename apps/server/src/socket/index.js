@@ -1,0 +1,244 @@
+import { Server as SocketServer } from 'socket.io';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { connectionService } from '../services/connectionService';
+import { socketAuthMiddleware } from './middleware/auth';
+import { connectionManager } from './connectionManager';
+import { pubClient, subClient } from './adapter';
+// Event handlers
+import { registerUserHandlers } from './handlers/user';
+import { registerChatHandlers } from './handlers/chat';
+import { registerSystemHandlers } from './handlers/system';
+import { registerGroupHandlers } from './handlers/groupHandler';
+import { registerHandoffHandlers } from './handlers/handoffHandler';
+import { registerRoomHandlers } from './handlers/roomHandler';
+import { registerAgentNegotiationHandlers } from './handlers/agentNegotiation';
+import { registerPresenceHandlers } from './handlers/presenceHandler';
+import { registerDialogHandlers } from './handlers/dialogHandler';
+import { registerMatchSubscriptionHandlers } from './handlers/matchSubscriptionHandler';
+/**
+ * Socket.io server instance
+ */
+let io = null;
+/**
+ * Initialize Socket.io server
+ */
+export async function initializeSocketServer(httpServer, _app) {
+    // Create Socket.io server with CORS configuration
+    io = new SocketServer(httpServer, {
+        cors: {
+            origin: process.env.CLIENT_URL || '*',
+            methods: ['GET', 'POST'],
+            credentials: true,
+        },
+        // Ping configuration for heartbeat
+        pingTimeout: 60000, // 60 seconds
+        pingInterval: 25000, // 25 seconds
+        // Transport configuration
+        transports: ['websocket', 'polling'],
+        // Connection configuration
+        connectTimeout: 45000,
+        // Upgrade timeout
+        upgradeTimeout: 10000,
+        // Maximum HTTP buffer size
+        maxHttpBufferSize: 1e6, // 1MB
+    });
+    // Setup Redis adapter for multi-node support
+    if (pubClient && subClient) {
+        io.adapter(createAdapter(pubClient, subClient));
+        console.log('[Socket.io] Redis adapter configured');
+    }
+    // Apply authentication middleware
+    io.use(socketAuthMiddleware);
+    // Setup namespaces
+    setupNamespaces(io);
+    // Setup connection manager
+    connectionManager.initialize(io);
+    console.log('[Socket.io] Server initialized');
+    return io;
+}
+/**
+ * Setup Socket.io namespaces
+ */
+function setupNamespaces(io) {
+    // Main namespace
+    const mainNsp = io.of('/');
+    mainNsp.on('connection', socket => {
+        handleConnection(socket, 'main');
+    });
+    // Chat namespace for chat-specific events
+    const chatNsp = io.of('/chat');
+    chatNsp.use(socketAuthMiddleware);
+    chatNsp.on('connection', socket => {
+        handleConnection(socket, 'chat');
+        registerChatHandlers(socket, chatNsp);
+    });
+    // User namespace for user-specific events
+    const userNsp = io.of('/user');
+    userNsp.use(socketAuthMiddleware);
+    userNsp.on('connection', socket => {
+        handleConnection(socket, 'user');
+        registerUserHandlers(socket, userNsp);
+    });
+    // Handoff namespace for human-agent switching
+    const handoffNsp = io.of('/handoff');
+    handoffNsp.use(socketAuthMiddleware);
+    handoffNsp.on('connection', socket => {
+        handleConnection(socket, 'handoff');
+        registerHandoffHandlers(socket, handoffNsp);
+    });
+    // System namespace for admin/monitoring
+    const systemNsp = io.of('/system');
+    systemNsp.use(socketAuthMiddleware);
+    systemNsp.use(requireAdminAuth);
+    systemNsp.on('connection', socket => {
+        handleConnection(socket, 'system');
+        registerSystemHandlers(socket, systemNsp);
+    });
+    // Group namespace for group chat events
+    const groupNsp = io.of('/group');
+    groupNsp.use(socketAuthMiddleware);
+    groupNsp.on('connection', socket => {
+        handleConnection(socket, 'group');
+        registerGroupHandlers(socket, groupNsp);
+    });
+    // Room namespace for room management
+    const roomNsp = io.of('/room');
+    roomNsp.use(socketAuthMiddleware);
+    roomNsp.on('connection', socket => {
+        handleConnection(socket, 'room');
+        registerRoomHandlers(socket, roomNsp);
+    });
+    // Negotiation namespace for Agent negotiation (AD003)
+    const negotiationNsp = io.of('/negotiation');
+    negotiationNsp.use(socketAuthMiddleware);
+    negotiationNsp.on('connection', socket => {
+        handleConnection(socket, 'negotiation');
+        registerAgentNegotiationHandlers(socket, negotiationNsp);
+    });
+    // Presence namespace for user presence tracking
+    const presenceNsp = io.of('/presence');
+    presenceNsp.use(socketAuthMiddleware);
+    presenceNsp.on('connection', socket => {
+        handleConnection(socket, 'presence');
+        registerPresenceHandlers(socket, presenceNsp);
+    });
+    // Dialog namespace for agent dialog events (ISSUE-AI004)
+    const dialogNsp = io.of('/dialog');
+    dialogNsp.use(socketAuthMiddleware);
+    dialogNsp.on('connection', socket => {
+        handleConnection(socket, 'dialog');
+        registerDialogHandlers(socket, dialogNsp);
+    });
+    // Match subscriptions namespace for real-time query subscriptions
+    const matchSubNsp = io.of('/matchSubscriptions');
+    matchSubNsp.use(socketAuthMiddleware);
+    matchSubNsp.on('connection', socket => {
+        handleConnection(socket, 'matchSubscriptions');
+        registerMatchSubscriptionHandlers(socket, matchSubNsp);
+    });
+}
+/**
+ * Handle new connection
+ */
+function handleConnection(socket, namespace) {
+    const userId = socket.user?.id;
+    const socketId = socket.id;
+    console.log(`[Socket.io] Connected: ${socketId} (user: ${userId}, ns: ${namespace})`);
+    // Track connection
+    connectionManager.addConnection(socket, namespace);
+    // Handle disconnection
+    socket.on('disconnect', (reason) => {
+        console.log(`[Socket.io] Disconnected: ${socketId} (reason: ${reason})`);
+        connectionManager.removeConnection(socketId);
+        connectionService.unregisterConnection(socketId);
+    });
+    // Handle errors
+    socket.on('error', (error) => {
+        console.error(`[Socket.io] Error on ${socketId}:`, error);
+    });
+    // Emit connection acknowledgment
+    socket.emit('connected', {
+        socketId,
+        timestamp: new Date().toISOString(),
+        namespace,
+    });
+}
+/**
+ * Middleware to require admin authentication for system namespace
+ */
+function requireAdminAuth(socket, next) {
+    const user = socket.user;
+    if (!user) {
+        next(new Error('Authentication required'));
+        return;
+    }
+    // Check if user has admin role
+    if (!user.roles?.includes('admin') && !user.roles?.includes('super_admin')) {
+        next(new Error('Admin access required'));
+        return;
+    }
+    next();
+}
+/**
+ * Get Socket.io instance
+ */
+export function getSocketServer() {
+    return io;
+}
+/**
+ * Get IO instance for emitting events
+ */
+export function getIO() {
+    if (!io) {
+        throw new Error('Socket.io server not initialized');
+    }
+    return io;
+}
+/**
+ * Emit event to specific user
+ */
+export function emitToUser(userId, event, data) {
+    if (!io)
+        return;
+    // Emit to all sockets of the user across all namespaces dynamically
+    const room = `user:${userId}`;
+    for (const nsp of io._nsps.values()) {
+        nsp.to(room).emit(event, data);
+    }
+}
+/**
+ * Emit event to specific room
+ */
+export function emitToRoom(roomId, event, data, namespace = '/') {
+    if (!io)
+        return;
+    io.of(namespace).to(roomId).emit(event, data);
+}
+/**
+ * Broadcast event to all connected clients
+ */
+export function broadcast(event, data, namespace = '/') {
+    if (!io)
+        return;
+    io.of(namespace).emit(event, data);
+}
+/**
+ * Close Socket.io server
+ */
+export async function closeSocketServer() {
+    if (io) {
+        await io.close();
+        io = null;
+        console.log('[Socket.io] Server closed');
+    }
+}
+export default {
+    initializeSocketServer,
+    getSocketServer,
+    getIO,
+    emitToUser,
+    emitToRoom,
+    broadcast,
+    closeSocketServer,
+};
+//# sourceMappingURL=index.js.map

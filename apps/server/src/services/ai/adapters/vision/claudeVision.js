@@ -1,0 +1,191 @@
+/**
+ * Claude Vision Adapter
+ * Anthropic Claude Vision模型适配器
+ */
+import { BaseVisionAdapter } from './base';
+export class ClaudeVisionAdapter extends BaseVisionAdapter {
+    id = 'claude-vision';
+    provider = 'Anthropic';
+    supportsImages = true;
+    apiConfig;
+    baseUrl;
+    constructor(apiConfig, modelConfig) {
+        super({
+            provider: 'claude',
+            model: 'claude-3-opus-20240229',
+            maxTokens: 4096,
+            temperature: 0.7,
+            ...modelConfig,
+        });
+        this.apiConfig = {
+            timeoutMs: 60000,
+            ...apiConfig,
+        };
+        this.baseUrl = apiConfig.apiUrl || 'https://api.anthropic.com/v1';
+    }
+    async initialize() {
+        await super.initialize();
+        if (!this.apiConfig.apiKey) {
+            throw new Error('Anthropic API key is required');
+        }
+    }
+    async healthCheck() {
+        try {
+            // Claude没有直接的模型列表API，尝试一个简单的请求
+            const response = await fetch(`${this.baseUrl}/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': this.apiConfig.apiKey,
+                    'anthropic-version': '2023-06-01',
+                },
+                body: JSON.stringify({
+                    model: 'claude-3-haiku-20240307',
+                    max_tokens: 1,
+                    messages: [{ role: 'user', content: 'Hi' }],
+                }),
+            });
+            return response.ok || response.status === 400; // 400 means API is up but request was bad
+        }
+        catch {
+            return false;
+        }
+    }
+    async analyzeImage(image, prompt, config) {
+        this.validateImageInput(image);
+        const mergedConfig = { ...this.config, ...config };
+        const imageContent = this.formatImageForClaude(image);
+        const response = await this.makeRequest('/messages', {
+            model: mergedConfig.model || 'claude-3-opus-20240229',
+            max_tokens: mergedConfig.maxTokens || 4096,
+            temperature: mergedConfig.temperature ?? 0.7,
+            messages: [
+                {
+                    role: 'user',
+                    content: [{ type: 'text', text: prompt }, imageContent],
+                },
+            ],
+        });
+        const data = (await response.json());
+        if (!data.content || data.content.length === 0) {
+            throw new Error('No response from Claude Vision');
+        }
+        return data.content[0].text;
+    }
+    /**
+     * 批量分析多张图像
+     */
+    async analyzeMultipleImages(images, prompt, config) {
+        if (images.length === 0) {
+            throw new Error('At least one image is required');
+        }
+        // 验证所有图像
+        images.forEach(img => this.validateImageInput(img));
+        const mergedConfig = { ...this.config, ...config };
+        // 构建包含多张图像的消息内容
+        const content = [
+            { type: 'text', text: prompt },
+        ];
+        images.forEach(image => {
+            content.push(this.formatImageForClaude(image));
+        });
+        const response = await this.makeRequest('/messages', {
+            model: mergedConfig.model || 'claude-3-opus-20240229',
+            max_tokens: mergedConfig.maxTokens || 4096,
+            temperature: mergedConfig.temperature ?? 0.7,
+            messages: [
+                {
+                    role: 'user',
+                    content,
+                },
+            ],
+        });
+        const data = (await response.json());
+        if (!data.content || data.content.length === 0) {
+            throw new Error('No response from Claude Vision');
+        }
+        return data.content[0].text;
+    }
+    /**
+     * Claude不支持直接的图像嵌入，使用图像描述调用OpenAI嵌入API生成文本嵌入
+     */
+    async generateEmbedding(image, _config) {
+        const description = await this.analyzeImage(image, 'Describe this image in detail for semantic search. Be concise but comprehensive.', { maxTokens: 512 });
+        const apiUrl = process.env.OPENAI_API_URL || 'https://api.openai.com/v1';
+        const apiKey = process.env.OPENAI_API_KEY;
+        if (!apiKey) {
+            throw new Error('OPENAI_API_KEY environment variable is required for image embeddings');
+        }
+        const response = await fetch(`${apiUrl}/embeddings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                model: 'text-embedding-3-large',
+                input: description,
+            }),
+        });
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`OpenAI embeddings API error: ${response.status} - ${error}`);
+        }
+        const data = (await response.json());
+        if (!data.data || data.data.length === 0) {
+            throw new Error('Failed to generate embedding: empty response from OpenAI');
+        }
+        return data.data[0].embedding;
+    }
+    /**
+     * 将图像输入转换为Claude API格式
+     */
+    formatImageForClaude(image) {
+        if (image.type === 'url') {
+            return {
+                type: 'image',
+                source: {
+                    type: 'url',
+                    url: image.data,
+                },
+            };
+        }
+        else {
+            // base64
+            const mimeType = image.mimeType || 'image/jpeg';
+            return {
+                type: 'image',
+                source: {
+                    type: 'base64',
+                    media_type: mimeType,
+                    data: image.data,
+                },
+            };
+        }
+    }
+    async makeRequest(endpoint, body) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.apiConfig.timeoutMs);
+        try {
+            const response = await fetch(`${this.baseUrl}${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': this.apiConfig.apiKey,
+                    'anthropic-version': '2023-06-01',
+                },
+                body: JSON.stringify(body),
+                signal: controller.signal,
+            });
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error(`Claude Vision API error: ${response.status} - ${error}`);
+            }
+            return response;
+        }
+        finally {
+            clearTimeout(timeoutId);
+        }
+    }
+}
+//# sourceMappingURL=claudeVision.js.map

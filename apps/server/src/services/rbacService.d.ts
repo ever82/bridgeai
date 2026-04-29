@@ -69,11 +69,11 @@ export declare class RBACService {
         permissions: ({
             permission: {
                 id: string;
-                name: string;
-                createdAt: Date;
-                action: string;
                 description: string | null;
+                createdAt: Date;
+                name: string;
                 updatedAt: Date;
+                action: string;
                 resource: string;
             };
         } & {
@@ -84,26 +84,26 @@ export declare class RBACService {
         })[];
     } & {
         id: string;
-        name: string;
-        createdAt: Date;
-        level: number;
-        displayName: string;
         description: string | null;
+        createdAt: Date;
+        name: string;
         updatedAt: Date;
+        displayName: string;
+        level: number;
         isSystem: boolean;
     })[]>;
     /**
      * Get role by ID
      */
-    getRoleById(id: string): Promise<({
+    getRoleById(id: string): Promise<{
         permissions: ({
             permission: {
                 id: string;
-                name: string;
-                createdAt: Date;
-                action: string;
                 description: string | null;
+                createdAt: Date;
+                name: string;
                 updatedAt: Date;
+                action: string;
                 resource: string;
             };
         } & {
@@ -114,26 +114,26 @@ export declare class RBACService {
         })[];
     } & {
         id: string;
-        name: string;
-        createdAt: Date;
-        level: number;
-        displayName: string;
         description: string | null;
+        createdAt: Date;
+        name: string;
         updatedAt: Date;
+        displayName: string;
+        level: number;
         isSystem: boolean;
-    }) | null>;
+    }>;
     /**
      * Get role by name
      */
-    getRoleByName(name: string): Promise<({
+    getRoleByName(name: string): Promise<{
         permissions: ({
             permission: {
                 id: string;
-                name: string;
-                createdAt: Date;
-                action: string;
                 description: string | null;
+                createdAt: Date;
+                name: string;
                 updatedAt: Date;
+                action: string;
                 resource: string;
             };
         } & {
@@ -144,14 +144,14 @@ export declare class RBACService {
         })[];
     } & {
         id: string;
-        name: string;
-        createdAt: Date;
-        level: number;
-        displayName: string;
         description: string | null;
+        createdAt: Date;
+        name: string;
         updatedAt: Date;
+        displayName: string;
+        level: number;
         isSystem: boolean;
-    }) | null>;
+    }>;
     /**
      * Create a new role
      */
@@ -161,15 +161,15 @@ export declare class RBACService {
         description?: string;
         level?: number;
         permissionIds?: string[];
-    }, grantedBy?: string): Promise<({
+    }, grantedBy?: string): Promise<{
         permissions: ({
             permission: {
                 id: string;
-                name: string;
-                createdAt: Date;
-                action: string;
                 description: string | null;
+                createdAt: Date;
+                name: string;
                 updatedAt: Date;
+                action: string;
                 resource: string;
             };
         } & {
@@ -180,14 +180,14 @@ export declare class RBACService {
         })[];
     } & {
         id: string;
-        name: string;
-        createdAt: Date;
-        level: number;
-        displayName: string;
         description: string | null;
+        createdAt: Date;
+        name: string;
         updatedAt: Date;
+        displayName: string;
+        level: number;
         isSystem: boolean;
-    }) | null>;
+    }>;
     /**
      * Update a role
      */
@@ -196,15 +196,15 @@ export declare class RBACService {
         description?: string;
         level?: number;
         permissionIds?: string[];
-    }, grantedBy?: string): Promise<({
+    }, grantedBy?: string): Promise<{
         permissions: ({
             permission: {
                 id: string;
-                name: string;
-                createdAt: Date;
-                action: string;
                 description: string | null;
+                createdAt: Date;
+                name: string;
                 updatedAt: Date;
+                action: string;
                 resource: string;
             };
         } & {
@@ -215,14 +215,14 @@ export declare class RBACService {
         })[];
     } & {
         id: string;
-        name: string;
-        createdAt: Date;
-        level: number;
-        displayName: string;
         description: string | null;
+        createdAt: Date;
+        name: string;
         updatedAt: Date;
+        displayName: string;
+        level: number;
         isSystem: boolean;
-    }) | null>;
+    }>;
     /**
      * Delete a role (only non-system roles)
      */
@@ -232,11 +232,11 @@ export declare class RBACService {
      */
     getAllPermissions(): Promise<{
         id: string;
-        name: string;
-        createdAt: Date;
-        action: string;
         description: string | null;
+        createdAt: Date;
+        name: string;
         updatedAt: Date;
+        action: string;
         resource: string;
     }[]>;
     /**
@@ -244,13 +244,13 @@ export declare class RBACService {
      */
     getPermissionById(id: string): Promise<{
         id: string;
-        name: string;
-        createdAt: Date;
-        action: string;
         description: string | null;
+        createdAt: Date;
+        name: string;
         updatedAt: Date;
+        action: string;
         resource: string;
-    } | null>;
+    }>;
     /**
      * Create a new permission
      */
@@ -261,11 +261,11 @@ export declare class RBACService {
         description?: string;
     }): Promise<{
         id: string;
-        name: string;
-        createdAt: Date;
-        action: string;
         description: string | null;
+        createdAt: Date;
+        name: string;
         updatedAt: Date;
+        action: string;
         resource: string;
     }>;
     /**
@@ -274,17 +274,17 @@ export declare class RBACService {
     getUserRoles(userId: string): Promise<({
         role: {
             id: string;
-            name: string;
-            createdAt: Date;
-            level: number;
-            displayName: string;
             description: string | null;
+            createdAt: Date;
+            name: string;
             updatedAt: Date;
+            displayName: string;
+            level: number;
             isSystem: boolean;
         };
     } & {
-        id: string;
         userId: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date | null;
@@ -296,11 +296,11 @@ export declare class RBACService {
      */
     getUserPermissions(userId: string): Promise<{
         id: string;
-        name: string;
-        createdAt: Date;
-        action: string;
         description: string | null;
+        createdAt: Date;
+        name: string;
         updatedAt: Date;
+        action: string;
         resource: string;
     }[]>;
     /**

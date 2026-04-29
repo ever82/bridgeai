@@ -1,0 +1,358 @@
+/**
+ * Agent Location Service
+ * Agent位置服务 - 管理Agent地理位置数据
+ */
+import { calculateDistance, isWithinBoundingBox, createBoundingBox } from '@bridgeai/shared';
+import { logger } from '../utils/logger';
+import { prisma } from '../db/client';
+import { checkPointInFence, findContainingFences } from './geoFenceService';
+/**
+ * Get the primary profile from a Prisma agent fetch result.
+ * Tolerates both `profile` (singular, used in some legacy/test mocks) and
+ * `profiles` (the canonical Prisma array relation in schema.prisma).
+ */
+function getPrimaryProfile(agent) {
+    if (!agent)
+        return null;
+    if (agent.profile)
+        return agent.profile;
+    if (Array.isArray(agent.profiles) && agent.profiles.length > 0) {
+        return agent.profiles[0];
+    }
+    return null;
+}
+/**
+ * Update agent's location
+ */
+export async function updateAgentLocation(agentId, location, coordinates) {
+    try {
+        const agent = await prisma.agent.findUnique({
+            where: { id: agentId },
+            include: { profiles: true },
+        });
+        if (!agent) {
+            logger.warn('Agent not found for location update', { agentId });
+            return false;
+        }
+        const profile = getPrimaryProfile(agent);
+        if (!profile) {
+            logger.warn('Agent has no profile for location update', { agentId });
+            return false;
+        }
+        const locationData = {
+            ...location,
+            ...(coordinates && { coordinates }),
+        };
+        // Update agent's profile with location data
+        await prisma.agentProfile.update({
+            where: { id: profile.id },
+            data: {
+                l1Data: {
+                    ...(profile.l1Data || {}),
+                    location: locationData,
+                },
+            },
+        });
+        // Update agent's lat/lng if available
+        if (coordinates) {
+            await prisma.agent.update({
+                where: { id: agentId },
+                data: {
+                    latitude: coordinates.latitude,
+                    longitude: coordinates.longitude,
+                },
+            });
+        }
+        logger.info('Agent location updated', { agentId, location });
+        return true;
+    }
+    catch (error) {
+        logger.error('Failed to update agent location', { error, agentId });
+        return false;
+    }
+}
+/**
+ * Get agent's current location
+ */
+export async function getAgentLocation(agentId) {
+    try {
+        const agent = await prisma.agent.findUnique({
+            where: { id: agentId },
+            include: { profiles: true },
+        });
+        const profile = getPrimaryProfile(agent);
+        if (!profile?.l1Data) {
+            return null;
+        }
+        const locationData = profile.l1Data.location;
+        return {
+            agentId: agent.id,
+            location: locationData,
+            coordinates: agent.latitude && agent.longitude
+                ? { latitude: agent.latitude, longitude: agent.longitude }
+                : undefined,
+            lastUpdated: agent.updatedAt,
+        };
+    }
+    catch (error) {
+        logger.error('Failed to get agent location', { error, agentId });
+        return null;
+    }
+}
+/**
+ * Search agents by location filter
+ */
+export async function searchAgentsByLocation(filter, page = 1, limit = 20) {
+    try {
+        const where = {};
+        // Build combined location filter using AND to avoid overwriting
+        const locationFilters = [];
+        if (filter.province) {
+            locationFilters.push({
+                profiles: {
+                    some: {
+                        l1Data: {
+                            path: ['location', 'province'],
+                            equals: filter.province,
+                        },
+                    },
+                },
+            });
+        }
+        if (filter.city) {
+            locationFilters.push({
+                profiles: {
+                    some: {
+                        l1Data: {
+                            path: ['location', 'city'],
+                            equals: filter.city,
+                        },
+                    },
+                },
+            });
+        }
+        if (filter.district) {
+            locationFilters.push({
+                profiles: {
+                    some: {
+                        l1Data: {
+                            path: ['location', 'district'],
+                            equals: filter.district,
+                        },
+                    },
+                },
+            });
+        }
+        if (locationFilters.length > 0) {
+            where.AND = locationFilters;
+        }
+        const [agents, total] = await Promise.all([
+            prisma.agent.findMany({
+                where,
+                skip: (page - 1) * limit,
+                take: limit,
+                include: { profiles: { select: { l1Data: true } } },
+            }),
+            prisma.agent.count({ where }),
+        ]);
+        let results = agents.map(agent => {
+            const profile = getPrimaryProfile(agent);
+            const locationData = profile?.l1Data?.location;
+            return {
+                id: agent.id,
+                name: agent.name,
+                type: agent.type,
+                location: locationData,
+                coordinates: agent.latitude && agent.longitude
+                    ? { latitude: agent.latitude, longitude: agent.longitude }
+                    : undefined,
+            };
+        });
+        // Apply radius filter
+        if (filter.withinRadius) {
+            results = results.filter(item => {
+                if (!item.coordinates)
+                    return false;
+                const { distanceKm } = calculateDistance(item.coordinates, filter.withinRadius.center);
+                item.distanceKm = distanceKm;
+                return distanceKm <= filter.withinRadius.radiusKm;
+            });
+        }
+        // Apply bounding box filter
+        if (filter.withinBounds) {
+            results = results.filter(item => {
+                if (!item.coordinates)
+                    return false;
+                return isWithinBoundingBox(item.coordinates, filter.withinBounds);
+            });
+        }
+        // Apply geo-fence filter
+        if (filter.withinFence) {
+            const fenceChecks = await Promise.all(results.map(async (item) => {
+                if (!item.coordinates)
+                    return false;
+                const result = await checkPointInFence(item.coordinates, filter.withinFence);
+                return result.inside;
+            }));
+            results = results.filter((_, i) => fenceChecks[i]);
+        }
+        return { agents: results, total };
+    }
+    catch (error) {
+        logger.error('Failed to search agents by location', { error, filter });
+        throw error;
+    }
+}
+/**
+ * Find agents within radius of a point
+ */
+export async function findAgentsNearLocation(center, radiusKm, options) {
+    try {
+        const boundingBox = createBoundingBox(center, radiusKm);
+        const where = {
+            latitude: { gte: boundingBox.minLat, lte: boundingBox.maxLat },
+            longitude: { gte: boundingBox.minLng, lte: boundingBox.maxLng },
+        };
+        if (options?.agentType) {
+            where.type = options.agentType;
+        }
+        if (options?.excludeAgentId) {
+            where.id = { not: options.excludeAgentId };
+        }
+        const agents = await prisma.agent.findMany({
+            where,
+            include: { profiles: { select: { l1Data: true } } },
+        });
+        const results = [];
+        for (const agent of agents) {
+            if (!agent.latitude || !agent.longitude)
+                continue;
+            const coords = {
+                latitude: agent.latitude,
+                longitude: agent.longitude,
+            };
+            const { distanceKm } = calculateDistance(center, coords);
+            if (distanceKm <= radiusKm) {
+                const profile = getPrimaryProfile(agent);
+                const locationData = profile?.l1Data?.location;
+                results.push({
+                    id: agent.id,
+                    name: agent.name,
+                    type: agent.type,
+                    location: locationData,
+                    coordinates: coords,
+                    distanceKm,
+                });
+            }
+        }
+        return results.sort((a, b) => (a.distanceKm || 0) - (b.distanceKm || 0));
+    }
+    catch (error) {
+        logger.error('Failed to find agents near location', { error, center, radiusKm });
+        throw error;
+    }
+}
+/**
+ * Get agents within geo-fences
+ */
+export async function getAgentsInGeoFence(fenceId) {
+    try {
+        const agents = await prisma.agent.findMany({
+            where: {
+                latitude: { not: null },
+                longitude: { not: null },
+            },
+            include: { profiles: { select: { l1Data: true } } },
+        });
+        const results = [];
+        for (const agent of agents) {
+            if (!agent.latitude || !agent.longitude)
+                continue;
+            const coords = {
+                latitude: agent.latitude,
+                longitude: agent.longitude,
+            };
+            const result = await checkPointInFence(coords, fenceId);
+            if (result.inside) {
+                const profile = getPrimaryProfile(agent);
+                const locationData = profile?.l1Data?.location;
+                results.push({
+                    id: agent.id,
+                    name: agent.name,
+                    type: agent.type,
+                    location: locationData,
+                    coordinates: coords,
+                });
+            }
+        }
+        return results;
+    }
+    catch (error) {
+        logger.error('Failed to get agents in geo-fence', { error, fenceId });
+        throw error;
+    }
+}
+/**
+ * Get geo-fences containing an agent
+ */
+export async function getAgentGeoFences(agentId) {
+    try {
+        const agent = await prisma.agent.findUnique({
+            where: { id: agentId },
+        });
+        if (!agent?.latitude || !agent?.longitude) {
+            return [];
+        }
+        const coords = {
+            latitude: agent.latitude,
+            longitude: agent.longitude,
+        };
+        return findContainingFences(coords);
+    }
+    catch (error) {
+        logger.error('Failed to get agent geo-fences', { error, agentId });
+        return [];
+    }
+}
+/**
+ * Calculate distance between two agents
+ */
+export async function getDistanceBetweenAgents(agentId1, agentId2) {
+    try {
+        const [loc1, loc2] = await Promise.all([
+            getAgentLocation(agentId1),
+            getAgentLocation(agentId2),
+        ]);
+        if (!loc1?.coordinates || !loc2?.coordinates) {
+            return null;
+        }
+        const { distanceKm } = calculateDistance(loc1.coordinates, loc2.coordinates);
+        return distanceKm;
+    }
+    catch (error) {
+        logger.error('Failed to calculate distance between agents', {
+            error,
+            agentId1,
+            agentId2,
+        });
+        return null;
+    }
+}
+/**
+ * Batch update agent locations
+ */
+export async function batchUpdateAgentLocations(updates) {
+    let success = 0;
+    let failed = 0;
+    for (const update of updates) {
+        const result = await updateAgentLocation(update.agentId, update.location, update.coordinates);
+        if (result) {
+            success++;
+        }
+        else {
+            failed++;
+        }
+    }
+    return { success, failed };
+}
+//# sourceMappingURL=agentLocationService.js.map

@@ -2,39 +2,64 @@
  * Socket.io Connection Manager
  *
  * Manages socket connections with heartbeat monitoring,
- * connection statistics, and cleanup.
+ * disconnect detection, connection pool management, and statistics.
  */
 import type { Socket, Server as SocketServer } from 'socket.io';
 /**
  * Connection info
  */
-interface ConnectionInfo {
+export interface ConnectionInfo {
     socketId: string;
     userId?: string;
     namespace: string;
     connectedAt: Date;
     lastPingAt: Date;
+    lastActivityAt: Date;
     ipAddress?: string;
     userAgent?: string;
     deviceInfo?: Record<string, any>;
+    rooms: string[];
+    metadata?: Record<string, any>;
 }
 /**
  * Connection statistics
  */
-interface ConnectionStats {
+export interface ConnectionStats {
     totalConnections: number;
     authenticatedConnections: number;
+    anonymousConnections: number;
     connectionsByNamespace: Record<string, number>;
     connectionsByUser: Record<string, number>;
+    onlineUserCount: number;
+    averageConnectionsPerUser: number;
+    peakConnections: number;
+    uptime: number;
+}
+/**
+ * Connection pool configuration
+ */
+export interface ConnectionPoolConfig {
+    maxTotalConnections: number;
+    maxConnectionsPerUser: number;
+    maxConnectionsPerIP: number;
+    idleTimeoutMs: number;
+    heartbeatIntervalMs: number;
+    maxHeartbeatMisses: number;
 }
 /**
  * Connection Manager class
+ * Implements heartbeat mechanism, disconnect detection, connection pool, and statistics
  */
 declare class ConnectionManager {
     private connections;
     private io;
     private statsInterval;
+    private heartbeatInterval;
     private readonly STATS_INTERVAL_MS;
+    private peakConnections;
+    private startTime;
+    private readonly config;
+    constructor(config?: ConnectionPoolConfig);
     /**
      * Initialize connection manager
      */
@@ -64,6 +89,10 @@ declare class ConnectionManager {
      */
     getNamespaceConnections(namespace: string): ConnectionInfo[];
     /**
+     * Get connections by IP address
+     */
+    getConnectionsByIP(ipAddress: string): ConnectionInfo[];
+    /**
      * Get connection statistics
      */
     getStats(): ConnectionStats;
@@ -76,9 +105,25 @@ declare class ConnectionManager {
      */
     getOnlineUserCount(): number;
     /**
-     * Update last ping time
+     * Update last ping time (heartbeat response)
      */
     updatePing(socketId: string): void;
+    /**
+     * Update last activity time
+     */
+    updateActivity(socketId: string): void;
+    /**
+     * Add room to connection
+     */
+    addConnectionRoom(socketId: string, room: string): void;
+    /**
+     * Remove room from connection
+     */
+    removeConnectionRoom(socketId: string, room: string): void;
+    /**
+     * Get rooms for a connection
+     */
+    getConnectionRooms(socketId: string): string[];
     /**
      * Disconnect a specific socket
      */
@@ -88,13 +133,36 @@ declare class ConnectionManager {
      */
     disconnectUser(userId: string, reason?: string): Promise<void>;
     /**
-     * Clean up stale connections
+     * Disconnect all connections from an IP
+     */
+    disconnectIP(ipAddress: string, reason?: string): Promise<number>;
+    /**
+     * Clean up stale connections (idle timeout)
      */
     cleanupStaleConnections(maxAgeMs?: number): void;
+    /**
+     * Get pool configuration
+     */
+    getPoolConfig(): ConnectionPoolConfig;
+    /**
+     * Check if pool allows new connections
+     */
+    canAcceptConnection(userId?: string, ipAddress?: string): {
+        allowed: boolean;
+        reason?: string;
+    };
     /**
      * Setup heartbeat monitoring for a socket
      */
     private setupHeartbeat;
+    /**
+     * Setup disconnect detection
+     */
+    private setupDisconnectDetection;
+    /**
+     * Start heartbeat broadcast
+     */
+    private startHeartbeat;
     /**
      * Start statistics collection
      */
@@ -103,6 +171,14 @@ declare class ConnectionManager {
      * Stop statistics collection
      */
     stopStatsCollection(): void;
+    /**
+     * Stop heartbeat
+     */
+    private stopHeartbeat;
+    /**
+     * Extract IP address from socket
+     */
+    private extractIPAddress;
     /**
      * Destroy connection manager
      */

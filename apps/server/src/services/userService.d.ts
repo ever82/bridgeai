@@ -86,17 +86,17 @@ export declare function registerDevice(userId: string, deviceInfo: DeviceInfo): 
  * Get user devices
  */
 export declare function getUserDevices(userId: string): Promise<{
-    id: string;
     userId: string;
+    id: string;
     createdAt: Date;
+    deviceId: string;
     deviceName: string | null;
+    deviceType: string | null;
     osVersion: string | null;
     appVersion: string | null;
-    lastActiveAt: Date;
-    deviceId: string;
     pushToken: string | null;
     ipAddress: string | null;
-    deviceType: string | null;
+    lastActiveAt: Date;
     isCurrent: boolean;
 }[]>;
 /**
@@ -117,13 +117,13 @@ export declare function unblockUser(userId: string, blockedUserId: string): Prom
 export declare function getBlockedUsers(userId: string): Promise<({
     blockedUser: {
         id: string;
-        name: string | null;
-        displayName: string | null;
-        avatarUrl: string | null;
+        name: string;
+        displayName: string;
+        avatarUrl: string;
     };
 } & {
-    id: string;
     userId: string;
+    id: string;
     createdAt: Date;
     reason: string | null;
     blockedUserId: string;

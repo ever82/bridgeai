@@ -1,0 +1,319 @@
+import { AgentType, AgentStatus } from '@prisma/client';
+import { prisma } from '../db/client';
+import { AppError } from '../errors/AppError';
+// Re-export Prisma enums for backward compatibility
+export { AgentType, AgentStatus };
+// Valid status transitions
+const VALID_STATUS_TRANSITIONS = {
+    [AgentStatus.DRAFT]: [AgentStatus.ACTIVE, AgentStatus.ARCHIVED],
+    [AgentStatus.ACTIVE]: [AgentStatus.PAUSED, AgentStatus.ARCHIVED],
+    [AgentStatus.PAUSED]: [AgentStatus.ACTIVE, AgentStatus.ARCHIVED],
+    [AgentStatus.ARCHIVED]: [], // Archived agents cannot transition to other states
+};
+/**
+ * Validate status transition
+ */
+function isValidStatusTransition(currentStatus, newStatus) {
+    if (currentStatus === newStatus)
+        return true;
+    const validTransitions = VALID_STATUS_TRANSITIONS[currentStatus];
+    return validTransitions.includes(newStatus);
+}
+/**
+ * Sanitize agent name — strip HTML/script tags to prevent XSS storage.
+ * Returns the stripped name.
+ */
+function sanitizeName(name) {
+    return name.replace(/<[^>]*>/g, '').trim();
+}
+/**
+ * Validate latitude/longitude bounds (WGS84).
+ */
+function validateCoordinates(lat, lon) {
+    if (lat !== undefined && (lat < -90 || lat > 90)) {
+        throw new AppError(`Invalid latitude: ${lat}. Must be between -90 and 90.`, 'INVALID_COORDINATES', 400);
+    }
+    if (lon !== undefined && (lon < -180 || lon > 180)) {
+        throw new AppError(`Invalid longitude: ${lon}. Must be between -180 and 180.`, 'INVALID_COORDINATES', 400);
+    }
+}
+/**
+ * Validate and sanitize agent name, returns sanitized name.
+ */
+function validateAndSanitizeName(name, fieldName = 'name') {
+    const trimmed = sanitizeName(name);
+    if (trimmed.length === 0) {
+        throw new AppError(`${fieldName} is required`, 'AGENT_NAME_REQUIRED', 400);
+    }
+    if (trimmed.length > 100) {
+        throw new AppError(`${fieldName} must be less than 100 characters`, 'AGENT_NAME_TOO_LONG', 400);
+    }
+    return trimmed;
+}
+/**
+ * Create a new agent
+ */
+export async function createAgent(userId, input) {
+    // Validate agent type
+    if (!Object.values(AgentType).includes(input.type)) {
+        throw new AppError(`Invalid agent type: ${input.type}. Valid types are: ${Object.values(AgentType).join(', ')}`, 'INVALID_AGENT_TYPE', 400);
+    }
+    // Validate and sanitize name (XSS prevention)
+    const sanitizedName = validateAndSanitizeName(input.name);
+    // Validate coordinates (WGS84 bounds)
+    validateCoordinates(input.latitude, input.longitude);
+    // Generate initial personality based on agent type
+    const personality = generateAgentPersonality(input.type);
+    const initialConfig = {
+        ...(input.config || {}),
+        personality,
+    };
+    const agent = await prisma.agent.create({
+        data: {
+            userId,
+            type: input.type,
+            name: sanitizedName,
+            description: input.description || null,
+            status: AgentStatus.DRAFT,
+            config: initialConfig,
+            latitude: input.latitude ?? null,
+            longitude: input.longitude ?? null,
+            isActive: true,
+            statusHistory: {
+                create: {
+                    status: AgentStatus.DRAFT,
+                    reason: 'Agent created',
+                },
+            },
+        },
+    });
+    // NP-270/NP-271: Create initial profile for the agent (best-effort).
+    // The profile is created empty via getOrCreateProfile and serves as the mechanism
+    // for reading the owner's L1/L2/L3 data (NP-271). NP-277: any failure here is
+    // intentionally swallowed so agent creation succeeds even with empty profile data.
+    try {
+        const { getOrCreateProfile } = await import('./agentProfileService');
+        await getOrCreateProfile(agent.id);
+    }
+    catch {
+        // Profile creation is best-effort, don't fail agent creation
+    }
+    return mapPrismaAgentToAgent(agent);
+}
+/**
+ * Generate initial personality config for an agent based on its scene type.
+ * NP-268: Adopted by agentService.createAgent to bootstrap behavior guidelines.
+ */
+export function generateAgentPersonality(type) {
+    switch (type) {
+        case AgentType.VISIONSHARE:
+            return { traits: ['地理敏感', '价格敏锐', '视觉导向'], communicationStyle: 'friendly' };
+        case AgentType.AGENTDATE:
+            return { traits: ['社交活跃', '情感细腻', '谨慎匹配'], communicationStyle: 'warm' };
+        case AgentType.AGENTJOB:
+            return { traits: ['技能导向', '效率优先', '职业敏感'], communicationStyle: 'professional' };
+        case AgentType.AGENTAD:
+            return { traits: ['消费敏感', '优惠追踪', '预算控制'], communicationStyle: 'direct' };
+        case AgentType.DEMAND:
+            return { traits: ['需求清晰', '匹配高效'], communicationStyle: 'direct' };
+        case AgentType.SUPPLY:
+            return { traits: ['资源丰富', '响应及时'], communicationStyle: 'professional' };
+        default:
+            return { traits: [], communicationStyle: 'neutral' };
+    }
+}
+/**
+ * Get agent by ID
+ */
+export async function getAgentById(agentId, userId) {
+    const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+    });
+    if (!agent)
+        return null;
+    // If userId is provided, verify ownership
+    if (userId && agent.userId !== userId) {
+        throw new AppError('Agent not found or access denied', 'AGENT_NOT_FOUND', 404);
+    }
+    return mapPrismaAgentToAgent(agent);
+}
+/**
+ * Get agents by user ID
+ */
+export async function getAgentsByUserId(userId, options = {}) {
+    const { type, status, page: rawPage = 1, limit: rawLimit = 20, sortBy = 'createdAt', sortOrder = 'desc', } = options;
+    // Probe fix: enforce bounds on pagination parameters
+    const page = Math.max(1, rawPage);
+    const limit = Math.min(100, Math.max(1, rawLimit));
+    const skip = (page - 1) * limit;
+    // Build where clause
+    const where = { userId };
+    if (type)
+        where.type = type;
+    if (status)
+        where.status = status;
+    // Get total count
+    const total = await prisma.agent.count({ where });
+    // Get agents
+    const agents = await prisma.agent.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
+    });
+    const totalPages = Math.ceil(total / limit);
+    return {
+        agents: agents.map(mapPrismaAgentToAgent),
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+        },
+    };
+}
+/**
+ * Update agent
+ */
+export async function updateAgent(agentId, userId, input) {
+    const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+    });
+    if (!agent) {
+        throw new AppError('Agent not found', 'AGENT_NOT_FOUND', 404);
+    }
+    if (agent.userId !== userId) {
+        throw new AppError('Unauthorized to update this agent', 'UNAUTHORIZED', 403);
+    }
+    // Validate and sanitize name if provided (XSS prevention)
+    const sanitizedName = input.name !== undefined ? validateAndSanitizeName(input.name) : agent.name;
+    // Validate coordinates if provided
+    validateCoordinates(input.latitude !== undefined ? input.latitude : undefined, input.longitude !== undefined ? input.longitude : undefined);
+    const updatedAgent = await prisma.agent.update({
+        where: { id: agentId },
+        data: {
+            name: sanitizedName,
+            description: input.description !== undefined ? input.description : agent.description,
+            config: input.config !== undefined ? input.config : agent.config,
+            latitude: input.latitude !== undefined ? input.latitude : agent.latitude,
+            longitude: input.longitude !== undefined ? input.longitude : agent.longitude,
+        },
+    });
+    return mapPrismaAgentToAgent(updatedAgent);
+}
+/**
+ * Update agent status
+ */
+export async function updateAgentStatus(agentId, userId, newStatus) {
+    const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+    });
+    if (!agent) {
+        throw new AppError('Agent not found', 'AGENT_NOT_FOUND', 404);
+    }
+    if (agent.userId !== userId) {
+        throw new AppError('Unauthorized to update this agent', 'UNAUTHORIZED', 403);
+    }
+    // Validate status transition
+    const currentStatus = agent.status;
+    if (!isValidStatusTransition(currentStatus, newStatus)) {
+        throw new AppError(`Invalid status transition from ${currentStatus} to ${newStatus}`, 'INVALID_STATUS_TRANSITION', 400);
+    }
+    const updatedAgent = await prisma.agent.update({
+        where: { id: agentId },
+        data: {
+            status: newStatus,
+            statusHistory: {
+                create: {
+                    status: newStatus,
+                    reason: `Status changed from ${currentStatus} to ${newStatus}`,
+                },
+            },
+        },
+    });
+    return mapPrismaAgentToAgent(updatedAgent);
+}
+/**
+ * Delete agent
+ */
+export async function deleteAgent(agentId, userId) {
+    const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+    });
+    if (!agent) {
+        throw new AppError('Agent not found', 'AGENT_NOT_FOUND', 404);
+    }
+    if (agent.userId !== userId) {
+        throw new AppError('Unauthorized to delete this agent', 'UNAUTHORIZED', 403);
+    }
+    // NP-276: Check for active matches before archiving.
+    // Demand: OPEN/MATCHED considered active. Supply: AVAILABLE/BUSY considered active.
+    const activeDemands = await prisma.demand.count({
+        where: { agentId, status: { in: ['OPEN', 'MATCHED'] } },
+    });
+    const activeSupplies = await prisma.supply.count({
+        where: { agentId, status: { in: ['AVAILABLE', 'BUSY'] } },
+    });
+    if (activeDemands > 0 || activeSupplies > 0) {
+        throw new AppError(`Cannot archive agent: ${activeDemands + activeSupplies} active matches found. Please resolve them first.`, 'AGENT_HAS_ACTIVE_MATCHES', 409);
+    }
+    await prisma.agent.update({
+        where: { id: agentId },
+        data: {
+            status: AgentStatus.ARCHIVED,
+            isActive: false,
+            statusHistory: {
+                create: {
+                    status: AgentStatus.ARCHIVED,
+                    reason: 'Agent archived (soft delete)',
+                },
+            },
+        },
+    });
+}
+/**
+ * Get agent status history
+ */
+export async function getAgentStatusHistory(agentId, userId) {
+    const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+    });
+    if (!agent) {
+        throw new AppError('Agent not found', 'AGENT_NOT_FOUND', 404);
+    }
+    // If userId is provided, verify ownership
+    if (userId && agent.userId !== userId) {
+        throw new AppError('Agent not found or access denied', 'AGENT_NOT_FOUND', 404);
+    }
+    const history = await prisma.agentStatusHistory.findMany({
+        where: { agentId },
+        orderBy: { createdAt: 'asc' },
+    });
+    return history.map((entry) => ({
+        status: entry.status,
+        changedAt: entry.createdAt,
+        reason: entry.reason,
+    }));
+}
+/**
+ * Map Prisma agent to Agent interface
+ */
+function mapPrismaAgentToAgent(prismaAgent) {
+    return {
+        id: prismaAgent.id,
+        userId: prismaAgent.userId,
+        type: prismaAgent.type,
+        name: prismaAgent.name,
+        description: prismaAgent.description,
+        status: prismaAgent.status,
+        config: prismaAgent.config,
+        latitude: prismaAgent.latitude,
+        longitude: prismaAgent.longitude,
+        isActive: prismaAgent.isActive,
+        createdAt: prismaAgent.createdAt,
+        updatedAt: prismaAgent.updatedAt,
+    };
+}
+//# sourceMappingURL=agentService.js.map

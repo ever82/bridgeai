@@ -1,59 +1,33 @@
-"use strict";
 /**
  * Mock for @bridgeai/shared
+ *
+ * Note: This mock provides stub types/functions for tests that don't need
+ * the real module. Tests requiring real L2 schema functions should use
+ * jest.requireActual('@bridgeai/shared') to bypass this mock.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.EDUCATION_LABELS = exports.GENDER_LABELS = exports.AGE_RANGE_LABELS = exports.L1_FIELD_LABELS = exports.L1_FIELD_WEIGHTS = exports.EducationLevel = exports.Gender = exports.AgeRange = exports.EARTH_RADIUS_KM = exports.VisibilityLevel = exports.DEFAULT_HANDOFF_CONFIG = exports.HandoffErrorCode = exports.HandoffSocketEvents = exports.SenderType = exports.HandoffRequestStatus = exports.HandoffStatus = exports.DatingPurpose = exports.InterestCategory = exports.PersonalityTrait = exports.ExportFormat = exports.SCENE_IDS = exports.PROTOCOL_VERSION = exports.AgentProtocolErrorCode = exports.MessagePriority = exports.AgentType = exports.AgentMessageType = exports.CreditFactorType = exports.CreditLevelEnum = exports.CREDIT_LEVEL_THRESHOLDS = exports.SCENE_FILTER_SCHEMAS = exports.SceneId = exports.isFilterCondition = exports.isNotFilter = exports.isOrFilter = exports.isAndFilter = exports.DISCLOSABLE_FIELDS = exports.DEFAULT_FIELD_DISCLOSURES = exports.DISCLOSURE_LEVEL_INFO = exports.FreezeStatus = exports.PointsTransactionType = exports.SceneCode = exports.RelationshipStage = exports.DisclosureLevel = void 0;
-exports.getRequiredStage = getRequiredStage;
-exports.canDiscloseAtStage = canDiscloseAtStage;
-exports.createDefaultDisclosureSettings = createDefaultDisclosureSettings;
-exports.getFilterSchemaForScene = getFilterSchemaForScene;
-exports.getFilterableFieldsForScene = getFilterableFieldsForScene;
-exports.validateAgentMessage = validateAgentMessage;
-exports.createAgentMessage = createAgentMessage;
-exports.isVersionCompatible = isVersionCompatible;
-exports.getSceneConfig = getSceneConfig;
-exports.getAllSceneConfigs = getAllSceneConfigs;
-exports.getActiveSceneConfigs = getActiveSceneConfigs;
-exports.getSceneInfo = getSceneInfo;
-exports.hasScene = hasScene;
-exports.serializeMessage = serializeMessage;
-exports.parseMessage = parseMessage;
-exports.calculateDistance = calculateDistance;
-exports.isWithinRadius = isWithinRadius;
-exports.isValidCoordinates = isValidCoordinates;
-exports.createBoundingBox = createBoundingBox;
-exports.isWithinBoundingBox = isWithinBoundingBox;
-exports.isPointInPolygon = isPointInPolygon;
-exports.calculatePolygonCentroid = calculatePolygonCentroid;
-exports.toGeoJSONPoint = toGeoJSONPoint;
-exports.formatDistance = formatDistance;
-exports.checkGeoFence = checkGeoFence;
-exports.findContainingGeoFences = findContainingGeoFences;
-exports.getGeoFencesWithinDistance = getGeoFencesWithinDistance;
 // Disclosure Level Types
-var DisclosureLevel;
+export var DisclosureLevel;
 (function (DisclosureLevel) {
     DisclosureLevel["PUBLIC"] = "PUBLIC";
     DisclosureLevel["AFTER_MATCH"] = "AFTER_MATCH";
     DisclosureLevel["AFTER_CHAT"] = "AFTER_CHAT";
     DisclosureLevel["AFTER_REFERRAL"] = "AFTER_REFERRAL";
-})(DisclosureLevel || (exports.DisclosureLevel = DisclosureLevel = {}));
-var RelationshipStage;
+})(DisclosureLevel || (DisclosureLevel = {}));
+export var RelationshipStage;
 (function (RelationshipStage) {
     RelationshipStage["NONE"] = "NONE";
     RelationshipStage["MATCHED"] = "MATCHED";
     RelationshipStage["CHATTED"] = "CHATTED";
     RelationshipStage["REFERRED"] = "REFERRED";
-})(RelationshipStage || (exports.RelationshipStage = RelationshipStage = {}));
-var SceneCode;
+})(RelationshipStage || (RelationshipStage = {}));
+export var SceneCode;
 (function (SceneCode) {
     SceneCode["VISION_SHARE"] = "vision_share";
     SceneCode["AGENT_DATE"] = "agent_date";
     SceneCode["AGENT_JOB"] = "agent_job";
     SceneCode["AGENT_AD"] = "agent_ad";
-})(SceneCode || (exports.SceneCode = SceneCode = {}));
-var PointsTransactionType;
+})(SceneCode || (SceneCode = {}));
+export var PointsTransactionType;
 (function (PointsTransactionType) {
     PointsTransactionType["EARN"] = "EARN";
     PointsTransactionType["SPEND"] = "SPEND";
@@ -61,14 +35,14 @@ var PointsTransactionType;
     PointsTransactionType["UNFROZEN"] = "UNFROZEN";
     PointsTransactionType["TRANSFER_IN"] = "TRANSFER_IN";
     PointsTransactionType["TRANSFER_OUT"] = "TRANSFER_OUT";
-})(PointsTransactionType || (exports.PointsTransactionType = PointsTransactionType = {}));
-var FreezeStatus;
+})(PointsTransactionType || (PointsTransactionType = {}));
+export var FreezeStatus;
 (function (FreezeStatus) {
     FreezeStatus["FROZEN"] = "FROZEN";
     FreezeStatus["RELEASED"] = "RELEASED";
     FreezeStatus["USED"] = "USED";
-})(FreezeStatus || (exports.FreezeStatus = FreezeStatus = {}));
-exports.DISCLOSURE_LEVEL_INFO = {
+})(FreezeStatus || (FreezeStatus = {}));
+export const DISCLOSURE_LEVEL_INFO = {
     [DisclosureLevel.PUBLIC]: {
         level: DisclosureLevel.PUBLIC,
         name: '公开',
@@ -102,7 +76,7 @@ exports.DISCLOSURE_LEVEL_INFO = {
         order: 3,
     },
 };
-exports.DEFAULT_FIELD_DISCLOSURES = [
+export const DEFAULT_FIELD_DISCLOSURES = [
     {
         fieldName: 'name',
         level: DisclosureLevel.PUBLIC,
@@ -122,8 +96,8 @@ exports.DEFAULT_FIELD_DISCLOSURES = [
         defaultLevel: DisclosureLevel.AFTER_REFERRAL,
     },
 ];
-exports.DISCLOSABLE_FIELDS = ['name', 'email', 'phone', 'bio', 'location'];
-function getRequiredStage(level) {
+export const DISCLOSABLE_FIELDS = ['name', 'email', 'phone', 'bio', 'location'];
+export function getRequiredStage(level) {
     switch (level) {
         case DisclosureLevel.PUBLIC:
             return RelationshipStage.NONE;
@@ -137,7 +111,7 @@ function getRequiredStage(level) {
             return RelationshipStage.REFERRED;
     }
 }
-function canDiscloseAtStage(requiredLevel, currentStage) {
+export function canDiscloseAtStage(requiredLevel, currentStage) {
     const requiredStage = getRequiredStage(requiredLevel);
     const stageOrder = {
         [RelationshipStage.NONE]: 0,
@@ -147,35 +121,31 @@ function canDiscloseAtStage(requiredLevel, currentStage) {
     };
     return stageOrder[currentStage] >= stageOrder[requiredStage];
 }
-function createDefaultDisclosureSettings(agentId, userId) {
+export function createDefaultDisclosureSettings(agentId, userId) {
     return {
         agentId,
         userId,
-        fieldDisclosures: exports.DEFAULT_FIELD_DISCLOSURES,
+        fieldDisclosures: DEFAULT_FIELD_DISCLOSURES,
         defaultLevel: DisclosureLevel.AFTER_MATCH,
         strictMode: false,
         updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),
     };
 }
-const isAndFilter = (expr) => 'and' in expr && Array.isArray(expr.and);
-exports.isAndFilter = isAndFilter;
-const isOrFilter = (expr) => 'or' in expr && Array.isArray(expr.or);
-exports.isOrFilter = isOrFilter;
-const isNotFilter = (expr) => 'not' in expr && !Array.isArray(expr.not);
-exports.isNotFilter = isNotFilter;
-const isFilterCondition = (expr) => 'field' in expr && 'operator' in expr && 'value' in expr;
-exports.isFilterCondition = isFilterCondition;
+export const isAndFilter = (expr) => 'and' in expr && Array.isArray(expr.and);
+export const isOrFilter = (expr) => 'or' in expr && Array.isArray(expr.or);
+export const isNotFilter = (expr) => 'not' in expr && !Array.isArray(expr.not);
+export const isFilterCondition = (expr) => 'field' in expr && 'operator' in expr && 'value' in expr;
 // SceneId enum
-var SceneId;
+export var SceneId;
 (function (SceneId) {
     SceneId["visionshare"] = "visionshare";
     SceneId["agentdate"] = "agentdate";
     SceneId["agentjob"] = "agentjob";
     SceneId["agentad"] = "agentad";
-})(SceneId || (exports.SceneId = SceneId = {}));
+})(SceneId || (SceneId = {}));
 // SCENE_FILTER_SCHEMAS
-exports.SCENE_FILTER_SCHEMAS = {
+export const SCENE_FILTER_SCHEMAS = {
     [SceneId.visionshare]: {
         sceneId: 'visionshare',
         fields: [
@@ -394,37 +364,37 @@ exports.SCENE_FILTER_SCHEMAS = {
     },
 };
 // getFilterSchemaForScene function
-function getFilterSchemaForScene(sceneId) {
-    return exports.SCENE_FILTER_SCHEMAS[sceneId];
+export function getFilterSchemaForScene(sceneId) {
+    return SCENE_FILTER_SCHEMAS[sceneId];
 }
 // getFilterableFieldsForScene function
-function getFilterableFieldsForScene(sceneId) {
-    return exports.SCENE_FILTER_SCHEMAS[sceneId]?.fields ?? [];
+export function getFilterableFieldsForScene(sceneId) {
+    return SCENE_FILTER_SCHEMAS[sceneId]?.fields ?? [];
 }
 // Credit level thresholds
-exports.CREDIT_LEVEL_THRESHOLDS = {
+export const CREDIT_LEVEL_THRESHOLDS = {
     excellent: { min: 900, max: 1000 },
     good: { min: 750, max: 899 },
     general: { min: 600, max: 749 },
     poor: { min: 0, max: 599 },
 };
 // Keep enum for backward compatibility
-var CreditLevelEnum;
+export var CreditLevelEnum;
 (function (CreditLevelEnum) {
     CreditLevelEnum["EXCELLENT"] = "excellent";
     CreditLevelEnum["GOOD"] = "good";
     CreditLevelEnum["GENERAL"] = "general";
     CreditLevelEnum["POOR"] = "poor";
-})(CreditLevelEnum || (exports.CreditLevelEnum = CreditLevelEnum = {}));
-var CreditFactorType;
+})(CreditLevelEnum || (CreditLevelEnum = {}));
+export var CreditFactorType;
 (function (CreditFactorType) {
     CreditFactorType["PROFILE"] = "profile";
     CreditFactorType["BEHAVIOR"] = "behavior";
     CreditFactorType["TRANSACTION"] = "transaction";
     CreditFactorType["SOCIAL"] = "social";
-})(CreditFactorType || (exports.CreditFactorType = CreditFactorType = {}));
+})(CreditFactorType || (CreditFactorType = {}));
 // Agent Message Protocol exports
-var AgentMessageType;
+export var AgentMessageType;
 (function (AgentMessageType) {
     AgentMessageType["DIRECT"] = "direct";
     AgentMessageType["GROUP"] = "group";
@@ -433,22 +403,22 @@ var AgentMessageType;
     AgentMessageType["RESPONSE"] = "response";
     AgentMessageType["STATUS"] = "status";
     AgentMessageType["ERROR"] = "error";
-})(AgentMessageType || (exports.AgentMessageType = AgentMessageType = {}));
-var AgentType;
+})(AgentMessageType || (AgentMessageType = {}));
+export var AgentType;
 (function (AgentType) {
     AgentType["PERSONAL"] = "personal";
     AgentType["BUSINESS"] = "business";
     AgentType["SERVICE"] = "service";
     AgentType["SYSTEM"] = "system";
-})(AgentType || (exports.AgentType = AgentType = {}));
-var MessagePriority;
+})(AgentType || (AgentType = {}));
+export var MessagePriority;
 (function (MessagePriority) {
     MessagePriority[MessagePriority["LOW"] = 1] = "LOW";
     MessagePriority[MessagePriority["NORMAL"] = 2] = "NORMAL";
     MessagePriority[MessagePriority["HIGH"] = 3] = "HIGH";
     MessagePriority[MessagePriority["URGENT"] = 4] = "URGENT";
-})(MessagePriority || (exports.MessagePriority = MessagePriority = {}));
-var AgentProtocolErrorCode;
+})(MessagePriority || (MessagePriority = {}));
+export var AgentProtocolErrorCode;
 (function (AgentProtocolErrorCode) {
     AgentProtocolErrorCode["INVALID_FORMAT"] = "INVALID_FORMAT";
     AgentProtocolErrorCode["UNSUPPORTED_VERSION"] = "UNSUPPORTED_VERSION";
@@ -458,12 +428,12 @@ var AgentProtocolErrorCode;
     AgentProtocolErrorCode["RECIPIENT_NOT_FOUND"] = "RECIPIENT_NOT_FOUND";
     AgentProtocolErrorCode["MESSAGE_EXPIRED"] = "MESSAGE_EXPIRED";
     AgentProtocolErrorCode["INTERNAL_ERROR"] = "INTERNAL_ERROR";
-})(AgentProtocolErrorCode || (exports.AgentProtocolErrorCode = AgentProtocolErrorCode = {}));
-exports.PROTOCOL_VERSION = '1.0.0';
-function validateAgentMessage(_message) {
+})(AgentProtocolErrorCode || (AgentProtocolErrorCode = {}));
+export const PROTOCOL_VERSION = '1.0.0';
+export function validateAgentMessage(_message) {
     return { valid: true, errors: [] };
 }
-function createAgentMessage(params) {
+export function createAgentMessage(params) {
     return {
         id: `msg_${Date.now()}`,
         type: params.type || AgentMessageType.DIRECT,
@@ -471,7 +441,7 @@ function createAgentMessage(params) {
         recipientId: params.recipientId,
         content: params.content,
         metadata: {
-            version: exports.PROTOCOL_VERSION,
+            version: PROTOCOL_VERSION,
             timestamp: new Date().toISOString(),
             priority: params.priority || MessagePriority.NORMAL,
             requireAck: false,
@@ -483,7 +453,7 @@ function createAgentMessage(params) {
         creditInfo: params.creditInfo,
     };
 }
-function isVersionCompatible(version) {
+export function isVersionCompatible(version) {
     return version.startsWith('1.');
 }
 // Real scene configs (inlined so moduleNameMapper can find them)
@@ -806,16 +776,16 @@ const sceneConfigs = {
     agentjob: makeAgentJobConfig(),
     agentad: makeAgentAdConfig(),
 };
-function getSceneConfig(sceneId) {
+export function getSceneConfig(sceneId) {
     return sceneConfigs[sceneId];
 }
-function getAllSceneConfigs() {
+export function getAllSceneConfigs() {
     return Object.values(sceneConfigs);
 }
-function getActiveSceneConfigs() {
+export function getActiveSceneConfigs() {
     return Object.values(sceneConfigs).filter(c => c.metadata.isActive);
 }
-function getSceneInfo(sceneId) {
+export function getSceneInfo(sceneId) {
     const config = sceneConfigs[sceneId];
     if (!config)
         return null;
@@ -830,14 +800,14 @@ function getSceneInfo(sceneId) {
         capabilityCount: config.capabilities.length,
     };
 }
-function hasScene(sceneId) {
+export function hasScene(sceneId) {
     return sceneId in sceneConfigs;
 }
-exports.SCENE_IDS = SCENE_IDS_LIST;
-function serializeMessage(message) {
+export const SCENE_IDS = SCENE_IDS_LIST;
+export function serializeMessage(message) {
     return JSON.stringify(message);
 }
-function parseMessage(json) {
+export function parseMessage(json) {
     try {
         return JSON.parse(json);
     }
@@ -851,7 +821,7 @@ function parseMessage(json) {
     SceneCode["AGENT_DATE"] = "agent_date";
     SceneCode["AGENT_JOB"] = "agent_job";
     SceneCode["AGENT_AD"] = "agent_ad";
-})(SceneCode || (exports.SceneCode = SceneCode = {}));
+})(SceneCode || (SceneCode = {}));
 (function (PointsTransactionType) {
     PointsTransactionType["EARN"] = "EARN";
     PointsTransactionType["SPEND"] = "SPEND";
@@ -859,20 +829,20 @@ function parseMessage(json) {
     PointsTransactionType["UNFROZEN"] = "UNFROZEN";
     PointsTransactionType["TRANSFER_IN"] = "TRANSFER_IN";
     PointsTransactionType["TRANSFER_OUT"] = "TRANSFER_OUT";
-})(PointsTransactionType || (exports.PointsTransactionType = PointsTransactionType = {}));
+})(PointsTransactionType || (PointsTransactionType = {}));
 (function (FreezeStatus) {
     FreezeStatus["FROZEN"] = "FROZEN";
     FreezeStatus["RELEASED"] = "RELEASED";
     FreezeStatus["USED"] = "USED";
     FreezeStatus["EXPIRED"] = "EXPIRED";
-})(FreezeStatus || (exports.FreezeStatus = FreezeStatus = {}));
-var ExportFormat;
+})(FreezeStatus || (FreezeStatus = {}));
+export var ExportFormat;
 (function (ExportFormat) {
     ExportFormat["CSV"] = "csv";
     ExportFormat["XLSX"] = "xlsx";
-})(ExportFormat || (exports.ExportFormat = ExportFormat = {}));
+})(ExportFormat || (ExportFormat = {}));
 // Dating types for AgentDate extractor
-var PersonalityTrait;
+export var PersonalityTrait;
 (function (PersonalityTrait) {
     PersonalityTrait["INTROVERTED"] = "INTROVERTED";
     PersonalityTrait["EXTROVERTED"] = "EXTROVERTED";
@@ -888,8 +858,8 @@ var PersonalityTrait;
     PersonalityTrait["GENTLE"] = "GENTLE";
     PersonalityTrait["INDEPENDENT"] = "INDEPENDENT";
     PersonalityTrait["DEPENDABLE"] = "DEPENDABLE";
-})(PersonalityTrait || (exports.PersonalityTrait = PersonalityTrait = {}));
-var InterestCategory;
+})(PersonalityTrait || (PersonalityTrait = {}));
+export var InterestCategory;
 (function (InterestCategory) {
     InterestCategory["SPORTS"] = "SPORTS";
     InterestCategory["MUSIC"] = "MUSIC";
@@ -907,8 +877,8 @@ var InterestCategory;
     InterestCategory["COOKING"] = "COOKING";
     InterestCategory["DANCING"] = "DANCING";
     InterestCategory["FITNESS"] = "FITNESS";
-})(InterestCategory || (exports.InterestCategory = InterestCategory = {}));
-var DatingPurpose;
+})(InterestCategory || (InterestCategory = {}));
+export var DatingPurpose;
 (function (DatingPurpose) {
     DatingPurpose["SERIOUS_RELATIONSHIP"] = "SERIOUS_RELATIONSHIP";
     DatingPurpose["MARRIAGE"] = "MARRIAGE";
@@ -916,9 +886,9 @@ var DatingPurpose;
     DatingPurpose["FRIENDSHIP_FIRST"] = "FRIENDSHIP_FIRST";
     DatingPurpose["COMPANIONSHIP"] = "COMPANIONSHIP";
     DatingPurpose["NOT_SURE"] = "NOT_SURE";
-})(DatingPurpose || (exports.DatingPurpose = DatingPurpose = {}));
+})(DatingPurpose || (DatingPurpose = {}));
 // Handoff types
-var HandoffStatus;
+export var HandoffStatus;
 (function (HandoffStatus) {
     HandoffStatus["AGENT_ACTIVE"] = "AGENT_ACTIVE";
     HandoffStatus["HUMAN_ACTIVE"] = "HUMAN_ACTIVE";
@@ -926,23 +896,23 @@ var HandoffStatus;
     HandoffStatus["PENDING_HANDOFF"] = "PENDING_HANDOFF";
     HandoffStatus["TIMEOUT"] = "TIMEOUT";
     HandoffStatus["CANCELLED"] = "CANCELLED";
-})(HandoffStatus || (exports.HandoffStatus = HandoffStatus = {}));
-var HandoffRequestStatus;
+})(HandoffStatus || (HandoffStatus = {}));
+export var HandoffRequestStatus;
 (function (HandoffRequestStatus) {
     HandoffRequestStatus["PENDING"] = "PENDING";
     HandoffRequestStatus["ACCEPTED"] = "ACCEPTED";
     HandoffRequestStatus["REJECTED"] = "REJECTED";
     HandoffRequestStatus["TIMEOUT"] = "TIMEOUT";
     HandoffRequestStatus["CANCELLED"] = "CANCELLED";
-})(HandoffRequestStatus || (exports.HandoffRequestStatus = HandoffRequestStatus = {}));
-var SenderType;
+})(HandoffRequestStatus || (HandoffRequestStatus = {}));
+export var SenderType;
 (function (SenderType) {
     SenderType["AGENT"] = "AGENT";
     SenderType["HUMAN"] = "HUMAN";
     SenderType["SYSTEM"] = "SYSTEM";
     SenderType["TRANSITION"] = "TRANSITION";
-})(SenderType || (exports.SenderType = SenderType = {}));
-var HandoffSocketEvents;
+})(SenderType || (SenderType = {}));
+export var HandoffSocketEvents;
 (function (HandoffSocketEvents) {
     HandoffSocketEvents["REQUEST_TAKEOVER"] = "handoff:request_takeover";
     HandoffSocketEvents["REQUEST_HANDOFF"] = "handoff:request_handoff";
@@ -956,8 +926,14 @@ var HandoffSocketEvents;
     HandoffSocketEvents["HANDOFF_CANCELLED"] = "handoff:cancelled";
     HandoffSocketEvents["HANDOFF_STATUS_CHANGED"] = "handoff:status_changed";
     HandoffSocketEvents["HANDOFF_ERROR"] = "handoff:error";
-})(HandoffSocketEvents || (exports.HandoffSocketEvents = HandoffSocketEvents = {}));
-var HandoffErrorCode;
+})(HandoffSocketEvents || (HandoffSocketEvents = {}));
+// Agent Ad Consumer types
+export var AgentAdRole;
+(function (AgentAdRole) {
+    AgentAdRole["CONSUMER"] = "CONSUMER";
+    AgentAdRole["MERCHANT"] = "MERCHANT";
+})(AgentAdRole || (AgentAdRole = {}));
+export var HandoffErrorCode;
 (function (HandoffErrorCode) {
     HandoffErrorCode["UNAUTHORIZED"] = "UNAUTHORIZED";
     HandoffErrorCode["RATE_LIMITED"] = "RATE_LIMITED";
@@ -966,8 +942,8 @@ var HandoffErrorCode;
     HandoffErrorCode["TIMEOUT"] = "TIMEOUT";
     HandoffErrorCode["ALREADY_PENDING"] = "ALREADY_PENDING";
     HandoffErrorCode["FORCE_TAKEOVER_DISABLED"] = "FORCE_TAKEOVER_DISABLED";
-})(HandoffErrorCode || (exports.HandoffErrorCode = HandoffErrorCode = {}));
-exports.DEFAULT_HANDOFF_CONFIG = {
+})(HandoffErrorCode || (HandoffErrorCode = {}));
+export const DEFAULT_HANDOFF_CONFIG = {
     allowedRoles: ['user', 'admin'],
     maxHandoffsPerHour: 60,
     minHandoffIntervalSeconds: 5,
@@ -977,16 +953,16 @@ exports.DEFAULT_HANDOFF_CONFIG = {
     requestTimeoutSeconds: 30,
 };
 // L1 Profile Types
-var VisibilityLevel;
+export var VisibilityLevel;
 (function (VisibilityLevel) {
     VisibilityLevel["PUBLIC"] = "PUBLIC";
     VisibilityLevel["PRIVATE"] = "PRIVATE";
     VisibilityLevel["MATCHED_ONLY"] = "MATCHED_ONLY";
     VisibilityLevel["VERIFIED_ONLY"] = "VERIFIED_ONLY";
-})(VisibilityLevel || (exports.VisibilityLevel = VisibilityLevel = {}));
-exports.EARTH_RADIUS_KM = 6371;
+})(VisibilityLevel || (VisibilityLevel = {}));
+export const EARTH_RADIUS_KM = 6371;
 // Geo Utilities
-function calculateDistance(coord1, coord2) {
+export function calculateDistance(coord1, coord2) {
     const R = 6371;
     const dLat = ((coord2.latitude - coord1.latitude) * Math.PI) / 180;
     const dLng = ((coord2.longitude - coord1.longitude) * Math.PI) / 180;
@@ -1002,18 +978,18 @@ function calculateDistance(coord1, coord2) {
         distanceMeters: distanceKm * 1000,
     };
 }
-function isWithinRadius(point, center, radiusKm) {
+export function isWithinRadius(point, center, radiusKm) {
     return calculateDistance(point, center).distanceKm <= radiusKm;
 }
-function isValidCoordinates(coords) {
+export function isValidCoordinates(coords) {
     return (coords.latitude >= -90 &&
         coords.latitude <= 90 &&
         coords.longitude >= -180 &&
         coords.longitude <= 180);
 }
-function createBoundingBox(center, radiusKm) {
-    const latDelta = (radiusKm / exports.EARTH_RADIUS_KM) * (180 / Math.PI);
-    const lngDelta = ((radiusKm / exports.EARTH_RADIUS_KM) * (180 / Math.PI)) / Math.cos((center.latitude * Math.PI) / 180);
+export function createBoundingBox(center, radiusKm) {
+    const latDelta = (radiusKm / EARTH_RADIUS_KM) * (180 / Math.PI);
+    const lngDelta = ((radiusKm / EARTH_RADIUS_KM) * (180 / Math.PI)) / Math.cos((center.latitude * Math.PI) / 180);
     return {
         minLat: center.latitude - latDelta,
         maxLat: center.latitude + latDelta,
@@ -1021,13 +997,13 @@ function createBoundingBox(center, radiusKm) {
         maxLng: center.longitude + lngDelta,
     };
 }
-function isWithinBoundingBox(point, box) {
+export function isWithinBoundingBox(point, box) {
     return (point.latitude >= box.minLat &&
         point.latitude <= box.maxLat &&
         point.longitude >= box.minLng &&
         point.longitude <= box.maxLng);
 }
-function isPointInPolygon(point, polygon) {
+export function isPointInPolygon(point, polygon) {
     const coordinates = polygon.coordinates[0];
     const x = point.longitude;
     const y = point.latitude;
@@ -1043,7 +1019,7 @@ function isPointInPolygon(point, polygon) {
     }
     return inside;
 }
-function calculatePolygonCentroid(polygon) {
+export function calculatePolygonCentroid(polygon) {
     const coordinates = polygon.coordinates[0];
     let sumX = 0, sumY = 0;
     for (const coord of coordinates) {
@@ -1055,10 +1031,10 @@ function calculatePolygonCentroid(polygon) {
         longitude: sumX / coordinates.length,
     };
 }
-function toGeoJSONPoint(coords) {
+export function toGeoJSONPoint(coords) {
     return { type: 'Point', coordinates: [coords.longitude, coords.latitude] };
 }
-function formatDistance(distanceMeters) {
+export function formatDistance(distanceMeters) {
     if (distanceMeters < 1000)
         return `${Math.round(distanceMeters)}米`;
     const km = distanceMeters / 1000;
@@ -1067,19 +1043,19 @@ function formatDistance(distanceMeters) {
     return `${Math.round(km)}公里`;
 }
 // Geo-fencing functions (mock implementations)
-function checkGeoFence(_point, _fenceId) {
+export function checkGeoFence(_point, _fenceId) {
     return { inside: false };
 }
-function findContainingGeoFences(_point) {
+export function findContainingGeoFences(_point) {
     return [];
 }
-function getGeoFencesWithinDistance(_point, _maxDistanceKm) {
+export function getGeoFencesWithinDistance(_point, _maxDistanceKm) {
     return [];
 }
 // ============================================
 // Agent Profile L1/L2/L3 Types
 // ============================================
-var AgeRange;
+export var AgeRange;
 (function (AgeRange) {
     AgeRange["UNDER_18"] = "UNDER_18";
     AgeRange["AGE_18_25"] = "AGE_18_25";
@@ -1090,15 +1066,15 @@ var AgeRange;
     AgeRange["AGE_46_50"] = "AGE_46_50";
     AgeRange["AGE_51_60"] = "AGE_51_60";
     AgeRange["OVER_60"] = "OVER_60";
-})(AgeRange || (exports.AgeRange = AgeRange = {}));
-var Gender;
+})(AgeRange || (AgeRange = {}));
+export var Gender;
 (function (Gender) {
     Gender["MALE"] = "MALE";
     Gender["FEMALE"] = "FEMALE";
     Gender["OTHER"] = "OTHER";
     Gender["PREFER_NOT_TO_SAY"] = "PREFER_NOT_TO_SAY";
-})(Gender || (exports.Gender = Gender = {}));
-var EducationLevel;
+})(Gender || (Gender = {}));
+export var EducationLevel;
 (function (EducationLevel) {
     EducationLevel["HIGH_SCHOOL"] = "HIGH_SCHOOL";
     EducationLevel["ASSOCIATE"] = "ASSOCIATE";
@@ -1107,22 +1083,22 @@ var EducationLevel;
     EducationLevel["DOCTORATE"] = "DOCTORATE";
     EducationLevel["OTHER"] = "OTHER";
     EducationLevel["NO_REQUIREMENT"] = "NO_REQUIREMENT";
-})(EducationLevel || (exports.EducationLevel = EducationLevel = {}));
-exports.L1_FIELD_WEIGHTS = {
+})(EducationLevel || (EducationLevel = {}));
+export const L1_FIELD_WEIGHTS = {
     age: 20,
     gender: 15,
     location: 25,
     occupation: 20,
     education: 20,
 };
-exports.L1_FIELD_LABELS = {
+export const L1_FIELD_LABELS = {
     age: '年龄段',
     gender: '性别',
     location: '所在地',
     occupation: '职业',
     education: '教育水平',
 };
-exports.AGE_RANGE_LABELS = {
+export const AGE_RANGE_LABELS = {
     [AgeRange.UNDER_18]: '18岁以下',
     [AgeRange.AGE_18_25]: '18-25岁',
     [AgeRange.AGE_26_30]: '26-30岁',
@@ -1133,13 +1109,13 @@ exports.AGE_RANGE_LABELS = {
     [AgeRange.AGE_51_60]: '51-60岁',
     [AgeRange.OVER_60]: '60岁以上',
 };
-exports.GENDER_LABELS = {
+export const GENDER_LABELS = {
     [Gender.MALE]: '男',
     [Gender.FEMALE]: '女',
     [Gender.OTHER]: '其他',
     [Gender.PREFER_NOT_TO_SAY]: '保密',
 };
-exports.EDUCATION_LABELS = {
+export const EDUCATION_LABELS = {
     [EducationLevel.HIGH_SCHOOL]: '高中及以下',
     [EducationLevel.ASSOCIATE]: '大专',
     [EducationLevel.BACHELOR]: '本科',
@@ -1148,4 +1124,179 @@ exports.EDUCATION_LABELS = {
     [EducationLevel.OTHER]: '其他',
     [EducationLevel.NO_REQUIREMENT]: '不限',
 };
+export const L2_SCHEMAS = {};
+export function getL2Schema(_scene, _role) {
+    return undefined;
+}
+export function getAllL2Schemas() {
+    return [];
+}
+export function getL2SchemaIds() {
+    return [];
+}
+// ============================================
+// Dating Profile Types (DATE002)
+// ============================================
+export var AgeRangePreference;
+(function (AgeRangePreference) {
+    AgeRangePreference["UNDER_20"] = "UNDER_20";
+    AgeRangePreference["AGE_20_25"] = "AGE_20_25";
+    AgeRangePreference["AGE_26_30"] = "AGE_26_30";
+    AgeRangePreference["AGE_31_35"] = "AGE_31_35";
+    AgeRangePreference["AGE_36_40"] = "AGE_36_40";
+    AgeRangePreference["AGE_41_50"] = "AGE_41_50";
+    AgeRangePreference["OVER_50"] = "OVER_50";
+    AgeRangePreference["NO_PREFERENCE"] = "NO_PREFERENCE";
+})(AgeRangePreference || (AgeRangePreference = {}));
+export var HeightRange;
+(function (HeightRange) {
+    HeightRange["BELOW_150"] = "BELOW_150";
+    HeightRange["HEIGHT_150_160"] = "HEIGHT_150_160";
+    HeightRange["HEIGHT_160_170"] = "HEIGHT_160_170";
+    HeightRange["HEIGHT_170_180"] = "HEIGHT_170_180";
+    HeightRange["HEIGHT_180_190"] = "HEIGHT_180_190";
+    HeightRange["ABOVE_190"] = "ABOVE_190";
+    HeightRange["NO_PREFERENCE"] = "NO_PREFERENCE";
+})(HeightRange || (HeightRange = {}));
+export var IncomeRange;
+(function (IncomeRange) {
+    IncomeRange["BELOW_5K"] = "BELOW_5K";
+    IncomeRange["INCOME_5K_10K"] = "INCOME_5K_10K";
+    IncomeRange["INCOME_10K_20K"] = "INCOME_10K_20K";
+    IncomeRange["INCOME_20K_50K"] = "INCOME_20K_50K";
+    IncomeRange["ABOVE_50K"] = "ABOVE_50K";
+    IncomeRange["NO_PREFERENCE"] = "NO_PREFERENCE";
+})(IncomeRange || (IncomeRange = {}));
+export var MBTIType;
+(function (MBTIType) {
+    MBTIType["INTJ"] = "INTJ";
+    MBTIType["INTP"] = "INTP";
+    MBTIType["ENTJ"] = "ENTJ";
+    MBTIType["ENTP"] = "ENTP";
+    MBTIType["INFJ"] = "INFJ";
+    MBTIType["INFP"] = "INFP";
+    MBTIType["ENFJ"] = "ENFJ";
+    MBTIType["ENFP"] = "ENFP";
+    MBTIType["ISTJ"] = "ISTJ";
+    MBTIType["ISFJ"] = "ISFJ";
+    MBTIType["ESTJ"] = "ESTJ";
+    MBTIType["ESFJ"] = "ESFJ";
+    MBTIType["ISTP"] = "ISTP";
+    MBTIType["ISFP"] = "ISFP";
+    MBTIType["ESTP"] = "ESTP";
+    MBTIType["ESFP"] = "ESFP";
+    MBTIType["NO_PREFERENCE"] = "NO_PREFERENCE";
+})(MBTIType || (MBTIType = {}));
+export var SleepSchedule;
+(function (SleepSchedule) {
+    SleepSchedule["EARLY_BIRD"] = "EARLY_BIRD";
+    SleepSchedule["NIGHT_OWL"] = "NIGHT_OWL";
+    SleepSchedule["FLEXIBLE"] = "FLEXIBLE";
+    SleepSchedule["REGULAR"] = "REGULAR";
+})(SleepSchedule || (SleepSchedule = {}));
+export var SmokingHabit;
+(function (SmokingHabit) {
+    SmokingHabit["NEVER"] = "NEVER";
+    SmokingHabit["OCCASIONALLY"] = "OCCASIONALLY";
+    SmokingHabit["REGULARLY"] = "REGULARLY";
+    SmokingHabit["QUITTING"] = "QUITTING";
+    SmokingHabit["NO_PREFERENCE"] = "NO_PREFERENCE";
+})(SmokingHabit || (SmokingHabit = {}));
+export var DrinkingHabit;
+(function (DrinkingHabit) {
+    DrinkingHabit["NEVER"] = "NEVER";
+    DrinkingHabit["SOCIALLY"] = "SOCIALLY";
+    DrinkingHabit["REGULARLY"] = "REGULARLY";
+    DrinkingHabit["NO_PREFERENCE"] = "NO_PREFERENCE";
+})(DrinkingHabit || (DrinkingHabit = {}));
+export var PetPreference;
+(function (PetPreference) {
+    PetPreference["DOGS"] = "DOGS";
+    PetPreference["CATS"] = "CATS";
+    PetPreference["OTHER"] = "OTHER";
+    PetPreference["NO_PETS"] = "NO_PETS";
+    PetPreference["ALLERGIC"] = "ALLERGIC";
+    PetPreference["NO_PREFERENCE"] = "NO_PREFERENCE";
+})(PetPreference || (PetPreference = {}));
+export var ExerciseFrequency;
+(function (ExerciseFrequency) {
+    ExerciseFrequency["NEVER"] = "NEVER";
+    ExerciseFrequency["OCCASIONALLY"] = "OCCASIONALLY";
+    ExerciseFrequency["REGULARLY"] = "REGULARLY";
+    ExerciseFrequency["DAILY"] = "DAILY";
+    ExerciseFrequency["NO_PREFERENCE"] = "NO_PREFERENCE";
+})(ExerciseFrequency || (ExerciseFrequency = {}));
+export var DietPreference;
+(function (DietPreference) {
+    DietPreference["OMNIVORE"] = "OMNIVORE";
+    DietPreference["VEGETARIAN"] = "VEGETARIAN";
+    DietPreference["VEGAN"] = "VEGAN";
+    DietPreference["HALAL"] = "HALAL";
+    DietPreference["KOSHER"] = "KOSHER";
+    DietPreference["GLUTEN_FREE"] = "GLUTEN_FREE";
+    DietPreference["NO_PREFERENCE"] = "NO_PREFERENCE";
+})(DietPreference || (DietPreference = {}));
+export var RelationshipPace;
+(function (RelationshipPace) {
+    RelationshipPace["TAKE_IT_SLOW"] = "TAKE_IT_SLOW";
+    RelationshipPace["MODERATE"] = "MODERATE";
+    RelationshipPace["READY_TO_COMMIT"] = "READY_TO_COMMIT";
+})(RelationshipPace || (RelationshipPace = {}));
+export var LivingArrangement;
+(function (LivingArrangement) {
+    LivingArrangement["LIVE_ALONE"] = "LIVE_ALONE";
+    LivingArrangement["WITH_FAMILY"] = "WITH_FAMILY";
+    LivingArrangement["WITH_ROOMMATES"] = "WITH_ROOMMATES";
+    LivingArrangement["OPEN_TO_MOVE"] = "OPEN_TO_MOVE";
+})(LivingArrangement || (LivingArrangement = {}));
+export var FamilyPlan;
+(function (FamilyPlan) {
+    FamilyPlan["WANT_CHILDREN"] = "WANT_CHILDREN";
+    FamilyPlan["DO_NOT_WANT_CHILDREN"] = "DO_NOT_WANT_CHILDREN";
+    FamilyPlan["OPEN_MINDED"] = "OPEN_MINDED";
+    FamilyPlan["HAVE_CHILDREN"] = "HAVE_CHILDREN";
+    FamilyPlan["NOT_SURE"] = "NOT_SURE";
+})(FamilyPlan || (FamilyPlan = {}));
+export const DEFAULT_SIMILARITY_WEIGHTS = {
+    basicConditions: 0.2,
+    personality: 0.2,
+    interests: 0.15,
+    lifestyle: 0.15,
+    expectations: 0.15,
+    complementary: 0.1,
+    geoProximity: 0.05,
+};
+// Mock calculateDatingSimilarity
+export function calculateDatingSimilarity(_profileA, _profileB, _weights) {
+    return {
+        totalScore: 50 + Math.floor(Math.random() * 50),
+        dimensions: [
+            { dimension: 'basicConditions', score: 60, weight: 0.2, weightedScore: 12, details: [] },
+            { dimension: 'personality', score: 70, weight: 0.2, weightedScore: 14, details: [] },
+            { dimension: 'interests', score: 55, weight: 0.15, weightedScore: 8.25, details: [] },
+            { dimension: 'lifestyle', score: 65, weight: 0.15, weightedScore: 9.75, details: [] },
+            { dimension: 'expectations', score: 80, weight: 0.15, weightedScore: 12, details: [] },
+            { dimension: 'complementary', score: 60, weight: 0.1, weightedScore: 6, details: [] },
+            { dimension: 'geoProximity', score: 70, weight: 0.05, weightedScore: 3.5, details: [] },
+        ],
+        highlights: ['匹配亮点'],
+        warnings: [],
+    };
+}
+// Dating labels
+export const DATING_AGE_RANGE_LABELS = {};
+export const HEIGHT_RANGE_LABELS = {};
+export const DATING_EDUCATION_LABELS = {};
+export const INCOME_LABELS = {};
+export const DATING_PURPOSE_LABELS = {};
+export const VISIBILITY_LABELS = {};
+export var EducationPreference;
+(function (EducationPreference) {
+    EducationPreference["HIGH_SCHOOL"] = "HIGH_SCHOOL";
+    EducationPreference["ASSOCIATE"] = "ASSOCIATE";
+    EducationPreference["BACHELOR"] = "BACHELOR";
+    EducationPreference["MASTER"] = "MASTER";
+    EducationPreference["DOCTORATE"] = "DOCTORATE";
+    EducationPreference["NO_PREFERENCE"] = "NO_PREFERENCE";
+})(EducationPreference || (EducationPreference = {}));
 //# sourceMappingURL=shared.js.map

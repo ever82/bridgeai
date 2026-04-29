@@ -46,15 +46,15 @@ export declare class PointsTransactionService {
      * 获取或创建积分账户
      */
     getOrCreateAccount(userId: string): Promise<{
-        id: string;
         userId: string;
+        id: string;
         createdAt: Date;
-        version: number;
         updatedAt: Date;
-        totalEarned: number;
         balance: number;
+        totalEarned: number;
         totalSpent: number;
         frozenAmount: number;
+        version: number;
     }>;
     /**
      * 原子性增加积分（获取）

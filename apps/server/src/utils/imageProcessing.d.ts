@@ -85,6 +85,7 @@ export declare function calculateImageHash(buffer: Buffer): string;
 export declare function compareImages(image1: Buffer, image2: Buffer): Promise<number>;
 /**
  * Strip EXIF metadata from image for privacy protection
+ * Preserves the original image format and only removes metadata
  */
 export declare function stripExif(imageBuffer: Buffer): Promise<Buffer>;
 /**

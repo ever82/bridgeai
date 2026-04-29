@@ -1,0 +1,344 @@
+import { Router } from 'express';
+import { authenticate } from '../middleware/auth';
+import { asyncHandler } from '../middleware/common';
+import { ApiResponse } from '../utils/response';
+import * as agentService from '../services/agentService';
+import { AppError } from '../errors/AppError';
+import { createAgentSchema } from '../schemas/agentSchemas';
+import { buildPrismaQuery, validateFilterDSL } from '../utils/queryBuilder';
+import { prisma } from '../db/client';
+import { filterAndSort } from '../services/smartFilter';
+import { getRecommendationsForUser } from '../services/recommendation';
+const router = Router();
+/**
+ * @route POST /api/v1/agents/filter
+ * @desc Filter agents with complex queries
+ * @access Private
+ */
+router.post('/filter', authenticate, asyncHandler(async (req, res) => {
+    if (!req.user) {
+        throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+    const filterDSL = req.body;
+    // Validate filter DSL
+    const validation = validateFilterDSL(filterDSL);
+    if (!validation.valid) {
+        throw new AppError(`Invalid filter: ${validation.errors.join(', ')}`, 'INVALID_FILTER', 400);
+    }
+    // Build Prisma query
+    const query = buildPrismaQuery(filterDSL);
+    // Add user filter
+    const where = {
+        AND: [{ userId: req.user.id }, query.where],
+    };
+    // Execute query
+    const [agents, total] = await Promise.all([
+        prisma.agent.findMany({
+            where,
+            orderBy: query.orderBy,
+            skip: query.skip,
+            take: query.take,
+            include: {
+                profiles: true,
+            },
+        }),
+        prisma.agent.count({ where }),
+    ]);
+    const page = filterDSL.pagination?.page || 1;
+    const limit = filterDSL.pagination?.limit || 20;
+    res.json(ApiResponse.success({
+        items: agents,
+        total,
+        page,
+        limit,
+        hasMore: page * limit < total,
+    }));
+}));
+/**
+ * @route GET /api/v1/agents/suggestions
+ * @desc Get filter suggestions for a field
+ * @access Private
+ */
+router.get('/suggestions', authenticate, asyncHandler(async (req, res) => {
+    if (!req.user) {
+        throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+    const { field, query: searchQuery, limit = '10' } = req.query;
+    if (!field) {
+        throw new AppError('Field is required', 'INVALID_REQUEST', 400);
+    }
+    // Get distinct values for the field
+    // This is a simplified implementation - in production, you'd want
+    // to handle different field types and JSON path queries
+    const suggestions = await prisma.agent.findMany({
+        where: {
+            userId: req.user.id,
+        },
+        select: {
+            name: field === 'name' ? true : undefined,
+            type: field === 'type' ? true : undefined,
+            status: field === 'status' ? true : undefined,
+        },
+        distinct: [field],
+        take: parseInt(limit, 10),
+    });
+    // Extract unique values
+    const values = suggestions
+        .map((a) => a[field])
+        .filter((v) => v !== null && v !== undefined)
+        .filter((v) => !searchQuery ||
+        v
+            .toString()
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()));
+    res.json(ApiResponse.success({
+        field,
+        values: values.map((v) => ({ value: v, count: 1 })),
+    }));
+}));
+/**
+ * @route POST /api/v1/agents
+ * @desc Create a new agent
+ * @access Private
+ */
+router.post('/', authenticate, asyncHandler(async (req, res) => {
+    if (!req.user) {
+        throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+    const validated = createAgentSchema.safeParse(req.body);
+    if (!validated.success) {
+        throw new AppError(`Validation error: ${validated.error.issues.map(i => i.message).join(', ')}`, 'VALIDATION_ERROR', 400);
+    }
+    const { type, name, description, config, latitude, longitude } = validated.data;
+    const agent = await agentService.createAgent(req.user.id, {
+        type,
+        name,
+        description,
+        config,
+        latitude,
+        longitude,
+    });
+    res.status(201).json(ApiResponse.success(agent, 'Agent created successfully'));
+}));
+/**
+ * @route GET /api/v1/agents
+ * @desc Get all agents for the current user with optional filtering
+ * @access Private
+ */
+router.get('/', authenticate, asyncHandler(async (req, res) => {
+    if (!req.user) {
+        throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+    const { type, status, page = '1', limit = '20', sortBy = 'createdAt', sortOrder = 'desc', } = req.query;
+    const result = await agentService.getAgentsByUserId(req.user.id, {
+        type: type,
+        status: status,
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
+        sortBy: sortBy,
+        sortOrder: sortOrder,
+    });
+    res.json(ApiResponse.success(result));
+}));
+/**
+ * @route GET /api/v1/agents/search
+ * @desc Search agents with smart filtering and sorting
+ * @access Private
+ */
+router.get('/search', authenticate, asyncHandler(async (req, res) => {
+    if (!req.user) {
+        throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+    const { skills, minRating, maxHourlyRate, availability, location, language, experienceYears, verified, sortBy = 'relevance', sortOrder = 'desc', page = '1', limit = '20', } = req.query;
+    // Build filter criteria
+    const criteria = {
+        skills: skills ? skills.split(',') : undefined,
+        minRating: minRating ? parseFloat(minRating) : undefined,
+        maxHourlyRate: maxHourlyRate ? parseFloat(maxHourlyRate) : undefined,
+        availability: availability !== undefined ? availability === 'true' : undefined,
+        location: location,
+        language: language ? language.split(',') : undefined,
+        experienceYears: experienceYears ? parseInt(experienceYears, 10) : undefined,
+        verified: verified !== undefined ? verified === 'true' : undefined,
+    };
+    // Fetch all agents first, then apply in-memory filtering/sorting, then paginate
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
+    const allAgents = await prisma.agent.findMany({
+        where: { userId: req.user.id },
+        include: {
+            profiles: true,
+        },
+    });
+    // Apply smart filtering and sorting
+    const results = filterAndSort(allAgents, criteria, sortBy, sortOrder);
+    const total = results.length;
+    const pagedResults = results.slice(skip, skip + limitNum);
+    res.json(ApiResponse.success({
+        agents: pagedResults.map(r => ({
+            ...r.agent,
+            matchScore: r.score,
+            matchDetails: r.matchDetails,
+        })),
+        pagination: {
+            page: pageNum,
+            limit: limitNum,
+            total,
+            totalPages: Math.ceil(total / limitNum),
+            hasMore: skip + limitNum < total,
+        },
+        filters: {
+            applied: criteria,
+            sortBy,
+            sortOrder,
+        },
+    }));
+}));
+/**
+ * @route GET /api/v1/agents/sort-options
+ * @desc Get available sorting options
+ * @access Private
+ */
+router.get('/sort-options', authenticate, asyncHandler(async (req, res) => {
+    const options = [
+        { value: 'relevance', label: 'Best Match', description: 'Most relevant to your search' },
+        { value: 'rating', label: 'Highest Rated', description: 'By customer rating' },
+        { value: 'price', label: 'Price', description: 'Lowest to highest hourly rate' },
+        { value: 'experience', label: 'Experience', description: 'Years of experience' },
+        { value: 'activity', label: 'Recently Active', description: 'Most recent activity' },
+        { value: 'credit', label: 'Credit Score', description: 'Platform credit score' },
+        { value: 'composite', label: 'Overall Score', description: 'Combined ranking' },
+    ];
+    res.json(ApiResponse.success({ options }));
+}));
+/**
+ * @route GET /api/v1/agents/recommended
+ * @desc Get personalized agent recommendations
+ * @access Private
+ */
+router.get('/recommended', authenticate, asyncHandler(async (req, res) => {
+    if (!req.user) {
+        throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+    const [agents, total] = await Promise.all([
+        prisma.agent.findMany({
+            where: { userId: req.user.id },
+            include: {
+                profiles: true,
+            },
+            take: limit,
+            skip,
+        }),
+        prisma.agent.count({ where: { userId: req.user.id } }),
+    ]);
+    const recommendations = await getRecommendationsForUser(req.user.id, agents);
+    res.json(ApiResponse.success({
+        agents: recommendations,
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+        },
+        explanation: 'Based on your preferences and past interactions',
+    }));
+}));
+/**
+ * @route GET /api/v1/agents/filter-suggestions
+ * @desc Get popular filter suggestions
+ * @access Private
+ */
+router.get('/filter-suggestions', authenticate, asyncHandler(async (req, res) => {
+    const suggestions = [
+        { label: 'Top Rated', criteria: { minRating: 4.5, verified: true } },
+        { label: 'Available Now', criteria: { availability: true, minRating: 4.0 } },
+        { label: 'Best Value', criteria: { verified: true, maxHourlyRate: 50 } },
+        { label: 'Expert Level', criteria: { experienceYears: 5, verified: true } },
+    ];
+    res.json(ApiResponse.success({ suggestions }));
+}));
+/**
+ * @route GET /api/v1/agents/:id/history
+ * @desc Get agent status history
+ * @access Private
+ */
+router.get('/:id/history', authenticate, asyncHandler(async (req, res) => {
+    if (!req.user) {
+        throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+    const { id } = req.params;
+    const history = await agentService.getAgentStatusHistory(id, req.user.id);
+    res.json(ApiResponse.success(history));
+}));
+/**
+ * @route GET /api/v1/agents/:id
+ * @desc Get a specific agent by ID
+ * @access Private
+ */
+router.get('/:id', authenticate, asyncHandler(async (req, res) => {
+    if (!req.user) {
+        throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+    const { id } = req.params;
+    const agent = await agentService.getAgentById(id, req.user.id);
+    if (!agent) {
+        throw new AppError('Agent not found', 'AGENT_NOT_FOUND', 404);
+    }
+    res.json(ApiResponse.success(agent));
+}));
+/**
+ * @route PATCH /api/v1/agents/:id
+ * @desc Update an agent
+ * @access Private
+ */
+router.patch('/:id', authenticate, asyncHandler(async (req, res) => {
+    if (!req.user) {
+        throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+    const { id } = req.params;
+    const { name, description, config, latitude, longitude } = req.body;
+    const agent = await agentService.updateAgent(id, req.user.id, {
+        name,
+        description,
+        config,
+        latitude,
+        longitude,
+    });
+    res.json(ApiResponse.success(agent, 'Agent updated successfully'));
+}));
+/**
+ * @route PATCH /api/v1/agents/:id/status
+ * @desc Update agent status
+ * @access Private
+ */
+router.patch('/:id/status', authenticate, asyncHandler(async (req, res) => {
+    if (!req.user) {
+        throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!status || !Object.values(agentService.AgentStatus).includes(status)) {
+        throw new AppError(`Invalid status. Valid statuses are: ${Object.values(agentService.AgentStatus).join(', ')}`, 'INVALID_STATUS', 400);
+    }
+    const agent = await agentService.updateAgentStatus(id, req.user.id, status);
+    res.json(ApiResponse.success(agent, 'Agent status updated successfully'));
+}));
+/**
+ * @route DELETE /api/v1/agents/:id
+ * @desc Delete an agent
+ * @access Private
+ */
+router.delete('/:id', authenticate, asyncHandler(async (req, res) => {
+    if (!req.user) {
+        throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+    const { id } = req.params;
+    await agentService.deleteAgent(id, req.user.id);
+    res.json(ApiResponse.success(null, 'Agent deleted successfully'));
+}));
+export default router;
+//# sourceMappingURL=agents.js.map

@@ -32,6 +32,6 @@ export declare const helmetMiddleware: (req: import("http").IncomingMessage, res
  * Apply all security protections
  * Usage: app.use(securityProtection())
  */
-export declare function securityProtection(): (typeof xssProtection)[];
+export declare function securityProtection(): ((req: import("http").IncomingMessage, res: import("http").ServerResponse, next: (err?: unknown) => void) => void)[];
 export default securityProtection;
 //# sourceMappingURL=security.d.ts.map

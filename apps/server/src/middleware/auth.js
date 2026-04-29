@@ -1,0 +1,114 @@
+import { prisma } from '../db/client';
+import { AppError } from '../errors/AppError';
+import * as blacklistService from '../services/auth/blacklist';
+import { verifyToken as verifyJwtToken } from '../services/auth/jwt';
+/**
+ * Extract token from Authorization header
+ */
+function extractToken(req) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return null;
+    }
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+        return null;
+    }
+    return parts[1];
+}
+/**
+ * Authentication middleware
+ * Verifies JWT token and attaches user to request
+ */
+export async function authenticate(req, res, next) {
+    try {
+        const token = extractToken(req);
+        if (!token) {
+            throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
+        }
+        // Store token for blacklisting in logout
+        req.token = token;
+        // Verify token
+        const decoded = verifyJwtToken(token);
+        // Check if token has been revoked
+        try {
+            if (await blacklistService.isTokenBlacklisted(token)) {
+                throw new AppError('Token has been revoked', 'TOKEN_REVOKED', 401);
+            }
+        }
+        catch (err) {
+            if (err instanceof AppError)
+                throw err;
+            // If blacklist check fails (e.g. Redis unavailable), log but allow through
+            // This ensures availability when Redis is down
+        }
+        // Check if user exists
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.userId },
+            select: { id: true, email: true, status: true },
+        });
+        if (!user) {
+            throw new AppError('User not found', 'USER_NOT_FOUND', 401);
+        }
+        if (user.status !== 'ACTIVE') {
+            throw new AppError('Account is not active', 'ACCOUNT_INACTIVE', 403);
+        }
+        // Attach user to request
+        req.user = {
+            id: user.id,
+            email: user.email,
+            role: decoded.role,
+        };
+        next();
+    }
+    catch (error) {
+        if (error instanceof AppError) {
+            next(error);
+            return;
+        }
+        if (error instanceof Error && error.message === 'Token has expired') {
+            next(new AppError('Token has expired', 'TOKEN_EXPIRED', 401));
+            return;
+        }
+        if (error instanceof Error && error.message === 'Invalid token') {
+            next(new AppError('Invalid token', 'INVALID_TOKEN', 401));
+            return;
+        }
+        next(new AppError('Authentication failed', 'AUTH_FAILED', 401));
+    }
+}
+/**
+ * Optional authentication middleware
+ * Attaches user to request if token is valid, but doesn't require it
+ */
+export async function optionalAuth(req, res, next) {
+    try {
+        const token = extractToken(req);
+        if (!token) {
+            next();
+            return;
+        }
+        const decoded = verifyJwtToken(token);
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.userId },
+            select: { id: true, email: true, status: true },
+        });
+        if (user && user.status === 'ACTIVE') {
+            req.user = {
+                id: user.id,
+                email: user.email,
+                role: decoded.role,
+            };
+        }
+        next();
+    }
+    catch (error) {
+        // Ignore errors for optional auth
+        next();
+    }
+}
+export default {
+    authenticate,
+    optionalAuth,
+};
+//# sourceMappingURL=auth.js.map

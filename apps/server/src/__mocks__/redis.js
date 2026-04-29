@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createClient = void 0;
 /**
  * Mock for redis module
  */
@@ -11,5 +8,5 @@ const mockRedisClient = {
     duplicate: jest.fn(() => Promise.resolve(mockRedisClient)),
     isOpen: false,
 };
-exports.createClient = jest.fn(() => mockRedisClient);
+export const createClient = jest.fn(() => mockRedisClient);
 //# sourceMappingURL=redis.js.map

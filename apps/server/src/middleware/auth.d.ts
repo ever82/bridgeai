@@ -22,7 +22,6 @@ export declare function optionalAuth(req: AuthenticatedRequest, res: Response, n
 declare const _default: {
     authenticate: typeof authenticate;
     optionalAuth: typeof optionalAuth;
-    requireAdmin: any;
 };
 export default _default;
 //# sourceMappingURL=auth.d.ts.map

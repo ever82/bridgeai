@@ -36,146 +36,151 @@ export interface SyncMessagesInput {
  */
 export declare function createMessage(input: CreateMessageInput): Promise<{
     content: string;
-    metadata: Prisma.JsonValue | null;
+    sender: {
+        id: string;
+        name: string;
+        avatarUrl: string;
+    };
     id: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
-    attachments: Prisma.JsonValue | null;
+    status: import(".prisma/client").$Enums.MessageStatus;
     conversationId: string;
-    editedAt: Date | null;
+    senderId: string;
+    attachments: Prisma.JsonValue | null;
     sequenceId: number | null;
+    editedAt: Date | null;
 }>;
 /**
  * Get messages by conversation with pagination
  */
 export declare function getMessagesByConversation(filters: MessageQueryFilters): Promise<{
     content: string;
-    sender: {
-        id: string;
-        name: string | null;
-        avatarUrl: string | null;
-    };
     readReceipts: {
         userId: string;
         readAt: Date;
     }[];
-    metadata: Prisma.JsonValue | null;
+    sender: {
+        id: string;
+        name: string;
+        avatarUrl: string;
+    };
     id: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
-    attachments: Prisma.JsonValue | null;
+    status: import(".prisma/client").$Enums.MessageStatus;
     conversationId: string;
-    editedAt: Date | null;
+    senderId: string;
+    attachments: Prisma.JsonValue | null;
     sequenceId: number | null;
+    editedAt: Date | null;
 }[]>;
 /**
  * Get messages by IDs
  */
 export declare function getMessagesByIds(messageIds: string[]): Promise<{
     content: string;
-    sender: {
-        id: string;
-        name: string | null;
-        avatarUrl: string | null;
-    };
     readReceipts: {
         userId: string;
         readAt: Date;
     }[];
-    metadata: Prisma.JsonValue | null;
+    sender: {
+        id: string;
+        name: string;
+        avatarUrl: string;
+    };
     id: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
-    attachments: Prisma.JsonValue | null;
+    status: import(".prisma/client").$Enums.MessageStatus;
     conversationId: string;
-    editedAt: Date | null;
+    senderId: string;
+    attachments: Prisma.JsonValue | null;
     sequenceId: number | null;
+    editedAt: Date | null;
 }[]>;
 /**
  * Get a single message by ID
  */
 export declare function getMessageById(messageId: string): Promise<{
     content: string;
-    sender: {
-        id: string;
-        name: string | null;
-        avatarUrl: string | null;
-    };
     readReceipts: {
         userId: string;
         readAt: Date;
     }[];
-    metadata: Prisma.JsonValue | null;
+    sender: {
+        id: string;
+        name: string;
+        avatarUrl: string;
+    };
     id: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
-    attachments: Prisma.JsonValue | null;
+    status: import(".prisma/client").$Enums.MessageStatus;
     conversationId: string;
-    editedAt: Date | null;
+    senderId: string;
+    attachments: Prisma.JsonValue | null;
     sequenceId: number | null;
-} | null>;
+    editedAt: Date | null;
+}>;
 /**
  * Update message status
  */
 export declare function updateMessageStatus(messageId: string, status: MessageStatus): Promise<{
-    metadata: Prisma.JsonValue | null;
     id: string;
-    content: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
-    attachments: Prisma.JsonValue | null;
+    status: import(".prisma/client").$Enums.MessageStatus;
     conversationId: string;
-    editedAt: Date | null;
+    senderId: string;
+    content: string;
+    attachments: Prisma.JsonValue | null;
     sequenceId: number | null;
+    editedAt: Date | null;
 }>;
 /**
  * Create read receipt
  */
 export declare function createReadReceipt(messageId: string, userId: string): Promise<{
+    userId: string;
     id: string;
     messageId: string;
-    userId: string;
     readAt: Date;
 }>;
 /**
  * Get offline messages for a user
  */
-export declare function getOfflineMessages(userId: string): Promise<({
+export declare function getOfflineMessages(userId: string): Promise<{
     message: {
         content: string;
         sender: {
             id: string;
-            name: string | null;
-            avatarUrl: string | null;
+            name: string;
+            avatarUrl: string;
         };
-        metadata: Prisma.JsonValue | null;
         id: string;
-        senderId: string;
-        status: import(".prisma/client").$Enums.MessageStatus;
         type: import(".prisma/client").$Enums.MessageType;
+        metadata: Prisma.JsonValue | null;
         createdAt: Date;
-        attachments: Prisma.JsonValue | null;
+        status: import(".prisma/client").$Enums.MessageStatus;
         conversationId: string;
-        editedAt: Date | null;
+        senderId: string;
+        attachments: Prisma.JsonValue | null;
         sequenceId: number | null;
+        editedAt: Date | null;
     };
-    id: string;
-    messageId: string;
     userId: string;
+    id: string;
     createdAt: Date;
     conversationId: string;
+    messageId: string;
     deliveredAt: Date | null;
-} | null)[]>;
+}[]>;
 /**
  * Mark offline messages as delivered
  */
@@ -186,25 +191,25 @@ export declare function markOfflineMessagesDelivered(userId: string, messageIds:
 export declare function syncMessages(input: SyncMessagesInput): Promise<{
     messages: {
         content: string;
-        sender: {
-            id: string;
-            name: string | null;
-            avatarUrl: string | null;
-        };
         readReceipts: {
             userId: string;
             readAt: Date;
         }[];
-        metadata: Prisma.JsonValue | null;
+        sender: {
+            id: string;
+            name: string;
+            avatarUrl: string;
+        };
         id: string;
-        senderId: string;
-        status: import(".prisma/client").$Enums.MessageStatus;
         type: import(".prisma/client").$Enums.MessageType;
+        metadata: Prisma.JsonValue | null;
         createdAt: Date;
-        attachments: Prisma.JsonValue | null;
+        status: import(".prisma/client").$Enums.MessageStatus;
         conversationId: string;
-        editedAt: Date | null;
+        senderId: string;
+        attachments: Prisma.JsonValue | null;
         sequenceId: number | null;
+        editedAt: Date | null;
     }[];
     lastSequenceId: number;
     hasMore: boolean;
@@ -220,33 +225,33 @@ export declare function searchMessages(conversationId: string, query: string, li
  * Delete a message (soft delete)
  */
 export declare function deleteMessage(messageId: string, userId: string): Promise<{
-    metadata: Prisma.JsonValue | null;
     id: string;
-    content: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
-    attachments: Prisma.JsonValue | null;
+    status: import(".prisma/client").$Enums.MessageStatus;
     conversationId: string;
-    editedAt: Date | null;
+    senderId: string;
+    content: string;
+    attachments: Prisma.JsonValue | null;
     sequenceId: number | null;
+    editedAt: Date | null;
 }>;
 /**
  * Edit a message
  */
 export declare function editMessage(messageId: string, userId: string, newContent: string): Promise<{
-    metadata: Prisma.JsonValue | null;
     id: string;
-    content: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
-    attachments: Prisma.JsonValue | null;
+    status: import(".prisma/client").$Enums.MessageStatus;
     conversationId: string;
-    editedAt: Date | null;
+    senderId: string;
+    content: string;
+    attachments: Prisma.JsonValue | null;
     sequenceId: number | null;
+    editedAt: Date | null;
 }>;
 export interface CreateChatRoomMessageInput {
     chatRoomId: string;
@@ -262,20 +267,20 @@ export interface CreateChatRoomMessageInput {
 export declare function createChatRoomMessage(input: CreateChatRoomMessageInput): Promise<{
     sender: {
         id: string;
-        name: string | null;
-        avatarUrl: string | null;
-    } | null;
+        name: string;
+        avatarUrl: string;
+    };
     content: string;
     conversationId: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
+    status: import(".prisma/client").$Enums.MessageStatus;
+    senderId: string;
+    attachments: Prisma.JsonValue | null;
     chatRoomId: string;
     senderType: import(".prisma/client").$Enums.SenderType;
-    attachments: Prisma.JsonValue | null;
 }>;
 /**
  * Get a single message by chat room ID (most recent)
@@ -285,19 +290,19 @@ export declare function findByRoomId(roomId: string): Promise<{
     content: string;
     sender: {
         id: string;
-        name: string | null;
-        avatarUrl: string | null;
-    } | null;
+        name: string;
+        avatarUrl: string;
+    };
     conversationId: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
+    status: import(".prisma/client").$Enums.MessageStatus;
+    senderId: string;
+    attachments: Prisma.JsonValue | null;
     chatRoomId: string;
     senderType: import(".prisma/client").$Enums.SenderType;
-    attachments: Prisma.JsonValue | null;
 }>;
 /**
  * Get messages by chat room with pagination
@@ -311,19 +316,19 @@ export declare function getChatRoomMessages(filters: {
     content: string;
     sender: {
         id: string;
-        name: string | null;
-        avatarUrl: string | null;
-    } | null;
+        name: string;
+        avatarUrl: string;
+    };
     conversationId: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
+    status: import(".prisma/client").$Enums.MessageStatus;
+    senderId: string;
+    attachments: Prisma.JsonValue | null;
     chatRoomId: string;
     senderType: import(".prisma/client").$Enums.SenderType;
-    attachments: Prisma.JsonValue | null;
 }[]>;
 /**
  * Sync chat room messages (incremental sync)
@@ -337,21 +342,21 @@ export declare function syncChatRoomMessages(input: {
         content: string;
         sender: {
             id: string;
-            name: string | null;
-            avatarUrl: string | null;
-        } | null;
+            name: string;
+            avatarUrl: string;
+        };
         conversationId: string;
-        metadata: Prisma.JsonValue | null;
         id: string;
-        senderId: string;
-        status: import(".prisma/client").$Enums.MessageStatus;
         type: import(".prisma/client").$Enums.MessageType;
+        metadata: Prisma.JsonValue | null;
         createdAt: Date;
+        status: import(".prisma/client").$Enums.MessageStatus;
+        senderId: string;
+        attachments: Prisma.JsonValue | null;
         chatRoomId: string;
         senderType: import(".prisma/client").$Enums.SenderType;
-        attachments: Prisma.JsonValue | null;
     }[];
-    lastMessageCreatedAt: Date | undefined;
+    lastMessageCreatedAt: Date;
     hasMore: boolean;
 }>;
 /**
@@ -360,31 +365,31 @@ export declare function syncChatRoomMessages(input: {
 export declare function editChatRoomMessage(messageId: string, userId: string, newContent: string): Promise<{
     content: string;
     conversationId: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
+    status: import(".prisma/client").$Enums.MessageStatus;
+    senderId: string;
+    attachments: Prisma.JsonValue | null;
     chatRoomId: string;
     senderType: import(".prisma/client").$Enums.SenderType;
-    attachments: Prisma.JsonValue | null;
 }>;
 /**
  * Delete a chat room message (soft delete)
  */
 export declare function deleteChatRoomMessage(messageId: string, userId: string): Promise<{
     conversationId: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    content: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
+    status: import(".prisma/client").$Enums.MessageStatus;
+    senderId: string;
+    content: string;
+    attachments: Prisma.JsonValue | null;
     chatRoomId: string;
     senderType: import(".prisma/client").$Enums.SenderType;
-    attachments: Prisma.JsonValue | null;
 }>;
 /**
  * Search messages in a chat room (uses ChatMessage model)
@@ -397,20 +402,20 @@ export declare function getChatMessageById(messageId: string): Promise<{
     content: string;
     sender: {
         id: string;
-        name: string | null;
-        avatarUrl: string | null;
-    } | null;
+        name: string;
+        avatarUrl: string;
+    };
     conversationId: string;
-    metadata: Prisma.JsonValue | null;
     id: string;
-    senderId: string;
-    status: import(".prisma/client").$Enums.MessageStatus;
     type: import(".prisma/client").$Enums.MessageType;
+    metadata: Prisma.JsonValue | null;
     createdAt: Date;
+    status: import(".prisma/client").$Enums.MessageStatus;
+    senderId: string;
+    attachments: Prisma.JsonValue | null;
     chatRoomId: string;
     senderType: import(".prisma/client").$Enums.SenderType;
-    attachments: Prisma.JsonValue | null;
-} | null>;
+}>;
 declare const _default: {
     createMessage: typeof createMessage;
     getMessagesByConversation: typeof getMessagesByConversation;

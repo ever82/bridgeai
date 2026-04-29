@@ -93,20 +93,20 @@ declare class TransactionService {
         amount: number;
         type: import(".prisma/client").$Enums.TransactionType;
         status: import(".prisma/client").$Enums.TransactionStatus;
-        description: string | null;
-        referenceId: string | null;
+        description: string;
+        referenceId: string;
         metadata: import("@prisma/client/runtime/library").JsonValue;
         createdAt: Date;
         updatedAt: Date;
         refund: {
-            id: any;
-            reason: any;
-            status: any;
+            id: string;
+            reason: string;
+            status: import(".prisma/client").$Enums.RefundStatus;
             refundAmount: number;
-            pointsRefunded: any;
-            createdAt: any;
-        } | null;
-    } | null>;
+            pointsRefunded: boolean;
+            createdAt: Date;
+        };
+    }>;
     /**
      * Get transaction statistics for a user
      */
@@ -119,12 +119,12 @@ declare class TransactionService {
      * Create a refund request for a transaction
      */
     createRefund(userId: string, transactionId: string, reason: string, details?: string, evidence?: string[]): Promise<{
-        id: any;
-        transactionId: any;
-        reason: any;
-        status: any;
+        id: string;
+        transactionId: string;
+        reason: string;
+        status: import(".prisma/client").$Enums.RefundStatus;
         refundAmount: number;
-        createdAt: any;
+        createdAt: Date;
     }>;
     /**
      * Get user's refund list
@@ -134,29 +134,36 @@ declare class TransactionService {
      * Get refund detail with appeals
      */
     getRefundDetail(userId: string, refundId: string): Promise<{
-        id: any;
-        transactionId: any;
-        reason: any;
-        details: any;
-        evidence: any;
-        status: any;
+        id: string;
+        transactionId: string;
+        reason: string;
+        details: string;
+        evidence: import("@prisma/client/runtime/library").JsonValue;
+        status: import(".prisma/client").$Enums.RefundStatus;
         refundAmount: number;
-        pointsRefunded: any;
-        reviewedBy: any;
-        reviewNote: any;
-        reviewedAt: any;
-        createdAt: any;
-        updatedAt: any;
+        pointsRefunded: boolean;
+        reviewedBy: string;
+        reviewNote: string;
+        reviewedAt: Date;
+        createdAt: Date;
+        updatedAt: Date;
         transaction: {
-            id: any;
+            id: string;
             amount: number;
-            type: any;
-            status: any;
-            description: any;
-            createdAt: any;
+            type: import(".prisma/client").$Enums.TransactionType;
+            status: import(".prisma/client").$Enums.TransactionStatus;
+            description: string;
+            createdAt: Date;
         };
-        appeals: any;
-    } | null>;
+        appeals: {
+            id: string;
+            reason: string;
+            evidence: import("@prisma/client/runtime/library").JsonValue;
+            status: import(".prisma/client").$Enums.AppealStatus;
+            reviewNote: string;
+            createdAt: Date;
+        }[];
+    }>;
     /**
      * Create an appeal for a rejected refund
      */
@@ -165,9 +172,9 @@ declare class TransactionService {
      * Cancel a pending refund
      */
     cancelRefund(userId: string, refundId: string): Promise<{
-        id: any;
-        status: any;
-        updatedAt: any;
+        id: string;
+        status: import(".prisma/client").$Enums.RefundStatus;
+        updatedAt: Date;
     }>;
 }
 export declare const transactionService: TransactionService;

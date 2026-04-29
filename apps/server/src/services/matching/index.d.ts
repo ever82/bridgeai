@@ -12,4 +12,6 @@ export { MatchingService, matchingService } from '../matchingService';
 export type { MatchQueryOptions, MatchResult } from '../matchingService';
 export type { ExecutionPlan, QueryResult, ResourceLimits } from './queryEngine';
 export type { Subscription, SubscriptionEvent, IncrementalUpdate, } from './querySubscriptionManager';
+export { evaluateBidirectionalMatch, filterMutualMatches, haveCriteriaChanged, resolveMatchConfig, } from './matchEdgeCases';
+export type { BidirectionalMatchResult, MatchConfig } from './matchEdgeCases';
 //# sourceMappingURL=index.d.ts.map

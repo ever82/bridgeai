@@ -1,0 +1,79 @@
+export class SmtpEmailAdapter {
+    name = 'smtp';
+    config;
+    defaultFrom;
+    constructor(config) {
+        this.config = config;
+        this.defaultFrom = config.from || 'noreply@bridgeai.com';
+    }
+    async getNodemailer() {
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            return require('nodemailer');
+        }
+        catch {
+            return null;
+        }
+    }
+    async send(message) {
+        try {
+            const nodemailer = await this.getNodemailer();
+            if (!nodemailer) {
+                return {
+                    success: false,
+                    error: 'nodemailer not installed',
+                    provider: this.name,
+                };
+            }
+            const transporter = nodemailer.createTransport({
+                host: this.config.host,
+                port: this.config.port,
+                secure: this.config.secure,
+                auth: this.config.auth,
+            });
+            const info = await transporter.sendMail({
+                from: message.from || this.defaultFrom,
+                to: Array.isArray(message.to) ? message.to.join(', ') : message.to,
+                subject: message.subject,
+                html: message.html,
+                text: message.text,
+                attachments: message.attachments,
+                headers: message.headers,
+            });
+            return {
+                success: true,
+                messageId: info.messageId,
+                provider: this.name,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                provider: this.name,
+            };
+        }
+    }
+    async sendBatch(messages) {
+        return Promise.all(messages.map((msg) => this.send(msg)));
+    }
+    async verifyConnection() {
+        try {
+            const nodemailer = await this.getNodemailer();
+            if (!nodemailer)
+                return false;
+            const transporter = nodemailer.createTransport({
+                host: this.config.host,
+                port: this.config.port,
+                secure: this.config.secure,
+                auth: this.config.auth,
+            });
+            await transporter.verify();
+            return true;
+        }
+        catch {
+            return false;
+        }
+    }
+}
+//# sourceMappingURL=smtp.adapter.js.map

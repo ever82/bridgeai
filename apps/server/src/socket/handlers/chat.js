@@ -1,0 +1,433 @@
+import { prisma } from '../../db/client';
+import { isUserInRoom } from '../../services/chat/roomService';
+import { createChatRoomMessage, getChatRoomMessages, getOfflineMessages, markOfflineMessagesDelivered, syncChatRoomMessages, editChatRoomMessage, deleteChatRoomMessage, } from '../../services/messageService';
+/**
+ * Register chat event handlers
+ */
+export function registerChatHandlers(socket, nsp) {
+    // Join chat room
+    socket.on('chat:join', async (data, callback) => {
+        try {
+            if (!socket.user?.id) {
+                callback?.({ success: false, error: 'Authentication required' });
+                return;
+            }
+            const { roomId } = data;
+            // Validate roomId is non-empty
+            if (!roomId || roomId.trim().length === 0) {
+                callback?.({ success: false, error: 'Room ID is required' });
+                return;
+            }
+            // Verify database room membership before allowing socket join
+            const isMember = await isUserInRoom(roomId, socket.user.id);
+            if (!isMember) {
+                callback?.({ success: false, error: 'Not a member of this room' });
+                return;
+            }
+            // Join the room
+            socket.join(roomId);
+            // Notify others in the room
+            socket.to(roomId).emit('chat:user_joined', {
+                userId: socket.user.id,
+                roomId,
+                timestamp: new Date().toISOString(),
+            });
+            // Get room members count
+            const roomSockets = await nsp.in(roomId).fetchSockets();
+            const memberCount = roomSockets.length;
+            // Deliver offline messages to user
+            await deliverOfflineMessages(socket, roomId);
+            callback?.({
+                success: true,
+                data: { roomId, memberCount },
+            });
+        }
+        catch (error) {
+            console.error('[Chat] Join error:', error);
+            callback?.({ success: false, error: 'Failed to join room' });
+        }
+    });
+    // Leave chat room
+    socket.on('chat:leave', (data, callback) => {
+        try {
+            const { roomId } = data;
+            socket.leave(roomId);
+            // Notify others
+            socket.to(roomId).emit('chat:user_left', {
+                userId: socket.user?.id,
+                roomId,
+                timestamp: new Date().toISOString(),
+            });
+            callback?.({ success: true });
+        }
+        catch (error) {
+            console.error('[Chat] Leave error:', error);
+            callback?.({ success: false, error: 'Failed to leave room' });
+        }
+    });
+    // Send message
+    socket.on('chat:message', async (data, callback) => {
+        try {
+            if (!socket.user?.id) {
+                callback?.({ success: false, error: 'Authentication required' });
+                return;
+            }
+            const { roomId, content, type = 'text', attachments, metadata } = data;
+            // Validate user is in the room
+            if (!socket.rooms.has(roomId)) {
+                callback?.({ success: false, error: 'Not in room' });
+                return;
+            }
+            // Validate content
+            if (!content || content.trim().length === 0) {
+                callback?.({ success: false, error: 'Message content cannot be empty' });
+                return;
+            }
+            // Create message in database
+            const message = await createChatRoomMessage({
+                chatRoomId: roomId,
+                senderId: socket.user.id,
+                content,
+                type: (type || 'TEXT').toUpperCase(),
+                attachments: attachments,
+                metadata: metadata,
+            });
+            // Broadcast to room (including sender)
+            // Include senderSnapshot to freeze identity at send time
+            const senderSnapshot = message.sender
+                ? {
+                    id: message.sender.id,
+                    name: message.sender.name ?? undefined,
+                    displayName: message.sender.name ?? undefined,
+                    avatarUrl: message.sender.avatarUrl ?? undefined,
+                    senderType: 'USER',
+                }
+                : undefined;
+            nsp.to(roomId).emit('chat:message', {
+                id: message.id,
+                roomId: message.conversationId,
+                senderId: message.senderId,
+                sender: message.sender,
+                senderSnapshot,
+                content: message.content,
+                type: message.type.toLowerCase(),
+                attachments: message.attachments,
+                metadata: message.metadata,
+                status: message.status,
+                createdAt: message.createdAt.toISOString(),
+            });
+            callback?.({ success: true, data: { messageId: message.id } });
+        }
+        catch (error) {
+            console.error('[Chat] Message error:', error);
+            callback?.({ success: false, error: 'Failed to send message' });
+        }
+    });
+    // Acknowledge message delivery
+    socket.on('chat:ack', (data, callback) => {
+        try {
+            if (!socket.user?.id) {
+                callback?.({ success: false, error: 'Authentication required' });
+                return;
+            }
+            const { roomId, messageIds } = data;
+            // Validate user is in the room
+            if (!socket.rooms.has(roomId)) {
+                callback?.({ success: false, error: 'Not in room' });
+                return;
+            }
+            // Broadcast delivery acknowledgment to room
+            socket.to(roomId).emit('chat:delivered', {
+                userId: socket.user.id,
+                roomId,
+                messageIds,
+                deliveredAt: new Date().toISOString(),
+            });
+            callback?.({ success: true });
+        }
+        catch (error) {
+            console.error('[Chat] Ack error:', error);
+            callback?.({ success: false, error: 'Failed to acknowledge message' });
+        }
+    });
+    // Mark messages as read
+    socket.on('chat:read', async (data, callback) => {
+        try {
+            if (!socket.user?.id) {
+                callback?.({ success: false, error: 'Authentication required' });
+                return;
+            }
+            const { roomId, messageIds } = data;
+            // Validate user is in the room
+            if (!socket.rooms.has(roomId)) {
+                callback?.({ success: false, error: 'Not in room' });
+                return;
+            }
+            // Limit batch size to prevent database overload
+            const MAX_BATCH_SIZE = 500;
+            if (messageIds.length > MAX_BATCH_SIZE) {
+                callback?.({ success: false, error: `Too many message IDs (max ${MAX_BATCH_SIZE})` });
+                return;
+            }
+            // Update ChatMessage status to READ and create read receipts
+            const updateResult = await prisma.chatMessage.updateMany({
+                where: { id: { in: messageIds }, chatRoomId: roomId },
+                data: { status: 'READ' },
+            });
+            // Create read receipts for each message (upsert to handle re-reads)
+            const readReceiptData = messageIds.map((msgId) => ({
+                chatMessageId: msgId,
+                userId: socket.user.id,
+                readAt: new Date(),
+            }));
+            await prisma.chatReadReceipt.createMany({
+                data: readReceiptData,
+                skipDuplicates: true,
+            });
+            // Broadcast read receipt to room
+            socket.to(roomId).emit('chat:read_receipt', {
+                userId: socket.user.id,
+                roomId,
+                messageIds,
+                readAt: new Date().toISOString(),
+            });
+            callback?.({ success: true, data: { updated: updateResult.count } });
+        }
+        catch (error) {
+            console.error('[Chat] Read error:', error);
+            callback?.({ success: false, error: 'Failed to mark as read' });
+        }
+    });
+    // Get message history
+    socket.on('chat:history', async (data, callback) => {
+        try {
+            if (!socket.user?.id) {
+                callback?.({ success: false, error: 'Authentication required' });
+                return;
+            }
+            const { roomId, limit = 50, before, after } = data;
+            // Validate user is in the room
+            if (!socket.rooms.has(roomId)) {
+                callback?.({ success: false, error: 'Not in room' });
+                return;
+            }
+            const messages = await getChatRoomMessages({
+                chatRoomId: roomId,
+                limit,
+                before: before ? new Date(before) : undefined,
+                after: after ? new Date(after) : undefined,
+            });
+            callback?.({
+                success: true,
+                data: {
+                    messages: messages.map(msg => ({
+                        id: msg.id,
+                        roomId: msg.conversationId,
+                        senderId: msg.senderId,
+                        sender: msg.sender,
+                        senderSnapshot: msg.sender
+                            ? {
+                                id: msg.sender.id,
+                                name: msg.sender.name ?? undefined,
+                                displayName: msg.sender.name ?? undefined,
+                                avatarUrl: msg.sender.avatarUrl ?? undefined,
+                                senderType: 'USER',
+                            }
+                            : undefined,
+                        content: msg.content,
+                        type: msg.type.toLowerCase(),
+                        attachments: msg.attachments,
+                        metadata: msg.metadata,
+                        status: msg.status,
+                        createdAt: msg.createdAt.toISOString(),
+                    })),
+                },
+            });
+        }
+        catch (error) {
+            console.error('[Chat] History error:', error);
+            callback?.({ success: false, error: 'Failed to get history' });
+        }
+    });
+    // Sync messages
+    socket.on('chat:sync', async (data, callback) => {
+        try {
+            if (!socket.user?.id) {
+                callback?.({ success: false, error: 'Authentication required' });
+                return;
+            }
+            const { roomId, lastMessageCreatedAt, limit = 100 } = data;
+            // Validate user is in the room
+            if (!socket.rooms.has(roomId)) {
+                callback?.({ success: false, error: 'Not in room' });
+                return;
+            }
+            const result = await syncChatRoomMessages({
+                chatRoomId: roomId,
+                lastMessageCreatedAt: lastMessageCreatedAt ? new Date(lastMessageCreatedAt) : undefined,
+                limit,
+            });
+            callback?.({
+                success: true,
+                data: {
+                    messages: result.messages.map(msg => ({
+                        id: msg.id,
+                        roomId: msg.conversationId,
+                        senderId: msg.senderId,
+                        sender: msg.sender,
+                        senderSnapshot: msg.sender
+                            ? {
+                                id: msg.sender.id,
+                                name: msg.sender.name ?? undefined,
+                                displayName: msg.sender.name ?? undefined,
+                                avatarUrl: msg.sender.avatarUrl ?? undefined,
+                                senderType: 'USER',
+                            }
+                            : undefined,
+                        content: msg.content,
+                        type: msg.type.toLowerCase(),
+                        attachments: msg.attachments,
+                        metadata: msg.metadata,
+                        status: msg.status,
+                        createdAt: msg.createdAt.toISOString(),
+                    })),
+                    lastMessageCreatedAt: result.lastMessageCreatedAt?.toISOString(),
+                    hasMore: result.hasMore,
+                },
+            });
+        }
+        catch (error) {
+            console.error('[Chat] Sync error:', error);
+            callback?.({ success: false, error: 'Failed to sync messages' });
+        }
+    });
+    // Edit message
+    socket.on('chat:edit', async (data, callback) => {
+        try {
+            if (!socket.user?.id) {
+                callback?.({ success: false, error: 'Authentication required' });
+                return;
+            }
+            const { messageId, content } = data;
+            const message = await editChatRoomMessage(messageId, socket.user.id, content);
+            // Broadcast edit to room
+            nsp.to(message.conversationId).emit('chat:message_edited', {
+                messageId: message.id,
+                content: message.content,
+                editedAt: new Date().toISOString(),
+            });
+            callback?.({ success: true, data: { message } });
+        }
+        catch (error) {
+            console.error('[Chat] Edit error:', error);
+            callback?.({ success: false, error: error.message });
+        }
+    });
+    // Delete message
+    socket.on('chat:delete', async (data, callback) => {
+        try {
+            if (!socket.user?.id) {
+                callback?.({ success: false, error: 'Authentication required' });
+                return;
+            }
+            const { messageId } = data;
+            const message = await deleteChatRoomMessage(messageId, socket.user.id);
+            // Broadcast delete to room
+            nsp.to(message.conversationId).emit('chat:message_deleted', {
+                messageId: message.id,
+                deletedAt: new Date().toISOString(),
+            });
+            callback?.({ success: true });
+        }
+        catch (error) {
+            console.error('[Chat] Delete error:', error);
+            callback?.({ success: false, error: error.message });
+        }
+    });
+    // User came online - deliver offline messages
+    socket.on('user:online', async (callback) => {
+        try {
+            if (!socket.user?.id) {
+                callback?.({ success: false, error: 'Authentication required' });
+                return;
+            }
+            const offlineMessages = await getOfflineMessages(socket.user.id);
+            // Group by conversation
+            const groupedByConversation = offlineMessages.reduce((acc, om) => {
+                if (!acc[om.conversationId]) {
+                    acc[om.conversationId] = [];
+                }
+                acc[om.conversationId].push(om.message);
+                return acc;
+            }, {});
+            // Deliver messages per conversation
+            for (const [conversationId, messages] of Object.entries(groupedByConversation)) {
+                socket.emit('chat:offline_messages', {
+                    roomId: conversationId,
+                    messages: messages.map(msg => ({
+                        id: msg.id,
+                        roomId: msg.conversationId,
+                        senderId: msg.senderId,
+                        sender: msg.sender,
+                        content: msg.content,
+                        type: msg.type.toLowerCase(),
+                        attachments: msg.attachments,
+                        metadata: msg.metadata,
+                        status: msg.status,
+                        sequenceId: msg.sequenceId.toString(),
+                        createdAt: msg.createdAt.toISOString(),
+                    })),
+                });
+                // Mark as delivered
+                await markOfflineMessagesDelivered(socket.user.id, messages.map(m => m.id));
+            }
+            callback?.({
+                success: true,
+                data: {
+                    deliveredCount: offlineMessages.length,
+                },
+            });
+        }
+        catch (error) {
+            console.error('[Chat] Online error:', error);
+            callback?.({ success: false, error: 'Failed to get offline messages' });
+        }
+    });
+}
+/**
+ * Deliver offline messages for a specific room
+ */
+async function deliverOfflineMessages(socket, roomId) {
+    if (!socket.user?.id)
+        return;
+    try {
+        const offlineMessages = await getOfflineMessages(socket.user.id);
+        const roomMessages = offlineMessages.filter(om => om.conversationId === roomId);
+        if (roomMessages.length === 0)
+            return;
+        // Send offline messages to user
+        socket.emit('chat:offline_messages', {
+            roomId,
+            messages: roomMessages.map(om => ({
+                id: om.message.id,
+                roomId: om.message.conversationId,
+                senderId: om.message.senderId,
+                sender: om.message.sender,
+                content: om.message.content,
+                type: om.message.type.toLowerCase(),
+                attachments: om.message.attachments,
+                metadata: om.message.metadata,
+                status: om.message.status,
+                sequenceId: om.message.sequenceId.toString(),
+                createdAt: om.message.createdAt.toISOString(),
+            })),
+        });
+        // Mark as delivered
+        await markOfflineMessagesDelivered(socket.user.id, roomMessages.map(om => om.message.id));
+    }
+    catch (error) {
+        console.error('[Chat] Deliver offline messages error:', error);
+    }
+}
+export default { registerChatHandlers };
+//# sourceMappingURL=chat.js.map
