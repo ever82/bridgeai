@@ -319,22 +319,24 @@ export function resetStats(): void {
 /**
  * Cache decorator for functions
  * Automatically caches function results
+ *
+ * Usage:
+ *   class UserService {
+ *     @cached('user', (id) => id, 300)
+ *     async getUser(id: string): Promise<User> { ... }
+ *   }
  */
-export function cached<T>(
+export function cached(
   namespace: string,
   keyGenerator: (...args: unknown[]) => string,
   ttl: number = DEFAULT_TTL
 ) {
-  return function (
-    target: unknown,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-  ) {
+  return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = async function (...args: unknown[]): Promise<T> {
-      const key = keyGenerator(...args);
-      return getOrSet(namespace, key, () => originalMethod.apply(this, args), ttl);
+    descriptor.value = async function (...args: unknown[]): Promise<unknown> {
+      const fullKey = generateKey(namespace, keyGenerator(...args));
+      return getOrSet(namespace, fullKey, () => originalMethod.apply(this, args), ttl);
     };
 
     return descriptor;
@@ -359,7 +361,7 @@ export async function warmCache<T>(
 ): Promise<void> {
   console.log(`Warming cache for namespace: ${namespace}`);
 
-  const promises = keys.map(async (key) => {
+  const promises = keys.map(async key => {
     const value = await fetcher(key);
     await set(namespace, key, value, ttl);
   });
