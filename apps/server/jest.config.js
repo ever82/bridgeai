@@ -2,16 +2,18 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
+  // Process .ts before .js to avoid loading stale compiled output
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   roots: ['<rootDir>/src'],
-  testMatch: [
-    '**/__tests__/**/*.test.ts',
-    '**/tests/**/*.test.ts',
-  ],
+  testMatch: ['**/__tests__/**/*.test.ts', '**/tests/**/*.test.ts'],
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
-      transpileOnly: true,
-      isolatedModules: true,
-    }],
+    '^.+\\.ts$': [
+      'ts-jest',
+      {
+        transpileOnly: true,
+        isolatedModules: true,
+      },
+    ],
   },
 
   // Module path aliases
@@ -22,7 +24,7 @@ module.exports = {
 
   // Setup files
   setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
-  
+
   globalTeardown: '<rootDir>/src/__tests__/teardown.ts',
 
   // Coverage configuration
@@ -46,13 +48,7 @@ module.exports = {
   },
 
   // Coverage reporters
-  coverageReporters: [
-    'text',
-    'text-summary',
-    'html',
-    'lcov',
-    'json-summary',
-  ],
+  coverageReporters: ['text', 'text-summary', 'html', 'lcov', 'json-summary'],
 
   // Coverage output directory
   coverageDirectory: '<rootDir>/coverage',
