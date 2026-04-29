@@ -137,27 +137,6 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 /**
- * GET /api/job/interviews/reminders/pending
- * Get interviews needing reminders
- */
-router.get('/reminders/pending', async (_req: Request, res: Response) => {
-  try {
-    const interviews = await interviewSchedulingService.getUpcomingInterviewsNeedingReminders();
-
-    return res.status(200).json({
-      success: true,
-      data: interviews,
-    });
-  } catch (error) {
-    console.error('Failed to get pending reminders:', error);
-    return res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Internal server error',
-    });
-  }
-});
-
-/**
  * GET /api/job/interviews/:id
  * Get a specific interview
  */
