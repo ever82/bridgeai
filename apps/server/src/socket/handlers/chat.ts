@@ -138,12 +138,13 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
         });
 
         // Broadcast to room (including sender)
-        // Include senderSnapshot to freeze identity at send time
+        // Include senderSnapshot to freeze identity at send time so
+        // name/avatar changes cannot retroactively rewrite message history.
         const senderSnapshot = message.sender
           ? {
               id: message.sender.id,
               name: message.sender.name ?? undefined,
-              displayName: message.sender.name ?? undefined,
+              displayName: (message.sender as { displayName?: string }).displayName ?? undefined,
               avatarUrl: message.sender.avatarUrl ?? undefined,
               senderType: 'USER' as const,
             }
@@ -303,7 +304,7 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
                 ? {
                     id: msg.sender.id,
                     name: msg.sender.name ?? undefined,
-                    displayName: msg.sender.name ?? undefined,
+                    displayName: (msg.sender as { displayName?: string }).displayName ?? undefined,
                     avatarUrl: msg.sender.avatarUrl ?? undefined,
                     senderType: 'USER' as const,
                   }
@@ -367,7 +368,7 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
                 ? {
                     id: msg.sender.id,
                     name: msg.sender.name ?? undefined,
-                    displayName: msg.sender.name ?? undefined,
+                    displayName: (msg.sender as { displayName?: string }).displayName ?? undefined,
                     avatarUrl: msg.sender.avatarUrl ?? undefined,
                     senderType: 'USER' as const,
                   }

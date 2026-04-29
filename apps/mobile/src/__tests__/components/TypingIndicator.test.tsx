@@ -9,7 +9,10 @@ import { TouchableOpacity, Text } from 'react-native';
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 // Animated is already mocked via __mocks__/react-native.ts
 
-import { TypingStatusIndicator, useTypingDetector } from '../../components/TypingIndicator';
+import {
+  SocketTypingIndicator as TypingStatusIndicator,
+  useTypingDetector,
+} from '../../components/TypingIndicator';
 import { socketClient } from '../../services/socketClient';
 
 // Mock socket client

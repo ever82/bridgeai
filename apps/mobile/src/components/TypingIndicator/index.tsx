@@ -1,15 +1,23 @@
 /**
- * Typing Indicator Component
+ * Typing Indicator - Unified Exports
  *
- * Displays typing status with animated dots and handles
- * typing detection, broadcast, timeout, and stop detection.
+ * - TypingIndicator (default export): Pure UI component (type/userName/visible/timeout).
+ *   Use for displaying typing/thinking status with animated dots.
+ * - SocketTypingIndicator: Socket-based component (roomId/currentUserId).
+ *   Use for showing real-time typing status from other users in a room.
+ * - useTypingDetector: Hook for broadcasting typing status via socket.
+ * - TypingInput: Input component with built-in typing detection.
  */
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, Animated, ViewStyle } from 'react-native';
 
 import { socketClient } from '../../services/socketClient';
 
-export interface TypingStatusIndicatorProps {
+// Re-export pure UI component for simple use cases
+export { TypingIndicator, type TypingIndicatorProps, type TypingType } from './TypingIndicator';
+export { TypingIndicator as default } from './TypingIndicator';
+
+export interface SocketTypingIndicatorProps {
   roomId: string;
   currentUserId: string;
   style?: ViewStyle;
@@ -72,9 +80,9 @@ const AnimatedDot: React.FC<{ delay: number; color: string }> = ({ delay, color 
 };
 
 /**
- * Typing Status Indicator - Shows when others are typing (socket-integrated)
+ * SocketTypingIndicator - Shows when others are typing (socket-integrated)
  */
-export const TypingStatusIndicator: React.FC<TypingStatusIndicatorProps> = ({
+export const SocketTypingIndicator: React.FC<SocketTypingIndicatorProps> = ({
   roomId,
   currentUserId,
   style,
@@ -341,7 +349,3 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
-
-// Re-export pure UI TypingIndicator as the primary default export
-export { TypingIndicator, type TypingIndicatorProps, type TypingType } from './TypingIndicator';
-export { TypingIndicator as default } from './TypingIndicator';

@@ -25,3 +25,5 @@ export { default as AttachmentPicker } from './AttachmentPicker';
 export type { AttachmentPickerProps } from './AttachmentPicker';
 export { IdentitySwitcher } from './IdentitySwitcher';
 export type { IdentitySwitcherProps } from './IdentitySwitcher';
+export { StatusChangeNotification } from './StatusChangeNotification';
+export type { StatusChangeNotificationProps } from './StatusChangeNotification';

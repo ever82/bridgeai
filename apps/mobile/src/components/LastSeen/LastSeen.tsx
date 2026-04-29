@@ -1,10 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native';
+import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 
 import { theme } from '../../theme';
 
@@ -70,8 +65,9 @@ export const formatExactTime = (timestamp: Date | number | string): string => {
   const date = new Date(timestamp);
   const now = new Date();
   const isToday = date.toDateString() === now.toDateString();
-  const nowCopy = new Date(now);
-  const isYesterday = new Date(nowCopy.setDate(nowCopy.getDate() - 1)).toDateString() === date.toDateString();
+  const isYesterday =
+    new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toDateString() ===
+    date.toDateString();
 
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -99,7 +95,7 @@ export const LastSeen: React.FC<LastSeenProps> = ({
   const [showExact, setShowExact] = useState(false);
 
   const triggerUpdate = useCallback(() => {
-    setTick((t) => t + 1);
+    setTick(t => t + 1);
   }, []);
 
   useEffect(() => {
@@ -152,11 +148,7 @@ export const LastSeen: React.FC<LastSeenProps> = ({
     <View style={[styles.container, style]} testID={testID}>
       {isOnline && <View style={styles.onlineIndicator} testID={`${testID}-indicator`} />}
       <Text
-        style={[
-          styles.text,
-          isOnline && styles.onlineText,
-          textStyle,
-        ]}
+        style={[styles.text, isOnline && styles.onlineText, textStyle]}
         accessibilityLabel={getAccessibilityLabel()}
         onLongPress={handleLongPress}
         onPressOut={handlePressOut}

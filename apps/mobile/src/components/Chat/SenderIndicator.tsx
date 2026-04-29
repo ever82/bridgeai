@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  ViewStyle,
-} from 'react-native';
+import { View, Text, StyleSheet, Animated, ViewStyle } from 'react-native';
 import {
   SenderType,
   SENDER_TYPE_LABELS,
@@ -113,8 +107,8 @@ export const SenderIndicator: React.FC<SenderIndicatorProps> = ({
             {handoffStatus === HandoffStatus.PENDING_TAKEOVER
               ? 'Human taking over...'
               : handoffStatus === HandoffStatus.PENDING_HANDOFF
-              ? 'Handing to AI...'
-              : 'Switching...'}
+                ? 'Handing to AI...'
+                : 'Switching...'}
           </Text>
         </View>
         <View style={styles.transitionLine} />
@@ -124,11 +118,7 @@ export const SenderIndicator: React.FC<SenderIndicatorProps> = ({
 
   return (
     <Animated.View
-      style={[
-        styles.container,
-        { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
-        style,
-      ]}
+      style={[styles.container, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }, style]}
       testID={testID}
     >
       {/* Sender avatar/icon */}
@@ -148,7 +138,9 @@ export const SenderIndicator: React.FC<SenderIndicatorProps> = ({
         <View style={[styles.typeBadge, { backgroundColor: `${getSenderColor()}20` }]}>
           <View style={[styles.typeDot, { backgroundColor: getSenderColor() }]} />
           <Text style={[styles.typeLabel, { color: getSenderColor() }]}>
-            {SENDER_TYPE_LABELS[senderType]}
+            {senderType === SenderType.AGENT && senderName
+              ? `${senderName} 的 Agent`
+              : SENDER_TYPE_LABELS[senderType]}
           </Text>
         </View>
       </View>

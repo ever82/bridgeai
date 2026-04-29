@@ -30,7 +30,21 @@ export const ChatScreen = ({ route }: Props) => {
   const [hasMore, setHasMore] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [quickReplies, setQuickReplies] = useState<QuickReplyItem[]>([]);
+  // Debounce rapid identity switches to prevent UI flicker and ensure
+  // only stable identity state is committed. 200ms window collapses
+  // burst switches into a single final value.
+  const identitySwitchTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [currentIdentity, setCurrentIdentity] = useState<'USER' | 'AGENT'>('AGENT');
+
+  const debouncedSetIdentity = React.useCallback((next: 'USER' | 'AGENT') => {
+    if (identitySwitchTimerRef.current) {
+      clearTimeout(identitySwitchTimerRef.current);
+    }
+    identitySwitchTimerRef.current = setTimeout(() => {
+      setCurrentIdentity(next);
+    }, 200);
+  }, []);
+
   const [showAttachmentPicker, setShowAttachmentPicker] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [newMessageCount, setNewMessageCount] = useState(0);
@@ -244,7 +258,7 @@ export const ChatScreen = ({ route }: Props) => {
       <View style={styles.identityBar}>
         <IdentitySwitcher
           currentIdentity={currentIdentity}
-          onSwitch={setCurrentIdentity}
+          onSwitch={debouncedSetIdentity}
           testID="chat-identity-switcher"
         />
       </View>

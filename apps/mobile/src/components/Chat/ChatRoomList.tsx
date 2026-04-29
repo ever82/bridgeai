@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
 
-import { ChatRoom, ChatRoomListProps, ChatRoomListItemProps } from '../../types/chat';
+import { ChatRoom, ChatRoomListProps } from '../../types/chat';
 import { ConversationItem } from '../ConversationItem/ConversationItem';
 
 /**
@@ -42,30 +42,6 @@ const getLastMessagePreview = (room: ChatRoom): string => {
 };
 
 /**
- * ChatRoomListItem Component
- * Wraps ConversationItem for use in ChatRoomList.
- */
-const ChatRoomListItem: React.FC<ChatRoomListItemProps> = ({
-  room,
-  onPress,
-  onLongPress,
-  selected = false,
-}) => (
-  <ConversationItem
-    id={room.id}
-    avatarUri={getRoomAvatar(room)}
-    name={getRoomName(room)}
-    lastMessage={getLastMessagePreview(room)}
-    lastMessageTime={room.lastMessageAt ?? room.updatedAt}
-    unreadCount={room.unreadCount}
-    onPress={() => onPress?.(room)}
-    onLongPress={() => onLongPress?.(room)}
-    style={selected ? styles.selectedContainer : undefined}
-    testID={`room-${room.id}`}
-  />
-);
-
-/**
  * ChatRoomList Component
  * 聊天房间列表组件
  */
@@ -81,11 +57,17 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({
   emptyComponent,
 }) => {
   const renderItem = ({ item }: { item: ChatRoom }) => (
-    <ChatRoomListItem
-      room={item}
-      onPress={onRoomPress}
-      onLongPress={onRoomLongPress}
-      selected={item.id === selectedRoomId}
+    <ConversationItem
+      id={item.id}
+      avatarUri={getRoomAvatar(item)}
+      name={getRoomName(item)}
+      lastMessage={getLastMessagePreview(item)}
+      lastMessageTime={item.lastMessageAt ?? item.updatedAt}
+      unreadCount={item.unreadCount}
+      onPress={() => onRoomPress?.(item)}
+      onLongPress={() => onRoomLongPress?.(item)}
+      style={item.id === selectedRoomId ? styles.selectedContainer : undefined}
+      testID={`room-${item.id}`}
     />
   );
 
@@ -157,4 +139,3 @@ const styles = StyleSheet.create({
 });
 
 export default ChatRoomList;
-export { ChatRoomListItem };
