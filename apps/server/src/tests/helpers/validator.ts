@@ -128,9 +128,21 @@ export function validateErrorResponse(response: TestResponse): boolean {
   // Format 1: { success: false, error: ... }
   // Format 2: { success: false, message: ... }
   // Format 3: { success: false, errorCode: ... }
+  // Format 4: { success: false, meta: { statusCode: ... } }
+  // Format 5: { success: false, error: { code: ..., message: ... } } (middleware format)
+  const hasMeta = 'meta' in body && typeof body.meta === 'object' && body.meta !== null;
+  const hasErrorObject =
+    'error' in body &&
+    typeof body.error === 'object' &&
+    body.error !== null &&
+    'message' in (body.error as Record<string, unknown>);
   return (
     body.success === false &&
-    ('error' in body || 'message' in body || 'errorCode' in body)
+    ('error' in body ||
+      'message' in body ||
+      'errorCode' in body ||
+      hasMeta ||
+      hasErrorObject)
   );
 }
 

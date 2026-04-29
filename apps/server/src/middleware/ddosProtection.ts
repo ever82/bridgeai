@@ -187,21 +187,15 @@ function cleanupExpiredRecords(): void {
 let cleanupIntervalId: ReturnType<typeof setInterval> | null = null;
 
 function startCleanupInterval(): void {
+  if (process.env.NODE_ENV === 'test') return;
   if (cleanupIntervalId === null) {
     cleanupIntervalId = setInterval(cleanupExpiredRecords, 60 * 1000);
   }
 }
 
-const isTest = process.env.NODE_ENV === 'test';
-if (!isTest) {
-  startCleanupInterval();
-}
-
 // Lazy cleanup interval starter - call this on first request to start cleanup
 export function startDDoSCleanup(): void {
-  if (!isTest && cleanupIntervalId === null) {
-    startCleanupInterval();
-  }
+  startCleanupInterval();
 }
 
 /**
@@ -209,6 +203,9 @@ export function startDDoSCleanup(): void {
  * Main middleware for DDoS detection and protection
  */
 export function ddosProtection(req: Request, res: Response, next: NextFunction): void {
+  // Lazy-start cleanup interval on first request
+  startDDoSCleanup();
+
   const ip = getClientIP(req);
 
   // Skip for whitelisted IPs
@@ -301,7 +298,7 @@ export function slowAttackProtection(
   timeoutMs: number = 30000
 ): (req: Request, res: Response, next: NextFunction) => void {
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (isTest) {
+    if (process.env.NODE_ENV === 'test') {
       next();
       return;
     }

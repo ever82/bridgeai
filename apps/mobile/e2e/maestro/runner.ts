@@ -16,6 +16,7 @@
  *   --build                    构建模式: 自动构建并安装应用后运行测试
  *   --install                  只安装 Maestro CLI
  *   --screenshot-on-failure    失败时自动截图
+ *   --stability-report         运行时输出稳定性和flaky测试报告
  *   --timeout <ms>             全局超时 (默认: 120000)
  *
  * 示例:
@@ -29,6 +30,10 @@
 import { execSync, spawn, ChildProcess } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
+
+import { StabilityMonitor } from '../support/stability-monitor';
+
+import { getShard } from './test-isolation';
 
 // ─── 配置 ──────────────────────────────────────────────────────────
 
@@ -85,8 +90,11 @@ function parseArgs(): {
   install: boolean;
   report: boolean;
   screenshotOnFailure: boolean;
+  stabilityReport: boolean;
   timeout: number;
   skipBackend: boolean;
+  shardIndex?: number;
+  totalShards?: number;
 } {
   const args = process.argv.slice(2);
   const result = {
@@ -98,9 +106,12 @@ function parseArgs(): {
     build: false,
     install: false,
     report: false,
+    stabilityReport: false,
     screenshotOnFailure: false,
     timeout: DEFAULT_TIMEOUT,
     skipBackend: false,
+    shardIndex: undefined,
+    totalShards: undefined,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -135,12 +146,23 @@ function parseArgs(): {
       case '--screenshot-on-failure':
         result.screenshotOnFailure = true;
         break;
+      case '--stability-report':
+        result.stabilityReport = true;
+        break;
       case '--timeout':
         result.timeout = parseInt(args[++i], 10) || DEFAULT_TIMEOUT;
         break;
       case '--skip-backend':
         result.skipBackend = true;
         break;
+      case '--shard': {
+        const shardParts = args[++i]?.split('/');
+        if (shardParts && shardParts.length === 2) {
+          result.shardIndex = parseInt(shardParts[0], 10);
+          result.totalShards = parseInt(shardParts[1], 10);
+        }
+        break;
+      }
     }
   }
 
@@ -963,7 +985,16 @@ async function main() {
   const startTime = Date.now();
   const results: RunResult[] = [];
 
-  for (const flow of flows) {
+  // Apply sharding if specified
+  const flowsToRun = args.totalShards !== undefined
+    ? getShard(flows, args.totalShards, args.shardIndex ?? 0)
+    : flows;
+
+  if (args.totalShards !== undefined) {
+    console.log(`   Shard: ${args.shardIndex}/${args.totalShards} (${flowsToRun.length} flows)`);
+  }
+
+  for (const flow of flowsToRun) {
     const result = runFlow(flow.file, args.platform, args.timeout, args.screenshotOnFailure);
     results.push(result);
   }
@@ -986,6 +1017,18 @@ async function main() {
   };
 
   generateReport(report);
+
+  // Record stability data for flaky-test tracking
+  const monitor = StabilityMonitor.load();
+  for (const result of results) {
+    monitor.recordResult(result.flow, result.passed, result.duration);
+  }
+  monitor.save();
+
+  // Output stability report if requested
+  if (args.stabilityReport) {
+    console.log('\n' + monitor.generateReport());
+  }
 
   // 最终输出
   console.log('\n' + '─'.repeat(50));

@@ -164,10 +164,8 @@ export function initializeSecurityMonitoring(): void {
     autoResponse: config.autoResponse.enabled,
   });
 
-  // Start periodic tasks
   // Skip in test environment to avoid open handles
-  const isTest = process.env.NODE_ENV === 'test';
-  if (isTest) return;
+  if (process.env.NODE_ENV === 'test') return;
 
   if (config.reports.hourlySummary) {
     setInterval(generateHourlySummary, 60 * 60 * 1000);

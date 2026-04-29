@@ -67,19 +67,14 @@ function cleanupExpiredEntries(): void {
   }
 }
 
-// Run cleanup every 5 minutes
+// Run cleanup every 5 minutes (lazy start)
 let cleanupInterval: ReturnType<typeof setInterval> | null = null;
 
 function startCleanupInterval(): void {
+  if (process.env.NODE_ENV === 'test') return;
   if (cleanupInterval === null) {
     cleanupInterval = setInterval(cleanupExpiredEntries, 5 * 60 * 1000);
   }
-}
-
-// Skip in test environment to avoid open handles
-const isTest = process.env.NODE_ENV === 'test';
-if (!isTest) {
-  startCleanupInterval();
 }
 
 /**
@@ -127,6 +122,9 @@ export function getRateLimitHeaders(
  * burstLimit is the bucket capacity; requestsPerMinute / 60 is the refill rate.
  */
 export function userRateLimiter(req: RateLimitRequest, res: Response, next: NextFunction): void {
+  // Lazy-start cleanup interval on first request
+  startCleanupInterval();
+
   const identifier = getClientIdentifier(req);
   const tier = getUserTier(req);
   const tierConfig = userTierLimits[tier];

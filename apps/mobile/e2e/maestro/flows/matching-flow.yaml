@@ -69,10 +69,49 @@ env:
 - assertVisible:
     id: 'agent-list-screen'
 
+# 进入 Agent 详情，执行匹配操作
+- tapOn:
+    index: 0
+- waitForAnimationToEnd
+
+# 断言6: Agent 详情页面可见，验证匹配入口可用
+- extendedWaitUntil:
+    visible:
+      id: 'agent-detail-screen'
+    timeout: 10000
+- assertVisible:
+    id: 'agent-detail-screen'
+
+# 断言7: 匹配按钮可见
+- assertVisible:
+    id: 'agent-match-button'
+
+# 点击匹配按钮执行匹配
+- tapOn:
+    id: 'agent-match-button'
+- waitForAnimationToEnd
+
+# 断言8: 匹配成功反馈可见
+- extendedWaitUntil:
+    visible:
+      id: 'agent-match-success-indicator'
+    timeout: 10000
+- assertVisible:
+    id: 'agent-match-success-indicator'
+
+# 返回 Agent 列表
+- tapOn:
+    id: 'back-button'
+- waitForAnimationToEnd
+
+# 断言9: 返回到 Agent 列表页面
+- assertVisible:
+    id: 'agent-list-screen'
+
 # 返回 Profile
 - tapOn:
     id: 'back-button'
 
-# 断言6: 验证回到 Profile 页面
+# 断言10: 验证回到 Profile 页面
 - assertVisible:
     id: 'profile-logout-button'

@@ -17,9 +17,6 @@ env:
 # 启动 App
 - launchApp
 
-# 等待 App 完全加载
-- waitForAnimationToEnd
-
 # 等待登录表单
 - extendedWaitUntil:
     visible:
