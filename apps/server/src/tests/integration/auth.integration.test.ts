@@ -33,14 +33,12 @@ describe('Authentication API Integration', () => {
       expect(response.status).toBe(201);
       expect(validateSuccessResponse(response)).toBe(true);
       const body = response.body as Record<string, unknown>;
-      // Register returns { user: {...}, accessToken, refreshToken, expiresIn }
+      // Register returns the user object directly in data
       const data = body.data as Record<string, unknown>;
-      expect(data).toHaveProperty('user');
-      const user = data.user as Record<string, unknown>;
-      expect(user).toHaveProperty('id');
-      expect(user).toHaveProperty('email', userData.email);
-      expect(user).toHaveProperty('name', userData.name);
-      expect(user).not.toHaveProperty('password');
+      expect(data).toHaveProperty('id');
+      expect(data).toHaveProperty('email', userData.email);
+      expect(data).toHaveProperty('name', userData.name);
+      expect(data).not.toHaveProperty('password');
     });
 
     it('should return 400 for invalid email', async () => {
@@ -95,8 +93,10 @@ describe('Authentication API Integration', () => {
       expect(validateSuccessResponse(response)).toBe(true);
       const body = response.body as Record<string, unknown>;
       const data = body.data as Record<string, unknown>;
-      expect(data).toHaveProperty('accessToken');
-      expect(data).toHaveProperty('refreshToken');
+      expect(data).toHaveProperty('tokens');
+      const tokens = data.tokens as Record<string, unknown>;
+      expect(tokens).toHaveProperty('accessToken');
+      expect(tokens).toHaveProperty('refreshToken');
       expect(data).toHaveProperty('user');
       const user = data.user as Record<string, unknown>;
       expect(user).toHaveProperty('id');
@@ -147,7 +147,8 @@ describe('Authentication API Integration', () => {
 
       const loginBody = loginResponse.body as Record<string, unknown>;
       const loginData = loginBody.data as Record<string, unknown>;
-      const refreshToken = loginData.refreshToken as string;
+      const loginTokens = loginData.tokens as Record<string, unknown>;
+      const refreshToken = loginTokens.refreshToken as string;
 
       const response = await Request.post(ApiPaths.auth.refresh, {
         refreshToken,
@@ -156,7 +157,9 @@ describe('Authentication API Integration', () => {
       expect(response.status).toBe(200);
       expect(validateSuccessResponse(response)).toBe(true);
       const body = response.body as Record<string, unknown>;
-      expect(body.data).toHaveProperty('accessToken');
+      const refreshData = body.data as Record<string, unknown>;
+      const refreshTokens = refreshData.tokens as Record<string, unknown>;
+      expect(refreshTokens).toHaveProperty('accessToken');
     });
 
     it('should return 401 for invalid refresh token', async () => {
@@ -205,8 +208,10 @@ describe('Authentication API Integration', () => {
       expect(response.status).toBe(200);
       expect(validateSuccessResponse(response)).toBe(true);
       const body = response.body as Record<string, unknown>;
-      expect(body.data).toHaveProperty('id', user.id);
-      expect(body.data).toHaveProperty('email', user.email);
+      const data = body.data as Record<string, unknown>;
+      const user_data = data.user as Record<string, unknown>;
+      expect(user_data).toHaveProperty('id', user.id);
+      expect(user_data).toHaveProperty('email', user.email);
     });
 
     it('should return 401 without authentication', async () => {
