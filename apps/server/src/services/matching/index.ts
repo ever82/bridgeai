@@ -51,3 +51,13 @@ export type {
   SubscriptionEvent,
   IncrementalUpdate,
 } from './querySubscriptionManager';
+
+// Match edge case handling
+export {
+  evaluateBidirectionalMatch,
+  filterMutualMatches,
+  haveCriteriaChanged,
+  resolveMatchConfig,
+} from './matchEdgeCases';
+
+export type { BidirectionalMatchResult, MatchConfig } from './matchEdgeCases';

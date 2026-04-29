@@ -89,54 +89,89 @@ export interface PaginatedResponse<T> {
 
 /**
  * Get job recommendations for job seeker
+ *
+ * Server endpoint: POST /jobs/recommendations/jobs
+ * Server response: PaginatedRecommendations { recommendations[], total, page, pageSize, hasMore }
+ * Mobile expects: PaginatedResponse { data[], pagination{...} }
  */
 export const getJobRecommendations = async (
   options: RecommendationFilterOptions = {}
 ): Promise<PaginatedResponse<JobRecommendation>> => {
-  const { jobId, minScore, maxScore, status, page = 1, limit = 20 } = options;
+  const { jobId, page = 1, limit = 20 } = options;
 
-  const params = new URLSearchParams();
-  if (jobId) params.append('jobId', jobId);
-  if (minScore !== undefined) params.append('minScore', minScore.toString());
-  if (maxScore !== undefined) params.append('maxScore', maxScore.toString());
-  if (status) params.append('status', status);
-  params.append('page', page.toString());
-  params.append('limit', limit.toString());
+  // POST body maps to server SeekerProfile and JobSummary; for now send minimal profile.
+  // The server endpoint expects { seekerProfile, jobs, page, pageSize } in body.
+  const response = await api.post<{
+    recommendations: JobRecommendation[];
+    total: number;
+    page: number;
+    pageSize: number;
+    hasMore: boolean;
+  }>('/jobs/recommendations/jobs', {
+    seekerProfile: { userId: jobId || '', skills: [] },
+    jobs: [],
+    page,
+    pageSize: limit,
+  });
 
-  const response = await api.get<PaginatedResponse<JobRecommendation>>(
-    `/job-matching/recommendations/jobs?${params.toString()}`
-  );
-  return response.data.data;
+  const serverData = response.data.data;
+  return {
+    data: serverData.recommendations,
+    pagination: {
+      page: serverData.page,
+      limit: serverData.pageSize,
+      total: serverData.total,
+      totalPages: Math.ceil(serverData.total / serverData.pageSize),
+      hasNext: serverData.hasMore,
+      hasPrev: serverData.page > 1,
+    },
+  };
 };
 
 /**
  * Get candidate recommendations for employer
+ *
+ * Server endpoint: POST /jobs/recommendations/candidates
+ * Server response: PaginatedRecommendations { recommendations[], total, page, pageSize, hasMore }
+ * Mobile expects: PaginatedResponse { data[], pagination{...} }
  */
 export const getCandidateRecommendations = async (
   options: RecommendationFilterOptions = {}
 ): Promise<PaginatedResponse<CandidateRecommendation>> => {
-  const { jobId, minScore, maxScore, status, page = 1, limit = 20 } = options;
+  const { jobId, page = 1, limit = 20 } = options;
 
-  const params = new URLSearchParams();
-  if (jobId) params.append('jobId', jobId);
-  if (minScore !== undefined) params.append('minScore', minScore.toString());
-  if (maxScore !== undefined) params.append('maxScore', maxScore.toString());
-  if (status) params.append('status', status);
-  params.append('page', page.toString());
-  params.append('limit', limit.toString());
+  // POST body maps to server JobSummary and CandidateSummary; for now send minimal criteria.
+  const response = await api.post<{
+    recommendations: CandidateRecommendation[];
+    total: number;
+    page: number;
+    pageSize: number;
+    hasMore: boolean;
+  }>('/jobs/recommendations/candidates', {
+    jobCriteria: { jobId: jobId || '' },
+    candidates: [],
+    page,
+    pageSize: limit,
+  });
 
-  const response = await api.get<PaginatedResponse<CandidateRecommendation>>(
-    `/job-matching/recommendations/candidates?${params.toString()}`
-  );
-  return response.data.data;
+  const serverData = response.data.data;
+  return {
+    data: serverData.recommendations,
+    pagination: {
+      page: serverData.page,
+      limit: serverData.pageSize,
+      total: serverData.total,
+      totalPages: Math.ceil(serverData.total / serverData.pageSize),
+      hasNext: serverData.hasMore,
+      hasPrev: serverData.page > 1,
+    },
+  };
 };
 
 /**
  * Mark job recommendation as interested
  */
-export const markJobInterested = async (
-  recommendationId: string
-): Promise<JobRecommendation> => {
+export const markJobInterested = async (recommendationId: string): Promise<JobRecommendation> => {
   const response = await api.post<JobRecommendation>(
     `/job-matching/recommendations/jobs/${recommendationId}/interested`
   );
@@ -146,9 +181,7 @@ export const markJobInterested = async (
 /**
  * Skip job recommendation
  */
-export const skipJobRecommendation = async (
-  recommendationId: string
-): Promise<void> => {
+export const skipJobRecommendation = async (recommendationId: string): Promise<void> => {
   await api.post(`/job-matching/recommendations/jobs/${recommendationId}/skip`);
 };
 
@@ -219,9 +252,17 @@ export const getMatchDetails = async (
     relevance: number;
   }>;
 }> => {
-  const response = await api.get(
-    `/job-matching/match-details?jobId=${jobId}&candidateId=${candidateId}`
-  );
+  const response = await api.get<{
+    matchScore: number;
+    matchFactors: MatchFactors;
+    analysis: string;
+    skillMatches: Array<{
+      skill: string;
+      required: boolean;
+      candidateHas: boolean;
+      relevance: number;
+    }>;
+  }>(`/job-matching/match-details?jobId=${jobId}&candidateId=${candidateId}`);
   return response.data.data;
 };
 
@@ -243,7 +284,14 @@ export const getRecommendationStats = async (): Promise<{
   shortlistedCount: number;
   contactedCount: number;
 }> => {
-  const response = await api.get('/job-matching/stats');
+  const response = await api.get<{
+    totalJobsRecommended: number;
+    totalCandidatesRecommended: number;
+    averageMatchScore: number;
+    interestedCount: number;
+    shortlistedCount: number;
+    contactedCount: number;
+  }>('/job-matching/stats');
   return response.data.data;
 };
 

@@ -27,8 +27,51 @@ interface Recommendation {
   reason: string;
 }
 
-// In-memory cache for user preferences (production should use a database table)
+// In-memory cache for user preferences (read-through cache backed by DB)
 const preferencesCache = new Map<string, UserPreferences>();
+
+/**
+ * Load user preferences from database
+ */
+async function loadPreferencesFromDb(userId: string): Promise<UserPreferences | null> {
+  const row = await prisma.userPreference.findUnique({ where: { userId } });
+  if (!row) return null;
+  return {
+    userId: row.userId,
+    preferredSkills: row.preferredSkills,
+    preferredCategories: row.preferredCategories,
+    priceRange: { min: row.priceRangeMin, max: row.priceRangeMax },
+    minRating: row.minRating,
+    preferredLocation: row.preferredLocation || undefined,
+    updatedAt: row.updatedAt,
+  };
+}
+
+/**
+ * Save user preferences to database
+ */
+async function savePreferencesToDb(preferences: UserPreferences): Promise<void> {
+  await prisma.userPreference.upsert({
+    where: { userId: preferences.userId },
+    update: {
+      preferredSkills: preferences.preferredSkills,
+      preferredCategories: preferences.preferredCategories,
+      priceRangeMin: preferences.priceRange.min,
+      priceRangeMax: preferences.priceRange.max,
+      minRating: preferences.minRating,
+      preferredLocation: preferences.preferredLocation,
+    },
+    create: {
+      userId: preferences.userId,
+      preferredSkills: preferences.preferredSkills,
+      preferredCategories: preferences.preferredCategories,
+      priceRangeMin: preferences.priceRange.min,
+      priceRangeMax: preferences.priceRange.max,
+      minRating: preferences.minRating,
+      preferredLocation: preferences.preferredLocation,
+    },
+  });
+}
 
 /**
  * Learn user preferences from past ratings (hires and high-rated reviews)
@@ -114,6 +157,8 @@ async function learnUserPreferencesFromRatings(userId: string): Promise<UserPref
     updatedAt: new Date(),
   };
 
+  // Persist to DB and update in-memory cache
+  await savePreferencesToDb(preferences);
   preferencesCache.set(userId, preferences);
   return preferences;
 }
@@ -122,7 +167,7 @@ async function learnUserPreferencesFromRatings(userId: string): Promise<UserPref
  * Collaborative filtering - find similar users based on rating patterns
  */
 async function findSimilarUsers(userId: string): Promise<string[]> {
-  const targetPrefs = preferencesCache.get(userId);
+  const targetPrefs = await getCachedOrLoadPreferences(userId);
   if (!targetPrefs) return [];
 
   // Get all users who have rated
@@ -136,8 +181,11 @@ async function findSimilarUsers(userId: string): Promise<string[]> {
   for (const { raterId } of allRatings) {
     if (raterId === userId) continue;
 
-    // Get cached preferences or learn them
+    // Get cached preferences or load from DB/compute
     let prefs = preferencesCache.get(raterId);
+    if (!prefs) {
+      prefs = await loadPreferencesFromDb(raterId);
+    }
     if (!prefs) {
       // Compute without caching to avoid side effects
       prefs = await computeUserPreferencesWithoutCache(raterId);
@@ -347,17 +395,27 @@ async function calculateRecommendationScore(
 }
 
 /**
+ * Get cached preferences or load from DB, falling back to learning from ratings
+ */
+async function getCachedOrLoadPreferences(userId: string): Promise<UserPreferences> {
+  const cached = preferencesCache.get(userId);
+  if (cached) return cached;
+  const fromDb = await loadPreferencesFromDb(userId);
+  if (fromDb) {
+    preferencesCache.set(userId, fromDb);
+    return fromDb;
+  }
+  return learnUserPreferencesFromRatings(userId);
+}
+
+/**
  * Get personalized recommendations for a user
  */
 export async function getRecommendationsForUser(
   userId: string,
   agents: Agent[]
 ): Promise<Recommendation[]> {
-  // Learn or get user preferences
-  let preferences = preferencesCache.get(userId);
-  if (!preferences) {
-    preferences = await learnUserPreferencesFromRatings(userId);
-  }
+  const preferences = await getCachedOrLoadPreferences(userId);
 
   // Get collaborative filtering recommendations
   const collaborativeIds = await getCollaborativeRecommendations(userId);
@@ -383,17 +441,19 @@ export async function getRecommendationsForUser(
 }
 
 /**
- * Record user interaction for learning (stores in preferences cache)
+ * Record user interaction for learning (invalidates cache; preferences will be
+ * recomputed and persisted to DB on next getRecommendationsForUser call)
  */
-export function recordInteraction(
+export async function recordInteraction(
   userId: string,
   agentId: string,
   type: 'view' | 'contact' | 'hire' | 'review',
   rating?: number
-): void {
-  // Invalidate preferences cache when user provides new interaction
-  // Production should persist this to a database table
+): Promise<void> {
+  // Invalidate in-memory cache so next request recomputes from fresh data
   preferencesCache.delete(userId);
+  // Delete DB record so next request recomputes from latest ratings
+  await prisma.userPreference.deleteMany({ where: { userId } });
   logger.debug('User interaction recorded for preference learning', {
     userId,
     agentId,
@@ -406,11 +466,7 @@ export function recordInteraction(
  * Get recommendation explanation for a specific agent
  */
 export async function getRecommendationExplanation(userId: string, agent: Agent): Promise<string> {
-  let preferences = preferencesCache.get(userId);
-  if (!preferences) {
-    preferences = await learnUserPreferencesFromRatings(userId);
-  }
-
+  const preferences = await getCachedOrLoadPreferences(userId);
   const { reason } = await calculateRecommendationScore(agent, preferences, userId);
   return reason;
 }

@@ -2230,3 +2230,22 @@ model PaymentRiskState {
   @@index([category])
   @@map("payment_risk_states")
 }
+
+// ============================================
+// User Preferences (Recommendation Engine)
+// ============================================
+
+model UserPreference {
+  id                 String   @id @default(uuid())
+  userId             String   @unique @map("user_id")
+  preferredSkills    String[] @default([]) @map("preferred_skills")
+  preferredCategories String[] @default([]) @map("preferred_categories")
+  priceRangeMin      Float    @default(0) @map("price_range_min")
+  priceRangeMax      Float    @default(1000) @map("price_range_max")
+  minRating          Float    @default(3.5) @map("min_rating")
+  preferredLocation  String?  @map("preferred_location")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("user_preferences")
+}
