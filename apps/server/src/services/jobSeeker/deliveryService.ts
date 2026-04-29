@@ -66,9 +66,10 @@ export async function checkDuplicateDelivery(
 
 /**
  * Create a new resume delivery
+ * @param profileId - The jobSeekerProfile ID (current model unifies Profile with Resume; a separate Resume entity for multi-version support is planned per AC c4)
  */
 export async function createDelivery(
-  resumeId: string,
+  profileId: string,
   jobId: string,
   seekerId: string,
   seekerAgentId: string,
@@ -77,7 +78,7 @@ export async function createDelivery(
   referralCode?: string
 ): Promise<ResumeDelivery> {
   // Check for duplicates
-  const existing = await checkDuplicateDelivery(resumeId, jobId, seekerId);
+  const existing = await checkDuplicateDelivery(profileId, jobId, seekerId);
   if (existing) {
     throw new AppError('Already applied to this job', 'DUPLICATE_APPLICATION', 400);
   }
@@ -91,9 +92,10 @@ export async function createDelivery(
   const now = new Date().toISOString();
   const id = uuidv4();
 
+  // Current model: ResumeDelivery.resumeId holds the JobSeekerProfile ID (Profile ≡ Resume in v1)
   const delivery: ResumeDelivery = {
     id,
-    resumeId,
+    resumeId: profileId,
     jobId,
     seekerId,
     seekerAgentId,
@@ -113,9 +115,7 @@ export async function createDelivery(
   addHistoryEntry(delivery, DeliveryAction.DELIVERED, seekerId, 'SEEKER', now);
 
   // Record disclosure for all deliveries (visibility controls what's visible, not tracking)
-  // Note: In current model, profile === resume (profileId == resumeId).
-  // TODO: When Resume entity is separated, fetch the associated profile via resume.profileId
-  const profile = await getProfile(resumeId);
+  const profile = await getProfile(profileId);
   recordDisclosures(id, profile);
 
   return delivery;
@@ -532,9 +532,10 @@ function calculateStats(deliveries: ResumeDelivery[]): DeliveryStats {
 
 /**
  * Batch deliver resume to multiple jobs
+ * @param profileId - The jobSeekerProfile ID (current model unifies Profile with Resume)
  */
 export async function batchDeliver(
-  resumeId: string,
+  profileId: string,
   jobIds: string[],
   seekerId: string,
   seekerAgentId: string,
@@ -552,7 +553,7 @@ export async function batchDeliver(
 
   for (const jobId of jobIds) {
     try {
-      const delivery = await createDelivery(resumeId, jobId, seekerId, seekerAgentId, coverLetter);
+      const delivery = await createDelivery(profileId, jobId, seekerId, seekerAgentId, coverLetter);
       results.push({
         jobId,
         success: true,

@@ -35,7 +35,7 @@ router.post('/parse', authenticate, parseResume);
 router.post('/', authenticate, create);
 router.get('/me', authenticate, getMyProfiles);
 router.get('/me/primary', authenticate, getMyPrimaryProfile);
-router.get('/me/stats', authenticate, getStats);
+router.get('/me/stats', authenticate, getStats); // Stats: aggregate data (completion rate, quality score, delivery count)
 
 router.get('/:id', authenticate, get);
 router.put('/:id', authenticate, update);
