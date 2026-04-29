@@ -22,12 +22,11 @@ import {
   shouldSendReminder,
   getNextRound,
   aggregateFeedback,
-  isValidInterviewStatus,
-  isValidInterviewType,
-  isValidInterviewRound
 } from '../../models/Interview';
 
-// In-memory storage (replace with database in production)
+// TODO(NP-1279): In-memory storage - data is lost on server restart and does not scale horizontally.
+// Replace with database persistence (e.g., Prisma) to store interviews, timeSlots, schedules,
+// and feedbacks with proper schema, indexes, and relations to job applications and users.
 const interviews = new Map<string, Interview>();
 const timeSlots = new Map<string, TimeSlot[]>();
 const schedules = new Map<string, InterviewSchedule>();
@@ -106,7 +105,7 @@ export class InterviewSchedulingService {
       roundNumber: request.roundNumber,
       type: request.type,
       interviewers: request.interviewers,
-      notes: request.notes
+      notes: request.notes,
     };
 
     const interview = createInterview(input, generateId);
@@ -172,7 +171,7 @@ export class InterviewSchedulingService {
     const updatedInterview: Interview = {
       ...interview,
       ...update,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     } as Interview;
 
     interviews.set(interviewId, updatedInterview);
@@ -208,7 +207,7 @@ export class InterviewSchedulingService {
     interview.proposedSlots.push(...slots);
     await this.updateInterview(request.interviewId, {
       proposedSlots: interview.proposedSlots,
-      status: InterviewStatus.PROPOSED
+      status: InterviewStatus.PROPOSED,
     });
 
     // Store in time slots map
@@ -244,7 +243,7 @@ export class InterviewSchedulingService {
         location: request.location,
         meetingLink: request.meetingLink,
         dialInNumber: request.dialInNumber,
-        conferenceId: request.conferenceId
+        conferenceId: request.conferenceId,
       }
     );
 
@@ -254,7 +253,7 @@ export class InterviewSchedulingService {
     const updatedInterview = await this.updateInterview(request.interviewId, {
       schedule,
       confirmedSlotId: request.slotId,
-      status: InterviewStatus.CONFIRMED
+      status: InterviewStatus.CONFIRMED,
     });
 
     if (!updatedInterview) {
@@ -295,7 +294,7 @@ export class InterviewSchedulingService {
       generateId,
       {
         location: interview.schedule?.location,
-        meetingLink: interview.schedule?.meetingLink
+        meetingLink: interview.schedule?.meetingLink,
       }
     );
 
@@ -305,7 +304,7 @@ export class InterviewSchedulingService {
       schedule,
       confirmedSlotId: newSlotId,
       status: InterviewStatus.RESCHEDULED,
-      notes: reason ? `Rescheduled: ${reason}` : interview.notes
+      notes: reason ? `Rescheduled: ${reason}` : interview.notes,
     });
 
     if (!updatedInterview) {
@@ -327,7 +326,7 @@ export class InterviewSchedulingService {
       status: InterviewStatus.CANCELLED,
       cancelledBy,
       cancellationReason: reason,
-      cancelledAt: new Date()
+      cancelledAt: new Date(),
     });
 
     return updatedInterview;
@@ -339,7 +338,7 @@ export class InterviewSchedulingService {
   async completeInterview(interviewId: string): Promise<Interview | null> {
     const interview = await this.updateInterview(interviewId, {
       status: InterviewStatus.FEEDBACK_PENDING,
-      completedAt: new Date()
+      completedAt: new Date(),
     });
 
     return interview;
@@ -367,7 +366,7 @@ export class InterviewSchedulingService {
       weaknesses: request.weaknesses,
       overallImpression: request.overallImpression,
       recommendation: request.recommendation,
-      notes: request.notes
+      notes: request.notes,
     };
 
     // Add to interview feedbacks
@@ -379,14 +378,16 @@ export class InterviewSchedulingService {
 
     // Update interview
     await this.updateInterview(request.interviewId, {
-      feedbacks: interview.feedbacks
+      feedbacks: interview.feedbacks,
     });
 
     // If all interviewers have submitted feedback, mark as closed
-    if (interview.interviewers.length > 0 &&
-        interview.feedbacks.length >= interview.interviewers.length) {
+    if (
+      interview.interviewers.length > 0 &&
+      interview.feedbacks.length >= interview.interviewers.length
+    ) {
       await this.updateInterview(request.interviewId, {
-        status: InterviewStatus.CLOSED
+        status: InterviewStatus.CLOSED,
       });
     }
 
@@ -433,11 +434,38 @@ export class InterviewSchedulingService {
     interview.schedule.reminderSentAt = new Date();
 
     await this.updateInterview(interviewId, {
-      schedule: interview.schedule
+      schedule: interview.schedule,
     });
 
-    // TODO: Actually send the notification (email/SMS/push)
-    console.log(`Reminder sent for interview ${interviewId}`);
+    // Send reminder notification to both job seeker and employer
+    try {
+      const { notificationService } = await import('../notificationService');
+
+      const scheduleLabel = interview.schedule!.scheduledAt
+        ? new Date(interview.schedule!.scheduledAt).toLocaleString()
+        : 'scheduled time';
+
+      await Promise.all([
+        notificationService.sendToUser(interview.jobSeekerId, {
+          type: 'INTERVIEW_REMINDER',
+          title: '面试提醒',
+          content: `您有一场面试即将开始：${scheduleLabel}`,
+          data: { interviewId, round: interview.round },
+          category: 'interview',
+          priority: 'HIGH',
+        }),
+        notificationService.sendToUser(interview.employerId, {
+          type: 'INTERVIEW_REMINDER',
+          title: '面试提醒',
+          content: `您有一场面试即将开始：${scheduleLabel}`,
+          data: { interviewId, round: interview.round },
+          category: 'interview',
+          priority: 'HIGH',
+        }),
+      ]);
+    } catch (error) {
+      console.error(`Failed to send reminder notification for interview ${interviewId}:`, error);
+    }
 
     return true;
   }
@@ -503,9 +531,10 @@ export class InterviewSchedulingService {
       overallStatus = 'completed';
     }
 
-    const currentRound = applicationInterviews.length > 0
-      ? applicationInterviews[applicationInterviews.length - 1].round
-      : null;
+    const currentRound =
+      applicationInterviews.length > 0
+        ? applicationInterviews[applicationInterviews.length - 1].round
+        : null;
 
     const nextRound = currentRound ? getNextRound(currentRound) : null;
 
@@ -516,7 +545,7 @@ export class InterviewSchedulingService {
       nextRound,
       totalRounds,
       completedRounds,
-      overallStatus
+      overallStatus,
     };
   }
 

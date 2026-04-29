@@ -13,7 +13,7 @@ import {
   InterviewRound,
   isValidInterviewStatus,
   isValidInterviewType,
-  isValidInterviewRound
+  isValidInterviewRound,
 } from '../../models/Interview';
 
 const router: Router = Router();
@@ -33,14 +33,15 @@ router.post('/', async (req: Request, res: Response) => {
       roundNumber,
       type,
       interviewers,
-      notes
+      notes,
     } = req.body;
 
     // Validate required fields
     if (!jobApplicationId || !jobSeekerId || !employerId || !positionId || !type) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: jobApplicationId, jobSeekerId, employerId, positionId, type'
+        error:
+          'Missing required fields: jobApplicationId, jobSeekerId, employerId, positionId, type',
       });
     }
 
@@ -48,7 +49,7 @@ router.post('/', async (req: Request, res: Response) => {
     if (!isValidInterviewType(type)) {
       return res.status(400).json({
         success: false,
-        error: `Invalid interview type: ${type}`
+        error: `Invalid interview type: ${type}`,
       });
     }
 
@@ -58,7 +59,7 @@ router.post('/', async (req: Request, res: Response) => {
       if (!isValidInterviewRound(round)) {
         return res.status(400).json({
           success: false,
-          error: `Invalid interview round: ${round}`
+          error: `Invalid interview round: ${round}`,
         });
       }
       validRound = round as InterviewRound;
@@ -73,18 +74,18 @@ router.post('/', async (req: Request, res: Response) => {
       roundNumber,
       type: type as InterviewType,
       interviewers,
-      notes
+      notes,
     });
 
     return res.status(201).json({
       success: true,
-      data: interview
+      data: interview,
     });
   } catch (error) {
     console.error('Failed to create interview:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -95,17 +96,17 @@ router.post('/', async (req: Request, res: Response) => {
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const {
-      jobApplicationId,
-      jobSeekerId,
-      employerId,
-      status,
-      type,
-      round,
-      upcoming
-    } = req.query;
+    const { jobApplicationId, jobSeekerId, employerId, status, type, round, upcoming } = req.query;
 
-    const filter: { jobApplicationId?: string; jobSeekerId?: string; employerId?: string; status?: InterviewStatus; type?: InterviewType; round?: InterviewRound; upcoming?: boolean } = {};
+    const filter: {
+      jobApplicationId?: string;
+      jobSeekerId?: string;
+      employerId?: string;
+      status?: InterviewStatus;
+      type?: InterviewType;
+      round?: InterviewRound;
+      upcoming?: boolean;
+    } = {};
     if (jobApplicationId) filter.jobApplicationId = jobApplicationId as string;
     if (jobSeekerId) filter.jobSeekerId = jobSeekerId as string;
     if (employerId) filter.employerId = employerId as string;
@@ -124,13 +125,34 @@ router.get('/', async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      data: interviews
+      data: interviews,
     });
   } catch (error) {
     console.error('Failed to get interviews:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
+    });
+  }
+});
+
+/**
+ * GET /api/job/interviews/reminders/pending
+ * Get interviews needing reminders
+ */
+router.get('/reminders/pending', async (_req: Request, res: Response) => {
+  try {
+    const interviews = await interviewSchedulingService.getUpcomingInterviewsNeedingReminders();
+
+    return res.status(200).json({
+      success: true,
+      data: interviews,
+    });
+  } catch (error) {
+    console.error('Failed to get pending reminders:', error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -147,19 +169,19 @@ router.get('/:id', async (req: Request, res: Response) => {
     if (!interview) {
       return res.status(404).json({
         success: false,
-        error: 'Interview not found'
+        error: 'Interview not found',
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: interview
+      data: interview,
     });
   } catch (error) {
     console.error('Failed to get interview:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -178,19 +200,19 @@ router.put('/:id', async (req: Request, res: Response) => {
     if (!interview) {
       return res.status(404).json({
         success: false,
-        error: 'Interview not found'
+        error: 'Interview not found',
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: interview
+      data: interview,
     });
   } catch (error) {
     console.error('Failed to update interview:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -207,7 +229,7 @@ router.post('/:id/slots', async (req: Request, res: Response) => {
     if (!slots || !Array.isArray(slots) || slots.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'Missing or invalid slots array'
+        error: 'Missing or invalid slots array',
       });
     }
 
@@ -216,7 +238,7 @@ router.post('/:id/slots', async (req: Request, res: Response) => {
       if (!slot.startTime || !slot.endTime || !slot.timezone || !slot.proposedBy) {
         return res.status(400).json({
           success: false,
-          error: 'Each slot must have startTime, endTime, timezone, and proposedBy'
+          error: 'Each slot must have startTime, endTime, timezone, and proposedBy',
         });
       }
     }
@@ -227,19 +249,19 @@ router.post('/:id/slots', async (req: Request, res: Response) => {
         startTime: new Date(s.startTime),
         endTime: new Date(s.endTime),
         timezone: s.timezone,
-        proposedBy: s.proposedBy
-      }))
+        proposedBy: s.proposedBy,
+      })),
     });
 
     return res.status(201).json({
       success: true,
-      data: createdSlots
+      data: createdSlots,
     });
   } catch (error) {
     console.error('Failed to propose time slots:', error);
     return res.status(400).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -255,13 +277,13 @@ router.get('/:id/slots', async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      data: slots
+      data: slots,
     });
   } catch (error) {
     console.error('Failed to get slots:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -278,7 +300,7 @@ router.post('/:id/schedule', async (req: Request, res: Response) => {
     if (!slotId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required field: slotId'
+        error: 'Missing required field: slotId',
       });
     }
 
@@ -288,18 +310,18 @@ router.post('/:id/schedule', async (req: Request, res: Response) => {
       location,
       meetingLink,
       dialInNumber,
-      conferenceId
+      conferenceId,
     });
 
     return res.status(200).json({
       success: true,
-      data: interview
+      data: interview,
     });
   } catch (error) {
     console.error('Failed to schedule interview:', error);
     return res.status(400).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -316,7 +338,7 @@ router.post('/:id/reschedule', async (req: Request, res: Response) => {
     if (!slotId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required field: slotId'
+        error: 'Missing required field: slotId',
       });
     }
 
@@ -324,13 +346,13 @@ router.post('/:id/reschedule', async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      data: interview
+      data: interview,
     });
   } catch (error) {
     console.error('Failed to reschedule interview:', error);
     return res.status(400).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -347,7 +369,7 @@ router.post('/:id/cancel', async (req: Request, res: Response) => {
     if (!cancelledBy) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required field: cancelledBy'
+        error: 'Missing required field: cancelledBy',
       });
     }
 
@@ -356,19 +378,19 @@ router.post('/:id/cancel', async (req: Request, res: Response) => {
     if (!interview) {
       return res.status(404).json({
         success: false,
-        error: 'Interview not found'
+        error: 'Interview not found',
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: interview
+      data: interview,
     });
   } catch (error) {
     console.error('Failed to cancel interview:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -385,19 +407,19 @@ router.post('/:id/complete', async (req: Request, res: Response) => {
     if (!interview) {
       return res.status(404).json({
         success: false,
-        error: 'Interview not found'
+        error: 'Interview not found',
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: interview
+      data: interview,
     });
   } catch (error) {
     console.error('Failed to complete interview:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -419,20 +441,28 @@ router.post('/:id/feedback', async (req: Request, res: Response) => {
       weaknesses,
       overallImpression,
       recommendation,
-      notes
+      notes,
     } = req.body;
 
-    if (!interviewerId || !rating || !strengths || !weaknesses || !overallImpression || !recommendation) {
+    if (
+      !interviewerId ||
+      !rating ||
+      !strengths ||
+      !weaknesses ||
+      !overallImpression ||
+      !recommendation
+    ) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: interviewerId, rating, strengths, weaknesses, overallImpression, recommendation'
+        error:
+          'Missing required fields: interviewerId, rating, strengths, weaknesses, overallImpression, recommendation',
       });
     }
 
     if (rating < 1 || rating > 5) {
       return res.status(400).json({
         success: false,
-        error: 'Rating must be between 1 and 5'
+        error: 'Rating must be between 1 and 5',
       });
     }
 
@@ -440,7 +470,7 @@ router.post('/:id/feedback', async (req: Request, res: Response) => {
     if (!validRecommendations.includes(recommendation)) {
       return res.status(400).json({
         success: false,
-        error: `Invalid recommendation. Must be one of: ${validRecommendations.join(', ')}`
+        error: `Invalid recommendation. Must be one of: ${validRecommendations.join(', ')}`,
       });
     }
 
@@ -454,19 +484,24 @@ router.post('/:id/feedback', async (req: Request, res: Response) => {
       strengths,
       weaknesses,
       overallImpression,
-      recommendation: recommendation as 'strong_hire' | 'hire' | 'neutral' | 'no_hire' | 'strong_no_hire',
-      notes
+      recommendation: recommendation as
+        | 'strong_hire'
+        | 'hire'
+        | 'neutral'
+        | 'no_hire'
+        | 'strong_no_hire',
+      notes,
     });
 
     return res.status(201).json({
       success: true,
-      data: feedback
+      data: feedback,
     });
   } catch (error) {
     console.error('Failed to submit feedback:', error);
     return res.status(400).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -482,13 +517,13 @@ router.get('/:id/feedback', async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      data: feedback
+      data: feedback,
     });
   } catch (error) {
     console.error('Failed to get feedback:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -505,19 +540,19 @@ router.get('/:id/aggregate-feedback', async (req: Request, res: Response) => {
     if (!aggregate) {
       return res.status(404).json({
         success: false,
-        error: 'No feedback available for aggregation'
+        error: 'No feedback available for aggregation',
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: aggregate
+      data: aggregate,
     });
   } catch (error) {
     console.error('Failed to aggregate feedback:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -534,19 +569,19 @@ router.get('/:id/time-remaining', async (req: Request, res: Response) => {
     if (!timeRemaining) {
       return res.status(404).json({
         success: false,
-        error: 'Interview not found or not scheduled'
+        error: 'Interview not found or not scheduled',
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: timeRemaining
+      data: timeRemaining,
     });
   } catch (error) {
     console.error('Failed to get time remaining:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -562,13 +597,13 @@ router.get('/:id/next-round', async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      data: { nextRound }
+      data: { nextRound },
     });
   } catch (error) {
     console.error('Failed to get next round:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -584,13 +619,13 @@ router.get('/application/:applicationId/series', async (req: Request, res: Respo
 
     return res.status(200).json({
       success: true,
-      data: series
+      data: series,
     });
   } catch (error) {
     console.error('Failed to get interview series:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -608,7 +643,7 @@ router.post('/:id/handoff', async (req: Request, res: Response) => {
     if (!interview) {
       return res.status(404).json({
         success: false,
-        error: 'Interview not found'
+        error: 'Interview not found',
       });
     }
 
@@ -620,41 +655,20 @@ router.post('/:id/handoff', async (req: Request, res: Response) => {
       context: context || {
         jobSeekerId: interview.jobSeekerId,
         employerId: interview.employerId,
-        jobApplicationId: interview.jobApplicationId
+        jobApplicationId: interview.jobApplicationId,
       },
-      priority: priority || 'medium'
+      priority: priority || 'medium',
     });
 
     return res.status(201).json({
       success: true,
-      data: session
+      data: session,
     });
   } catch (error) {
     console.error('Failed to request handoff:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
-    });
-  }
-});
-
-/**
- * GET /api/job/interviews/reminders/pending
- * Get interviews needing reminders
- */
-router.get('/reminders/pending', async (_req: Request, res: Response) => {
-  try {
-    const interviews = await interviewSchedulingService.getUpcomingInterviewsNeedingReminders();
-
-    return res.status(200).json({
-      success: true,
-      data: interviews
-    });
-  } catch (error) {
-    console.error('Failed to get pending reminders:', error);
-    return res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });
@@ -670,13 +684,13 @@ router.post('/:id/send-reminder', async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: sent,
-      data: { sent }
+      data: { sent },
     });
   } catch (error) {
     console.error('Failed to send reminder:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 });

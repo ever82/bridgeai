@@ -3,15 +3,7 @@
  * 人机切换服务
  */
 
-import { NegotiationRoom, NegotiationStatus, MessageSender } from '../../models/NegotiationRoom';
-import {
-  Interview,
-  InterviewStatus,
-  InterviewRound
-} from '../../models/Interview';
-
-import { negotiationRoomService } from './negotiationRoom';
-import { interviewSchedulingService } from './interviewScheduling';
+import { MessageSender } from '../../models/NegotiationRoom';
 
 export enum HandoffTrigger {
   MAX_ROUNDS_REACHED = 'MAX_ROUNDS_REACHED',
@@ -21,13 +13,13 @@ export enum HandoffTrigger {
   COMPLEX_NEGOTIATION = 'COMPLEX_NEGOTIATION',
   USER_REQUESTED = 'USER_REQUESTED',
   AI_ERROR = 'AI_ERROR',
-  INTERVIEW_SCHEDULING_CONFLICT = 'INTERVIEW_SCHEDULING_CONFLICT'
+  INTERVIEW_SCHEDULING_CONFLICT = 'INTERVIEW_SCHEDULING_CONFLICT',
 }
 
 export enum HandoffType {
   NEGOTIATION = 'negotiation',
   INTERVIEW = 'interview',
-  GENERAL = 'general'
+  GENERAL = 'general',
 }
 
 export interface HandoffRequest {
@@ -79,7 +71,9 @@ export interface HumanAgent {
   currentSessions: string[];
 }
 
-// In-memory storage
+// TODO(NP-1279): In-memory storage - data is lost on server restart and does not scale horizontally.
+// Replace with database persistence (e.g., Prisma) to store handoffSessions, handoffEvents,
+// humanAgents, and handoffQueue with proper schema, indexes, and relations to users/rooms.
 const handoffSessions = new Map<string, HandoffSession>();
 const handoffEvents = new Map<string, HandoffEvent[]>();
 const humanAgents = new Map<string, HumanAgent>();
@@ -95,8 +89,10 @@ function generateEventId(): string {
 
 export class HumanHandoffService {
   constructor() {
-    // Initialize with some dummy human agents
-    this.initializeDummyAgents();
+    // Initialize dummy agents only in non-production environments
+    if (process.env.NODE_ENV !== 'production') {
+      this.initializeDummyAgents();
+    }
   }
 
   private initializeDummyAgents(): void {
@@ -107,7 +103,7 @@ export class HumanHandoffService {
         role: 'HR Specialist',
         expertise: ['salary_negotiation', 'benefits', 'onboarding'],
         availability: 'available',
-        currentSessions: []
+        currentSessions: [],
       },
       {
         id: 'agent_hr_2',
@@ -115,7 +111,7 @@ export class HumanHandoffService {
         role: 'Senior Recruiter',
         expertise: ['interview_scheduling', 'candidate_screening'],
         availability: 'available',
-        currentSessions: []
+        currentSessions: [],
       },
       {
         id: 'agent_hr_3',
@@ -123,8 +119,8 @@ export class HumanHandoffService {
         role: 'Talent Acquisition Manager',
         expertise: ['complex_negotiations', 'executive_hiring'],
         availability: 'available',
-        currentSessions: []
-      }
+        currentSessions: [],
+      },
     ];
 
     agents.forEach(agent => humanAgents.set(agent.id, agent));
@@ -151,7 +147,7 @@ export class HumanHandoffService {
       reason: request.reason,
       priority: request.priority,
       context: request.context,
-      history: []
+      history: [],
     };
 
     // Create initial event
@@ -162,7 +158,7 @@ export class HumanHandoffService {
       timestamp: new Date(),
       actor: 'system',
       actorId: 'system',
-      data: { trigger: request.trigger, reason: request.reason, metadata: request.metadata }
+      data: { trigger: request.trigger, reason: request.reason, metadata: request.metadata },
     };
 
     session.history.push(event);
@@ -196,7 +192,7 @@ export class HumanHandoffService {
         return {
           needed: true,
           reason: result.reason,
-          trigger: result.reason as HandoffTrigger
+          trigger: result.reason as HandoffTrigger,
         };
       }
     }
@@ -221,7 +217,7 @@ export class HumanHandoffService {
         trigger: check.trigger,
         reason: check.reason || 'Automatic handoff triggered',
         context,
-        priority: this.determinePriority(check.trigger)
+        priority: this.determinePriority(check.trigger),
       });
     }
 
@@ -235,9 +231,9 @@ export class HumanHandoffService {
     const agents = Array.from(humanAgents.values());
 
     if (expertise && expertise.length > 0) {
-      return agents.filter(agent =>
-        agent.availability === 'available' &&
-        expertise.some(exp => agent.expertise.includes(exp))
+      return agents.filter(
+        agent =>
+          agent.availability === 'available' && expertise.some(exp => agent.expertise.includes(exp))
       );
     }
 
@@ -274,7 +270,7 @@ export class HumanHandoffService {
       timestamp: new Date(),
       actor: 'system',
       actorId: 'system',
-      data: { agentId, agentName: agent.name }
+      data: { agentId, agentName: agent.name },
     };
 
     session.history.push(event);
@@ -309,7 +305,7 @@ export class HumanHandoffService {
       timestamp: new Date(),
       actor: 'human',
       actorId: agentId,
-      data: { action: 'join_session' }
+      data: { action: 'join_session' },
     };
 
     session.history.push(event);
@@ -324,7 +320,7 @@ export class HumanHandoffService {
         sender: MessageSender.SYSTEM,
         senderId: 'system',
         content: 'A human agent has joined the conversation to assist with the negotiation.',
-        metadata: { type: 'human_joined', sessionId, agentId }
+        metadata: { type: 'human_joined', sessionId, agentId },
       });
     }
 
@@ -334,11 +330,7 @@ export class HumanHandoffService {
   /**
    * Human agent sends message
    */
-  async sendHumanMessage(
-    sessionId: string,
-    agentId: string,
-    content: string
-  ): Promise<void> {
+  async sendHumanMessage(sessionId: string, agentId: string, content: string): Promise<void> {
     const session = handoffSessions.get(sessionId);
     if (!session || session.assignedTo !== agentId) {
       throw new Error('Session not found or not assigned to this agent');
@@ -352,7 +344,7 @@ export class HumanHandoffService {
       timestamp: new Date(),
       actor: 'human',
       actorId: agentId,
-      data: { content }
+      data: { content },
     };
 
     session.history.push(event);
@@ -365,7 +357,7 @@ export class HumanHandoffService {
         sender: MessageSender.HUMAN,
         senderId: agentId,
         content,
-        metadata: { sessionId }
+        metadata: { sessionId },
       });
     }
   }
@@ -401,7 +393,7 @@ export class HumanHandoffService {
       timestamp: new Date(),
       actor: 'human',
       actorId: agentId,
-      data: { resolution }
+      data: { resolution },
     };
 
     session.history.push(event);
@@ -430,7 +422,7 @@ export class HumanHandoffService {
       timestamp: new Date(),
       actor: 'system',
       actorId: 'system',
-      data: {}
+      data: {},
     };
 
     session.history.push(event);
@@ -451,10 +443,7 @@ export class HumanHandoffService {
   /**
    * Get sessions by entity
    */
-  async getSessionsByEntity(
-    type: HandoffType,
-    entityId: string
-  ): Promise<HandoffSession[]> {
+  async getSessionsByEntity(type: HandoffType, entityId: string): Promise<HandoffSession[]> {
     return Array.from(handoffSessions.values()).filter(
       s => s.type === type && s.entityId === entityId
     );
@@ -474,7 +463,9 @@ export class HumanHandoffService {
     const agent = humanAgents.get(agentId);
     if (!agent) return [];
 
-    return agent.currentSessions.map(id => handoffSessions.get(id)).filter(Boolean) as HandoffSession[];
+    return agent.currentSessions
+      .map(id => handoffSessions.get(id))
+      .filter(Boolean) as HandoffSession[];
   }
 
   /**
@@ -489,17 +480,16 @@ export class HumanHandoffService {
    */
   async isInHandoff(type: HandoffType, entityId: string): Promise<boolean> {
     const sessions = await this.getSessionsByEntity(type, entityId);
-    return sessions.some(s =>
-      s.status === 'pending' ||
-      s.status === 'assigned' ||
-      s.status === 'active'
+    return sessions.some(
+      s => s.status === 'pending' || s.status === 'assigned' || s.status === 'active'
     );
   }
 
   private findSessionByEntity(type: HandoffType, entityId: string): HandoffSession | null {
-    return Array.from(handoffSessions.values()).find(
-      s => s.type === type && s.entityId === entityId
-    ) || null;
+    return (
+      Array.from(handoffSessions.values()).find(s => s.type === type && s.entityId === entityId) ||
+      null
+    );
   }
 
   private async tryAutoAssign(sessionId: string): Promise<void> {

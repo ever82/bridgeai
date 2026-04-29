@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,13 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { api } from '../../services/api/client';
 
 // Types
 interface Interview {
@@ -57,15 +59,18 @@ type RootStackParamList = {
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProps = RouteProp<RootStackParamList, 'InterviewSchedule'>;
 
-// API client
+// API client using centralized apiClient with absolute URL from environment config
 const apiClient = {
   getInterviews: async (applicationId: string): Promise<Interview[]> => {
-    const response = await fetch(`/api/job/interviews?jobApplicationId=${applicationId}`);
-    const data = await response.json();
-    return data.data;
+    const response = await api.get<Interview[]>(
+      `/api/job/interviews?jobApplicationId=${applicationId}`
+    );
+    return response.data.data;
   },
 
-  getInterviewSeries: async (applicationId: string): Promise<{
+  getInterviewSeries: async (
+    applicationId: string
+  ): Promise<{
     applicationId: string;
     interviews: Interview[];
     currentRound: string | null;
@@ -74,54 +79,54 @@ const apiClient = {
     completedRounds: number;
     overallStatus: string;
   }> => {
-    const response = await fetch(`/api/job/interviews/application/${applicationId}/series`);
-    const data = await response.json();
-    return data.data;
+    const response = await api.get<{
+      applicationId: string;
+      interviews: Interview[];
+      currentRound: string | null;
+      nextRound: string | null;
+      totalRounds: number;
+      completedRounds: number;
+      overallStatus: string;
+    }>(`/api/job/interviews/application/${applicationId}/series`);
+    return response.data.data;
   },
 
   scheduleInterview: async (interviewId: string, slotId: string): Promise<Interview> => {
-    const response = await fetch(`/api/job/interviews/${interviewId}/schedule`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slotId })
+    const response = await api.post<Interview>(`/api/job/interviews/${interviewId}/schedule`, {
+      slotId,
     });
-    const data = await response.json();
-    return data.data;
+    return response.data.data;
   },
 
-  rescheduleInterview: async (interviewId: string, slotId: string, reason?: string): Promise<Interview> => {
-    const response = await fetch(`/api/job/interviews/${interviewId}/reschedule`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slotId, reason })
+  rescheduleInterview: async (
+    interviewId: string,
+    slotId: string,
+    reason?: string
+  ): Promise<Interview> => {
+    const response = await api.post<Interview>(`/api/job/interviews/${interviewId}/reschedule`, {
+      slotId,
+      reason,
     });
-    const data = await response.json();
-    return data.data;
+    return response.data.data;
   },
 
   cancelInterview: async (interviewId: string, reason: string): Promise<Interview> => {
-    const response = await fetch(`/api/job/interviews/${interviewId}/cancel`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cancelledBy: 'user', reason })
+    const response = await api.post<Interview>(`/api/job/interviews/${interviewId}/cancel`, {
+      cancelledBy: 'user',
+      reason,
     });
-    const data = await response.json();
-    return data.data;
+    return response.data.data;
   },
 
   requestHandoff: async (interviewId: string, reason: string): Promise<void> => {
-    await fetch(`/api/job/interviews/${interviewId}/handoff`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason, priority: 'medium' })
-    });
-  }
+    await api.post(`/api/job/interviews/${interviewId}/handoff`, { reason, priority: 'medium' });
+  },
 };
 
 const InterviewScheduleScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
-  const { applicationId, isJobSeeker } = route.params;
+  const { applicationId, isJobSeeker: _isJobSeeker } = route.params;
 
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [series, setSeries] = useState<{
@@ -135,6 +140,7 @@ const InterviewScheduleScreen: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationId]);
 
   const loadData = async () => {
@@ -142,13 +148,13 @@ const InterviewScheduleScreen: React.FC = () => {
       setIsLoading(true);
       const [interviewsData, seriesData] = await Promise.all([
         apiClient.getInterviews(applicationId),
-        apiClient.getInterviewSeries(applicationId)
+        apiClient.getInterviewSeries(applicationId),
       ]);
       setInterviews(interviewsData);
       setSeries({
         totalRounds: seriesData.totalRounds,
         completedRounds: seriesData.completedRounds,
-        overallStatus: seriesData.overallStatus
+        overallStatus: seriesData.overallStatus,
       });
     } catch (error) {
       console.error('Failed to load interviews:', error);
@@ -201,58 +207,50 @@ const InterviewScheduleScreen: React.FC = () => {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Propose New',
-          onPress: () => navigation.navigate('ProposeTimeSlots', { interviewId: interview.id })
+          onPress: () => navigation.navigate('ProposeTimeSlots', { interviewId: interview.id }),
         },
         {
           text: 'Select Existing',
-          onPress: () => setSelectedInterview(interview)
-        }
+          onPress: () => setSelectedInterview(interview),
+        },
       ]
     );
   };
 
   const handleCancel = (interview: Interview) => {
-    Alert.alert(
-      'Cancel Interview',
-      'Are you sure you want to cancel this interview?',
-      [
-        { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes, Cancel',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await apiClient.cancelInterview(interview.id, 'User cancelled');
-              Alert.alert('Success', 'Interview cancelled');
-              loadData();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to cancel interview');
-            }
+    Alert.alert('Cancel Interview', 'Are you sure you want to cancel this interview?', [
+      { text: 'No', style: 'cancel' },
+      {
+        text: 'Yes, Cancel',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await apiClient.cancelInterview(interview.id, 'User cancelled');
+            Alert.alert('Success', 'Interview cancelled');
+            loadData();
+          } catch (error) {
+            Alert.alert('Error', 'Failed to cancel interview');
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
 
   const handleHandoff = (interview: Interview) => {
-    Alert.alert(
-      'Request Human Support',
-      'A human agent will assist you with scheduling.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Request',
-          onPress: async () => {
-            try {
-              await apiClient.requestHandoff(interview.id, 'User requested scheduling assistance');
-              Alert.alert('Success', 'Human support requested');
-            } catch (error) {
-              Alert.alert('Error', 'Failed to request support');
-            }
+    Alert.alert('Request Human Support', 'A human agent will assist you with scheduling.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Request',
+        onPress: async () => {
+          try {
+            await apiClient.requestHandoff(interview.id, 'User requested scheduling assistance');
+            Alert.alert('Success', 'Human support requested');
+          } catch (error) {
+            Alert.alert('Error', 'Failed to request support');
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
 
   const getStatusColor = (status: string): string => {
@@ -319,7 +317,7 @@ const InterviewScheduleScreen: React.FC = () => {
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -344,20 +342,16 @@ const InterviewScheduleScreen: React.FC = () => {
 
         {isScheduled && item.schedule && (
           <View style={styles.scheduleInfo}>
-            <Text style={styles.scheduleDate}>
-              {formatDateTime(item.schedule.scheduledAt)}
-            </Text>
-            <Text style={styles.scheduleDuration}>
-              Duration: {item.schedule.duration} minutes
-            </Text>
+            <Text style={styles.scheduleDate}>{formatDateTime(item.schedule.scheduledAt)}</Text>
+            <Text style={styles.scheduleDuration}>Duration: {item.schedule.duration} minutes</Text>
             {item.schedule.location && (
-              <Text style={styles.scheduleLocation}>
-                Location: {item.schedule.location}
-              </Text>
+              <Text style={styles.scheduleLocation}>Location: {item.schedule.location}</Text>
             )}
             {item.schedule.meetingLink && (
               <TouchableOpacity
-                onPress={() => {/* Open meeting link */}}
+                onPress={() => {
+                  /* Open meeting link */
+                }}
                 style={styles.meetingLink}
               >
                 <Text style={styles.meetingLinkText}>Join Meeting</Text>
@@ -434,10 +428,7 @@ const InterviewScheduleScreen: React.FC = () => {
               </TouchableOpacity>
             ))}
           </ScrollView>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setSelectedInterview(null)}
-          >
+          <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedInterview(null)}>
             <Text style={styles.closeButtonText}>Cancel</Text>
           </TouchableOpacity>
         </View>
@@ -475,7 +466,7 @@ const InterviewScheduleScreen: React.FC = () => {
             <View
               style={[
                 styles.progressFill,
-                { width: `${(series.completedRounds / series.totalRounds) * 100}%` }
+                { width: `${(series.completedRounds / series.totalRounds) * 100}%` },
               ]}
             />
           </View>
@@ -491,9 +482,7 @@ const InterviewScheduleScreen: React.FC = () => {
         renderItem={renderInterviewCard}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContainer}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No interviews scheduled yet</Text>
@@ -510,58 +499,58 @@ const InterviewScheduleScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5'
+    backgroundColor: '#f5f5f5',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   loadingText: {
     marginTop: 10,
-    color: '#666'
+    color: '#666',
   },
   header: {
     padding: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0'
+    borderBottomColor: '#e0e0e0',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333'
+    color: '#333',
   },
   headerSubtitle: {
     fontSize: 14,
     color: '#666',
-    marginTop: 4
+    marginTop: 4,
   },
   progressContainer: {
     padding: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0'
+    borderBottomColor: '#e0e0e0',
   },
   progressBar: {
     height: 8,
     backgroundColor: '#e0e0e0',
     borderRadius: 4,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
     backgroundColor: '#34C759',
-    borderRadius: 4
+    borderRadius: 4,
   },
   progressText: {
     fontSize: 12,
     color: '#666',
     marginTop: 8,
-    textAlign: 'right'
+    textAlign: 'right',
   },
   listContainer: {
-    padding: 16
+    padding: 16,
   },
   card: {
     backgroundColor: '#fff',
@@ -572,66 +561,66 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3
+    elevation: 3,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12
+    marginBottom: 12,
   },
   roundBadge: {
     backgroundColor: '#007AFF',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16
+    borderRadius: 16,
   },
   roundText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   statusBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12
+    borderRadius: 12,
   },
   statusText: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   interviewType: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 4
+    marginBottom: 4,
   },
   roundLabel: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 12
+    marginBottom: 12,
   },
   scheduleInfo: {
     backgroundColor: '#f8f9fa',
     borderRadius: 8,
     padding: 12,
-    marginBottom: 12
+    marginBottom: 12,
   },
   scheduleDate: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 4
+    marginBottom: 4,
   },
   scheduleDuration: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 4
+    marginBottom: 4,
   },
   scheduleLocation: {
     fontSize: 14,
-    color: '#666'
+    color: '#666',
   },
   meetingLink: {
     marginTop: 8,
@@ -639,72 +628,72 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 6,
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
   },
   meetingLinkText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   proposedSlots: {
     backgroundColor: '#fff3cd',
     borderRadius: 8,
     padding: 12,
-    marginBottom: 12
+    marginBottom: 12,
   },
   proposedSlotsTitle: {
     fontSize: 14,
-    color: '#856404'
+    color: '#856404',
   },
   cardActions: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    gap: 8
+    gap: 8,
   },
   actionButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,
-    borderWidth: 1
+    borderWidth: 1,
   },
   scheduleButton: {
     backgroundColor: '#34C759',
-    borderColor: '#34C759'
+    borderColor: '#34C759',
   },
   rescheduleButton: {
     backgroundColor: '#007AFF',
-    borderColor: '#007AFF'
+    borderColor: '#007AFF',
   },
   cancelButton: {
     backgroundColor: '#fff',
-    borderColor: '#FF3B30'
+    borderColor: '#FF3B30',
   },
   helpButton: {
     backgroundColor: '#fff',
-    borderColor: '#8E8E93'
+    borderColor: '#8E8E93',
   },
   actionButtonText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   cancelButtonText: {
     color: '#FF3B30',
     fontSize: 14,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   helpButtonText: {
     color: '#8E8E93',
     fontSize: 14,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   emptyContainer: {
     padding: 40,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   emptyText: {
     fontSize: 16,
-    color: '#666'
+    color: '#666',
   },
   modalOverlay: {
     position: 'absolute',
@@ -715,57 +704,57 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20
+    padding: 20,
   },
   modalContent: {
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 20,
     width: '100%',
-    maxHeight: '70%'
+    maxHeight: '70%',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 16,
-    textAlign: 'center'
+    textAlign: 'center',
   },
   slotsList: {
-    maxHeight: 300
+    maxHeight: 300,
   },
   slotItem: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0'
+    borderBottomColor: '#e0e0e0',
   },
   slotTime: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 4
+    marginBottom: 4,
   },
   slotDuration: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 2
+    marginBottom: 2,
   },
   slotTimezone: {
     fontSize: 12,
-    color: '#999'
+    color: '#999',
   },
   closeButton: {
     marginTop: 16,
     padding: 12,
     backgroundColor: '#f5f5f5',
     borderRadius: 8,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   closeButtonText: {
     fontSize: 16,
     color: '#666',
-    fontWeight: 'bold'
-  }
+    fontWeight: 'bold',
+  },
 });
 
 export default InterviewScheduleScreen;

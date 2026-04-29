@@ -15,10 +15,12 @@ import {
   createNegotiationRoom,
   createNegotiationMessage,
   calculateNegotiationProgress,
-  shouldHandoffToHuman
+  shouldHandoffToHuman,
 } from '../../models/NegotiationRoom';
 
-// In-memory storage (replace with database in production)
+// TODO(NP-1279): In-memory storage - data is lost on server restart and does not scale horizontally.
+// Replace with database persistence (e.g., Prisma) to store rooms and messages with proper schema,
+// indexes, and relations to job applications and users.
 const rooms = new Map<string, NegotiationRoom>();
 const messages = new Map<string, NegotiationMessage[]>();
 
@@ -76,7 +78,7 @@ export class NegotiationRoomService {
       maxRounds: request.maxRounds,
       initialOffer: request.initialOffer,
       targetRange: request.targetRange,
-      currency: request.currency
+      currency: request.currency,
     };
 
     const room = createNegotiationRoom(input, generateId);
@@ -140,7 +142,7 @@ export class NegotiationRoomService {
     const updatedRoom: NegotiationRoom = {
       ...room,
       ...update,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     rooms.set(roomId, updatedRoom);
@@ -160,7 +162,7 @@ export class NegotiationRoomService {
 
     const updatedRoom = await this.updateRoom(roomId, {
       status: NegotiationStatus.ACTIVE,
-      currentRound: 1
+      currentRound: 1,
     });
 
     if (updatedRoom) {
@@ -169,7 +171,7 @@ export class NegotiationRoomService {
         roundNumber: 1,
         startedAt: new Date(),
         messages: [],
-        status: 'active'
+        status: 'active',
       };
       updatedRoom.rounds.push(round);
 
@@ -199,8 +201,7 @@ export class NegotiationRoomService {
       throw new Error('Room not found');
     }
 
-    if (room.status !== NegotiationStatus.ACTIVE &&
-        room.status !== NegotiationStatus.NEGOTIATING) {
+    if (room.status !== NegotiationStatus.ACTIVE && room.status !== NegotiationStatus.NEGOTIATING) {
       throw new Error('Cannot send message: negotiation is not active');
     }
 
@@ -216,7 +217,7 @@ export class NegotiationRoomService {
         isCounterOffer: request.isCounterOffer,
         offerValue: request.offerValue,
         offerCurrency: room.currency,
-        metadata: request.metadata
+        metadata: request.metadata,
       }
     );
 
@@ -228,7 +229,9 @@ export class NegotiationRoomService {
     }
 
     // Update current round with message
-    const currentRound = room.rounds.find((r: NegotiationRound) => r.roundNumber === room.currentRound);
+    const currentRound = room.rounds.find(
+      (r: NegotiationRound) => r.roundNumber === room.currentRound
+    );
     if (currentRound) {
       currentRound.messages.push(message);
 
@@ -278,7 +281,9 @@ export class NegotiationRoomService {
     if (!room) return null;
 
     // Close current round
-    const currentRound = room.rounds.find((r: NegotiationRound) => r.roundNumber === room.currentRound);
+    const currentRound = room.rounds.find(
+      (r: NegotiationRound) => r.roundNumber === room.currentRound
+    );
     if (currentRound) {
       currentRound.endedAt = new Date();
       currentRound.status = 'completed';
@@ -296,7 +301,7 @@ export class NegotiationRoomService {
       roundNumber: newRoundNumber,
       startedAt: new Date(),
       messages: [],
-      status: 'active'
+      status: 'active',
     };
 
     room.rounds.push(newRound);
@@ -332,7 +337,7 @@ export class NegotiationRoomService {
   async handoffToHuman(roomId: string, reason: string): Promise<NegotiationRoom | null> {
     const room = await this.updateRoom(roomId, {
       status: NegotiationStatus.HANDOFF_TO_HUMAN,
-      handoffReason: reason
+      handoffReason: reason,
     });
 
     if (room) {
@@ -363,7 +368,7 @@ export class NegotiationRoomService {
       status: NegotiationStatus.REACHED,
       agreedAmount,
       agreedBenefits,
-      completedAt: new Date()
+      completedAt: new Date(),
     });
 
     if (room) {
@@ -388,7 +393,7 @@ export class NegotiationRoomService {
   async markAsFailed(roomId: string): Promise<NegotiationRoom | null> {
     const room = await this.updateRoom(roomId, {
       status: NegotiationStatus.FAILED,
-      completedAt: new Date()
+      completedAt: new Date(),
     });
 
     if (room) {
@@ -427,7 +432,7 @@ export class NegotiationRoomService {
       remainingRounds,
       isStale,
       currentRound: room.currentRound,
-      maxRounds: room.maxRounds
+      maxRounds: room.maxRounds,
     };
   }
 
@@ -445,7 +450,7 @@ export class NegotiationRoomService {
 
     return {
       room,
-      messages: roomMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+      messages: roomMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()),
     };
   }
 
@@ -455,7 +460,7 @@ export class NegotiationRoomService {
   async cancelRoom(roomId: string, reason?: string): Promise<NegotiationRoom | null> {
     const room = await this.updateRoom(roomId, {
       status: NegotiationStatus.CANCELLED,
-      completedAt: new Date()
+      completedAt: new Date(),
     });
 
     if (room) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,12 @@ import {
   Platform,
   SafeAreaView,
   ActivityIndicator,
-  Alert
+  Alert,
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { api } from '../../services/api/client';
 
 // Types
 interface NegotiationMessage {
@@ -46,65 +48,56 @@ type RootStackParamList = {
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProps = RouteProp<RootStackParamList, 'NegotiationChat'>;
 
-// API client (placeholder - replace with actual API client)
+// API client using centralized apiClient with absolute URL from environment config
 const apiClient = {
   getRoom: async (roomId: string): Promise<NegotiationRoom> => {
-    const response = await fetch(`/api/job/negotiations/${roomId}`);
-    const data = await response.json();
-    return data.data;
+    const response = await api.get<NegotiationRoom>(`/api/job/negotiations/${roomId}`);
+    return response.data.data;
   },
 
   getMessages: async (roomId: string): Promise<NegotiationMessage[]> => {
-    const response = await fetch(`/api/job/negotiations/${roomId}/messages`);
-    const data = await response.json();
-    return data.data;
+    const response = await api.get<NegotiationMessage[]>(
+      `/api/job/negotiations/${roomId}/messages`
+    );
+    return response.data.data;
   },
 
-  sendMessage: async (roomId: string, content: string, isCounterOffer?: boolean, offerValue?: number): Promise<NegotiationMessage> => {
-    const response = await fetch(`/api/job/negotiations/${roomId}/messages`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+  sendMessage: async (
+    roomId: string,
+    content: string,
+    isCounterOffer?: boolean,
+    offerValue?: number
+  ): Promise<NegotiationMessage> => {
+    const response = await api.post<NegotiationMessage>(
+      `/api/job/negotiations/${roomId}/messages`,
+      {
         sender: 'jobseeker_agent',
         senderId: 'user_agent_id',
         content,
         isCounterOffer,
-        offerValue
-      })
-    });
-    const data = await response.json();
-    return data.data;
+        offerValue,
+      }
+    );
+    return response.data.data;
   },
 
   requestHandoff: async (roomId: string, reason: string): Promise<void> => {
-    await fetch(`/api/job/negotiations/${roomId}/handoff`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason, priority: 'medium' })
-    });
+    await api.post(`/api/job/negotiations/${roomId}/handoff`, { reason, priority: 'medium' });
   },
 
   confirmAgreement: async (roomId: string): Promise<void> => {
-    await fetch(`/api/job/negotiations/${roomId}/confirm`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ party: 'jobseeker' })
-    });
+    await api.post(`/api/job/negotiations/${roomId}/confirm`, { party: 'jobseeker' });
   },
 
   cancelNegotiation: async (roomId: string, reason: string): Promise<void> => {
-    await fetch(`/api/job/negotiations/${roomId}/cancel`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason })
-    });
-  }
+    await api.post(`/api/job/negotiations/${roomId}/cancel`, { reason });
+  },
 };
 
 const NegotiationChatScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
-  const { roomId, isJobSeeker } = route.params;
+  const { roomId, isJobSeeker: _isJobSeeker } = route.params;
 
   const [room, setRoom] = useState<NegotiationRoom | null>(null);
   const [messages, setMessages] = useState<NegotiationMessage[]>([]);
@@ -123,6 +116,7 @@ const NegotiationChatScreen: React.FC = () => {
     }, 3000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId]);
 
   const loadRoomAndMessages = async () => {
@@ -130,7 +124,7 @@ const NegotiationChatScreen: React.FC = () => {
       setIsLoading(true);
       const [roomData, messagesData] = await Promise.all([
         apiClient.getRoom(roomId),
-        apiClient.getMessages(roomId)
+        apiClient.getMessages(roomId),
       ]);
       setRoom(roomData);
       setMessages(messagesData);
@@ -194,37 +188,36 @@ const NegotiationChatScreen: React.FC = () => {
           onPress: async () => {
             try {
               await apiClient.requestHandoff(roomId, 'User requested human assistance');
-              Alert.alert('Success', 'Human support has been requested. An agent will join shortly.');
+              Alert.alert(
+                'Success',
+                'Human support has been requested. An agent will join shortly.'
+              );
             } catch (error) {
               Alert.alert('Error', 'Failed to request human support');
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
 
   const handleConfirmAgreement = () => {
-    Alert.alert(
-      'Confirm Agreement',
-      'Are you sure you want to confirm this agreement?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          style: 'default',
-          onPress: async () => {
-            try {
-              await apiClient.confirmAgreement(roomId);
-              Alert.alert('Success', 'Agreement confirmed!');
-              navigation.navigate('NegotiationResult', { roomId });
-            } catch (error) {
-              Alert.alert('Error', 'Failed to confirm agreement');
-            }
+    Alert.alert('Confirm Agreement', 'Are you sure you want to confirm this agreement?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Confirm',
+        style: 'default',
+        onPress: async () => {
+          try {
+            await apiClient.confirmAgreement(roomId);
+            Alert.alert('Success', 'Agreement confirmed!');
+            navigation.navigate('NegotiationResult', { roomId });
+          } catch (error) {
+            Alert.alert('Error', 'Failed to confirm agreement');
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
 
   const handleCancel = () => {
@@ -243,8 +236,8 @@ const NegotiationChatScreen: React.FC = () => {
             } catch (error) {
               Alert.alert('Error', 'Failed to cancel negotiation');
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
@@ -283,20 +276,21 @@ const NegotiationChatScreen: React.FC = () => {
     const isMyMessage = item.sender === 'jobseeker_agent';
 
     return (
-      <View style={[styles.messageContainer, isMyMessage ? styles.myMessageContainer : styles.theirMessageContainer]}>
+      <View
+        style={[
+          styles.messageContainer,
+          isMyMessage ? styles.myMessageContainer : styles.theirMessageContainer,
+        ]}
+      >
         <View style={[styles.messageBubble, getMessageStyle(item.sender)]}>
           <Text style={styles.senderName}>{getSenderName(item.sender)}</Text>
           <Text style={styles.messageText}>{item.content}</Text>
           {item.isCounterOffer && item.offerValue && (
             <View style={styles.offerBadge}>
-              <Text style={styles.offerText}>
-                Counter Offer: {item.offerValue}
-              </Text>
+              <Text style={styles.offerText}>Counter Offer: {item.offerValue}</Text>
             </View>
           )}
-          <Text style={styles.timestamp}>
-            {new Date(item.timestamp).toLocaleTimeString()}
-          </Text>
+          <Text style={styles.timestamp}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
         </View>
       </View>
     );
@@ -335,7 +329,9 @@ const NegotiationChatScreen: React.FC = () => {
 
       {/* Status Bar */}
       <View style={styles.statusBar}>
-        <Text style={styles.statusText}>Status: {room?.status?.replace('_', ' ').toUpperCase()}</Text>
+        <Text style={styles.statusText}>
+          Status: {room?.status?.replace('_', ' ').toUpperCase()}
+        </Text>
         {room?.agreedAmount && (
           <Text style={styles.agreedAmount}>
             Agreed: {room.agreedAmount} {room.currency}
@@ -384,7 +380,10 @@ const NegotiationChatScreen: React.FC = () => {
           <TouchableOpacity
             onPress={handleSend}
             disabled={!inputText.trim() || isSending}
-            style={[styles.sendButton, (!inputText.trim() || isSending) && styles.sendButtonDisabled]}
+            style={[
+              styles.sendButton,
+              (!inputText.trim() || isSending) && styles.sendButtonDisabled,
+            ]}
           >
             {isSending ? (
               <ActivityIndicator size="small" color="#fff" />
@@ -401,16 +400,16 @@ const NegotiationChatScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5'
+    backgroundColor: '#f5f5f5',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   loadingText: {
     marginTop: 10,
-    color: '#666'
+    color: '#666',
   },
   header: {
     flexDirection: 'row',
@@ -419,35 +418,35 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0'
+    borderBottomColor: '#e0e0e0',
   },
   headerInfo: {
-    flex: 1
+    flex: 1,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333'
+    color: '#333',
   },
   headerSubtitle: {
     fontSize: 14,
     color: '#666',
-    marginTop: 2
+    marginTop: 2,
   },
   headerActions: {
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   headerButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    marginLeft: 8
+    marginLeft: 8,
   },
   headerButtonText: {
     color: '#007AFF',
-    fontSize: 14
+    fontSize: 14,
   },
   cancelText: {
-    color: '#FF3B30'
+    color: '#FF3B30',
   },
   statusBar: {
     flexDirection: 'row',
@@ -456,77 +455,77 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0'
+    borderBottomColor: '#e0e0e0',
   },
   statusText: {
     fontSize: 14,
-    color: '#666'
+    color: '#666',
   },
   agreedAmount: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#34C759'
+    color: '#34C759',
   },
   messagesList: {
-    padding: 16
+    padding: 16,
   },
   messageContainer: {
     marginBottom: 12,
-    maxWidth: '80%'
+    maxWidth: '80%',
   },
   myMessageContainer: {
-    alignSelf: 'flex-end'
+    alignSelf: 'flex-end',
   },
   theirMessageContainer: {
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
   },
   messageBubble: {
     padding: 12,
-    borderRadius: 16
+    borderRadius: 16,
   },
   myMessage: {
     backgroundColor: '#007AFF',
-    borderBottomRightRadius: 4
+    borderBottomRightRadius: 4,
   },
   theirMessage: {
     backgroundColor: '#E9ECEF',
-    borderBottomLeftRadius: 4
+    borderBottomLeftRadius: 4,
   },
   systemMessage: {
     backgroundColor: '#FFF3CD',
     alignSelf: 'center',
-    borderRadius: 8
+    borderRadius: 8,
   },
   humanMessage: {
     backgroundColor: '#D4EDDA',
-    borderBottomLeftRadius: 4
+    borderBottomLeftRadius: 4,
   },
   senderName: {
     fontSize: 12,
     fontWeight: 'bold',
     marginBottom: 4,
-    color: '#666'
+    color: '#666',
   },
   messageText: {
     fontSize: 16,
-    color: '#333'
+    color: '#333',
   },
   offerBadge: {
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     padding: 6,
     borderRadius: 8,
-    marginTop: 8
+    marginTop: 8,
   },
   offerText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#333'
+    color: '#333',
   },
   timestamp: {
     fontSize: 11,
     color: '#999',
     marginTop: 4,
-    alignSelf: 'flex-end'
+    alignSelf: 'flex-end',
   },
   confirmButton: {
     backgroundColor: '#34C759',
@@ -534,18 +533,18 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   confirmButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   inputContainer: {
     backgroundColor: '#fff',
     padding: 12,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0'
+    borderTopColor: '#e0e0e0',
   },
   offerInput: {
     borderWidth: 1,
@@ -553,7 +552,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 8,
     marginBottom: 8,
-    fontSize: 14
+    fontSize: 14,
   },
   input: {
     borderWidth: 1,
@@ -561,7 +560,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 12,
     fontSize: 16,
-    maxHeight: 100
+    maxHeight: 100,
   },
   sendButton: {
     backgroundColor: '#007AFF',
@@ -569,16 +568,16 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     alignSelf: 'flex-end',
-    marginTop: 8
+    marginTop: 8,
   },
   sendButtonDisabled: {
-    backgroundColor: '#ccc'
+    backgroundColor: '#ccc',
   },
   sendButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold'
-  }
+    fontWeight: 'bold',
+  },
 });
 
 export default NegotiationChatScreen;

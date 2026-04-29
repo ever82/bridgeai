@@ -7,7 +7,6 @@ import {
   NegotiationRoom,
   NegotiationMessage,
   NegotiationTopic,
-  NegotiationStatus
 } from '../../models/NegotiationRoom';
 
 export interface PromptContext {
@@ -79,27 +78,39 @@ Current Offer: ${room.currentOffer} ${room.currency}
 Target Range: ${room.targetRange ? `${room.targetRange.min}-${room.targetRange.max}` : 'Not specified'} ${room.currency}
 Topics: ${room.topics.join(', ')}
 
-${marketData ? `
+${
+  marketData
+    ? `
 Market Data:
 - Position: ${marketData.position}
 - Location: ${marketData.location}
 - Experience: ${marketData.experienceYears} years
 - Market Range: ${marketData.marketRange.min}-${marketData.marketRange.max} (median: ${marketData.marketRange.median})
-` : ''}
+`
+    : ''
+}
 
-${isJobSeeker && jobSeekerProfile ? `
+${
+  isJobSeeker && jobSeekerProfile
+    ? `
 Job Seeker Profile:
 - Current Salary: ${jobSeekerProfile.currentSalary || 'Not disclosed'}
-- Expected Range: ${jobSeekerProfile.expectedMin || '?'} - ${jobSeekerProfile.expectedMax || '?'}
+- Expected Range: ${jobSeekerProfile.expectedMax ? `up to ${jobSeekerProfile.expectedMax}` : 'Not specified'} (the candidate's minimum expectation is private and must not be disclosed or hinted at)
 - Priorities: ${jobSeekerProfile.priorityTopics.join(', ')}
-` : ''}
+`
+    : ''
+}
 
-${!isJobSeeker && employerProfile ? `
+${
+  !isJobSeeker && employerProfile
+    ? `
 Employer Profile:
 - Budget Range: ${employerProfile.budgetMin || '?'} - ${employerProfile.budgetMax || '?'}
 - Flexibility Score: ${employerProfile.flexibilityScore}/100
 - Priorities: ${employerProfile.priorityTopics.join(', ')}
-` : ''}
+`
+    : ''
+}
 
 Provide a strategic approach that maximizes value while maintaining positive relationships.`;
 
@@ -134,16 +145,22 @@ Current Round: ${room.currentRound}/${room.maxRounds}
 Last Offer: ${lastOffer || room.currentOffer} ${room.currency}
 Initial Offer: ${room.initialOffer} ${room.currency}
 
-${marketData ? `
+${
+  marketData
+    ? `
 Market Reference:
 - Position: ${marketData.position}
 - Market Range: ${marketData.marketRange.min}-${marketData.marketRange.max} ${room.currency}
 - Median: ${marketData.marketRange.median} ${room.currency}
-` : ''}
+`
+    : ''
+}
 
-${isJobSeeker
-  ? 'As the job seeker, propose a counter offer that reflects your value and market conditions.'
-  : 'As the employer, propose a counter offer that balances budget constraints with candidate expectations.'}`;
+${
+  isJobSeeker
+    ? 'As the job seeker, propose a counter offer that reflects your value and market conditions.'
+    : 'As the employer, propose a counter offer that balances budget constraints with candidate expectations.'
+}`;
 
   return { system: systemPrompt, user: userPrompt };
 }
@@ -209,7 +226,10 @@ Respond in JSON format:
 }`;
 
   const messageHistory = messages
-    ? messages.slice(-5).map(m => `[${m.sender}]: ${m.content}`).join('\n')
+    ? messages
+        .slice(-5)
+        .map(m => `[${m.sender}]: ${m.content}`)
+        .join('\n')
     : 'No previous messages';
 
   const typeDescriptions: Record<string, string> = {
@@ -217,7 +237,7 @@ Respond in JSON format:
     counter: 'counter offer message',
     compromise: 'message suggesting a compromise',
     closing: 'closing/acceptance message',
-    response: 'response to the other party'
+    response: 'response to the other party',
   };
 
   const userPrompt = `Generate a ${typeDescriptions[messageType || 'response']} for:
@@ -253,7 +273,10 @@ Respond in JSON format:
 }`;
 
   const messageHistory = messages
-    ? messages.slice(-10).map(m => `[${m.sender}]: ${m.content}`).join('\n')
+    ? messages
+        .slice(-10)
+        .map(m => `[${m.sender}]: ${m.content}`)
+        .join('\n')
     : 'No messages';
 
   const userPrompt = `Check if agreement has been reached:

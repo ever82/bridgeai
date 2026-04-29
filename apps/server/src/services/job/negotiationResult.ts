@@ -7,7 +7,7 @@ import {
   NegotiationRoom,
   NegotiationStatus,
   NegotiationMessage,
-  NegotiationTopic
+  NegotiationTopic,
 } from '../../models/NegotiationRoom';
 
 import { negotiationRoomService } from './negotiationRoom';
@@ -52,7 +52,9 @@ export interface NegotiationExport {
   summary: string;
 }
 
-// In-memory storage
+// TODO(NP-1279): In-memory storage - data is lost on server restart and does not scale horizontally.
+// Replace with database persistence (e.g., Prisma) to store agreementConfirmations and rejectionReasons
+// with proper schema, indexes, and relations to the NegotiationRoom entity.
 const agreementConfirmations = new Map<string, AgreementConfirmation[]>();
 const rejectionReasons = new Map<string, RejectionReason[]>();
 
@@ -71,8 +73,7 @@ export class NegotiationResultService {
       throw new Error('Room not found');
     }
 
-    if (room.status !== NegotiationStatus.NEGOTIATING &&
-        room.status !== NegotiationStatus.ACTIVE) {
+    if (room.status !== NegotiationStatus.NEGOTIATING && room.status !== NegotiationStatus.ACTIVE) {
       throw new Error('Cannot confirm agreement: negotiation is not active');
     }
 
@@ -82,7 +83,7 @@ export class NegotiationResultService {
       confirmed: true,
       confirmedAt: new Date(),
       conditions,
-      notes
+      notes,
     };
 
     // Store confirmation
@@ -98,7 +99,7 @@ export class NegotiationResultService {
       sender: 'system' as any,
       senderId: 'system',
       content: `${party === 'jobseeker' ? 'Job seeker' : 'Employer'} has confirmed the agreement.${conditions ? ` Conditions: ${conditions.join(', ')}` : ''}`,
-      metadata: { type: 'agreement_confirmation', party, conditions }
+      metadata: { type: 'agreement_confirmation', party, conditions },
     });
 
     return confirmation;
@@ -119,7 +120,7 @@ export class NegotiationResultService {
     return {
       agreed: jobseekerConfirmed && employerConfirmed,
       jobseekerConfirmed,
-      employerConfirmed
+      employerConfirmed,
     };
   }
 
@@ -131,20 +132,14 @@ export class NegotiationResultService {
     agreedAmount: number,
     agreedBenefits: string[]
   ): Promise<NegotiationResult> {
-    const room = await negotiationRoomService.markAsReached(
-      roomId,
-      agreedAmount,
-      agreedBenefits
-    );
+    const room = await negotiationRoomService.markAsReached(roomId, agreedAmount, agreedBenefits);
 
     if (!room) {
       throw new Error('Failed to finalize agreement: room not found');
     }
 
     // Calculate duration
-    const duration = Math.round(
-      (new Date().getTime() - room.createdAt.getTime()) / (1000 * 60)
-    );
+    const duration = Math.round((new Date().getTime() - room.createdAt.getTime()) / (1000 * 60));
 
     const result: NegotiationResult = {
       roomId,
@@ -157,7 +152,7 @@ export class NegotiationResultService {
       agreementTimestamp: new Date(),
       finalRound: room.currentRound,
       totalRounds: room.rounds.length,
-      duration
+      duration,
     };
 
     return result;
@@ -184,7 +179,7 @@ export class NegotiationResultService {
       reason,
       rejectedAt: new Date(),
       alternativeProposed,
-      alternativeAmount
+      alternativeAmount,
     };
 
     const reasons = rejectionReasons.get(roomId) || [];
@@ -197,7 +192,7 @@ export class NegotiationResultService {
       sender: 'system' as any,
       senderId: 'system',
       content: `${rejectedBy === 'jobseeker' ? 'Job seeker' : 'Employer'} has rejected the offer.${reason ? ` Reason: ${reason}` : ''}${alternativeAmount ? ` Alternative proposed: ${alternativeAmount}` : ''}`,
-      metadata: { type: 'rejection', rejectedBy, reason, alternativeAmount }
+      metadata: { type: 'rejection', rejectedBy, reason, alternativeAmount },
     });
 
     // If rejection received, mark as failed
@@ -215,15 +210,15 @@ export class NegotiationResultService {
 
     const { room } = history;
 
-    if (room.status !== NegotiationStatus.REACHED &&
-        room.status !== NegotiationStatus.FAILED &&
-        room.status !== NegotiationStatus.CANCELLED) {
+    if (
+      room.status !== NegotiationStatus.REACHED &&
+      room.status !== NegotiationStatus.FAILED &&
+      room.status !== NegotiationStatus.CANCELLED
+    ) {
       return null;
     }
 
-    const duration = Math.round(
-      (new Date().getTime() - room.createdAt.getTime()) / (1000 * 60)
-    );
+    const duration = Math.round((new Date().getTime() - room.createdAt.getTime()) / (1000 * 60));
 
     const confirmations = agreementConfirmations.get(roomId) || [];
     const jobseekerConfirmed = confirmations.some(c => c.party === 'jobseeker');
@@ -240,7 +235,7 @@ export class NegotiationResultService {
       agreementTimestamp: room.completedAt,
       finalRound: room.currentRound,
       totalRounds: room.rounds.length,
-      duration
+      duration,
     };
   }
 
@@ -281,7 +276,7 @@ export class NegotiationResultService {
       exportType,
       exportedAt: new Date(),
       data,
-      summary
+      summary,
     };
   }
 
@@ -332,7 +327,7 @@ export class NegotiationResultService {
       conditionsMet,
       pendingConditions,
       jobseekerConditions,
-      employerConditions
+      employerConditions,
     };
   }
 
@@ -366,9 +361,8 @@ export class NegotiationResultService {
         responseCount++;
       }
     }
-    const averageResponseTime = responseCount > 0
-      ? Math.round(totalResponseTime / responseCount / 1000)
-      : 0;
+    const averageResponseTime =
+      responseCount > 0 ? Math.round(totalResponseTime / responseCount / 1000) : 0;
 
     // Get offer progression
     const offerProgression = room.rounds
@@ -376,14 +370,16 @@ export class NegotiationResultService {
       .map(r => r.employerOffer || r.jobSeekerOffer || 0);
 
     // Get topics discussed
-    const topicsDiscussed = [...new Set(messages.filter(m => m.topic).map(m => m.topic as NegotiationTopic))];
+    const topicsDiscussed = [
+      ...new Set(messages.filter(m => m.topic).map(m => m.topic as NegotiationTopic)),
+    ];
 
     return {
       totalMessages: messages.length,
       messagesBySender,
       averageResponseTime,
       offerProgression,
-      topicsDiscussed
+      topicsDiscussed,
     };
   }
 
@@ -395,7 +391,7 @@ export class NegotiationResultService {
       m.round.toString(),
       `"${m.content.replace(/"/g, '""')}"`,
       m.topic || '',
-      m.offerValue?.toString() || ''
+      m.offerValue?.toString() || '',
     ]);
 
     return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
