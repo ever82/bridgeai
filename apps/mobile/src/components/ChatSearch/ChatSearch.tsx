@@ -24,8 +24,9 @@ export const ChatSearch: React.FC<ChatSearchProps> = ({
   const debouncedQuery = useDebounce(query, 300);
 
   const results = useMemo(() => {
-    if (!debouncedQuery.trim()) return [];
-    const lower = debouncedQuery.toLowerCase();
+    const trimmed = debouncedQuery.trim();
+    if (!trimmed) return [];
+    const lower = trimmed.toLowerCase();
     return messages.filter(m => m.content.toLowerCase().includes(lower));
   }, [debouncedQuery, messages]);
 
