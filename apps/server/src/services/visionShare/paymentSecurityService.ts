@@ -564,9 +564,9 @@ export async function validatePaymentRequest(
 export async function checkFraudRisk(
   userId: string,
   photoIds: string[],
-  amount?: number
+  amount: number
 ): Promise<FraudRiskResult> {
-  const assessment = await assessRisk(userId, amount ?? 0);
+  const assessment = await assessRisk(userId, amount);
 
   logEvent({
     type: assessment.allowed ? 'PAYMENT_ALLOWED' : 'FRAUD_DETECTED',
@@ -782,7 +782,47 @@ export async function getPaymentLimits(userId: string): Promise<PaymentLimitInfo
 }
 
 /**
- * Get security events with optional filters
+ * Map an AuditLog DB record back to a PaymentSecurityEvent.
+ */
+function auditLogToSecurityEvent(record: {
+  id: string;
+  userId: string | null;
+  action: string;
+  details: unknown;
+  timestamp: Date;
+}): PaymentSecurityEvent | null {
+  const details = record.details as Record<string, unknown>;
+  const type = record.action as PaymentSecurityEvent['type'];
+  const validTypes: PaymentSecurityEvent['type'][] = [
+    'PAYMENT_BLOCKED',
+    'FRAUD_DETECTED',
+    'LIMIT_EXCEEDED',
+    'VELOCITY_WARNING',
+    'AMOUNT_ANOMALY',
+    'SUSPICIOUS_PATTERN',
+    'PAYMENT_ALLOWED',
+    'COOLDOWN_ACTIVE',
+  ];
+  if (!validTypes.includes(type)) {
+    return null;
+  }
+  return {
+    id: record.id,
+    type,
+    userId: record.userId ?? '',
+    severity: (details?.severity as PaymentSecurityEvent['severity']) ?? 'low',
+    riskScore: (details?.riskScore as number) ?? 0,
+    details: details ?? {},
+    timestamp: record.timestamp,
+  };
+}
+
+/**
+ * Get security events with optional filters.
+ *
+ * Returns events from the in-memory cache. Events are also persisted to the
+ * `audit_logs` table by logEvent(), so data survives server restarts.
+ * For historical queries beyond the in-memory window, use getSecurityEventsFromDB().
  */
 export function getSecurityEvents(filters?: {
   userId?: string;
@@ -813,6 +853,39 @@ export function getSecurityEvents(filters?: {
   }
 
   return filtered;
+}
+
+/**
+ * Get security events from the database (persistent audit trail).
+ * Use for historical queries that may go beyond the in-memory cache window.
+ */
+export async function getSecurityEventsFromDB(filters?: {
+  userId?: string;
+  type?: PaymentSecurityEvent['type'];
+  severity?: string;
+  since?: Date;
+  limit?: number;
+}): Promise<PaymentSecurityEvent[]> {
+  const dbWhere: {
+    resource: string;
+    userId?: string;
+    action?: string;
+    timestamp?: { gte: Date };
+  } = { resource: 'payment_security' };
+
+  if (filters?.userId) dbWhere.userId = filters.userId;
+  if (filters?.type) dbWhere.action = filters.type;
+  if (filters?.since) dbWhere.timestamp = { gte: filters.since };
+
+  const records = await prisma.auditLog.findMany({
+    where: dbWhere,
+    orderBy: { timestamp: 'desc' },
+    take: filters?.limit ?? 1000,
+  });
+
+  return records
+    .map(r => auditLogToSecurityEvent(r))
+    .filter((e): e is PaymentSecurityEvent => e !== null);
 }
 
 /**

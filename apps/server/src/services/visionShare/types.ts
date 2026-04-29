@@ -209,7 +209,7 @@ export interface ISecurityService {
   validatePaymentRequest(userId: string, request: PaymentRequest): Promise<ValidationResult>;
 
   /** Check for suspicious activity */
-  checkFraudRisk(userId: string, photoIds: string[]): Promise<FraudRiskResult>;
+  checkFraudRisk(userId: string, photoIds: string[], amount: number): Promise<FraudRiskResult>;
 
   /** Log security event */
   logSecurityEvent(event: SecurityEvent): Promise<void>;
