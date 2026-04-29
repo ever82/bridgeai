@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: bridgeai_prometheus_demo
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alert.rules.yml:/etc/prometheus/alert.rules.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - monitoring-demo
+
+  node-exporter:
+    image: prom/node-exporter:v1.6.1
+    container_name: bridgeai_node_exporter_demo
+    ports:
+      - '9100:9100'
+    networks:
+      - monitoring-demo
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.55.0
+    container_name: bridgeai_redis_exporter_demo
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    ports:
+      - '9121:9121'
+    networks:
+      - monitoring-demo
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.12.0
+    container_name: bridgeai_postgres_exporter_demo
+    environment:
+      - DATA_SOURCE_NAME=postgresql://demo_user:changeme@postgres:5432/bridgeai_demo?sslmode=disable
+    ports:
+      - '9187:9187'
+    networks:
+      - monitoring-demo
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: bridgeai_grafana_demo
+    ports:
+      - '3001:3000'
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=changeme
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - monitoring-demo
+
+  # Optional: ELK stack for log aggregation
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: bridgeai_elasticsearch_demo
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+    ports:
+      - '9200:9200'
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - monitoring-demo
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: bridgeai_logstash_demo
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - '5044:5044'
+    networks:
+      - monitoring-demo
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: bridgeai_kibana_demo
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - '5601:5601'
+    depends_on:
+      - elasticsearch
+    networks:
+      - monitoring-demo
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  elasticsearch_data:
+
+networks:
+  monitoring-demo:
+    name: monitoring-demo
+    driver: bridge

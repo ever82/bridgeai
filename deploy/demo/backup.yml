@@ -1,0 +1,43 @@
+version: '3.8'
+
+# Automated backup service for BridgeAI demo
+# Run with: docker compose -f deploy/demo/backup.yml up -d
+
+services:
+  backup:
+    image: postgres:15-alpine
+    container_name: bridgeai_backup_demo
+    volumes:
+      - ./backups:/backups
+      - bridgeai_demo_postgres_demo_data:/var/lib/postgresql/data:ro
+    environment:
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-7}
+    entrypoint: >
+      /bin/sh -c '
+        while true; do
+          echo "[backup] Creating PostgreSQL dump..."
+          pg_dump -h postgres -U demo_user bridgeai_demo -f "/backups/bridgeai_demo_$$(date +%Y%m%d_%H%M%S).sql"
+          # Clean up old backups
+          find /backups -name "bridgeai_demo_*.sql" -mtime +$$BACKUP_RETENTION_DAYS -delete
+          echo "[backup] Done. Next backup in 24h."
+          sleep 86400
+        done
+      '
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: bridgeai_backup_pg
+    environment:
+      POSTGRES_USER: demo_user
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: bridgeai_demo
+    volumes:
+      - bridgeai_demo_postgres_demo_data:/var/lib/postgresql/data
+
+volumes:
+  bridgeai_demo_postgres_demo_data:
+    external: true
+    name: deploy_demo_postgres_demo_data

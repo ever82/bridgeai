@@ -1,0 +1,50 @@
+groups:
+  - name: bridgeai_alerts
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+          / sum(rate(http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'High error rate (>5%)'
+          description: 'Error rate is {{ $value | humanizePercentage }} over the last 5 minutes'
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High response time'
+          description: 'p99 latency is {{ $value }}s'
+
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Service {{ $labels.job }} is down'
+          description: '{{ $labels.job }} has been down for more than 1 minute'
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High memory usage on {{ $labels.instance }}'
+          description: 'Memory usage is at {{ $value | humanizePercentage }}'
+
+      - alert: RedisConnectionErrors
+        expr: redis_connection_errors_total > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Redis connection errors detected'
+          description: 'Redis has {{ $value }} connection errors in the last 5 minutes'
