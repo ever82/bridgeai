@@ -285,10 +285,13 @@ export function canAccessField(
   }
 
   // Check field-level visibility
-  const fieldVisibility = visibility.fieldVisibility || {};
-  const fieldLevel = (fieldVisibility as any)[field] || VisibilityLevel.PUBLIC;
+  const fieldVisibility = (visibility.fieldVisibility ?? {}) as Record<
+    string,
+    VisibilityLevel | undefined
+  >;
+  const fieldLevel = fieldVisibility[field] ?? VisibilityLevel.PUBLIC;
 
-  return shouldFieldBeVisible(fieldLevel as VisibilityLevel, relationshipStage, isMatched);
+  return shouldFieldBeVisible(fieldLevel, relationshipStage, isMatched);
 }
 
 /**

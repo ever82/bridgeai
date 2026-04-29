@@ -53,7 +53,7 @@ function calculateCompletenessMetrics(profile: DatingProfile): {
   const missingCriticalFields: string[] = [];
 
   requiredSections.forEach(section => {
-    const value = (profile as any)[section.field];
+    const value = (profile as unknown as Record<string, unknown>)[section.field];
     const isFilled = isSectionFilled(section.field, value);
 
     if (isFilled) {
@@ -69,20 +69,25 @@ function calculateCompletenessMetrics(profile: DatingProfile): {
 /**
  * Check if a section is filled
  */
-function isSectionFilled(field: string, value: any): boolean {
+function isSectionFilled(field: string, value: unknown): boolean {
   if (value === undefined || value === null) return false;
+
+  const obj = value as Record<string, unknown>;
 
   switch (field) {
     case 'basicConditions':
-      return value.ageRange || value.education || value.location;
+      return !!(obj.ageRange || obj.education || obj.location);
     case 'personality':
-      return value.mbti?.length > 0 || value.traits?.length > 0;
+      return (
+        (obj.mbti as unknown[] | undefined)?.length > 0 ||
+        (obj.traits as unknown[] | undefined)?.length > 0
+      );
     case 'interests':
-      return value.interests?.length > 0;
+      return (obj.interests as unknown[] | undefined)?.length > 0;
     case 'lifestyle':
-      return value.sleepSchedule || value.smoking || value.drinking;
+      return !!(obj.sleepSchedule || obj.smoking || obj.drinking);
     case 'expectations':
-      return value.purpose !== undefined;
+      return obj.purpose !== undefined;
     case 'description':
       return typeof value === 'string' && value.length >= 50;
     default:
@@ -148,7 +153,9 @@ function calculateRichnessMetrics(profile: DatingProfile): {
   // Lifestyle details
   if (profile.lifestyle) {
     const lifestyleFields = ['sleepSchedule', 'smoking', 'drinking', 'exercise', 'diet'];
-    const filledCount = lifestyleFields.filter(f => (profile.lifestyle as any)?.[f]).length;
+    const filledCount = lifestyleFields.filter(
+      f => (profile.lifestyle as Record<string, unknown>)?.[f]
+    ).length;
     score += Math.min(filledCount * 3, 15);
 
     if (filledCount < 3) {

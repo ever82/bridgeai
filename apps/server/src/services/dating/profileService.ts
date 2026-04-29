@@ -394,10 +394,24 @@ function validateProfileData(data: CreateDatingProfileRequest | UpdateDatingProf
         field: 'agentId',
         message: 'agentId must be a non-empty string',
       });
-    } else if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.agentId)) {
+    } else if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.agentId)
+    ) {
       errors.push({
         field: 'agentId',
         message: 'agentId must be a valid UUID',
+      });
+    }
+  }
+
+  // For create requests, require basicConditions
+  if ('agentId' in data) {
+    const hasBasicConditions = data.basicConditions && Object.keys(data.basicConditions).length > 0;
+
+    if (!hasBasicConditions) {
+      errors.push({
+        field: 'basicConditions',
+        message: 'basicConditions is required and must contain at least one field',
       });
     }
   }
@@ -424,7 +438,10 @@ function validateProfileData(data: CreateDatingProfileRequest | UpdateDatingProf
       }
     }
     if (data.basicConditions.education !== undefined) {
-      if (typeof data.basicConditions.education !== 'string' || data.basicConditions.education.trim() === '') {
+      if (
+        typeof data.basicConditions.education !== 'string' ||
+        data.basicConditions.education.trim() === ''
+      ) {
         errors.push({
           field: 'basicConditions.education',
           message: 'Education must be a non-empty string',
@@ -432,7 +449,10 @@ function validateProfileData(data: CreateDatingProfileRequest | UpdateDatingProf
       }
     }
     if (data.basicConditions.income !== undefined) {
-      if (typeof data.basicConditions.income !== 'string' || data.basicConditions.income.trim() === '') {
+      if (
+        typeof data.basicConditions.income !== 'string' ||
+        data.basicConditions.income.trim() === ''
+      ) {
         errors.push({
           field: 'basicConditions.income',
           message: 'Income must be a non-empty string',
@@ -443,7 +463,11 @@ function validateProfileData(data: CreateDatingProfileRequest | UpdateDatingProf
 
   // Validate personality is an object
   if (data.personality !== undefined) {
-    if (typeof data.personality !== 'object' || data.personality === null || Array.isArray(data.personality)) {
+    if (
+      typeof data.personality !== 'object' ||
+      data.personality === null ||
+      Array.isArray(data.personality)
+    ) {
       errors.push({
         field: 'personality',
         message: 'Personality must be an object',
@@ -473,7 +497,11 @@ function validateProfileData(data: CreateDatingProfileRequest | UpdateDatingProf
             field: `interests.interests[${index}]`,
             message: 'Each interest must be an object',
           });
-        } else if (!interest.category || typeof interest.category !== 'string' || interest.category.trim() === '') {
+        } else if (
+          !interest.category ||
+          typeof interest.category !== 'string' ||
+          interest.category.trim() === ''
+        ) {
           errors.push({
             field: `interests.interests[${index}].category`,
             message: 'Each interest must have a non-empty category',
@@ -523,7 +551,10 @@ function validateProfileData(data: CreateDatingProfileRequest | UpdateDatingProf
   // Validate expectations
   if (data.expectations) {
     if (data.expectations.purpose !== undefined) {
-      if (typeof data.expectations.purpose !== 'string' || data.expectations.purpose.trim() === '') {
+      if (
+        typeof data.expectations.purpose !== 'string' ||
+        data.expectations.purpose.trim() === ''
+      ) {
         errors.push({
           field: 'expectations.purpose',
           message: 'Purpose must be a non-empty string',

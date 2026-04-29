@@ -3,7 +3,16 @@
  * 约会推荐服务 - 每日候选池生成、自动筛选、排序、过滤、多样性保证
  */
 
-import type { DatingProfile } from '@bridgeai/shared';
+import type {
+  DatingProfile,
+  BasicConditions,
+  PersonalityPreferences,
+  InterestPreferences,
+  Lifestyle,
+  RelationshipExpectations,
+  PrivacySettings,
+} from '@bridgeai/shared';
+import { VisibilityLevel } from '@bridgeai/shared';
 
 import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
@@ -88,29 +97,29 @@ async function fetchActiveCandidateProfiles(
 /**
  * 从 Prisma 记录映射为 DatingProfile
  */
-function mapPrismaToProfile(p: any): DatingProfile {
+function mapPrismaToProfile(p: Record<string, unknown>): DatingProfile {
   return {
-    id: p.id,
-    agentId: p.agentId,
-    userId: p.userId,
-    basicConditions: (p.basicConditions as any) ?? undefined,
-    personality: (p.personality as any) ?? undefined,
-    interests: (p.interests as any) ?? undefined,
-    lifestyle: (p.lifestyle as any) ?? undefined,
-    expectations: (p.expectations as any) ?? undefined,
-    description: p.description ?? undefined,
-    aiExtractedData: (p.aiExtractedData as any) ?? undefined,
-    aiExtractionConfidence: p.aiExtractionConfidence ?? undefined,
-    privacySettings: (p.privacySettings as any) ?? {
-      profileVisibility: 'PUBLIC',
+    id: p.id as string,
+    agentId: p.agentId as string,
+    userId: p.userId as string,
+    basicConditions: (p.basicConditions as BasicConditions | null) ?? undefined,
+    personality: (p.personality as PersonalityPreferences | null) ?? undefined,
+    interests: (p.interests as InterestPreferences | null) ?? undefined,
+    lifestyle: (p.lifestyle as Lifestyle | null) ?? undefined,
+    expectations: (p.expectations as RelationshipExpectations | null) ?? undefined,
+    description: (p.description as string | null) ?? undefined,
+    aiExtractedData: (p.aiExtractedData as Record<string, unknown> | null) ?? undefined,
+    aiExtractionConfidence: (p.aiExtractionConfidence as number | null) ?? undefined,
+    privacySettings: ((p.privacySettings as PrivacySettings | null) ?? {
+      profileVisibility: VisibilityLevel.PUBLIC,
       fieldVisibility: {},
-    },
-    completenessScore: p.completenessScore ?? undefined,
-    qualityScore: p.qualityScore ?? undefined,
-    isActive: p.isActive,
-    isComplete: p.isComplete,
-    createdAt: p.createdAt?.toISOString() ?? new Date().toISOString(),
-    updatedAt: p.updatedAt?.toISOString() ?? new Date().toISOString(),
+    }) as PrivacySettings,
+    completenessScore: (p.completenessScore as number | null) ?? undefined,
+    qualityScore: (p.qualityScore as number | null) ?? undefined,
+    isActive: p.isActive as boolean,
+    isComplete: p.isComplete as boolean,
+    createdAt: (p.createdAt as Date | null)?.toISOString() ?? new Date().toISOString(),
+    updatedAt: (p.updatedAt as Date | null)?.toISOString() ?? new Date().toISOString(),
   };
 }
 

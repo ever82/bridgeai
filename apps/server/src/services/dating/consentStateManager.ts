@@ -20,6 +20,7 @@ import {
   ConsentExpiredError,
   ConsentChangeLimitError,
 } from '../../models/MutualConsent';
+import { ReferralRecord } from '../../models/ReferralRecord';
 
 import {
   sendReferralNotification,
@@ -56,7 +57,10 @@ export async function createConsent(
 
   // 发送决策邀请通知给双方用户
   try {
-    await sendReferralNotification({ id: referralId, userAId, userBId } as any, consent);
+    await sendReferralNotification(
+      { id: referralId, userAId, userBId } as unknown as ReferralRecord,
+      consent
+    );
   } catch (err) {
     console.error('Failed to send decision request notification:', err);
   }
@@ -123,7 +127,7 @@ export async function recordDecision(
           id: updatedConsent.referralId,
           userAId: updatedConsent.userAId,
           userBId: updatedConsent.userBId,
-        } as any,
+        } as unknown as ReferralRecord,
         userId
       );
     } catch (err) {
@@ -208,7 +212,11 @@ export async function checkAndSendTimeoutReminders(): Promise<void> {
         // 发送超时提醒
         try {
           await sendTimeoutWarningNotification(
-            { id: consent.referralId, userAId: consent.userAId, userBId: consent.userBId } as any,
+            {
+              id: consent.referralId,
+              userAId: consent.userAId,
+              userBId: consent.userBId,
+            } as unknown as ReferralRecord,
             consent,
             threshold
           );
@@ -240,7 +248,7 @@ export async function processExpiredConsents(): Promise<number> {
           id: expiredConsent.referralId,
           userAId: expiredConsent.userAId,
           userBId: expiredConsent.userBId,
-        } as any);
+        } as unknown as ReferralRecord);
       } catch (err) {
         console.error('Failed to send expiry notification:', err);
       }
@@ -307,7 +315,11 @@ export async function cancelConsent(consentId: string, _reason?: string): Promis
   // 发送取消通知
   try {
     await sendCancelNotification(
-      { id: consent.referralId, userAId: consent.userAId, userBId: consent.userBId } as any,
+      {
+        id: consent.referralId,
+        userAId: consent.userAId,
+        userBId: consent.userBId,
+      } as unknown as ReferralRecord,
       consent.userAId
     );
   } catch (err) {

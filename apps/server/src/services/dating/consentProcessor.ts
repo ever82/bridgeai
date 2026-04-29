@@ -306,7 +306,7 @@ async function createHumanChatRoomFromConsent(
       recommendedTopics: [],
       matchScore: 0,
     },
-  } as any;
+  } as unknown as ReferralRecord;
 
   const chatRoom = await createHumanChatRoom(referral);
   return chatRoom.id;
@@ -331,7 +331,7 @@ async function updateMatchingAlgorithm(
   userAId: string,
   userBId: string,
   outcome: string,
-  details: Record<string, any>
+  details: Record<string, unknown>
 ): Promise<void> {
   // 调用匹配服务更新算法（记录反馈用于后续推荐优化）
   console.log(`Updating matching algorithm for ${userAId} and ${userBId}: ${outcome}`, details);
@@ -348,7 +348,7 @@ async function sendMatchSuccessNotifications(
     id: consent.referralId,
     userAId: consent.userAId,
     userBId: consent.userBId,
-  } as any;
+  } as unknown as ReferralRecord;
   await sendMutualAcceptNotification(referral, chatRoomId);
 }
 
@@ -364,7 +364,7 @@ async function sendSingleAcceptNotifications(
     id: consent.referralId,
     userAId: consent.userAId,
     userBId: consent.userBId,
-  } as any;
+  } as unknown as ReferralRecord;
   await sendSingleAcceptNotification(referral, acceptedUserId);
 }
 
@@ -376,7 +376,7 @@ async function sendRejectionNotifications(consent: MutualConsent, mutual: boolea
     id: consent.referralId,
     userAId: consent.userAId,
     userBId: consent.userBId,
-  } as any;
+  } as unknown as ReferralRecord;
   await sendRejectionNotification(referral, mutual);
 }
 
@@ -388,7 +388,7 @@ async function sendTimeoutNotifications(consent: MutualConsent): Promise<void> {
     id: consent.referralId,
     userAId: consent.userAId,
     userBId: consent.userBId,
-  } as any;
+  } as unknown as ReferralRecord;
   await sendTimeoutExpiredNotification(referral);
 }
 

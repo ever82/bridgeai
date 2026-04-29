@@ -24,7 +24,7 @@ jest.mock('../../db/client', () => ({
 
 describe('DatingProfileService', () => {
   const mockUserId = 'user-123';
-  const mockAgentId = 'agent-123';
+  const mockAgentId = '550e8400-e29b-41d4-a716-446655440000';
   const mockProfileId = 'profile-123';
   const mockDate = new Date('2026-04-10');
 
@@ -99,8 +99,9 @@ describe('DatingProfileService', () => {
     it('should throw error if agent not found', async () => {
       (prisma.agent.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(profileService.getOrCreateProfile(mockAgentId, mockUserId))
-        .rejects.toThrow(AppError);
+      await expect(profileService.getOrCreateProfile(mockAgentId, mockUserId)).rejects.toThrow(
+        AppError
+      );
     });
 
     it('should throw error if user not authorized', async () => {
@@ -109,8 +110,9 @@ describe('DatingProfileService', () => {
         userId: 'other-user',
       });
 
-      await expect(profileService.getOrCreateProfile(mockAgentId, mockUserId))
-        .rejects.toThrow(AppError);
+      await expect(profileService.getOrCreateProfile(mockAgentId, mockUserId)).rejects.toThrow(
+        AppError
+      );
     });
   });
 
@@ -142,15 +144,15 @@ describe('DatingProfileService', () => {
       (prisma.agent.findUnique as jest.Mock).mockResolvedValue(mockAgent);
       (prisma.datingProfile.findUnique as jest.Mock).mockResolvedValue(mockProfile);
 
-      await expect(profileService.createProfile(createInput, mockUserId))
-        .rejects.toThrow('Dating profile already exists');
+      await expect(profileService.createProfile(createInput, mockUserId)).rejects.toThrow(
+        'Dating profile already exists'
+      );
     });
 
     it('should throw error if agent not found', async () => {
       (prisma.agent.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(profileService.createProfile(createInput, mockUserId))
-        .rejects.toThrow(AppError);
+      await expect(profileService.createProfile(createInput, mockUserId)).rejects.toThrow(AppError);
     });
   });
 
@@ -179,8 +181,9 @@ describe('DatingProfileService', () => {
     it('should throw error if profile not found', async () => {
       (prisma.datingProfile.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(profileService.updateProfile(mockAgentId, mockUserId, updateInput))
-        .rejects.toThrow('Dating profile not found');
+      await expect(
+        profileService.updateProfile(mockAgentId, mockUserId, updateInput)
+      ).rejects.toThrow('Dating profile not found');
     });
 
     it('should throw error if user not authorized', async () => {
@@ -189,8 +192,9 @@ describe('DatingProfileService', () => {
         userId: 'other-user',
       });
 
-      await expect(profileService.updateProfile(mockAgentId, mockUserId, updateInput))
-        .rejects.toThrow('Unauthorized');
+      await expect(
+        profileService.updateProfile(mockAgentId, mockUserId, updateInput)
+      ).rejects.toThrow('Unauthorized');
     });
   });
 
@@ -209,8 +213,9 @@ describe('DatingProfileService', () => {
     it('should throw error if profile not found', async () => {
       (prisma.datingProfile.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(profileService.deleteProfile(mockAgentId, mockUserId))
-        .rejects.toThrow('Dating profile not found');
+      await expect(profileService.deleteProfile(mockAgentId, mockUserId)).rejects.toThrow(
+        'Dating profile not found'
+      );
     });
   });
 
