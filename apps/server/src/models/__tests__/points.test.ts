@@ -35,7 +35,7 @@ jest.mock('@prisma/client', () => ({
     user: {
       findUnique: jest.fn(),
     },
-    $transaction: jest.fn((callbacks: any[]) => {
+    $transaction: jest.fn(callbacks => {
       // Mock transaction - execute all callbacks sequentially
       return Promise.all(callbacks.map(cb => cb()));
     }),
@@ -43,6 +43,7 @@ jest.mock('@prisma/client', () => ({
 }));
 
 describe('Points Account Data Models', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockPrisma: any;
 
   beforeEach(() => {
