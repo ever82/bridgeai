@@ -271,6 +271,7 @@ export const ChatScreen = ({ route }: Props) => {
           hasMore={hasMore}
           onLoadMore={handleLoadMore}
           onReport={handleReportMessage}
+          testID="chat-message-list"
         />
 
         {isTyping && (
