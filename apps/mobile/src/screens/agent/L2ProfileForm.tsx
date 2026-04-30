@@ -343,6 +343,7 @@ interface BooleanToggleProps {
   value: boolean | undefined;
   onChange: (value: boolean) => void;
   description?: string;
+  testID?: string;
 }
 
 const BooleanToggle: React.FC<BooleanToggleProps> = ({
@@ -350,6 +351,7 @@ const BooleanToggle: React.FC<BooleanToggleProps> = ({
   value = false,
   onChange,
   description,
+  testID,
 }) => {
   return (
     <View style={styles.booleanContainer}>
@@ -358,6 +360,7 @@ const BooleanToggle: React.FC<BooleanToggleProps> = ({
         {description && <Text style={styles.description}>{description}</Text>}
       </View>
       <TouchableOpacity
+        testID={testID}
         style={[styles.toggle, value && styles.toggleActive]}
         onPress={() => onChange(!value)}
       >
@@ -420,6 +423,7 @@ const renderField: React.FC<{
           value={value as boolean | undefined}
           onChange={onChange}
           description={field.description}
+          testID={`toggle-${field.id}`}
         />
       );
 

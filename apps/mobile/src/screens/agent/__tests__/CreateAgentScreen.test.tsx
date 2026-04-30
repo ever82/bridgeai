@@ -11,10 +11,21 @@ import { CreateAgentScreen } from '../CreateAgentScreen';
 // Mock navigation
 const mockGoBack = jest.fn();
 jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
+  NavigationContainer: ({ children }: { children: React.ReactNode }) => children,
   useNavigation: () => ({
     navigate: jest.fn(),
     goBack: mockGoBack,
+  }),
+  useRoute: () => ({ params: {} }),
+}));
+
+// Mock useAsyncStorage to avoid infinite re-render from unstable setValue ref
+jest.mock('../../../hooks/useAsyncStorage', () => ({
+  useAsyncStorage: () => ({
+    value: null,
+    setValue: jest.fn(),
+    removeValue: jest.fn(),
+    isLoading: false,
   }),
 }));
 

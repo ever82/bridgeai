@@ -1,6 +1,6 @@
 /**
  * Agent Preview Component
- * Shows agent profile preview, test chat, and config history
+ * Shows agent profile preview and test chat
  */
 
 import React, { useState, useRef } from 'react';
@@ -10,7 +10,6 @@ import { Agent } from '@bridgeai/shared';
 interface AgentPreviewProps {
   agent: Agent;
   onResetDefaults?: () => void;
-  configHistory?: ConfigHistoryEntry[];
 }
 
 interface ChatMessage {
@@ -20,18 +19,8 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-interface ConfigHistoryEntry {
-  id: string;
-  changedAt: Date;
-  summary: string;
-}
-
-export const AgentPreview: React.FC<AgentPreviewProps> = ({
-  agent,
-  onResetDefaults,
-  configHistory = [],
-}) => {
-  const [activeTab, setActiveTab] = useState<'preview' | 'chat' | 'history'>('preview');
+export const AgentPreview: React.FC<AgentPreviewProps> = ({ agent, onResetDefaults }) => {
+  const [activeTab, setActiveTab] = useState<'preview' | 'chat'>('preview');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const chatRef = useRef<FlatList>(null);
@@ -168,24 +157,6 @@ export const AgentPreview: React.FC<AgentPreviewProps> = ({
     </View>
   );
 
-  const renderHistory = () => (
-    <View style={styles.historyContainer}>
-      <FlatList
-        data={configHistory}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.historyItem}>
-            <View style={styles.historyDot} />
-            <View style={styles.historyContent}>
-              <Text style={styles.historySummary}>{item.summary}</Text>
-              <Text style={styles.historyTime}>{item.changedAt.toLocaleString()}</Text>
-            </View>
-          </View>
-        )}
-      />
-    </View>
-  );
-
   return (
     <View style={styles.container}>
       <View style={styles.tabBar}>
@@ -205,20 +176,11 @@ export const AgentPreview: React.FC<AgentPreviewProps> = ({
             对话测试
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'history' && styles.tabActive]}
-          onPress={() => setActiveTab('history')}
-        >
-          <Text style={[styles.tabText, activeTab === 'history' && styles.tabTextActive]}>
-            历史记录
-          </Text>
-        </TouchableOpacity>
       </View>
 
       <View style={styles.tabContent}>
         {activeTab === 'preview' && renderPreview()}
         {activeTab === 'chat' && renderChat()}
-        {activeTab === 'history' && renderHistory()}
       </View>
     </View>
   );
@@ -405,33 +367,5 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: '#fff',
     fontWeight: '600',
-  },
-  historyContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  historyItem: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-  },
-  historyDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#007AFF',
-    marginRight: 12,
-    marginTop: 4,
-  },
-  historyContent: {
-    flex: 1,
-  },
-  historySummary: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 4,
-  },
-  historyTime: {
-    fontSize: 12,
-    color: '#999',
   },
 });

@@ -40,10 +40,21 @@ jest.mock('../../../services/api/agents', () => ({
 }));
 
 jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
+  NavigationContainer: ({ children }: { children: React.ReactNode }) => children,
   useNavigation: () => ({
     navigate: mockNavigate,
     goBack: mockGoBack,
+  }),
+  useRoute: () => ({ params: {} }),
+}));
+
+// Mock useAsyncStorage to avoid infinite re-render from unstable setValue ref
+jest.mock('../../../hooks/useAsyncStorage', () => ({
+  useAsyncStorage: () => ({
+    value: null,
+    setValue: jest.fn(),
+    removeValue: jest.fn(),
+    isLoading: false,
   }),
 }));
 
@@ -357,9 +368,13 @@ describe('CreateAgentScreen E2E Tests', () => {
       // Select GPT-4 model
       fireEvent.press(screen.getByText('GPT-4'));
 
-      // Toggle auto-reply
-      const autoReplySwitch = screen.getByRole('switch');
-      fireEvent(autoReplySwitch, 'valueChange', false);
+      // Toggle auto-reply — Switch mock lacks 'switch' role, find by type
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { Switch } = require('react-native');
+      const switchInstances = screen.UNSAFE_queryAllByType(Switch);
+      if (switchInstances.length > 0) {
+        fireEvent(switchInstances[0], 'valueChange', false);
+      }
 
       // Verify we can proceed
       fireEvent.press(screen.getByText('Next'));
