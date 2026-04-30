@@ -49,7 +49,22 @@ describe('MatchQueryService', () => {
 });
 
 describe('Match scoring calculations', () => {
-  // Test the scoring logic independently
+  // Test the scoring logic independently by invoking the
+  // production private methods on MatchQueryService directly,
+  // so any change in scoring logic is automatically covered.
+  let svc: MatchQueryService;
+  const calcBudgetScore = (sourceL1: Record<string, any>, targetL1: Record<string, any>): number =>
+    (svc as any).calcBudgetScore(sourceL1, targetL1);
+  const calcCategoryScore = (
+    sourceL1: Record<string, any>,
+    targetL1: Record<string, any>
+  ): number => (svc as any).calcCategoryScore(sourceL1, targetL1);
+  const calcTimeScore = (sourceL1: Record<string, any>, targetL1: Record<string, any>): number =>
+    (svc as any).calcTimeScore(sourceL1, targetL1);
+
+  beforeEach(() => {
+    svc = new MatchQueryService();
+  });
 
   describe('Budget score calculation', () => {
     it('returns 0.5 when no budget data', () => {
@@ -151,64 +166,3 @@ describe('Match scoring calculations', () => {
     });
   });
 });
-
-// ============================================
-// Test helper functions (replicate scoring logic for unit testing)
-// ============================================
-
-function calcBudgetScore(sourceL1: Record<string, any>, targetL1: Record<string, any>): number {
-  const sourceBudget = sourceL1.budget || sourceL1.budgetRange;
-  const targetBudget = targetL1.budget || targetL1.budgetRange;
-
-  if (!sourceBudget && !targetBudget) return 0.5;
-
-  const sMin = sourceBudget?.min ?? 0;
-  const sMax = sourceBudget?.max ?? Infinity;
-  const tMin = targetBudget?.min ?? 0;
-  const tMax = targetBudget?.max ?? Infinity;
-
-  const overlap = Math.max(0, Math.min(sMax, tMax) - Math.max(sMin, tMin));
-  if (overlap <= 0) return 0;
-
-  const sRange = sMax - sMin || 1;
-  return Math.min(1, overlap / sRange);
-}
-
-function calcCategoryScore(sourceL1: Record<string, any>, targetL1: Record<string, any>): number {
-  const sourceCat = sourceL1.category || sourceL1.categories || [];
-  const targetCat = targetL1.category || targetL1.categories || [];
-
-  if (!sourceCat || !targetCat) return 0.5;
-
-  const sArr = Array.isArray(sourceCat) ? sourceCat : [sourceCat];
-  const tArr = Array.isArray(targetCat) ? targetCat : [targetCat];
-
-  if (sArr.length === 0 || tArr.length === 0) return 0.5;
-
-  const matches = sArr.filter((c: string) =>
-    tArr.some((tc: string) => tc.toLowerCase() === c.toLowerCase())
-  ).length;
-
-  return matches / Math.max(sArr.length, tArr.length);
-}
-
-function calcTimeScore(sourceL1: Record<string, any>, targetL1: Record<string, any>): number {
-  const sourceTime = sourceL1.timeRange || sourceL1.availability;
-  const targetTime = targetL1.timeRange || targetL1.availability;
-
-  if (!sourceTime || !targetTime) return 0.5;
-
-  const sStart = sourceTime.start ? new Date(sourceTime.start).getTime() : 0;
-  const sEnd = sourceTime.end ? new Date(sourceTime.end).getTime() : Infinity;
-  const tStart = targetTime.start ? new Date(targetTime.start).getTime() : 0;
-  const tEnd = targetTime.end ? new Date(targetTime.end).getTime() : Infinity;
-
-  if (sStart === 0 && sEnd === Infinity) return 0.5;
-  if (tStart === 0 && tEnd === Infinity) return 0.5;
-
-  const overlap = Math.max(0, Math.min(sEnd, tEnd) - Math.max(sStart, tStart));
-  if (overlap <= 0) return 0;
-
-  const sRange = sEnd - sStart || 1;
-  return Math.min(1, overlap / sRange);
-}
