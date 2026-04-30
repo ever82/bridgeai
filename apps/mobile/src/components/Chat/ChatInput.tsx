@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   TextInput,
@@ -11,9 +11,53 @@ import {
   Platform,
   ScrollView,
   LayoutAnimation,
+  UIManager,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { theme } from '../../theme';
+
+const RECENT_EMOJIS_KEY = '@chat_input_recent_emojis';
+const MAX_RECENT_EMOJIS = 24;
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+const STICKERS = [
+  '🎁',
+  '🎂',
+  '🎈',
+  '🎀',
+  '🎄',
+  '🎃',
+  '🎆',
+  '🎇',
+  '🧸',
+  '🎮',
+  '🎲',
+  '🎸',
+  '🎺',
+  '🎻',
+  '🥁',
+  '🎹',
+  '🏆',
+  '🥇',
+  '🥈',
+  '🥉',
+  '⚽',
+  '🏀',
+  '🏈',
+  '⚾',
+  '🐶',
+  '🐱',
+  '🐭',
+  '🐹',
+  '🐰',
+  '🦊',
+  '🐻',
+  '🐼',
+];
 
 /** Minimal user shape for mention suggestions. */
 export interface MentionUser {
@@ -131,7 +175,33 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [emojiSearch, setEmojiSearch] = useState('');
+  const [recentEmojis, setRecentEmojis] = useState<string[]>([]);
   const inputRef = useRef<TextInput>(null);
+
+  // Load recent emojis from AsyncStorage on mount
+  useEffect(() => {
+    AsyncStorage.getItem(RECENT_EMOJIS_KEY)
+      .then(stored => {
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) setRecentEmojis(parsed);
+          } catch {
+            // ignore parse errors
+          }
+        }
+      })
+      .catch(() => {
+        // ignore read errors
+      });
+  }, []);
+
+  const persistRecentEmojis = useCallback((emojis: string[]) => {
+    AsyncStorage.setItem(RECENT_EMOJIS_KEY, JSON.stringify(emojis)).catch(() => {
+      // ignore write errors
+    });
+  }, []);
 
   const handleSend = useCallback(() => {
     const trimmed = text.trim();
@@ -140,12 +210,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     setText('');
   }, [text, disabled, onSend]);
 
-  const handleEmojiSelect = useCallback((emoji: string) => {
-    setText(prev => prev + emoji);
-    inputRef.current?.focus();
-  }, []);
+  const handleEmojiSelect = useCallback(
+    (emoji: string) => {
+      setText(prev => prev + emoji);
+      inputRef.current?.focus();
+      setRecentEmojis(prev => {
+        const next = [emoji, ...prev.filter(e => e !== emoji)].slice(0, MAX_RECENT_EMOJIS);
+        persistRecentEmojis(next);
+        return next;
+      });
+    },
+    [persistRecentEmojis]
+  );
 
   const toggleEmojiPicker = useCallback(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setShowEmojiPicker(prev => !prev);
     if (showEmojiPicker) {
       inputRef.current?.focus();
@@ -230,6 +309,31 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     </TouchableOpacity>
   );
 
+  // Build dynamic category list including recent + stickers
+  const allCategories = useMemo(() => {
+    const cats: { name: string; emojis: string[] }[] = [];
+    if (recentEmojis.length > 0) {
+      cats.push({ name: '最近', emojis: recentEmojis });
+    }
+    cats.push(...EMOJI_CATEGORIES);
+    cats.push({ name: '贴纸', emojis: STICKERS });
+    return cats;
+  }, [recentEmojis]);
+
+  const safeSelectedCategory = Math.min(selectedCategory, allCategories.length - 1);
+
+  // Apply search filter across all emojis when query is non-empty
+  const visibleEmojis = useMemo(() => {
+    const query = emojiSearch.trim();
+    if (query.length > 0) {
+      const all = Array.from(
+        new Set([...recentEmojis, ...EMOJI_CATEGORIES.flatMap(c => c.emojis), ...STICKERS])
+      );
+      return all.filter(e => e.includes(query));
+    }
+    return allCategories[safeSelectedCategory]?.emojis ?? [];
+  }, [emojiSearch, allCategories, safeSelectedCategory, recentEmojis]);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -238,26 +342,44 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     >
       {showEmojiPicker && (
         <View style={styles.emojiPicker}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryTabs}>
-            {EMOJI_CATEGORIES.map((category, index) => (
-              <TouchableOpacity
-                key={category.name}
-                style={[styles.categoryTab, selectedCategory === index && styles.categoryTabActive]}
-                onPress={() => setSelectedCategory(index)}
-              >
-                <Text
+          <TextInput
+            style={styles.emojiSearchInput}
+            value={emojiSearch}
+            onChangeText={setEmojiSearch}
+            placeholder="搜索 emoji..."
+            placeholderTextColor={theme.colors.textTertiary}
+            testID="emoji-search-input"
+          />
+          {emojiSearch.trim().length === 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.categoryTabs}
+            >
+              {allCategories.map((category, index) => (
+                <TouchableOpacity
+                  key={category.name}
                   style={[
-                    styles.categoryTabText,
-                    selectedCategory === index && styles.categoryTabTextActive,
+                    styles.categoryTab,
+                    safeSelectedCategory === index && styles.categoryTabActive,
                   ]}
+                  onPress={() => setSelectedCategory(index)}
+                  testID={`emoji-category-${category.name}`}
                 >
-                  {category.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+                  <Text
+                    style={[
+                      styles.categoryTabText,
+                      safeSelectedCategory === index && styles.categoryTabTextActive,
+                    ]}
+                  >
+                    {category.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
           <FlatList
-            data={EMOJI_CATEGORIES[selectedCategory].emojis}
+            data={visibleEmojis}
             renderItem={renderEmojiItem}
             keyExtractor={(item, index) => `${item}-${index}`}
             numColumns={8}
@@ -355,10 +477,21 @@ const styles = StyleSheet.create({
     borderTopColor: theme.colors.border,
   },
   emojiPicker: {
-    height: 180,
+    height: 240,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     backgroundColor: theme.colors.backgroundSecondary,
+  },
+  emojiSearchInput: {
+    margin: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    fontSize: theme.fonts.sizes.sm,
+    color: theme.colors.text,
+    backgroundColor: theme.colors.background,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   categoryTabs: {
     borderBottomWidth: 1,

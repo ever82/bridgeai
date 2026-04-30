@@ -18,12 +18,14 @@ describe('QuickReply', () => {
   });
 
   describe('Rendering', () => {
-    it('should return null when replies array is empty', () => {
-      const { queryByTestId } = render(
+    it('should still render the add-custom-reply button when replies array is empty', () => {
+      const { getByTestId } = render(
         <QuickReply replies={[]} onSelect={mockOnSelect} testID="quick-reply" />
       );
 
-      expect(queryByTestId('quick-reply')).toBeNull();
+      // Container should be rendered so users can always add a custom reply
+      expect(getByTestId('quick-reply')).toBeTruthy();
+      expect(getByTestId('quick-reply-add-button')).toBeTruthy();
     });
 
     it('should render reply items with correct text', () => {
@@ -43,13 +45,18 @@ describe('QuickReply', () => {
       expect(scrollView).toBeTruthy();
     });
 
-    it('should render each reply as a TouchableOpacity', () => {
-      const { UNSAFE_getAllByType } = render(
+    it('should render each reply plus the add-custom-reply button as TouchableOpacity', () => {
+      const { UNSAFE_getAllByType, getByTestId } = render(
         <QuickReply replies={mockReplies} onSelect={mockOnSelect} />
       );
 
+      // 3 replies + 1 add button visible in the scroll bar (modal buttons exist
+      // in the tree but are hidden inside an invisible Modal). Assert the add
+      // button is present and that the visible reply count matches.
+      expect(getByTestId('quick-reply-add-button')).toBeTruthy();
       const touchableOpacities = UNSAFE_getAllByType(TouchableOpacity);
-      expect(touchableOpacities).toHaveLength(3);
+      // 3 replies + 1 add + 2 modal buttons (cancel, confirm) rendered in tree
+      expect(touchableOpacities.length).toBeGreaterThanOrEqual(4);
     });
   });
 

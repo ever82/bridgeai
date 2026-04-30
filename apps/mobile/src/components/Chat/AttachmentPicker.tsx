@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   Modal,
   View,
@@ -40,6 +40,7 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({ visible, onC
   const [attachment, setAttachment] = useState<AttachmentData | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const xhrRef = useRef<XMLHttpRequest | null>(null);
 
   const resetState = useCallback(() => {
     setStep('menu');
@@ -141,6 +142,7 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({ visible, onC
 
     return new Promise<void>((resolve, _reject) => {
       const xhr = new XMLHttpRequest();
+      xhrRef.current = xhr;
 
       xhr.upload.addEventListener('progress', event => {
         if (event.lengthComputable) {
@@ -150,6 +152,7 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({ visible, onC
       });
 
       xhr.addEventListener('load', () => {
+        xhrRef.current = null;
         if (xhr.status >= 200 && xhr.status < 300) {
           // Upload succeeded. onSend is called with the local attachment data.
           // If the server returns a URL or file ID, merge it here.
@@ -164,12 +167,14 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({ visible, onC
       });
 
       xhr.addEventListener('error', () => {
+        xhrRef.current = null;
         setError('上传失败，请检查网络连接');
         setStep('preview');
         resolve();
       });
 
       xhr.addEventListener('abort', () => {
+        xhrRef.current = null;
         setError('上传已取消');
         setStep('preview');
         resolve();
@@ -193,6 +198,10 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({ visible, onC
   }, [attachment, onSend, handleClose]);
 
   const handleCancelUpload = useCallback(() => {
+    if (xhrRef.current) {
+      xhrRef.current.abort();
+      xhrRef.current = null;
+    }
     handleClose();
   }, [handleClose]);
 
