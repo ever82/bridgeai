@@ -51,13 +51,15 @@ env:
     index: 0
 - waitForAnimationToEnd
 
-# ── 断言 3: 聊天界面核心元素可见 ──────────────────────────────────
+# ── 断言 3: 聊天界面核心元素可见（含 MessageList，承载 MessageBubble） ──
 - extendedWaitUntil:
     visible:
       id: 'chat-identity-switcher'
     timeout: 10000
 - assertVisible:
     id: 'chat-identity-switcher'
+- assertVisible:
+    id: 'chat-message-list'
 - assertVisible:
     id: 'send-button'
 - assertVisible:
