@@ -253,6 +253,7 @@ enum MatchStatus {
   ACCEPTED
   REJECTED
   COMPLETED
+  CANCELLED
 }
 
 // ============================================
@@ -641,6 +642,7 @@ model ChatMessage {
   status      MessageStatus @default(SENT)
   attachments Json?
   metadata    Json? // 包含私聊建议标记等
+  creditScore Int?          @map("credit_score") // Sender's credit score snapshot at send time (AS-PROTO-001-AC-1)
   createdAt   DateTime      @default(now()) @map("created_at")
 
   // Relations
@@ -1896,6 +1898,25 @@ model DialogSessionRecord {
   @@map("dialog_sessions")
 }
 
+// Append-only dialog message log. Provides a durable, ordered record of
+// every message in a dialog session, independent of the JSON `messages`
+// column on DialogSessionRecord (which is a full upsert and may be
+// corrupted or lost). See ISSUE play-story-AS-005-16-1777555515-13.
+model DialogMessage {
+  id             String   @id @default(cuid())
+  sessionId      String   @map("session_id")
+  senderId       String   @map("sender_id")
+  senderType     String   @map("sender_type") // 'agent' | 'user' | 'system'
+  content        String   @db.Text
+  sequenceNumber Int      @map("sequence_number")
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([sessionId, sequenceNumber])
+  @@index([sessionId, createdAt])
+  @@map("dialog_messages")
+}
+
 // ============================================
 // Scene Migration History
 // ============================================
@@ -2265,4 +2286,21 @@ model SearchHistory {
   @@index([userId])
   @@index([createdAt])
   @@map("search_history")
+}
+
+// ============================================
+// Agent Persona Snapshot - tracks persona over
+// time for cross-session consistency / drift
+// detection, scene rule learning.
+// ============================================
+
+model AgentPersonaSnapshot {
+  id                     String   @id @default(cuid())
+  agentId                String   @map("agent_id")
+  personalityFingerprint Json     @map("personality_fingerprint")
+  sceneCode              String?  @map("scene_code")
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  @@index([agentId, createdAt])
+  @@map("agent_persona_snapshots")
 }

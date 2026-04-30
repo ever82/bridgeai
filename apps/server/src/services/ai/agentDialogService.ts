@@ -11,10 +11,61 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import { logger } from '../../utils/logger';
+import {
+  getMemoriesForAgent,
+  AgentMemoryRecord,
+  AgentMemoryType,
+} from '../dating/agentMemoryService';
+
+import { persistPersona, detectDrift, PersonalityFingerprint } from './agentPersonaService';
+
+/** Run drift detection every N agent messages within a session. */
+const PERSONA_DRIFT_CHECK_INTERVAL = 5;
 
 // Dialog message types
 export type MessageSender = 'agent' | 'user' | 'system';
 export type DialogType = 'agent_to_agent' | 'agent_to_user' | 'negotiation' | 'matching';
+
+/**
+ * Negotiation state machine states for agent-agent negotiations.
+ * Tracks the lifecycle of a negotiation beyond simple message-count heuristics.
+ */
+export enum NegotiationState {
+  PROPOSED = 'proposed',
+  COUNTER = 'counter',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+  STALEMATE = 'stalemate',
+}
+
+/** Maximum rounds before declaring stalemate */
+const STALEMATE_ROUND_THRESHOLD = 12;
+
+/** Keywords indicating acceptance in negotiation */
+const ACCEPTANCE_KEYWORDS = [
+  '接受',
+  '同意',
+  '可以',
+  'deal',
+  'agree',
+  'accepted',
+  '成交',
+  '赞同',
+  '确认',
+  'approve',
+];
+/** Keywords indicating rejection in negotiation */
+const REJECTION_KEYWORDS = [
+  '拒绝',
+  '不同意',
+  'no ',
+  'reject',
+  '不行',
+  '无法接受',
+  '不同意',
+  'refuse',
+  'decline',
+];
 
 /**
  * Dialog message interface
@@ -91,6 +142,10 @@ export interface DialogContext {
     currentRound: number;
     agreedTerms: string[];
     pendingIssues: string[];
+    /** Negotiation lifecycle state (proposed/counter/accepted/rejected/stalemate) */
+    state?: NegotiationState;
+    /** Per-field bottom-line limits, e.g. { salary: 22000 }. Violations trigger auto counter-proposal. */
+    bottomLine?: Record<string, number>;
   };
   matchingCriteria?: {
     requirements: string[];
@@ -193,6 +248,21 @@ export class AgentDialogService {
     // Persist to database
     await this.persistSession(session);
 
+    // Persist a persona snapshot for each agent participant so each
+    // session has a fingerprint baseline for drift detection.
+    for (const p of participants) {
+      if (p.type === 'agent' && p.persona) {
+        const fingerprint: PersonalityFingerprint = {
+          traits: p.persona.personality,
+          communicationStyle: p.persona.communicationStyle,
+          goals: p.persona.goals,
+          specializations: p.persona.specializations,
+        };
+        // Fire-and-forget: never block session creation on snapshot write.
+        void persistPersona(p.id, fingerprint, scene);
+      }
+    }
+
     logger.info('Dialog session created', {
       sessionId,
       type,
@@ -219,8 +289,13 @@ export class AgentDialogService {
 
     const startTime = Date.now();
 
+    // Fetch structured long-term memories for the sender agent
+    const { textBlock: structuredMemoryText } = await this.buildStructuredMemoryBlock(
+      request.senderId
+    );
+
     // Build prompt based on dialog type and context
-    const prompt = this.buildDialogPrompt(session, sender, request);
+    const prompt = this.buildDialogPrompt(session, sender, request, structuredMemoryText);
 
     // Generate response using LLM
     const { llmService } = await this.getLLMService();
@@ -260,7 +335,34 @@ export class AgentDialogService {
 
     // Add to session
     session.messages.push(message);
+    const appendedSeq = session.messages.length - 1;
     session.updatedAt = new Date();
+
+    // Append-only durable log (in addition to the JSON column on
+    // DialogSessionRecord). Best-effort; failures are logged.
+    void this.appendMessageToDb(session.id, message, appendedSeq);
+
+    // Periodic persona drift detection — non-blocking. Runs every N
+    // messages on agent senders only.
+    if (
+      request.senderType === 'agent' &&
+      session.messages.length % PERSONA_DRIFT_CHECK_INTERVAL === 0 &&
+      sender.persona
+    ) {
+      const currentFingerprint: PersonalityFingerprint = {
+        traits: sender.persona.personality,
+        communicationStyle: sender.persona.communicationStyle,
+        goals: sender.persona.goals,
+        specializations: sender.persona.specializations,
+      };
+      void detectDrift(request.senderId, message.content, currentFingerprint).catch(err => {
+        logger.warn('Persona drift detection failed', {
+          sessionId: session.id,
+          senderId: request.senderId,
+          error: (err as Error)?.message,
+        });
+      });
+    }
 
     // Prune old messages if needed
     await this.pruneHistory(session);
@@ -456,11 +558,13 @@ export class AgentDialogService {
 
   /**
    * Build dialog prompt (exposed for streaming endpoint)
+   * @param structuredMemoryText  Pre-fetched structured memory block (from AgentMemory table)
    */
   buildDialogPrompt(
     session: DialogSession,
     sender: DialogParticipant,
-    request: GenerateDialogRequest
+    request: GenerateDialogRequest,
+    structuredMemoryText?: string
   ): string {
     // Build message history
     const historyText = session.messages
@@ -479,6 +583,11 @@ export class AgentDialogService {
       prompt = this.buildNegotiationPrompt(session, sender, request.content, historyText);
     } else if (session.type === 'matching') {
       prompt = this.buildMatchingPrompt(session, sender, request.content, historyText);
+    }
+
+    // Inject structured long-term memory block before the user message
+    if (structuredMemoryText) {
+      prompt += `\n\n长期记忆（从历史交互中学习的关键信息）：\n${structuredMemoryText}`;
     }
 
     return prompt;
@@ -690,8 +799,68 @@ ${historyText || '（无历史记录）'}
   }
 
   /**
+   * Fetch and format structured long-term memories for the given agent.
+   * Returns a human-readable block grouped by memory type for injection
+   * into the system prompt.
+   */
+  private async buildStructuredMemoryBlock(agentId: string): Promise<{
+    memories: AgentMemoryRecord[];
+    textBlock: string;
+  }> {
+    try {
+      const memories = await getMemoriesForAgent(agentId, { limit: 10 });
+      if (memories.length === 0) {
+        return { memories: [], textBlock: '' };
+      }
+
+      const typeOrder: AgentMemoryType[] = [
+        'SUCCESS_TRAIT',
+        'OWNER_PREFERENCE',
+        'FAILURE_REASON',
+        'INTERACTION_OUTCOME',
+      ];
+      const typeLabels: Record<AgentMemoryType, string> = {
+        SUCCESS_TRAIT: '成功特征',
+        OWNER_PREFERENCE: '主人偏好',
+        FAILURE_REASON: '失败原因',
+        INTERACTION_OUTCOME: '交互结果',
+      };
+
+      const grouped = new Map<AgentMemoryType, AgentMemoryRecord[]>();
+      for (const mem of memories) {
+        const list = grouped.get(mem.memoryType) || [];
+        list.push(mem);
+        grouped.set(mem.memoryType, list);
+      }
+
+      const lines: string[] = [];
+      for (const t of typeOrder) {
+        const group = grouped.get(t);
+        if (!group || group.length === 0) continue;
+        lines.push(`【${typeLabels[t]}】`);
+        for (const mem of group) {
+          const desc =
+            typeof mem.structuredFields?.description === 'string'
+              ? mem.structuredFields.description
+              : JSON.stringify(mem.structuredFields);
+          lines.push(`  - ${desc}`);
+        }
+      }
+
+      return { memories, textBlock: lines.join('\n') };
+    } catch (err) {
+      logger.warn('Failed to build structured memory block', {
+        agentId,
+        error: (err as Error)?.message,
+      });
+      return { memories: [], textBlock: '' };
+    }
+  }
+
+  /**
    * Prune message history to prevent memory bloat
    * Generates LLM summary of pruned messages for long-term context
+   * Also enriches session metadata with structured memories from AgentMemory
    */
   private async pruneHistory(session: DialogSession): Promise<void> {
     if (session.messages.length > this.defaultMaxHistory) {
@@ -700,11 +869,30 @@ ${historyText || '（无历史记录）'}
 
       // Generate summary of pruned messages using LLM
       const summary = await this.summarizeMessages(prunedMessages, session.context.relevantHistory);
+
+      // Fetch structured memories for all agent participants
+      const agentIds = session.participants.filter(p => p.type === 'agent').map(p => p.id);
+      const structuredMemories: Record<string, unknown[]> = {};
+      await Promise.all(
+        agentIds.map(async agentId => {
+          const { memories } = await this.buildStructuredMemoryBlock(agentId);
+          if (memories.length > 0) {
+            structuredMemories[agentId] = memories.map(m => ({
+              type: m.memoryType,
+              fields: m.structuredFields,
+              source: m.sourceEventType,
+              createdAt: m.createdAt,
+            }));
+          }
+        })
+      );
+
       if (summary) {
         session.context.relevantHistory = [];
         session.metadata = {
           ...session.metadata,
           conversationSummary: summary,
+          ...(Object.keys(structuredMemories).length > 0 ? { structuredMemories } : {}),
         };
       } else {
         session.context.relevantHistory = prunedMessages;
@@ -762,9 +950,10 @@ ${historyText || '（无历史记录）'}
   }
 
   /**
-   * Update dialog phase based on conversation progress
+   * Update dialog phase based on conversation progress.
+   * Also tracks negotiation state machine for negotiation-type sessions.
    */
-  private updateDialogPhase(session: DialogSession, _message: DialogMessage): void {
+  private updateDialogPhase(session: DialogSession, message: DialogMessage): void {
     const messageCount = session.messages.length;
     const previousPhase = session.dialogPhase;
 
@@ -793,6 +982,11 @@ ${historyText || '（无历史记录）'}
       }
     }
 
+    // --- Negotiation state machine (parallel layer) ---
+    if (session.type === 'negotiation') {
+      this.updateNegotiationState(session, message);
+    }
+
     if (previousPhase !== session.dialogPhase) {
       logger.info('Dialog phase updated', {
         sessionId: session.id,
@@ -800,6 +994,154 @@ ${historyText || '（无历史记录）'}
         to: session.dialogPhase,
       });
     }
+  }
+
+  /**
+   * Evaluate and update the NegotiationState enum based on message content.
+   * Runs as a parallel layer alongside the existing phase-based logic.
+   */
+  private updateNegotiationState(session: DialogSession, message: DialogMessage): void {
+    // Ensure negotiationState exists
+    if (!session.context.negotiationState) {
+      session.context.negotiationState = {
+        currentRound: 0,
+        agreedTerms: [],
+        pendingIssues: [],
+        state: NegotiationState.PROPOSED,
+      };
+    }
+    const ns = session.context.negotiationState;
+
+    // Initialize state if not set
+    if (!ns.state) {
+      ns.state = NegotiationState.PROPOSED;
+    }
+
+    // Once terminal, do not regress
+    if (ns.state === NegotiationState.ACCEPTED || ns.state === NegotiationState.REJECTED) {
+      return;
+    }
+
+    const previousState = ns.state;
+    const contentLower = message.content.toLowerCase();
+
+    // Increment round on each message
+    ns.currentRound = (ns.currentRound || 0) + 1;
+
+    // Check for stalemate (too many rounds without resolution)
+    if (ns.currentRound >= STALEMATE_ROUND_THRESHOLD) {
+      ns.state = NegotiationState.STALEMATE;
+    } else if (ACCEPTANCE_KEYWORDS.some(kw => contentLower.includes(kw))) {
+      ns.state = NegotiationState.ACCEPTED;
+    } else if (REJECTION_KEYWORDS.some(kw => contentLower.includes(kw))) {
+      ns.state = NegotiationState.REJECTED;
+    } else if (ns.currentRound > 1) {
+      // If we're past the first proposal and no terminal signal, it's a counter-proposal exchange
+      ns.state = NegotiationState.COUNTER;
+    }
+
+    // Check bottom line when a proposal appears in the message
+    const bottomLine = ns.bottomLine;
+    if (
+      bottomLine &&
+      ns.state !== NegotiationState.ACCEPTED &&
+      ns.state !== NegotiationState.REJECTED
+    ) {
+      const proposal = this.extractNumericProposal(message.content, Object.keys(bottomLine));
+      if (proposal && Object.keys(proposal).length > 0) {
+        const result = this.checkBottomLine(session, proposal);
+        if (!result.withinLine) {
+          // Signal auto counter-proposal in metadata
+          session.metadata = {
+            ...session.metadata,
+            bottomLineViolation: true,
+            violatedFields: result.violatedFields,
+            autoCounterProposal: true,
+          };
+          logger.info('Negotiation bottom line violated — auto counter-proposal triggered', {
+            sessionId: session.id,
+            violatedFields: result.violatedFields,
+            proposal,
+            bottomLine,
+          });
+        }
+      }
+    }
+
+    if (previousState !== ns.state) {
+      logger.info('Negotiation state updated', {
+        sessionId: session.id,
+        from: previousState,
+        to: ns.state,
+        round: ns.currentRound,
+      });
+
+      // Handle terminal states
+      if (ns.state === NegotiationState.ACCEPTED) {
+        session.status = 'completed';
+        logger.info('Negotiation completed — agreement reached', { sessionId: session.id });
+      } else if (ns.state === NegotiationState.REJECTED) {
+        session.status = 'completed';
+        logger.info('Negotiation completed — rejected', { sessionId: session.id });
+      } else if (ns.state === NegotiationState.STALEMATE) {
+        logger.warn('Negotiation stalemate detected — exceeded round threshold', {
+          sessionId: session.id,
+          rounds: ns.currentRound,
+          threshold: STALEMATE_ROUND_THRESHOLD,
+        });
+      }
+    }
+  }
+
+  /**
+   * Check whether a proposed numeric offer violates the session's bottom-line limits.
+   * Returns which fields are violated so the caller can generate an automatic counter-proposal.
+   */
+  checkBottomLine(
+    session: DialogSession,
+    proposal: Record<string, number>
+  ): { withinLine: boolean; violatedFields: string[] } {
+    const bottomLine = session.context.negotiationState?.bottomLine;
+    if (!bottomLine) {
+      return { withinLine: true, violatedFields: [] };
+    }
+
+    const violatedFields: string[] = [];
+    for (const [field, proposedValue] of Object.entries(proposal)) {
+      const limit = bottomLine[field];
+      if (limit !== undefined && proposedValue < limit) {
+        violatedFields.push(field);
+      }
+    }
+
+    return {
+      withinLine: violatedFields.length === 0,
+      violatedFields,
+    };
+  }
+
+  /**
+   * Extract numeric proposal values from message text for known fields.
+   * Simple regex-based extraction: looks for patterns like "薪资 25000" or "salary: 20000".
+   */
+  private extractNumericProposal(content: string, fields: string[]): Record<string, number> | null {
+    const result: Record<string, number> = {};
+    const fieldPatterns: Record<string, RegExp> = {
+      salary: /(?:薪资|salary|月薪|月薪)\s*[:：]?\s*(\d+)/i,
+      // Extend with more field patterns as needed
+    };
+
+    for (const field of fields) {
+      const pattern = fieldPatterns[field];
+      if (pattern) {
+        const match = content.match(pattern);
+        if (match && match[1]) {
+          result[field] = parseInt(match[1], 10);
+        }
+      }
+    }
+
+    return Object.keys(result).length > 0 ? result : null;
   }
 
   /**
@@ -831,6 +1173,129 @@ ${historyText || '（无历史记录）'}
     } catch (err) {
       logger.warn('Failed to persist dialog session', {
         sessionId: session.id,
+        error: (err as Error)?.message,
+      });
+    }
+  }
+
+  /**
+   * Append a single message to the dialog_messages append-only table.
+   *
+   * This is an additional source of truth alongside the JSON `messages`
+   * column on DialogSessionRecord. It is best-effort: failures are
+   * logged but do not break the main flow. The unique constraint on
+   * (sessionId, sequenceNumber) prevents duplicate appends.
+   */
+  async appendMessageToDb(
+    sessionId: string,
+    message: DialogMessage,
+    sequenceNumber: number
+  ): Promise<void> {
+    try {
+      const { prisma } = await import('../../db/client').catch(() => ({ prisma: null }));
+      if (!prisma) return;
+      await (prisma as any).dialogMessage.create({
+        data: {
+          id: message.id,
+          sessionId,
+          senderId: message.senderId,
+          senderType: message.senderType,
+          content: message.content,
+          sequenceNumber,
+          metadata: (message.metadata as any) || null,
+          createdAt: message.timestamp || new Date(),
+        },
+      });
+    } catch (err) {
+      logger.warn('Failed to append dialog message to dialog_messages table', {
+        sessionId,
+        messageId: message.id,
+        sequenceNumber,
+        error: (err as Error)?.message,
+      });
+    }
+  }
+
+  /**
+   * Load ordered messages for a session from the append-only
+   * dialog_messages table. Returns [] if the table is unavailable or
+   * the session has no rows.
+   */
+  async loadMessagesFromDb(sessionId: string): Promise<DialogMessage[]> {
+    try {
+      const { prisma } = await import('../../db/client').catch(() => ({ prisma: null }));
+      if (!prisma) return [];
+      const rows = await (prisma as any).dialogMessage.findMany({
+        where: { sessionId },
+        orderBy: { sequenceNumber: 'asc' },
+      });
+      return (rows || []).map(
+        (r: any): DialogMessage => ({
+          id: r.id,
+          sessionId: r.sessionId,
+          senderId: r.senderId,
+          senderType: r.senderType as MessageSender,
+          senderName: (r.metadata && r.metadata.senderName) || '',
+          content: r.content,
+          timestamp: r.createdAt,
+          metadata: (r.metadata as any) || undefined,
+        })
+      );
+    } catch (err) {
+      logger.warn('Failed to load dialog messages from dialog_messages table', {
+        sessionId,
+        error: (err as Error)?.message,
+      });
+      return [];
+    }
+  }
+
+  /**
+   * Backfill the append-only dialog_messages table from a session's
+   * in-memory `messages` JSON. Idempotent: skips messages whose
+   * (sessionId, sequenceNumber) already exists.
+   */
+  async migrateSessionToAppendOnly(sessionId: string): Promise<void> {
+    try {
+      const session = this.sessions.get(sessionId) || (await this.loadSession(sessionId));
+      if (!session) return;
+      const { prisma } = await import('../../db/client').catch(() => ({ prisma: null }));
+      if (!prisma) return;
+
+      const existing = await (prisma as any).dialogMessage.findMany({
+        where: { sessionId },
+        select: { sequenceNumber: true },
+      });
+      const existingSeq = new Set<number>((existing || []).map((r: any) => r.sequenceNumber));
+
+      for (let i = 0; i < session.messages.length; i++) {
+        if (existingSeq.has(i)) continue;
+        const m = session.messages[i];
+        try {
+          await (prisma as any).dialogMessage.create({
+            data: {
+              id: m.id,
+              sessionId,
+              senderId: m.senderId,
+              senderType: m.senderType,
+              content: m.content,
+              sequenceNumber: i,
+              metadata: (m.metadata as any) || null,
+              createdAt: m.timestamp || new Date(),
+            },
+          });
+        } catch (innerErr) {
+          // Likely a unique-constraint race; safe to ignore.
+          logger.warn('Skipped append during migration', {
+            sessionId,
+            sequenceNumber: i,
+            error: (innerErr as Error)?.message,
+          });
+        }
+      }
+    } catch (err) {
+      logger.warn('Failed to migrate session to append-only log', {
+        sessionId,
         error: (err as Error)?.message,
       });
     }

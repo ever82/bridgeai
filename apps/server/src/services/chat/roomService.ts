@@ -43,6 +43,7 @@ export interface RoomQueryOptions {
   type?: ChatRoomType;
   status?: ChatRoomStatus;
   search?: string;
+  sceneId?: string;
   page?: number;
   limit?: number;
   sortBy?: 'lastMessageAt' | 'createdAt' | 'updatedAt';
@@ -263,6 +264,7 @@ export async function getUserRooms(
     type,
     status = ChatRoomStatus.ACTIVE,
     search,
+    sceneId,
     page = 1,
     limit = 20,
     sortBy = 'lastMessageAt',
@@ -284,6 +286,10 @@ export async function getUserRooms(
 
   if (type) {
     where.type = type;
+  }
+
+  if (sceneId) {
+    where.sceneId = sceneId;
   }
 
   if (search) {

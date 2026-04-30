@@ -19,6 +19,8 @@ export interface SenderIndicatorProps {
   senderName?: string;
   /** Sender avatar URI (optional) */
   senderAvatarUrl?: string;
+  /** Sender's credit score snapshot at send time (AS-PROTO-001-AC-1) */
+  creditScore?: number | null;
   /** Whether this is a transition message */
   isTransition?: boolean;
   /** Show animation for sender change */
@@ -40,6 +42,7 @@ export const SenderIndicator: React.FC<SenderIndicatorProps> = ({
   handoffStatus,
   senderName,
   senderAvatarUrl,
+  creditScore,
   isTransition = false,
   animate = true,
   style,
@@ -144,6 +147,13 @@ export const SenderIndicator: React.FC<SenderIndicatorProps> = ({
           </Text>
         </View>
       </View>
+
+      {/* Credit score corner badge (AS-PROTO-001-AC-1) */}
+      {typeof creditScore === 'number' && (
+        <View style={styles.creditBadge} testID={testID ? `${testID}-credit` : undefined}>
+          <Text style={styles.creditBadgeText}>{creditScore}</Text>
+        </View>
+      )}
 
       {/* Status indicator */}
       <View style={[styles.statusIndicator, { backgroundColor: getSenderColor() }]} />
@@ -270,6 +280,21 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
+  },
+  creditBadge: {
+    minWidth: 24,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing.xs,
+  },
+  creditBadgeText: {
+    fontSize: theme.fonts.sizes.xs,
+    fontWeight: theme.fonts.weights.semibold,
+    color: theme.colors.text,
   },
 
   // Transition styles

@@ -11,6 +11,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import apiClient from '../../services/api/client';
+import { CreditScore } from '../../components/CreditScore/CreditScore';
 
 // 同意状态枚举
 enum ConsentStatus {
@@ -54,6 +55,15 @@ interface MutualConsent {
   matchScore?: number;
 }
 
+// 对方用户简要信息接口
+interface OtherUserInfo {
+  userId: string;
+  nickname?: string;
+  avatar?: string;
+  creditScore?: number;
+  keyInfo?: string[];
+}
+
 // 引荐记录接口
 interface ReferralRecord {
   id: string;
@@ -67,6 +77,7 @@ interface ReferralRecord {
   };
   status: string;
   result: ReferralResult | null;
+  otherUser?: OtherUserInfo;
 }
 
 const ReferralScreen: React.FC = () => {
@@ -294,6 +305,31 @@ const ReferralScreen: React.FC = () => {
         </View>
       )}
 
+      {/* 对方信用与关键信息区域 */}
+      {referral.otherUser && (
+        <View style={styles.otherUserContainer}>
+          <Text style={styles.sectionTitle}>对方信息</Text>
+          {typeof referral.otherUser.creditScore === 'number' && (
+            <View style={styles.creditScoreWrapper}>
+              <CreditScore
+                score={referral.otherUser.creditScore}
+                size="md"
+                testID="referral-other-user-credit-score"
+              />
+            </View>
+          )}
+          {referral.otherUser.keyInfo && referral.otherUser.keyInfo.length > 0 && (
+            <View style={styles.keyInfoList}>
+              {referral.otherUser.keyInfo.map((info, index) => (
+                <View key={index} style={styles.keyInfoBadge}>
+                  <Text style={styles.keyInfoText}>{info}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
       {/* 对话摘要区域 */}
       <View style={styles.summaryContainer}>
         <Text style={styles.sectionTitle}>Agent对话摘要</Text>
@@ -441,6 +477,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#1976D2',
     textAlign: 'center',
+  },
+  otherUserContainer: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 20,
+    borderRadius: 12,
+  },
+  creditScoreWrapper: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  keyInfoList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  keyInfoBadge: {
+    backgroundColor: '#F3E5F5',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  keyInfoText: {
+    color: '#6A1B9A',
+    fontSize: 13,
   },
   summaryContainer: {
     backgroundColor: '#FFFFFF',

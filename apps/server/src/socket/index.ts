@@ -10,6 +10,7 @@ import type { Application } from 'express';
 import { createAdapter } from '@socket.io/redis-adapter';
 
 import { connectionService } from '../services/connectionService';
+import { setSocketIO as setPrivateAdviceSocketIO } from '../services/dating/privateAdviceService';
 
 import { socketAuthMiddleware } from './middleware/auth';
 import { connectionManager } from './connectionManager';
@@ -25,6 +26,7 @@ import { registerAgentNegotiationHandlers } from './handlers/agentNegotiation';
 import { registerPresenceHandlers } from './handlers/presenceHandler';
 import { registerDialogHandlers } from './handlers/dialogHandler';
 import { registerMatchSubscriptionHandlers } from './handlers/matchSubscriptionHandler';
+import { registerDisclosureHandlers } from './handlers/disclosureHandler';
 
 /**
  * Socket.io server instance
@@ -72,6 +74,9 @@ export async function initializeSocketServer(
 
   // Setup connection manager
   connectionManager.initialize(io);
+
+  // Inject io into private advice service so emitPrivateAdvice can target user rooms
+  setPrivateAdviceSocketIO(io);
 
   console.log('[Socket.io] Server initialized');
   return io;
@@ -166,6 +171,14 @@ function setupNamespaces(io: SocketServer): void {
   matchSubNsp.on('connection', socket => {
     handleConnection(socket, 'matchSubscriptions');
     registerMatchSubscriptionHandlers(socket, matchSubNsp);
+  });
+
+  // Disclosure namespace for realtime disclosure veto event chain (ISSUE-AS007)
+  const disclosureNsp = io.of('/disclosure');
+  disclosureNsp.use(socketAuthMiddleware);
+  disclosureNsp.on('connection', socket => {
+    handleConnection(socket, 'disclosure');
+    registerDisclosureHandlers(socket, disclosureNsp);
   });
 }
 

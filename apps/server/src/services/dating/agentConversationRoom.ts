@@ -1,3 +1,4 @@
+// TODO: Migrate agentConversationRoom to extend AgentRoomBase (apps/server/src/services/agent/agentRoomBase.ts)
 /**
  * Agent Conversation Room Service
  * Agent对话房间服务 (ISSUE-DATE003 c1)
@@ -11,6 +12,16 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import { logger } from '../../utils/logger';
+
+import { emitPrivateAdvice } from './privateAdviceService';
+
+// ---------------------------------------------------------------------------
+// 引荐阈值 (AS-009 对齐剧本要求 0.8，env 可覆盖)
+// ---------------------------------------------------------------------------
+
+export const REFERRAL_QUALITY_THRESHOLD = parseFloat(
+  process.env.REFERRAL_QUALITY_THRESHOLD ?? '0.8'
+);
 
 // ---------------------------------------------------------------------------
 // 类型定义
@@ -38,7 +49,7 @@ export interface ConversationRoom {
 export interface RoomConfig {
   maxRounds: number; // default 20
   timeoutMs: number; // default 30 * 60 * 1000 (30 minutes)
-  qualityThreshold: number; // default 0.6
+  qualityThreshold: number; // default REFERRAL_QUALITY_THRESHOLD (env: REFERRAL_QUALITY_THRESHOLD, 默认 0.8)
 }
 
 export interface RoomMessage {
@@ -58,8 +69,25 @@ export interface RoomMessage {
 const DEFAULT_CONFIG: Required<RoomConfig> = {
   maxRounds: 20,
   timeoutMs: 30 * 60 * 1000, // 30分钟
-  qualityThreshold: 0.6,
+  qualityThreshold: REFERRAL_QUALITY_THRESHOLD,
 };
+
+// ---------------------------------------------------------------------------
+// 引荐确认动作存储 (AS-009 实时阈值 + 双方确认流)
+// ---------------------------------------------------------------------------
+
+export interface ReferralAction {
+  id: string;
+  roomId: string;
+  qualityScore: number;
+  createdAt: Date;
+  status: 'pending' | 'confirmed' | 'cancelled';
+  confirmations: { [ownerId: string]: 'accepted' | 'rejected' | undefined };
+}
+
+const referralActionStore = new Map<string, ReferralAction>();
+// 标记房间是否已经触发过实时引荐（避免重复弹窗）
+const realtimeReferralTriggered = new Set<string>();
 
 // ---------------------------------------------------------------------------
 // 模拟存储
@@ -303,7 +331,199 @@ export async function addMessage(
     `[AgentConversationRoom] Message added to room ${roomId} by ${senderType} (${senderId})`
   );
 
+  // AS-009 实时阈值监听 — 在每次非系统消息后检查质量分是否刚刚跨越阈值
+  if (senderType !== 'system') {
+    try {
+      await checkRealtimeReferralEligibility(room, message);
+    } catch (error) {
+      logger.warn(`[AgentConversationRoom] Realtime referral check failed for ${roomId}`, {
+        error,
+      });
+    }
+  }
+
   return message;
+}
+
+/**
+ * 实时引荐资格检查 (AS-009)
+ *
+ * 在每条非系统消息加入房间后调用：
+ * - 根据当前消息计算运行中质量分
+ * - 若刚刚跨越 REFERRAL_QUALITY_THRESHOLD 阈值，向双方主人的私聊房间发出
+ *   `one_tap_action` 类型的私聊建议，附带 referralActionId 供客户端确认
+ * - 同一房间仅触发一次，避免重复弹窗
+ */
+export async function checkRealtimeReferralEligibility(
+  roomState: ConversationRoom,
+  latestMessage: RoomMessage
+): Promise<ReferralAction | null> {
+  if (realtimeReferralTriggered.has(roomState.id)) {
+    return null;
+  }
+
+  // 计算运行中质量分（最少消息门槛 4 条以避免过早触发）
+  const messages = messageStore.get(roomState.id) || [];
+  const realMessages = messages.filter(m => m.senderType !== 'system');
+  if (realMessages.length < 4) {
+    return null;
+  }
+
+  let runningScore: number | null = null;
+  try {
+    const qualityModule = await import('./conversationQualityService').catch(() => null);
+    if (
+      qualityModule &&
+      typeof (qualityModule as any).calculateConversationQuality === 'function'
+    ) {
+      const result = await (qualityModule as any).calculateConversationQuality(realMessages);
+      runningScore =
+        typeof result === 'number'
+          ? result
+          : typeof result?.overall === 'number'
+            ? result.overall
+            : typeof result?.score === 'number'
+              ? result.score
+              : null;
+    }
+  } catch (error) {
+    logger.debug(`[AgentConversationRoom] quality calc failed`, { error });
+  }
+
+  // 兜底：若无法计算运行分，则用消息长度/轮次粗估（仅用于触发判断）
+  if (runningScore === null) {
+    const avgLen =
+      realMessages.reduce((acc, m) => acc + (m.content?.length || 0), 0) / realMessages.length;
+    runningScore = Math.min(
+      1,
+      0.4 + Math.min(roomState.currentRound / 20, 0.4) + (avgLen > 30 ? 0.1 : 0)
+    );
+  }
+
+  if (runningScore < REFERRAL_QUALITY_THRESHOLD) {
+    return null;
+  }
+
+  // 已跨越阈值 — 创建 ReferralAction 并通知双方主人
+  realtimeReferralTriggered.add(roomState.id);
+  const action: ReferralAction = {
+    id: uuidv4(),
+    roomId: roomState.id,
+    qualityScore: runningScore,
+    createdAt: new Date(),
+    status: 'pending',
+    confirmations: {
+      [roomState.userIdA]: undefined,
+      [roomState.userIdB]: undefined,
+    },
+  };
+  referralActionStore.set(action.id, action);
+
+  const advicePayload = {
+    chatSessionId: roomState.id,
+    type: 'one_tap_action' as const,
+    content: '匹配度已达标，是否进入四人群聊？',
+    metadata: {
+      referralActionId: action.id,
+      qualityScore: runningScore,
+      threshold: REFERRAL_QUALITY_THRESHOLD,
+      triggeredBy: latestMessage.id,
+    },
+    createdAt: action.createdAt,
+  };
+
+  try {
+    emitPrivateAdvice(null, roomState.userIdA, advicePayload);
+    emitPrivateAdvice(null, roomState.userIdB, advicePayload);
+  } catch (error) {
+    logger.warn(`[AgentConversationRoom] emitPrivateAdvice failed`, { error });
+  }
+
+  logger.info(
+    `[AgentConversationRoom] Realtime referral eligible for room ${roomState.id} (score=${runningScore.toFixed(2)}, action=${action.id})`
+  );
+
+  return action;
+}
+
+/**
+ * 双方确认引荐动作 (AS-009)
+ *
+ * 当 BOTH owner 接受时，立即调用 createReferralFromConversation（不等待 completeRoom）。
+ * 任一方拒绝则标记为 cancelled。
+ */
+export async function confirmReferralAction(
+  referralActionId: string,
+  ownerId: string,
+  accept: boolean
+): Promise<ReferralAction> {
+  const action = referralActionStore.get(referralActionId);
+  if (!action) {
+    throw new Error(`ReferralAction not found: ${referralActionId}`);
+  }
+  if (action.status !== 'pending') {
+    return action;
+  }
+
+  if (!(ownerId in action.confirmations)) {
+    throw new Error(`Owner ${ownerId} is not part of referral action ${referralActionId}`);
+  }
+
+  action.confirmations[ownerId] = accept ? 'accepted' : 'rejected';
+
+  if (!accept) {
+    action.status = 'cancelled';
+    referralActionStore.set(action.id, action);
+    logger.info(`[AgentConversationRoom] ReferralAction ${action.id} cancelled by ${ownerId}`);
+    return action;
+  }
+
+  const allAccepted = Object.values(action.confirmations).every(v => v === 'accepted');
+  if (allAccepted) {
+    action.status = 'confirmed';
+    referralActionStore.set(action.id, action);
+
+    const room = roomStore.get(action.roomId);
+    if (room) {
+      try {
+        const { createReferralFromConversation } = await import('./referralService');
+        const messages = messageStore.get(action.roomId) || [];
+        const sharedInterests = extractSharedInterests(messages);
+        await createReferralFromConversation(
+          action.roomId,
+          room.agentAId,
+          room.agentBId,
+          room.userIdA,
+          room.userIdB,
+          {
+            summary: room.conversationSummary || '',
+            qualityScore: action.qualityScore,
+            sharedInterests,
+            compatibilityScore: Math.round(action.qualityScore * 100),
+          }
+        );
+        logger.info(
+          `[AgentConversationRoom] Realtime referral created for room ${action.roomId} via action ${action.id}`
+        );
+      } catch (error) {
+        logger.error(
+          `[AgentConversationRoom] Failed to create realtime referral for action ${action.id}`,
+          { error }
+        );
+      }
+    }
+  } else {
+    referralActionStore.set(action.id, action);
+  }
+
+  return action;
+}
+
+/**
+ * 获取引荐动作（测试/查询用）
+ */
+export function getReferralAction(referralActionId: string): ReferralAction | null {
+  return referralActionStore.get(referralActionId) || null;
 }
 
 /**
@@ -411,7 +631,7 @@ export async function completeRoom(
   );
 
   // 当质量评分达标时，自动触发引荐请求（AC-2 联动）
-  if (qualityScore !== null && qualityScore >= 0.6) {
+  if (qualityScore !== null && qualityScore >= REFERRAL_QUALITY_THRESHOLD) {
     try {
       const { createReferralFromConversation } = await import('./referralService');
       const messages = messageStore.get(roomId) || [];
@@ -569,6 +789,8 @@ export function clearAllRooms(): void {
   timeoutTimers.clear();
   roomStore.clear();
   messageStore.clear();
+  referralActionStore.clear();
+  realtimeReferralTriggered.clear();
   logger.info('[AgentConversationRoom] All rooms cleared');
 }
 
@@ -588,4 +810,8 @@ export default {
   getRoomMessages,
   getActiveRoomsByUser,
   clearAllRooms,
+  checkRealtimeReferralEligibility,
+  confirmReferralAction,
+  getReferralAction,
+  REFERRAL_QUALITY_THRESHOLD,
 };

@@ -1,3 +1,4 @@
+// TODO: Migrate negotiationRoom to extend AgentRoomBase (apps/server/src/services/agent/agentRoomBase.ts)
 /**
  * Negotiation Room Service
  * 协商房间服务
@@ -17,6 +18,7 @@ import {
   calculateNegotiationProgress,
   shouldHandoffToHuman,
 } from '../../models/NegotiationRoom';
+import * as chatRoomService from '../chat/roomService';
 
 // TODO(NP-1279): In-memory storage - data is lost on server restart and does not scale horizontally.
 // Replace with database persistence (e.g., Prisma) to store rooms and messages with proper schema,
@@ -96,6 +98,50 @@ export class NegotiationRoomService {
     );
 
     await this.addMessage(room.id, systemMessage);
+
+    // Create the linked QUAD ChatRoom (4 participants:
+    // jobSeeker + jobSeekerAgent + employer + employerAgent) and store
+    // bidirectional references between NegotiationRoom and ChatRoom.
+    // Failures are logged but do not abort negotiation creation since the
+    // negotiation record is already persisted in memory above.
+    try {
+      const participantIds = [
+        request.jobSeekerId,
+        request.jobSeekerAgentId,
+        request.employerId,
+        request.employerAgentId,
+      ];
+
+      const chatRoom = await chatRoomService.createRoom({
+        type: 'QUAD' as any,
+        participantIds,
+        matchId: request.jobApplicationId,
+        metadata: {
+          negotiationRoomId: room.id,
+          jobApplicationId: request.jobApplicationId,
+        },
+        createdBy: request.jobSeekerAgentId,
+      });
+
+      // Store chatRoomId on negotiation room metadata (bidirectional reference)
+      const updatedMetadata = {
+        ...(room.metadata || {}),
+        chatRoomId: chatRoom.id,
+      };
+      const updated: NegotiationRoom = {
+        ...room,
+        metadata: updatedMetadata,
+        updatedAt: new Date(),
+      };
+      rooms.set(room.id, updated);
+      return updated;
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[NegotiationRoomService] Failed to create linked QUAD chat room for negotiation ${room.id}:`,
+        err
+      );
+    }
 
     return room;
   }

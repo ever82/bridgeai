@@ -156,6 +156,8 @@ export function registerChatHandlers(socket: AuthenticatedSocket, nsp: Namespace
           senderId: message.senderId,
           sender: message.sender,
           senderSnapshot,
+          senderType: message.senderType,
+          creditScore: message.creditScore ?? null,
           content: message.content,
           type: message.type.toLowerCase(),
           attachments: message.attachments,

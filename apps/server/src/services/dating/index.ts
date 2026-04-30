@@ -17,6 +17,8 @@ export * from './matchAlgorithm';
 export * from './recommendationService';
 export * from './matchNotificationService';
 export * from './agentInitiatedChat';
+export * from './agentChatDispatcher';
+export * from './privateAdviceService';
 export * from './feedbackService';
 export * from './preferenceLearning';
 
@@ -32,5 +34,7 @@ export { default as matchAlgorithm } from './matchAlgorithm';
 export { default as recommendationService } from './recommendationService';
 export { default as matchNotificationService } from './matchNotificationService';
 export { default as agentInitiatedChat } from './agentInitiatedChat';
+export { default as agentChatDispatcher } from './agentChatDispatcher';
+export { default as privateAdviceService } from './privateAdviceService';
 export { default as feedbackService } from './feedbackService';
 export { default as preferenceLearning } from './preferenceLearning';

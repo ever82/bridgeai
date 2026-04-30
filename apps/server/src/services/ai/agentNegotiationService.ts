@@ -1,3 +1,4 @@
+// TODO: Migrate agentNegotiationService to extend AgentRoomBase + AgentDialogBase (apps/server/src/services/agent/)
 /**
  * Agent Negotiation Service
  * Agent优惠协商谈判服务 - 核心模块
@@ -90,7 +91,14 @@ export interface NegotiationMessage {
   senderType: AgentType;
   creditScore?: number;
   content: string;
-  messageType: 'introduction' | 'offer' | 'question' | 'response' | 'comparison' | 'recommendation' | 'system';
+  messageType:
+    | 'introduction'
+    | 'offer'
+    | 'question'
+    | 'response'
+    | 'comparison'
+    | 'recommendation'
+    | 'system';
   timestamp: Date;
   metadata?: {
     offerId?: string;
@@ -973,14 +981,16 @@ ${consumerDemand.brandPreferences?.length ? `- 品牌偏好：${consumerDemand.b
 ${consumerDemand.requirements?.length ? `- 要求：${consumerDemand.requirements.join('、')}` : ''}
 
 商家优惠方案：
-${allOffers.map(({ merchantId, offer }, idx) => {
-  const merchant = room.merchantAgents.find(m => m.id === merchantId);
-  return `${idx + 1}. ${merchant?.name || 'Unknown'} - ${offer.title}
+${allOffers
+  .map(({ merchantId, offer }, idx) => {
+    const merchant = room.merchantAgents.find(m => m.id === merchantId);
+    return `${idx + 1}. ${merchant?.name || 'Unknown'} - ${offer.title}
    - 优惠：${offer.discountValue}${offer.discountType === 'percentage' ? '%' : '元'}
    ${offer.minPurchase ? `- 最低消费：${offer.minPurchase}元` : ''}
    - 有效期：${offer.validFrom} 至 ${offer.validTo}
    ${offer.applicableProducts?.length ? `- 适用：${offer.applicableProducts.join('、')}` : ' - 适用：全部商品'}`;
-}).join('\n')}
+  })
+  .join('\n')}
 
 请进行全面对比分析，包括：
 1. 优惠价值（节省金额）
@@ -1021,16 +1031,18 @@ ${allOffers.map(({ merchantId, offer }, idx) => {
     return `作为智能消费顾问，请根据对比分析结果，为消费者推荐最优方案。
 
 对比分析结果：
-${comparisonResult.offers.map(o => {
-  const merchant = room.merchantAgents.find(m => m.id === o.merchantId);
-  return `- ${merchant?.name || 'Unknown'} (${o.offer.title})
+${comparisonResult.offers
+  .map(o => {
+    const merchant = room.merchantAgents.find(m => m.id === o.merchantId);
+    return `- ${merchant?.name || 'Unknown'} (${o.offer.title})
   综合评分：${o.scores.overall}
   优惠价值：${o.scores.value}
   匹配度：${o.scores.match}
   便利性：${o.scores.convenience}
   优点：${o.pros.join('、')}
   缺点：${o.cons.join('、')}`;
-}).join('\n')}
+  })
+  .join('\n')}
 
 ${comparisonResult.summary ? `分析总结：${comparisonResult.summary}` : ''}
 
@@ -1096,13 +1108,9 @@ ${comparisonResult.summary ? `分析总结：${comparisonResult.summary}` : ''}
       const comparedOffers: ComparedOffer[] = [];
 
       for (const offerData of result.offers || []) {
-        const originalOffer = allOffers.find(
-          o => o.offer.id === offerData.offerId
-        );
+        const originalOffer = allOffers.find(o => o.offer.id === offerData.offerId);
         if (originalOffer) {
-          const merchant = room.merchantAgents.find(
-            m => m.id === offerData.merchantId
-          );
+          const merchant = room.merchantAgents.find(m => m.id === offerData.merchantId);
           comparedOffers.push({
             offerId: offerData.offerId,
             merchantId: offerData.merchantId,
@@ -1145,15 +1153,22 @@ ${comparisonResult.summary ? `分析总结：${comparisonResult.summary}` : ''}
 
           // Match score: check category/brand alignment
           let matchScore = 60;
-          if (demand.category && offer.applicableProducts?.some(p =>
-            p.toLowerCase().includes(demand.category!.toLowerCase()) ||
-            demand.category!.toLowerCase().includes(p.toLowerCase())
-          )) {
+          if (
+            demand.category &&
+            offer.applicableProducts?.some(
+              p =>
+                p.toLowerCase().includes(demand.category!.toLowerCase()) ||
+                demand.category!.toLowerCase().includes(p.toLowerCase())
+            )
+          ) {
             matchScore = 85;
           }
-          if (demand.brandPreferences?.length && offer.applicableProducts?.some(p =>
-            demand.brandPreferences!.some(bp => p.toLowerCase().includes(bp.toLowerCase()))
-          )) {
+          if (
+            demand.brandPreferences?.length &&
+            offer.applicableProducts?.some(p =>
+              demand.brandPreferences!.some(bp => p.toLowerCase().includes(bp.toLowerCase()))
+            )
+          ) {
             matchScore = Math.min(100, matchScore + 10);
           }
 
@@ -1263,11 +1278,7 @@ ${comparisonResult.summary ? `分析总结：${comparisonResult.summary}` : ''}
   /**
    * 记录指标
    */
-  private async recordMetrics(
-    operation: string,
-    response: any,
-    startTime: number
-  ): Promise<void> {
+  private async recordMetrics(operation: string, response: any, startTime: number): Promise<void> {
     await metricsService.recordRequest({
       requestId: `negotiation-${operation}-${Date.now()}`,
       provider: response.provider as LLMProvider,

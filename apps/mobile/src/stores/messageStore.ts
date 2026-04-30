@@ -34,6 +34,8 @@ export interface Conversation {
   isOnline: boolean;
   isArchived: boolean;
   isMuted: boolean;
+  matchScore?: number | null;
+  partnerAgentName?: string;
 }
 
 export interface MessageSearchResult {
@@ -140,6 +142,9 @@ const mapChatRoomToConversation = (room: ChatRoom): Conversation => {
     isOnline: false,
     isArchived: !!room.settings?.isArchived,
     isMuted: !!room.settings?.isMuted,
+    matchScore: typeof metadata.matchScore === 'number' ? metadata.matchScore : null,
+    partnerAgentName:
+      typeof metadata.partnerAgentName === 'string' ? metadata.partnerAgentName : undefined,
   };
 };
 

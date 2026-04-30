@@ -17,6 +17,7 @@ import { VisibilityLevel } from '@bridgeai/shared';
 import { prisma } from '../../db/client';
 import { logger } from '../../utils/logger';
 
+import { dispatchAgentChatsForMatches } from './agentChatDispatcher';
 import {
   generateDailyRecommendations,
   type MatchScore,
@@ -273,6 +274,16 @@ export async function generateRecommendations(
   dailyRecommendationCache.set(cacheKey, {
     result,
     expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+  });
+
+  // 触发 Agent 自主对话调度（fire-and-forget；失败不影响推荐返回）
+  void dispatchAgentChatsForMatches(userId, recommendations, {
+    sourceAgentId: agentId,
+  }).catch(err => {
+    logger.warn('dispatchAgentChatsForMatches failed (non-fatal)', {
+      userId,
+      err: err instanceof Error ? err.message : String(err),
+    });
   });
 
   return result;

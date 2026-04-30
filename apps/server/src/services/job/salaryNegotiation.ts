@@ -9,7 +9,7 @@ import {
   NegotiationMessage,
   MessageSender,
   NegotiationTopic,
-  NegotiationStatus
+  NegotiationStatus,
 } from '../../models/NegotiationRoom';
 import { getSalaryNegotiationPrompt } from '../../ai/prompts/salaryNegotiation';
 
@@ -90,12 +90,14 @@ export class SalaryNegotiationService {
       room: context.room,
       messages: context.messages,
       isJobSeeker,
-      marketData: context.marketData ? {
-        position: context.marketData.position,
-        location: context.marketData.location,
-        experienceYears: context.marketData.experienceYears,
-        marketRange: context.marketData.marketRange,
-      } : undefined,
+      marketData: context.marketData
+        ? {
+            position: context.marketData.position,
+            location: context.marketData.location,
+            experienceYears: context.marketData.experienceYears,
+            marketRange: context.marketData.marketRange,
+          }
+        : undefined,
       jobSeekerProfile: context.jobSeekerProfile,
       employerProfile: context.employerProfile,
     });
@@ -105,10 +107,10 @@ export class SalaryNegotiationService {
         model: 'claude-sonnet-4-6',
         messages: [
           { role: 'system', content: prompt.system },
-          { role: 'user', content: prompt.user }
+          { role: 'user', content: prompt.user },
         ],
         temperature: 0.7,
-        maxTokens: 2000
+        maxTokens: 2000,
       });
 
       // Parse the response to extract strategy
@@ -122,24 +124,206 @@ export class SalaryNegotiationService {
   }
 
   /**
+   * Abort negotiation if an incoming offer falls below the agent's bottom line.
+   * Implements an explicit walk-away handler so that bottomLine constraints are
+   * enforced rather than treated as advisory.
+   *
+   * @returns true if the negotiation was aborted (offer below bottom line),
+   *          false otherwise (including when bottomLine is null/undefined or
+   *          the room cannot be found).
+   */
+  async abortIfBelowBottomLine(
+    negotiationId: string,
+    offerAmount: number,
+    bottomLine: number | null | undefined
+  ): Promise<boolean> {
+    if (bottomLine === null || bottomLine === undefined) {
+      return false;
+    }
+    if (!Number.isFinite(offerAmount) || !Number.isFinite(bottomLine)) {
+      return false;
+    }
+    if (offerAmount >= bottomLine) {
+      return false;
+    }
+
+    const room = await negotiationRoomService.getRoom(negotiationId);
+    if (!room) return false;
+
+    // Skip if already in a terminal state
+    if (
+      room.status === NegotiationStatus.FAILED ||
+      room.status === NegotiationStatus.REACHED ||
+      room.status === NegotiationStatus.CANCELLED
+    ) {
+      return false;
+    }
+
+    await negotiationRoomService.updateRoom(negotiationId, {
+      status: NegotiationStatus.FAILED,
+    });
+
+    console.warn(
+      `[SalaryNegotiation] Walk-away triggered for room ${negotiationId}: ` +
+        `offer ${offerAmount} below bottom line ${bottomLine}`
+    );
+
+    return true;
+  }
+
+  /**
+   * Detect negotiation deadlock based on recent offer history.
+   *
+   * Triggers deadlock when either:
+   *  - The last 3 (or more) consecutive offers from any single side share the
+   *    same amount (no movement / repeated stand-still), OR
+   *  - The two sides exhibit ping-pong behavior (A→x, B→y, A→x, B→y) for at
+   *    least 2 complete cycles (>= 4 alternating offers with the same pair).
+   *
+   * Pure detection: returns a boolean. When deadlock is detected, the room
+   * status is updated to FAILED via the existing updateRoom method (mirroring
+   * abortIfBelowBottomLine) so the surrounding flow can react.
+   *
+   * @param negotiationId - Room id used to update terminal status if needed.
+   * @param roundsHistory - Recent offers in chronological order. Each entry
+   *                       contains the side (jobSeeker/employer) and amount.
+   * @returns true when deadlock is detected, false otherwise (including when
+   *          history is too short to decide).
+   */
+  async detectDeadlock(
+    negotiationId: string,
+    roundsHistory: Array<{ side: 'jobSeeker' | 'employer'; amount: number }>
+  ): Promise<boolean> {
+    if (!Array.isArray(roundsHistory) || roundsHistory.length < 3) {
+      return false;
+    }
+
+    // Rule 1: 3 consecutive offers from the same side with identical amount
+    let stagnationDetected = false;
+    for (let i = 2; i < roundsHistory.length; i++) {
+      const a = roundsHistory[i - 2];
+      const b = roundsHistory[i - 1];
+      const c = roundsHistory[i];
+      if (
+        a &&
+        b &&
+        c &&
+        a.side === b.side &&
+        b.side === c.side &&
+        Number.isFinite(a.amount) &&
+        a.amount === b.amount &&
+        b.amount === c.amount
+      ) {
+        stagnationDetected = true;
+        break;
+      }
+    }
+
+    // Rule 2: ping-pong (A→x, B→y, A→x, B→y) over >= 2 full cycles (4 offers)
+    let pingPongDetected = false;
+    if (roundsHistory.length >= 4) {
+      const last4 = roundsHistory.slice(-4);
+      const [o1, o2, o3, o4] = last4;
+      if (
+        o1 &&
+        o2 &&
+        o3 &&
+        o4 &&
+        o1.side !== o2.side &&
+        o1.side === o3.side &&
+        o2.side === o4.side &&
+        o1.amount === o3.amount &&
+        o2.amount === o4.amount
+      ) {
+        pingPongDetected = true;
+      }
+    }
+
+    if (!stagnationDetected && !pingPongDetected) {
+      return false;
+    }
+
+    const room = await negotiationRoomService.getRoom(negotiationId);
+    if (!room) return false;
+
+    if (
+      room.status === NegotiationStatus.FAILED ||
+      room.status === NegotiationStatus.REACHED ||
+      room.status === NegotiationStatus.CANCELLED
+    ) {
+      return false;
+    }
+
+    await negotiationRoomService.updateRoom(negotiationId, {
+      status: NegotiationStatus.FAILED,
+    });
+
+    console.warn(
+      `[SalaryNegotiation] Deadlock detected for room ${negotiationId}: ` +
+        `${stagnationDetected ? 'stagnation' : 'ping-pong'} pattern over recent rounds`
+    );
+
+    return true;
+  }
+
+  /**
    * Generate a counter offer
    */
   async generateCounterOffer(
     context: NegotiationContext,
     isJobSeeker: boolean,
-    lastOffer?: number
+    lastOffer?: number,
+    bottomLine?: number
   ): Promise<CounterOffer> {
+    // Walk-away check: abort if the incoming offer is below our bottom line
+    if (lastOffer !== undefined && bottomLine !== undefined) {
+      const aborted = await this.abortIfBelowBottomLine(context.room.id, lastOffer, bottomLine);
+      if (aborted) {
+        return {
+          amount: 0,
+          reasoning: `Walking away: offer ${lastOffer} is below bottom line ${bottomLine}`,
+        };
+      }
+    }
+
+    // Deadlock check: build offer history from messages and bail out if stuck
+    try {
+      const offerHistory: Array<{ side: 'jobSeeker' | 'employer'; amount: number }> = (
+        context.messages || []
+      )
+        .filter(m => m.isCounterOffer && typeof m.offerValue === 'number')
+        .map(m => ({
+          side: m.sender === MessageSender.JOBSEEKER_AGENT ? 'jobSeeker' : 'employer',
+          amount: m.offerValue as number,
+        }));
+
+      if (offerHistory.length >= 3) {
+        const isDeadlocked = await this.detectDeadlock(context.room.id, offerHistory);
+        if (isDeadlocked) {
+          return {
+            amount: lastOffer ?? context.room.currentOffer ?? 0,
+            reasoning: 'Negotiation deadlock detected: no movement across recent rounds',
+          };
+        }
+      }
+    } catch (e) {
+      // Detection is best-effort; do not block counter-offer generation on errors
+      console.warn('[SalaryNegotiation] Deadlock detection skipped due to error:', e);
+    }
+
     const prompt = getSalaryNegotiationPrompt('counter_offer', {
       room: context.room,
       messages: context.messages,
       isJobSeeker,
       lastOffer,
-      marketData: context.marketData ? {
-        position: context.marketData.position,
-        location: context.marketData.location,
-        experienceYears: context.marketData.experienceYears,
-        marketRange: context.marketData.marketRange,
-      } : undefined,
+      marketData: context.marketData
+        ? {
+            position: context.marketData.position,
+            location: context.marketData.location,
+            experienceYears: context.marketData.experienceYears,
+            marketRange: context.marketData.marketRange,
+          }
+        : undefined,
       jobSeekerProfile: context.jobSeekerProfile,
       employerProfile: context.employerProfile,
     });
@@ -149,10 +333,10 @@ export class SalaryNegotiationService {
         model: 'claude-sonnet-4-6',
         messages: [
           { role: 'system', content: prompt.system },
-          { role: 'user', content: prompt.user }
+          { role: 'user', content: prompt.user },
         ],
         temperature: 0.6,
-        maxTokens: 1500
+        maxTokens: 1500,
       });
 
       const content = response.choices[0]?.message?.content || '';
@@ -170,12 +354,14 @@ export class SalaryNegotiationService {
     const prompt = getSalaryNegotiationPrompt('analysis', {
       room: context.room,
       messages: context.messages,
-      marketData: context.marketData ? {
-        position: context.marketData.position,
-        location: context.marketData.location,
-        experienceYears: context.marketData.experienceYears,
-        marketRange: context.marketData.marketRange,
-      } : undefined,
+      marketData: context.marketData
+        ? {
+            position: context.marketData.position,
+            location: context.marketData.location,
+            experienceYears: context.marketData.experienceYears,
+            marketRange: context.marketData.marketRange,
+          }
+        : undefined,
     });
 
     try {
@@ -183,10 +369,10 @@ export class SalaryNegotiationService {
         model: 'claude-sonnet-4-6',
         messages: [
           { role: 'system', content: prompt.system },
-          { role: 'user', content: prompt.user }
+          { role: 'user', content: prompt.user },
         ],
         temperature: 0.5,
-        maxTokens: 2000
+        maxTokens: 2000,
       });
 
       const content = response.choices[0]?.message?.content || '';
@@ -215,12 +401,14 @@ export class SalaryNegotiationService {
       messages: context.messages,
       isJobSeeker,
       messageType,
-      marketData: context.marketData ? {
-        position: context.marketData.position,
-        location: context.marketData.location,
-        experienceYears: context.marketData.experienceYears,
-        marketRange: context.marketData.marketRange,
-      } : undefined,
+      marketData: context.marketData
+        ? {
+            position: context.marketData.position,
+            location: context.marketData.location,
+            experienceYears: context.marketData.experienceYears,
+            marketRange: context.marketData.marketRange,
+          }
+        : undefined,
     });
 
     try {
@@ -228,10 +416,10 @@ export class SalaryNegotiationService {
         model: 'claude-sonnet-4-6',
         messages: [
           { role: 'system', content: prompt.system },
-          { role: 'user', content: prompt.user }
+          { role: 'user', content: prompt.user },
         ],
         temperature: 0.8,
-        maxTokens: 1500
+        maxTokens: 1500,
       });
 
       const content = response.choices[0]?.message?.content || '';
@@ -262,10 +450,10 @@ export class SalaryNegotiationService {
         model: 'claude-sonnet-4-6',
         messages: [
           { role: 'system', content: prompt.system },
-          { role: 'user', content: prompt.user }
+          { role: 'user', content: prompt.user },
         ],
         temperature: 0.3,
-        maxTokens: 1000
+        maxTokens: 1000,
       });
 
       const content = response.choices[0]?.message?.content || '';
@@ -290,7 +478,7 @@ export class SalaryNegotiationService {
 
     const prompt = getSalaryNegotiationPrompt('summary', {
       room: history.room,
-      messages: history.messages
+      messages: history.messages,
     });
 
     try {
@@ -298,10 +486,10 @@ export class SalaryNegotiationService {
         model: 'claude-sonnet-4-6',
         messages: [
           { role: 'system', content: prompt.system },
-          { role: 'user', content: prompt.user }
+          { role: 'user', content: prompt.user },
         ],
         temperature: 0.5,
-        maxTokens: 2000
+        maxTokens: 2000,
       });
 
       const content = response.choices[0]?.message?.content || '';
@@ -321,8 +509,7 @@ export class SalaryNegotiationService {
   ): NegotiationStrategy {
     try {
       // Extract JSON from response
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) ||
-                       content.match(/\{[\s\S]*\}/);
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) || content.match(/\{[\s\S]*\}/);
 
       if (jsonMatch) {
         const jsonStr = jsonMatch[1] || jsonMatch[0];
@@ -334,7 +521,7 @@ export class SalaryNegotiationService {
           concessions: parsed.concessions || [],
           bottomLine: parsed.bottomLine || 0,
           targetAmount: parsed.targetAmount || 0,
-          reasoning: parsed.reasoning || ''
+          reasoning: parsed.reasoning || '',
         };
       }
     } catch (e) {
@@ -346,8 +533,7 @@ export class SalaryNegotiationService {
 
   private parseCounterOfferResponse(content: string, context: NegotiationContext): CounterOffer {
     try {
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) ||
-                       content.match(/\{[\s\S]*\}/);
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) || content.match(/\{[\s\S]*\}/);
 
       if (jsonMatch) {
         const jsonStr = jsonMatch[1] || jsonMatch[0];
@@ -358,7 +544,7 @@ export class SalaryNegotiationService {
           reasoning: parsed.reasoning || '',
           conditions: parsed.conditions,
           benefits: parsed.benefits,
-          deadline: parsed.deadline ? new Date(parsed.deadline) : undefined
+          deadline: parsed.deadline ? new Date(parsed.deadline) : undefined,
         };
       }
     } catch (e) {
@@ -370,8 +556,7 @@ export class SalaryNegotiationService {
 
   private parseAnalysisResponse(content: string, context: NegotiationContext): NegotiationAnalysis {
     try {
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) ||
-                       content.match(/\{[\s\S]*\}/);
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) || content.match(/\{[\s\S]*\}/);
 
       if (jsonMatch) {
         const jsonStr = jsonMatch[1] || jsonMatch[0];
@@ -383,7 +568,7 @@ export class SalaryNegotiationService {
           suggestedCompromise: parsed.suggestedCompromise || 0,
           winWinOpportunities: parsed.winWinOpportunities || [],
           riskAreas: parsed.riskAreas || [],
-          nextMoveSuggestion: parsed.nextMoveSuggestion || ''
+          nextMoveSuggestion: parsed.nextMoveSuggestion || '',
         };
       }
     } catch (e) {
@@ -400,8 +585,7 @@ export class SalaryNegotiationService {
     topic?: NegotiationTopic;
   } {
     try {
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) ||
-                       content.match(/\{[\s\S]*\}/);
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) || content.match(/\{[\s\S]*\}/);
 
       if (jsonMatch) {
         const jsonStr = jsonMatch[1] || jsonMatch[0];
@@ -411,26 +595,26 @@ export class SalaryNegotiationService {
           content: parsed.content || parsed.message || '',
           isCounterOffer: parsed.isCounterOffer || false,
           offerValue: parsed.offerValue,
-          topic: parsed.topic
+          topic: parsed.topic,
         };
       }
 
       // If no JSON, treat entire content as message
       return {
         content: content.trim(),
-        isCounterOffer: false
+        isCounterOffer: false,
       };
     } catch (e) {
       return {
         content: content.trim(),
-        isCounterOffer: false
+        isCounterOffer: false,
       };
     }
   }
 
   private parseAgreementResponse(
     content: string,
-    context: NegotiationContext
+    _context: NegotiationContext
   ): {
     isReached: boolean;
     agreedAmount?: number;
@@ -438,8 +622,7 @@ export class SalaryNegotiationService {
     confidence: number;
   } {
     try {
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) ||
-                       content.match(/\{[\s\S]*\}/);
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) || content.match(/\{[\s\S]*\}/);
 
       if (jsonMatch) {
         const jsonStr = jsonMatch[1] || jsonMatch[0];
@@ -449,7 +632,7 @@ export class SalaryNegotiationService {
           isReached: parsed.isReached || parsed.agreementReached || false,
           agreedAmount: parsed.agreedAmount,
           agreedBenefits: parsed.agreedBenefits,
-          confidence: parsed.confidence || 0
+          confidence: parsed.confidence || 0,
         };
       }
     } catch (e) {
@@ -466,8 +649,7 @@ export class SalaryNegotiationService {
     lessonsLearned: string[];
   } {
     try {
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) ||
-                       content.match(/\{[\s\S]*\}/);
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) || content.match(/\{[\s\S]*\}/);
 
       if (jsonMatch) {
         const jsonStr = jsonMatch[1] || jsonMatch[0];
@@ -477,7 +659,7 @@ export class SalaryNegotiationService {
           summary: parsed.summary || '',
           outcome: parsed.outcome || 'failed',
           keyPoints: parsed.keyPoints || [],
-          lessonsLearned: parsed.lessonsLearned || []
+          lessonsLearned: parsed.lessonsLearned || [],
         };
       }
     } catch (e) {
@@ -488,7 +670,7 @@ export class SalaryNegotiationService {
       summary: content.trim(),
       outcome: 'failed',
       keyPoints: [],
-      lessonsLearned: []
+      lessonsLearned: [],
     };
   }
 
@@ -502,14 +684,15 @@ export class SalaryNegotiationService {
     const initialOffer = context.room.initialOffer || 0;
 
     if (isJobSeeker) {
-      const expectedMax = context.jobSeekerProfile?.expectedMax || targetRange?.max || initialOffer * 1.2;
+      const expectedMax =
+        context.jobSeekerProfile?.expectedMax || targetRange?.max || initialOffer * 1.2;
       return {
         approach: 'collaborative',
         keyPoints: ['Highlight relevant experience', 'Emphasize unique skills'],
         concessions: ['Flexibility on start date', 'Remote work options'],
         bottomLine: context.jobSeekerProfile?.expectedMin || initialOffer,
         targetAmount: expectedMax,
-        reasoning: 'Aim for collaborative approach while maintaining bottom line'
+        reasoning: 'Aim for collaborative approach while maintaining bottom line',
       };
     } else {
       const budgetMax = context.employerProfile?.budgetMax || initialOffer * 1.15;
@@ -519,7 +702,7 @@ export class SalaryNegotiationService {
         concessions: ['Additional PTO', 'Professional development budget'],
         bottomLine: context.employerProfile?.budgetMin || initialOffer * 0.9,
         targetAmount: budgetMax,
-        reasoning: 'Balance budget constraints with candidate expectations'
+        reasoning: 'Balance budget constraints with candidate expectations',
       };
     }
   }
@@ -536,14 +719,14 @@ export class SalaryNegotiationService {
         amount: Math.round(base * 1.1),
         reasoning: 'Based on market research and experience level',
         conditions: ['Performance review after 6 months'],
-        benefits: ['Flexible work arrangement']
+        benefits: ['Flexible work arrangement'],
       };
     } else {
       return {
         amount: Math.round(base * 0.95),
         reasoning: 'Aligned with budget and candidate experience',
         conditions: ['90-day probation period'],
-        benefits: ['Comprehensive health insurance']
+        benefits: ['Comprehensive health insurance'],
       };
     }
   }
@@ -560,14 +743,14 @@ export class SalaryNegotiationService {
       suggestedCompromise: Math.round((currentOffer + initialOffer) / 2),
       winWinOpportunities: ['Flexible working hours', 'Professional development'],
       riskAreas: ['Large gap between offers'],
-      nextMoveSuggestion: 'Propose compromise focusing on non-monetary benefits'
+      nextMoveSuggestion: 'Propose compromise focusing on non-monetary benefits',
     };
   }
 
   private getDefaultMessage(
     messageType: string,
     isJobSeeker: boolean,
-    context: NegotiationContext
+    _context: NegotiationContext
   ): {
     content: string;
     isCounterOffer: boolean;
@@ -576,19 +759,20 @@ export class SalaryNegotiationService {
   } {
     const messages: Record<string, string> = {
       opening: isJobSeeker
-        ? 'Thank you for the opportunity. I\'m excited about this role and would like to discuss the compensation package.'
-        : 'We\'re impressed with your profile. Let\'s discuss the offer details.',
-      counter: 'Based on my research and experience, I believe a higher compensation would be appropriate.',
-      compromise: 'I\'m willing to find a middle ground that works for both of us.',
+        ? "Thank you for the opportunity. I'm excited about this role and would like to discuss the compensation package."
+        : "We're impressed with your profile. Let's discuss the offer details.",
+      counter:
+        'Based on my research and experience, I believe a higher compensation would be appropriate.',
+      compromise: "I'm willing to find a middle ground that works for both of us.",
       closing: isJobSeeker
         ? 'I accept this offer. Thank you for the productive discussion.'
-        : 'We\'re glad we could reach an agreement. Welcome to the team!',
-      response: 'I understand your position. Let me consider this and respond.'
+        : "We're glad we could reach an agreement. Welcome to the team!",
+      response: 'I understand your position. Let me consider this and respond.',
     };
 
     return {
       content: messages[messageType] || messages.response,
-      isCounterOffer: messageType === 'counter'
+      isCounterOffer: messageType === 'counter',
     };
   }
 }
@@ -602,7 +786,9 @@ export function initializeSalaryNegotiationService(llmService: LLMService): void
 
 export function getSalaryNegotiationService(): SalaryNegotiationService {
   if (!salaryNegotiationService) {
-    throw new Error('SalaryNegotiationService not initialized. Call initializeSalaryNegotiationService first.');
+    throw new Error(
+      'SalaryNegotiationService not initialized. Call initializeSalaryNegotiationService first.'
+    );
   }
   return salaryNegotiationService;
 }

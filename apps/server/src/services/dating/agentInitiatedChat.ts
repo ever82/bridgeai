@@ -5,10 +5,13 @@
 
 import { v4 as uuidv4 } from 'uuid';
 
+import { agentBehaviorService } from '../../services/agentBehaviorService';
 import { logger } from '../../utils/logger';
+import { agentDialogService } from '../ai/agentDialogService';
 import { generateOpeningLine, type OpeningLineResult } from '../ai/openingLineService';
 
 import type { MatchScore } from './matchAlgorithm';
+import { emitPrivateAdvice, generateAdviceFromConversation } from './privateAdviceService';
 
 // ============================================
 // 类型定义
@@ -75,10 +78,54 @@ const DEFAULT_CONFIG: ChatConfig = {
 };
 
 // ============================================
+// 并发限流 (env-overridable)
+// ============================================
+
+export const MAX_ACTIVE_CHATS_PER_USER = parseInt(
+  process.env.MAX_ACTIVE_CHATS_PER_USER ?? '10',
+  10
+);
+export const MAX_GLOBAL_ACTIVE_SESSIONS = parseInt(
+  process.env.MAX_GLOBAL_ACTIVE_SESSIONS ?? '50',
+  10
+);
+
+// ============================================
+// 错误类型
+// ============================================
+
+export class MaxActiveChatsError extends Error {
+  code = 'MAX_ACTIVE_CHATS' as const;
+  constructor(userId: string, limit: number) {
+    super(`User ${userId} has reached max active chats limit (${limit})`);
+    this.name = 'MaxActiveChatsError';
+  }
+}
+
+export class MaxGlobalSessionsError extends Error {
+  code = 'MAX_GLOBAL_SESSIONS' as const;
+  constructor(limit: number) {
+    super(`Global active sessions limit reached (${limit})`);
+    this.name = 'MaxGlobalSessionsError';
+  }
+}
+
+export class BehaviorRejectedError extends Error {
+  code = 'BEHAVIOR_REJECTED' as const;
+  constructor(agentId: string) {
+    super(`Agent ${agentId} is suspended by behavior service`);
+    this.name = 'BehaviorRejectedError';
+  }
+}
+
+// ============================================
 // 存储
 // ============================================
 
 const sessionStore = new Map<string, ChatSession>();
+
+// chatSessionId → dialogSessionId (LLM dialog session)
+const dialogSessionMap = new Map<string, string>();
 
 // ============================================
 // 核心逻辑
@@ -96,6 +143,29 @@ export async function initiateChat(params: {
   config?: Partial<ChatConfig>;
   customGoal?: string;
 }): Promise<ChatSession> {
+  // ===== 并发限流检查 =====
+  const userActiveCount = countActiveSessionsForUser(params.sourceUserId);
+  if (userActiveCount >= MAX_ACTIVE_CHATS_PER_USER) {
+    throw new MaxActiveChatsError(params.sourceUserId, MAX_ACTIVE_CHATS_PER_USER);
+  }
+
+  const globalActiveCount = countGlobalActiveSessions();
+  if (globalActiveCount >= MAX_GLOBAL_ACTIVE_SESSIONS) {
+    throw new MaxGlobalSessionsError(MAX_GLOBAL_ACTIVE_SESSIONS);
+  }
+
+  // ===== 行为闸门 =====
+  try {
+    if (agentBehaviorService.isSuspended(params.sourceAgentId)) {
+      throw new BehaviorRejectedError(params.sourceAgentId);
+    }
+  } catch (err) {
+    if (err instanceof BehaviorRejectedError) throw err;
+    logger.warn('agentBehaviorService.isSuspended failed; allowing chat', {
+      err: err instanceof Error ? err.message : String(err),
+    });
+  }
+
   const config = { ...DEFAULT_CONFIG, ...params.config };
   const sessionId = `dating-chat-${uuidv4()}`;
 
@@ -174,7 +244,7 @@ export async function generateAgentResponse(
 
   // 生成响应内容
   const lastMessage = session.messages[session.messages.length - 1];
-  const responseContent = generateResponseContent(session, lastMessage, respondingAgentId);
+  const responseContent = await generateResponseContent(session, lastMessage, respondingAgentId);
 
   const response: ChatMessage = {
     id: `msg-${uuidv4()}`,
@@ -191,6 +261,20 @@ export async function generateAgentResponse(
 
   session.messages.push(response);
   session.updatedAt = new Date();
+
+  // ===== 私聊建议 (AS-008) =====
+  try {
+    const advice = generateAdviceFromConversation(session, respondingAgentId);
+    if (advice) {
+      // 仅向双方主人各自的私聊房间推送，不会泄露给对方 Agent
+      emitPrivateAdvice(null, session.sourceUserId, advice);
+      emitPrivateAdvice(null, session.targetUserId, advice);
+    }
+  } catch (err) {
+    logger.warn('emitPrivateAdvice failed (non-fatal)', {
+      err: err instanceof Error ? err.message : String(err),
+    });
+  }
 
   // 检查是否应该暂停
   if (shouldPauseAfterTurn(session, autoTurnNumber + 1)) {
@@ -332,34 +416,93 @@ function shouldPauseAfterTurn(session: ChatSession, turnNumber: number): boolean
   return false;
 }
 
-function generateResponseContent(
-  session: ChatSession,
-  _lastMessage: ChatMessage,
-  _respondingAgentId: string
-): string {
+function isSessionLive(s: ChatSession): boolean {
+  return s.status === ChatStatus.ACTIVE || s.status === ChatStatus.PENDING;
+}
+
+function countActiveSessionsForUser(userId: string): number {
+  let count = 0;
+  for (const s of sessionStore.values()) {
+    if ((s.sourceUserId === userId || s.targetUserId === userId) && isSessionLive(s)) {
+      count++;
+    }
+  }
+  return count;
+}
+
+function countGlobalActiveSessions(): number {
+  let count = 0;
+  for (const s of sessionStore.values()) {
+    if (isSessionLive(s)) count++;
+  }
+  return count;
+}
+
+function fallbackResponse(session: ChatSession): string {
   const highlights = session.matchScore.highlights;
-  const matchScore = session.matchScore.totalScore;
-
-  // 基于对话历史和匹配点生成响应
-  const responses: string[] = [];
-
   if (highlights.length > 0) {
-    const randomHighlight = highlights[Math.floor(Math.random() * highlights.length)];
-    responses.push(`是的！我也注意到了${randomHighlight}。`);
+    return `是的！我也注意到了${highlights[0]}。你怎么看？`;
   }
+  return '你觉得呢？';
+}
 
-  if (matchScore >= 70) {
-    responses.push('感觉我们挺合拍的！');
+async function generateResponseContent(
+  session: ChatSession,
+  lastMessage: ChatMessage,
+  respondingAgentId: string
+): Promise<string> {
+  try {
+    // 复用同一 chat session 的 dialog session
+    let dialogSessionId = dialogSessionMap.get(session.id);
+    if (!dialogSessionId) {
+      const dialogSession = await agentDialogService.createSession(
+        'agent_to_agent',
+        [
+          {
+            id: session.sourceAgentId,
+            type: 'agent',
+            name: 'Source Agent',
+            persona: undefined,
+          },
+          {
+            id: session.targetAgentId,
+            type: 'agent',
+            name: 'Target Agent',
+            persona: undefined,
+          },
+        ],
+        'dating',
+        {
+          goals: session.goals.map(g => g.primary),
+          sharedKnowledge: {
+            highlights: session.matchScore.highlights,
+            matchScore: session.matchScore.totalScore,
+          },
+        }
+      );
+      dialogSessionId = dialogSession.id;
+      dialogSessionMap.set(session.id, dialogSessionId);
+    }
+
+    const result = await agentDialogService.generateMessage({
+      sessionId: dialogSessionId,
+      senderId: respondingAgentId,
+      senderType: 'agent',
+      content: lastMessage.content,
+      options: {
+        temperature: 0.8,
+        maxTokens: 200,
+      },
+    });
+
+    return result.content || fallbackResponse(session);
+  } catch (err) {
+    logger.warn('LLM generateMessage failed; using fallback', {
+      err: err instanceof Error ? err.message : String(err),
+      sessionId: session.id,
+    });
+    return fallbackResponse(session);
   }
-
-  responses.push('你觉得呢？');
-  responses.push('你平时喜欢做什么？');
-  responses.push('说说你的故事吧！');
-  responses.push('你有什么有趣的事情想分享吗？');
-
-  // 简单策略：交替使用不同类型的响应
-  const turnIndex = session.messages.length;
-  return responses[turnIndex % responses.length];
 }
 
 export default {

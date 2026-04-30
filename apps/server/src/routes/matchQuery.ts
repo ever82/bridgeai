@@ -126,6 +126,103 @@ router.get(
 );
 
 /**
+ * @route POST /api/v1/matches/cancel
+ * @desc 取消匹配（pre-match exit）- 取消 PENDING 状态的匹配
+ * @access Private
+ *
+ * Body:
+ *   matchId: string (required)
+ */
+router.post(
+  '/cancel',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const { matchId } = req.body;
+
+    if (!matchId) {
+      throw new AppError('matchId is required', 'VALIDATION_ERROR', 400);
+    }
+
+    const { prisma } = await import('../db/client');
+
+    // Find the match with agent ownership info
+    const match = await prisma.match.findUnique({
+      where: { id: matchId },
+      include: {
+        demand: {
+          include: {
+            agent: {
+              select: { id: true, userId: true },
+            },
+          },
+        },
+        supply: {
+          include: {
+            agent: {
+              select: { id: true, userId: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!match) {
+      throw new AppError('Match not found', 'NOT_FOUND', 404);
+    }
+
+    // Verify the user owns one of the agents involved
+    const userAgents = await prisma.agent.findMany({
+      where: { userId: req.user.id },
+      select: { id: true },
+    });
+    const agentIds = userAgents.map(a => a.id);
+
+    const isParticipant =
+      agentIds.includes(match.demand.agentId) || agentIds.includes(match.supply.agentId);
+
+    if (!isParticipant) {
+      throw new AppError('Access denied', 'FORBIDDEN', 403);
+    }
+
+    // Only PENDING matches can be cancelled
+    if (match.status !== 'PENDING') {
+      throw new AppError(`Cannot cancel match in ${match.status} status`, 'INVALID_STATE', 409);
+    }
+
+    // Update match status to CANCELLED
+    const updated = await prisma.match.update({
+      where: { id: matchId },
+      data: { status: 'CANCELLED' },
+    });
+
+    // Notify the other participant via socket
+    try {
+      const { emitToUser } = await import('../socket');
+      const otherUserId =
+        match.demand.agent.userId === req.user.id
+          ? match.supply.agent.userId
+          : match.demand.agent.userId;
+
+      if (otherUserId) {
+        emitToUser(otherUserId, 'match:cancelled', {
+          matchId,
+          cancelledBy: req.user.id,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    } catch {
+      // Socket notification is best-effort; do not fail the request
+    }
+
+    res.json(ApiResponse.success(updated));
+  })
+);
+
+/**
  * @route GET /api/v1/matches
  * @desc 获取当前用户的匹配列表（已有 Match 记录）
  * @access Private

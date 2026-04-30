@@ -30,3 +30,11 @@ export type { StatusChangeNotificationProps } from './Chat/StatusChangeNotificat
 // Chat message rendering - integrates UserAvatar + IdentityBadge (US-AGENT-008)
 export { MessageBubble as ChatMessage } from './Chat/MessageBubble';
 export type { MessageBubbleProps as ChatMessageProps } from './Chat/MessageBubble';
+
+// Whisper (private advice) one-tap adopt — AS-007/AS-008
+export { WhisperAdoptButton } from './WhisperAdoptButton';
+export type {
+  WhisperAdoptButtonProps,
+  WhisperAdvice,
+  WhisperAdviceType,
+} from './WhisperAdoptButton';

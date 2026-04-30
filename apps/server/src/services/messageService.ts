@@ -11,6 +11,7 @@ import { prisma } from '../db/client';
 
 import { pushNotificationService } from './pushNotification';
 import { presenceService } from './presenceService';
+import { getUserCreditScore } from './creditScoreService';
 
 /**
  * Message delivery retry configuration
@@ -820,6 +821,15 @@ export interface CreateChatRoomMessageInput {
 export async function createChatRoomMessage(input: CreateChatRoomMessageInput) {
   const encryptedContent = await encryptionService.encrypt(input.content);
 
+  // Snapshot sender's credit score at send time (AS-PROTO-001-AC-1).
+  // Failures are non-fatal: messages must still send if scoring is unavailable.
+  let creditScoreSnapshot: number | null = null;
+  try {
+    creditScoreSnapshot = await getUserCreditScore(input.senderId);
+  } catch (err) {
+    console.warn('[messageService] Failed to fetch credit score for sender', input.senderId, err);
+  }
+
   const result = await prisma.$transaction(async tx => {
     const chatMessage = await tx.chatMessage.create({
       data: {
@@ -831,6 +841,7 @@ export async function createChatRoomMessage(input: CreateChatRoomMessageInput) {
         attachments: input.attachments || null,
         metadata: input.metadata || { deleted: false },
         status: 'SENT',
+        creditScore: creditScoreSnapshot,
       },
     });
 

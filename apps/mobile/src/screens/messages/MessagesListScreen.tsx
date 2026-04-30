@@ -246,6 +246,11 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
                 {conversation.isMuted && '🔇 '}
                 {conversation.name}
               </Text>
+              {conversation.matchScore != null && (
+                <View style={styles.matchScoreBadge}>
+                  <Text style={styles.matchScoreText}>{conversation.matchScore}%</Text>
+                </View>
+              )}
               <SceneTag tag={conversation.sceneTag} />
             </View>
 
@@ -877,6 +882,18 @@ const styles = StyleSheet.create({
   sceneTagText: {
     fontSize: theme.fonts.sizes.xs,
     color: theme.colors.textSecondary,
+  },
+  matchScoreBadge: {
+    backgroundColor: theme.colors.primaryLight + '30',
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 1,
+    marginRight: theme.spacing.xs,
+  },
+  matchScoreText: {
+    fontSize: theme.fonts.sizes.xs,
+    fontWeight: theme.fonts.weights.bold,
+    color: theme.colors.primary,
   },
   statusBadge: {
     alignSelf: 'flex-start',

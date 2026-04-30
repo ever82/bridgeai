@@ -37,6 +37,7 @@ import moderationRoutes from '../moderation';
 import moderationAnalyticsRoutes from '../moderationAnalytics';
 import appealRoutes from '../appeals';
 import sensitiveWordRoutes from '../sensitiveWords';
+import whisperRoutes from '../whisper';
 
 import healthRoutes from './health';
 import sceneRoutes from './scene';
@@ -84,5 +85,6 @@ router.use('/sensitive-words', sensitiveWordRoutes);
 router.use('/visionshare', visionSharePublishRoutes);
 router.use('/visionshare/payment', visionSharePaymentRoutes);
 router.use('/transactions', transactionRoutes);
+router.use('/whisper', whisperRoutes);
 
 export default router;

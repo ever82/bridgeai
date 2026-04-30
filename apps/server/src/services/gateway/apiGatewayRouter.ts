@@ -6,7 +6,7 @@
  * and integrates with the existing middleware stack.
  */
 
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -167,22 +167,31 @@ export class ApiGatewayRouter {
   /**
    * Express middleware entry point.
    * Runs all registered middleware then attempts to match and execute a route.
+   * If no route matches, calls next() so the request continues down the
+   * Express middleware/router chain.
    */
-  async handle(req: Request, res: Response): Promise<void> {
-    // Execute middleware chain
-    for (const middleware of this._middleware) {
-      const result = middleware(req, res);
-      if (result instanceof Promise) {
-        await result;
+  async handle(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // Execute middleware chain
+      for (const middleware of this._middleware) {
+        const result = middleware(req, res);
+        if (result instanceof Promise) {
+          await result;
+        }
       }
-    }
 
-    // Attempt to match a route
-    const match = this.matchRoute(req);
-    if (match) {
-      await Promise.resolve(match.route.handler(req, res));
+      // Attempt to match a route
+      const match = this.matchRoute(req);
+      if (match) {
+        await Promise.resolve(match.route.handler(req, res));
+        return;
+      }
+
+      // No match: fall through to subsequent middleware/routers.
+      next();
+    } catch (err) {
+      next(err);
     }
-    // If no match: fall through — caller should attach subsequent middleware/router.
   }
 
   /**
