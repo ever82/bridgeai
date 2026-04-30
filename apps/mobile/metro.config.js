@@ -7,17 +7,36 @@ const stubsDir = path.join(projectRoot, 'src/utils/stubs');
 
 const config = getDefaultConfig(projectRoot);
 
-// Watch the shared package directory so Metro can process its files
-config.watchFolders = [path.join(workspaceRoot, 'packages/shared')];
-
 // In pnpm monorepo, find-yarn-workspace-root returns null, so we need to manually
 // add the node_modules paths for Metro module resolution
 // The monorepo uses pnpm --filter (not yarn workspaces), so we force the monorepo root
 const monorepoRoot = path.resolve(projectRoot, '../..');
+
+// Watch the shared package directory and the monorepo root node_modules so
+// Metro can discover hoisted dependencies (e.g. @babel/runtime/helpers/*)
+// installed at the monorepo root under pnpm's hoisted node-linker mode.
+config.watchFolders = [
+  path.join(workspaceRoot, 'packages/shared'),
+  path.join(monorepoRoot, 'node_modules'),
+];
+
 config.resolver.nodeModulesPaths = [
   path.join(projectRoot, 'node_modules'),
   path.join(monorepoRoot, 'node_modules'),
 ];
+
+// Keep Metro's hierarchical lookup enabled so deep imports like
+// `@babel/runtime/helpers/interopRequireDefault` can fall back to the
+// hoisted monorepo root node_modules when not present in apps/mobile.
+config.resolver.disableHierarchicalLookup = false;
+
+// Explicitly map @babel/runtime to the hoisted copy at the monorepo root so
+// deep helper imports always resolve even if Metro's nodeModulesPaths
+// fallback misses them under pnpm hoisted mode.
+config.resolver.extraNodeModules = {
+  ...(config.resolver.extraNodeModules || {}),
+  '@babel/runtime': path.join(monorepoRoot, 'node_modules/@babel/runtime'),
+};
 
 // Resolve @bridgeai/shared workspace package to its source
 const sharedSrc = path.join(workspaceRoot, 'packages/shared/src');

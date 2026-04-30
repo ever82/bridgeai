@@ -512,6 +512,159 @@
 
 ---
 
+### Phase 14: 场景模板验证（ISSUE-C006~c3）
+
+**目的**: 完整覆盖 `ISSUE-C006~c3` 场景模板 AC（预设模板库选择 + 复制现有模板 + 自定义模板 + 分享模板给好友），独立于 Step 6.2 的「配置摘要」覆盖
+
+**Step 14.1**: 进入「场景模板」管理页
+
+- 操作: 从 Agent 创建向导的 Step 3「场景配置」页或个人中心进入「场景模板」管理入口
+- 预期: 模板管理页加载成功，顶部显示「预设模板」「我的模板」两个 Tab，右上角有「新建模板」按钮
+- 验证 AC: `ISSUE-C006~c3` 场景模板页面承载（模板系统入口）
+- 截图: 场景模板管理页全貌
+- API 响应: 记录 `GET /api/v1/scene-templates` 返回的模板列表（含预设和自定义）
+
+**Step 14.2**: 查看预设模板库
+
+- 操作: 切换到「预设模板」Tab，浏览预设模板列表（如「VisionShare 同城求购默认模板」「AgentDate 兴趣交友默认模板」「AgentJob 全职岗位默认模板」「AgentAd 本地推广默认模板」等）
+- 预期: 模板列表展示 ≥ 4 个预设模板卡片，每张卡片显示模板名称、所属场景类型、描述、字段预览；DevTools Network 面板捕获 `GET /api/v1/scene-templates?type=preset` 请求
+- 验证 AC: `ISSUE-C006~c3` 预设场景模板（模板库列表）
+- 截图: 预设模板库列表
+- API 响应: 记录 `GET /api/v1/scene-templates?type=preset` 响应 body（模板数组，每个含 `id, name, sceneType, isPreset: true, fields`）
+
+**Step 14.3**: 应用预设模板（配置自动填充）
+
+- 操作: 选择一个 VisionShare 预设模板，点击「应用此模板」按钮，确认弹窗后回到 Agent 创建向导的场景配置页
+- 预期: 场景配置表单字段被模板预设值自动填充（需求范围、价格、自动分享等字段全部预填）；DevTools Network 面板捕获 `POST /api/v1/scene-templates/:id/apply` 请求与响应
+- 验证 AC: `ISSUE-C006~c3` 模板应用（应用预设模板自动填充配置）
+- 截图: 应用前的空白配置表单 vs 应用后已填充的配置表单
+- API 响应: 记录 `POST /api/v1/scene-templates/:id/apply` 响应 body（应用结果与填充字段映射）
+
+**Step 14.4**: 复制现有模板
+
+- 操作: 在预设模板列表中选择某个模板，点击「复制」按钮，输入新模板名称（如「我的 VisionShare 同城副本」），确认提交
+- 预期: 复制成功提示，新模板出现在「我的模板」Tab 中，字段配置与源模板一致但 `isPreset: false` 且 `id` 不同
+- 验证 AC: `ISSUE-C006~c3` 模板复制（复制现有模板创建副本）
+- 截图: 复制确认弹窗、复制成功后「我的模板」Tab 显示副本卡片
+- API 响应: 记录 `POST /api/v1/scene-templates/:id/duplicate` 请求体 `{ name }` 和响应
+
+**Step 14.5**: 自定义模板（修改字段后保存为模板）
+
+- 操作: 在 Agent 创建向导填写一份独特的场景配置（与预设模板不同的字段组合），点击「保存为模板」按钮，输入自定义模板名称和描述，确认保存
+- 预期: 保存成功提示，新自定义模板出现在「我的模板」Tab，`isPreset: false`，字段反映用户填写值
+- 验证 AC: `ISSUE-C006~c3` 用户自定义模板（保存自定义配置为模板）
+- 截图: 「保存为模板」表单、保存成功后「我的模板」列表显示自定义模板
+- API 响应: 记录 `POST /api/v1/scene-templates` 请求体（含 `name, sceneType, fields, isPreset: false`）和响应
+
+**Step 14.6**: 分享模板给好友
+
+- 操作: 在「我的模板」中选择某模板，点击「分享」按钮，弹出分享面板：选择「生成分享链接」或「选择联系人」，复制链接 / 选中目标好友后确认
+- 预期: 生成分享链接（含 token，如 `https://bridgeai.app/templates/share/<token>`），或好友收到分享通知；分享成功提示
+- 验证 AC: `ISSUE-C006~c3` 模板分享（生成分享链接 + 选择联系人发送）
+- 截图: 分享面板、生成的分享链接、好友列表选择、分享成功提示
+- API 响应: 记录 `POST /api/v1/scene-templates/:id/share` 请求体（`{ method: "link" | "contact", targetUserId? }`）和响应（含 `shareToken` 或 `shareId`）
+
+---
+
+### Phase 15: 能力系统验证（ISSUE-C006~c4）
+
+**目的**: 完整覆盖 `ISSUE-C006~c4` 能力系统 AC（能力面板逐项启用/禁用 + 依赖冲突提示 + 版本管理），独立于 Step 3.1 的「四种类型卡片」覆盖
+
+**Step 15.1**: 进入「能力管理」面板
+
+- 操作: 在已创建 Agent 的详情页或场景配置页，点击「能力管理」入口
+- 预期: 能力管理面板加载成功，显示该场景所支持的功能能力列表（如 VisionShare 包含「自动分享」「价格协商」「图片识别」「需求匹配」「位置共享」等）
+- 验证 AC: `ISSUE-C006~c4` 场景支持的功能列表（能力清单展示）
+- 截图: 能力管理面板全貌
+- API 响应: 记录 `GET /api/v1/agents/:id/capabilities` 返回的能力数组（每个含 `id, name, enabled, version, dependencies`）
+
+**Step 15.2**: 启用某能力
+
+- 操作: 在能力列表中找到一个未启用的能力（如「图片识别」），点击其「启用」开关
+- 预期: 开关切换为已启用状态，能力卡片显示绿色「已启用」Badge；DevTools Network 面板捕获 `PATCH /api/v1/agents/:id/capabilities/:capId` 请求 `{ enabled: true }`
+- 验证 AC: `ISSUE-C006~c4` 能力启用（逐项启用）
+- 截图: 启用前后的开关状态对比
+- API 响应: 记录 `PATCH /api/v1/agents/:id/capabilities/:capId` 请求体 `{ enabled: true }` 与响应 `{ enabled: true }`
+
+**Step 15.3**: 禁用某能力
+
+- 操作: 在能力列表中找到一个已启用的能力（如「自动分享」），点击其「禁用」开关
+- 预期: 开关切换为已禁用状态，能力卡片显示灰色「已禁用」Badge；DevTools Network 面板捕获 `PATCH /api/v1/agents/:id/capabilities/:capId` 请求 `{ enabled: false }`
+- 验证 AC: `ISSUE-C006~c4` 能力禁用（逐项禁用）
+- 截图: 禁用前后的开关状态对比
+- API 响应: 记录 `PATCH /api/v1/agents/:id/capabilities/:capId` 请求体 `{ enabled: false }` 与响应
+
+**Step 15.4**: 启用有依赖冲突的能力（触发依赖冲突提示）
+
+- 操作: 在能力列表中找到一个有依赖关系的能力（如「需求匹配」依赖「图片识别」+「位置共享」），先确保其依赖项中至少有一项被禁用，再点击「启用」该能力
+- 预期: 弹出「依赖冲突提示」弹窗，列出缺失的依赖能力（如「需启用：位置共享」），并提供「一键启用所有依赖」或「取消」按钮；如果点击「取消」，能力保持未启用
+- 验证 AC: `ISSUE-C006~c4` 能力依赖检查（缺失依赖时弹出冲突提示）
+- 截图: 依赖冲突提示弹窗（含缺失依赖清单）、取消后能力仍未启用
+- API 响应: 记录 `PATCH /api/v1/agents/:id/capabilities/:capId` 在依赖未满足时返回 `409 Conflict` 或 `{ error: "missing_dependencies", missing: [...] }`
+
+**Step 15.5**: 查看能力版本管理（版本切换 / 版本回滚）
+
+- 操作: 在某能力卡片上点击「版本管理」，进入版本历史面板，查看该能力的所有可用版本（如 v1.0.0、v1.1.0、v2.0.0），切换当前使用版本到 v1.1.0
+- 预期: 版本历史面板显示版本列表（含版本号、发布时间、变更摘要），当前版本被标记；切换后该能力的版本字段更新为 v1.1.0；DevTools Network 面板捕获 `PATCH /api/v1/agents/:id/capabilities/:capId/version` 请求 `{ version: "1.1.0" }`
+- 验证 AC: `ISSUE-C006~c4` 能力版本管理（版本切换/回滚）
+- 截图: 版本历史面板、切换前后能力卡片版本号变化
+- API 响应: 记录 `GET /api/v1/agents/:id/capabilities/:capId/versions` 返回版本数组、`PATCH /api/v1/agents/:id/capabilities/:capId/version` 请求体 `{ version }` 与响应
+
+---
+
+### Phase 16: 场景切换验证（ISSUE-C006~c5）
+
+**目的**: 完整覆盖 `ISSUE-C006~c5` 场景切换 AC（场景间数据迁移 + 配置转换规则 + 迁移预览 + 迁移确认），独立于 Step 10.3 的「继续创建」覆盖
+
+**Step 16.1**: 在已有 Agent 上发起「切换场景」
+
+- 操作: 在已创建的 VisionShare Agent 详情页，点击「切换场景」按钮（或菜单中「迁移到其他场景」），在弹出选项中选择目标场景类型 AgentDate
+- 预期: 进入场景切换流程，按钮触发后展示加载态并准备打开「迁移预览」弹窗；DevTools Network 面板捕获 `POST /api/v1/agents/:id/migrate/preview` 请求 `{ targetType: "AGENTDATE" }`
+- 验证 AC: `ISSUE-C006~c5` 场景切换入口（在已有 Agent 上发起切换）
+- 截图: 切换场景按钮、目标场景选择面板
+- API 响应: 记录 `POST /api/v1/agents/:id/migrate/preview` 请求与响应
+
+**Step 16.2**: 查看「迁移预览」弹窗（保留 / 转换 / 丢弃 字段分类）
+
+- 操作: 等待迁移预览弹窗加载完成，仔细查看三栏内容
+- 预期: 弹窗显示三类字段：
+  - 「保留」: 在新场景中字段名一致且语义兼容（如 `name`, `description`, `isPublic`）
+  - 「转换」: 字段会按转换规则映射到新场景对应字段（如 VisionShare 的 `priceRange` → AgentDate 的 `budget`，附转换规则说明）
+  - 「丢弃」: 旧场景特有字段在新场景没有对应位置（如 VisionShare 的 `autoShare` 在 AgentDate 不存在）
+- 验证 AC: `ISSUE-C006~c5` 迁移预览（字段保留/转换/丢弃可视化） + 配置转换规则（转换映射展示）
+- 截图: 迁移预览弹窗的三栏分类全貌
+- API 响应: 记录 `POST /api/v1/agents/:id/migrate/preview` 响应 body 含 `{ retained: [...], converted: [{from, to, rule}], dropped: [...] }`
+
+**Step 16.3**: 数据冲突解决（旧场景特有字段处理）
+
+- 操作: 在「丢弃」分类中找到旧场景特有字段（如 `autoShare`），点击该字段旁的「处理」按钮，选择处理策略：「忽略并丢弃」「导出为备注」「映射到新字段（手动选择）」
+- 预期: 选择策略后该字段被标记，预览弹窗底部显示已处理冲突计数；若选「映射到新字段」会弹出新场景字段选择器
+- 验证 AC: `ISSUE-C006~c5` 数据冲突解决（特有字段处理策略）
+- 截图: 冲突字段「处理」面板、策略选择菜单、处理后状态
+- API 响应: 记录 `PATCH /api/v1/agents/:id/migrate/preview` 请求体 `{ conflictResolutions: [{ field, strategy }] }` 和响应
+
+**Step 16.4**: 确认迁移并提交切换请求
+
+- 操作: 在迁移预览弹窗底部点击「确认迁移」按钮，二次确认弹窗点击「确定」
+- 预期: DevTools Network 面板捕获 `POST /api/v1/agents/:id/migrate` 请求体 `{ targetType: "AGENTDATE", conflictResolutions: [...] }`，返回 200 + 迁移后的 Agent 对象；UI 显示「迁移成功」提示后跳转到 Agent 详情页
+- 验证 AC: `ISSUE-C006~c5` 迁移确认（提交切换请求 + 二次确认）
+- 截图: 二次确认弹窗、迁移成功提示
+- API 响应: 记录 `POST /api/v1/agents/:id/migrate` 请求体与响应 body（含新 `type: "AGENTDATE"` 与转换后的 fields）
+
+**Step 16.5**: 验证切换后场景类型与配置已按规则迁移
+
+- 操作: 迁移成功后停留在 Agent 详情页，DevTools Network 面板捕获 `GET /api/v1/agents/:id` 请求；对比迁移前后 Agent 的 `type` 与场景配置
+- 预期:
+  - Agent `type` 字段已从 `VISIONSHARE` 变更为 `AGENTDATE`
+  - 「保留」字段（`name`, `description`, `isPublic`）值未变
+  - 「转换」字段已按规则迁移（如 `priceRange` 的值正确写入 `budget`）
+  - 「丢弃」字段不再存在于新配置中（或按用户选择策略已处理）
+- 验证 AC: `ISSUE-C006~c5` 数据迁移结果验证（场景类型变更 + 配置按转换规则迁移）
+- 截图: 迁移前 Agent 详情页（VisionShare 类型 + 旧字段） vs 迁移后 Agent 详情页（AgentDate 类型 + 转换后字段）
+- API 响应: 记录 `GET /api/v1/agents/:id` 响应 body（迁移后完整 Agent 对象）
+
+---
+
 ## AC 覆盖表
 
 | AC Slug             | 描述                                                                | 验证方式                                                                                                                                                                                                                                                                                                              | 所在步骤                                                  |
@@ -537,9 +690,9 @@
 | `ISSUE-C001~c5`     | Agent 管理 UI（列表页/创建向导/卡片/空状态）                        | Step 1.2 空状态，Step 1.3 创建按钮，Step 6.4 向导完成                                                                                                                                                                                                                                                                 | 1.2, 1.3, 6.4                                             |
 | `ISSUE-C006~c1`     | 场景配置（VisionShare/AgentDate/AgentJob/AgentAd 配置）             | Step 4.1 VisionShare 配置表单，Step 10.3 选择其他场景                                                                                                                                                                                                                                                                 | 4.1, 10.3                                                 |
 | `ISSUE-C006~c2`     | 字段系统（场景特定字段/验证规则/依赖关系）                          | Step 4.1-4.3 字段输入和必填验证                                                                                                                                                                                                                                                                                       | 4.1, 4.3                                                  |
-| `ISSUE-C006~c3`     | 场景模板（预设模板/应用复制/自定义/分享）                           | Step 6.2 预览页配置摘要体现模板效果                                                                                                                                                                                                                                                                                   | 6.2                                                       |
-| `ISSUE-C006~c4`     | 能力系统（场景功能列表/启用禁用/依赖检查/版本）                     | Step 3.1 四种场景类型差异体现能力不同                                                                                                                                                                                                                                                                                 | 3.1                                                       |
-| `ISSUE-C006~c5`     | 场景切换（数据迁移/转换规则/预览/确认）                             | Step 10.3 "继续创建"向导实现场景切换效果                                                                                                                                                                                                                                                                              | 10.3                                                      |
+| `ISSUE-C006~c3`     | 场景模板（预设模板/应用复制/自定义/分享）                           | Step 14.1 场景模板管理页入口，Step 14.2 预设模板库列表查看，Step 14.3 应用预设模板（配置自动填充），Step 14.4 复制现有模板创建副本，Step 14.5 自定义模板（保存为模板），Step 14.6 分享模板给好友（生成分享链接 / 选择联系人）                                                                                         | 14.1, 14.2, 14.3, 14.4, 14.5, 14.6                        |
+| `ISSUE-C006~c4`     | 能力系统（场景功能列表/启用禁用/依赖检查/版本）                     | Step 15.1 能力管理面板入口与功能列表，Step 15.2 启用某能力，Step 15.3 禁用某能力，Step 15.4 启用有依赖冲突能力时触发依赖冲突提示，Step 15.5 能力版本管理（版本切换/回滚）                                                                                                                                             | 15.1, 15.2, 15.3, 15.4, 15.5                              |
+| `ISSUE-C006~c5`     | 场景切换（数据迁移/转换规则/预览/确认）                             | Step 16.1 在已有 Agent 上发起切换场景（VisionShare → AgentDate），Step 16.2 迁移预览弹窗（保留/转换/丢弃 三栏分类 + 转换规则展示），Step 16.3 数据冲突解决（旧场景特有字段处理策略），Step 16.4 确认迁移提交切换请求，Step 16.5 验证切换后场景类型变更与配置按转换规则迁移                                            | 16.1, 16.2, 16.3, 16.4, 16.5                              |
 | `ISSUE-C006~c6`     | 场景配置可视化管理和预览界面                                        | Step 6.2 预览页配置摘要可视化                                                                                                                                                                                                                                                                                         | 6.2                                                       |
 | `US-AGENT-011~func` | 每个场景设置公开信息和详细信息                                      | Step 6.2 预览页显示公开信息（名称/类型）和配置详情                                                                                                                                                                                                                                                                    | 6.2                                                       |
 | `US-AGENT-011~edge` | 异常：披露策略切换后的行为一致性                                    | Step 2.6 Public/Private 切换场景                                                                                                                                                                                                                                                                                      | 2.6                                                       |
