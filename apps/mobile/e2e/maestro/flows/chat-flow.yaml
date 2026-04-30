@@ -1,5 +1,5 @@
 # issue: ISSUE-CHAT-001
-# description: 消息列表和聊天发送接收交互（覆盖 ChatInput / AttachmentPicker / QuickReply / IdentitySwitcher / EmojiPicker）
+# description: 消息列表和聊天发送接收交互（覆盖 ChatInput / AttachmentPicker / QuickReply / IdentitySwitcher / EmojiPicker / MessageBubble）
 
 appId: com.bridgeai.mobile
 env:
@@ -38,7 +38,7 @@ env:
     label: 'messages-tab'
 - waitForAnimationToEnd
 
-# 断言1: 消息列表页面可见
+# ── 断言 1: 消息列表页面可见 ──────────────────────────────────────
 - extendedWaitUntil:
     visible:
       id: 'messages-list'
@@ -46,38 +46,36 @@ env:
 - assertVisible:
     id: 'messages-list'
 
-# 断言2: 验证有会话项（点击第一个会话进入聊天）
+# ── 断言 2: 点击第一个会话进入聊天 ─────────────────────────────────
 - tapOn:
     index: 0
 - waitForAnimationToEnd
 
-# 断言3: 聊天界面身份切换器可见
+# ── 断言 3: 聊天界面核心元素可见 ──────────────────────────────────
 - extendedWaitUntil:
     visible:
       id: 'chat-identity-switcher'
     timeout: 10000
 - assertVisible:
     id: 'chat-identity-switcher'
-
-# 断言4: 验证发送按钮可见
 - assertVisible:
     id: 'send-button'
-
-# 断言5: 验证输入框存在（通过 emoji 按钮确认输入区域可见）
 - assertVisible:
     id: 'emoji-button'
+- assertVisible:
+    id: 'chat-message-input'
 
-# ── 场景 A: 使用 EmojiPicker 选择 emoji ─────────────────────────
-# 打开 emoji 选择器
+# ── 场景 A: EmojiPicker 交互 ────────────────────────────────────────
+# A-1: 打开 emoji 选择器
 - tapOn:
     id: 'emoji-button'
 - waitForAnimationToEnd
 
-# 验证 emoji 搜索框可见（确认 picker 已展开）
+# A-2: 验证 emoji picker 已展开（搜索框可见）
 - assertVisible:
     id: 'emoji-search-input'
 
-# 选择常用分类（可选，默认已选中）
+# A-3: 选择分类（常用 or 第一个可用分类）
 - runFlow:
     when:
       visible:
@@ -87,36 +85,48 @@ env:
           id: 'emoji-category-常用'
       - waitForAnimationToEnd
 
-# 关闭 emoji picker，回到输入状态
+# A-4: 搜索 emoji
+- tapOn:
+    id: 'emoji-search-input'
+- inputText: '😊'
+- waitForAnimationToEnd
+
+# A-5: 关闭 emoji picker（回到输入状态，emoji 已在搜索框中）
 - tapOn:
     id: 'emoji-button'
 - waitForAnimationToEnd
 
-# ── 场景 B: 通过 ChatInput 输入并发送消息 ───────────────────────
-# 输入消息文本（点击输入框区域 - 第一个可输入控件）
+# ── 场景 B: ChatInput 输入并发送消息 ───────────────────────────────
+# B-1: 点击输入框并输入文本
 - tapOn:
-    index: 0
+    id: 'chat-message-input'
 - inputText: '${TEST_MESSAGE}'
 - waitForAnimationToEnd
 
-# 点击发送
+# B-2: 点击发送
 - tapOn:
     id: 'send-button'
 - waitForAnimationToEnd
 
-# 断言6: 验证发送后输入框仍可见（消息已发送，输入框清空）
+# B-3: 验证发送后输入框清空但仍可见
+- assertVisible:
+    id: 'chat-message-input'
+
+# B-4: 验证发送按钮仍可见（消息已发送，输入框清空）
 - assertVisible:
     id: 'send-button'
 
-# ── 场景 C: 打开 AttachmentPicker（如果存在附件按钮）─────────────
+# ── 场景 C: AttachmentPicker 交互 ───────────────────────────────────
 - runFlow:
     when:
       visible:
         id: 'attachment-button'
     commands:
+      # C-1: 打开附件选择器
       - tapOn:
           id: 'attachment-button'
       - waitForAnimationToEnd
+      # C-2: 验证 modal 和按钮可见
       - extendedWaitUntil:
           visible:
             id: 'attachment-picker-modal'
@@ -127,18 +137,18 @@ env:
           id: 'pick-image-button'
       - assertVisible:
           id: 'pick-file-button'
-      # 关闭附件选择器
+      # C-3: 关闭附件选择器
       - tapOn:
           id: 'attachment-cancel-button'
       - waitForAnimationToEnd
 
-# ── 场景 D: 使用 QuickReply 快捷回复（如果存在）──────────────────
+# ── 场景 D: QuickReply 快捷回复交互 ─────────────────────────────────
+# D-1: 如果存在快捷回复按钮，测试自定义快捷回复添加
 - runFlow:
     when:
       visible:
         id: 'quick-reply-add-button'
     commands:
-      # 打开自定义快捷回复对话框
       - tapOn:
           id: 'quick-reply-add-button'
       - waitForAnimationToEnd
@@ -151,16 +161,17 @@ env:
           id: 'quick-reply-add-confirm'
       - waitForAnimationToEnd
 
-# ── 场景 E: 切换身份 (IdentitySwitcher) ────────────────────────
+# ── 场景 E: IdentitySwitcher 身份切换 ───────────────────────────────
 - runFlow:
     when:
       visible:
         id: 'chat-identity-switcher-switch-button'
     commands:
+      # E-1: 点击切换按钮
       - tapOn:
           id: 'chat-identity-switcher-switch-button'
       - waitForAnimationToEnd
-      # 处理确认弹窗（点击"取消"避免影响后续测试，验证弹窗确实出现过）
+      # E-2: 处理确认弹窗（点击"取消"避免影响后续测试）
       - runFlow:
           when:
             visible: '取消'
@@ -168,8 +179,10 @@ env:
             - tapOn: '取消'
             - waitForAnimationToEnd
 
-# 最终断言: 仍在聊天界面，身份切换器可见
+# ── 最终断言: 仍在聊天界面，核心元素可见 ─────────────────────────────
 - assertVisible:
     id: 'chat-identity-switcher'
 - assertVisible:
     id: 'send-button'
+- assertVisible:
+    id: 'chat-message-input'

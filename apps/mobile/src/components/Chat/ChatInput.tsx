@@ -455,6 +455,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           editable={!disabled}
           onBlur={hideMentionPopup}
           onFocus={() => setShowEmojiPicker(false)}
+          testID="chat-message-input"
         />
 
         <TouchableOpacity
