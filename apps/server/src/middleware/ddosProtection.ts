@@ -302,9 +302,14 @@ export function slowAttackProtection(
       next();
       return;
     }
+    // Skip for whitelisted IPs (localhost, etc.)
+    const ip = getClientIP(req);
+    if (isWhitelisted(ip)) {
+      next();
+      return;
+    }
     const timer = setTimeout(() => {
       if (!res.headersSent) {
-        const ip = getClientIP(req);
         console.warn(`[DDoS Protection] Slow request timeout from ${ip}`);
 
         res.status(408).json({

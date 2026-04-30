@@ -37,7 +37,10 @@ import { SceneConfigForm } from './components/SceneConfigForm';
 import { AIConfigSection } from './components/AIConfigSection';
 import { AgentPreview } from './components/AgentPreview';
 
-// NP-272: AC specifies 4 scene types — exclude DEMAND/SUPPLY from the wizard.
+// NP-272 / NP-2088: AC specifies 4 user-creatable scene types. DEMAND/SUPPLY
+// are intentionally excluded from this wizard — they are system-generated
+// transactional agent types (created server-side via seeds/demand-extraction
+// queue), not selectable by end users.
 const SCENE_TYPES: AgentType[] = [
   AgentType.VISIONSHARE,
   AgentType.AGENTDATE,

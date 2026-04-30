@@ -142,8 +142,10 @@ export async function createAgent(userId: string, input: CreateAgentInput): Prom
   // Validate coordinates (WGS84 bounds)
   validateCoordinates(input.latitude, input.longitude);
 
-  // Generate initial personality based on agent type
-  const personality = generateAgentPersonality(input.type);
+  // Generate initial personality based on agent type and user master profile.
+  // NP-2086: pass userId so generateAgentPersonality can dynamically read the
+  // owner's profile and augment traits beyond the hardcoded defaults.
+  const personality = await generateAgentPersonality(input.type, userId);
   const initialConfig = {
     ...(input.config || {}),
     personality,
@@ -186,8 +188,64 @@ export async function createAgent(userId: string, input: CreateAgentInput): Prom
 /**
  * Generate initial personality config for an agent based on its scene type.
  * NP-268: Adopted by agentService.createAgent to bootstrap behavior guidelines.
+ * NP-2086: Accepts an optional `userId` to dynamically read the owner's master
+ * profile (User row + AgentProfile L1/L2/L3) and augment the hardcoded defaults
+ * with profile-derived traits. When `userId` is omitted or no profile data
+ * exists, falls back to the original hardcoded traits/communicationStyle so
+ * existing callers and tests continue to work unchanged.
  */
-export function generateAgentPersonality(type: AgentType): {
+export async function generateAgentPersonality(
+  type: AgentType,
+  userId?: string
+): Promise<{
+  traits: string[];
+  communicationStyle: string;
+}> {
+  const base = getDefaultPersonality(type);
+
+  if (!userId) {
+    return base;
+  }
+
+  // Best-effort dynamic augmentation from the user's master profile. Any DB
+  // failure or missing data must not break agent creation, so we swallow
+  // errors and return the hardcoded defaults.
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { bio: true, location: true, displayName: true, name: true },
+    });
+
+    const dynamicTraits: string[] = [];
+    if (user?.location) {
+      dynamicTraits.push(`本地化:${user.location}`);
+    }
+    if (user?.bio) {
+      // Keep trait short — take the first comma/period-delimited segment.
+      const snippet = user.bio.split(/[,，。.]/)[0]?.trim();
+      if (snippet && snippet.length > 0 && snippet.length <= 30) {
+        dynamicTraits.push(`兴趣:${snippet}`);
+      }
+    }
+
+    if (dynamicTraits.length === 0) {
+      return base;
+    }
+
+    return {
+      traits: [...base.traits, ...dynamicTraits],
+      communicationStyle: base.communicationStyle,
+    };
+  } catch {
+    return base;
+  }
+}
+
+/**
+ * Hardcoded default personality per AgentType. Used as the fallback when no
+ * user profile is available (NP-2086).
+ */
+function getDefaultPersonality(type: AgentType): {
   traits: string[];
   communicationStyle: string;
 } {

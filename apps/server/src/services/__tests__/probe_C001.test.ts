@@ -46,7 +46,7 @@ const {
   __mockAgent: mockAgent,
   __mockDemand: mockDemand,
   __mockSupply: mockSupply,
-  __mockProfile: mockProfile,
+  __mockProfile: _mockProfile,
 } = jest.requireMock('../../db/client');
 
 // Mock logger
@@ -106,7 +106,9 @@ describe('PROBE: ISSUE-C001 — Agent创建与基础配置', () => {
       mockAgent.update.mockResolvedValue({ ...archivedAgent });
 
       const result = await agentService.updateAgentStatus(
-        agentId, userId, agentService.AgentStatus.ARCHIVED
+        agentId,
+        userId,
+        agentService.AgentStatus.ARCHIVED
       );
 
       // BUG? No error thrown, but this is a no-op transition.
@@ -265,9 +267,10 @@ describe('PROBE: ISSUE-C001 — Agent创建与基础配置', () => {
 
       // NOTE: returns 404 not 403 — could be security info leak
       // but actually this is a common pattern to avoid leaking existence
-      await expect(
-        agentService.getAgentById(agentId, userId)
-      ).rejects.toMatchObject({ code: 'AGENT_NOT_FOUND', statusCode: 404 });
+      await expect(agentService.getAgentById(agentId, userId)).rejects.toMatchObject({
+        code: 'AGENT_NOT_FOUND',
+        statusCode: 404,
+      });
     });
 
     it('updateAgent with wrong userId → throws UNAUTHORIZED (403)', async () => {
@@ -287,9 +290,10 @@ describe('PROBE: ISSUE-C001 — Agent创建与基础配置', () => {
         userId: 'different-user',
       });
 
-      await expect(
-        agentService.deleteAgent(agentId, userId)
-      ).rejects.toMatchObject({ code: 'UNAUTHORIZED', statusCode: 403 });
+      await expect(agentService.deleteAgent(agentId, userId)).rejects.toMatchObject({
+        code: 'UNAUTHORIZED',
+        statusCode: 403,
+      });
     });
 
     it('updateAgentStatus with wrong userId → throws UNAUTHORIZED', async () => {
@@ -322,9 +326,7 @@ describe('PROBE: ISSUE-C001 — Agent创建与基础配置', () => {
       mockDemand.count.mockResolvedValue(3);
       mockSupply.count.mockResolvedValue(0);
 
-      await expect(
-        agentService.deleteAgent(agentId, userId)
-      ).rejects.toMatchObject({
+      await expect(agentService.deleteAgent(agentId, userId)).rejects.toMatchObject({
         code: 'AGENT_HAS_ACTIVE_MATCHES',
         statusCode: 409,
       });
@@ -335,9 +337,9 @@ describe('PROBE: ISSUE-C001 — Agent创建与基础配置', () => {
       mockDemand.count.mockResolvedValue(0);
       mockSupply.count.mockResolvedValue(1);
 
-      await expect(
-        agentService.deleteAgent(agentId, userId)
-      ).rejects.toMatchObject({ code: 'AGENT_HAS_ACTIVE_MATCHES' });
+      await expect(agentService.deleteAgent(agentId, userId)).rejects.toMatchObject({
+        code: 'AGENT_HAS_ACTIVE_MATCHES',
+      });
     });
 
     it('Allows archive when no active matches', async () => {
@@ -409,15 +411,13 @@ describe('PROBE: ISSUE-C001 — Agent创建与基础配置', () => {
       mockAgent.count.mockResolvedValue(5);
       mockAgent.findMany.mockResolvedValue([]);
 
-      const result = await agentService.getAgentsByUserId(userId, {
+      const _result = await agentService.getAgentsByUserId(userId, {
         page: 1,
         limit: 0,
       });
 
       // FIXED: limit=0 normalized to limit=1
-      expect(mockAgent.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ take: 1 })
-      );
+      expect(mockAgent.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 1 }));
     });
 
     it('Very large limit (999999) → capped to 100', async () => {
@@ -430,9 +430,7 @@ describe('PROBE: ISSUE-C001 — Agent创建与基础配置', () => {
       });
 
       // FIXED: limit capped to max 100
-      expect(mockAgent.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ take: 100 })
-      );
+      expect(mockAgent.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 100 }));
     });
   });
 
@@ -599,15 +597,15 @@ describe('PROBE: ISSUE-C001 — Agent创建与基础配置', () => {
     ];
 
     types.forEach(type => {
-      it(`${type} returns non-empty traits and communicationStyle`, () => {
-        const personality = agentService.generateAgentPersonality(type);
+      it(`${type} returns non-empty traits and communicationStyle`, async () => {
+        const personality = await agentService.generateAgentPersonality(type);
         expect(personality.traits.length).toBeGreaterThan(0);
         expect(personality.communicationStyle).toBeTruthy();
       });
     });
 
-    it('Unknown type returns empty traits and neutral style', () => {
-      const personality = agentService.generateAgentPersonality(
+    it('Unknown type returns empty traits and neutral style', async () => {
+      const personality = await agentService.generateAgentPersonality(
         'UNKNOWN' as agentService.AgentType
       );
       expect(personality.traits).toEqual([]);
@@ -635,9 +633,9 @@ describe('PROBE: ISSUE-C001 — Agent创建与基础配置', () => {
         userId: 'different-user',
       });
 
-      await expect(
-        agentService.getAgentStatusHistory(agentId, userId)
-      ).rejects.toMatchObject({ code: 'AGENT_NOT_FOUND' });
+      await expect(agentService.getAgentStatusHistory(agentId, userId)).rejects.toMatchObject({
+        code: 'AGENT_NOT_FOUND',
+      });
     });
 
     it('Without userId → returns history without ownership check', async () => {
@@ -708,9 +706,10 @@ describe('PROBE: ISSUE-C001 — Agent创建与基础配置', () => {
 
     it('deleteAgent(not-found) → AGENT_NOT_FOUND 404', async () => {
       mockAgent.findUnique.mockResolvedValue(null);
-      await expect(
-        agentService.deleteAgent('nonexistent', userId)
-      ).rejects.toMatchObject({ code: 'AGENT_NOT_FOUND', statusCode: 404 });
+      await expect(agentService.deleteAgent('nonexistent', userId)).rejects.toMatchObject({
+        code: 'AGENT_NOT_FOUND',
+        statusCode: 404,
+      });
     });
   });
 });
