@@ -49,18 +49,10 @@ describe('MatchQueryService', () => {
 });
 
 describe('Match scoring calculations', () => {
-  // Test the scoring logic independently by invoking the
-  // production private methods on MatchQueryService directly,
-  // so any change in scoring logic is automatically covered.
+  // Test the scoring logic by invoking the production private methods on
+  // MatchQueryService directly, so any change in scoring logic is
+  // automatically covered. No local helpers — call the service in each test.
   let svc: MatchQueryService;
-  const calcBudgetScore = (sourceL1: Record<string, any>, targetL1: Record<string, any>): number =>
-    (svc as any).calcBudgetScore(sourceL1, targetL1);
-  const calcCategoryScore = (
-    sourceL1: Record<string, any>,
-    targetL1: Record<string, any>
-  ): number => (svc as any).calcCategoryScore(sourceL1, targetL1);
-  const calcTimeScore = (sourceL1: Record<string, any>, targetL1: Record<string, any>): number =>
-    (svc as any).calcTimeScore(sourceL1, targetL1);
 
   beforeEach(() => {
     svc = new MatchQueryService();
@@ -69,28 +61,28 @@ describe('Match scoring calculations', () => {
   describe('Budget score calculation', () => {
     it('returns 0.5 when no budget data', () => {
       // No budget info -> neutral score
-      const result = calcBudgetScore({}, {});
+      const result = (svc as any).calcBudgetScore({}, {});
       expect(result).toBe(0.5);
     });
 
     it('returns 1 for perfect overlap', () => {
       const source = { budget: { min: 100, max: 200 } };
       const target = { budget: { min: 100, max: 200 } };
-      const result = calcBudgetScore(source, target);
+      const result = (svc as any).calcBudgetScore(source, target);
       expect(result).toBe(1);
     });
 
     it('returns 0 for no overlap', () => {
       const source = { budget: { min: 100, max: 200 } };
       const target = { budget: { min: 300, max: 400 } };
-      const result = calcBudgetScore(source, target);
+      const result = (svc as any).calcBudgetScore(source, target);
       expect(result).toBe(0);
     });
 
     it('returns partial score for partial overlap', () => {
       const source = { budget: { min: 100, max: 300 } };
       const target = { budget: { min: 200, max: 400 } };
-      const result = calcBudgetScore(source, target);
+      const result = (svc as any).calcBudgetScore(source, target);
       expect(result).toBeGreaterThan(0);
       expect(result).toBeLessThanOrEqual(1);
     });
@@ -98,28 +90,28 @@ describe('Match scoring calculations', () => {
 
   describe('Category score calculation', () => {
     it('returns 0.5 when no categories', () => {
-      const result = calcCategoryScore({}, {});
+      const result = (svc as any).calcCategoryScore({}, {});
       expect(result).toBe(0.5);
     });
 
     it('returns 1 for exact match', () => {
       const source = { category: 'photography' };
       const target = { category: 'photography' };
-      const result = calcCategoryScore(source, target);
+      const result = (svc as any).calcCategoryScore(source, target);
       expect(result).toBe(1);
     });
 
     it('returns 0 for no match', () => {
       const source = { categories: ['photography', 'design'] };
       const target = { categories: ['cooking', 'music'] };
-      const result = calcCategoryScore(source, target);
+      const result = (svc as any).calcCategoryScore(source, target);
       expect(result).toBe(0);
     });
 
     it('returns partial score for partial match', () => {
       const source = { categories: ['photography', 'design', 'art'] };
       const target = { categories: ['photography', 'music'] };
-      const result = calcCategoryScore(source, target);
+      const result = (svc as any).calcCategoryScore(source, target);
       expect(result).toBeGreaterThan(0);
       expect(result).toBeLessThan(1);
     });
@@ -127,7 +119,7 @@ describe('Match scoring calculations', () => {
 
   describe('Time score calculation', () => {
     it('returns 0.5 when no time data', () => {
-      const result = calcTimeScore({}, {});
+      const result = (svc as any).calcTimeScore({}, {});
       expect(result).toBe(0.5);
     });
 
@@ -144,7 +136,7 @@ describe('Match scoring calculations', () => {
           end: '2025-12-31',
         },
       };
-      const result = calcTimeScore(source, target);
+      const result = (svc as any).calcTimeScore(source, target);
       expect(result).toBe(1);
     });
 
@@ -161,7 +153,7 @@ describe('Match scoring calculations', () => {
           end: '2025-12-31',
         },
       };
-      const result = calcTimeScore(source, target);
+      const result = (svc as any).calcTimeScore(source, target);
       expect(result).toBe(0);
     });
   });
