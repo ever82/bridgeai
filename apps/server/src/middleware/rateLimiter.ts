@@ -221,19 +221,26 @@ export function endpointRateLimiter(): RateLimitRequestHandler {
 /**
  * Enhanced IP-based rate limiter with tiered limits
  */
+// Whitelist IPs that bypass rate limiting (loopback by default).
+// Avoids hangs/blocks when local clients (curl, E2E, dev tools) hit /api/* routes.
+const RATE_LIMIT_WHITELIST = (
+  process.env.RATE_LIMIT_WHITELIST?.split(',') || ['127.0.0.1', '::1', '::ffff:127.0.0.1']
+).map(s => s.trim());
+
+function getRequestIP(req: Request): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string') {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.ip || req.socket.remoteAddress || 'unknown';
+}
+
 export const enhancedIpLimiter = rateLimit({
   windowMs: rateLimitConfigs.default.windowMs,
   max: rateLimitConfigs.default.maxRequests,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: Request): string => {
-    // Get real client IP behind proxy
-    const forwarded = req.headers['x-forwarded-for'];
-    if (typeof forwarded === 'string') {
-      return forwarded.split(',')[0].trim();
-    }
-    return req.ip || req.socket.remoteAddress || 'unknown';
-  },
+  keyGenerator: (req: Request): string => getRequestIP(req),
   handler: (req: Request, res: Response) => {
     res
       .status(429)
@@ -247,7 +254,12 @@ export const enhancedIpLimiter = rateLimit({
   },
   skip: (req: Request) => {
     // Skip health checks
-    return req.path === '/health' || req.path === '/ready';
+    if (req.path === '/health' || req.path === '/ready') return true;
+    // Bypass entirely in test environment
+    if (process.env.NODE_ENV === 'test') return true;
+    // Skip whitelisted (loopback) IPs to prevent local clients from being rate limited
+    const ip = getRequestIP(req);
+    return RATE_LIMIT_WHITELIST.includes(ip);
   },
 });
 
