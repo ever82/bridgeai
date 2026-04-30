@@ -16,131 +16,115 @@ import {
 } from '../../services/job/jobMatchNotifications';
 import { AppError } from '../../errors';
 
-interface AuthenticatedRequest extends Request {
-  user?: { id: string; role?: string };
-}
-
 const router: Router = Router();
 
 // ---------------------------------------------------------------------------
 // Trigger notifications (for internal / agent use)
 // ---------------------------------------------------------------------------
 
-router.post(
-  '/notify/new-match',
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      if (!req.user) {
-        throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
-      }
-
-      const { matchId, matchScore, jobTitle, candidateName, metadata, targetUserId } = req.body;
-      const effectiveTargetUserId =
-        targetUserId && req.user.role === 'admin' ? targetUserId : req.user.id;
-      const result = await notifyNewMatch({
-        userId: effectiveTargetUserId,
-        matchId,
-        matchScore,
-        jobTitle,
-        candidateName,
-        metadata,
-      });
-
-      res.json({ success: true, data: result });
-    } catch (error) {
-      next(error);
+router.post('/notify/new-match', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
+
+    const { matchId, matchScore, jobTitle, candidateName, metadata, targetUserId } = req.body;
+    const effectiveTargetUserId =
+      targetUserId && req.user.role === 'admin' ? targetUserId : req.user.id;
+    const result = await notifyNewMatch({
+      userId: effectiveTargetUserId,
+      matchId,
+      matchScore,
+      jobTitle,
+      candidateName,
+      metadata,
+    });
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
-router.post(
-  '/notify/high-match',
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      if (!req.user) {
-        throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
-      }
-
-      const { matchId, matchScore, jobTitle, metadata, targetUserId } = req.body;
-      const effectiveTargetUserId =
-        targetUserId && req.user.role === 'admin' ? targetUserId : req.user.id;
-      const result = await notifyHighMatchJob({
-        userId: effectiveTargetUserId,
-        matchId,
-        matchScore,
-        jobTitle,
-        metadata,
-      });
-
-      res.json({ success: true, data: result });
-    } catch (error) {
-      next(error);
+router.post('/notify/high-match', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
+
+    const { matchId, matchScore, jobTitle, metadata, targetUserId } = req.body;
+    const effectiveTargetUserId =
+      targetUserId && req.user.role === 'admin' ? targetUserId : req.user.id;
+    const result = await notifyHighMatchJob({
+      userId: effectiveTargetUserId,
+      matchId,
+      matchScore,
+      jobTitle,
+      metadata,
+    });
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
-router.post(
-  '/notify/resume-viewed',
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      if (!req.user) {
-        throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
-      }
-
-      const { matchId, candidateName, metadata, targetUserId } = req.body;
-      const effectiveTargetUserId =
-        targetUserId && req.user.role === 'admin' ? targetUserId : req.user.id;
-      const result = await notifyResumeViewed({
-        userId: effectiveTargetUserId,
-        matchId,
-        candidateName,
-        metadata,
-      });
-
-      res.json({ success: true, data: result });
-    } catch (error) {
-      next(error);
+router.post('/notify/resume-viewed', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
+
+    const { matchId, candidateName, metadata, targetUserId } = req.body;
+    const effectiveTargetUserId =
+      targetUserId && req.user.role === 'admin' ? targetUserId : req.user.id;
+    const result = await notifyResumeViewed({
+      userId: effectiveTargetUserId,
+      matchId,
+      candidateName,
+      metadata,
+    });
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
-router.post(
-  '/notify/match-status',
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      if (!req.user) {
-        throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
-      }
-
-      const { matchId, status, metadata, targetUserId } = req.body;
-      if (!['accepted', 'rejected', 'completed'].includes(status)) {
-        throw new AppError(
-          'Invalid status. Must be: accepted, rejected, completed',
-          'INVALID_STATUS',
-          400
-        );
-      }
-
-      const effectiveTargetUserId =
-        targetUserId && req.user.role === 'admin' ? targetUserId : req.user.id;
-      const result = await notifyMatchStatusChange(status, {
-        userId: effectiveTargetUserId,
-        matchId,
-        metadata,
-      });
-
-      res.json({ success: true, data: result });
-    } catch (error) {
-      next(error);
+router.post('/notify/match-status', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
+
+    const { matchId, status, metadata, targetUserId } = req.body;
+    if (!['accepted', 'rejected', 'completed'].includes(status)) {
+      throw new AppError(
+        'Invalid status. Must be: accepted, rejected, completed',
+        'INVALID_STATUS',
+        400
+      );
+    }
+
+    const effectiveTargetUserId =
+      targetUserId && req.user.role === 'admin' ? targetUserId : req.user.id;
+    const result = await notifyMatchStatusChange(status, {
+      userId: effectiveTargetUserId,
+      matchId,
+      metadata,
+    });
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 // ---------------------------------------------------------------------------
 // Preferences
 // ---------------------------------------------------------------------------
 
-router.get('/preferences', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('/preferences', async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
       throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
@@ -154,7 +138,7 @@ router.get('/preferences', async (req: AuthenticatedRequest, res: Response, next
   }
 });
 
-router.put('/preferences', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.put('/preferences', async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
       throw new AppError('Authentication required', 'UNAUTHORIZED', 401);

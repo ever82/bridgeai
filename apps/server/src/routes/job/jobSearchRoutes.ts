@@ -15,17 +15,13 @@ import {
 } from '../../services/job/jobSearchService';
 import { AppError } from '../../errors';
 
-interface AuthenticatedRequest extends Request {
-  user?: { id: string };
-}
-
 const router: Router = Router();
 
 // ---------------------------------------------------------------------------
 // Job search
 // ---------------------------------------------------------------------------
 
-router.get('/jobs', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('/jobs', async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
       throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
@@ -58,42 +54,39 @@ router.get('/jobs', async (req: AuthenticatedRequest, res: Response, next: NextF
 // Candidate search (recruiter)
 // ---------------------------------------------------------------------------
 
-router.get(
-  '/candidates/:jobId',
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      if (!req.user) {
-        throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
-      }
-
-      const result = await searchCandidates({
-        userId: req.user.id,
-        jobId: req.params.jobId,
-        minMatchScore: req.query.minMatchScore
-          ? parseFloat(req.query.minMatchScore as string)
-          : undefined,
-        skills: req.query.skills ? (req.query.skills as string).split(',') : undefined,
-        experienceLevel: req.query.experienceLevel as string,
-        salaryMin: req.query.salaryMin ? parseInt(req.query.salaryMin as string) : undefined,
-        salaryMax: req.query.salaryMax ? parseInt(req.query.salaryMax as string) : undefined,
-        sortBy: req.query.sortBy as any,
-        sortOrder: req.query.sortOrder as any,
-        page: req.query.page ? parseInt(req.query.page as string) : 1,
-        limit: req.query.limit ? parseInt(req.query.limit as string) : 20,
-      });
-
-      res.json({ success: true, data: result.items, pagination: result });
-    } catch (error) {
-      next(error);
+router.get('/candidates/:jobId', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
     }
+
+    const result = await searchCandidates({
+      userId: req.user.id,
+      jobId: req.params.jobId,
+      minMatchScore: req.query.minMatchScore
+        ? parseFloat(req.query.minMatchScore as string)
+        : undefined,
+      skills: req.query.skills ? (req.query.skills as string).split(',') : undefined,
+      experienceLevel: req.query.experienceLevel as string,
+      salaryMin: req.query.salaryMin ? parseInt(req.query.salaryMin as string) : undefined,
+      salaryMax: req.query.salaryMax ? parseInt(req.query.salaryMax as string) : undefined,
+      sortBy: req.query.sortBy as any,
+      sortOrder: req.query.sortOrder as any,
+      page: req.query.page ? parseInt(req.query.page as string) : 1,
+      limit: req.query.limit ? parseInt(req.query.limit as string) : 20,
+    });
+
+    res.json({ success: true, data: result.items, pagination: result });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 // ---------------------------------------------------------------------------
 // Match results
 // ---------------------------------------------------------------------------
 
-router.get('/matches', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('/matches', async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
       throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
@@ -120,7 +113,7 @@ router.get('/matches', async (req: AuthenticatedRequest, res: Response, next: Ne
 // Search history
 // ---------------------------------------------------------------------------
 
-router.get('/history', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('/history', async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
       throw new AppError('Authentication required', 'UNAUTHORIZED', 401);
@@ -138,7 +131,7 @@ router.get('/history', async (req: AuthenticatedRequest, res: Response, next: Ne
   }
 });
 
-router.delete('/history', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.delete('/history', async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
       throw new AppError('Authentication required', 'UNAUTHORIZED', 401);

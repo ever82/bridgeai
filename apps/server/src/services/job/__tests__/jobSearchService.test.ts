@@ -457,8 +457,13 @@ describe('jobSearchService', () => {
     });
 
     it('should paginate results', async () => {
-      const allMatches = Array.from({ length: 25 }, (_, i) => ({ id: `m-${i}`, score: 90 - i }));
-      (prisma.match.findMany as jest.Mock).mockResolvedValue(allMatches);
+      (prisma.match.findMany as jest.Mock).mockImplementation((args: any) => {
+        // DB-level pagination returns only the requested page
+        const skip = args.skip || 0;
+        const take = args.take || 20;
+        const allMatches = Array.from({ length: 25 }, (_, i) => ({ id: `m-${i}`, score: 90 - i }));
+        return Promise.resolve(allMatches.slice(skip, skip + take));
+      });
       (prisma.match.count as jest.Mock).mockResolvedValue(25);
 
       const result = await getMatchResults({ userId: 'user-1', page: 2, limit: 10 });
@@ -468,6 +473,9 @@ describe('jobSearchService', () => {
       expect(result.totalPages).toBe(3);
       expect(result.hasNext).toBe(true);
       expect(result.hasPrev).toBe(true);
+      expect(prisma.match.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 10, take: 10 })
+      );
     });
   });
 

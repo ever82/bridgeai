@@ -105,6 +105,10 @@ function paginate<T>(items: T[], page: number, limit: number): SearchResult<T> {
  * Search published jobs with multi-condition filtering and sorting.
  */
 export async function searchJobs(params: JobSearchParams): Promise<SearchResult<any>> {
+  // matchScore is not supported by listJobPostings; fall back to createdAt
+  const effectiveSortBy =
+    params.sortBy && params.sortBy !== 'matchScore' ? params.sortBy : 'createdAt';
+
   const result = await listJobPostings({
     keyword: params.keyword,
     city: params.city,
@@ -116,7 +120,7 @@ export async function searchJobs(params: JobSearchParams): Promise<SearchResult<
     maxSalary: params.maxSalary,
     skills: params.skills,
     status: 'PUBLISHED' as any,
-    sortBy: params.sortBy || 'createdAt',
+    sortBy: effectiveSortBy,
     sortOrder: params.sortOrder || 'desc',
     page: params.page || 1,
     limit: params.limit || 20,
@@ -271,10 +275,15 @@ export async function getMatchResults(params: MatchResultQueryParams): Promise<S
   const sortOrder = params.sortOrder || 'desc';
   const orderBy: any = { [sortBy]: sortOrder };
 
+  const page = params.page || 1;
+  const limit = params.limit || 20;
+
   const [matches, total] = await Promise.all([
     prisma.match.findMany({
       where,
       orderBy,
+      skip: (page - 1) * limit,
+      take: limit,
       include: {
         demand: { include: { agent: { select: { userId: true } } } },
         supply: { include: { agent: { select: { userId: true } } } },
@@ -283,13 +292,10 @@ export async function getMatchResults(params: MatchResultQueryParams): Promise<S
     prisma.match.count({ where }),
   ]);
 
-  const page = params.page || 1;
-  const limit = params.limit || 20;
   const totalPages = Math.ceil(total / limit);
-  const start = (page - 1) * limit;
 
   return {
-    items: matches.slice(start, start + limit),
+    items: matches,
     total,
     page,
     limit,
