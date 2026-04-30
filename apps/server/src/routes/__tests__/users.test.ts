@@ -14,6 +14,15 @@ import * as storageService from '../../services/storageService';
 jest.mock('../../services/userService');
 // Mock storage service
 jest.mock('../../services/storageService');
+// Mock sharp (avatar compression) to avoid processing fake image buffers in tests
+jest.mock('sharp', () => {
+  const sharpMock = jest.fn(() => ({
+    resize: jest.fn().mockReturnThis(),
+    jpeg: jest.fn().mockReturnThis(),
+    toBuffer: jest.fn().mockResolvedValue(Buffer.from('compressed-image')),
+  }));
+  return sharpMock;
+});
 
 // Mock auth middleware
 jest.mock('../../middleware/auth', () => ({
@@ -325,7 +334,9 @@ describe('User Routes', () => {
         });
 
       expect(response.status).toBe(200);
-      expect(storageService.deleteFile).toHaveBeenCalledWith('https://cdn.example.com/old-avatar.jpg');
+      expect(storageService.deleteFile).toHaveBeenCalledWith(
+        'https://cdn.example.com/old-avatar.jpg'
+      );
     });
   });
 });

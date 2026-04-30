@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import multer from 'multer';
+import sharp from 'sharp';
 
 import { AppError } from '../errors/AppError';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
@@ -135,12 +136,25 @@ router.post(
     let avatarUrl: string;
 
     if (req.file) {
-      // Handle file upload
+      // Compress avatar image (skip GIFs to preserve animation)
+      let buffer = req.file.buffer;
+      let mimeType = req.file.mimetype;
+      let originalName = req.file.originalname;
+
+      if (mimeType !== 'image/gif') {
+        buffer = await sharp(req.file.buffer)
+          .resize(200, 200, { fit: 'cover' })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+        mimeType = 'image/jpeg';
+        originalName = originalName.replace(/\.[^.]+$/, '') + '.jpg';
+      }
+
       const fileInfo: storageService.FileInfo = {
-        buffer: req.file.buffer,
-        originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
-        size: req.file.size,
+        buffer,
+        originalName,
+        mimeType,
+        size: buffer.length,
       };
 
       const result = await storageService.uploadAvatar(fileInfo, req.user.id);
