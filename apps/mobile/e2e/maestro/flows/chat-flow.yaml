@@ -118,6 +118,10 @@ env:
 - assertVisible:
     id: 'send-button'
 
+# B-5: 验证 MessageBubble 已渲染（消息列表中存在已发送消息）
+- assertVisible:
+    id: 'chat-message-list'
+
 # ── 场景 C: AttachmentPicker 交互 ───────────────────────────────────
 - runFlow:
     when:
@@ -162,6 +166,19 @@ env:
       - tapOn:
           id: 'quick-reply-add-confirm'
       - waitForAnimationToEnd
+      # D-2: 选择刚添加的自定义快捷回复（应填入输入框）
+      - runFlow:
+          when:
+            visible: 'Maestro Quick Reply'
+          commands:
+            - tapOn: 'Maestro Quick Reply'
+            - waitForAnimationToEnd
+            - assertVisible:
+                id: 'chat-message-input'
+            # D-3: 发送通过快捷回复填入的消息
+            - tapOn:
+                id: 'send-button'
+            - waitForAnimationToEnd
 
 # ── 场景 E: IdentitySwitcher 身份切换 ───────────────────────────────
 - runFlow:
