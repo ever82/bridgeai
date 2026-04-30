@@ -4,14 +4,29 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { useThemeStore } from '../../stores/themeStore';
+import { useAuthStore } from '../../stores/authStore';
 import { theme as themeColors } from '../../theme';
 
 export const SettingsScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { isDarkMode, toggleDarkMode, useSystemTheme, setUseSystemTheme } = useThemeStore();
+  const { logout } = useAuthStore();
   const [pushNotification, setPushNotification] = useState(true);
   const [emailNotification, setEmailNotification] = useState(false);
+
+  const handleLogout = () => {
+    Alert.alert('退出登录', '确定要退出登录吗？', [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '退出',
+        style: 'destructive',
+        onPress: async () => {
+          await logout();
+        },
+      },
+    ]);
+  };
 
   const settingsGroups = [
     {
@@ -91,6 +106,17 @@ export const SettingsScreen = () => {
         { title: '隐私政策', type: 'link', onPress: () => {} },
       ],
     },
+    {
+      title: '账号',
+      items: [
+        {
+          title: '退出登录',
+          type: 'link',
+          destructive: true,
+          onPress: handleLogout,
+        },
+      ],
+    },
   ];
 
   return (
@@ -108,22 +134,43 @@ export const SettingsScreen = () => {
           <View key={groupIndex} style={styles.group}>
             <Text style={styles.groupTitle}>{group.title}</Text>
             <View style={styles.groupContent}>
-              {group.items.map((item, itemIndex) => (
-                <View
-                  key={itemIndex}
-                  style={[
-                    styles.settingItem,
-                    itemIndex === group.items.length - 1 && styles.settingItemLast,
-                  ]}
-                >
-                  <Text style={styles.settingTitle}>{item.title}</Text>
-                  {item.type === 'toggle' && (
-                    <Switch value={item.value} onValueChange={item.onChange} />
-                  )}
-                  {item.type === 'value' && <Text style={styles.settingValue}>{item.value}</Text>}
-                  {item.type === 'link' && <Text style={styles.settingArrow}>›</Text>}
-                </View>
-              ))}
+              {group.items.map((item, itemIndex) => {
+                const itemStyle = [
+                  styles.settingItem,
+                  itemIndex === group.items.length - 1 && styles.settingItemLast,
+                ];
+                const itemContent = (
+                  <>
+                    <Text
+                      style={[
+                        styles.settingTitle,
+                        item.destructive && styles.settingTitleDestructive,
+                      ]}
+                    >
+                      {item.title}
+                    </Text>
+                    {item.type === 'toggle' && (
+                      <Switch value={item.value} onValueChange={item.onChange} />
+                    )}
+                    {item.type === 'value' && <Text style={styles.settingValue}>{item.value}</Text>}
+                    {item.type === 'link' && !item.destructive && (
+                      <Text style={styles.settingArrow}>›</Text>
+                    )}
+                  </>
+                );
+                if (item.type === 'link') {
+                  return (
+                    <TouchableOpacity key={itemIndex} onPress={item.onPress} style={itemStyle}>
+                      {itemContent}
+                    </TouchableOpacity>
+                  );
+                }
+                return (
+                  <View key={itemIndex} style={itemStyle}>
+                    {itemContent}
+                  </View>
+                );
+              })}
             </View>
           </View>
         ))}
@@ -192,6 +239,9 @@ const styles = StyleSheet.create({
   settingTitle: {
     fontSize: themeColors.fonts.sizes.base,
     color: themeColors.colors.text,
+  },
+  settingTitleDestructive: {
+    color: themeColors.colors.error,
   },
   settingValue: {
     fontSize: themeColors.fonts.sizes.base,

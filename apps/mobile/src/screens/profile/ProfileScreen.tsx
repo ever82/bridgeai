@@ -30,7 +30,8 @@ export const ProfileScreen = () => {
           score: data.score,
           level: levelMap[data.level] ?? 1,
           trend: 'stable',
-          history: [],
+          history: data.history ?? [],
+          description: data.levelDescription ?? '',
         });
       })
       .catch(() => {
@@ -40,6 +41,7 @@ export const ProfileScreen = () => {
           level: 1,
           trend: 'stable',
           history: [],
+          description: '',
         });
       });
   }, []);
@@ -52,6 +54,8 @@ export const ProfileScreen = () => {
     { icon: '📝', title: '我的动态', onPress: () => navigation.navigate('MyMoments') },
     { icon: '⭐', title: '我的评价', onPress: () => navigation.navigate('ReviewList') },
     { icon: '💰', title: '交易记录', onPress: () => navigation.navigate('TransactionList') },
+    { icon: '💎', title: '积分账户', onPress: () => navigation.navigate('PointsWallet') },
+    { icon: '📊', title: '我的活动', onPress: () => navigation.navigate('Activity') },
     { icon: '❤️', title: '赞过的', onPress: () => navigation.navigate('LikedMoments') },
     {
       icon: '🤖',

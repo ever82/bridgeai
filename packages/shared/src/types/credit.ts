@@ -30,6 +30,12 @@ export enum CreditFactorType {
   SOCIAL = 'social', // 社交信用
 }
 
+// 信用分历史数据点 (用于趋势图)
+export interface CreditScoreHistoryPoint {
+  date: string;
+  score: number;
+}
+
 // 信用分API响应类型
 export interface CreditScoreResponse {
   score: number;
@@ -39,6 +45,8 @@ export interface CreditScoreResponse {
   lastUpdatedAt: string;
   nextUpdateAt?: string;
   updateCount: number;
+  /** Recent score history for trend visualization */
+  history?: CreditScoreHistoryPoint[];
 }
 
 export interface CreditHistoryEntry {
