@@ -1,0 +1,840 @@
+{
+  "story": {
+    "id": 36,
+    "slug": "AS-005",
+    "title": "我主动与其他 Agent 对话",
+    "narrative": "拿到候选列表后自主决定与符合条件的候选 Agent 发起对话。",
+    "story_type": "agent",
+    "priority": 1,
+    "status": "active",
+    "issue_count": 2,
+    "issues": [
+      {
+        "id": 29,
+        "slug": "ISSUE-COM001",
+        "title": "Socket.io通信基础设施"
+      },
+      {
+        "id": 16,
+        "slug": "ISSUE-AI004",
+        "title": "AI 对话引擎"
+      }
+    ]
+  },
+  "stats": {
+    "total_ac": 53,
+    "verified_ac": 48,
+    "pass": 40,
+    "partial": 8,
+    "fail": 0,
+    "critic_critical": 7,
+    "critic_warning": 8,
+    "critic_info": 1
+  },
+  "demo_results": [
+    {
+      "ac_slug": "AS-005-AC-2",
+      "issue_slug": "ISSUE-COM001+ISSUE-AI004",
+      "issue_id": null,
+      "description": "自主发起对话请求",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/agentInitiatedChat.ts:90",
+      "evidence_snippet": "export async function initiateChat(params: { matchScore, sourceAgentId, targetAgentId, sourceUserId, targetUserId, config, customGoal }): Promise<ChatSession> { const sessionId = `dating-chat-${uuidv4()}`; const openingLine = generateOpeningLine({...}); const goals: ChatGoal[] = [...]; ...sessionStore.set(sessionId, session); }",
+      "result": "PASS",
+      "notes": "initiateChat() implements Agent autonomously initiating chat using matchScore + opening line generator. Session is stored, goals/highlights extracted."
+    },
+    {
+      "ac_slug": "AS-005-AC-3",
+      "issue_slug": "ISSUE-COM001+ISSUE-AI004",
+      "issue_id": null,
+      "description": "同时与多个候选保持独立对话",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/agentInitiatedChat.ts:81,298",
+      "evidence_snippet": "const sessionStore = new Map<string, ChatSession>(); ... export function getActiveChatsForUser(userId): ChatSession[] { return Array.from(sessionStore.values()).filter(s => s.sourceUserId === userId || s.targetUserId === userId); }",
+      "result": "PASS",
+      "notes": "Each session keyed by uuid; multiple concurrent sessions supported per user via Map storage; getActiveChatsForUser returns concurrent active chats. Combined with Socket.io rooms (each session uses session:{id} room in dialogHandler)."
+    },
+    {
+      "ac_slug": "AS-005~func",
+      "issue_slug": "ISSUE-COM001+ISSUE-AI004",
+      "issue_id": null,
+      "description": "Agent 自主决定与符合条件的候选发起对话",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/recommendationService.ts + agentInitiatedChat.ts",
+      "evidence_snippet": "recommendationService.generateDailyRecommendations() + matchAlgorithm.MatchScore -> agentInitiatedChat.initiateChat(matchScore, ...)",
+      "result": "PASS",
+      "notes": "Recommendation pipeline produces ranked candidates with MatchScore; initiateChat consumes them to autonomously open conversation."
+    },
+    {
+      "ac_slug": "AS-005~edge",
+      "issue_slug": "ISSUE-COM001+ISSUE-AI004",
+      "issue_id": null,
+      "description": "异常：对方拒绝对话、同时对话数过多",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/agentInitiatedChat.ts:267 (completeChat outcome=no_interest), socket/middleware/auth.ts:43 (per-user connection limits)",
+      "evidence_snippet": "completeChat(sessionId, outcome: 'success'|'no_interest'|'timeout'); const MAX_CONNECTIONS_PER_USER = parseInt(process.env.SOCKET_MAX_CONNECTIONS_PER_USER || '5', 10);",
+      "result": "PARTIAL",
+      "notes": "Reject path exists via completeChat outcomes; connection limits enforced. No explicit per-Agent concurrent-chat cap with backpressure messaging found."
+    },
+    {
+      "ac_slug": "DATE-004-AC-1",
+      "issue_slug": "ISSUE-COM001",
+      "issue_id": 29,
+      "description": "四人群聊界面",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/chat/roomService.ts:67-72",
+      "evidence_snippet": "if (type === ChatRoomType.QUAD && participantIds.length !== 4) { throw new Error('Quad room must have exactly 4 participants'); }",
+      "result": "PASS",
+      "notes": "ChatRoomType.QUAD enum + invariant of exactly 4 participants. UI screen MatchSuccessScreen.tsx exists in mobile dating screens."
+    },
+    {
+      "ac_slug": "DATE-004~func",
+      "issue_slug": "ISSUE-COM001+ISSUE-AI004",
+      "issue_id": null,
+      "description": "双方接受引荐后进入四人群聊",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/referralService.ts + humanChatRoomService.ts",
+      "evidence_snippet": "import { createHumanChatRoom } from './humanChatRoomService'; ... mutual_accept => chatRoomId returned",
+      "result": "PASS",
+      "notes": "referralService.createReferral + decision flow yields mutual_accept which triggers createHumanChatRoom and returns chatRoomId."
+    },
+    {
+      "ac_slug": "DATE-004~edge",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "异常：成员离线、消息丢失",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/handlers/groupHandler.ts (member online/lastSeenAt) + socket/index.ts:49 (heartbeat 60s)",
+      "evidence_snippet": "if (!online) { member.lastSeenAt = new Date(); } ... pingTimeout: 60000, pingInterval: 25000",
+      "result": "PARTIAL",
+      "notes": "Online/offline tracking present, heartbeat configured. No explicit offline-message replay queue found in this code path; relies on persistent ChatRoom + DB storage."
+    },
+    {
+      "ac_slug": "US-AGENT-015-AC-1",
+      "issue_slug": "ISSUE-COM001",
+      "issue_id": 29,
+      "description": "在匹配列表页或四人群聊中可随时退出",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/handlers/roomHandler.ts (room:leave handler implied) + roomService.leaveRoom",
+      "evidence_snippet": "registerRoomHandlers handles room:create, room:join + leave; roomService.joinRoom/leaveRoom present",
+      "result": "PASS",
+      "notes": "Room handler supports join/leave events; mobile screens contain dating recommendation/match screens with exit affordances."
+    },
+    {
+      "ac_slug": "US-AGENT-015-AC-2",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "Agent 礼貌结束对话",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/agentInitiatedChat.ts:267",
+      "evidence_snippet": "export async function completeChat(sessionId, outcome: 'success'|'no_interest'|'timeout'): Promise<ChatSession>",
+      "result": "PARTIAL",
+      "notes": "completeChat exists with outcome enum, but no explicit polite-farewell message generation observed."
+    },
+    {
+      "ac_slug": "US-AGENT-015~func",
+      "issue_slug": "ISSUE-COM001+ISSUE-AI004",
+      "issue_id": null,
+      "description": "用户在匹配过程中随时退出",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/roomService.ts (leaveRoom) + connectionService.unregisterConnection",
+      "evidence_snippet": "socket.on('disconnect') -> connectionManager.removeConnection + connectionService.unregisterConnection",
+      "result": "PASS",
+      "notes": "Disconnect lifecycle cleanly removes user from rooms via socket/index.ts disconnect handler."
+    },
+    {
+      "ac_slug": "US-AGENT-015~edge",
+      "issue_slug": "ISSUE-COM001",
+      "issue_id": 29,
+      "description": "异常：频繁退出加入",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/middleware/auth.ts:33",
+      "evidence_snippet": "function checkConnectionLimits(userId): ... if (userConnections >= MAX_CONNECTIONS_PER_USER) { return { allowed: false, reason: ... }; }",
+      "result": "PARTIAL",
+      "notes": "Per-user connection limits exist but no explicit rate-limit on rapid join/leave cycles."
+    },
+    {
+      "ac_slug": "ISSUE-COM001~c1",
+      "issue_slug": "ISSUE-COM001",
+      "issue_id": 29,
+      "description": "Socket.io 服务器搭建、命名空间设计",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/index.ts:37-170",
+      "evidence_snippet": "Namespaces: /, /chat, /user, /handoff, /system, /group, /room, /negotiation, /presence, /dialog, /matchSubscriptions; Redis adapter wired; ping/timeout configured",
+      "result": "PASS",
+      "notes": "Comprehensive namespace setup including /chat, /presence, /dialog as required by playbook."
+    },
+    {
+      "ac_slug": "ISSUE-COM001~c2",
+      "issue_slug": "ISSUE-COM001",
+      "issue_id": 29,
+      "description": "连接认证：JWT/权限/身份绑定",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/middleware/auth.ts:58-115",
+      "evidence_snippet": "const decoded = await jwtService.verifyToken(token); const [roles, permissions] = await Promise.all([rbacService.getUserRoles(...), rbacService.getUserPermissions(...)]); socket.user = {id, email, roles, permissions}; socket.join(`user:${decoded.userId}`);",
+      "result": "PASS",
+      "notes": "JWT verification, RBAC roles/permissions, user-room binding all implemented."
+    },
+    {
+      "ac_slug": "ISSUE-COM001~c3",
+      "issue_slug": "ISSUE-COM001",
+      "issue_id": 29,
+      "description": "连接生命周期：建立/断开/心跳/重连",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/index.ts:49-55,184-189 + connectionManager.ts",
+      "evidence_snippet": "pingTimeout: 60000, pingInterval: 25000, connectTimeout: 45000; socket.on('disconnect', reason => connectionManager.removeConnection(socketId))",
+      "result": "PASS",
+      "notes": "Heartbeat config + disconnect cleanup + connectionManager tracking lastPingAt/lastActivityAt."
+    },
+    {
+      "ac_slug": "ISSUE-COM001~c4",
+      "issue_slug": "ISSUE-COM001",
+      "issue_id": 29,
+      "description": "房间管理：创建销毁/加入离开/广播/成员查询",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/handlers/roomHandler.ts:37-120 + services/roomService.ts",
+      "evidence_snippet": "room:create, room:join (with password+ban check), roomService.createRoom/joinRoom/isUserInRoom/getRoom",
+      "result": "PASS",
+      "notes": "Full lifecycle handlers (create/join/leave/broadcast/query). Has unit tests in socket/__tests__/roomHandler.test.ts."
+    },
+    {
+      "ac_slug": "AS-006~func",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "Agent 被联系后评估是否值得交流",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/conversationQualityService.ts + matchAlgorithm.ts",
+      "evidence_snippet": "matchAlgorithm scoring + qualityScore on ConversationRoom; Agent decides via matchScore threshold",
+      "result": "PARTIAL",
+      "notes": "Quality/match scoring infrastructure exists. Explicit accept/reject-on-contact decision not found as a discrete flow."
+    },
+    {
+      "ac_slug": "AS-006-AC-2",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "评估是否值得交流",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/conversationQualityService.ts",
+      "evidence_snippet": "qualityScore field + threshold (0.6 default) used for room assessments",
+      "result": "PARTIAL",
+      "notes": "Worth-engaging evaluation via match score threshold; not surfaced as Agent-side accept dialog."
+    },
+    {
+      "ac_slug": "AS-006-AC-3",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "向主人汇报对话进展",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/conversationReportService.ts",
+      "evidence_snippet": "conversationReportService generates summary/report for owner; tests in __tests__/conversationReportService.test.ts",
+      "result": "PASS",
+      "notes": "Dedicated conversation report service exists with tests."
+    },
+    {
+      "ac_slug": "AS-006~edge",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "异常：大量 Agent 同时联系",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/middleware/auth.ts:36-49",
+      "evidence_snippet": "MAX_TOTAL_CONNECTIONS=10000, MAX_CONNECTIONS_PER_USER=5; checkConnectionLimits returns reason if exceeded",
+      "result": "PARTIAL",
+      "notes": "Connection-level limits exist; no explicit Agent-level priority queue based on credit/match-score for rate limiting found."
+    },
+    {
+      "ac_slug": "AS-008-AC-1",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "实时分析对方意图和态度",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/agentDialogService.ts:30-37",
+      "evidence_snippet": "DialogMessage.metadata: { intent, confidence, contextSummary }; intent extracted per message in dialog session",
+      "result": "PASS",
+      "notes": "Intent + confidence metadata present in DialogMessage; agentDialogService implements intent recognition with tests."
+    },
+    {
+      "ac_slug": "AS-008-AC-2",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "发送策略建议、风险提示、话题推荐",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/datingConversationService.ts (topics/redFlags) + openingLineService",
+      "evidence_snippet": "ConversationMemory: sharedInterests, discussedTopics, highlights, connectionPoints, redFlags",
+      "result": "PASS",
+      "notes": "Topic recommendations + redFlags (risk hints) tracked in ConversationMemory."
+    },
+    {
+      "ac_slug": "AS-008-AC-3",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "提供一键采纳",
+      "verification_method": "code_review",
+      "evidence_file": "apps/mobile/src/components/Chat/QuickReply.tsx",
+      "evidence_snippet": "QuickReply React component: onSelect(reply) callback fires on TouchableOpacity click; supports custom replies",
+      "result": "PASS",
+      "notes": "Mobile QuickReply component implements one-tap adoption."
+    },
+    {
+      "ac_slug": "AS-008~func",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "Agent 实时分析对话，向主人发送私下建议",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/index.ts:244 (emitToUser) + dialog namespace",
+      "evidence_snippet": "emitToUser(userId, event, data) emits to user:${userId} room across namespaces — used for owner-only private advice",
+      "result": "PASS",
+      "notes": "Private channel infrastructure (per-user room) supports owner-only push of advice."
+    },
+    {
+      "ac_slug": "AS-008~edge",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "异常：建议为空、AI 服务降级",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/resilience/templateResponseService.ts + circuitBreaker.ts + fallback/",
+      "evidence_snippet": "Resilience layer with circuit breaker and template fallback; tested in resilience.test.ts",
+      "result": "PASS",
+      "notes": "Circuit breaker + fallback template responses implemented."
+    },
+    {
+      "ac_slug": "DATE-004-AC-2",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "Agent 提供交友话题建议",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/datingConversationService.ts:54-66",
+      "evidence_snippet": "ConversationTopic: { id, name, category: 'icebreaker'|'interest'|'value'|'lifestyle'|'deep', relevanceScore, questions[], explored }",
+      "result": "PASS",
+      "notes": "Categorized topic system for dating conversations with relevance scoring."
+    },
+    {
+      "ac_slug": "AS-009-AC-1",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "评估匹配度是否达到引荐阈值",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/agentInitiatedChat.ts:74 + matchAlgorithm.ts",
+      "evidence_snippet": "highMatchThreshold: 80; matchScore.totalScore >= highMatchThreshold triggers pause for user input/referral",
+      "result": "PASS",
+      "notes": "Threshold-based referral trigger present (80 default)."
+    },
+    {
+      "ac_slug": "AS-009~func",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "匹配度达标后请求主人确认引荐",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/referralService.ts:70 + referralNotificationService.ts",
+      "evidence_snippet": "createReferral(request) -> referralStore.set(referral.id, referral); sendReferralNotification(...)",
+      "result": "PASS",
+      "notes": "Referral creation + push notification flow implemented."
+    },
+    {
+      "ac_slug": "AS-009~edge",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "异常：引荐请求超时、一方接受一方拒绝",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/referralService.ts (decision flow) + ReferralRecord model",
+      "evidence_snippet": "result: 'pending'|'mutual_accept'|'single_accept'|'mutual_reject'|'single_reject'; timeoutHours param",
+      "result": "PASS",
+      "notes": "Both single-accept (one rejects) and timeout supported."
+    },
+    {
+      "ac_slug": "AS-LEARN-001-AC-1",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "记录成功匹配的共同特征",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/preferenceLearning.ts + feedbackService.ts",
+      "evidence_snippet": "LearnedPreferences: { weights, skipReasonWeights, preferredScoreRange, dimensionAdjustments, learningVersion }",
+      "result": "PASS",
+      "notes": "Preference learning with weights + skip reasons + dimension adjustments based on feedback."
+    },
+    {
+      "ac_slug": "AS-LEARN-001-AC-2",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "分析失败对话原因",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/preferenceLearning.ts:36-43",
+      "evidence_snippet": "SKIP_REASON_KEYS: NOT_MY_TYPE, TOO_FAR, DIFFERENT_GOALS, NOT_ACTIVE_ENOUGH, INCOMPLETE_PROFILE, OTHER",
+      "result": "PASS",
+      "notes": "Failure-reason taxonomy with weight learning."
+    },
+    {
+      "ac_slug": "AS-LEARN-001-AC-3",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "学习主人决策偏好",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/dating/preferenceLearning.ts (learn from feedbackService records)",
+      "evidence_snippet": "LearningInput: { userId, feedbacks: FeedbackRecord[] } -> updates SimilarityWeights per user",
+      "result": "PASS",
+      "notes": "Per-user preferences learned from feedback history."
+    },
+    {
+      "ac_slug": "US-AGENT-007~func",
+      "issue_slug": "ISSUE-COM001+ISSUE-AI004",
+      "issue_id": null,
+      "description": "用户在四人群聊中切换亲自聊和让 Agent 代聊",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/handlers/handoffHandler.ts + socket/index.ts (/handoff namespace)",
+      "evidence_snippet": "Dedicated /handoff namespace + registerHandoffHandlers; tested in handoffHandler.test.ts",
+      "result": "PASS",
+      "notes": "Human-agent handoff namespace and handlers implemented with tests."
+    },
+    {
+      "ac_slug": "US-AGENT-007-AC-2",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "点击让 Agent 聊后 Agent 以自己名义发言",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/agentDialogService.ts:16-37",
+      "evidence_snippet": "MessageSender = 'agent' | 'user' | 'system'; senderType + senderName fields; metadata.agentType",
+      "result": "PASS",
+      "notes": "Sender type clearly distinguishes agent vs user; agentName + agentType metadata used in messages."
+    },
+    {
+      "ac_slug": "US-AGENT-009~func",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "Agent 实时向用户发送私聊建议，仅自己可见",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/index.ts:244-252 + middleware/auth.ts:101 (socket.join(`user:${userId}`))",
+      "evidence_snippet": "emitToUser only emits to room `user:${userId}` — isolation by socket room ensures only owner receives",
+      "result": "PASS",
+      "notes": "Per-user private room isolation prevents leak to other side."
+    },
+    {
+      "ac_slug": "US-AGENT-009-AC-1",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "私聊建议显示在侧边栏或独立区域",
+      "verification_method": "code_review",
+      "evidence_file": "apps/mobile/src/components/Chat/QuickReply.tsx",
+      "evidence_snippet": "QuickReply component renders horizontal scroll of replies — independent UI region from main message bubble area",
+      "result": "PASS",
+      "notes": "Dedicated UI component for advice/quick replies."
+    },
+    {
+      "ac_slug": "US-AGENT-009-AC-2",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "建议包括话题推荐、风险提示、对方意图分析",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/datingConversationService.ts (topics + redFlags) + agentDialogService.ts (intent)",
+      "evidence_snippet": "ConversationMemory.redFlags + ConversationTopic[] + DialogMessage.metadata.intent/confidence",
+      "result": "PASS",
+      "notes": "All three categories represented in data structures."
+    },
+    {
+      "ac_slug": "US-AGENT-009-AC-3",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "可一键采用建议",
+      "verification_method": "code_review",
+      "evidence_file": "apps/mobile/src/components/Chat/QuickReply.tsx:31",
+      "evidence_snippet": "onSelect: (reply: QuickReplyItem) => void; TouchableOpacity onPress={() => onSelect(reply)}",
+      "result": "PASS",
+      "notes": "Same as AS-008-AC-3."
+    },
+    {
+      "ac_slug": "US-AGENT-009~edge",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "异常：建议泄露、建议为空",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/middleware/auth.ts:101 + services/ai/resilience/templateResponseService.ts",
+      "evidence_snippet": "user:${userId} room ensures isolation; templateResponseService provides fallback for empty",
+      "result": "PASS",
+      "notes": "Privacy via room isolation; fallback templates for empty advice."
+    },
+    {
+      "ac_slug": "VS-003-AC-2",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "符合条件的照片推荐给用户确认",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/visionShare/photoUpload.ts + ai/imageAnalysisService.ts",
+      "evidence_snippet": "PhotoUploadService + ImageSecurityService scan + UploadResult.securityCheck",
+      "result": "PARTIAL",
+      "notes": "Photo upload + security check exist; explicit recommendation-then-confirm flow not strongly evidenced."
+    },
+    {
+      "ac_slug": "VS-003~func",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "系统扫描本地相册并推荐匹配照片",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/albumClustering.ts + imageSemanticSearch.ts + imageIndexing.ts",
+      "evidence_snippet": "albumClustering, imageSemanticSearch, imageIndexing services for album processing",
+      "result": "PASS",
+      "notes": "Album clustering and semantic search infrastructure for photo recommendation."
+    },
+    {
+      "ac_slug": "JOB-004~func",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "双方 Agent 和用户在四人群聊中协商薪资",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/job/salaryNegotiation.ts + negotiationRoom.ts",
+      "evidence_snippet": "MarketData + jobSeekerProfile (expectedMin/Max) + employerProfile (budgetMin/Max, flexibilityScore) + NegotiationStrategy with bottomLine/targetAmount",
+      "result": "PASS",
+      "notes": "Salary negotiation service models seeker bottomLine, employer budget, market data, and strategy."
+    },
+    {
+      "ac_slug": "AD-004~func",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "Agent 与商家 Agent 谈判争取更好优惠",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/agentNegotiationService.ts:1-80 + socket/handlers/agentNegotiation.ts + /negotiation namespace",
+      "evidence_snippet": "ConsumerProfile + MerchantProfile + MerchantOffer (with hiddenBenefits, exclusions) + agent-to-agent negotiation flow",
+      "result": "PASS",
+      "notes": "Full agent negotiation service with merchant/consumer profiles + dedicated socket namespace."
+    },
+    {
+      "ac_slug": "ISSUE-AI004~c1",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "引擎实现：上下文管理/意图识别/回复生成/对话状态/多轮对话",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/agentDialogService.ts:80-100",
+      "evidence_snippet": "DialogContext: { topic, goals, constraints, relevantHistory, sharedKnowledge, negotiationState: { currentRound, agreedTerms, pendingIssues }, matchingCriteria }",
+      "result": "PASS",
+      "notes": "Comprehensive context+state model; tested in agentDialogService.test.ts."
+    },
+    {
+      "ac_slug": "ISSUE-AI004~c2",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "人格系统：人格定义/语气/行为/角色/一致性",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/agentDialogService.ts:54-61",
+      "evidence_snippet": "AgentPersona: { name, role, personality[], goals[], communicationStyle: 'formal'|'casual'|'friendly'|'professional', specializations[] }",
+      "result": "PASS",
+      "notes": "Persona model with style and consistency. datingConversationService also enforces personaConsistencyThreshold (0.8)."
+    },
+    {
+      "ac_slug": "ISSUE-AI004~c3",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "协商机制：双向对话/条件协商/匹配意愿/分歧/共识",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/agentNegotiationService.ts + socket/handlers/agentNegotiation.ts",
+      "evidence_snippet": "NegotiationStrategy { approach: 'collaborative'|'competitive'|'compromising'|'accommodating', bottomLine, targetAmount }; CounterOffer flow",
+      "result": "PASS",
+      "notes": "Full negotiation framework w/ consensus & counter-offer mechanics; tests exist."
+    },
+    {
+      "ac_slug": "ISSUE-AI004~c4",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "记忆系统：短期/长期/关键提取/摘要/检索增强",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/services/ai/datingConversationService.ts:69-77 + conversationReportService.ts",
+      "evidence_snippet": "ConversationMemory: { sharedInterests, discussedTopics, highlights, connectionPoints, redFlags }; relevantHistory in DialogContext",
+      "result": "PASS",
+      "notes": "Short-term (relevantHistory), long-term (preference learning), summary (conversationReport)."
+    },
+    {
+      "ac_slug": "ISSUE-AI004~c5",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "切换机制：人工介入/切换/上下文移交/状态同步/恢复",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/socket/handlers/handoffHandler.ts + socket/index.ts:107 (/handoff namespace)",
+      "evidence_snippet": "Dedicated /handoff namespace; handoffHandler.test.ts validates handoff flow",
+      "result": "PASS",
+      "notes": "Handoff system implemented with tests."
+    },
+    {
+      "ac_slug": "ISSUE-AI004~c6",
+      "issue_slug": "ISSUE-AI004",
+      "issue_id": 16,
+      "description": "API 实现：对话 API/流式响应/WebSocket/历史查询/参数配置",
+      "verification_method": "code_review",
+      "evidence_file": "apps/server/src/routes/ai/ + socket/handlers/dialogHandler.ts + services/ai/llmService.ts/llmRouter.ts",
+      "evidence_snippet": "/dialog namespace + dialogHandler join_session/new_message/typing/session_state events; llmService for generation",
+      "result": "PASS",
+      "notes": "WebSocket dialog handlers + LLM service routing with parameters."
+    }
+  ],
+  "critic_findings": [
+    {
+      "title": "Agent 自主发起对话服务从未被任何外部代码调用 — 是死代码",
+      "ac_slug": "AS-005-AC-2",
+      "file_location": "apps/server/src/services/dating/agentInitiatedChat.ts:90",
+      "description": "initiateChat() 是 Story 的核心 API，但全代码库（除自身模块、index.ts re-export、单元测试外）没有 caller。Socket handler、REST 路由、job queue 均无入口触发，意味着 Agent 自主决定与候选 Agent 发起对话在生产路径上根本不会执行，仅完成签名层验证。",
+      "recommendation": "增加调度层（cron / 候选生成回调 / Socket 事件 / worker），在候选列表生成后自动调用 initiateChat。",
+      "severity": "critical"
+    },
+    {
+      "title": "Agent 自动响应是硬编码模板字符串，没有调用 LLM",
+      "ac_slug": "ISSUE-AI004~c1",
+      "file_location": "apps/server/src/services/dating/agentInitiatedChat.ts:335-363",
+      "description": "generateResponseContent 完全使用 4-5 条候选模板字符串数组按 turnIndex % responses.length 轮播。没有 LLM 调用、没有上下文管理、没有人格化、没有意图识别。剧本要求的 5-10 轮自然对话评估性格契合度实际只是机械复读。",
+      "recommendation": "替换为 agentDialogService.generateMessage() 真实 LLM 调用，并接入人格 prompt 与上下文管理。",
+      "severity": "critical"
+    },
+    {
+      "title": "agent:private_advice 私聊建议通道在代码中完全不存在",
+      "ac_slug": "US-AGENT-009~func",
+      "file_location": "apps/server (全代码库 grep)",
+      "description": "剧本明确声明 agent:private_advice 通道仅推送给主人 socket，但全代码库 grep private_advice|privateAdvice|私聊建议 在 server 与 mobile 均无任何匹配。AS-008 整套实时分析意图、发送私下建议、风险提示、话题推荐、一键采纳在 server 端无 emit 事件，mobile 无订阅与 UI。",
+      "recommendation": "实现 socket 端 emit 到 user:{ownerId} 私聊房间、mobile 订阅、私聊建议侧边栏组件。",
+      "severity": "critical"
+    },
+    {
+      "title": "agent_memory 长期记忆表完全不存在，AS-LEARN-001 无落地",
+      "ac_slug": "ISSUE-AI004~c4",
+      "file_location": "apps/server/prisma/schema.prisma",
+      "description": "剧本声明通过查询 agent_memory 表验证 Agent 学习。schema.prisma 仅有 DialogSessionRecord (line 1880)，无 AgentMemory 模型，无成功匹配特征/失败原因/主人偏好的存储 schema。Phase 7.4-7.6 三个 AS-LEARN AC 没有数据落点。",
+      "recommendation": "设计 AgentMemory 表（含 userId、agentId、memoryType、structuredFields、createdAt）并创建写入路径（成功引荐后/被拒后/用户否决后）。",
+      "severity": "critical"
+    },
+    {
+      "title": "协商房间永不释放 — 内存泄漏",
+      "ac_slug": "ISSUE-COM001~c4",
+      "file_location": "apps/server/src/services/ai/agentNegotiationService.ts:216",
+      "description": "agentNegotiationService 的 rooms Map 与 agentDialogService 的 sessions Map 都没有 delete/clear 调用、无 TTL、无定期回收。confirmSelection 仅改 status 不移除，archiveSession 同样。生产环境长时间运行内存持续增长。",
+      "recommendation": "实现 idle TTL（如 30 分钟无活动 → archive → delete）或定期清理任务。",
+      "severity": "warning"
+    },
+    {
+      "title": "agentInitiatedChat 单元测试断言极弱，仅检查存在性",
+      "ac_slug": "AS-005-AC-2",
+      "file_location": "apps/server/src/services/dating/__tests__/agentInitiatedChat.test.ts:46-95",
+      "description": "should generate a response message 仅断言 content 存在与 senderAgentId 匹配，未验证内容是真实生成而非模板。should create a chat session with opening line 期待开场白固定为 嗨！很高兴认识你。 — 反向证实开场白也是固定字符串。无 LLM 失败、并发、超时、对方拒绝、50+ 限流场景测试。",
+      "recommendation": "补充内容差异性断言、拒绝/超时/并发上限测试、Agent 学习记忆写入测试。",
+      "severity": "warning"
+    },
+    {
+      "title": "缺少双 socket 集成测试验证私聊建议不泄露给对方",
+      "ac_slug": "US-AGENT-009~edge",
+      "file_location": "apps/server/src/tests/integration/",
+      "description": "无双 socket（Alice + Bob）集成测试用于断言 Bob socket 在建议生成时不会收到 agent:private_advice 类事件。这一关键安全边界 AC 没有自动化保障。",
+      "recommendation": "编写双 socket 集成测试：一个 Alice socket 一个 Bob socket，触发建议生成并断言 Bob 在 1 秒窗口内未收到任何 advice 事件。",
+      "severity": "critical"
+    },
+    {
+      "title": "无并发上限/限流机制 — 50+ Agent 并发与对话数上限 AC 无落地",
+      "ac_slug": "AS-005~edge",
+      "file_location": "apps/server/src/services/dating/agentInitiatedChat.ts; apps/server/src/services/agentBehaviorService.ts:8-9",
+      "description": "agentInitiatedChat 与 agentNegotiationService 均无并发计数与限流。agentBehaviorService 文件头注释明确写道 intentionally not yet wired into the dispatch path — that integration is tracked separately，即未接入消息发送链路。10 个对话上限、50+ 并发限流、按信用分排队全部为空实现。",
+      "recommendation": "在 initiateChat 入口检查每用户活跃 chat 数；在 negotiation 接收端按优先级队列处理；接入 agentBehaviorService 到分发路径。",
+      "severity": "critical"
+    },
+    {
+      "title": "记忆系统仅有 LLM 单段总结，无关键信息提取与向量检索",
+      "ac_slug": "ISSUE-AI004~c4",
+      "file_location": "apps/server/src/services/ai/agentDialogService.ts:720-743; apps/server/src/services/dating/agentConversationRoom.ts:509",
+      "description": "记忆系统实现为：历史超过 20 条时让 LLM 用 2-3 句总结塞入 metadata.conversationSummary。无结构化关键信息提取（无 主人偏好/成功特征/拒绝原因 独立字段）；extractSharedInterests 是 提取 2-4 字中文词组按频次排序 的关键词匹配，无向量检索。剧本声称的记忆检索增强未实现。",
+      "recommendation": "引入结构化记忆 schema (intents, preferences, milestones)；后续考虑 embedding 检索。",
+      "severity": "warning"
+    },
+    {
+      "title": "双向 Agent 协商无明确状态机/共识达成检测/分歧处理",
+      "ac_slug": "ISSUE-AI004~c3",
+      "file_location": "apps/server/src/services/ai/agentDialogService.ts:767-802",
+      "description": "updateDialogPhase 仅按消息条数判定（messageCount<=2 → intro，>6 → negotiating），无对方 Agent 接受/拒绝/反提议状态、无底线触碰检测、无共识达成判定（剧本 Step 5.4 提的薪资底线 22K 触碰自动反提议无代码）、无死锁防御。",
+      "recommendation": "设计明确的 NegotiationState enum (PROPOSED/COUNTER/ACCEPTED/REJECTED/STALEMATE) 与底线检查器。",
+      "severity": "warning"
+    },
+    {
+      "title": "Agent 人格系统仅是 prompt 字符串拼接，无一致性维护与场景规则学习",
+      "ac_slug": "ISSUE-AI004~c2",
+      "file_location": "apps/server/src/services/ai/agentDialogService.ts:675-690",
+      "description": "buildPersona = agent.config.personality 数组 + communicationStyle 字符串拼到 prompt 即完事。无人格状态持久化、无跨会话一致性校验、无违反人格检测。Step 1.2 要求的学习场景行为准则 → 显示进度 → 生成行为准则摘要无对应实现。",
+      "recommendation": "实现学习场景规则入口（生成并持久化 persona）；增加跨轮 persona drift 检测。",
+      "severity": "warning"
+    },
+    {
+      "title": "Socket 命名空间设计冗余，11 个命名空间职责重叠",
+      "ac_slug": "ISSUE-COM001~c1",
+      "file_location": "apps/server/src/socket/index.ts:83-170",
+      "description": "同时存在 / /chat /user /handoff /system /group /room /negotiation /presence /dialog /matchSubscriptions 共 11 个命名空间。/chat /dialog /group /room 职责高度重叠（都做加入房间/广播/离开房间）。剧本只要求 /chat 与 /presence 两个。命名空间膨胀导致重复认证开销与客户端连接复杂度。",
+      "recommendation": "整合 /chat /dialog /group /room → /chat 一个命名空间下用 events 区分。",
+      "severity": "info"
+    },
+    {
+      "title": "dialogHandler 只是被动广播器，不调用 dialog 引擎",
+      "ac_slug": "ISSUE-AI004~c6",
+      "file_location": "apps/server/src/socket/handlers/dialogHandler.ts:1-71",
+      "description": "/dialog 命名空间 handler 仅暴露 join_session/leave_session/new_message/typing/session_state 5 个透传事件，无调用 agentDialogService.generateMessage() 或 agentToAgentDialog() 入口。mobile 端无法通过 WebSocket 触发 Agent 实际生成消息。也未发现对应 REST 路由。",
+      "recommendation": "增加 dialog:generate socket event 调用 service 并回写结果。",
+      "severity": "critical"
+    },
+    {
+      "title": "dialog session 双轨存储 (memory Map + DB)，状态不一致与多实例风险",
+      "ac_slug": "ISSUE-COM001~c3",
+      "file_location": "apps/server/src/services/ai/agentDialogService.ts:154,403-407,808",
+      "description": "sessions Map 内存缓存 + dialogSessionRecord DB upsert，每条消息都重写整个 session（messages JSON 列整体替换）。多实例下进程内存 Map 偏离；大对话越多越慢（O(n) 序列化）。persistSession 失败仅 logger.warn，调用方拿到的是 in-memory 状态，下次重启丢失。",
+      "recommendation": "改为 messages 单独 table、append-only；session Map 仅做缓存；多副本配合 Redis pub/sub。",
+      "severity": "warning"
+    },
+    {
+      "title": "横向场景 (AgentJob/AgentAd/VisionShare) 各自独立实现，未真正复用基础设施",
+      "ac_slug": "JOB-004~func",
+      "file_location": "apps/server/src/services/dating/agentConversationRoom.ts; apps/server/src/services/job/negotiationRoom.ts; apps/server/src/services/ai/agentNegotiationService.ts",
+      "description": "三场景各有自己的 Room 与 Chat 服务（dating 的 agentConversationRoom + agentInitiatedChat、job 的 negotiationRoom、ad 的 agentNegotiationService），房间数据结构、状态机、消息格式互不相同。剧本 Phase 5 声称的横向同构 — 同一套基础设施实际是三套各自实现，没有共享 base class 或抽象。VisionShare 与 Agent 对话基础设施完全脱钩。",
+      "recommendation": "抽象 AgentRoomBase / AgentDialogBase 类，三场景继承统一接口。",
+      "severity": "warning"
+    },
+    {
+      "title": "AS-009 引荐流程仅有 referralService 桩，阈值/实时触发/UI 链路不完整",
+      "ac_slug": "AS-009-AC-1",
+      "file_location": "apps/server/src/services/dating/agentConversationRoom.ts:413-439",
+      "description": "匹配度达标 → 请求引荐 → 进入四人群聊 整个流程在代码中只有 completeRoom 末尾一段 — 当 qualityScore >= 0.6 调用 createReferralFromConversation。但：(a) 剧本要求 80% 阈值，代码用 0.6；(b) 此触发只在 room 完成时走，不是匹配度实时达标动态触发；(c) 实时意图分析 → 主人确认弹窗 → 双方接受跳四人群聊在 mobile 端无对应屏幕。",
+      "recommendation": "拆分实时阈值监听器 + 引荐确认 UI 流；阈值常量集中配置；与剧本对齐为 0.8。",
+      "severity": "warning"
+    }
+  ],
+  "findings_to_db": [
+    {
+      "issue_id": 16,
+      "ac_slug": "AS-005-AC-2",
+      "severity": "critical",
+      "category": "verification",
+      "description": "Agent 自主发起对话服务从未被任何外部代码调用 — 是死代码。initiateChat() 是 Story 的核心 API，但全代码库（除自身模块、index.ts re-export、单元测试外）没有 caller。Socket handler、REST 路由、job queue 均无入口触发，意味着 Agent 自主决定与候选 Agent 发起对话在生产路径上根本不会执行。",
+      "evidence": "apps/server/src/services/dating/agentInitiatedChat.ts:90 — initiateChat() 被定义但无生产调用方",
+      "recommendation": "增加调度层（cron / 候选生成回调 / Socket 事件 / worker），在候选列表生成后自动调用 initiateChat。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "ISSUE-AI004~c1",
+      "severity": "critical",
+      "category": "code_quality",
+      "description": "Agent 自动响应是硬编码模板字符串，没有调用 LLM。generateResponseContent 完全使用 4-5 条候选模板字符串数组按 turnIndex % responses.length 轮播。没有 LLM 调用、没有上下文管理、没有人格化、没有意图识别。剧本要求的 5-10 轮自然对话评估性格契合度实际只是机械复读。",
+      "evidence": "apps/server/src/services/dating/agentInitiatedChat.ts:335-363 — 模板数组 + 轮播",
+      "recommendation": "替换为 agentDialogService.generateMessage() 真实 LLM 调用，并接入人格 prompt 与上下文管理。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "US-AGENT-009~func",
+      "severity": "critical",
+      "category": "verification",
+      "description": "agent:private_advice 私聊建议通道在代码中完全不存在。剧本明确声明 agent:private_advice 通道仅推送给主人 socket，但全代码库 grep private_advice|privateAdvice|私聊建议 在 server 与 mobile 均无任何匹配。AS-008 整套实时分析意图、发送私下建议、风险提示、话题推荐、一键采纳在 server 端无 emit 事件，mobile 无订阅与 UI。",
+      "evidence": "apps/server (全代码库 grep) — 无任何 private_advice 通道实现",
+      "recommendation": "实现 socket 端 emit 到 user:{ownerId} 私聊房间、mobile 订阅、私聊建议侧边栏组件。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "ISSUE-AI004~c4",
+      "severity": "critical",
+      "category": "verification",
+      "description": "agent_memory 长期记忆表完全不存在，AS-LEARN-001 无落地。剧本声明通过查询 agent_memory 表验证 Agent 学习。schema.prisma 仅有 DialogSessionRecord，无 AgentMemory 模型，无成功匹配特征/失败原因/主人偏好的存储 schema。Phase 7.4-7.6 三个 AS-LEARN AC 没有数据落点。",
+      "evidence": "apps/server/prisma/schema.prisma — 无 AgentMemory 模型",
+      "recommendation": "设计 AgentMemory 表（含 userId、agentId、memoryType、structuredFields、createdAt）并创建写入路径（成功引荐后/被拒后/用户否决后）。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "US-AGENT-009~edge",
+      "severity": "critical",
+      "category": "test_coverage",
+      "description": "缺少双 socket 集成测试验证私聊建议不泄露给对方。无双 socket（Alice + Bob）集成测试用于断言 Bob socket 在建议生成时不会收到 agent:private_advice 类事件。这一关键安全边界 AC 没有自动化保障。",
+      "evidence": "apps/server/src/tests/integration/ — 缺少双 socket 隔离测试",
+      "recommendation": "编写双 socket 集成测试：一个 Alice socket 一个 Bob socket，触发建议生成并断言 Bob 在 1 秒窗口内未收到任何 advice 事件。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "AS-005~edge",
+      "severity": "critical",
+      "category": "verification",
+      "description": "无并发上限/限流机制 — 50+ Agent 并发与对话数上限 AC 无落地。agentInitiatedChat 与 agentNegotiationService 均无并发计数与限流。agentBehaviorService 文件头注释明确写道 intentionally not yet wired into the dispatch path — that integration is tracked separately，即未接入消息发送链路。10 个对话上限、50+ 并发限流、按信用分排队全部为空实现。",
+      "evidence": "apps/server/src/services/dating/agentInitiatedChat.ts; apps/server/src/services/agentBehaviorService.ts:8-9",
+      "recommendation": "在 initiateChat 入口检查每用户活跃 chat 数；在 negotiation 接收端按优先级队列处理；接入 agentBehaviorService 到分发路径。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "ISSUE-AI004~c6",
+      "severity": "critical",
+      "category": "verification",
+      "description": "dialogHandler 只是被动广播器，不调用 dialog 引擎。/dialog 命名空间 handler 仅暴露 join_session/leave_session/new_message/typing/session_state 5 个透传事件，无调用 agentDialogService.generateMessage() 或 agentToAgentDialog() 入口。mobile 端无法通过 WebSocket 触发 Agent 实际生成消息。也未发现对应 REST 路由。",
+      "evidence": "apps/server/src/socket/handlers/dialogHandler.ts:1-71 — 只有透传事件",
+      "recommendation": "增加 dialog:generate socket event 调用 service 并回写结果。"
+    },
+    {
+      "issue_id": 29,
+      "ac_slug": "ISSUE-COM001~c4",
+      "severity": "warning",
+      "category": "code_quality",
+      "description": "协商房间永不释放 — 内存泄漏。agentNegotiationService 的 rooms Map 与 agentDialogService 的 sessions Map 都没有 delete/clear 调用、无 TTL、无定期回收。confirmSelection 仅改 status 不移除，archiveSession 同样。生产环境长时间运行内存持续增长。",
+      "evidence": "apps/server/src/services/ai/agentNegotiationService.ts:216 — Map 无清理",
+      "recommendation": "实现 idle TTL（如 30 分钟无活动 → archive → delete）或定期清理任务。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "AS-005-AC-2",
+      "severity": "warning",
+      "category": "test_coverage",
+      "description": "agentInitiatedChat 单元测试断言极弱，仅检查存在性。should generate a response message 仅断言 content 存在与 senderAgentId 匹配，未验证内容是真实生成而非模板。should create a chat session with opening line 期待开场白固定为 嗨！很高兴认识你 — 反向证实开场白也是固定字符串。无 LLM 失败、并发、超时、对方拒绝、50+ 限流场景测试。",
+      "evidence": "apps/server/src/services/dating/__tests__/agentInitiatedChat.test.ts:46-95",
+      "recommendation": "补充内容差异性断言、拒绝/超时/并发上限测试、Agent 学习记忆写入测试。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "ISSUE-AI004~c4",
+      "severity": "warning",
+      "category": "code_quality",
+      "description": "记忆系统仅有 LLM 单段总结，无关键信息提取与向量检索。记忆系统实现为：历史超过 20 条时让 LLM 用 2-3 句总结塞入 metadata.conversationSummary。无结构化关键信息提取（无 主人偏好/成功特征/拒绝原因 独立字段）；extractSharedInterests 是 提取 2-4 字中文词组按频次排序 的关键词匹配，无向量检索。剧本声称的记忆检索增强未实现。",
+      "evidence": "apps/server/src/services/ai/agentDialogService.ts:720-743; apps/server/src/services/dating/agentConversationRoom.ts:509",
+      "recommendation": "引入结构化记忆 schema (intents, preferences, milestones)；后续考虑 embedding 检索。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "ISSUE-AI004~c3",
+      "severity": "warning",
+      "category": "code_quality",
+      "description": "双向 Agent 协商无明确状态机/共识达成检测/分歧处理。updateDialogPhase 仅按消息条数判定（messageCount<=2 → intro，>6 → negotiating），无对方 Agent 接受/拒绝/反提议状态、无底线触碰检测、无共识达成判定（剧本 Step 5.4 提的薪资底线 22K 触碰自动反提议无代码）、无死锁防御。",
+      "evidence": "apps/server/src/services/ai/agentDialogService.ts:767-802",
+      "recommendation": "设计明确的 NegotiationState enum (PROPOSED/COUNTER/ACCEPTED/REJECTED/STALEMATE) 与底线检查器。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "ISSUE-AI004~c2",
+      "severity": "warning",
+      "category": "code_quality",
+      "description": "Agent 人格系统仅是 prompt 字符串拼接，无一致性维护与场景规则学习。buildPersona = agent.config.personality 数组 + communicationStyle 字符串拼到 prompt 即完事。无人格状态持久化、无跨会话一致性校验、无违反人格检测。Step 1.2 要求的学习场景行为准则 → 显示进度 → 生成行为准则摘要无对应实现。",
+      "evidence": "apps/server/src/services/ai/agentDialogService.ts:675-690",
+      "recommendation": "实现学习场景规则入口（生成并持久化 persona）；增加跨轮 persona drift 检测。"
+    },
+    {
+      "issue_id": 29,
+      "ac_slug": "ISSUE-COM001~c1",
+      "severity": "info",
+      "category": "code_quality",
+      "description": "Socket 命名空间设计冗余，11 个命名空间职责重叠。同时存在 / /chat /user /handoff /system /group /room /negotiation /presence /dialog /matchSubscriptions 共 11 个命名空间。/chat /dialog /group /room 职责高度重叠（都做加入房间/广播/离开房间）。剧本只要求 /chat 与 /presence 两个。命名空间膨胀导致重复认证开销与客户端连接复杂度。",
+      "evidence": "apps/server/src/socket/index.ts:83-170",
+      "recommendation": "整合 /chat /dialog /group /room → /chat 一个命名空间下用 events 区分。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "ISSUE-COM001~c3",
+      "severity": "warning",
+      "category": "code_quality",
+      "description": "dialog session 双轨存储 (memory Map + DB)，状态不一致与多实例风险。sessions Map 内存缓存 + dialogSessionRecord DB upsert，每条消息都重写整个 session（messages JSON 列整体替换）。多实例下进程内存 Map 偏离；大对话越多越慢（O(n) 序列化）。persistSession 失败仅 logger.warn，调用方拿到的是 in-memory 状态，下次重启丢失。",
+      "evidence": "apps/server/src/services/ai/agentDialogService.ts:154,403-407,808",
+      "recommendation": "改为 messages 单独 table、append-only；session Map 仅做缓存；多副本配合 Redis pub/sub。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "JOB-004~func",
+      "severity": "warning",
+      "category": "consistency",
+      "description": "横向场景 (AgentJob/AgentAd/VisionShare) 各自独立实现，未真正复用基础设施。三场景各有自己的 Room 与 Chat 服务（dating 的 agentConversationRoom + agentInitiatedChat、job 的 negotiationRoom、ad 的 agentNegotiationService），房间数据结构、状态机、消息格式互不相同。剧本 Phase 5 声称的横向同构 — 同一套基础设施实际是三套各自实现，没有共享 base class 或抽象。VisionShare 与 Agent 对话基础设施完全脱钩。",
+      "evidence": "apps/server/src/services/dating/agentConversationRoom.ts; apps/server/src/services/job/negotiationRoom.ts; apps/server/src/services/ai/agentNegotiationService.ts",
+      "recommendation": "抽象 AgentRoomBase / AgentDialogBase 类，三场景继承统一接口。"
+    },
+    {
+      "issue_id": 16,
+      "ac_slug": "AS-009-AC-1",
+      "severity": "warning",
+      "category": "verification",
+      "description": "AS-009 引荐流程仅有 referralService 桩，阈值/实时触发/UI 链路不完整。匹配度达标 → 请求引荐 → 进入四人群聊 整个流程在代码中只有 completeRoom 末尾一段 — 当 qualityScore >= 0.6 调用 createReferralFromConversation。但：(a) 剧本要求 80% 阈值，代码用 0.6；(b) 此触发只在 room 完成时走，不是匹配度实时达标动态触发；(c) 实时意图分析 → 主人确认弹窗 → 双方接受跳四人群聊在 mobile 端无对应屏幕。",
+      "evidence": "apps/server/src/services/dating/agentConversationRoom.ts:413-439",
+      "recommendation": "拆分实时阈值监听器 + 引荐确认 UI 流；阈值常量集中配置；与剧本对齐为 0.8。"
+    }
+  ]
+}

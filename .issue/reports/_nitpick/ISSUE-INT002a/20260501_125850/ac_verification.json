@@ -1,0 +1,191 @@
+{
+  "ac_results": [
+    {
+      "ac_slug": "ISSUE-INT002a~c1",
+      "verdict": "partial",
+      "sub_items": [
+        {
+          "name": "P95<200ms baseline test exists & meaningful",
+          "verdict": "pass",
+          "evidence_path": "screenshots/ac-c1-baseline.txt",
+          "notes": "perf/api-load-test.js defines response_time: ['p(95)<200'] threshold with warmup/benchmark/stress scenarios and 7 endpoint test functions. Script is k6-runnable but not executed live."
+        },
+        {
+          "name": "High concurrency throughput test (VUs >= 100)",
+          "verdict": "pass",
+          "evidence_path": "screenshots/ac-c1-stress.txt",
+          "notes": "stress scenario ramps to 200 then 400 VUs; benchmark scenario sustains 100 VUs."
+        },
+        {
+          "name": "DB query perf analysis present",
+          "verdict": "partial",
+          "evidence_path": "screenshots/ac-c2-indexes.txt",
+          "notes": "perf/db-perf-report.md (232 lines) exists with EXPLAIN-style analysis. However the dedicated perf-index migration (20260419000000_perf_indexes) is UNTRACKED on master."
+        },
+        {
+          "name": "Redis cache strategy & verification",
+          "verdict": "partial",
+          "evidence_path": "screenshots/ac-c1-cache.txt",
+          "notes": "services/cache.ts is Redis-backed with cacheAside/writeThrough/readThrough strategies; 107 cache tests pass. BUT middleware/cache.ts uses an in-memory Map instead of Redis."
+        },
+        {
+          "name": "API rate limiting pressure test",
+          "verdict": "partial",
+          "evidence_path": "screenshots/ac-c1-rate.txt",
+          "notes": "18/18 rateLimiter unit tests pass. apps/server/perf/api-rate-limit-test.js k6 script exists. But rateLimiter.ts contains 6 NODE_ENV==='test' bypass branches that disable substantial behaviour during unit tests."
+        }
+      ],
+      "summary": "AC1 is largely scaffolded: k6 scripts and Redis cache service are in place and 125 unit tests pass. Significant gaps: response middleware cache is in-memory, /metrics endpoint exposes only memory/uptime (no p50/p95 percentiles), rateLimiter test bypasses are heavy, and live load-test results are absent."
+    },
+    {
+      "ac_slug": "ISSUE-INT002a~c2",
+      "verdict": "fail",
+      "sub_items": [
+        {
+          "name": "Slow query analysis & index optimization",
+          "verdict": "partial",
+          "evidence_path": "screenshots/ac-c2-indexes.txt",
+          "notes": "schema.prisma has @@index lines and tracked migration 20260428000001_add_l2data_gin_index exists. However migration 20260419000000_perf_indexes is UNTRACKED (git ls-files --others)."
+        },
+        {
+          "name": "High-concurrency read/write test",
+          "verdict": "pass",
+          "evidence_path": "screenshots/ac-c2-pool.txt",
+          "notes": "apps/server/perf/db-performance-test.js exists with 100 VUs, 10m duration, p95/p99 thresholds for simple/complex/join/aggregation queries."
+        },
+        {
+          "name": "Prisma connection pool configuration",
+          "verdict": "fail",
+          "evidence_path": "screenshots/ac-c2-pool.txt",
+          "notes": "db/client.ts declares CONNECTION_POOL_SIZE/CONNECTION_TIMEOUT/IDLE_TIMEOUT (lines 14-16) but they are NEVER USED — ESLint reports them as unused-vars errors. PrismaClient receives only DATABASE_URL verbatim. getConnectionStats() returns hardcoded zeros."
+        },
+        {
+          "name": "Complex query (matching) optimization",
+          "verdict": "partial",
+          "evidence_path": "screenshots/ac-c2-matching-perf.txt",
+          "notes": "optimizedMatchingService.ts uses Redis cache-aside (TTL 60-300s). But there is no queryAnalyzer.ts in apps/server/src/utils, no EXPLAIN-based runtime optimization."
+        },
+        {
+          "name": "Sharding/sub-partition strategy evaluation",
+          "verdict": "fail",
+          "evidence_path": "screenshots/ac-c2-sharding.txt",
+          "notes": "Grep across perf/, docs/, apps/server/ for shard|分表|分库 returns zero matches. No design doc or ADR evaluates sharding."
+        }
+      ],
+      "summary": "AC2 has strong index coverage in the base schema and a working db-performance k6 script, but the connection-pool config is a no-op, no sharding evaluation exists, and the dedicated perf-index migration tied to this issue was never committed to master."
+    }
+  ],
+  "test_results": {
+    "performance_test_passed": 5,
+    "performance_test_failed": 2,
+    "rate_limiter_test_passed": 18,
+    "rate_limiter_test_failed": 0,
+    "cache_test_passed": 107,
+    "cache_test_failed": 0,
+    "lint_errors": 3,
+    "lint_warnings": 1,
+    "lint_summary": "ESLint on rateLimiter.ts/cache.ts/db/client.ts: 3 errors (CONNECTION_POOL_SIZE/CONNECTION_TIMEOUT/IDLE_TIMEOUT unused) + 1 warning (any in rateLimiter request type)."
+  },
+  "findings": [
+    {
+      "category": "ac_verification",
+      "severity": "critical",
+      "description": "Prisma connection pool configuration is dead code. CONNECTION_POOL_SIZE/CONNECTION_TIMEOUT/IDLE_TIMEOUT vars are read from env but never used; PrismaClient receives only DATABASE_URL verbatim. ESLint flags them as unused-vars errors.",
+      "evidence": "apps/server/src/db/client.ts:14-37; ESLint: 'CONNECTION_POOL_SIZE is assigned a value but never used'",
+      "file_path": "apps/server/src/db/client.ts",
+      "recommendation": "Inject pool params into the URL via ?connection_limit=&pool_timeout= querystring (Prisma's documented mechanism), or remove the misleading constants.",
+      "related_ac": "ISSUE-INT002a~c2"
+    },
+    {
+      "category": "ac_verification",
+      "severity": "critical",
+      "description": "getConnectionStats() returns hardcoded zeros and is documented as 'placeholder for future implementation' — claim of pool monitoring is unsubstantiated.",
+      "evidence": "apps/server/src/db/client.ts:146-159 returns {active:0, idle:0, total:0}",
+      "file_path": "apps/server/src/db/client.ts",
+      "recommendation": "Implement using pg_stat_activity SELECT or remove the function until functional.",
+      "related_ac": "ISSUE-INT002a~c2"
+    },
+    {
+      "category": "consistency",
+      "severity": "critical",
+      "description": "Performance index migration 20260419000000_perf_indexes (which adds composite indexes for ISSUE-INT002a) is UNTRACKED on master — created in working tree but never committed. The promised composite indexes therefore are not deployed.",
+      "evidence": "git ls-files apps/server/prisma/migrations/ does not list 20260419000000_perf_indexes; git ls-files --others does.",
+      "file_path": "apps/server/prisma/migrations/20260419000000_perf_indexes/migration.sql",
+      "recommendation": "Either commit the migration with proper review, or remove it from the working tree if rejected.",
+      "related_ac": "ISSUE-INT002a~c2"
+    },
+    {
+      "category": "ac_verification",
+      "severity": "critical",
+      "description": "AC2.5 (sharding/sub-partition strategy evaluation) has no artifact. Repo grep for shard|分表|分库 in perf/ docs/ apps/server/ *.md returns no design notes.",
+      "evidence": "grep -rn 'shard|分表|分库' --include='*.md' returned only 评分表 (rating table heading).",
+      "file_path": "docs/database/",
+      "recommendation": "Author an ADR or perf/sharding-evaluation.md describing the assessment outcome (even if conclusion is 'not needed for current scale').",
+      "related_ac": "ISSUE-INT002a~c2"
+    },
+    {
+      "category": "runtime_behavior",
+      "severity": "warning",
+      "description": "Cache middleware uses an in-memory Map instead of Redis. Multi-node deployments will have inconsistent caches.",
+      "evidence": "apps/server/src/middleware/cache.ts:13-14: const cacheStore = new Map<string, CacheEntry>();",
+      "file_path": "apps/server/src/middleware/cache.ts:13-14",
+      "recommendation": "Refactor cacheMiddleware to use the Redis-backed services/cache.ts get/set with namespaced keys.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "runtime_behavior",
+      "severity": "warning",
+      "description": "/metrics endpoint exposes only uptime/memory/pid; no p50/p95/p99 latency percentiles are emitted, making the AC1 P95 SLO unmeasurable from the running service.",
+      "evidence": "apps/server/src/app.ts:157-172",
+      "file_path": "apps/server/src/app.ts:157-172",
+      "recommendation": "Integrate prom-client histograms (http_request_duration_seconds) and expose Prometheus text format on /metrics, or include rolling p50/p95.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "test_coverage",
+      "severity": "warning",
+      "description": "rateLimiter.ts has 6 NODE_ENV==='test' bypass branches that short-circuit cleanup and disable limiters, weakening the 18/18 unit test signal.",
+      "evidence": "apps/server/src/middleware/rateLimiter.ts lines 74, 259, 290, 334, 351, 454",
+      "file_path": "apps/server/src/middleware/rateLimiter.ts",
+      "recommendation": "Replace blanket NODE_ENV bypass with explicit injectable config and enable the limiter in dedicated stress tests.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "test_coverage",
+      "severity": "critical",
+      "description": "Performance middleware tests have 2/7 failing tests: 'should add performance headers to response' and 'should set X-Response-Time header'. Tests expect res.on('finish'), implementation uses res.end override.",
+      "evidence": "ac-step1-jest-perf.log: Tests: 2 failed, 5 passed, 7 total",
+      "file_path": "apps/server/src/middleware/__tests__/performance.test.ts:70-94",
+      "recommendation": "Investigate why response headers are not being added — could indicate the perf header middleware is broken, which directly undermines AC1 latency tracking.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "ac_verification",
+      "severity": "info",
+      "description": "matching service has no queryAnalyzer.ts. Optimization is limited to Redis cache-aside in optimizedMatchingService.ts. No EXPLAIN-driven analysis path.",
+      "evidence": "ls apps/server/src/utils/queryAnalyzer.ts -> No such file or directory; grep 'queryAnalyzer' apps/server/src/ -> 0 hits.",
+      "file_path": "apps/server/src/services/matching/optimizedMatchingService.ts",
+      "recommendation": "Either implement a queryAnalyzer that runs EXPLAIN on slow matching queries, or update AC2.4 acceptance text to reflect cache-only optimization.",
+      "related_ac": "ISSUE-INT002a~c2"
+    }
+  ],
+  "screenshots": [
+    { "name": "ac-c1-baseline", "path": "screenshots/ac-c1-baseline.txt", "type": "text" },
+    { "name": "ac-c1-stress", "path": "screenshots/ac-c1-stress.txt", "type": "text" },
+    { "name": "ac-c1-cache", "path": "screenshots/ac-c1-cache.txt", "type": "text" },
+    { "name": "ac-c1-cache-jest", "path": "screenshots/ac-c1-cache-jest.log", "type": "text" },
+    { "name": "ac-c1-rate", "path": "screenshots/ac-c1-rate.txt", "type": "text" },
+    { "name": "ac-c1-rate-jest", "path": "screenshots/ac-c1-rate-jest.log", "type": "text" },
+    { "name": "ac-c2-indexes", "path": "screenshots/ac-c2-indexes.txt", "type": "text" },
+    { "name": "ac-c2-pool", "path": "screenshots/ac-c2-pool.txt", "type": "text" },
+    {
+      "name": "ac-c2-matching-perf",
+      "path": "screenshots/ac-c2-matching-perf.txt",
+      "type": "text"
+    },
+    { "name": "ac-c2-sharding", "path": "screenshots/ac-c2-sharding.txt", "type": "text" },
+    { "name": "ac-step1-jest-perf", "path": "screenshots/ac-step1-jest-perf.log", "type": "text" },
+    { "name": "ac-step1-lint", "path": "screenshots/ac-step1-lint.log", "type": "text" }
+  ],
+  "notes": "Server was not reachable on :3000 so /health, /ready, /metrics curls returned no body. Code review confirms /metrics has no percentile data. Backend-only issue — no UI to screenshot."
+}

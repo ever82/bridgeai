@@ -1,0 +1,182 @@
+{
+  "issue": {
+    "id": 64,
+    "slug": "ISSUE-INT002a",
+    "title": "基础设施性能优化",
+    "status": "nitpicking",
+    "description": "执行系统基础设施层性能优化与压力测试，包括API响应时间优化和数据库查询优化。\n这是ISSUE-INT002的阶段1，专注于基础设施性能，为后续实时服务性能优化奠定基础。\n目标：API响应时间P95<200ms，数据库查询性能达到高并发要求。\n",
+    "issue_type": "implement",
+    "current_task_id": 1085
+  },
+  "acs": [
+    {
+      "id": 396,
+      "slug": "ISSUE-INT002a~c1",
+      "criteria_type": "functional",
+      "verification_method": "{'ai': {'prompt': '检查API性能测试实现，验证有k6或Artillery压测脚本，包含基准测试、并发测试、限流测试，确认性能优化方案', 'context_files': ['apps/server/perf/', 'perf/api-load-test.yml', 'apps/server/src/middleware/rateLimiter.ts']}}",
+      "priority": 1,
+      "description": "API性能测试与优化:\n- 核心API响应时间基准测试(目标P95<200ms)\n- 高并发场景API吞吐量测试\n- 数据库查询性能分析与优化\n- 缓存策略实施与验证(Redis)\n- API限流与熔断机制压力测试\n",
+      "coverage": {
+        "ai": "sufficient",
+        "unit": "not_needed",
+        "integration": "required",
+        "e2e": "required",
+        "manual": "required"
+      },
+      "iac_status": "pending"
+    },
+    {
+      "id": 397,
+      "slug": "ISSUE-INT002a~c2",
+      "criteria_type": "functional",
+      "verification_method": "{'ai': {'prompt': '检查数据库性能优化实现，验证慢查询日志配置、索引优化方案、Prisma连接池配置，确认性能测试报告', 'context_files': ['apps/server/prisma/schema.prisma', 'apps/server/src/services/matching/', 'perf/db-perf-report.md']}}",
+      "priority": 1,
+      "description": "数据库性能优化:\n- 慢查询分析与索引优化\n- 高并发读写性能测试\n- Prisma连接池配置优化\n- 复杂查询(匹配算法)性能优化\n- 数据库分表分库策略评估\n",
+      "coverage": {
+        "ai": "sufficient",
+        "unit": "not_needed",
+        "integration": "required",
+        "e2e": "not_needed",
+        "manual": "not_needed"
+      },
+      "iac_status": "pending"
+    }
+  ],
+  "open_checkpoints": [
+    {
+      "id": 1143,
+      "slug": "VC-1143",
+      "description": "Main implementation commit 2ad66001 never merged to master. Key files missing: performanceMetrics.ts (P50/P90/P95/P99 metrics service), redisRateLimitStore.ts (Redis-backed rate limit store), queryAnalyzer.ts (DB query analyzer), and migration 20260419000000_perf_indexes. The /metrics endpoint and enhanced /health/detailed are missing the metrics integration. Commit 2ad66001 is NOT an ancestor of HEAD.\n推荐修复: Merge commit 2ad66001 to master or re-implement the missing functionality.",
+      "status": "open",
+      "finding_id": 1997
+    },
+    {
+      "id": 1144,
+      "slug": "VC-1144",
+      "description": "Prisma connection pool configuration regression in db/client.ts. The INT002a commit added URL parameter builder to append connection_limit and pool_timeout to DATABASE_URL, but this code was reverted on master. Current db/client.ts passes raw DATABASE_URL without pool params. getConnectionStats() returns hardcoded zeros instead of querying pg_stat_activity.\n推荐修复: Restore the connection pool URL parameter builder and pg_stat_activity-based getConnectionStats().",
+      "status": "open",
+      "finding_id": 1998
+    },
+    {
+      "id": 1145,
+      "slug": "VC-1145",
+      "description": "Dead code in db/client.ts: CONNECTION_POOL_SIZE (line 14), CONNECTION_TIMEOUT (line 15), IDLE_TIMEOUT (line 16) are declared but never used. ESLint reports @typescript-eslint/no-unused-vars errors. These variables were used by the connection pool URL builder which was removed.\n推荐修复: Either remove the unused variables or restore the code that uses them (connection pool URL builder).",
+      "status": "open",
+      "finding_id": 1999
+    },
+    {
+      "id": 1146,
+      "slug": "VC-1146",
+      "description": "Performance middleware test failures: 2 of 7 tests fail in performance.test.ts. Test 'should add performance headers to response' expects res.on('finish', ...) but implementation uses res.end override. Test 'should set X-Response-Time header' fails for same reason. Test is out of sync with implementation.\n推荐修复: Fix tests to match the res.end override pattern used by performanceHeaders(), or update the implementation to use res.on('finish').",
+      "status": "open",
+      "finding_id": 2000
+    },
+    {
+      "id": 1147,
+      "slug": "VC-1147",
+      "description": "Cache middleware (middleware/cache.ts) still uses in-memory Map instead of Redis. Comment on line 13 says 'in production, use Redis'. While services/cache.ts provides Redis-backed caching for the matching service, the HTTP cache middleware layer does not use Redis. This is inconsistent with AC1 which requires Redis caching strategy.\n推荐修复: Integrate Redis-backed caching into the cache middleware, or document that services/cache.ts is the Redis cache layer while middleware/cache.ts is a simple HTTP response cache.",
+      "status": "open",
+      "finding_id": 2001
+    },
+    {
+      "id": 1148,
+      "slug": "VC-1148",
+      "description": "No test coverage for cache middleware (middleware/cache.ts) or cache service (services/cache.ts). AC1 requires '缓存策略实施与验证(Redis)' but there are no automated tests verifying the cache strategy.\n推荐修复: Add unit tests for the cache middleware and integration tests for the Redis cache service.",
+      "status": "open",
+      "finding_id": 2002
+    },
+    {
+      "id": 1149,
+      "slug": "VC-1149",
+      "description": "/ready endpoint in app.ts returns static 'ok' without actually checking database connectivity. The INT002a commit added a real readiness probe that tested DB connection, but the current HEAD version just returns a hardcoded response.\n推荐修复: Implement actual DB connectivity check in the /ready endpoint using prisma.$queryRaw`SELECT 1`.",
+      "status": "open",
+      "finding_id": 2003
+    }
+  ],
+  "recent_findings": [
+    {
+      "id": 2003,
+      "slug": "NP-2003",
+      "category": "verification",
+      "severity": "warning",
+      "description": "/ready endpoint in app.ts returns static 'ok' without actually checking database connectivity. The INT002a commit added a real readiness probe that tested DB connection, but the current HEAD version just returns a hardcoded response.",
+      "status": "adopted",
+      "disposition": "fix_inline",
+      "file_path": "apps/server/src/app.ts:128-138",
+      "evidence": "apps/server/src/app.ts:128-138: app.get('/ready') returns { status: 'ready', checks: { database: 'ok' } } without any DB query.",
+      "recommendation": "Implement actual DB connectivity check in the /ready endpoint using prisma.$queryRaw`SELECT 1`."
+    },
+    {
+      "id": 2002,
+      "slug": "NP-2002",
+      "category": "test_coverage",
+      "severity": "warning",
+      "description": "No test coverage for cache middleware (middleware/cache.ts) or cache service (services/cache.ts). AC1 requires '缓存策略实施与验证(Redis)' but there are no automated tests verifying the cache strategy.",
+      "status": "adopted",
+      "disposition": "fix_inline",
+      "file_path": "apps/server/src/middleware/cache.ts",
+      "evidence": "No cache.test.ts found in apps/server/src/middleware/__tests__/ or apps/server/src/services/__tests__/. find src -name '*cache*test*' returns empty.",
+      "recommendation": "Add unit tests for the cache middleware and integration tests for the Redis cache service."
+    },
+    {
+      "id": 2001,
+      "slug": "NP-2001",
+      "category": "consistency",
+      "severity": "warning",
+      "description": "Cache middleware (middleware/cache.ts) still uses in-memory Map instead of Redis. Comment on line 13 says 'in production, use Redis'. While services/cache.ts provides Redis-backed caching for the matching service, the HTTP cache middleware layer does not use Redis. This is inconsistent with AC1 which requires Redis caching strategy.",
+      "status": "adopted",
+      "disposition": "fix_inline",
+      "file_path": "apps/server/src/middleware/cache.ts:13-14",
+      "evidence": "apps/server/src/middleware/cache.ts:13-14: '// In-memory cache store (in production, use Redis)' and 'const cacheStore = new Map<string, CacheEntry>();'",
+      "recommendation": "Integrate Redis-backed caching into the cache middleware, or document that services/cache.ts is the Redis cache layer while middleware/cache.ts is a simple HTTP response cache."
+    },
+    {
+      "id": 2000,
+      "slug": "NP-2000",
+      "category": "runtime_behavior",
+      "severity": "critical",
+      "description": "Performance middleware test failures: 2 of 7 tests fail in performance.test.ts. Test 'should add performance headers to response' expects res.on('finish', ...) but implementation uses res.end override. Test 'should set X-Response-Time header' fails for same reason. Test is out of sync with implementation.",
+      "status": "adopted",
+      "disposition": "fix_inline",
+      "file_path": "apps/server/src/middleware/__tests__/performance.test.ts:71-93",
+      "evidence": "jest output: FAIL src/middleware/__tests__/performance.test.ts - 2 tests failed. expect(mockResponse.on).toHaveBeenCalledWith('finish', expect.any(Function)) - Number of calls: 0",
+      "recommendation": "Fix tests to match the res.end override pattern used by performanceHeaders(), or update the implementation to use res.on('finish')."
+    },
+    {
+      "id": 1999,
+      "slug": "NP-1999",
+      "category": "code_quality",
+      "severity": "critical",
+      "description": "Dead code in db/client.ts: CONNECTION_POOL_SIZE (line 14), CONNECTION_TIMEOUT (line 15), IDLE_TIMEOUT (line 16) are declared but never used. ESLint reports @typescript-eslint/no-unused-vars errors. These variables were used by the connection pool URL builder which was removed.",
+      "status": "adopted",
+      "disposition": "fix_inline",
+      "file_path": "apps/server/src/db/client.ts:14-16",
+      "evidence": "eslint output: 14:7 error 'CONNECTION_POOL_SIZE' is assigned a value but never used, 15:7 error 'CONNECTION_TIMEOUT' is assigned a value but never used, 16:7 error 'IDLE_TIMEOUT' is assigned a value but never used",
+      "recommendation": "Either remove the unused variables or restore the code that uses them (connection pool URL builder)."
+    },
+    {
+      "id": 1998,
+      "slug": "NP-1998",
+      "category": "code_quality",
+      "severity": "critical",
+      "description": "Prisma connection pool configuration regression in db/client.ts. The INT002a commit added URL parameter builder to append connection_limit and pool_timeout to DATABASE_URL, but this code was reverted on master. Current db/client.ts passes raw DATABASE_URL without pool params. getConnectionStats() returns hardcoded zeros instead of querying pg_stat_activity.",
+      "status": "adopted",
+      "disposition": "fix_inline",
+      "file_path": "apps/server/src/db/client.ts:37",
+      "evidence": "INT002a commit had: 'if (dbUrl && !dbUrl.includes(\"connection_limit\")) { dbUrl = `${dbUrl}${separator}connection_limit=${CONNECTION_POOL_SIZE}&pool_timeout=...` }'. HEAD has: 'url: process.env.DATABASE_URL'. getConnectionStats() returns {active:0, idle:0, total:0}.",
+      "recommendation": "Restore the connection pool URL parameter builder and pg_stat_activity-based getConnectionStats()."
+    },
+    {
+      "id": 1997,
+      "slug": "NP-1997",
+      "category": "verification",
+      "severity": "critical",
+      "description": "Main implementation commit 2ad66001 never merged to master. Key files missing: performanceMetrics.ts (P50/P90/P95/P99 metrics service), redisRateLimitStore.ts (Redis-backed rate limit store), queryAnalyzer.ts (DB query analyzer), and migration 20260419000000_perf_indexes. The /metrics endpoint and enhanced /health/detailed are missing the metrics integration. Commit 2ad66001 is NOT an ancestor of HEAD.",
+      "status": "adopted",
+      "disposition": "fix_inline",
+      "file_path": "apps/server/src/services/performanceMetrics.ts",
+      "evidence": "git merge-base --is-ancestor 2ad66001 HEAD returns false. Files not found on master: apps/server/src/services/performanceMetrics.ts, apps/server/src/middleware/redisRateLimitStore.ts, apps/server/src/db/queryAnalyzer.ts, apps/server/prisma/migrations/20260419000000_perf_indexes/migration.sql",
+      "recommendation": "Merge commit 2ad66001 to master or re-implement the missing functionality."
+    }
+  ]
+}

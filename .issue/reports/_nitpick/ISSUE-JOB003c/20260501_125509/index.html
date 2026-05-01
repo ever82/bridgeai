@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nitpick Report - ISSUE-JOB003c</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #0d1117;
+    color: #c9d1d9;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    border-bottom: 1px solid #21262d;
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .header .slug {
+    display: inline-block;
+    background: #1f6feb33;
+    color: #58a6ff;
+    padding: 0.2rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+  }
+  .header h1 {
+    font-size: 1.6rem;
+    color: #f0f6fc;
+    margin-bottom: 0.25rem;
+  }
+  .header .subtitle {
+    color: #8b949e;
+    font-size: 0.95rem;
+  }
+  .header .timestamp {
+    color: #6e7681;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Summary cards */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .card .label {
+    font-size: 0.8rem;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+  }
+  .card .value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f0f6fc;
+  }
+  .card .value.pass { color: #3fb950; }
+  .card .value.warn { color: #d29922; }
+  .card .value.info-val { color: #58a6ff; }
+  .card .detail {
+    font-size: 0.8rem;
+    color: #6e7681;
+    margin-top: 0.25rem;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 2rem;
+  }
+  .section h2 {
+    font-size: 1.15rem;
+    color: #f0f6fc;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #21262d;
+  }
+
+  /* AC results */
+  .ac-item {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+  .ac-item .ac-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .badge-pass {
+    background: #238636;
+    color: #fff;
+    padding: 0.15rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge-fail {
+    background: #da3633;
+    color: #fff;
+    padding: 0.15rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .ac-item .ac-id {
+    color: #58a6ff;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .ac-item .ac-desc {
+    color: #8b949e;
+    font-size: 0.85rem;
+  }
+  .ac-item .evidence {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #8b949e;
+  }
+
+  /* Findings */
+  .finding {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-left: 4px solid #21262d;
+    border-radius: 0 8px 8px 0;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+  .finding.warning { border-left-color: #d29922; }
+  .finding.critical { border-left-color: #da3633; }
+  .finding.info { border-left-color: #58a6ff; }
+  .finding .finding-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.35rem;
+  }
+  .finding .severity-badge {
+    padding: 0.1rem 0.55rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .severity-badge.critical { background: #da363344; color: #f85149; }
+  .severity-badge.warning { background: #d2992244; color: #d29922; }
+  .severity-badge.info { background: #1f6feb44; color: #58a6ff; }
+  .finding .finding-id {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.85rem;
+    color: #f0f6fc;
+    font-weight: 600;
+  }
+  .finding .category {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.75rem;
+    color: #6e7681;
+    background: #21262d;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+  }
+  .finding .finding-desc {
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    margin-bottom: 0.35rem;
+  }
+  .finding .finding-meta {
+    font-size: 0.8rem;
+    color: #6e7681;
+  }
+  .finding .finding-meta code {
+    color: #79c0ff;
+    background: #161b22;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+  }
+
+  /* Test results */
+  .test-suite {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+  .test-suite-header {
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #21262d;
+  }
+  .test-suite-header .name {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.85rem;
+    color: #f0f6fc;
+  }
+  .test-suite-header .count {
+    color: #3fb950;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .test-suite pre {
+    padding: 1rem 1.25rem;
+    font-size: 0.8rem;
+    color: #8b949e;
+    overflow-x: auto;
+    max-height: 400px;
+    overflow-y: auto;
+    background: #0d1117;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+  .test-suite .screenshot-link {
+    display: inline-block;
+    padding: 0.5rem 1.25rem;
+    background: #21262d;
+    color: #58a6ff;
+    text-decoration: none;
+    font-size: 0.8rem;
+    border-top: 1px solid #21262d;
+    width: 100%;
+  }
+  .test-suite .screenshot-link:hover {
+    background: #30363d;
+  }
+
+  /* Compilation */
+  .compile-box {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .compile-box .icon-pass {
+    color: #3fb950;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  .compile-box .label { color: #8b949e; font-size: 0.9rem; }
+  .compile-box .result { color: #3fb950; font-weight: 600; font-size: 0.9rem; }
+
+  /* Footer */
+  .footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #21262d;
+    text-align: center;
+    color: #6e7681;
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="slug">ISSUE-JOB003c</div>
+    <h1>简历智能匹配 - 接口层</h1>
+    <div class="subtitle">实现匹配查询API和匹配通知系统，支持多条件搜索、结果排序，以及匹配相关的推送通知。</div>
+    <div class="timestamp">Generated: 2026-05-01 12:55:09</div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary">
+    <div class="card">
+      <div class="label">AC Results</div>
+      <div class="value pass">2 / 2</div>
+      <div class="detail">All acceptance criteria passed</div>
+    </div>
+    <div class="card">
+      <div class="label">Tests</div>
+      <div class="value pass">46 / 46</div>
+      <div class="detail">19 unit + 27 integration</div>
+    </div>
+    <div class="card">
+      <div class="label">Findings</div>
+      <div class="value warn">6</div>
+      <div class="detail">0 critical, 4 warning, 2 info</div>
+    </div>
+    <div class="card">
+      <div class="label">TypeScript</div>
+      <div class="value pass">PASS</div>
+      <div class="detail">No compilation errors</div>
+    </div>
+  </div>
+
+  <!-- AC Results -->
+  <div class="section">
+    <h2>Acceptance Criteria Results</h2>
+
+    <div class="ac-item">
+      <div class="ac-header">
+        <span class="badge-pass">PASS</span>
+        <span class="ac-id">ISSUE-JOB003c~c1</span>
+      </div>
+      <div class="ac-desc">查询接口: 职位搜索API, 候选人搜索API, 匹配结果获取API, 搜索结果排序与过滤, 搜索历史记录</div>
+      <div class="evidence">
+        19/19 unit tests pass, 12/12 integration tests pass. All endpoints reject unauthenticated requests. TypeScript compiles clean. Routes mounted at /api/v1/job-search.
+      </div>
+    </div>
+
+    <div class="ac-item">
+      <div class="ac-header">
+        <span class="badge-pass">PASS</span>
+        <span class="ac-id">ISSUE-JOB003c~c2</span>
+      </div>
+      <div class="ac-desc">通知系统: 新匹配结果通知, 高匹配度职位推送, 简历被查看通知, 匹配状态变更通知, 通知偏好设置</div>
+      <div class="evidence">
+        15/15 integration tests pass. All notification types verified with auth checks, admin override, quiet hours, daily limits. TypeScript compiles clean. Routes mounted at /api/v1/job-match-notifications.
+      </div>
+    </div>
+  </div>
+
+  <!-- Findings -->
+  <div class="section">
+    <h2>Findings (6)</h2>
+
+    <!-- NP-2411 -->
+    <div class="finding warning">
+      <div class="finding-header">
+        <span class="severity-badge warning">Warning</span>
+        <span class="finding-id">NP-2411</span>
+        <span class="category">runtime_behavior</span>
+      </div>
+      <div class="finding-desc">sendMatchNotification redundant DB query - preference fetched twice (line 141 then via isInQuietHours at line 109) in jobMatchNotifications.ts.</div>
+      <div class="finding-meta">Related to <code>ISSUE-JOB003c~c2</code></div>
+    </div>
+
+    <!-- NP-2412 -->
+    <div class="finding warning">
+      <div class="finding-header">
+        <span class="severity-badge warning">Warning</span>
+        <span class="finding-id">NP-2412</span>
+        <span class="category">runtime_behavior</span>
+      </div>
+      <div class="finding-desc">searchCandidates loads ALL agents into memory before filtering/paginating in JS. Same pattern as previously fixed NP-2111. In jobSearchService.ts.</div>
+      <div class="finding-meta">Related to <code>ISSUE-JOB003c~c1</code></div>
+    </div>
+
+    <!-- NP-2413 -->
+    <div class="finding warning">
+      <div class="finding-header">
+        <span class="severity-badge warning">Warning</span>
+        <span class="finding-id">NP-2413</span>
+        <span class="category">runtime_behavior</span>
+      </div>
+      <div class="finding-desc">parseInt on query params can produce NaN. No NaN/clamp guards in jobSearchRoutes.ts.</div>
+      <div class="finding-meta">Related to <code>ISSUE-JOB003c~c1</code></div>
+    </div>
+
+    <!-- NP-2414 -->
+    <div class="finding warning">
+      <div class="finding-header">
+        <span class="severity-badge warning">Warning</span>
+        <span class="finding-id">NP-2414</span>
+        <span class="category">runtime_behavior</span>
+      </div>
+      <div class="finding-desc">Production server returns 500 instead of 401 for auth errors (instanceof AppError mismatch). In errorHandler.ts.</div>
+      <div class="finding-meta">Related to <code>ISSUE-JOB003c~c1</code></div>
+    </div>
+
+    <!-- NP-2415 -->
+    <div class="finding info">
+      <div class="finding-header">
+        <span class="severity-badge info">Info</span>
+        <span class="finding-id">NP-2415</span>
+        <span class="category">code_quality</span>
+      </div>
+      <div class="finding-desc">buildNotificationContent called twice in sendMatchNotification. Could cache result. In jobMatchNotifications.ts.</div>
+      <div class="finding-meta">Related to <code>ISSUE-JOB003c~c2</code></div>
+    </div>
+
+    <!-- NP-2416 -->
+    <div class="finding info">
+      <div class="finding-header">
+        <span class="severity-badge info">Info</span>
+        <span class="finding-id">NP-2416</span>
+        <span class="category">test_coverage</span>
+      </div>
+      <div class="finding-desc">Sort order not tested at integration level, only unit level. In jobSearchRoutes.integration.test.ts.</div>
+      <div class="finding-meta">Related to <code>ISSUE-JOB003c~c1</code></div>
+    </div>
+  </div>
+
+  <!-- Test Results -->
+  <div class="section">
+    <h2>Test Results</h2>
+
+    <!-- jobSearchService unit tests -->
+    <div class="test-suite">
+      <div class="test-suite-header">
+        <span class="name">jobSearchService.test.ts (unit)</span>
+        <span class="count">19/19 pass</span>
+      </div>
+      <pre>  jobSearchService
+    searchJobs
+      ✓ should call listJobPostings and return paginated results (2 ms)
+      ✓ should create search history entry
+      ✓ should return empty results when no jobs found (1 ms)
+    searchCandidates
+      ✓ should throw error when job does not exist (6 ms)
+      ✓ should return candidates array
+      ✓ should filter by minMatchScore (1 ms)
+      ✓ should filter by skills
+      ✓ should filter by experienceLevel (2 ms)
+      ✓ should filter by salaryMin and salaryMax (1 ms)
+      ✓ should paginate results correctly (1 ms)
+    getMatchResults
+      ✓ should return match results
+      ✓ should filter by status (1 ms)
+      ✓ should filter by score range (1 ms)
+      ✓ should paginate results (1 ms)
+    getSearchHistory
+      ✓ should return history entries (3 ms)
+      ✓ should paginate correctly (1 ms)
+      ✓ should return empty results when no history exists
+    clearSearchHistory
+      ✓ should call deleteMany and return deleted count (1 ms)
+      ✓ should return 0 when nothing to delete
+
+  Tests:       19 passed, 19 total
+  Time:        0.257 s</pre>
+      <a class="screenshot-link" href="screenshots/test-jobSearchService.txt">View full output</a>
+    </div>
+
+    <!-- jobSearchRoutes integration tests -->
+    <div class="test-suite">
+      <div class="test-suite-header">
+        <span class="name">jobSearchRoutes.integration.test.ts</span>
+        <span class="count">12/12 pass</span>
+      </div>
+      <pre>  Job Search Routes Integration (JOB003c)
+    GET /api/v1/job-search/jobs
+      ✓ returns paginated job results for authenticated user (33 ms)
+      ✓ parses numeric and array query params correctly (5 ms)
+      ✓ returns 401 when no authenticated user is present (11 ms)
+      ✓ propagates 500 when service throws unexpected error (3 ms)
+    GET /api/v1/job-search/candidates/:jobId
+      ✓ returns candidate matches for the given job (9 ms)
+      ✓ returns 401 when not authenticated (4 ms)
+    GET /api/v1/job-search/matches
+      ✓ returns paginated match results for the user (11 ms)
+      ✓ returns 401 when not authenticated (3 ms)
+    Search history endpoints
+      ✓ GET /history returns paginated search history (8 ms)
+      ✓ DELETE /history clears search history and reports count (4 ms)
+      ✓ GET /history returns 401 when not authenticated (13 ms)
+      ✓ DELETE /history returns 401 when not authenticated (11 ms)
+
+  Tests:       12 passed, 12 total
+  Time:        0.437 s</pre>
+      <a class="screenshot-link" href="screenshots/test-jobSearchRoutes.txt">View full output</a>
+    </div>
+
+    <!-- jobMatchNotifications integration tests -->
+    <div class="test-suite">
+      <div class="test-suite-header">
+        <span class="name">jobMatchNotificationsRoutes.integration.test.ts</span>
+        <span class="count">15/15 pass</span>
+      </div>
+      <pre>  Job Match Notification Routes Integration (JOB003c)
+    POST /notify/new-match
+      ✓ sends a new-match notification for an enabled user (37 ms)
+      ✓ returns 401 when not authenticated (11 ms)
+      ✓ non-admin users cannot impersonate other users via targetUserId (3 ms)
+      ✓ admins may target a different user via targetUserId (10 ms)
+    POST /notify/high-match
+      ✓ sends a high-match notification (4 ms)
+      ✓ returns 401 when not authenticated (11 ms)
+    POST /notify/resume-viewed
+      ✓ sends a resume-viewed notification (12 ms)
+      ✓ returns 401 when not authenticated (4 ms)
+    POST /notify/match-status
+      ✓ sends a match-status notification for a valid status (10 ms)
+      ✓ rejects invalid status values with 400 (4 ms)
+      ✓ returns 401 when not authenticated (13 ms)
+    Preferences endpoints
+      ✓ GET /preferences returns the user preferences (11 ms)
+      ✓ PUT /preferences upserts preferences for the user (4 ms)
+      ✓ GET /preferences returns 401 when not authenticated (9 ms)
+      ✓ PUT /preferences returns 401 when not authenticated (4 ms)
+
+  Tests:       15 passed, 15 total
+  Time:        0.403 s</pre>
+      <a class="screenshot-link" href="screenshots/test-jobMatchNotifications.txt">View full output</a>
+    </div>
+
+    <!-- TypeScript compilation -->
+    <div class="compile-box">
+      <span class="icon-pass">&#10003;</span>
+      <span class="label">TypeScript compilation:</span>
+      <span class="result">PASS (no errors)</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Nitpick Report for ISSUE-JOB003c &mdash; 2026-05-01 12:55:09
+  </div>
+
+</div>
+</body>
+</html>

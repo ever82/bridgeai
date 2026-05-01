@@ -1,11 +1,24 @@
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
+const escape = require('escape-string-regexp');
+const exclusionList = require('metro-config/src/defaults/exclusionList');
 
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, '../..');
 const stubsDir = path.join(projectRoot, 'src/utils/stubs');
 
 const config = getDefaultConfig(projectRoot);
+
+// Exclude worktree directories (issue-tree V3 + claude worktrees) — they contain
+// 60+ full project copies that overwhelm Metro's FileMap (RangeError: Too many
+// elements passed to Promise.all). Block them from resolution AND from being
+// watched.
+const worktreeBlockPatterns = [
+  new RegExp(`${escape(path.join(workspaceRoot, '.issuetree', 'worktrees'))}.*`),
+  new RegExp(`${escape(path.join(workspaceRoot, '.claude', 'worktrees'))}.*`),
+  new RegExp(`${escape(path.join(workspaceRoot, '.git', 'worktrees'))}.*`),
+];
+config.resolver.blockList = exclusionList(worktreeBlockPatterns);
 
 // In pnpm monorepo, find-yarn-workspace-root returns null, so we need to manually
 // add the node_modules paths for Metro module resolution

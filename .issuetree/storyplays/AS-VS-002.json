@@ -1,0 +1,101 @@
+{
+  "id": 42,
+  "slug": "AS-VS-002",
+  "title": "我帮主人响应视觉任务",
+  "narrative": "附近有视觉需求，我判断主人是否适合接单。",
+  "issues": [
+    {
+      "id": 97,
+      "slug": "ISSUE-VS002",
+      "title": "附近任务查询与接单",
+      "description": "实现VisionShare场景的附近任务查询和接单功能。供给方可以基于地理位置\n查看附近的需求任务，使用匹配引擎的推送通知获取推荐任务，并可以\n接受或拒绝任务邀请。\n",
+      "status": "fixing",
+      "acceptance_criteria": [
+        {
+          "ac_id": 91,
+          "slug": "VS-002-AC-2",
+          "description": "点击接单后进入拍照界面",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 554,
+          "slug": "ISSUE-VS002~c1",
+          "description": "地图界面:\n- 基于地图的任务分布展示\n- 当前位置定位和显示\n- 任务标记和信息气泡\n- 地图缩放和区域筛选\n- 列表/地图视图切换\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 555,
+          "slug": "ISSUE-VS002~c2",
+          "description": "筛选功能:\n- 距离范围筛选(1km/5km/10km/全城)\n- 预算范围筛选\n- 任务类型筛选\n- 发布时间筛选\n- 排序方式(距离/时间/预算)\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 556,
+          "slug": "ISSUE-VS002~c3",
+          "description": "详情展示:\n- 任务完整信息展示\n- 发布者信用分显示\n- 距离和预计到达时间\n- 任务图片预览(如有)\n- 历史评价查看\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 557,
+          "slug": "ISSUE-VS002~c4",
+          "description": "接单流程:\n- 接单按钮和确认弹窗\n- 接单资格检查(信用分/积分/位置)\n- 接单成功状态变更\n- 任务状态实时同步\n- 接单后导航入口\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 558,
+          "slug": "ISSUE-VS002~c5",
+          "description": "推荐系统:\n- 基于位置的实时推送\n- 匹配度评分展示\n- 推送通知处理\n- 推荐任务快捷入口\n- 推荐偏好设置\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 559,
+          "slug": "ISSUE-VS002~c6",
+          "description": "状态管理:\n- 已接任务列表\n- 进行中的任务状态\n- 任务完成确认\n- 历史接单记录\n- 任务取消和申诉\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 604,
+          "slug": "VS-001~func",
+          "description": "用户发布视觉需求，系统解析并推送给附近符合条件的用户",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 606,
+          "slug": "VS-002~func",
+          "description": "用户根据地域和信用过滤条件查看并接附近任务",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 607,
+          "slug": "VS-002~edge",
+          "description": "异常：位置异常、信用过滤绕过",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 664,
+          "slug": "AS-VS-001~func",
+          "description": "Agent 解析主人地点意图，设置过滤条件并寻找响应者",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 666,
+          "slug": "AS-VS-002~func",
+          "description": "Agent 判断主人是否适合响应附近视觉任务",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

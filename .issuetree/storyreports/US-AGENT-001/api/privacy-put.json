@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "data": {
+    "profileVisibility": "private",
+    "onlineStatusVisibility": "everyone",
+    "phoneVisibility": "hidden",
+    "emailVisibility": "hidden",
+    "allowSearchByPhone": false,
+    "allowSearchByEmail": false,
+    "showLastSeen": true
+  }
+}

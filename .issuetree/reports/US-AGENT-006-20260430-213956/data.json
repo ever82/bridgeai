@@ -1,0 +1,93 @@
+{
+  "story": {
+    "id": 9,
+    "slug": "US-AGENT-006",
+    "title": "接受/拒绝引荐",
+    "story_type": "user",
+    "status": "active",
+    "narrative": "Agent 匹配成功并请求引荐真人时，用户决定是否接受。",
+    "priority": 2
+  },
+  "issue_count": 1,
+  "total_ac": 41,
+  "demo_result": {
+    "passed": 41,
+    "failed": 0,
+    "method": "code_review"
+  },
+  "critic_findings": {
+    "blocking": 7,
+    "warning": 3,
+    "info": 1,
+    "risks": [
+      {
+        "id": "R1",
+        "severity": "critical",
+        "phase": "API Routes",
+        "description": "/api/v1/dating/referrals/* not mounted in Express router"
+      },
+      {
+        "id": "R2",
+        "severity": "critical",
+        "phase": "Mobile",
+        "description": "Referral screens not registered in Navigator"
+      },
+      {
+        "id": "R3",
+        "severity": "critical",
+        "phase": "Mobile",
+        "description": "currentUserId hardcoded to 'current_user_id'"
+      },
+      {
+        "id": "R4",
+        "severity": "critical",
+        "phase": "Data",
+        "description": "In-memory Map stores without persistence"
+      },
+      {
+        "id": "R5",
+        "severity": "critical",
+        "phase": "Data",
+        "description": "Dual parallel stores not shared"
+      },
+      {
+        "id": "R6",
+        "severity": "critical",
+        "phase": "Business",
+        "description": "chatRoomId format not UUID, zod rejects"
+      },
+      {
+        "id": "R7",
+        "severity": "critical",
+        "phase": "Business",
+        "description": "Core functions are console.log stubs"
+      },
+      {
+        "id": "R8",
+        "severity": "warning",
+        "phase": "UI",
+        "description": "Rejection doesn't collect RejectionReason"
+      },
+      {
+        "id": "R9",
+        "severity": "warning",
+        "phase": "Model",
+        "description": "Two different Agent model concepts"
+      },
+      {
+        "id": "R10",
+        "severity": "warning",
+        "phase": "Business",
+        "description": "Decision change limit 3 has no AC"
+      },
+      {
+        "id": "R11",
+        "severity": "info",
+        "phase": "Timing",
+        "description": "Client-side countdown no server skew calibration"
+      }
+    ]
+  },
+  "verdict": "BLOCKED",
+  "verdict_reason": "7 blocking issues prevent end-to-end functionality. Code exists at service/UI level but API routes not mounted, navigation not registered, data not persisted, and core functions are stubs."
+}

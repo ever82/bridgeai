@@ -1,0 +1,16 @@
+=== AC2.4 Evidence: Complex query (matching algorithm) optimization ===
+
+apps/server/src/services/matching/optimizedMatchingService.ts (427 lines)
+  - Imports: cacheGet, cacheSet (Redis-backed), prisma
+  - Strategy: cache-aside with TTLs (MATCH_LIST=60s, RECOMMENDED=300s, CREDIT_SCORE=300s)
+  - Cache key derived from JSON.stringify(query parameters)
+  - Used through services/matching/index.ts: optimizedMatchingService export
+
+queryAnalyzer.ts:
+  - File path: apps/server/src/utils/queryAnalyzer.ts -> NOT FOUND
+  - grep "queryAnalyzer" in apps/server/src/ -> 0 hits
+  -> No EXPLAIN-based query analyzer is in master tree.
+
+VERDICT: partial — caching strategy applied (good), but no explicit
+  EXPLAIN/queryAnalyzer integration. Optimizations are limited to caching +
+  batched select calls.

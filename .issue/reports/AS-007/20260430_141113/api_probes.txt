@@ -1,0 +1,72 @@
+=== AS-007 API Probes — 2026年 4月30日 星期四 22时19分01秒 CST ===
+
+--- /health ---
+{"success":true,"data":{"status":"healthy","timestamp":"2026-04-30T14:19:01.224Z","service":"bridgeai-server","version":"0.1.0"}}
+HTTP 200
+
+--- GET /api ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/auth/login ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/users/me ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/agents ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/disclosure ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/dating/recommendations ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/rooms ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/dating/referrals ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/job/postings ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/merchants ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/offers ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/reports ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/notifications ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- GET /api/ai/whisper ---
+HTTP 504  size=103
+{"success":false,"message":"Response timeout","errorCode":"RESPONSE_TIMEOUT","meta":{"statusCode":504}}
+
+--- Web (Expo) GET / ---
+HTTP 200 bytes=1224
+<title>BridgeAI</title>
+first 200 bytes of HTML:
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1

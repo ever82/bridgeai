@@ -1,0 +1,72 @@
+{
+  "success": true,
+  "data": {
+    "agents": [
+      {
+        "id": "24a3dfb3-8a7d-4d39-8c5e-153c35609116",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 8",
+        "description": "Bulk 8",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.626Z",
+        "updatedAt": "2026-04-30T17:36:11.626Z"
+      },
+      {
+        "id": "c1fa6460-92aa-4469-9e7d-d7d49950fce3",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 7",
+        "description": "Bulk 7",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.613Z",
+        "updatedAt": "2026-04-30T17:36:11.613Z"
+      },
+      {
+        "id": "d489cacc-2bcf-4b19-844c-9f2e3186202f",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 6",
+        "description": "Bulk 6",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.598Z",
+        "updatedAt": "2026-04-30T17:36:11.598Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 3,
+      "total": 12,
+      "totalPages": 4,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  }
+}

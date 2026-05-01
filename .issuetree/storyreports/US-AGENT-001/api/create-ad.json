@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "data": {
+    "id": "8622a4e1-1395-416d-9b94-5532d6c54aa8",
+    "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+    "type": "AGENTAD",
+    "name": "Ad Agent",
+    "description": "For ads",
+    "status": "DRAFT",
+    "config": {
+      "personality": {
+        "traits": ["消费敏感", "优惠追踪", "预算控制"],
+        "communicationStyle": "direct"
+      }
+    },
+    "latitude": null,
+    "longitude": null,
+    "isActive": true,
+    "createdAt": "2026-04-30T17:35:28.866Z",
+    "updatedAt": "2026-04-30T17:35:28.866Z"
+  },
+  "message": "Agent created successfully"
+}

@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AS-007 Story 演示验收报告 — 我决定信息披露</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --bg-elevated: #1a2030;
+    --bg-hover: #232b3d;
+    --border: #2d3650;
+    --text: #d8dfeb;
+    --text-muted: #8a93a8;
+    --accent: #4ea1f2;
+    --pass: #3ec18a;
+    --warn: #e0a93b;
+    --fail: #e85a5a;
+    --skip: #6b7280;
+    --critical: #e85a5a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  header.story-head {
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+  }
+  h1 { font-size: 28px; margin: 0 0 8px; color: var(--text); }
+  h2 { font-size: 20px; margin: 24px 0 12px; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 12px; }
+  h3, h4 { margin: 12px 0 8px; }
+  .muted { color: var(--text-muted); }
+  code {
+    background: var(--bg-elevated);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: #c9d1e0;
+  }
+  pre {
+    background: var(--bg-elevated);
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .stat-card {
+    background: var(--bg-elevated);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .stat-num { font-size: 28px; font-weight: bold; }
+  .stat-label { color: var(--text-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card.pass .stat-num { color: var(--pass); }
+  .stat-card.warn .stat-num { color: var(--warn); }
+  .stat-card.fail .stat-num { color: var(--fail); }
+  .stat-card.skip .stat-num { color: var(--skip); }
+  .stat-card.total .stat-num { color: var(--accent); }
+  .stat-card.rate .stat-num { color: var(--pass); }
+  .alert {
+    padding: 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+    border-left: 4px solid;
+  }
+  .alert-critical {
+    background: rgba(232, 90, 90, 0.1);
+    border-color: var(--critical);
+  }
+  .alert h2 {
+    margin-top: 0;
+    border: none;
+    padding: 0;
+    color: var(--critical);
+  }
+  .alert ul { margin: 8px 0 0; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+    margin: 0 6px;
+  }
+  .badge-pass { background: rgba(62, 193, 138, 0.2); color: var(--pass); border: 1px solid var(--pass); }
+  .badge-warn { background: rgba(224, 169, 59, 0.2); color: var(--warn); border: 1px solid var(--warn); }
+  .badge-fail { background: rgba(232, 90, 90, 0.2); color: var(--fail); border: 1px solid var(--fail); }
+  .badge-skip { background: rgba(107, 114, 128, 0.2); color: var(--skip); border: 1px solid var(--skip); }
+  .phase-block {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 16px 0;
+    overflow: hidden;
+  }
+  .phase-header {
+    background: var(--bg-hover);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .phase-header h2 {
+    font-size: 16px;
+    margin: 0;
+    border: none;
+    padding: 0;
+    color: var(--text);
+  }
+  .phase-stats { display: flex; gap: 14px; font-size: 13px; }
+  .stat-pass { color: var(--pass); }
+  .stat-warn { color: var(--warn); }
+  .stat-fail { color: var(--fail); }
+  .stat-skip { color: var(--skip); }
+  .phase-content { padding: 8px 16px; }
+  .ac-row {
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+  }
+  .ac-row:last-child { border-bottom: none; }
+  .ac-summary {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 6px 0;
+  }
+  .ac-summary::-webkit-details-marker { display: none; }
+  .ac-summary::before {
+    content: "▶";
+    color: var(--text-muted);
+    font-size: 10px;
+    transition: transform 0.15s;
+    margin-right: 4px;
+  }
+  details[open] .ac-summary::before { transform: rotate(90deg); }
+  .ac-slug { font-family: monospace; color: var(--accent); font-weight: bold; }
+  .ac-desc { color: var(--text-muted); font-size: 14px; }
+  .ac-body {
+    background: var(--bg);
+    padding: 12px 16px;
+    margin: 8px 0;
+    border-radius: 4px;
+    border-left: 3px solid var(--accent);
+  }
+  .ac-summary-text { margin: 4px 0 12px; }
+  .ac-evidence { font-size: 13px; }
+  .ac-evidence h4 { margin: 8px 0 6px; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .evidence-text {
+    background: var(--bg-elevated);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .evidence-list {
+    margin: 6px 0;
+    padding-left: 20px;
+  }
+  .evidence-list li { margin: 2px 0; }
+  .evidence-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-elevated);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .evidence-table th {
+    text-align: left;
+    padding: 8px 10px;
+    background: var(--bg-hover);
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 25%;
+    vertical-align: top;
+  }
+  .evidence-table td {
+    padding: 8px 10px;
+    border-top: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .findings-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+  .findings-table th, .findings-table td {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+  .findings-table th { background: var(--bg-hover); color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
+  .findings-table tbody tr:hover { background: var(--bg-hover); }
+  .findings-table .evidence-cell, .findings-table .recommendation-cell { max-width: 400px; }
+  .table-wrap { overflow-x: auto; }
+  .key-findings ul { padding-left: 20px; }
+  .key-findings li { margin: 6px 0; }
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .screenshot-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .screenshot-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+  }
+  .screenshot-name {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
+  }
+  @media print {
+    body { background: white; color: black; }
+    .container { max-width: 100%; padding: 0; }
+    details { break-inside: avoid; }
+    .screenshot-card img { height: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="story-head">
+    <h1>📋 我决定信息披露 — 演示验收报告</h1>
+    <div class="muted">
+      Story: <code>AS-007</code>
+      · 类型: <code>agent</code>
+      · 优先级: <code>2</code>
+      · 生成于: <code>2026-04-30T14:11:13</code>
+    </div>
+  </header>
+
+  
+    <div class="alert alert-critical">
+      <h2>🚨 运行时阻断（2）</h2>
+      <ul><li>Frontend bundle: @babel/runtime missing - prevents UI loading</li><li>API gateway: apiGatewayRouter.handle() never calls next() - all API requests return 504</li></ul>
+    </div>
+    
+
+  <section class="overview">
+    <h2>📊 验收总览</h2>
+    <div class="stats-grid">
+      <div class="stat-card total"><div class="stat-num">80</div><div class="stat-label">总 AC</div></div>
+      <div class="stat-card pass"><div class="stat-num">56</div><div class="stat-label">通过</div></div>
+      <div class="stat-card warn"><div class="stat-num">11</div><div class="stat-label">存疑</div></div>
+      <div class="stat-card fail"><div class="stat-num">1</div><div class="stat-label">失败</div></div>
+      <div class="stat-card skip"><div class="stat-num">12</div><div class="stat-label">跳过</div></div>
+      <div class="stat-card rate"><div class="stat-num">70.0%</div><div class="stat-label">通过率</div></div>
+    </div>
+  </section>
+
+  
+    <section class="key-findings">
+      <h2>关键发现</h2>
+      <ul><li>Whisper feature uses &#x27;private advice&#x27; terminology in code (privateAdviceService.ts), implementing all 4 advice types via socket channel agent:private_advice</li><li>One-tap advice adoption (US-AGENT-009-AC-3) is the only outright FAILED AC - type defined but no UI/handler</li><li>Credit score in message payload (AS-PROTO-001-AC-1) - SenderType is on every message but creditScore is not embedded</li><li>Disclosure system is robust: DisclosureSettings + DisclosureChange + DisclosureAccessLog with relationship-stage gating</li><li>Job/Ad negotiation uses dedicated services: SalaryNegotiationService + AgentNegotiationService + NegotiationRoomService</li><li>Identity switching (亲自聊/代聊) implemented via IdentitySwitcher + handoffHandler + StatusChangeNotification</li><li>Quad room (4-person group) has dedicated ChatRoomType.QUAD enum + humanChatRoomService.createHumanChatRoom</li><li>Report system wired in ChatScreen with 5 reasons (SPAM/INAPPROPRIATE/FALSE/HARASSMENT/OTHER)</li><li>Scene-based history filtering (US-AGENT-005-AC-1) - schema supports sceneId but query API does not expose filter</li><li>Edge cases (15 ACs) cannot be verified statically - require runtime exploits/concurrency tests</li><li>Despite runtime blockers (babel/runtime + apiGatewayRouter), backend code is largely complete and well-tested</li></ul>
+    </section>
+    
+
+  
+<section class="findings-section">
+  <h2>📋 已写入数据库的 Findings（14）</h2>
+  <p class="muted">所有问题都已写入 <code>nitpick_findings</code> 表，并将 <code>ISSUE-COM002</code> 状态从 <code>ai_confirmed</code> 改为 <code>fixing</code>。</p>
+  <div class="table-wrap">
+    <table class="findings-table">
+      <thead>
+        <tr><th>严重</th><th>AC</th><th>类别</th><th>问题描述</th><th>证据</th><th>修复建议</th></tr>
+      </thead>
+      <tbody>
+    <tr>
+      <td><span class="badge badge-fail">CRITICAL</span></td>
+      <td><code>ISSUE-COM002~runtime</code></td>
+      <td>runtime_behavior</td>
+      <td>Runtime 阻断：前端 Expo Web bundle 加载失败 - @babel/runtime/helpers/interopRequireDefault 模块在 node_modules 中找不到</td>
+      <td class="evidence-cell">GET /expo/AppEntry.bundle 返回 500，错误：&#x27;Unable to resolve module @babel/runtime/helpers/interopRequireDefault from /Users/z/projects/bridgeai/apps/mobile/expo/AppEntry.js&#x27;。导致 web 端完全空白，无法做 UI 验收。截图：01b_landing_blank_with_errors.png</td>
+      <td class="recommendation-cell">在 apps/mobile 或根目录 package.json 添加 @babel/runtime 作为依赖，运行 pnpm install 后重启 Expo dev server</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-fail">CRITICAL</span></td>
+      <td><code>ISSUE-COM002~runtime</code></td>
+      <td>runtime_behavior</td>
+      <td>Runtime 阻断：API gateway 路由器导致所有 /api/* 请求挂起 30 秒后返回 504</td>
+      <td class="evidence-cell">apiGatewayRouter.handle() 方法（apps/server/src/services/gateway/apiGatewayRouter.ts:171）签名为 (req, res) 而非 (req, res, next)，无路由匹配时不调用 next()，所有 /api/* 请求被卡住直到 timeout 中间件触发 504。验证：curl -m 35 http://localhost:3001/api/v1/health → HTTP 504 RESPONSE_TIMEOUT，time=30.004s</td>
+      <td class="recommendation-cell">修改 apiGatewayRouter.handle 签名为 (req, res, next)，无路由匹配时调用 next() 让请求继续向下传递到 app.use(&#x27;/api&#x27;, routes)</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-fail">CRITICAL</span></td>
+      <td><code>US-AGENT-009-AC-3</code></td>
+      <td>verification</td>
+      <td>一键采用建议（Whisper）端到端缺口 - 类型已定义，但前端无 UI、后端无 handler</td>
+      <td class="evidence-cell">privateAdviceService.ts 定义了 4 种 advice 类型（包含 one_tap_action），但搜索整个仓库未找到对应的前端采纳按钮组件 / 后端 adopt 处理路由。该 AC 在源码层面 failed。</td>
+      <td class="recommendation-cell">1) 在 mobile/src/components 添加 WhisperAdoptButton 组件；2) 在 server/src/routes 添加 POST /api/v1/whisper/adopt 路由，将建议内容转为消息发送</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-warn">WARNING</span></td>
+      <td><code>AS-PROTO-001-AC-1</code></td>
+      <td>verification</td>
+      <td>消息载荷缺少 creditScore 字段 - 协议规范的硬性要求未达成</td>
+      <td class="evidence-cell">ChatMessage 含 senderType 字段，但 creditScore 字段未嵌入消息载荷或 SenderIndicator UI。AS-PROTO-001-AC-1 明确要求 &#x27;每条消息包含发送者类型和信用分&#x27;。</td>
+      <td class="recommendation-cell">1) 在 ChatMessage Prisma 模型添加 creditScore 字段（snapshot at send time）；2) 在 SenderIndicator 组件渲染该字段；3) 在消息发送时从 creditScoreService 取分写入</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-warn">WARNING</span></td>
+      <td><code>US-AGENT-014-AC-3</code></td>
+      <td>verification</td>
+      <td>实时否决披露未实现 - 设置层支持但对话内的 socket 否决通道缺失</td>
+      <td class="evidence-cell">披露策略可在 settings 中配置，但未发现对话进行中通过 socket 实时拒绝即将发生披露的机制（如 &#x27;disclosure:pending&#x27; → 用户点击拒绝 → &#x27;disclosure:veto&#x27; 事件链）。</td>
+      <td class="recommendation-cell">在 socket handlers 中添加 disclosure veto 事件链：服务端推送 pending 披露请求 → 客户端弹窗确认 → 否决回传</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-warn">WARNING</span></td>
+      <td><code>AS-008-AC-3</code></td>
+      <td>verification</td>
+      <td>私下建议一键采纳与 US-AGENT-009-AC-3 同源缺口</td>
+      <td class="evidence-cell">advice 类型定义有 one_tap_action，但端到端流程缺失 backend handler + frontend UI。</td>
+      <td class="recommendation-cell">见 US-AGENT-009-AC-3 修复建议</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-warn">WARNING</span></td>
+      <td><code>US-AGENT-006-AC-2</code></td>
+      <td>verification</td>
+      <td>引荐通知中是否完整展示对方信用分未确认</td>
+      <td class="evidence-cell">CreditScore 组件存在，但其在引荐通知/match introduction view 中的集成未确认。</td>
+      <td class="recommendation-cell">在引荐通知组件中显式渲染对方 creditScore 与 keyInfo</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-warn">WARNING</span></td>
+      <td><code>AS-JOB-001~edge</code></td>
+      <td>verification</td>
+      <td>薪资底线被触碰时的明确终止/walk-away 处理未观察到</td>
+      <td class="evidence-cell">salaryNegotiation.ts 有 bottomLine 字段，但未列出明确的 walk-away/abort handler 来处理报价低于底线的场景。</td>
+      <td class="recommendation-cell">在 SalaryNegotiationService 添加 abortIfBelowBottomLine 方法，且在 negotiation engine 中触发</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-warn">WARNING</span></td>
+      <td><code>JOB-004~func</code></td>
+      <td>verification</td>
+      <td>四人群聊（QUAD）与薪资协商房间的链接未明确</td>
+      <td class="evidence-cell">Negotiation rooms 存在，但其与 4-participant QUAD ChatRoom 的链接未在源码中明确观察到。</td>
+      <td class="recommendation-cell">在 NegotiationRoomService.createRoom 中创建 ChatRoomType.QUAD 房间，并存储双向引用</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-warn">WARNING</span></td>
+      <td><code>JOB-004~edge</code></td>
+      <td>verification</td>
+      <td>协商僵局检测逻辑未在源码方法清单中浮现</td>
+      <td class="evidence-cell">底线被追踪，但 deadlock detection 逻辑未在 method listing 中明确出现。</td>
+      <td class="recommendation-cell">添加 detectDeadlock 方法（如：连续 N 轮报价无变化或来回踢皮球时触发）</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-warn">WARNING</span></td>
+      <td><code>US-AGENT-005-AC-1</code></td>
+      <td>verification</td>
+      <td>按场景筛选对话历史 - schema 支持但 query API 未暴露 sceneId 过滤参数</td>
+      <td class="evidence-cell">ChatRoom.sceneId 列存在，但 getUserRooms 查询 API 未暴露 sceneId 过滤参数。</td>
+      <td class="recommendation-cell">在 getUserRooms / chat history endpoint 添加 sceneId 可选 query parameter</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-warn">WARNING</span></td>
+      <td><code>US-AGENT-005-AC-2</code></td>
+      <td>verification</td>
+      <td>对话历史列表中匹配度评分的显示未确认</td>
+      <td class="evidence-cell">Match score 模型存在，但其在历史对话列表中的展示集成未确认。</td>
+      <td class="recommendation-cell">在 ChatHistoryItem UI 组件中渲染对方 Agent 名称 + matchScore</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-warn">WARNING</span></td>
+      <td><code>US-AGENT-005~func</code></td>
+      <td>verification</td>
+      <td>聊天历史的场景筛选参数缺失</td>
+      <td class="evidence-cell">Referral history API 存在，但主聊天历史查询中缺少 scene filter 参数。</td>
+      <td class="recommendation-cell">见 US-AGENT-005-AC-1</td>
+    </tr>
+    
+    <tr>
+      <td><span class="badge badge-warn">WARNING</span></td>
+      <td><code>US-AGENT-015~func</code></td>
+      <td>verification</td>
+      <td>用户预匹配阶段退出（pre-match exit）的明确入口未观察到</td>
+      <td class="evidence-cell">Room/referral cancellation 存在，但 pre-match exit 不确定。未发现明确的 exitMatch 或 pre-match cancellation。</td>
+      <td class="recommendation-cell">添加 cancelMatch / exitDiscovery API 与对应 UI 入口</td>
+    </tr>
+    </tbody>
+    </table>
+  </div>
+</section>
+
+
+  
+        <section class="screenshots-section">
+          <h2>📸 验收截图（2）</h2>
+          <div class="screenshot-grid">
+            <div class="screenshot-card">
+              <a href="screenshots/01_landing.png" target="_blank"><img src="screenshots/01_landing.png" alt="01_landing.png"></a>
+              <div class="screenshot-name">01_landing.png</div>
+            </div>
+            
+            <div class="screenshot-card">
+              <a href="screenshots/01b_landing_blank_with_errors.png" target="_blank"><img src="screenshots/01b_landing_blank_with_errors.png" alt="01b_landing_blank_with_errors.png"></a>
+              <div class="screenshot-name">01b_landing_blank_with_errors.png</div>
+            </div>
+            </div>
+        </section>
+        
+
+  <section class="phases">
+    <h2>📑 各 Phase AC 详情</h2>
+    
+    <section class="phase-block">
+      <header class="phase-header">
+        <h2>Phase 1: 聊天底座 (ISSUE-COM002)</h2>
+        <div class="phase-stats">
+          <span>共 13</span>
+          <span class="stat-pass">✅ 12</span>
+          <span class="stat-warn">⚠️ 1</span>
+          <span class="stat-fail">❌ 0</span>
+          <span class="stat-skip">⊘ 0</span>
+        </div>
+      </header>
+      <div class="phase-content">
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">ISSUE-COM002~c1</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">房间系统（私聊创建、群聊管理、成员权限、消息路由）</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Complete room CRUD with private/group/quad types, participant roles, persistent + ephemeral split.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/chat/roomService.ts</code></li><li><code>apps/server/src/services/chat/participantService.ts</code></li><li><code>apps/server/src/services/roomService.ts (in-memory ephemeral)</code></li><li><code>apps/server/src/routes/v1/chat.ts</code></li><li><code>apps/server/src/socket/handlers/roomHandler.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>createRoom (PRIVATE/GROUP/QUAD validation)</code></li><li><code>findPrivateRoom</code></li><li><code>createParticipants (OWNER/MEMBER role)</code></li><li><code>getRoomById</code></li><li><code>updateRoom</code></li><li><code>closeRoom</code></li><li><code>getUserRooms</code></li><li><code>isUserInRoom</code></li><li><code>getRoomParticipantCount</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/screens/messages/MessagesListScreen.tsx</code></li><li><code>apps/mobile/src/screens/messages/ChatScreen.tsx</code></li><li><code>apps/mobile/src/screens/messages/NewChatScreen.tsx</code></li><li><code>apps/mobile/src/components/Chat/ChatRoomList.tsx</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>ChatRoom</code></li><li><code>RoomParticipant</code></li><li><code>ChatRoomType (PRIVATE/GROUP/QUAD)</code></li><li><code>ParticipantRole (OWNER/MEMBER)</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>apps/server/src/services/chat/__tests__/</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">ISSUE-COM002~c2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">消息存储（数据模型、查询、分页、软删除）</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Full message persistence with pagination, edit, soft-delete, and sync.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/messageService.ts</code></li><li><code>apps/server/src/services/chat/index.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>createMessage / createChatRoomMessage</code></li><li><code>getMessagesByConversation (pagination)</code></li><li><code>getChatRoomMessages (with filters)</code></li><li><code>deleteMessage / deleteChatRoomMessage (soft)</code></li><li><code>editMessage / editChatRoomMessage</code></li><li><code>syncMessages / syncChatRoomMessages</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/components/Chat/MessageList.tsx</code></li><li><code>apps/mobile/src/components/Chat/MessageBubble.tsx</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>ChatMessage</code></li><li><code>Message</code></li><li><code>ChatReadReceipt</code></li><li><code>ReadReceipt</code></li><li><code>MessageStatus</code></li><li><code>MessageType</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>apps/server/src/services/__tests__/</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">ISSUE-COM002~c3</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">消息投递（实时推送、离线队列、确认、重试）</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Offline queue, push, and retry mechanisms all present.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/messageService.ts</code></li><li><code>apps/server/src/socket/handlers/chat.ts</code></li><li><code>apps/server/src/services/notificationService.ts</code></li><li><code>apps/server/src/services/pushNotification.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>deliverOfflineMessage</code></li><li><code>scheduleMessageRetry</code></li><li><code>getOfflineMessages</code></li><li><code>markOfflineMessagesDelivered</code></li><li><code>sendOfflinePushNotifications</code></li><li><code>updateMessageStatus</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/components/Chat/MessageStatus.tsx</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>OfflineMessage</code></li><li><code>PushToken</code></li><li><code>NotificationDelivery</code></li></ul></td></tr><tr><th>tests</th><td><em class="muted">空</em></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">ISSUE-COM002~c4</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">状态管理（已读、在线、打字、最后活跃）</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Presence + typing + read receipts fully implemented.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/presenceService.ts</code></li><li><code>apps/server/src/socket/handlers/presenceHandler.ts</code></li><li><code>apps/server/src/socket/connectionManager.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>createReadReceipt</code></li><li><code>presence handler with typing/online/lastActive</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/components/TypingIndicator/</code></li><li><code>apps/mobile/src/components/OnlineStatus/</code></li><li><code>apps/mobile/src/components/LastSeen/</code></li><li><code>apps/mobile/src/components/UserStatusIndicator/UserStatusIndicator.tsx</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>ChatReadReceipt</code></li><li><code>ReadReceipt</code></li><li><code>AgentStatusHistory</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>apps/server/src/socket/__tests__/</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-005~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Agent 自主决定发起对话</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Agent-initiated dialog with throttling and behavior gating.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/dating/agentInitiatedChat.ts</code></li><li><code>apps/server/src/services/dating/agentChatDispatcher.ts</code></li><li><code>apps/server/src/services/agentBehaviorService.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>initiateChat</code></li><li><code>MAX_ACTIVE_CHATS_PER_USER, MAX_GLOBAL_ACTIVE_SESSIONS</code></li><li><code>BehaviorRejectedError, MaxActiveChatsError</code></li><li><code>agentBehaviorService.checkBehavior</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>DialogSessionRecord</code></li><li><code>DialogMessage</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>apps/server/src/services/dating/__tests__/agentInitiatedChat.test.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-006~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Agent 评估是否值得交流</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Match scoring and conversation quality assessment present.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/dating/matchAlgorithm.ts</code></li><li><code>apps/server/src/services/dating/conversationQualityService.ts</code></li><li><code>apps/server/src/services/agentBehaviorService.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>calculateMatchScore</code></li><li><code>rankMatches</code></li><li><code>getMatchAnalysis</code></li><li><code>agentBehaviorService.checkBehavior</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>matchAlgorithm.test.ts</code></li><li><code>conversationQualityService.test.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-006-AC-3</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">向主人汇报对话进展</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Conversation report service generates summary + compatibility for owner.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/ai/conversationReportService.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>generateReport</code></li><li><code>getReportsByUser</code></li><li><code>evaluateCompatibility</code></li><li><code>generateSummary</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/screens/dating/ConversationReportScreen.tsx</code></li></ul></td></tr><tr><th>tests</th><td><em class="muted">空</em></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>No persistReport DB schema directly observed; uses generic Conversation model</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">DATE-003-AC-1</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Agent 间多轮对话</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Multi-round agent-to-agent dialog with round counting and timeout.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/ai/agentDialogService.ts</code></li><li><code>apps/server/src/services/dating/agentConversationRoom.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>AgentDialogService class</code></li><li><code>createRoom / activateRoom / addMessage</code></li><li><code>incrementRound / checkRoomTimeout</code></li><li><code>DialogType: agent_to_agent</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>DialogSessionRecord</code></li><li><code>DialogMessage</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>agentConversationRoom.test.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">DATE-003~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">双方 Agent 先对话再引荐</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Quality-gated referral after agent-to-agent conversation.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/dating/agentConversationRoom.ts</code></li><li><code>apps/server/src/services/dating/referralService.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>checkRealtimeReferralEligibility</code></li><li><code>confirmReferralAction</code></li><li><code>createReferralFromConversation</code></li><li><code>REFERRAL_QUALITY_THRESHOLD</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>agentConversationRoom.test.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-008-AC-1</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">消息显示头像和名称</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>SenderIndicator renders avatar + name from senderType/senderName/senderAvatarUrl.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/components/Chat/SenderIndicator.tsx</code></li><li><code>apps/mobile/src/components/Chat/MessageBubble.tsx</code></li><li><code>apps/mobile/src/components/UserAvatar/</code></li></ul></td></tr><tr><th>backend_files</th><td><em class="muted">空</em></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>apps/mobile/src/components/Chat/__tests__/SenderIndicator.test.tsx</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-008-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Agent 消息标识 &#x27;XX 的 Agent&#x27;</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>SENDER_TYPE_LABELS + IdentityBadge handle agent labeling.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/components/Chat/SenderIndicator.tsx</code></li><li><code>apps/mobile/src/components/AgentIdentity/AgentIdentity.tsx</code></li><li><code>apps/mobile/src/components/IdentityBadge/</code></li></ul></td></tr><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>packages/shared SENDER_TYPE_LABELS, SENDER_TYPE_COLORS</code></li></ul></td></tr><tr><th>tests</th><td><em class="muted">空</em></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-008~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">清晰显示发送者身份</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Multi-component identity display layer present.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>SenderIndicator (animated transition)</code></li><li><code>IdentitySwitcher</code></li><li><code>IdentityBadge</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>SenderIndicator.test.tsx</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-questioned">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-PROTO-001-AC-1</span>
+            <span class="badge badge-warn">QUESTIONED</span>
+            <span class="ac-desc">每条消息含发送者类型和信用分</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Sender type present on every message, but credit score is NOT embedded in message payload or UI.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>SenderIndicator: senderType present</code></li><li><code>MessageBubble.tsx</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>SenderType enum (USER/AGENT) on ChatMessage</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>ChatMessage.senderType</code></li><li><code>CreditScore (separate model)</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>No creditScore field embedded in ChatMessage payload</code></li><li><code>SenderIndicator does not render credit score</code></li><li><code>Credit score lookup not wired into message rendering pipeline</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+      </div>
+    </section>
+    
+    <section class="phase-block">
+      <header class="phase-header">
+        <h2>Phase 2: 信息披露策略</h2>
+        <div class="phase-stats">
+          <span>共 7</span>
+          <span class="stat-pass">✅ 4</span>
+          <span class="stat-warn">⚠️ 2</span>
+          <span class="stat-fail">❌ 0</span>
+          <span class="stat-skip">⊘ 1</span>
+        </div>
+      </header>
+      <div class="phase-content">
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-007-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">执行披露策略（每次确认/自动）</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Disclosure service with per-field access control and per-relationship gating.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/disclosureService.ts</code></li><li><code>apps/server/src/services/disclosureAuditService.ts</code></li><li><code>apps/server/src/routes/disclosure.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>DisclosureService.canViewField</code></li><li><code>filterAgentData</code></li><li><code>bulkUpdateDisclosure</code></li><li><code>getDisclosureSettings</code></li><li><code>updateDisclosureSettings</code></li><li><code>resetToDefaults</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>DisclosureSettings</code></li><li><code>DisclosureChange</code></li><li><code>DisclosureAccessLog</code></li></ul></td></tr><tr><th>tests</th><td><em class="muted">空</em></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-007-AC-3</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">记录已披露信息</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>DisclosureAccessLog + DisclosureChange Prisma models record all disclosures.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/disclosureAuditService.ts</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>DisclosureAccessLog</code></li><li><code>DisclosureChange</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-007~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Agent 根据信任水平决定披露</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>RelationshipStage + per-field gating implements trust-based disclosure.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/disclosureService.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>getRelationshipStage</code></li><li><code>getUserRelationship (trust-stage based)</code></li><li><code>canViewField (relationship-stage gated)</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-007~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">披露策略被绕过、信任计算错误</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case requires runtime exploits to verify.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge case - cannot verify via static source code; would need runtime tests</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-questioned">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-014-AC-3</span>
+            <span class="badge badge-warn">QUESTIONED</span>
+            <span class="ac-desc">用户实时否决披露</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Settings can be updated, but no in-conversation real-time veto toggle observed.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/disclosureService.ts (bulkUpdateDisclosure)</code></li><li><code>apps/server/src/routes/disclosure.ts (POST /:agentId/bulk)</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/components/Disclosure/DisclosurePreview.tsx</code></li><li><code>apps/mobile/src/components/PrivacyEditor/</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>No real-time veto mechanism (e.g. socket-based deny) found in chat flow</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-014~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">根据信任水平决定披露</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Implementation matches AS-007~func.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>disclosureService.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>getRelationshipStage</code></li><li><code>canViewField</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-questioned">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-006-AC-2</span>
+            <span class="badge badge-warn">QUESTIONED</span>
+            <span class="ac-desc">显示对方关键信息和信用分</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Credit display components and models exist; integration in referral notification needs deeper verification.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/components/CreditScore/</code></li><li><code>apps/mobile/src/components/Credit/</code></li><li><code>apps/mobile/src/components/dating/MatchCard.tsx</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>CreditScore</code></li><li><code>CreditFactor</code></li><li><code>CreditHistory</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Credit score component exists but its integration into match introduction view not confirmed</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+      </div>
+    </section>
+    
+    <section class="phase-block">
+      <header class="phase-header">
+        <h2>Phase 3: Whisper 建议</h2>
+        <div class="phase-stats">
+          <span>共 9</span>
+          <span class="stat-pass">✅ 6</span>
+          <span class="stat-warn">⚠️ 1</span>
+          <span class="stat-fail">❌ 1</span>
+          <span class="stat-skip">⊘ 1</span>
+        </div>
+      </header>
+      <div class="phase-content">
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-008-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">发送策略建议、风险提示、话题推荐</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>privateAdviceService is the AS-008 implementation - delivers risk/topic/intent advice via socket.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/dating/privateAdviceService.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>PrivateAdviceType: topic_suggestion | risk_warning | intent_analysis | one_tap_action</code></li><li><code>emitPrivateAdvice</code></li><li><code>generateAdviceFromConversation</code></li><li><code>Channel: agent:private_advice</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>apps/server/src/services/dating/__tests__/privateAdviceService.integration.test.ts</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>No &#x27;whisper&#x27; name; system uses &#x27;private advice&#x27; terminology</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-questioned">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-008-AC-3</span>
+            <span class="badge badge-warn">QUESTIONED</span>
+            <span class="ac-desc">提供一键采纳</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Type defined but no end-to-end adoption flow visible (handler + UI missing).</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>one_tap_action type defined in PrivateAdviceType</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>No backend handler for adopting/applying the advice</code></li><li><code>No frontend one-tap adoption UI found in mobile components</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-008~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">实时分析对话发送私下建议</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Real-time per-user advice channel implemented, currently heuristic-based.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>privateAdviceService.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>generateAdviceFromConversation (heuristic stub)</code></li><li><code>emitPrivateAdvice (room: user:{ownerId})</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Currently heuristic only; comment notes &#x27;stub - 后续可替换为 LLM 分析&#x27;</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-008~edge</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">建议为空、AI 服务降级</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Null guards + circuit breaker exist.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>generateAdviceFromConversation returns null when no messages</code></li><li><code>emitPrivateAdvice logs warn and returns when no socket.io</code></li><li><code>circuitBreaker.ts in services/ai/</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-009-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">建议含话题/风险/意图分析</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>All three advice types defined.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>topic_suggestion, risk_warning, intent_analysis types</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-failed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-009-AC-3</span>
+            <span class="badge badge-fail">FAILED</span>
+            <span class="ac-desc">可一键采用建议</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>One-tap adoption type defined but no UI or handler.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>No mobile UI for adopting whisper</code></li><li><code>No backend route to apply advice as a sent message</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-002-AC-5</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">用户确认后自动保存到对应场景</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Demand/Supply with sceneId support present.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/sceneCapabilityService.ts</code></li><li><code>apps/server/src/services/consumerDemandService.ts</code></li><li><code>apps/server/src/services/offerService.ts</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>Scene</code></li><li><code>SceneTemplate</code></li><li><code>Demand</code></li><li><code>Supply</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-009~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Whisper 仅自己可见</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Per-user socket room ensures privacy.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>emitPrivateAdvice sends to room: user:{ownerId}</code></li><li><code>Comment: &#x27;只有 owner 可以看到 — 对方 Agent 永远不会收到&#x27;</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-009~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">建议泄露、建议为空</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge - leakage requires runtime test</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+      </div>
+    </section>
+    
+    <section class="phase-block">
+      <header class="phase-header">
+        <h2>Phase 4: 亲自聊/代聊切换</h2>
+        <div class="phase-stats">
+          <span>共 8</span>
+          <span class="stat-pass">✅ 6</span>
+          <span class="stat-warn">⚠️ 0</span>
+          <span class="stat-fail">❌ 0</span>
+          <span class="stat-skip">⊘ 2</span>
+        </div>
+      </header>
+      <div class="phase-content">
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-007-AC-1</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">亲自聊以用户身份发言</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>IdentitySwitcher + handoff handler enable user-mode.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/components/Chat/IdentitySwitcher.tsx</code></li><li><code>apps/mobile/src/components/Handoff/HandoffButton.tsx</code></li><li><code>apps/mobile/src/components/Handoff/HandoffStatus.tsx</code></li></ul></td></tr><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/socket/handlers/handoffHandler.ts</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>HandoffButton.test.tsx</code></li><li><code>HandoffStatus.test.tsx</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-007-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">让 Agent 聊后 Agent 发言</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Mode switch component handles agent take-over.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>IdentitySwitcher.tsx (USER&lt;-&gt;AGENT toggle)</code></li></ul></td></tr><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>handoffHandler.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-007-AC-3</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">切换状态实时显示</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Animated identity transition + status notification.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>IdentitySwitcher (animated fade-out/fade-in)</code></li><li><code>StatusChangeNotification.tsx</code></li><li><code>UserStatusIndicator.tsx</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-007~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">切换亲自聊和代聊</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Handoff toggle implemented end-to-end.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>handoffHandler.ts</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>IdentitySwitcher.tsx</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-007~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">切换中断、并发冲突</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge case requires runtime concurrency tests</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-008-AC-3</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">对方切换时实时更新标识</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>SenderIndicator accepts handoffStatus and StatusChangeNotification renders updates.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>Chat/StatusChangeNotification.tsx</code></li><li><code>Chat/SenderIndicator.tsx (handoffStatus prop)</code></li></ul></td></tr><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>socket/handlers/handoffHandler.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-008~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">身份标识错乱</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge case</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-PROTO-001-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">实时接收对方模式切换通知</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Handoff socket events propagate to peer client.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>handoffHandler.ts</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>StatusChangeNotification.tsx</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+      </div>
+    </section>
+    
+    <section class="phase-block">
+      <header class="phase-header">
+        <h2>Phase 5: 引荐 + 四人群聊</h2>
+        <div class="phase-stats">
+          <span>共 14</span>
+          <span class="stat-pass">✅ 10</span>
+          <span class="stat-warn">⚠️ 0</span>
+          <span class="stat-fail">❌ 0</span>
+          <span class="stat-skip">⊘ 4</span>
+        </div>
+      </header>
+      <div class="phase-content">
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-009-AC-3</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">主人接受或拒绝</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Owner accept/reject flow with mutual consent state machine.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/dating/referralService.ts</code></li><li><code>apps/server/src/services/dating/consentProcessor.ts</code></li><li><code>apps/server/src/services/dating/consentStateManager.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>processReferralDecision</code></li><li><code>ReferralDecisionRequest/Response</code></li><li><code>MutualConsent</code></li><li><code>cancelReferral</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/components/dating/DecisionButtons.tsx</code></li><li><code>apps/mobile/src/screens/dating/ReferralScreen.tsx</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-009~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">匹配度达标后请求主人确认</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Quality-gated referral request workflow.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>agentConversationRoom.ts (REFERRAL_QUALITY_THRESHOLD)</code></li><li><code>referralService.ts createReferralFromConversation</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>checkRealtimeReferralEligibility</code></li><li><code>confirmReferralAction</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-DATE-002-AC-3</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">双方合适后请求引荐</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Mutual-fit referral path implemented.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>agentConversationRoom.ts</code></li><li><code>referralService.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>createReferral with createReferralFromConversation</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-DATE-002~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Agent 评估性格匹配度</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Multi-layered compatibility evaluation.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>matchAlgorithm.ts (calculateMatchScore)</code></li><li><code>conversationQualityService.ts</code></li><li><code>conversationReportService.ts (evaluateCompatibility)</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-DATE-002~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">对话不投机、匹配度无法提升</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge case</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-006-AC-1</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">收到引荐通知，显示匹配理由</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Notification + reason highlights present.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/dating/referralNotificationService.ts</code></li><li><code>matchAlgorithm.ts (highlights field on MatchScore)</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>MatchCard.tsx</code></li><li><code>ReferralScreen.tsx</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-006~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">用户能接受或拒绝引荐</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Accept/reject UI + backend implemented.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>processReferralDecision</code></li><li><code>DecisionButtons component</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-006~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">引荐请求丢失、双方同时拒绝</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge case</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">DATE-003-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">匹配度达标后请求引荐</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Threshold-gated referral matches AS-009~func.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>REFERRAL_QUALITY_THRESHOLD</code></li><li><code>checkRealtimeReferralEligibility</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">DATE-003~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">Agent 卡住、引荐未到达</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case (timeout method exists).</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge case - checkRoomTimeout exists but stuck-state edge needs runtime</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">DATE-004-AC-1</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">四人群聊界面</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Quad room type schema + service exist; same chat UI.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>humanChatRoomService.ts (ChatRoomType.QUAD support)</code></li><li><code>ChatRoom.type=QUAD default in Prisma</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>createHumanChatRoom (4 participants validation)</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>ChatScreen.tsx works for QUAD type</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>ChatRoomType.QUAD</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">DATE-004-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Agent 提供交友话题建议</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Welcome messages + opening line service for topic seeding.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>humanChatRoomService.ts (generateWelcomeMessages)</code></li><li><code>openingLineService.ts (services/ai/)</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">DATE-004~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">双方接受引荐进入四人群聊</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Mutual consent triggers QUAD room creation.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>consentStateManager.ts</code></li><li><code>humanChatRoomService.createHumanChatRoom (called from referral flow)</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">DATE-004~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">成员离线、消息丢失</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case (offline queue exists).</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge - offline queue exists but message-loss edge needs runtime</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+      </div>
+    </section>
+    
+    <section class="phase-block">
+      <header class="phase-header">
+        <h2>Phase 6: AgentJob 协商</h2>
+        <div class="phase-stats">
+          <span>共 12</span>
+          <span class="stat-pass">✅ 8</span>
+          <span class="stat-warn">⚠️ 3</span>
+          <span class="stat-fail">❌ 0</span>
+          <span class="stat-skip">⊘ 1</span>
+        </div>
+      </header>
+      <div class="phase-content">
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-JOB-001-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">同时与多个 HR Agent 沟通</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Independent negotiation rooms enable parallel HR conversations.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/job/jobRecommendation.ts</code></li><li><code>apps/server/src/services/job/negotiationRoom.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>JobRecommendationService</code></li><li><code>NegotiationRoomService (multiple rooms)</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>jobRecommendation.test.ts</code></li><li><code>negotiationRoom.test.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-JOB-001-AC-3</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">协商薪资保护主人底线</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>bottomLine + reservation logic for owner&#x27;s floor.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/job/salaryNegotiation.ts</code></li><li><code>apps/server/src/ai/prompts/salaryNegotiation.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>SalaryNegotiationService</code></li><li><code>bottomLine field on NegotiationStrategy</code></li><li><code>expectedMin/budgetMin defaults</code></li></ul></td></tr><tr><th>tests</th><td><em class="muted">空</em></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-JOB-001~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">求职者 Agent 匹配职位并协商</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Match + negotiate end-to-end.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>jobRecommendation.ts (SeekerProfile + matchScore)</code></li><li><code>salaryNegotiation.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-questioned">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-JOB-001~edge</span>
+            <span class="badge badge-warn">QUESTIONED</span>
+            <span class="ac-desc">薪资底线被触碰</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>bottomLine field exists, but bottom-line breach handling needs runtime probe.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>bottomLine present</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>No explicit walk-away/abort handler observed in salaryNegotiation.ts methods listing</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-JOB-002-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">同时与多个候选人 Agent 初筛</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Batch resume screening service.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/job/resumeScreening.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>ResumeScreeningService.screenResume</code></li><li><code>BatchScreeningRequest/Result</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>resumeScreening.test.ts</code></li><li><code>resumeScreening.integration.test.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-JOB-002~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">HR 筛选简历并初筛</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Multi-dimension resume scoring implemented.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>ResumeScreeningService</code></li><li><code>ScreeningDimensionResult</code></li><li><code>RankedResume</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-JOB-002~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">简历信息不足</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge case - LLMResponseParseError exists for one path</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-006~edge</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">大量 Agent 同时联系</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Throttle limits to prevent agent flood.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>MAX_ACTIVE_CHATS_PER_USER</code></li><li><code>MAX_GLOBAL_ACTIVE_SESSIONS</code></li><li><code>MaxActiveChatsError, MaxGlobalSessionsError</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">JOB-004-AC-1</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Agent 间薪资协商</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Full salary negotiation stack.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>salaryNegotiation.ts</code></li><li><code>negotiationRoom.ts</code></li><li><code>ai/prompts/salaryNegotiation.ts</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/screens/Job/NegotiationChatScreen.tsx</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>negotiationResult.test.ts</code></li><li><code>negotiationRoom.test.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">JOB-004-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">达成一致后引荐真人面试</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Human handoff + interview scheduling on agreement.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/job/interviewScheduling.ts</code></li><li><code>apps/server/src/services/job/humanHandoff.ts</code></li><li><code>apps/server/src/routes/job/interviewRoutes.ts</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/screens/Job/InterviewScheduleScreen.tsx</code></li></ul></td></tr><tr><th>tests</th><td><ul class="evidence-list"><li><code>interviewScheduling.test.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-questioned">
+          <summary class="ac-summary">
+            <span class="ac-slug">JOB-004~func</span>
+            <span class="badge badge-warn">QUESTIONED</span>
+            <span class="ac-desc">四人群聊协商薪资</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Negotiation room exists; specific 4-person quad linkage uncertain.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>negotiationRoom.ts</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Negotiation rooms exist but linkage to a 4-participant QUAD ChatRoom not explicitly observed</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-questioned">
+          <summary class="ac-summary">
+            <span class="ac-slug">JOB-004~edge</span>
+            <span class="badge badge-warn">QUESTIONED</span>
+            <span class="ac-desc">协商僵局、薪资超底线</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Bottom line tracked; deadlock detection needs deeper review.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>NegotiationStrategy bottomLine</code></li><li><code>negotiationResult.ts</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Deadlock detection logic not surfaced from method listing</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+      </div>
+    </section>
+    
+    <section class="phase-block">
+      <header class="phase-header">
+        <h2>Phase 7: AgentAd 商家协商</h2>
+        <div class="phase-stats">
+          <span>共 8</span>
+          <span class="stat-pass">✅ 6</span>
+          <span class="stat-warn">⚠️ 0</span>
+          <span class="stat-fail">❌ 0</span>
+          <span class="stat-skip">⊘ 2</span>
+        </div>
+      </header>
+      <div class="phase-content">
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-AD-002-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">与用户 Agent 协商优惠条件</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Agent-to-agent merchant negotiation service with consumer/merchant typing.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/ai/agentNegotiationService.ts</code></li><li><code>apps/server/src/routes/ai/negotiation.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>AgentNegotiationService class</code></li><li><code>AgentType: consumer|merchant</code></li><li><code>NegotiationRoom</code></li><li><code>NegotiationContext</code></li><li><code>MerchantOffer</code></li></ul></td></tr><tr><th>tests</th><td><em class="muted">空</em></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-AD-002~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">商家寻找潜在客户推销优惠</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Merchant + offer + matching system in place.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>agentNegotiationService.ts</code></li><li><code>apps/server/src/services/offerService.ts</code></li><li><code>apps/server/src/services/merchantService.ts</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>Merchant</code></li><li><code>Offer</code></li><li><code>Coupon</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">AS-AD-002~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">无匹配用户、协商失败</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge case</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AD-004-AC-1</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Agent 间协商优惠条件</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Negotiation room + comparison/recommendation.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>AgentNegotiationService.NegotiationRoom</code></li><li><code>ComparisonResult</code></li><li><code>ComparedOffer</code></li><li><code>RecommendationResult</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AD-004-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">达成双方满意的方案</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Recommendation result type for finalization.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>RecommendationResult</code></li><li><code>FollowUpQuestion</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">AD-004~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Agent 与商家谈判争取优惠</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Negotiation orchestration class.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>agentNegotiationService.ts</code></li></ul></td></tr><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>NegotiationConfig</code></li><li><code>NegotiationContext</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">AD-004~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">谈判僵局、商家拒让</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge case</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-002~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">创建需求与供给</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Demand + Supply CRUD with AI extraction.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>consumerDemandService.ts</code></li><li><code>offerService.ts</code></li><li><code>ai/demandExtractionService.ts</code></li><li><code>ai/supplyExtractionService.ts</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>Demand</code></li><li><code>Supply</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+      </div>
+    </section>
+    
+    <section class="phase-block">
+      <header class="phase-header">
+        <h2>Phase 8: 历史 + 举报 + 边界</h2>
+        <div class="phase-stats">
+          <span>共 9</span>
+          <span class="stat-pass">✅ 4</span>
+          <span class="stat-warn">⚠️ 4</span>
+          <span class="stat-fail">❌ 0</span>
+          <span class="stat-skip">⊘ 1</span>
+        </div>
+      </header>
+      <div class="phase-content">
+        
+        <details class="ac-row ac-questioned">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-005-AC-1</span>
+            <span class="badge badge-warn">QUESTIONED</span>
+            <span class="ac-desc">按场景筛选对话记录</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Schema supports sceneId; query API does not yet filter by it.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>RoomQueryOptions has type/status/search but no sceneId filter in getUserRooms</code></li><li><code>ChatRoom has sceneId column</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/screens/dating/ReferralHistoryScreen.tsx</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>sceneId column exists but getUserRooms does not expose scene-based filter</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-questioned">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-005-AC-2</span>
+            <span class="badge badge-warn">QUESTIONED</span>
+            <span class="ac-desc">显示对话双方 Agent 和匹配度评分</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Match score model exists; history-list integration uncertain.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>matchAlgorithm.ts MatchScore.score</code></li></ul></td></tr><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>MatchCard.tsx</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Conversation history list display of match score not confirmed</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-questioned">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-005~func</span>
+            <span class="badge badge-warn">QUESTIONED</span>
+            <span class="ac-desc">按场景筛选并查看历史</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Referral history API exists; chat history scene filter missing.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>referralHistoryService getReferralHistory</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Scene filter parameter not present in main chat history query</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-skipped">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-005~edge</span>
+            <span class="badge badge-skip">SKIPPED</span>
+            <span class="ac-desc">历史记录缺失、加载异常</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Edge case.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>gaps</th><td><ul class="evidence-list"><li><code>Edge case</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-015-AC-2</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">Agent 礼貌结束对话</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Polite termination methods present.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>completeChat</code></li><li><code>terminateRoom</code></li><li><code>completeRoom</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-questioned">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-015~func</span>
+            <span class="badge badge-warn">QUESTIONED</span>
+            <span class="ac-desc">用户随时退出匹配</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Room/referral cancellation present; pre-match exit uncertain.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_methods</th><td><ul class="evidence-list"><li><code>leaveRoom (humanChatRoomService)</code></li><li><code>closeRoom</code></li><li><code>cancelReferral</code></li></ul></td></tr><tr><th>gaps</th><td><ul class="evidence-list"><li><code>No explicit &#x27;exitMatch&#x27; or pre-match cancellation observed</code></li></ul></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-016-AC-1</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">可在对话界面举报</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>ChatScreen has report buttons (SPAM/INAPPROPRIATE/FALSE/HARASSMENT/OTHER) wired to backend.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>apps/mobile/src/screens/messages/ChatScreen.tsx (handleReportMessage)</code></li><li><code>apps/mobile/src/services/api/reportApi.ts (createReport)</code></li></ul></td></tr><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/routes/reports.ts</code></li><li><code>apps/server/src/services/uploadAudit.ts (evidence)</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>Report</code></li><li><code>ReportTargetType (MESSAGE/USER/CONTENT)</code></li><li><code>ReportReason</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-016~func</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">用户在对话界面举报不当行为</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>End-to-end report workflow with moderation queue.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>frontend_components</th><td><ul class="evidence-list"><li><code>ChatScreen.handleReportMessage + submitReport</code></li></ul></td></tr><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>reports.ts</code></li><li><code>moderationQueue.ts</code></li></ul></td></tr><tr><th>prisma_models</th><td><ul class="evidence-list"><li><code>Report</code></li><li><code>ModerationQueueItem</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+        <details class="ac-row ac-passed">
+          <summary class="ac-summary">
+            <span class="ac-slug">US-AGENT-002~edge</span>
+            <span class="badge badge-pass">PASSED</span>
+            <span class="ac-desc">空输入、无意义输入、超长对话</span>
+          </summary>
+          <div class="ac-body">
+            <p class="ac-summary-text"><strong>结论：</strong>Validation + sensitive-word filter present.</p>
+            <div class="ac-evidence">
+              <h4>证据</h4>
+              <table class="evidence-table"><tr><th>backend_files</th><td><ul class="evidence-list"><li><code>apps/server/src/services/sensitiveWordFilter.ts</code></li><li><code>apps/server/src/services/dating/conversationSafetyService.ts</code></li><li><code>apps/server/src/services/visionShare/publishValidation.ts</code></li></ul></td></tr><tr><th>gaps</th><td><em class="muted">空</em></td></tr></table>
+            </div>
+          </div>
+        </details>
+        
+      </div>
+    </section>
+    
+  </section>
+
+  <footer>
+    Generated by IssueTree play-story workflow · BridgeAI · AS-007
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story 演示验收报告 — AS-005</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #1a1a1a;
+    color: #e8e8e8;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 32px;
+  }
+  header {
+    border-bottom: 2px solid #333;
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+  h1 { color: #fff; margin: 0 0 12px 0; font-size: 32px; }
+  h2 { color: #5e9eff; margin: 32px 0 16px 0; font-size: 24px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+  h3 { color: #f5b14e; margin: 20px 0 12px 0; font-size: 18px; }
+  .meta-row {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .meta-row > div { color: #aaa; }
+  .meta-row code { color: #5e9eff; }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .stat-card {
+    background: #252525;
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 4px solid #5e9eff;
+  }
+  .stat-card.pass { border-left-color: #3ddc97; }
+  .stat-card.partial { border-left-color: #f5b14e; }
+  .stat-card.fail { border-left-color: #ef5350; }
+  .stat-card.critical { border-left-color: #ef5350; }
+  .stat-card.warning { border-left-color: #f5b14e; }
+  .stat-card.info { border-left-color: #5e9eff; }
+  .stat-num {
+    font-size: 28px;
+    font-weight: bold;
+    color: #fff;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-transform: uppercase;
+  }
+  .ac-block, .finding-block {
+    background: #232323;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    border-left: 3px solid #444;
+  }
+  .ac-header, .finding-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .ac-slug, .finding-ac {
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+    font-size: 14px;
+    color: #5e9eff;
+    background: #1a1a1a;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .ac-desc, .finding-title {
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .finding-title { font-weight: 600; }
+  .ac-meta, .finding-meta {
+    font-size: 13px;
+    color: #aaa;
+    margin: 6px 0;
+  }
+  .meta-label {
+    color: #888;
+    font-size: 12px;
+  }
+  code {
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: #f5b14e;
+  }
+  pre {
+    background: #161616;
+    border-radius: 6px;
+    padding: 12px;
+    overflow-x: auto;
+    margin: 8px 0;
+  }
+  pre code {
+    color: #d0d0d0;
+    font-size: 12px;
+  }
+  .ac-evidence {
+    margin: 8px 0;
+  }
+  .evidence-label {
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .ac-notes, .finding-rec, .finding-desc {
+    font-size: 13px;
+    color: #ccc;
+    margin-top: 8px;
+  }
+  .finding-critical { border-left-color: #ef5350; }
+  .finding-warning { border-left-color: #f5b14e; }
+  .finding-info { border-left-color: #5e9eff; }
+  .toc {
+    background: #252525;
+    padding: 16px 24px;
+    border-radius: 8px;
+    margin: 16px 0 32px;
+  }
+  .toc ul { margin: 0; padding-left: 20px; }
+  .toc a { color: #5e9eff; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .conclusion {
+    background: linear-gradient(135deg, #2a1f1f 0%, #1f2a2a 100%);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 24px 0;
+  }
+  @media print {
+    body { background: white; color: black; }
+    .container { max-width: 100%; padding: 16px; }
+    .ac-block, .finding-block, .stat-card { background: #f5f5f5; color: black; }
+    pre { background: #eee; color: black; }
+    pre code, .ac-desc, .finding-title { color: black; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1>Story 演示验收报告</h1>
+  <div class="meta-row">
+    <div><span class="meta-label">Story:</span> <code>AS-005</code> · 我主动与其他 Agent 对话</div>
+    <div><span class="meta-label">类型:</span> agent</div>
+    <div><span class="meta-label">优先级:</span> P1</div>
+    <div><span class="meta-label">报告生成:</span> 2026-04-30 21:23:43</div>
+  </div>
+  <p style="margin-top: 16px; color: #ccc;"><strong>叙事:</strong> 拿到候选列表后自主决定与符合条件的候选 Agent 发起对话。</p>
+</header>
+
+<div class="toc">
+  <strong>目录</strong>
+  <ul>
+    <li><a href="#overview">1. 总览</a></li>
+    <li><a href="#issues">2. 涉及 Issue</a></li>
+    <li><a href="#ac-com001">3. ISSUE-COM001 AC 验证</a></li>
+    <li><a href="#ac-ai004">4. ISSUE-AI004 AC 验证</a></li>
+    <li><a href="#ac-both">5. 跨 Issue AC 验证</a></li>
+    <li><a href="#critic-critical">6. Critic 疑点 — 严重 (Critical)</a></li>
+    <li><a href="#critic-warning">7. Critic 疑点 — 警告 (Warning)</a></li>
+    <li><a href="#critic-info">8. Critic 疑点 — 提示 (Info)</a></li>
+    <li><a href="#conclusion">9. 总结与结论</a></li>
+  </ul>
+</div>
+
+<h2 id="overview">1. 总览</h2>
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-num">53</div>
+    <div class="stat-label">Total ACs</div>
+  </div>
+  <div class="stat-card pass">
+    <div class="stat-num">40</div>
+    <div class="stat-label">Demo: PASS</div>
+  </div>
+  <div class="stat-card partial">
+    <div class="stat-num">8</div>
+    <div class="stat-label">Demo: PARTIAL</div>
+  </div>
+  <div class="stat-card fail">
+    <div class="stat-num">0</div>
+    <div class="stat-label">Demo: FAIL</div>
+  </div>
+  <div class="stat-card critical">
+    <div class="stat-num">7</div>
+    <div class="stat-label">Critic: 严重</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="stat-num">8</div>
+    <div class="stat-label">Critic: 警告</div>
+  </div>
+  <div class="stat-card info">
+    <div class="stat-num">1</div>
+    <div class="stat-label">Critic: 提示</div>
+  </div>
+</div>
+
+<h2 id="issues">2. 涉及 Issue</h2>
+<ul>
+<li><strong>ISSUE-COM001</strong> — Socket.io通信基础设施 (id=29)</li>
+<li><strong>ISSUE-AI004</strong> — AI 对话引擎 (id=16)</li>
+
+</ul>
+<p style="color: #aaa;">由于 53 ACs 中部分 AC 在两个 Issue 中重复出现，去重后实际验证 48 条。</p>
+
+<h2 id="ac-com001">3. ISSUE-COM001 AC 验证 (Socket.io 基础设施)</h2>
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">DATE-004-AC-1</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">四人群聊界面</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/chat/roomService.ts:67-72</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>if (type === ChatRoomType.QUAD &amp;&amp; participantIds.length !== 4) { throw new Error('Quad room must have exactly 4 participants'); }</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> ChatRoomType.QUAD enum + invariant of exactly 4 participants. UI screen MatchSuccessScreen.tsx exists in mobile dating screens.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">US-AGENT-015-AC-1</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">在匹配列表页或四人群聊中可随时退出</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/handlers/roomHandler.ts (room:leave handler implied) + roomService.leaveRoom</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>registerRoomHandlers handles room:create, room:join + leave; roomService.joinRoom/leaveRoom present</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Room handler supports join/leave events; mobile screens contain dating recommendation/match screens with exit affordances.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">US-AGENT-015~edge</span>
+    <span class="badge" style="background:#f5b14e;">PARTIAL</span>
+  </div>
+  <div class="ac-desc">异常：频繁退出加入</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/middleware/auth.ts:33</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>function checkConnectionLimits(userId): ... if (userConnections &gt;= MAX_CONNECTIONS_PER_USER) { return { allowed: false, reason: ... }; }</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Per-user connection limits exist but no explicit rate-limit on rapid join/leave cycles.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">ISSUE-COM001~c1</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">Socket.io 服务器搭建、命名空间设计</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/index.ts:37-170</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>Namespaces: /, /chat, /user, /handoff, /system, /group, /room, /negotiation, /presence, /dialog, /matchSubscriptions; Redis adapter wired; ping/timeout configured</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Comprehensive namespace setup including /chat, /presence, /dialog as required by playbook.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">ISSUE-COM001~c2</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">连接认证：JWT/权限/身份绑定</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/middleware/auth.ts:58-115</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>const decoded = await jwtService.verifyToken(token); const [roles, permissions] = await Promise.all([rbacService.getUserRoles(...), rbacService.getUserPermissions(...)]); socket.user = {id, email, roles, permissions}; socket.join(`user:${decoded.userId}`);</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> JWT verification, RBAC roles/permissions, user-room binding all implemented.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">ISSUE-COM001~c3</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">连接生命周期：建立/断开/心跳/重连</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/index.ts:49-55,184-189 + connectionManager.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>pingTimeout: 60000, pingInterval: 25000, connectTimeout: 45000; socket.on('disconnect', reason =&gt; connectionManager.removeConnection(socketId))</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Heartbeat config + disconnect cleanup + connectionManager tracking lastPingAt/lastActivityAt.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">ISSUE-COM001~c4</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">房间管理：创建销毁/加入离开/广播/成员查询</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/handlers/roomHandler.ts:37-120 + services/roomService.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>room:create, room:join (with password+ban check), roomService.createRoom/joinRoom/isUserInRoom/getRoom</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Full lifecycle handlers (create/join/leave/broadcast/query). Has unit tests in socket/__tests__/roomHandler.test.ts.
+  </div>
+</div>
+
+
+<h2 id="ac-ai004">4. ISSUE-AI004 AC 验证 (AI 对话引擎)</h2>
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">DATE-004~edge</span>
+    <span class="badge" style="background:#f5b14e;">PARTIAL</span>
+  </div>
+  <div class="ac-desc">异常：成员离线、消息丢失</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/handlers/groupHandler.ts (member online/lastSeenAt) + socket/index.ts:49 (heartbeat 60s)</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>if (!online) { member.lastSeenAt = new Date(); } ... pingTimeout: 60000, pingInterval: 25000</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Online/offline tracking present, heartbeat configured. No explicit offline-message replay queue found in this code path; relies on persistent ChatRoom + DB storage.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">US-AGENT-015-AC-2</span>
+    <span class="badge" style="background:#f5b14e;">PARTIAL</span>
+  </div>
+  <div class="ac-desc">Agent 礼貌结束对话</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/agentInitiatedChat.ts:267</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>export async function completeChat(sessionId, outcome: 'success'|'no_interest'|'timeout'): Promise&lt;ChatSession&gt;</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> completeChat exists with outcome enum, but no explicit polite-farewell message generation observed.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-006~func</span>
+    <span class="badge" style="background:#f5b14e;">PARTIAL</span>
+  </div>
+  <div class="ac-desc">Agent 被联系后评估是否值得交流</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/conversationQualityService.ts + matchAlgorithm.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>matchAlgorithm scoring + qualityScore on ConversationRoom; Agent decides via matchScore threshold</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Quality/match scoring infrastructure exists. Explicit accept/reject-on-contact decision not found as a discrete flow.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-006-AC-2</span>
+    <span class="badge" style="background:#f5b14e;">PARTIAL</span>
+  </div>
+  <div class="ac-desc">评估是否值得交流</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/conversationQualityService.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>qualityScore field + threshold (0.6 default) used for room assessments</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Worth-engaging evaluation via match score threshold; not surfaced as Agent-side accept dialog.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-006-AC-3</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">向主人汇报对话进展</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/conversationReportService.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>conversationReportService generates summary/report for owner; tests in __tests__/conversationReportService.test.ts</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Dedicated conversation report service exists with tests.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-006~edge</span>
+    <span class="badge" style="background:#f5b14e;">PARTIAL</span>
+  </div>
+  <div class="ac-desc">异常：大量 Agent 同时联系</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/middleware/auth.ts:36-49</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>MAX_TOTAL_CONNECTIONS=10000, MAX_CONNECTIONS_PER_USER=5; checkConnectionLimits returns reason if exceeded</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Connection-level limits exist; no explicit Agent-level priority queue based on credit/match-score for rate limiting found.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-008-AC-1</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">实时分析对方意图和态度</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/agentDialogService.ts:30-37</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>DialogMessage.metadata: { intent, confidence, contextSummary }; intent extracted per message in dialog session</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Intent + confidence metadata present in DialogMessage; agentDialogService implements intent recognition with tests.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-008-AC-2</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">发送策略建议、风险提示、话题推荐</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/datingConversationService.ts (topics/redFlags) + openingLineService</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>ConversationMemory: sharedInterests, discussedTopics, highlights, connectionPoints, redFlags</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Topic recommendations + redFlags (risk hints) tracked in ConversationMemory.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-008-AC-3</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">提供一键采纳</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/mobile/src/components/Chat/QuickReply.tsx</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>QuickReply React component: onSelect(reply) callback fires on TouchableOpacity click; supports custom replies</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Mobile QuickReply component implements one-tap adoption.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-008~func</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">Agent 实时分析对话，向主人发送私下建议</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/index.ts:244 (emitToUser) + dialog namespace</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>emitToUser(userId, event, data) emits to user:${userId} room across namespaces — used for owner-only private advice</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Private channel infrastructure (per-user room) supports owner-only push of advice.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-008~edge</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">异常：建议为空、AI 服务降级</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/resilience/templateResponseService.ts + circuitBreaker.ts + fallback/</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>Resilience layer with circuit breaker and template fallback; tested in resilience.test.ts</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Circuit breaker + fallback template responses implemented.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">DATE-004-AC-2</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">Agent 提供交友话题建议</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/datingConversationService.ts:54-66</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>ConversationTopic: { id, name, category: 'icebreaker'|'interest'|'value'|'lifestyle'|'deep', relevanceScore, questions[], explored }</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Categorized topic system for dating conversations with relevance scoring.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-009-AC-1</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">评估匹配度是否达到引荐阈值</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/agentInitiatedChat.ts:74 + matchAlgorithm.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>highMatchThreshold: 80; matchScore.totalScore &gt;= highMatchThreshold triggers pause for user input/referral</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Threshold-based referral trigger present (80 default).
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-009~func</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">匹配度达标后请求主人确认引荐</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/referralService.ts:70 + referralNotificationService.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>createReferral(request) -&gt; referralStore.set(referral.id, referral); sendReferralNotification(...)</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Referral creation + push notification flow implemented.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-009~edge</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">异常：引荐请求超时、一方接受一方拒绝</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/referralService.ts (decision flow) + ReferralRecord model</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>result: 'pending'|'mutual_accept'|'single_accept'|'mutual_reject'|'single_reject'; timeoutHours param</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Both single-accept (one rejects) and timeout supported.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-LEARN-001-AC-1</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">记录成功匹配的共同特征</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/preferenceLearning.ts + feedbackService.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>LearnedPreferences: { weights, skipReasonWeights, preferredScoreRange, dimensionAdjustments, learningVersion }</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Preference learning with weights + skip reasons + dimension adjustments based on feedback.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-LEARN-001-AC-2</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">分析失败对话原因</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/preferenceLearning.ts:36-43</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>SKIP_REASON_KEYS: NOT_MY_TYPE, TOO_FAR, DIFFERENT_GOALS, NOT_ACTIVE_ENOUGH, INCOMPLETE_PROFILE, OTHER</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Failure-reason taxonomy with weight learning.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-LEARN-001-AC-3</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">学习主人决策偏好</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/preferenceLearning.ts (learn from feedbackService records)</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>LearningInput: { userId, feedbacks: FeedbackRecord[] } -&gt; updates SimilarityWeights per user</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Per-user preferences learned from feedback history.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">US-AGENT-007-AC-2</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">点击让 Agent 聊后 Agent 以自己名义发言</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/agentDialogService.ts:16-37</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>MessageSender = 'agent' | 'user' | 'system'; senderType + senderName fields; metadata.agentType</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Sender type clearly distinguishes agent vs user; agentName + agentType metadata used in messages.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">US-AGENT-009~func</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">Agent 实时向用户发送私聊建议，仅自己可见</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/index.ts:244-252 + middleware/auth.ts:101 (socket.join(`user:${userId}`))</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>emitToUser only emits to room `user:${userId}` — isolation by socket room ensures only owner receives</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Per-user private room isolation prevents leak to other side.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">US-AGENT-009-AC-1</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">私聊建议显示在侧边栏或独立区域</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/mobile/src/components/Chat/QuickReply.tsx</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>QuickReply component renders horizontal scroll of replies — independent UI region from main message bubble area</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Dedicated UI component for advice/quick replies.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">US-AGENT-009-AC-2</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">建议包括话题推荐、风险提示、对方意图分析</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/datingConversationService.ts (topics + redFlags) + agentDialogService.ts (intent)</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>ConversationMemory.redFlags + ConversationTopic[] + DialogMessage.metadata.intent/confidence</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> All three categories represented in data structures.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">US-AGENT-009-AC-3</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">可一键采用建议</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/mobile/src/components/Chat/QuickReply.tsx:31</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>onSelect: (reply: QuickReplyItem) =&gt; void; TouchableOpacity onPress={() =&gt; onSelect(reply)}</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Same as AS-008-AC-3.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">US-AGENT-009~edge</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">异常：建议泄露、建议为空</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/middleware/auth.ts:101 + services/ai/resilience/templateResponseService.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>user:${userId} room ensures isolation; templateResponseService provides fallback for empty</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Privacy via room isolation; fallback templates for empty advice.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">VS-003-AC-2</span>
+    <span class="badge" style="background:#f5b14e;">PARTIAL</span>
+  </div>
+  <div class="ac-desc">符合条件的照片推荐给用户确认</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/visionShare/photoUpload.ts + ai/imageAnalysisService.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>PhotoUploadService + ImageSecurityService scan + UploadResult.securityCheck</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Photo upload + security check exist; explicit recommendation-then-confirm flow not strongly evidenced.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">VS-003~func</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">系统扫描本地相册并推荐匹配照片</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/albumClustering.ts + imageSemanticSearch.ts + imageIndexing.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>albumClustering, imageSemanticSearch, imageIndexing services for album processing</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Album clustering and semantic search infrastructure for photo recommendation.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">JOB-004~func</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">双方 Agent 和用户在四人群聊中协商薪资</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/job/salaryNegotiation.ts + negotiationRoom.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>MarketData + jobSeekerProfile (expectedMin/Max) + employerProfile (budgetMin/Max, flexibilityScore) + NegotiationStrategy with bottomLine/targetAmount</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Salary negotiation service models seeker bottomLine, employer budget, market data, and strategy.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AD-004~func</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">Agent 与商家 Agent 谈判争取更好优惠</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/agentNegotiationService.ts:1-80 + socket/handlers/agentNegotiation.ts + /negotiation namespace</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>ConsumerProfile + MerchantProfile + MerchantOffer (with hiddenBenefits, exclusions) + agent-to-agent negotiation flow</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Full agent negotiation service with merchant/consumer profiles + dedicated socket namespace.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">ISSUE-AI004~c1</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">引擎实现：上下文管理/意图识别/回复生成/对话状态/多轮对话</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/agentDialogService.ts:80-100</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>DialogContext: { topic, goals, constraints, relevantHistory, sharedKnowledge, negotiationState: { currentRound, agreedTerms, pendingIssues }, matchingCriteria }</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Comprehensive context+state model; tested in agentDialogService.test.ts.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">ISSUE-AI004~c2</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">人格系统：人格定义/语气/行为/角色/一致性</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/agentDialogService.ts:54-61</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>AgentPersona: { name, role, personality[], goals[], communicationStyle: 'formal'|'casual'|'friendly'|'professional', specializations[] }</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Persona model with style and consistency. datingConversationService also enforces personaConsistencyThreshold (0.8).
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">ISSUE-AI004~c3</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">协商机制：双向对话/条件协商/匹配意愿/分歧/共识</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/agentNegotiationService.ts + socket/handlers/agentNegotiation.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>NegotiationStrategy { approach: 'collaborative'|'competitive'|'compromising'|'accommodating', bottomLine, targetAmount }; CounterOffer flow</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Full negotiation framework w/ consensus &amp; counter-offer mechanics; tests exist.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">ISSUE-AI004~c4</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">记忆系统：短期/长期/关键提取/摘要/检索增强</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/ai/datingConversationService.ts:69-77 + conversationReportService.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>ConversationMemory: { sharedInterests, discussedTopics, highlights, connectionPoints, redFlags }; relevantHistory in DialogContext</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Short-term (relevantHistory), long-term (preference learning), summary (conversationReport).
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">ISSUE-AI004~c5</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">切换机制：人工介入/切换/上下文移交/状态同步/恢复</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/handlers/handoffHandler.ts + socket/index.ts:107 (/handoff namespace)</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>Dedicated /handoff namespace; handoffHandler.test.ts validates handoff flow</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Handoff system implemented with tests.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">ISSUE-AI004~c6</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">API 实现：对话 API/流式响应/WebSocket/历史查询/参数配置</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/routes/ai/ + socket/handlers/dialogHandler.ts + services/ai/llmService.ts/llmRouter.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>/dialog namespace + dialogHandler join_session/new_message/typing/session_state events; llmService for generation</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> WebSocket dialog handlers + LLM service routing with parameters.
+  </div>
+</div>
+
+
+<h2 id="ac-both">5. 跨 Issue AC 验证 (两 Issue 共有 AC)</h2>
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-005-AC-2</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">自主发起对话请求</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/agentInitiatedChat.ts:90</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>export async function initiateChat(params: { matchScore, sourceAgentId, targetAgentId, sourceUserId, targetUserId, config, customGoal }): Promise&lt;ChatSession&gt; { const sessionId = `dating-chat-${uuidv4()}`; const openingLine = generateOpeningLine({...}); const goals: ChatGoal[] = [...]; ...sessionStore.set(sessionId, session); }</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> initiateChat() implements Agent autonomously initiating chat using matchScore + opening line generator. Session is stored, goals/highlights extracted.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-005-AC-3</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">同时与多个候选保持独立对话</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/agentInitiatedChat.ts:81,298</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>const sessionStore = new Map&lt;string, ChatSession&gt;(); ... export function getActiveChatsForUser(userId): ChatSession[] { return Array.from(sessionStore.values()).filter(s =&gt; s.sourceUserId === userId || s.targetUserId === userId); }</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Each session keyed by uuid; multiple concurrent sessions supported per user via Map storage; getActiveChatsForUser returns concurrent active chats. Combined with Socket.io rooms (each session uses session:{id} room in dialogHandler).
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-005~func</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">Agent 自主决定与符合条件的候选发起对话</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/recommendationService.ts + agentInitiatedChat.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>recommendationService.generateDailyRecommendations() + matchAlgorithm.MatchScore -&gt; agentInitiatedChat.initiateChat(matchScore, ...)</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Recommendation pipeline produces ranked candidates with MatchScore; initiateChat consumes them to autonomously open conversation.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">AS-005~edge</span>
+    <span class="badge" style="background:#f5b14e;">PARTIAL</span>
+  </div>
+  <div class="ac-desc">异常：对方拒绝对话、同时对话数过多</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/agentInitiatedChat.ts:267 (completeChat outcome=no_interest), socket/middleware/auth.ts:43 (per-user connection limits)</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>completeChat(sessionId, outcome: 'success'|'no_interest'|'timeout'); const MAX_CONNECTIONS_PER_USER = parseInt(process.env.SOCKET_MAX_CONNECTIONS_PER_USER || '5', 10);</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Reject path exists via completeChat outcomes; connection limits enforced. No explicit per-Agent concurrent-chat cap with backpressure messaging found.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">DATE-004~func</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">双方接受引荐后进入四人群聊</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/dating/referralService.ts + humanChatRoomService.ts</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>import { createHumanChatRoom } from './humanChatRoomService'; ... mutual_accept =&gt; chatRoomId returned</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> referralService.createReferral + decision flow yields mutual_accept which triggers createHumanChatRoom and returns chatRoomId.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">US-AGENT-015~func</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">用户在匹配过程中随时退出</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/services/roomService.ts (leaveRoom) + connectionService.unregisterConnection</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>socket.on('disconnect') -&gt; connectionManager.removeConnection + connectionService.unregisterConnection</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Disconnect lifecycle cleanly removes user from rooms via socket/index.ts disconnect handler.
+  </div>
+</div>
+
+
+<div class="ac-block">
+  <div class="ac-header">
+    <span class="ac-slug">US-AGENT-007~func</span>
+    <span class="badge" style="background:#3ddc97;">PASS</span>
+  </div>
+  <div class="ac-desc">用户在四人群聊中切换亲自聊和让 Agent 代聊</div>
+  <div class="ac-meta">
+    <div><span class="meta-label">验证方式:</span> code_review</div>
+    <div><span class="meta-label">证据文件:</span> <code>apps/server/src/socket/handlers/handoffHandler.ts + socket/index.ts (/handoff namespace)</code></div>
+  </div>
+  <div class="ac-evidence">
+    <div class="evidence-label">证据片段:</div>
+    <pre><code>Dedicated /handoff namespace + registerHandoffHandlers; tested in handoffHandler.test.ts</code></pre>
+  </div>
+  <div class="ac-notes">
+    <span class="meta-label">备注:</span> Human-agent handoff namespace and handlers implemented with tests.
+  </div>
+</div>
+
+
+<h2 id="critic-critical">6. Critic 疑点 — 严重 (Critical) — 7 项</h2>
+<p style="color: #ef5350;">⚠️ 以下问题影响 Story 核心功能的真实性，必须修复：</p>
+
+<div class="finding-block finding-critical">
+  <div class="finding-header">
+    <span class="badge" style="background:#ef5350;">CRITICAL</span>
+    <span class="finding-ac">AS-005-AC-2</span>
+  </div>
+  <div class="finding-title">Agent 自主发起对话服务从未被任何外部代码调用 — 是死代码</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/services/dating/agentInitiatedChat.ts:90</code>
+  </div>
+  <div class="finding-desc">initiateChat() 是 Story 的核心 API，但全代码库（除自身模块、index.ts re-export、单元测试外）没有 caller。Socket handler、REST 路由、job queue 均无入口触发，意味着 Agent 自主决定与候选 Agent 发起对话在生产路径上根本不会执行，仅完成签名层验证。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 增加调度层（cron / 候选生成回调 / Socket 事件 / worker），在候选列表生成后自动调用 initiateChat。
+  </div>
+</div>
+
+
+<div class="finding-block finding-critical">
+  <div class="finding-header">
+    <span class="badge" style="background:#ef5350;">CRITICAL</span>
+    <span class="finding-ac">ISSUE-AI004~c1</span>
+  </div>
+  <div class="finding-title">Agent 自动响应是硬编码模板字符串，没有调用 LLM</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/services/dating/agentInitiatedChat.ts:335-363</code>
+  </div>
+  <div class="finding-desc">generateResponseContent 完全使用 4-5 条候选模板字符串数组按 turnIndex % responses.length 轮播。没有 LLM 调用、没有上下文管理、没有人格化、没有意图识别。剧本要求的 5-10 轮自然对话评估性格契合度实际只是机械复读。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 替换为 agentDialogService.generateMessage() 真实 LLM 调用，并接入人格 prompt 与上下文管理。
+  </div>
+</div>
+
+
+<div class="finding-block finding-critical">
+  <div class="finding-header">
+    <span class="badge" style="background:#ef5350;">CRITICAL</span>
+    <span class="finding-ac">US-AGENT-009~func</span>
+  </div>
+  <div class="finding-title">agent:private_advice 私聊建议通道在代码中完全不存在</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server (全代码库 grep)</code>
+  </div>
+  <div class="finding-desc">剧本明确声明 agent:private_advice 通道仅推送给主人 socket，但全代码库 grep private_advice|privateAdvice|私聊建议 在 server 与 mobile 均无任何匹配。AS-008 整套实时分析意图、发送私下建议、风险提示、话题推荐、一键采纳在 server 端无 emit 事件，mobile 无订阅与 UI。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 实现 socket 端 emit 到 user:{ownerId} 私聊房间、mobile 订阅、私聊建议侧边栏组件。
+  </div>
+</div>
+
+
+<div class="finding-block finding-critical">
+  <div class="finding-header">
+    <span class="badge" style="background:#ef5350;">CRITICAL</span>
+    <span class="finding-ac">ISSUE-AI004~c4</span>
+  </div>
+  <div class="finding-title">agent_memory 长期记忆表完全不存在，AS-LEARN-001 无落地</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/prisma/schema.prisma</code>
+  </div>
+  <div class="finding-desc">剧本声明通过查询 agent_memory 表验证 Agent 学习。schema.prisma 仅有 DialogSessionRecord (line 1880)，无 AgentMemory 模型，无成功匹配特征/失败原因/主人偏好的存储 schema。Phase 7.4-7.6 三个 AS-LEARN AC 没有数据落点。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 设计 AgentMemory 表（含 userId、agentId、memoryType、structuredFields、createdAt）并创建写入路径（成功引荐后/被拒后/用户否决后）。
+  </div>
+</div>
+
+
+<div class="finding-block finding-critical">
+  <div class="finding-header">
+    <span class="badge" style="background:#ef5350;">CRITICAL</span>
+    <span class="finding-ac">US-AGENT-009~edge</span>
+  </div>
+  <div class="finding-title">缺少双 socket 集成测试验证私聊建议不泄露给对方</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/tests/integration/</code>
+  </div>
+  <div class="finding-desc">无双 socket（Alice + Bob）集成测试用于断言 Bob socket 在建议生成时不会收到 agent:private_advice 类事件。这一关键安全边界 AC 没有自动化保障。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 编写双 socket 集成测试：一个 Alice socket 一个 Bob socket，触发建议生成并断言 Bob 在 1 秒窗口内未收到任何 advice 事件。
+  </div>
+</div>
+
+
+<div class="finding-block finding-critical">
+  <div class="finding-header">
+    <span class="badge" style="background:#ef5350;">CRITICAL</span>
+    <span class="finding-ac">AS-005~edge</span>
+  </div>
+  <div class="finding-title">无并发上限/限流机制 — 50+ Agent 并发与对话数上限 AC 无落地</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/services/dating/agentInitiatedChat.ts; apps/server/src/services/agentBehaviorService.ts:8-9</code>
+  </div>
+  <div class="finding-desc">agentInitiatedChat 与 agentNegotiationService 均无并发计数与限流。agentBehaviorService 文件头注释明确写道 intentionally not yet wired into the dispatch path — that integration is tracked separately，即未接入消息发送链路。10 个对话上限、50+ 并发限流、按信用分排队全部为空实现。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 在 initiateChat 入口检查每用户活跃 chat 数；在 negotiation 接收端按优先级队列处理；接入 agentBehaviorService 到分发路径。
+  </div>
+</div>
+
+
+<div class="finding-block finding-critical">
+  <div class="finding-header">
+    <span class="badge" style="background:#ef5350;">CRITICAL</span>
+    <span class="finding-ac">ISSUE-AI004~c6</span>
+  </div>
+  <div class="finding-title">dialogHandler 只是被动广播器，不调用 dialog 引擎</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/socket/handlers/dialogHandler.ts:1-71</code>
+  </div>
+  <div class="finding-desc">/dialog 命名空间 handler 仅暴露 join_session/leave_session/new_message/typing/session_state 5 个透传事件，无调用 agentDialogService.generateMessage() 或 agentToAgentDialog() 入口。mobile 端无法通过 WebSocket 触发 Agent 实际生成消息。也未发现对应 REST 路由。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 增加 dialog:generate socket event 调用 service 并回写结果。
+  </div>
+</div>
+
+
+<h2 id="critic-warning">7. Critic 疑点 — 警告 (Warning) — 8 项</h2>
+
+<div class="finding-block finding-warning">
+  <div class="finding-header">
+    <span class="badge" style="background:#f5b14e;">WARNING</span>
+    <span class="finding-ac">ISSUE-COM001~c4</span>
+  </div>
+  <div class="finding-title">协商房间永不释放 — 内存泄漏</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/services/ai/agentNegotiationService.ts:216</code>
+  </div>
+  <div class="finding-desc">agentNegotiationService 的 rooms Map 与 agentDialogService 的 sessions Map 都没有 delete/clear 调用、无 TTL、无定期回收。confirmSelection 仅改 status 不移除，archiveSession 同样。生产环境长时间运行内存持续增长。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 实现 idle TTL（如 30 分钟无活动 → archive → delete）或定期清理任务。
+  </div>
+</div>
+
+
+<div class="finding-block finding-warning">
+  <div class="finding-header">
+    <span class="badge" style="background:#f5b14e;">WARNING</span>
+    <span class="finding-ac">AS-005-AC-2</span>
+  </div>
+  <div class="finding-title">agentInitiatedChat 单元测试断言极弱，仅检查存在性</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/services/dating/__tests__/agentInitiatedChat.test.ts:46-95</code>
+  </div>
+  <div class="finding-desc">should generate a response message 仅断言 content 存在与 senderAgentId 匹配，未验证内容是真实生成而非模板。should create a chat session with opening line 期待开场白固定为 嗨！很高兴认识你。 — 反向证实开场白也是固定字符串。无 LLM 失败、并发、超时、对方拒绝、50+ 限流场景测试。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 补充内容差异性断言、拒绝/超时/并发上限测试、Agent 学习记忆写入测试。
+  </div>
+</div>
+
+
+<div class="finding-block finding-warning">
+  <div class="finding-header">
+    <span class="badge" style="background:#f5b14e;">WARNING</span>
+    <span class="finding-ac">ISSUE-AI004~c4</span>
+  </div>
+  <div class="finding-title">记忆系统仅有 LLM 单段总结，无关键信息提取与向量检索</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/services/ai/agentDialogService.ts:720-743; apps/server/src/services/dating/agentConversationRoom.ts:509</code>
+  </div>
+  <div class="finding-desc">记忆系统实现为：历史超过 20 条时让 LLM 用 2-3 句总结塞入 metadata.conversationSummary。无结构化关键信息提取（无 主人偏好/成功特征/拒绝原因 独立字段）；extractSharedInterests 是 提取 2-4 字中文词组按频次排序 的关键词匹配，无向量检索。剧本声称的记忆检索增强未实现。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 引入结构化记忆 schema (intents, preferences, milestones)；后续考虑 embedding 检索。
+  </div>
+</div>
+
+
+<div class="finding-block finding-warning">
+  <div class="finding-header">
+    <span class="badge" style="background:#f5b14e;">WARNING</span>
+    <span class="finding-ac">ISSUE-AI004~c3</span>
+  </div>
+  <div class="finding-title">双向 Agent 协商无明确状态机/共识达成检测/分歧处理</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/services/ai/agentDialogService.ts:767-802</code>
+  </div>
+  <div class="finding-desc">updateDialogPhase 仅按消息条数判定（messageCount&lt;=2 → intro，&gt;6 → negotiating），无对方 Agent 接受/拒绝/反提议状态、无底线触碰检测、无共识达成判定（剧本 Step 5.4 提的薪资底线 22K 触碰自动反提议无代码）、无死锁防御。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 设计明确的 NegotiationState enum (PROPOSED/COUNTER/ACCEPTED/REJECTED/STALEMATE) 与底线检查器。
+  </div>
+</div>
+
+
+<div class="finding-block finding-warning">
+  <div class="finding-header">
+    <span class="badge" style="background:#f5b14e;">WARNING</span>
+    <span class="finding-ac">ISSUE-AI004~c2</span>
+  </div>
+  <div class="finding-title">Agent 人格系统仅是 prompt 字符串拼接，无一致性维护与场景规则学习</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/services/ai/agentDialogService.ts:675-690</code>
+  </div>
+  <div class="finding-desc">buildPersona = agent.config.personality 数组 + communicationStyle 字符串拼到 prompt 即完事。无人格状态持久化、无跨会话一致性校验、无违反人格检测。Step 1.2 要求的学习场景行为准则 → 显示进度 → 生成行为准则摘要无对应实现。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 实现学习场景规则入口（生成并持久化 persona）；增加跨轮 persona drift 检测。
+  </div>
+</div>
+
+
+<div class="finding-block finding-warning">
+  <div class="finding-header">
+    <span class="badge" style="background:#f5b14e;">WARNING</span>
+    <span class="finding-ac">ISSUE-COM001~c3</span>
+  </div>
+  <div class="finding-title">dialog session 双轨存储 (memory Map + DB)，状态不一致与多实例风险</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/services/ai/agentDialogService.ts:154,403-407,808</code>
+  </div>
+  <div class="finding-desc">sessions Map 内存缓存 + dialogSessionRecord DB upsert，每条消息都重写整个 session（messages JSON 列整体替换）。多实例下进程内存 Map 偏离；大对话越多越慢（O(n) 序列化）。persistSession 失败仅 logger.warn，调用方拿到的是 in-memory 状态，下次重启丢失。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 改为 messages 单独 table、append-only；session Map 仅做缓存；多副本配合 Redis pub/sub。
+  </div>
+</div>
+
+
+<div class="finding-block finding-warning">
+  <div class="finding-header">
+    <span class="badge" style="background:#f5b14e;">WARNING</span>
+    <span class="finding-ac">JOB-004~func</span>
+  </div>
+  <div class="finding-title">横向场景 (AgentJob/AgentAd/VisionShare) 各自独立实现，未真正复用基础设施</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/services/dating/agentConversationRoom.ts; apps/server/src/services/job/negotiationRoom.ts; apps/server/src/services/ai/agentNegotiationService.ts</code>
+  </div>
+  <div class="finding-desc">三场景各有自己的 Room 与 Chat 服务（dating 的 agentConversationRoom + agentInitiatedChat、job 的 negotiationRoom、ad 的 agentNegotiationService），房间数据结构、状态机、消息格式互不相同。剧本 Phase 5 声称的横向同构 — 同一套基础设施实际是三套各自实现，没有共享 base class 或抽象。VisionShare 与 Agent 对话基础设施完全脱钩。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 抽象 AgentRoomBase / AgentDialogBase 类，三场景继承统一接口。
+  </div>
+</div>
+
+
+<div class="finding-block finding-warning">
+  <div class="finding-header">
+    <span class="badge" style="background:#f5b14e;">WARNING</span>
+    <span class="finding-ac">AS-009-AC-1</span>
+  </div>
+  <div class="finding-title">AS-009 引荐流程仅有 referralService 桩，阈值/实时触发/UI 链路不完整</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/services/dating/agentConversationRoom.ts:413-439</code>
+  </div>
+  <div class="finding-desc">匹配度达标 → 请求引荐 → 进入四人群聊 整个流程在代码中只有 completeRoom 末尾一段 — 当 qualityScore &gt;= 0.6 调用 createReferralFromConversation。但：(a) 剧本要求 80% 阈值，代码用 0.6；(b) 此触发只在 room 完成时走，不是匹配度实时达标动态触发；(c) 实时意图分析 → 主人确认弹窗 → 双方接受跳四人群聊在 mobile 端无对应屏幕。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 拆分实时阈值监听器 + 引荐确认 UI 流；阈值常量集中配置；与剧本对齐为 0.8。
+  </div>
+</div>
+
+
+<h2 id="critic-info">8. Critic 疑点 — 提示 (Info) — 1 项</h2>
+
+<div class="finding-block finding-info">
+  <div class="finding-header">
+    <span class="badge" style="background:#5e9eff;">INFO</span>
+    <span class="finding-ac">ISSUE-COM001~c1</span>
+  </div>
+  <div class="finding-title">Socket 命名空间设计冗余，11 个命名空间职责重叠</div>
+  <div class="finding-meta">
+    <span class="meta-label">位置:</span> <code>apps/server/src/socket/index.ts:83-170</code>
+  </div>
+  <div class="finding-desc">同时存在 / /chat /user /handoff /system /group /room /negotiation /presence /dialog /matchSubscriptions 共 11 个命名空间。/chat /dialog /group /room 职责高度重叠（都做加入房间/广播/离开房间）。剧本只要求 /chat 与 /presence 两个。命名空间膨胀导致重复认证开销与客户端连接复杂度。</div>
+  <div class="finding-rec">
+    <span class="meta-label">建议:</span> 整合 /chat /dialog /group /room → /chat 一个命名空间下用 events 区分。
+  </div>
+</div>
+
+
+<h2 id="conclusion">9. 总结与结论</h2>
+<div class="conclusion">
+  <h3>验证结果反差</h3>
+  <p>Demo Agent 在 48 条 AC 中标记 40 条 PASS（基于代码存在性），但 Critic Agent 深入审查后发现 7 条严重问题，揭示了多个 AC 实际上是"占位实现"而非"功能完整"。</p>
+
+  <h3>关键漏洞</h3>
+  <ol>
+    <li><strong>核心 API 死代码</strong>：initiateChat() 无任何调用方，AS-005 主功能无法触发</li>
+    <li><strong>LLM 未接入</strong>：Agent 自动响应是硬编码模板，与剧本声称的"5-10 轮自然对话"矛盾</li>
+    <li><strong>private_advice 通道缺失</strong>：US-AGENT-009 / AS-008 整套私聊建议在 server 与 mobile 双端均不存在</li>
+    <li><strong>AgentMemory 表缺失</strong>：AS-LEARN-001 三个 AC 没有 schema 落地</li>
+    <li><strong>限流机制缺失</strong>：50+ 并发、对话上限均无落地，剧本 Phase 6 的边界情形不可验证</li>
+    <li><strong>dialog 命名空间是空壳</strong>：dialogHandler 不调用 dialog 引擎，WebSocket 触发 Agent 生成消息的链路断开</li>
+  </ol>
+
+  <h3>对应 Issue 状态</h3>
+  <p>由于发现 16 项问题，相关 Issue 将被回退到 <code>fixing</code> 状态：</p>
+  <ul>
+    <li><code>ISSUE-COM001</code> (id=29) — 2 项 (1 warning + 1 info)</li>
+    <li><code>ISSUE-AI004</code> (id=16) — 14 项 (7 critical + 6 warning + 1 cross-cutting)</li>
+  </ul>
+
+  <h3>建议</h3>
+  <p>这些问题应优先处理 critical 项（核心 API 调用链 + LLM 接入 + 私聊建议通道 + AgentMemory schema），warning 项作为后续 polish 阶段处理。</p>
+</div>
+
+<footer style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #333; color: #777; font-size: 12px;">
+  生成于 2026-04-30T21:23:43.516721 · BridgeAI IssueTree V3 · play-story
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,343 @@
+{
+  "id": 15,
+  "slug": "VS-005",
+  "title": "查看照片（显示对方信用）",
+  "narrative": "用户支付积分查看照片，界面显示拍摄者信用分。",
+  "issues": [
+    {
+      "id": 24,
+      "slug": "ISSUE-C002c",
+      "title": "L3自然语言信息模型",
+      "description": "实现 Agent L3 自然语言信息模型，支持用户用自由文本\n描述需求/供给，AI 智能提炼并转化为结构化信息。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 99,
+          "slug": "VS-006-AC-1",
+          "description": "支持按地点和时间搜索",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 100,
+          "slug": "VS-006-AC-2",
+          "description": "返回匹配的历史照片",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 239,
+          "slug": "ISSUE-C002c~c1",
+          "description": "L3 文本管理:\n- 多段文本输入支持\n- 富文本/纯文本选项\n- 字符数限制和提示\n- 草稿自动保存\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 240,
+          "slug": "ISSUE-C002c~c2",
+          "description": "文本提炼:\n- LLM 提炼 L3 到 L2\n- 提炼结果置信度评分\n- 可编辑的提炼结果\n- 提炼历史记录\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 241,
+          "slug": "ISSUE-C002c~c3",
+          "description": "提炼确认 UI:\n- 提炼结果展示\n- 编辑和确认流程\n- 拒绝和重新提炼\n- 置信度可视化\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 242,
+          "slug": "ISSUE-C002c~c4",
+          "description": "L3 存储:\n- 原始文本存储\n- 提炼历史存储\n- 文本向量化(可选)\n- 全文搜索索引\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 243,
+          "slug": "ISSUE-C002c~c5",
+          "description": "提炼优化:\n- 用户修正反馈收集\n- Few-shot 示例学习\n- 提炼质量监控\n- 模型调优\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 614,
+          "slug": "VS-006~func",
+          "description": "用户按地点和时间搜索历史照片",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 615,
+          "slug": "VS-006~edge",
+          "description": "异常：搜索无结果、搜索条件异常",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "slug": "ISSUE-CR003",
+      "title": "积分系统基础与交易记录",
+      "description": "实现平台积分系统，包括积分账户管理、积分获取与消耗、\n交易记录追踪、积分商城基础、以及积分在场景中的应用(如VisionShare照片购买)。\n积分作为平台内流通的虚拟货币，支持平台经济生态。\n\n注意: 本Issue已拆分为子Issue，详见 sub_issues 列表。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 97,
+          "slug": "VS-005-AC-1",
+          "description": "照片列表页显示价格、缩略图和拍摄者信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 121,
+          "slug": "AD-004-AC-2",
+          "description": "达成双方满意的方案",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 122,
+          "slug": "AD-005-AC-1",
+          "description": "一键跳转商家页面，自动应用优惠",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 612,
+          "slug": "VS-005~func",
+          "description": "用户支付积分查看照片，界面显示拍摄者信用",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 642,
+          "slug": "AD-004~func",
+          "description": "Agent 与商家 Agent 谈判争取更好优惠",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 643,
+          "slug": "AD-004~edge",
+          "description": "异常：谈判僵局、商家拒绝让步",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 644,
+          "slug": "AD-005~func",
+          "description": "一键购买后评价商家",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 645,
+          "slug": "AD-005~edge",
+          "description": "异常：购买失败、优惠码无效",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "slug": "ISSUE-CR003a",
+      "title": "积分账户数据模型",
+      "description": "积分系统数据库设计与基础数据模型实现。\n包括积分账户、交易记录、冻结记录等核心数据表设计。\n作为积分系统的数据层基础，为上层服务提供数据支撑。\n",
+      "status": "fixing",
+      "acceptance_criteria": [
+        {
+          "ac_id": 98,
+          "slug": "VS-005-AC-2",
+          "description": "支付积分后显示完整照片",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 303,
+          "slug": "ISSUE-CR003a~c1",
+          "description": "积分系统数据库设计:\n- PointsAccount 表设计(用户ID、当前余额、总获取、总消耗、冻结金额)\n- PointsTransaction 表设计(交易ID、类型、金额、描述、关联场景)\n- PointsFreeze 表设计(冻结记录用于交易担保)\n- 账户唯一性约束和用户关联\n- 余额非负约束\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 612,
+          "slug": "VS-005~func",
+          "description": "用户支付积分查看照片，界面显示拍摄者信用",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 613,
+          "slug": "VS-005~edge",
+          "description": "异常：积分不足、支付中断",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "slug": "ISSUE-CR003b",
+      "title": "积分交易核心服务与规则配置",
+      "description": "积分交易核心服务实现，包含积分获取、消耗、冻结、转账等操作的原子性实现，",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 98,
+          "slug": "VS-005-AC-2",
+          "description": "支付积分后显示完整照片",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 612,
+          "slug": "VS-005~func",
+          "description": "用户支付积分查看照片，界面显示拍摄者信用",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 613,
+          "slug": "VS-005~edge",
+          "description": "异常：积分不足、支付中断",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 707,
+          "slug": "ISSUE-CR003b~c1",
+          "description": "积分操作原子性实现:\n- 积分获取接口(任务奖励、签到等)\n- 积分消耗接口(购买服务、打赏等)\n- 积分冻结/解冻(交易担保)\n- 积分转账(用户间转移)\n- 事务安全(防止超卖和并发问题)\n",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 708,
+          "slug": "ISSUE-CR003b~c2",
+          "description": "积分获取和消耗规则:\n- 获取规则配置(签到、分享、完成任务等)\n- 消耗规则配置(查看照片、发起匹配等)\n- 每日/每周获取上限\n- 积分价值换算(人民币->积分)\n- 规则动态调整接口(管理员)\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "slug": "ISSUE-CR003c",
+      "title": "积分交易记录API",
+      "description": "积分交易记录查询API实现，包括余额查询、交易记录列表、交易详情、积分统计等功能。\n作为积分系统的API层，为客户端提供积分数据访问接口。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 304,
+          "slug": "ISSUE-CR003c~c1",
+          "description": "积分记录查询接口:\n- GET /api/v1/points/balance - 获取当前余额\n- GET /api/v1/points/transactions - 获取交易记录(支持筛选和分页)\n- GET /api/v1/points/transactions/:id - 获取交易详情\n- GET /api/v1/points/stats - 获取积分统计(收入/支出分类)\n- 交易记录导出功能\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "slug": "ISSUE-CR003d",
+      "title": "积分钱包UI与VisionShare场景支付",
+      "description": "积分钱包移动端UI实现，以及VisionShare场景下的积分支付功能。\n包括积分钱包界面、交易记录展示、照片购买积分支付等应用层功能。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 305,
+          "slug": "ISSUE-CR003d~c1",
+          "description": "移动端积分界面:\n- 积分钱包首页(余额、收支概览)\n- 交易记录列表(时间轴展示)\n- 交易详情页(含关联场景)\n- 积分获取任务列表\n- 积分充值入口(预留)\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 306,
+          "slug": "ISSUE-CR003d~c2",
+          "description": "积分在VisionShare场景的应用:\n- 照片查看积分支付接口\n- 支付前余额检查\n- 积分支付给供给方(平台抽成)\n- 支付成功后的照片解锁\n- 支付失败和退款处理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 100,
+      "slug": "ISSUE-VS005a",
+      "title": "照片浏览与画廊展示",
+      "description": "实现VisionShare场景的照片浏览和画廊展示功能。\n需求方可以浏览供给方上传的照片，查看缩略图网格、大图预览、图片信息等。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 572,
+          "slug": "ISSUE-VS005a~c1",
+          "description": "浏览功能:\n- 缩略图网格展示\n- 大图预览和缩放\n- 左右滑动切换\n- 图片信息展示(拍摄时间/地点)\n- 下载和收藏按钮(未解锁时显示锁定状态)\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 101,
+      "slug": "ISSUE-VS005b",
+      "title": "积分支付与高清解锁",
+      "description": "实现VisionShare场景的积分支付核心功能和高清原图解锁机制。\n支持单图/多图支付、支付确认、支付后自动解锁高清原图下载。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 573,
+          "slug": "ISSUE-VS005b~c1",
+          "description": "支付功能:\n- 单图/多图支付选项\n- 积分余额显示\n- 支付确认弹窗\n- 支付密码验证\n- 支付结果通知\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 574,
+          "slug": "ISSUE-VS005b~c2",
+          "description": "解锁机制:\n- 支付后自动解锁\n- 原图下载链接生成\n- 下载次数限制\n- 有效期管理\n- 水印移除\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "slug": "ISSUE-VS005c",
+      "title": "交易记录与退款申诉",
+      "description": "实现VisionShare场景的交易记录管理和退款申诉功能。\n用户可以查看支付历史、交易详情，并在需要时发起退款申请和申诉。\n",
+      "status": "fixing",
+      "acceptance_criteria": [
+        {
+          "ac_id": 575,
+          "slug": "ISSUE-VS005c~c1",
+          "description": "记录功能:\n- 支付历史列表\n- 交易详情查看\n- 收支明细统计\n- 交易状态追踪\n- 交易记录导出\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 576,
+          "slug": "ISSUE-VS005c~c2",
+          "description": "售后功能:\n- 退款申请入口\n- 退款原因选择\n- 退款审核流程\n- 积分退回处理\n- 申诉状态查询\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "slug": "ISSUE-VS005d",
+      "title": "支付安全与风控",
+      "description": "实现VisionShare场景的支付安全和风控系统。\n包括支付行为风控检测、异常交易预警、支付限额控制等安全功能。\n",
+      "status": "fixing",
+      "acceptance_criteria": [
+        {
+          "ac_id": 577,
+          "slug": "ISSUE-VS005d~c1",
+          "description": "安全功能:\n- 支付行为风控检测\n- 异常交易预警\n- 支付限额控制\n- 设备指纹识别\n- 支付日志审计\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "success": false,
+  "message": "Password is incorrect",
+  "errorCode": "INTERNAL_ERROR",
+  "meta": {
+    "stack": "Error: Password is incorrect\n    at Object.verifyPassword (/Users/z/projects/bridgeai/apps/server/src/services/userService.js:191:15)\n    at async <anonymous> (/Users/z/projects/bridgeai/apps/server/src/routes/users.js:142:5)",
+    "statusCode": 500
+  }
+}

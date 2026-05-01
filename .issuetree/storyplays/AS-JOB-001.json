@@ -1,0 +1,124 @@
+{
+  "id": 45,
+  "slug": "AS-JOB-001",
+  "title": "我为求职者主人寻找职位",
+  "narrative": "匹配合适职位并与 HR Agent 协商。",
+  "issues": [
+    {
+      "id": 68,
+      "slug": "ISSUE-JOB001",
+      "title": "求职者画像与简历",
+      "description": "实现求职者Agent的画像配置与简历管理功能。求职者通过自然语言\n或结构化表单描述个人技能、工作经历、期望薪资等，AI提炼核心\n信息并生成标准化简历。支持简历隐私控制和定向投递。\n",
+      "status": "arbitrating",
+      "acceptance_criteria": [
+        {
+          "ac_id": 111,
+          "slug": "JOB-001-AC-1",
+          "description": "设置技能标签、工作经历、期望薪资、工作偏好",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 408,
+          "slug": "ISSUE-JOB001~c1",
+          "description": "模型设计:\n- 求职者Agent类型定义(JobSeekerAgent)\n- 基本信息字段(姓名、联系方式、所在地)\n- 专业技能标签体系\n- 工作经历结构化存储\n- 教育背景信息\n- 期望薪资范围与职位类型\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 409,
+          "slug": "ISSUE-JOB001~c2",
+          "description": "AI提炼:\n- 自然语言简历解析\n- 关键信息自动提取(技能/经验/学历)\n- 技能标签智能匹配与标准化\n- 工作经历时间线生成\n- 简历质量评分与优化建议\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 410,
+          "slug": "ISSUE-JOB001~c3",
+          "description": "隐私管理:\n- 简历可见性设置(公开/仅投递/隐藏)\n- 敏感信息脱敏处理(手机号/邮箱)\n- 联系方式访问权限控制\n- 投递记录追踪\n- 简历撤回功能\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 411,
+          "slug": "ISSUE-JOB001~c4",
+          "description": "CRUD接口:\n- 创建/更新简历API\n- 简历版本管理\n- 多简历支持(针对不同职位)\n- 简历预览功能\n- 简历导出(PDF/Markdown)\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 412,
+          "slug": "ISSUE-JOB001~c5",
+          "description": "UI实现:\n- 简历表单组件(分步骤填写)\n- 技能标签选择器\n- 工作经历时间线编辑\n- 简历预览页面\n- 隐私设置界面\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 413,
+          "slug": "ISSUE-JOB001~c6",
+          "description": "投递系统:\n- 向职位投递简历功能\n- 投递状态追踪(已投递/已查看/感兴趣/不合适)\n- 投递历史记录\n- 投递反馈通知\n- 批量投递限制管理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 626,
+          "slug": "JOB-001~func",
+          "description": "求职者配置 Agent：技能、经验、期望薪资",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 627,
+          "slug": "JOB-001~edge",
+          "description": "异常：信息不完整、虚假技能",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 672,
+          "slug": "AS-JOB-001~func",
+          "description": "求职者 Agent 匹配职位并与 HR Agent 协商",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 69,
+      "slug": "ISSUE-JOB003",
+      "title": "简历智能匹配筛选",
+      "description": "实现求职者与招聘方的智能双向匹配系统。AI分析简历与职位\n要求的匹配度，考虑技能、经验、薪资期望等多维度因素，\n为双方推荐最合适的匹配对象。支持匹配筛选与排序。\n\n这是一个史诗级任务，包含以下子任务:\n- ISSUE-JOB003a: 核心算法层 - 匹配度算法实现\n- ISSUE-JOB003b: 服务层 - 筛选服务+推荐引擎\n- ISSUE-JOB003c: 接口层 - API+通知\n- ISSUE-JOB003d: UI层 - 移动端界面\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 113,
+          "slug": "JOB-003-AC-1",
+          "description": "评估匹配度并向双方推荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 630,
+          "slug": "JOB-003~func",
+          "description": "Agent 间自动匹配职位和简历，双向过滤",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 631,
+          "slug": "JOB-003~edge",
+          "description": "异常：单向匹配、过滤条件变更",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 674,
+          "slug": "AS-JOB-002~func",
+          "description": "招聘方 Agent 筛选简历并与候选人 Agent 初筛",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

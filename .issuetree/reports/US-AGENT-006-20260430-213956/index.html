@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>US-AGENT-006 Story Play Report</title>
+  <style>
+    :root {
+      --bg: #1a1b26;
+      --surface: #24283b;
+      --surface2: #2f334d;
+      --border: #3b4261;
+      --text: #c0caf5;
+      --text-dim: #565f89;
+      --accent: #7aa2f7;
+      --green: #9ece6a;
+      --red: #f7768e;
+      --yellow: #e0af68;
+      --orange: #ff9e64;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+    h2 { font-size: 20px; font-weight: 600; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    h3 { font-size: 16px; font-weight: 600; margin: 16px 0 8px; }
+
+    .meta { color: var(--text-dim); margin-bottom: 24px; font-size: 14px; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 24px 0; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-card .number { font-size: 36px; font-weight: 700; }
+    .stat-card .label { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+    .stat-pass .number { color: var(--green); }
+    .stat-warn .number { color: var(--yellow); }
+    .stat-fail .number { color: var(--red); }
+    .stat-total .number { color: var(--accent); }
+
+    .phase { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 16px 0; overflow: hidden; }
+    .phase-header { background: var(--surface2); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .phase-header:hover { background: var(--border); }
+    .phase-title { font-weight: 600; font-size: 15px; }
+    .phase-count { font-size: 13px; color: var(--text-dim); }
+
+    .ac-item { padding: 12px 16px; border-top: 1px solid var(--border); }
+    .ac-slug { font-family: 'SF Mono', monospace; font-size: 13px; color: var(--accent); }
+    .ac-desc { font-size: 14px; margin: 4px 0; }
+    .ac-meta { font-size: 12px; color: var(--text-dim); display: flex; gap: 16px; }
+    .ac-result { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .ac-result.pass { background: rgba(158,206,106,0.15); color: var(--green); }
+    .ac-result.fail { background: rgba(247,118,142,0.15); color: var(--red); }
+    .ac-result.warn { background: rgba(224,175,104,0.15); color: var(--yellow); }
+
+    .risk-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .risk-table th { text-align: left; padding: 8px 12px; background: var(--surface2); font-size: 13px; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+    .risk-table td { padding: 8px 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
+    .risk-table tr:hover { background: var(--surface2); }
+    .risk-badge { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+    .risk-critical { background: var(--red); }
+    .risk-warning { background: var(--yellow); }
+    .risk-info { background: var(--green); }
+
+    .verdict { background: var(--surface); border: 2px solid var(--red); border-radius: 8px; padding: 20px; margin: 24px 0; }
+    .verdict h3 { color: var(--red); }
+
+    .summary-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .summary-box ul { list-style: none; padding: 0; }
+    .summary-box li { padding: 4px 0; font-size: 14px; }
+    .summary-box li::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+
+    @media print {
+      body { background: #fff; color: #333; }
+      .phase { break-inside: avoid; }
+      .stat-card { border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>US-AGENT-006 Story Play Report</h1>
+    <div class="meta">
+      <strong>Story</strong>: 接受/拒绝引荐 |
+      <strong>Narrative</strong>: Agent 匹配成功并请求引荐真人时，用户决定是否接受 |
+      <strong>Date</strong>: 2026-04-30 |
+      <strong>Issue</strong>: ISSUE-C002 (ai_confirmed)
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card stat-total">
+        <div class="number">41</div>
+        <div class="label">AC Total</div>
+      </div>
+      <div class="stat-card stat-pass">
+        <div class="number">34</div>
+        <div class="label">Code Review Pass</div>
+      </div>
+      <div class="stat-card stat-warn">
+        <div class="number">0</div>
+        <div class="label">Questioned</div>
+      </div>
+      <div class="stat-card stat-fail">
+        <div class="number">7</div>
+        <div class="label">Blocking Issues (Critic)</div>
+      </div>
+    </div>
+
+    <!-- Verdict -->
+    <div class="verdict">
+      <h3>Story Verdict: BLOCKED</h3>
+      <p style="margin-top:8px;">Demo Agent verified all 41 ACs pass at code existence level. However, Critic Agent discovered 7 blocking issues that prevent end-to-end functionality. The referral API routes are not mounted in Express, mobile screens are not registered in navigation, data uses in-memory stores without persistence, and several core functions are console.log stubs.</p>
+      <p style="margin-top:8px; color: var(--text-dim); font-size: 13px;">Recommendation: Do NOT accept this story. Fix R1-R7 before re-verification.</p>
+    </div>
+
+    <!-- Critic Risk Table -->
+    <h2>Critic Agent Risk Analysis</h2>
+    <table class="risk-table">
+      <thead>
+        <tr><th>Risk</th><th>Severity</th><th>Phase</th><th>Description</th><th>Evidence</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>R1</td>
+          <td><span class="risk-badge risk-critical"></span>Critical</td>
+          <td>API Routes</td>
+          <td>Entire <code>/api/v1/dating/referrals/*</code> API not mounted in Express router. Only service functions exist.</td>
+          <td>routes/dating/index.ts only mounts profileRoutes</td>
+        </tr>
+        <tr>
+          <td>R2</td>
+          <td><span class="risk-badge risk-critical"></span>Critical</td>
+          <td>Mobile</td>
+          <td>ReferralScreen/ReferralHistoryScreen/MatchSuccessScreen not registered in any Navigator</td>
+          <td>Grep of navigation/ directory: 0 references</td>
+        </tr>
+        <tr>
+          <td>R3</td>
+          <td><span class="risk-badge risk-critical"></span>Critical</td>
+          <td>Mobile</td>
+          <td>currentUserId hardcoded to <code>'current_user_id'</code> string literal</td>
+          <td>ReferralScreen.tsx:81, ReferralHistoryScreen.tsx:82</td>
+        </tr>
+        <tr>
+          <td>R4</td>
+          <td><span class="risk-badge risk-critical"></span>Critical</td>
+          <td>Data</td>
+          <td>ReferralRecord/MutualConsent/ChatRoom use in-memory Map stores, no persistence</td>
+          <td>referralService.ts:34-35, humanChatRoomService.ts:85</td>
+        </tr>
+        <tr>
+          <td>R5</td>
+          <td><span class="risk-badge risk-critical"></span>Critical</td>
+          <td>Data</td>
+          <td>Two parallel stores (referralService + consentProcessor) for same referralId, not shared</td>
+          <td>Both files maintain independent Map stores</td>
+        </tr>
+        <tr>
+          <td>R6</td>
+          <td><span class="risk-badge risk-critical"></span>Critical</td>
+          <td>Business</td>
+          <td>chatRoomId format <code>room_human_xxx</code> is not UUID, chat route zod validation rejects it</td>
+          <td>humanChatRoomService.ts:431 vs routes/v1/chat.ts:51</td>
+        </tr>
+        <tr>
+          <td>R7</td>
+          <td><span class="risk-badge risk-critical"></span>Critical</td>
+          <td>Business</td>
+          <td>exchangeContactInfo and updateMatchingAlgorithm are console.log stubs</td>
+          <td>consentProcessor.ts:318, 330</td>
+        </tr>
+        <tr>
+          <td>R8</td>
+          <td><span class="risk-badge risk-warning"></span>Warning</td>
+          <td>UI</td>
+          <td>Rejection does not collect RejectionReason, model supports it but UI doesn't</td>
+          <td>ReferralScreen.tsx:210</td>
+        </tr>
+        <tr>
+          <td>R9</td>
+          <td><span class="risk-badge risk-warning"></span>Warning</td>
+          <td>Model</td>
+          <td>models/Agent.ts and services/agentService.ts define two different Agent concepts</td>
+          <td>Both files</td>
+        </tr>
+        <tr>
+          <td>R10</td>
+          <td><span class="risk-badge risk-warning"></span>Warning</td>
+          <td>Business</td>
+          <td>Decision change limit of 3 has no corresponding AC (possible over-engineering)</td>
+          <td>MutualConsent.ts:76</td>
+        </tr>
+        <tr>
+          <td>R11</td>
+          <td><span class="risk-badge risk-info"></span>Info</td>
+          <td>Timing</td>
+          <td>Client-side countdown has no server clock skew calibration</td>
+          <td>ReferralScreen.tsx:121</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Phase 0 -->
+    <h2>Phase 0: Agent Configuration (26 ACs)</h2>
+    <div class="phase">
+      <div class="phase-header">
+        <span class="phase-title">Agent Configuration — Demand/Supply/Scenes</span>
+        <span class="phase-count">26 ACs | Code Review: All Pass | Critic: N/A (model layer)</span>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-002~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">User creates demand/supply via Agent dialog</div>
+        <div class="ac-meta"><span>Verified: demandExtractionService.ts + supplyExtractionService.ts</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-002-AC-4</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Agent extracts key fields from dialog and classifies</div>
+        <div class="ac-meta"><span>Verified: ai/extraction.ts + demandToL2Mapper</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-002-AC-5</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Auto-save to scene after user confirms</div>
+        <div class="ac-meta"><span>Verified: ExtractionResultScreen.tsx + dating profile POST</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AS-002~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Agent parses NL input into structured demand</div>
+        <div class="ac-meta"><span>Verified: demandExtractionService NLP pipeline + extractL2FromL3</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">DATE-001-AC-1</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Set personal info and preferences</div>
+        <div class="ac-meta"><span>Verified: L1ProfileForm.tsx with age/gender/location/occupation fields</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">DATE-001~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">User configures dating preferences</div>
+        <div class="ac-meta"><span>Verified: dating/profile.routes.ts POST endpoint</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">ISSUE-C002~c1</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Agent L1 basic fields (age, gender, location, occupation)</div>
+        <div class="ac-meta"><span>Verified: L1ProfileForm.tsx with AgeRange/Gender/Location fields</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">ISSUE-C002~c2</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Agent L2 scene-specific structured attributes</div>
+        <div class="ac-meta"><span>Verified: L2ProfileForm.tsx + 4 scene schemas</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">ISSUE-C002~c3</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Agent L3 unstructured expression (free text, multimedia)</div>
+        <div class="ac-meta"><span>Verified: L3TextEditor.tsx with maxLength=2000, auto-save</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AS-002-AC-3</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Store and trigger real-time matching after confirmation</div>
+        <div class="ac-meta"><span>Verified: matchQueryService.queryMatches() + querySubscriptionManager</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AS-003~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Agent records supply profile</div>
+        <div class="ac-meta"><span>Verified: supplyExtractionService.ts with Supply interface</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AS-003-AC-3</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Activate supply status for matching</div>
+        <div class="ac-meta"><span>Verified: matchQueryService filters agentType=SUPPLY</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-002~edge</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Edge case: empty input, nonsense input, long dialog</div>
+        <div class="ac-meta"><span>Verified: matchEdgeCases.ts + extractionValidator</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AS-002~edge</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Edge case: extraction failure, empty 3-layer fields</div>
+        <div class="ac-meta"><span>Verified: extractionValidator.ts + clarificationService.ts</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">JOB-001-AC-1</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Set skill tags, work experience, expected salary</div>
+        <div class="ac-meta"><span>Verified: L2 agentJob schema</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">JOB-001~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Job seeker configures Agent</div>
+        <div class="ac-meta"><span>Verified: jobSeeker/profile.routes.ts</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-011-AC-1</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Set public and detailed info per scene</div>
+        <div class="ac-meta"><span>Verified: disclosure.ts with DisclosureLevel enum</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-011~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Configure 2-level (public/detailed) demand info per scene</div>
+        <div class="ac-meta"><span>Verified: disclosureService field-level disclosure</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">JOB-002-AC-1</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Set job posting info, salary budget, conditions</div>
+        <div class="ac-meta"><span>Verified: jobPostingRoutes.ts + employerSchema.ts</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">JOB-002~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Employer configures Agent with job posting</div>
+        <div class="ac-meta"><span>Verified: jobPostingRoutes.ts CRUD endpoints</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AD-001-AC-1</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Set categories, budget range, brand preferences</div>
+        <div class="ac-meta"><span>Verified: consumerDemandRoutes.ts + agentAdConsumer L2 schema</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AD-001~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">User configures ad consumer Agent</div>
+        <div class="ac-meta"><span>Verified: consumerDemandRoutes.ts endpoints</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AD-002-AC-1</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Set target customers, promotions, marketing budget</div>
+        <div class="ac-meta"><span>Verified: merchants.ts + agentAd L2 schema</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AD-002~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Merchant configures Agent</div>
+        <div class="ac-meta"><span>Verified: merchants.ts + offers.ts routes</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-012-AC-1</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Set public and detailed supply info per scene</div>
+        <div class="ac-meta"><span>Verified: DisclosureLevel across all scenes</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-012~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Configure 2-level supply info per scene</div>
+        <div class="ac-meta"><span>Verified: disclosureService.canViewField()</span></div>
+      </div>
+    </div>
+
+    <!-- Phase 1 -->
+    <h2>Phase 1: Match Discovery (13 ACs)</h2>
+    <div class="phase">
+      <div class="phase-header">
+        <span class="phase-title">Referral Notification &amp; Match Score</span>
+        <span class="phase-count">13 ACs | Code Review: All Pass | Critic: R1-R7 block this phase</span>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-006-AC-1</span>
+        <span class="ac-result warn">WARN</span>
+        <div class="ac-desc">Receive referral notification with match reason</div>
+        <div class="ac-meta"><span>Demo: PASS (ReferralScreen.tsx shows compatibilityFactors). Critic: R1 blocks — API not mounted.</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-006-AC-2</span>
+        <span class="ac-result warn">WARN</span>
+        <div class="ac-desc">Show other party's key info and credit score</div>
+        <div class="ac-meta"><span>Demo: PASS (MatchCandidate.creditScore). Critic: R2 blocks — screen not navigable.</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-006~func</span>
+        <span class="ac-result warn">WARN</span>
+        <div class="ac-desc">User can accept or reject referral</div>
+        <div class="ac-meta"><span>Demo: PASS (ReferralScreen accept/reject buttons). Critic: R1+R2+R3+R4 block end-to-end.</span></div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AS-009-AC-2 / AS-009~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Show counterpart info + credit score; request referral confirmation</div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AS-DATE-002-AC-3 / DATE-003-AC-2 / DATE-003~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Request referral after match threshold; Agent dialog before referral</div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-005-AC-2</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Display dialog agents and match score</div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">VS-005-AC-1</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Photo list shows price, thumbnail, photographer credit score</div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-006~edge / DATE-003~edge / DATE-004~edge</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Edge cases: referral lost, agent stuck, member offline</div>
+        <div class="ac-meta"><span>Verified: consentProcessor handles MUTUAL_REJECT/SINGLE_REJECT/EXPIRED</span></div>
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <h2>Phase 2: Detail Review (10 ACs)</h2>
+    <div class="phase">
+      <div class="phase-header">
+        <span class="phase-title">Public Info Browsing &amp; Privacy</span>
+        <span class="phase-count">10 ACs | Code Review: All Pass</span>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-013-AC-1 / US-AGENT-013~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Agent displays counterpart public demand/supply overview</div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">US-AGENT-013~edge</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Edge: attempt to view detailed info blocked</div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AS-007~func / AS-007-AC-2 / AS-007-AC-3 / AS-007~edge</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Disclosure strategy, audit logging, strict mode</div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">AS-004-AC-1 / AS-004~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Structured match records; batch read + scoring</div>
+      </div>
+      <div class="ac-item">
+        <span class="ac-slug">JOB-003~func</span>
+        <span class="ac-result pass">PASS</span>
+        <div class="ac-desc">Agent auto-matches jobs and resumes bidirectionally</div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <h2>Summary</h2>
+    <div class="summary-box">
+      <h3>What was verified</h3>
+      <ul>
+        <li style="color:var(--green)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:8px"></span>41 ACs have corresponding code files (service layer + UI components)</li>
+        <li style="color:var(--green)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:8px"></span>L1/L2/L3 info model implemented with 4 scene schemas</li>
+        <li style="color:var(--green)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:8px"></span>Referral consent flow implemented with mutual/single accept/reject</li>
+        <li style="color:var(--green)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:8px"></span>Disclosure service with field-level access control</li>
+      </ul>
+    </div>
+    <div class="summary-box" style="border-color: var(--red);">
+      <h3 style="color: var(--red);">What blocks acceptance</h3>
+      <ul>
+        <li style="color:var(--red)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:8px"></span><strong>R1</strong>: Referral API routes not mounted in Express — HTTP endpoints return 404</li>
+        <li style="color:var(--red)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:8px"></span><strong>R2</strong>: Mobile screens not registered in navigation — users cannot reach referral pages</li>
+        <li style="color:var(--red)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:8px"></span><strong>R3</strong>: currentUserId hardcoded — multi-user testing impossible</li>
+        <li style="color:var(--red)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:8px"></span><strong>R4</strong>: In-memory data stores — all referral data lost on restart</li>
+        <li style="color:var(--red)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:8px"></span><strong>R5</strong>: Dual store inconsistency between referralService and consentProcessor</li>
+        <li style="color:var(--red)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:8px"></span><strong>R6</strong>: chatRoomId format mismatch with chat route zod validation</li>
+        <li style="color:var(--red)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:8px"></span><strong>R7</strong>: Core functions are console.log stubs (contact exchange, algorithm feedback)</li>
+      </ul>
+    </div>
+
+    <div class="meta" style="margin-top: 32px;">
+      Generated by Claude Code Play Story | Report: <code>.issuetree/reports/US-AGENT-006-20260430-213956/</code>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,497 @@
+{
+  "id": 19,
+  "slug": "DATE-003",
+  "title": "Agent 间对话匹配",
+  "narrative": "双方 Agent 先进行对话，匹配度高后请求引荐。",
+  "issues": [
+    {
+      "id": 25,
+      "slug": "ISSUE-C003",
+      "title": "地域过滤系统",
+      "description": "实现基于地理位置的过滤系统，支持按省市区、\n距离范围、地理围栏等方式筛选 Agent。\n",
+      "status": "fixing",
+      "acceptance_criteria": [
+        {
+          "ac_id": 2,
+          "slug": "AS-001-AC-2",
+          "description": "学习本场景的过滤规则",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 13,
+          "slug": "AS-004-AC-3",
+          "description": "计算匹配度分数并排序推荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 14,
+          "slug": "AS-005-AC-1",
+          "description": "根据过滤规则筛选候选",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 31,
+          "slug": "AS-VS-001-AC-3",
+          "description": "筛选信用高、距离近的候选",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 32,
+          "slug": "AS-VS-002-AC-1",
+          "description": "检查位置和相册匹配",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 35,
+          "slug": "AS-DATE-001-AC-1",
+          "description": "应用地域和属性过滤",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 41,
+          "slug": "AS-JOB-001-AC-1",
+          "description": "应用过滤条件",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 47,
+          "slug": "AS-AD-001-AC-1",
+          "description": "应用过滤条件",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 88,
+          "slug": "VS-001-AC-3",
+          "description": "设置过滤条件",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 90,
+          "slug": "VS-002-AC-1",
+          "description": "只显示符合地域和信用过滤条件的任务",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 99,
+          "slug": "VS-006-AC-1",
+          "description": "支持按地点和时间搜索",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 103,
+          "slug": "DATE-002-AC-1",
+          "description": "Agent 只扫描符合过滤条件的用户",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 119,
+          "slug": "AD-003-AC-1",
+          "description": "只推送高匹配度且符合过滤条件的广告",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 244,
+          "slug": "ISSUE-C003~c1",
+          "description": "地理数据:\n- 省市区编码标准\n- 经纬度坐标存储\n- GeoJSON 支持\n- 地址解析服务\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 245,
+          "slug": "ISSUE-C003~c2",
+          "description": "位置选择 UI:\n- 三级联动选择器\n- 地图选点功能\n- 定位权限处理\n- 常用地址管理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 246,
+          "slug": "ISSUE-C003~c3",
+          "description": "距离筛选:\n- 基于经纬度的距离计算\n- 距离范围筛选(1km, 5km, 10km等)\n- PostGIS 空间查询优化\n- 近似距离估算\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 247,
+          "slug": "ISSUE-C003~c4",
+          "description": "围栏功能:\n- 多边形围栏定义\n- 点是否在围栏内判断\n- 围栏交集计算\n- 围栏可视化\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 248,
+          "slug": "ISSUE-C003~c5",
+          "description": "位置服务:\n- 高德/百度地图 API 集成\n- 地理编码(地址转坐标)\n- 逆地理编码(坐标转地址)\n- 地址联想搜索\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 249,
+          "slug": "ISSUE-C003~c6",
+          "description": "Agent位置筛选:\n- Agent位置数据存储和更新\n- 基于位置的Agent搜索API\n- 实时位置更新机制\n- 位置隐私设置管理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 604,
+          "slug": "VS-001~func",
+          "description": "用户发布视觉需求，系统解析并推送给附近符合条件的用户",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 605,
+          "slug": "VS-001~edge",
+          "description": "异常：无法解析地点、附近无匹配用户",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 606,
+          "slug": "VS-002~func",
+          "description": "用户根据地域和信用过滤条件查看并接附近任务",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 614,
+          "slug": "VS-006~func",
+          "description": "用户按地点和时间搜索历史照片",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 618,
+          "slug": "DATE-002~func",
+          "description": "Agent 根据画像和过滤规则自动推荐匹配对象",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 640,
+          "slug": "AD-003~func",
+          "description": "Agent 间匹配用户需求和商家优惠，双向过滤",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 646,
+          "slug": "AS-001~func",
+          "description": "Agent 被创建后能读取主人画像、学习规则、生成本场景性格",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 652,
+          "slug": "AS-004~func",
+          "description": "Agent 批量读取候选公开信息，计算匹配度并排序",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 653,
+          "slug": "AS-004~edge",
+          "description": "异常：无候选、匹配算法出错",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 664,
+          "slug": "AS-VS-001~func",
+          "description": "Agent 解析主人地点意图，设置过滤条件并寻找响应者",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 665,
+          "slug": "AS-VS-001~edge",
+          "description": "异常：无法解析地点、无候选响应者",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 666,
+          "slug": "AS-VS-002~func",
+          "description": "Agent 判断主人是否适合响应附近视觉任务",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 668,
+          "slug": "AS-DATE-001~func",
+          "description": "Agent 在符合过滤条件的用户中寻找高匹配度对象",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 669,
+          "slug": "AS-DATE-001~edge",
+          "description": "异常：过滤后无候选",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 672,
+          "slug": "AS-JOB-001~func",
+          "description": "求职者 Agent 匹配职位并与 HR Agent 协商",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 676,
+          "slug": "AS-AD-001~func",
+          "description": "消费者 Agent 同时与多个商家 Agent 谈判比价",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "slug": "ISSUE-C005",
+      "title": "信用过滤系统",
+      "description": "实现基于信用分的过滤系统，支持按信用分范围筛选 Agent，\n信用分门槛设置，以及信用等级过滤。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 2,
+          "slug": "AS-001-AC-2",
+          "description": "学习本场景的过滤规则",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 13,
+          "slug": "AS-004-AC-3",
+          "description": "计算匹配度分数并排序推荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 14,
+          "slug": "AS-005-AC-1",
+          "description": "根据过滤规则筛选候选",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 35,
+          "slug": "AS-DATE-001-AC-1",
+          "description": "应用地域和属性过滤",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 41,
+          "slug": "AS-JOB-001-AC-1",
+          "description": "应用过滤条件",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 47,
+          "slug": "AS-AD-001-AC-1",
+          "description": "应用过滤条件",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 88,
+          "slug": "VS-001-AC-3",
+          "description": "设置过滤条件",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 103,
+          "slug": "DATE-002-AC-1",
+          "description": "Agent 只扫描符合过滤条件的用户",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 119,
+          "slug": "AD-003-AC-1",
+          "description": "只推送高匹配度且符合过滤条件的广告",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 250,
+          "slug": "ISSUE-C005~c1",
+          "description": "信用筛选:\n- 最低信用分设置\n- 信用分范围筛选\n- 信用等级筛选(优秀/良好/一般)\n- 无信用分处理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 251,
+          "slug": "ISSUE-C005~c2",
+          "description": "门槛设置:\n- 场景特定的信用门槛\n- 动态门槛调整\n- 门槛豁免机制\n- 门槛变更通知\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 252,
+          "slug": "ISSUE-C005~c3",
+          "description": "信用筛选 UI:\n- 信用分滑块选择器\n- 信用等级快速选择\n- 筛选结果信用展示\n- 信用解释说明\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 253,
+          "slug": "ISSUE-C005~c4",
+          "description": "不足处理:\n- 信用不足原因说明\n- 提升信用建议\n- 临时准入申请\n- 替代推荐\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 618,
+          "slug": "DATE-002~func",
+          "description": "Agent 根据画像和过滤规则自动推荐匹配对象",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 640,
+          "slug": "AD-003~func",
+          "description": "Agent 间匹配用户需求和商家优惠，双向过滤",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 646,
+          "slug": "AS-001~func",
+          "description": "Agent 被创建后能读取主人画像、学习规则、生成本场景性格",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 652,
+          "slug": "AS-004~func",
+          "description": "Agent 批量读取候选公开信息，计算匹配度并排序",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 668,
+          "slug": "AS-DATE-001~func",
+          "description": "Agent 在符合过滤条件的用户中寻找高匹配度对象",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 672,
+          "slug": "AS-JOB-001~func",
+          "description": "求职者 Agent 匹配职位并与 HR Agent 协商",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 676,
+          "slug": "AS-AD-001~func",
+          "description": "消费者 Agent 同时与多个商家 Agent 谈判比价",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "slug": "ISSUE-DATE003",
+      "title": "Agent间对话匹配",
+      "description": "实现AgentDate场景的Agent间对话匹配系统。双方Agent在隔离环境中进行多轮对话，\n了解彼此、验证匹配度、挖掘共同话题。对话结束后生成对话摘要和匹配评估报告，\n供用户决定是否同意进一步交流。支持人设一致性维护、话题深度控制、对话质量评估。\n",
+      "status": "fixing",
+      "acceptance_criteria": [
+        {
+          "ac_id": 105,
+          "slug": "DATE-003-AC-1",
+          "description": "Agent 间可进行多轮对话",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 106,
+          "slug": "DATE-003-AC-2",
+          "description": "匹配度达标后请求引荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 314,
+          "slug": "ISSUE-DATE003~c1",
+          "description": "隔离机制:\n- 双人Agent对话房间创建\n- 对话状态管理（进行中/已完成/中断）\n- 对话超时控制（单轮和总时长）\n- 对话轮次限制配置\n- 用户不可见隔离层（防止提前暴露）\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 315,
+          "slug": "ISSUE-DATE003~c2",
+          "description": "对话生成:\n- 基于交友画像的对话策略\n- 话题选择与引导（从浅入深）\n- 人设一致性维护（与L3模型一致）\n- 信息获取与验证\n- 对话上下文记忆（多轮连贯性）\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 316,
+          "slug": "ISSUE-DATE003~c3",
+          "description": "质量评估:\n- 对话流畅度监测\n- 话题深度评估\n- 双方参与度分析\n- 信息获取有效性\n- 实时质量分数（低质量时调整策略）\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 317,
+          "slug": "ISSUE-DATE003~c4",
+          "description": "报告生成:\n- 对话内容摘要（关键信息提取）\n- 匹配度重新评估（基于对话）\n- 共同话题亮点提炼\n- 潜在问题提示（价值观冲突等）\n- 建议是否继续交流\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 318,
+          "slug": "ISSUE-DATE003~c5",
+          "description": "移动端UI:\n- Agent对话进行中状态提示\n- 对话完成通知\n- 对话摘要查看界面\n- 匹配评估报告展示\n- 用户决策操作（同意/拒绝/再聊一轮）\n- 决策理由收集（可选）\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 319,
+          "slug": "ISSUE-DATE003~c6",
+          "description": "安全机制:\n- 敏感话题检测与回避\n- 不当内容拦截\n- 对话异常中断处理\n- 用户紧急终止对话\n- 争议上报机制\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 620,
+          "slug": "DATE-003~func",
+          "description": "双方 Agent 先对话，匹配度高后请求引荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 621,
+          "slug": "DATE-003~edge",
+          "description": "异常：Agent 对话卡住、引荐请求未到达",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 670,
+          "slug": "AS-DATE-002~func",
+          "description": "Agent 与对方 Agent 聊天评估性格匹配度",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

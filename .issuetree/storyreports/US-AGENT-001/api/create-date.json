@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "data": {
+    "id": "a094a9a2-6e94-4c7e-afae-01ee23b851a5",
+    "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+    "type": "AGENTDATE",
+    "name": "Date Agent",
+    "description": "For dating",
+    "status": "DRAFT",
+    "config": {
+      "personality": {
+        "traits": ["社交活跃", "情感细腻", "谨慎匹配"],
+        "communicationStyle": "warm"
+      }
+    },
+    "latitude": null,
+    "longitude": null,
+    "isActive": true,
+    "createdAt": "2026-04-30T17:35:28.838Z",
+    "updatedAt": "2026-04-30T17:35:28.838Z"
+  },
+  "message": "Agent created successfully"
+}

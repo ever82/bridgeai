@@ -1,0 +1,23 @@
+=== AC1.4 Evidence: Redis cache strategy (cache.ts) ===
+
+apps/server/src/services/cache.ts:
+  - Imports redis, isRedisConnected from ./redis
+  - Strategy stats: cacheAside, writeThrough, readThrough (recordHit/Miss/Fill)
+  - Slow query log (>= 100ms threshold, max 200 entries)
+  - measureCacheOp(): timing wrapper for ops
+
+Cache test suite results (npx jest src/__tests__/cache --runInBand):
+  PASS src/__tests__/cache/strategy.test.ts
+  PASS src/__tests__/cache/client.test.ts
+  PASS src/__tests__/cache/metrics.test.ts
+  PASS src/__tests__/cache/decorator.test.ts
+  Test Suites: 4 passed, 4 total
+  Tests:       107 passed, 107 total
+
+apps/server/src/middleware/cache.ts:
+  -> WARNING: Uses in-memory Map<string, CacheEntry> (line 14)
+     Comment line 13: "In-memory cache store (in production, use Redis)"
+  -> Middleware is NOT Redis-backed; only the lower-level service is.
+
+VERDICT: partial — service-layer cache uses Redis with full strategies,
+  but the express middleware is in-memory only. Cache tests all pass (107).

@@ -1,0 +1,949 @@
+{
+  "story": {
+    "slug": "AS-007",
+    "title": "我决定信息披露",
+    "narrative": "根据信任水平决定是否向对方披露详细信息"
+  },
+  "environment": {
+    "web_url": "http://localhost:8081",
+    "api_url": "http://localhost:3001",
+    "report_dir": "/Users/z/projects/bridgeai/.issue/reports/AS-007/20260430_141113",
+    "screenshots_dir": "/Users/z/projects/bridgeai/.issue/reports/AS-007/20260430_141113/screenshots"
+  },
+  "summary": {
+    "total_ac": 80,
+    "verified": 80,
+    "passed": 0,
+    "questioned": 65,
+    "failed": 0,
+    "skipped": 16,
+    "report_entry_count": 81,
+    "report_entry_count_note": "AS-005~func 在剧本中跨 Phase 1 与 Phase 6 出现两次 (1.1 + 6.1)，因此报告条目比 80 多 1。",
+    "ui_screenshots_taken": 0,
+    "verification_mode": "code_probe_only",
+    "verification_mode_reason": "chrome-devtools-mcp profile lock prevented browser automation; /api/* gateway requests timed out (504). Source-code + route-mounting probes used as fallback."
+  },
+  "issues_encountered": [
+    "chrome-devtools-mcp 浏览器配置文件被另一个 Chrome 实例占用（/Users/z/.cache/chrome-devtools-mcp/chrome-profile already in use），无法启动新页面或 take_snapshot/take_screenshot；UI 截图全部缺失。",
+    "/api/* 网关请求统一返回 504 RESPONSE_TIMEOUT（apiGatewayRouter 内部超时，疑似 DB/auth 调用阻塞）；/health 与 /health/encryption 正常 200。无法通过 HTTP 验证业务逻辑。",
+    "由于上述两条限制，AC 验证从『真实操作』降级为『源码 + 路由挂载』结构性验证。所有结果标记为 questioned（结构存在但运行时未直接观察）或 skipped（必须靠 UI 才能验证的边界场景）。"
+  ],
+  "phases": [
+    {
+      "phase": "Phase 1: 聊天底座",
+      "ac_results": [
+        {
+          "ac_slug": "ISSUE-COM002~c1",
+          "description": "房间系统（私聊创建、成员权限、消息路由）",
+          "verification_method": "源码探测",
+          "actions": [
+            "确认 apps/server/src/services/chat/roomService.ts 存在",
+            "确认 apps/server/src/services/chat/participantService.ts 存在",
+            "确认 apps/server/src/services/dating/humanChatRoomService.ts 存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "三个房间相关 service 均存在，但未通过 UI 实际创建房间。",
+          "notes": "结构齐备，运行时未验证。"
+        },
+        {
+          "ac_slug": "ISSUE-COM002~c2",
+          "description": "消息存储（数据模型、查询、分页、软删除）",
+          "verification_method": "源码探测",
+          "actions": [
+            "在 messageService.ts 中匹配 softDelete/paginate/cursor/offset 关键字得到 14 处命中"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "messageService.ts 含分页/软删除关键字共 14 处，repositories/messageRepository.ts 不存在但 service 自带持久化逻辑。",
+          "notes": "未通过 UI 翻页验证。"
+        },
+        {
+          "ac_slug": "ISSUE-COM002~c3",
+          "description": "消息投递（实时推送、离线队列、确认、重试）",
+          "verification_method": "源码探测",
+          "actions": ["确认 services/notificationService.ts、presenceService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "通知/在线服务均存在但未通过 WebSocket 离线/上线场景实测。",
+          "notes": "需运行时验证。"
+        },
+        {
+          "ac_slug": "ISSUE-COM002~c4",
+          "description": "状态管理（已读、在线、打字、最后活跃）",
+          "verification_method": "源码探测",
+          "actions": [
+            "presenceService.ts 存在但 grep lastActiveAt/isOnline/typing/markAsRead 未在该文件直接命中"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "presenceService 存在，状态字段命名可能在 schema/类型层。",
+          "notes": "未直接观察 UI 状态指示。"
+        },
+        {
+          "ac_slug": "DATE-003-AC-1",
+          "description": "Agent 间多轮对话",
+          "verification_method": "源码探测",
+          "actions": ["agentConversationRoom.ts、datingConversationService.ts 均存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "Agent 对话 service 齐备。",
+          "notes": "未观察实际多轮聊天。"
+        },
+        {
+          "ac_slug": "DATE-003~func",
+          "description": "双方 Agent 先对话再请求引荐",
+          "verification_method": "源码探测",
+          "actions": ["dating/referralService.ts、agentConversationRoom.ts 共存于 dating 模块"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "服务结构与剧本描述一致。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-005~func",
+          "description": "Agent 自主决定与候选 Agent 发起对话",
+          "verification_method": "源码探测",
+          "actions": ["agentInitiatedChat.ts、agentChatDispatcher.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "存在 Agent 主动发起对话的服务。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-006~func",
+          "description": "评估是否值得交流",
+          "verification_method": "源码探测",
+          "actions": ["matchAlgorithm.ts、profileQualityService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "评估能力相关服务存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-008-AC-1",
+          "description": "每条消息显示头像和名称",
+          "verification_method": "源码探测",
+          "actions": ["mobile/src/screens/messages/ChatScreen.tsx 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "聊天屏存在；样式细节未验证。",
+          "notes": "缺 UI 截图。"
+        },
+        {
+          "ac_slug": "US-AGENT-008-AC-2",
+          "description": "Agent 消息标识为 \"XX 的 Agent\"",
+          "verification_method": "源码探测",
+          "actions": ["agentConversationRoom.ts 含 senderType/creditScore 字段"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "协议字段存在，UI 标签未直接观察。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-008~func",
+          "description": "清晰显示发送者身份",
+          "verification_method": "源码探测",
+          "actions": ["messageService.ts、agentConversationRoom.ts 含 senderType 字段"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "数据层支持发送者类型区分。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-PROTO-001-AC-1",
+          "description": "每条消息含发送者类型和信用分",
+          "verification_method": "源码探测",
+          "actions": [
+            "grep 确认 messageService.ts 与 agentConversationRoom.ts 同时含 senderType / creditScore"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "协议字段在源码层存在。",
+          "notes": "运行时 payload 未抓取。"
+        }
+      ]
+    },
+    {
+      "phase": "Phase 2: 信息披露策略",
+      "ac_results": [
+        {
+          "ac_slug": "AS-007-AC-2",
+          "description": "执行披露策略（每次确认/自动）",
+          "verification_method": "源码 + 路由挂载",
+          "actions": [
+            "disclosureService.ts 存在",
+            "routes/disclosure.ts 提供 settings/bulk/reset/check/filter/preview/history/levels 等 11 条路由",
+            "v1/index.ts 第 51 行挂载 /disclosure"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "披露服务与路由完整，运行时被网关 504 阻挡未直接命中。",
+          "notes": "结构 OK。"
+        },
+        {
+          "ac_slug": "AS-007-AC-3",
+          "description": "记录已披露信息",
+          "verification_method": "源码探测",
+          "actions": ["disclosureAuditService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "审计服务文件存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-007~func",
+          "description": "根据信任水平决定披露",
+          "verification_method": "源码探测",
+          "actions": [
+            "disclosureService.ts + creditScoreService.ts + creditFilterService.ts 同时存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "信任→披露链条服务齐备。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-007~edge",
+          "description": "披露策略被绕过、信任计算错误",
+          "verification_method": "无法验证",
+          "actions": ["需要构造异常 payload 直击 API；网关 504"],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": "需登录态与未阻塞 API。"
+        },
+        {
+          "ac_slug": "US-AGENT-014-AC-3",
+          "description": "用户可实时否决即将发生的披露",
+          "verification_method": "源码探测",
+          "actions": ["mobile/src/screens/settings/DisclosureSettings.tsx 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "披露设置屏存在，否决弹窗交互未验证。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-014~func",
+          "description": "根据对话与信任水平决定披露",
+          "verification_method": "源码探测",
+          "actions": ["disclosureService.ts + creditScoreService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "服务存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-006-AC-2",
+          "description": "显示对方关键信息和信用分",
+          "verification_method": "源码探测",
+          "actions": ["creditScoreService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "信用分服务存在。",
+          "notes": "UI 展示未验证。"
+        }
+      ]
+    },
+    {
+      "phase": "Phase 3: Whisper 私下建议",
+      "ac_results": [
+        {
+          "ac_slug": "AS-008-AC-2",
+          "description": "发送策略建议、风险提示、话题推荐",
+          "verification_method": "源码探测",
+          "actions": [
+            "dating/privateAdviceService.ts 存在",
+            "ai/clarificationService.ts、desensitizationAdvisor.ts、openingLineService.ts 存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "私聊建议服务及相关 AI 顾问齐备。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-008-AC-3",
+          "description": "提供一键采纳",
+          "verification_method": "源码探测",
+          "actions": ["privateAdviceService.ts 存在；UI 入口未截图"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "服务存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-008~func",
+          "description": "实时分析对话发送私下建议",
+          "verification_method": "源码探测",
+          "actions": ["privateAdviceService.ts 存在", "AI service 集成完整 (llmService/llmRouter)"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "实时建议链路源码完整。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-008~edge",
+          "description": "建议为空、AI 服务降级",
+          "verification_method": "源码探测",
+          "actions": ["ai/fallback、ai/circuitBreaker.ts、ai/resilience 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "降级与熔断模块存在。",
+          "notes": "未注入故障实测。"
+        },
+        {
+          "ac_slug": "US-AGENT-009-AC-2",
+          "description": "建议含话题/风险/意图分析",
+          "verification_method": "源码探测",
+          "actions": [
+            "openingLineService、desensitizationAdvisor、conversationSafetyService 三类齐全"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "三类建议来源服务都在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-009-AC-3",
+          "description": "可一键采用建议",
+          "verification_method": "源码探测",
+          "actions": ["privateAdviceService 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": "UI 未截图。"
+        },
+        {
+          "ac_slug": "US-AGENT-009~func",
+          "description": "Whisper 仅自己可见",
+          "verification_method": "源码探测",
+          "actions": ["privateAdviceService 与 humanChatRoomService 隔离"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "私聊建议是独立服务，不写入聊天房间消息流。",
+          "notes": "未抓包验证。"
+        },
+        {
+          "ac_slug": "US-AGENT-009~edge",
+          "description": "建议泄露、建议为空",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": "需 UI/抓包。"
+        }
+      ]
+    },
+    {
+      "phase": "Phase 4: 亲自聊/代聊切换",
+      "ac_results": [
+        {
+          "ac_slug": "US-AGENT-007-AC-1",
+          "description": "\"亲自聊\"以用户身份发言",
+          "verification_method": "源码探测",
+          "actions": [
+            "mobile/src/components/Handoff/HandoffButton.tsx 存在",
+            "服务端 dating/consentProcessor.ts、consentStateManager.ts 存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "Handoff 按钮组件 + 服务端 consent 状态机。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-007-AC-2",
+          "description": "\"让 Agent 聊\"后 Agent 以自己名义发言",
+          "verification_method": "源码探测",
+          "actions": ["agentChatDispatcher.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "调度器存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-007-AC-3",
+          "description": "切换状态实时显示",
+          "verification_method": "源码探测",
+          "actions": [
+            "mobile/src/components/Chat/StatusChangeNotification.tsx、components/Handoff/HandoffStatus.test.tsx 存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "状态变化通知组件存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-007~func",
+          "description": "切换\"亲自聊\"/\"代聊\"",
+          "verification_method": "源码探测",
+          "actions": ["consentStateManager 状态机 + HandoffButton"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "全链路存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-007~edge",
+          "description": "切换中断、并发冲突",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": "需 UI 操作。"
+        },
+        {
+          "ac_slug": "US-AGENT-008-AC-3",
+          "description": "对方切换时实时更新标识",
+          "verification_method": "源码探测",
+          "actions": ["StatusChangeNotification + senderType 协议字段"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-008~edge",
+          "description": "身份标识错乱",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-PROTO-001-AC-2",
+          "description": "实时接收对方模式切换通知",
+          "verification_method": "源码探测",
+          "actions": ["StatusChangeNotification.tsx 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "phase": "Phase 5: 引荐 + 四人群聊",
+      "ac_results": [
+        {
+          "ac_slug": "AS-006-AC-3",
+          "description": "向主人汇报对话进展",
+          "verification_method": "源码探测",
+          "actions": ["dating/conversationQualityService.ts、ai/conversationReportService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "进展评估 + 报告服务存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-009-AC-3",
+          "description": "主人接受或拒绝",
+          "verification_method": "源码探测",
+          "actions": [
+            "dating/referralService.ts、referralNotificationService.ts 存在",
+            "mobile/src/screens/dating/ReferralScreen.tsx 存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "服务端 + 前端屏均到位。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-009~func",
+          "description": "匹配度达标后请求主人确认",
+          "verification_method": "源码探测",
+          "actions": ["referralService.ts + matchAlgorithm.ts"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-DATE-002-AC-3",
+          "description": "双方合适后请求引荐",
+          "verification_method": "源码探测",
+          "actions": ["referralService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-DATE-002~func",
+          "description": "Agent 评估性格匹配度",
+          "verification_method": "源码探测",
+          "actions": ["matchAlgorithm.ts、profileQualityService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-DATE-002~edge",
+          "description": "对话不投机、匹配度无法提升",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "DATE-003-AC-2",
+          "description": "匹配度达标后请求引荐",
+          "verification_method": "源码探测",
+          "actions": ["matchAlgorithm + referralService"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "DATE-003~edge",
+          "description": "Agent 卡住、引荐未到达",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "DATE-004-AC-1",
+          "description": "四人群聊界面",
+          "verification_method": "源码探测 (gap)",
+          "actions": ["全仓 grep FourParty/fourParty/inviteHuman/humanJoin/four_party 全部 0 命中"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "未发现四人群聊明确实现关键字；可能命名不同（如 multi-party room）。",
+          "notes": "实现可疑，建议人工确认。"
+        },
+        {
+          "ac_slug": "DATE-004-AC-2",
+          "description": "Agent 提供交友话题建议",
+          "verification_method": "源码探测",
+          "actions": ["openingLineService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "话题建议服务存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "DATE-004~func",
+          "description": "双方接受进入四人群聊",
+          "verification_method": "源码探测 (gap)",
+          "actions": ["FourParty/inviteHuman 等关键字未命中"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "可疑：四人群聊创建逻辑未明显呈现。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "DATE-004~edge",
+          "description": "成员离线、消息丢失",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-006-AC-1",
+          "description": "收到引荐通知，显示匹配理由",
+          "verification_method": "源码探测",
+          "actions": ["referralNotificationService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-006~func",
+          "description": "用户能接受或拒绝引荐",
+          "verification_method": "源码探测",
+          "actions": ["ReferralScreen.tsx 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-006~edge",
+          "description": "引荐请求丢失、双方同时拒绝",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-015-AC-2",
+          "description": "Agent 礼貌结束对话",
+          "verification_method": "源码探测",
+          "actions": ["conversationStateManager.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-015~func",
+          "description": "用户随时退出匹配",
+          "verification_method": "源码探测",
+          "actions": ["conversationStateManager.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "phase": "Phase 6: AgentJob 协商",
+      "ac_results": [
+        {
+          "ac_slug": "AS-JOB-001-AC-2",
+          "description": "同时与多个 HR Agent 沟通",
+          "verification_method": "源码探测",
+          "actions": [
+            "services/job/negotiationRoom.ts、jobRecommendation.ts 存在",
+            "v1/index.ts 第 68 行挂载 /job/negotiations"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "协商房间 + 推荐服务齐备。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-JOB-001-AC-3",
+          "description": "协商薪资保护主人底线",
+          "verification_method": "源码探测",
+          "actions": ["job/salaryNegotiation.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "薪资协商服务存在。",
+          "notes": "底线保护逻辑未细查。"
+        },
+        {
+          "ac_slug": "AS-JOB-001~func",
+          "description": "求职者 Agent 匹配并协商",
+          "verification_method": "源码探测",
+          "actions": [
+            "jobSeeker/profileService.ts、deliveryService.ts、resumeExtractionService.ts 全部存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "求职者侧服务完整。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-JOB-001~edge",
+          "description": "薪资底线被触碰",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-JOB-002-AC-2",
+          "description": "同时与多个候选人 Agent 初筛",
+          "verification_method": "源码探测",
+          "actions": [
+            "job/resumeScreening.ts、jobMatchNotifications.ts 存在",
+            "mobile screens/Job/CandidateRecommendationsScreen.tsx 存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "招聘方初筛链路齐备。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-JOB-002~func",
+          "description": "HR 筛选简历并初筛",
+          "verification_method": "源码探测",
+          "actions": ["resumeScreening.ts、jobRecommendation.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-JOB-002~edge",
+          "description": "简历信息不足、初筛无法判断",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "JOB-004-AC-1",
+          "description": "Agent 间薪资协商",
+          "verification_method": "源码探测",
+          "actions": [
+            "job/salaryNegotiation.ts、negotiationRoom.ts、negotiationResult.ts 存在",
+            "ai/agentNegotiationService.ts 存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "薪资协商三件套 + AI 协商服务齐备。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "JOB-004-AC-2",
+          "description": "达成初步一致后引荐真人面试",
+          "verification_method": "源码探测",
+          "actions": ["job/humanHandoff.ts、interviewScheduling.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "面试调度 + 转人工存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "JOB-004~func",
+          "description": "四人群聊协商薪资",
+          "verification_method": "源码探测 (gap)",
+          "actions": ["FourParty 关键字未命中；negotiationRoom.ts 存在但成员组成未直接读取"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "可疑：四人群聊命名未发现。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "JOB-004~edge",
+          "description": "协商僵局、薪资超底线",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-005~func (job 上下文)",
+          "description": "Agent 自主决定与候选 Agent 发起对话",
+          "verification_method": "源码探测",
+          "actions": ["agentInitiatedChat.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "复用 Phase 1 相同服务。",
+          "notes": "AC 在剧本中用于 1.1 + 6.1 双场景。"
+        },
+        {
+          "ac_slug": "AS-006~edge",
+          "description": "大量 Agent 同时联系",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "phase": "Phase 7: AgentAd 商家协商",
+      "ac_results": [
+        {
+          "ac_slug": "AS-AD-002-AC-2",
+          "description": "与用户 Agent 协商优惠条件",
+          "verification_method": "源码探测",
+          "actions": [
+            "offerService.ts、merchantService.ts、ai/agentNegotiationService.ts 存在",
+            "v1/index.ts 第 64-65 行挂载 /merchants 与 /offers"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "商家 + 优惠 + 协商服务齐备。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-AD-002~func",
+          "description": "商家寻找潜在客户推销优惠",
+          "verification_method": "源码探测",
+          "actions": ["merchantService + consumerDemandService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AS-AD-002~edge",
+          "description": "无匹配用户、协商失败",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AD-004-AC-1",
+          "description": "Agent 间协商优惠条件",
+          "verification_method": "源码探测",
+          "actions": ["agentNegotiationService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AD-004-AC-2",
+          "description": "达成双方满意的方案",
+          "verification_method": "源码探测",
+          "actions": ["offerService.ts + transactionService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AD-004~func",
+          "description": "Agent 与商家谈判争取优惠",
+          "verification_method": "源码探测",
+          "actions": ["agentNegotiationService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "AD-004~edge",
+          "description": "谈判僵局、商家拒让",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-002~func",
+          "description": "用户与 Agent 对话后成功创建需求/供给",
+          "verification_method": "源码探测",
+          "actions": [
+            "consumerDemandService.ts、ai/demandExtractionService.ts、ai/supplyExtractionService.ts 存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "需求/供给抽取链路完整。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-002-AC-5",
+          "description": "用户确认后自动保存到对应场景",
+          "verification_method": "源码探测",
+          "actions": ["sceneCapabilityService.ts、sceneMigrationService.ts 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "场景服务齐备。",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "phase": "Phase 8: 历史 + 举报",
+      "ac_results": [
+        {
+          "ac_slug": "US-AGENT-005-AC-1",
+          "description": "按场景筛选对话记录",
+          "verification_method": "源码探测",
+          "actions": [
+            "dating/referralHistoryService.ts、mobile screens/dating/ReferralHistoryScreen.tsx 存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "历史服务 + 屏存在。",
+          "notes": "筛选 UI 未截图。"
+        },
+        {
+          "ac_slug": "US-AGENT-005-AC-2",
+          "description": "显示对话双方 Agent 和匹配度评分",
+          "verification_method": "源码探测",
+          "actions": ["referralHistoryService + matchAlgorithm 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-005~func",
+          "description": "按场景筛选并查看历史",
+          "verification_method": "源码探测",
+          "actions": ["ReferralHistoryScreen 存在"],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-005~edge",
+          "description": "历史记录缺失、加载异常",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-016-AC-1",
+          "description": "可在对话界面举报",
+          "verification_method": "源码探测",
+          "actions": [
+            "routes/reports.ts 提供 4 条路由 (1 GET + 3 POST)",
+            "mobile screens/messages/ChatScreen.tsx 含 \"举报/report\" 关键字"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "举报路由 + 聊天屏入口存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-016~func",
+          "description": "用户在对话界面举报不当行为",
+          "verification_method": "源码探测",
+          "actions": [
+            "ai/conversationReportService.ts、routes/reports.ts、moderationQueue.ts、moderationAnalytics.ts 存在"
+          ],
+          "screenshots": [],
+          "result": "questioned",
+          "evidence": "举报+审核全链路服务存在。",
+          "notes": ""
+        },
+        {
+          "ac_slug": "US-AGENT-002~edge",
+          "description": "空输入、无意义输入、超长对话",
+          "verification_method": "无法验证",
+          "actions": [],
+          "screenshots": [],
+          "result": "skipped",
+          "evidence": "",
+          "notes": "需 UI 边界输入。"
+        }
+      ]
+    }
+  ],
+  "key_findings": [
+    "服务端结构完整：Phase 1-8 所需的 30+ 关键 service 文件全部存在（chat/dating/disclosure/job/jobSeeker/ai/offer/merchant/reports/moderation 等模块齐备）。",
+    "API 路由挂载完整：v1/index.ts 第 48-83 行覆盖 /disclosure /chat /dating /reports /agents /merchants /offers /job/negotiations /reviews /appeals 等所有剧本所需路径。",
+    "披露策略链：disclosureService + disclosureAuditService + creditScoreService + creditFilterService 形成完整的『信任水平→披露决策→审计』链路（Phase 2 全 AC 结构性通过）。",
+    "亲自聊/代聊切换：服务端 consentProcessor + consentStateManager + agentChatDispatcher，前端 components/Handoff/HandoffButton.tsx + Chat/StatusChangeNotification.tsx 双侧齐全。",
+    "Whisper 私聊建议：privateAdviceService 与 humanChatRoomService 物理隔离，AI 降级 (fallback/circuitBreaker/resilience) 模块齐备。",
+    "潜在缺口：四人群聊（DATE-004 / JOB-004~func）— 全仓 grep FourParty / fourParty / inviteHuman / humanJoin / four_party / 四人 全部 0 命中。可能是命名不同的多方聊天，建议人工确认 negotiationRoom.ts / agentConversationRoom.ts 实际成员模型是否支持 user+agent×2 = 4 方。",
+    "messageRepository.ts / roomRepository.ts 不存在，持久化逻辑直接写在 service 层（messageService.ts grep 到 14 处分页/软删/cursor 关键字）；非阻塞，但与剧本『仓储层』描述略有偏差。",
+    "运行时验证空白：浏览器 MCP 被锁 + /api/* 504，Phase 1 实时投递、Phase 2 弹窗否决、Phase 4 切换通知、Phase 5 引荐通知、Phase 8 举报提交 全部未通过 UI/HTTP 实测。所有 64 个标记 questioned 的 AC 仅做了源码结构性证明。"
+  ],
+  "screenshots_taken": [],
+  "service_pids": {
+    "note": "本次未启动新服务；Demo agent 仅做读路径探测。Web (8081)/API (3001)/Postgres/Redis 由外部进程持有，未在此清理范围内。"
+  }
+}

@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story 演示验收报告 - US-AGENT-001 创建个人 Agent</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary: #0f1117;
+  --bg-secondary: #161b27;
+  --bg-card: #1a2033;
+  --border: #2a3347;
+  --text-primary: #e8edf5;
+  --text-secondary: #8b95a8;
+  --accent: #4f9cf9;
+  --accent-green: #3ecf8e;
+  --accent-orange: #f5a623;
+  --accent-red: #e5534b;
+  --accent-purple: #a78bfa;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+/* Header */
+.report-header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 32px;
+  margin-bottom: 40px;
+}
+
+.report-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.report-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.story-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.tag-story { background: rgba(79, 156, 249, 0.1); border-color: var(--accent); color: var(--accent); }
+.tag-issue { background: rgba(167, 139, 250, 0.1); border-color: var(--accent-purple); color: var(--accent-purple); }
+.tag-user { background: rgba(62, 207, 142, 0.1); border-color: var(--accent-green); color: var(--accent-green); }
+
+.narrative {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card.warning .stat-value { color: var(--accent-orange); }
+.stat-card.error .stat-value { color: var(--accent-red); }
+.stat-card.pass .stat-value { color: var(--accent-green); }
+
+/* Environment Blockers */
+.blockers-section {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-red);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 40px;
+}
+
+.blockers-title {
+  color: var(--accent-red);
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.blocker-item {
+  background: rgba(229, 83, 75, 0.08);
+  border: 1px solid rgba(229, 83, 75, 0.3);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.blocker-item:last-child { margin-bottom: 0; }
+
+.blocker-issue {
+  font-weight: 600;
+  color: var(--accent-red);
+  margin-bottom: 4px;
+}
+
+.blocker-reason {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.blocker-mitigation {
+  color: var(--accent-green);
+  font-size: 12px;
+  padding: 6px 10px;
+  background: rgba(62, 207, 142, 0.08);
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Section */
+.section {
+  margin-bottom: 48px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title .num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Issue Cards */
+.issue-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.issue-header {
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.issue-slug {
+  font-weight: 700;
+  color: var(--accent-purple);
+  font-size: 15px;
+}
+
+.issue-title {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-left: 12px;
+}
+
+.issue-status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.issue-status.ai_confirmed { background: rgba(62, 207, 142, 0.1); color: var(--accent-green); }
+.issue-status.draft { background: rgba(139, 149, 168, 0.1); color: var(--text-secondary); }
+
+.issue-body { padding: 20px; }
+
+/* AC Table */
+.ac-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ac-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ac-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.ac-table tr:last-child td { border-bottom: none; }
+
+.ac-slug {
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.ac-desc {
+  color: var(--text-secondary);
+  max-width: 300px;
+}
+
+.ac-type {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: rgba(79, 156, 249, 0.1);
+  color: var(--accent);
+}
+
+.ac-type.edge_case { background: rgba(245, 166, 35, 0.1); color: var(--accent-orange); }
+
+.status-icon {
+  font-size: 18px;
+  text-align: center;
+  display: block;
+}
+
+.status-pass { color: var(--accent-green); }
+.status-fail { color: var(--accent-red); }
+.status-partial { color: var(--accent-orange); }
+.status-code { color: var(--accent-purple); }
+.status-pending { color: var(--text-secondary); }
+
+.ac-file {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: monospace;
+  word-break: break-all;
+  max-width: 200px;
+}
+
+.evidence-summary {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Critic Section */
+.critic-section {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-orange);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 40px;
+}
+
+.critic-title {
+  color: var(--accent-orange);
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.critic-question {
+  background: rgba(245, 166, 35, 0.06);
+  border: 1px solid rgba(245, 166, 35, 0.3);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.critic-q-label {
+  font-weight: 700;
+  color: var(--accent-orange);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.critic-q-text {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.critic-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.critic-stat {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+}
+
+.critic-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  display: block;
+}
+
+.critic-stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Screenshots */
+.screenshot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.screenshot-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.screenshot-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: pointer;
+}
+
+.screenshot-item img:hover { opacity: 0.85; }
+
+.screenshot-label {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.screenshot-label .filename {
+  color: var(--accent);
+  font-family: monospace;
+}
+
+.screenshot-status {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.screenshot-status.blank { background: rgba(245, 166, 35, 0.1); color: var(--accent-orange); }
+
+/* Summary Box */
+.summary-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 40px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.summary-row:last-child { border-bottom: none; }
+
+.summary-key { color: var(--text-secondary); }
+
+.summary-value { font-weight: 700; }
+
+.summary-value.green { color: var(--accent-green); }
+.summary-value.orange { color: var(--accent-orange); }
+.summary-value.red { color: var(--accent-red); }
+.summary-value.blue { color: var(--accent); }
+
+/* Report Footer */
+.report-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  margin-top: 60px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.modal:target { display: flex; }
+
+.modal img {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: 8px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px; right: 20px;
+  color: white;
+  font-size: 32px;
+  text-decoration: none;
+  background: rgba(0,0,0,0.5);
+  width: 48px; height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+/* Print */
+@media print {
+  body { background: white; color: black; }
+  .blockers-section, .critic-section { border-color: #ccc; }
+  .screenshot-item { break-inside: avoid; }
+  .report-header { border-bottom-color: #ccc; }
+  .tag { border: 1px solid #ccc; color: #333; background: none; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 20px 16px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .ac-table { font-size: 12px; }
+  .ac-desc { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="report-header">
+  <div class="report-title">Story 演示验收报告</div>
+  <div class="report-subtitle">US-AGENT-001 · 创建个人 Agent</div>
+  <div class="story-meta">
+    <span class="tag tag-story">Story</span>
+    <span class="tag tag-issue">3 Issues</span>
+    <span class="tag tag-issue">48 ACs (去重 30)</span>
+    <span class="tag tag-user">user</span>
+  </div>
+  <div class="narrative">
+    用户首次使用 BridgeAI，创建自己的 AI Agent，配置基本信息和偏好。新用户完成注册登录后，在 5 步创建向导中完成 Agent 的命名、头像上传、场景类型选择、场景配置和 AI 行为偏好设置，最后在预览页确认并提交创建。
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card pass">
+    <span class="stat-value">17</span>
+    <span class="stat-label">Code 验证通过</span>
+  </div>
+  <div class="stat-card warning">
+    <span class="stat-value">2</span>
+    <span class="stat-label">部分实现</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">0</span>
+    <span class="stat-label">API 实时验证</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">0</span>
+    <span class="stat-label">UI 截图验证</span>
+  </div>
+  <div class="stat-card error">
+    <span class="stat-value">3</span>
+    <span class="stat-label">环境阻塞</span>
+  </div>
+</div>
+
+<!-- Blockers -->
+<div class="blockers-section">
+  <div class="blockers-title">&#9888; 环境阻塞 - 无法进行实时验证</div>
+
+  <div class="blocker-item">
+    <div class="blocker-issue">API 端点被 DDoS 防护中间件阻塞</div>
+    <div class="blocker-reason">
+      slowAttackProtection 中间件（30s 超时）对所有来自 127.0.0.1 的 POST/PUT/DELETE 请求返回 408。
+      所有 /api/v1/auth/login、/api/v1/agents 等端点全部超时。
+    </div>
+    <div class="blocker-mitigation">替代方案：代码审查 + 数据库 Schema 分析</div>
+  </div>
+
+  <div class="blocker-item">
+    <div class="blocker-issue">Web 前端 Metro Bundler 错误</div>
+    <div class="blocker-reason">
+      @babel/runtime/helpers/interopRequireDefault 模块缺失，AppEntry.bundle 返回 500 Internal Server Error。
+      Web 页面仅显示空白白色页面。
+    </div>
+    <div class="blocker-mitigation">替代方案：React Native 源码代码审查</div>
+  </div>
+
+  <div class="blocker-item">
+    <div class="blocker-issue">移动端 App 需 Expo Go 或模拟器</div>
+    <div class="blocker-reason">
+      React Native 移动端 App 无法在浏览器中运行。需要物理设备或 iOS/Android 模拟器。
+    </div>
+    <div class="blocker-mitigation">替代方案：移动端屏幕源码审查</div>
+  </div>
+</div>
+
+<!-- Summary Box -->
+<div class="summary-box">
+  <div class="summary-row">
+    <span class="summary-key">Story</span>
+    <span class="summary-value">US-AGENT-001 创建个人 Agent</span>
+  </div>
+  <div class="summary-row">
+    <span class="summary-key">Issues</span>
+    <span class="summary-value blue">3 个 (ISSUE-A003, ISSUE-C001, ISSUE-C006)</span>
+  </div>
+  <div class="summary-row">
+    <span class="summary-key">去重后 AC 总数</span>
+    <span class="summary-value">30 条</span>
+  </div>
+  <div class="summary-row">
+    <span class="summary-key">通过代码审查验证</span>
+    <span class="summary-value green">17 条 (✅ code_exists)</span>
+  </div>
+  <div class="summary-row">
+    <span class="summary-key">部分实现</span>
+    <span class="summary-value orange">2 条 (⚠️ partial)</span>
+  </div>
+  <div class="summary-row">
+    <span class="summary-key">验证方式</span>
+    <span class="summary-value">代码审查 + DB Schema 分析</span>
+  </div>
+  <div class="summary-row">
+    <span class="summary-key">报告生成时间</span>
+    <span class="summary-value">2026-04-30 08:50 CST</span>
+  </div>
+</div>
+
+<!-- Issues -->
+<div class="section">
+  <div class="section-title">
+    <span class="num">1</span>
+    AC 验证结果（按 Issue 分组）
+  </div>
+
+  <!-- ISSUE-A003 -->
+  <div class="issue-card">
+    <div class="issue-header">
+      <div>
+        <span class="issue-slug">ISSUE-A003</span>
+        <span class="issue-title">用户基础资料管理</span>
+      </div>
+      <span class="issue-status ai_confirmed">ai_confirmed</span>
+    </div>
+    <div class="issue-body">
+      <table class="ac-table">
+        <thead>
+          <tr>
+            <th>AC Slug</th>
+            <th>描述</th>
+            <th>类型</th>
+            <th>状态</th>
+            <th>证据</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ac-slug">AS-001-AC-1</td>
+            <td class="ac-desc">读取主人的基础画像和场景配置</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-pass">&#10003;</span></td>
+            <td class="ac-file">agentProfileService.ts:35-75</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-A003~c1</td>
+            <td class="ac-desc">用户信息接口（获取/更新/头像上传/删除账号）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">routes/users.ts:69-195</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-A003~c2</td>
+            <td class="ac-desc">头像管理（上传/压缩裁剪/云存储）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-partial">&#9888;</span></td>
+            <td class="ac-file">routes/users.ts:120-162<br>compression not visible in code</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-A003~c3</td>
+            <td class="ac-desc">移动端资料 UI（展示/编辑表单/头像上传/预览）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">ProfileScreen.tsx, EditProfileScreen.tsx</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-A003~c4</td>
+            <td class="ac-desc">隐私控制（可见性/在线状态/联系方式/阻止列表）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">PrivacySettingsScreen.tsx, users.ts</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-A003~c5</td>
+            <td class="ac-desc">安全功能（改密码/换绑手机邮箱/设备管理）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">users.ts:297-395</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">US-AGENT-001~func</td>
+            <td class="ac-desc">用户首次创建 Agent 并配置基本信息和偏好</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-pass">&#10003;</span></td>
+            <td class="ac-file">CreateAgentScreen.tsx 5-step wizard</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">US-AGENT-001~edge</td>
+            <td class="ac-desc">异常场景：重复创建、无效输入、网络中断</td>
+            <td><span class="ac-type edge_case">edge_case</span></td>
+            <td><span class="status-icon status-pending">?</span></td>
+            <td class="evidence-summary">UI 需手动验证</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">AS-001~func</td>
+            <td class="ac-desc">Agent 被创建后能读取主人画像、学习规则、生成本场景性格</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-pass">&#10003;</span></td>
+            <td class="ac-file">agentService.ts:190 personality gen</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">AS-001~edge</td>
+            <td class="ac-desc">异常：主人画像缺失、场景规则加载失败</td>
+            <td><span class="ac-type edge_case">edge_case</span></td>
+            <td><span class="status-icon status-pending">?</span></td>
+            <td class="evidence-summary">UI 需手动验证</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ISSUE-C001 -->
+  <div class="issue-card">
+    <div class="issue-header">
+      <div>
+        <span class="issue-slug">ISSUE-C001</span>
+        <span class="issue-title">Agent创建与基础配置</span>
+      </div>
+      <span class="issue-status ai_confirmed">ai_confirmed</span>
+    </div>
+    <div class="issue-body">
+      <table class="ac-table">
+        <thead>
+          <tr>
+            <th>AC Slug</th>
+            <th>描述</th>
+            <th>类型</th>
+            <th>状态</th>
+            <th>证据</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ac-slug">ISSUE-C001~c1</td>
+            <td class="ac-desc">Agent 创建接口（POST /api/v1/agents）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">routes/agents.ts:133-168, type/name required</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-C001~c2</td>
+            <td class="ac-desc">Agent 类型定义（6种枚举：VISIONSHARE/AGENTDATE/AGENTJOB/AGENTAD/DEMAND/SUPPLY）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">shared/types/agent.ts:5-12, DB has 3 types</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-C001~c3</td>
+            <td class="ac-desc">Agent 生命周期（DRAFT/ACTIVE/PAUSED/ARCHIVED + 状态转换规则）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">shared/types/agent.ts:14-19, agentService.ts:68-78</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-C001~c4</td>
+            <td class="ac-desc">Agent 查询接口（type/status筛选/分页/排序）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">routes/agents.ts:40-90</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-C001~c5</td>
+            <td class="ac-desc">Agent 管理 UI（列表页/创建向导/卡片/空状态/testIDs）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">CreateAgentScreen.tsx (5-step), AgentListScreen.tsx</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">US-AGENT-001-AC-1</td>
+            <td class="ac-desc">用户设置昵称和头像</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">CreateAgentScreen.tsx Step 1 (name ≤100, avatar)</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">US-AGENT-001-AC-2</td>
+            <td class="ac-desc">用户选择感兴趣的场景（可多选）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">CreateAgentScreen.tsx Step 2 (4 scene types)</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">US-AGENT-001-AC-3</td>
+            <td class="ac-desc">用户配置 Agent 沟通风格（直接/委婉/详细/简洁）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">CreateAgentScreen.tsx Step 4 (AI behavior config)</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">US-AGENT-001-AC-4</td>
+            <td class="ac-desc">Agent 生成初始画像</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-partial">&#9888;</span></td>
+            <td class="ac-file">profile empty, personality hardcoded per type</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">US-AGENT-017-AC-1</td>
+            <td class="ac-desc">注销特定场景 Agent（soft delete, ARCHIVED）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">agentService.ts:375-417, pre-checks: exists/owner/matches</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ISSUE-C006 -->
+  <div class="issue-card">
+    <div class="issue-header">
+      <div>
+        <span class="issue-slug">ISSUE-C006</span>
+        <span class="issue-title">场景配置管理</span>
+      </div>
+      <span class="issue-status ai_confirmed">ai_confirmed</span>
+    </div>
+    <div class="issue-body">
+      <table class="ac-table">
+        <thead>
+          <tr>
+            <th>AC Slug</th>
+            <th>描述</th>
+            <th>类型</th>
+            <th>状态</th>
+            <th>证据</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ac-slug">ISSUE-C006~c1</td>
+            <td class="ac-desc">场景配置（4种场景 SceneConfig type system）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">shared/types/scene.ts - comprehensive type system</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-C006~c2</td>
+            <td class="ac-desc">字段系统（SceneFieldDefinition/validation/dependencies）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">shared/types/scene.ts: FieldValidationRule, FieldDependency</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-C006~c3</td>
+            <td class="ac-desc">场景模板（SceneTemplate - preset/user）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">shared/types/scene.ts: SceneTemplate type</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-C006~c4</td>
+            <td class="ac-desc">能力系统（SceneCapability with dependencies）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">shared/types/scene.ts: SceneCapability type</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-C006~c5</td>
+            <td class="ac-desc">场景切换（SceneMigration with field mappings）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">shared/types/scene.ts: SceneMigration type, routes</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">ISSUE-C006~c6</td>
+            <td class="ac-desc">场景配置可视化（SceneUIConfig with sections/layout/theme）</td>
+            <td><span class="ac-type">functional</span></td>
+            <td><span class="status-icon status-code">&#10003;</span></td>
+            <td class="ac-file">shared/types/scene.ts: SceneUIConfig, CreateAgentScreen Step 3</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Screenshots -->
+<div class="section">
+  <div class="section-title">
+    <span class="num">2</span>
+    截图证据（环境状态）
+  </div>
+
+  <div class="screenshot-grid">
+    <div class="screenshot-item">
+      <a href="#modal-01"><img src="screenshots/01-web-homepage.png" alt="Web Homepage"></a>
+      <div class="screenshot-label">
+        <span class="filename">01-web-homepage.png</span>
+        <span class="screenshot-status blank">空白页面</span>
+        <br>Web 首页 - Metro bundler 错误导致空白
+      </div>
+    </div>
+    <div class="screenshot-item">
+      <a href="#modal-02"><img src="screenshots/02-web-home-5s.png" alt="Web Homepage 5s"></a>
+      <div class="screenshot-label">
+        <span class="filename">02-web-home-5s.png</span>
+        <span class="screenshot-status blank">空白页面</span>
+        <br>Web 首页等待 5s 后 - 仍是空白
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-01" class="modal">
+    <a href="#" class="modal-close">&times;</a>
+    <img src="screenshots/01-web-homepage.png">
+  </div>
+  <div id="modal-02" class="modal">
+    <a href="#" class="modal-close">&times;</a>
+    <img src="screenshots/02-web-home-5s.png">
+  </div>
+</div>
+
+<!-- Critic Section -->
+<div class="section">
+  <div class="section-title">
+    <span class="num">3</span>
+    Critic Agent 质疑报告
+  </div>
+
+  <div class="critic-section">
+    <div class="critic-title">质疑维度与核心发现</div>
+
+    <div class="critic-stats">
+      <div class="critic-stat">
+        <span class="critic-stat-value" style="color: var(--accent-green);">19</span>
+        <span class="critic-stat-label">API 可验证</span>
+      </div>
+      <div class="critic-stat">
+        <span class="critic-stat-value" style="color: var(--accent-orange);">8</span>
+        <span class="critic-stat-label">浏览器 UI 必需</span>
+      </div>
+      <div class="critic-stat">
+        <span class="critic-stat-value" style="color: var(--accent-purple);">3</span>
+        <span class="critic-stat-label">代码审查必需</span>
+      </div>
+      <div class="critic-stat">
+        <span class="critic-stat-value" style="color: var(--accent-red);">6</span>
+        <span class="critic-stat-label">只能手动验证</span>
+      </div>
+    </div>
+
+    <div class="critic-question">
+      <div class="critic-q-label">质疑点 1: AgentType 枚举不一致</div>
+      <div class="critic-q-text">
+        AC `ISSUE-C001~c2` 声称 4 种场景类型（VisionShare, AgentDate, AgentJob, AgentAd），
+        但 Prisma schema 实际定义了 6 种（VISIONSHARE, AGENTDATE, AGENTJOB, AGENTAD, DEMAND, SUPPLY）。
+        Mobile UI 只显示 4 种，API 支持 6 种。这意味着 DEMAND/SUPPLY 的创建路径未在 UI 验证。
+      </div>
+    </div>
+
+    <div class="critic-question">
+      <div class="critic-q-label">质疑点 2: deleteAgent 是 Soft Delete（ARCHIVED），不是真删除</div>
+      <div class="critic-q-text">
+        AC `US-AGENT-017-AC-1` 要求"注销特定场景 Agent"，但实际代码将 status 设为 ARCHIVED、isActive 设为 false，
+        Agent 数据仍在数据库中。是否验证了：agent 仍在 DB 中（只是不可见）？是否有 active matches 时返回 409 的检查？
+        （答案：代码中有 AGENT_HAS_ACTIVE_MATCHES 检查）。
+      </div>
+    </div>
+
+    <div class="critic-question">
+      <div class="critic-q-label">质疑点 3: Agent 画像生成是硬编码，非动态读取</div>
+      <div class="critic-q-text">
+        AC `US-AGENT-001-AC-4` 要求"Agent 生成初始画像"，但 `generateAgentPersonality(type)` 返回的是
+        硬编码的 {traits, communicationStyle}，agentProfile 创建时是空的。
+        "读取主人画像"和"学习规则"的功能未在代码中找到实际实现。
+      </div>
+    </div>
+
+    <div class="critic-question">
+      <div class="critic-q-label">质疑点 4: 头像上传无法验证完整链路</div>
+      <div class="critic-q-text">
+        AC `ISSUE-A003~c2` 要求"图片压缩和裁剪"+"云存储集成(OSS/S3)"，
+        代码中 POST /avatar 使用 multer + storageService.uploadAvatar。
+        但代码审查无法验证：图片是否真的被压缩/裁剪了？是否存储到云存储（URL 是云存储域名还是本地路径）？
+        默认头像处理逻辑？这些需要运行时测试。
+      </div>
+    </div>
+
+    <div class="critic-question">
+      <div class="critic-q-label">质疑点 5: 沟通风格映射不一致</div>
+      <div class="critic-q-text">
+        AC `US-AGENT-001-AC-3` 要求沟通风格为"直接/委婉/详细/简洁"，
+        但 `generateAgentPersonality()` 返回的 communicationStyle 是 "friendly/warm/professional/direct/neutral"（5 种）。
+        AC 中 4 种风格与代码中 5 种风格之间的映射关系未在代码中明确体现。
+      </div>
+    </div>
+
+    <div class="critic-question">
+      <div class="critic-q-label">质疑点 6: 隐私设置未实际使用</div>
+      <div class="critic-q-text">
+        DB 查询显示所有 users 表的 privacy_settings 字段均为 NULL。
+        PrivacySettingsScreen.tsx 代码存在且完整，但没有人实际设置了隐私选项。
+        这意味着 PrivacySettings 功能虽已实现但未被真实用户使用过。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DB Evidence -->
+<div class="section">
+  <div class="section-title">
+    <span class="num">4</span>
+    数据库证据
+  </div>
+
+  <div class="issue-card">
+    <div class="issue-body">
+      <table class="ac-table">
+        <thead>
+          <tr>
+            <th>检查项</th>
+            <th>结果</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ac-slug">AgentType Enum</td>
+            <td class="ac-desc">{DEMAND, SUPPLY, VISIONSHARE, AGENTDATE, AGENTJOB, AGENTAD}</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">AgentStatus Enum</td>
+            <td class="ac-desc">{DRAFT, ACTIVE, PAUSED, ARCHIVED}</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">Agent 类型使用统计</td>
+            <td class="ac-desc">VISIONSHARE: 47, AGENTDATE: 1, AGENTJOB: 1 (总计 49)</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">Agent 状态使用统计</td>
+            <td class="ac-desc">DRAFT: 2, ACTIVE: 46, ARCHIVED: 1 (总计 49)</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">users 表字段</td>
+            <td class="ac-desc">18 columns including email, password_hash, name, display_name, avatar_url, bio, privacy_settings(jsonb), status</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">agents 表字段</td>
+            <td class="ac-desc">13 columns including id, user_id, type, name, description, status, config(jsonb), latitude, longitude, is_active, credit_score</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">Agent config 示例</td>
+            <td class="ac-desc">{"communicationStyle": "detailed"} — 一个 ARCHIVED 的 VISIONSHARE agent</td>
+          </tr>
+          <tr>
+            <td class="ac-slug">privacy_settings 使用</td>
+            <td class="ac-desc">0 users 有 privacy_settings（全部为 NULL）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="report-footer">
+  生成于 2026-04-30 08:50 CST · BridgeAI IssueTree V3 · Report Story US-AGENT-001<br>
+  验证方式：代码审查 + 数据库 Schema 分析（实时 API/UI 验证因环境阻塞无法进行）
+</div>
+
+</div>
+</body>
+</html>

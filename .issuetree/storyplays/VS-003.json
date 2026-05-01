@@ -1,0 +1,441 @@
+{
+  "id": 13,
+  "slug": "VS-003",
+  "title": "AI 智能检索本地相册",
+  "narrative": "系统智能扫描本地相册，推荐匹配照片。",
+  "issues": [
+    {
+      "id": 23,
+      "slug": "ISSUE-C002b",
+      "title": "L2结构化信息模型",
+      "description": "实现 Agent L2 结构化信息模型，支持用户通过选择/填写\n预设选项来描述需求/供给，用于过滤和匹配。\n",
+      "status": "fixing",
+      "acceptance_criteria": [
+        {
+          "ac_id": 6,
+          "slug": "AS-002-AC-2",
+          "description": "提取 queryable/readable/private 三层字段",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 9,
+          "slug": "AS-003-AC-2",
+          "description": "提取三层字段并存储",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 234,
+          "slug": "ISSUE-C002b~c1",
+          "description": "结构化信息定义:\n- 场景特定的 L2 Schema\n- 字段类型: enum, range, boolean, multi_select\n- 条件字段(dependent fields)\n- Schema 版本管理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 235,
+          "slug": "ISSUE-C002b~c2",
+          "description": "表单渲染:\n- 根据 Schema 动态生成表单\n- 条件字段显示逻辑\n- 字段联动\n- 移动端适配\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 236,
+          "slug": "ISSUE-C002b~c3",
+          "description": "L2 存储:\n- JSON 字段存储\n- GIN 索引支持复杂查询\n- 数据验证 middleware\n- 历史版本存储\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 237,
+          "slug": "ISSUE-C002b~c4",
+          "description": "L2 配置界面:\n- 分步骤表单\n- 实时预览\n- 自动保存草稿\n- 完成度展示\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 238,
+          "slug": "ISSUE-C002b~c5",
+          "description": "数据验证:\n- Schema 验证\n- 必填字段检查\n- 选项值白名单验证\n- 验证错误提示\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 648,
+          "slug": "AS-002~func",
+          "description": "Agent 解析主人自然语言输入，提炼成结构化需求",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 650,
+          "slug": "AS-003~func",
+          "description": "Agent 理解主人供给能力，记录为供给档案",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "slug": "ISSUE-AI004",
+      "title": "Agent对话生成服务",
+      "description": "实现Agent对话生成服务，为AI Agent提供智能对话能力，\n支持Agent间的自主沟通、协商、匹配对话，以及Agent与用户\n的交互对话，具备上下文记忆和个性化回复能力。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 15,
+          "slug": "AS-005-AC-2",
+          "description": "自主发起对话请求",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 16,
+          "slug": "AS-005-AC-3",
+          "description": "同时与多个候选保持独立对话",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 18,
+          "slug": "AS-006-AC-2",
+          "description": "评估是否值得交流",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 19,
+          "slug": "AS-006-AC-3",
+          "description": "向主人汇报对话进展",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 23,
+          "slug": "AS-008-AC-1",
+          "description": "实时分析对方意图和态度",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 24,
+          "slug": "AS-008-AC-2",
+          "description": "发送策略建议、风险提示、话题推荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 26,
+          "slug": "AS-009-AC-1",
+          "description": "评估匹配度是否达到引荐阈值",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 53,
+          "slug": "AS-LEARN-001-AC-1",
+          "description": "记录成功匹配的共同特征",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 54,
+          "slug": "AS-LEARN-001-AC-2",
+          "description": "分析失败对话原因",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 55,
+          "slug": "AS-LEARN-001-AC-3",
+          "description": "学习主人决策偏好",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 70,
+          "slug": "US-AGENT-007-AC-2",
+          "description": "点击\"让 Agent 聊\"按钮后 Agent 以自己名义发言",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 78,
+          "slug": "US-AGENT-009-AC-1",
+          "description": "私聊建议显示在侧边栏或独立区域",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 79,
+          "slug": "US-AGENT-009-AC-2",
+          "description": "建议包括话题推荐、风险提示、对方意图分析",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 93,
+          "slug": "VS-003-AC-2",
+          "description": "符合条件的照片推荐给用户确认",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 108,
+          "slug": "DATE-004-AC-2",
+          "description": "Agent 提供交友话题建议",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 129,
+          "slug": "US-AGENT-015-AC-2",
+          "description": "Agent 礼貌结束对话",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 592,
+          "slug": "US-AGENT-007~func",
+          "description": "用户在四人群聊中成功切换\"亲自聊\"和\"让 Agent 代聊\"",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 598,
+          "slug": "US-AGENT-009~func",
+          "description": "Agent 实时向用户发送私聊建议，仅自己可见",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 599,
+          "slug": "US-AGENT-009~edge",
+          "description": "异常：建议泄露、建议为空",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 608,
+          "slug": "VS-003~func",
+          "description": "系统扫描本地相册并推荐匹配照片",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 622,
+          "slug": "DATE-004~func",
+          "description": "双方接受引荐后进入四人群聊交友",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 623,
+          "slug": "DATE-004~edge",
+          "description": "异常：成员离线、消息丢失",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 654,
+          "slug": "AS-005~func",
+          "description": "Agent 自主决定与符合条件的候选 Agent 发起对话",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 655,
+          "slug": "AS-005~edge",
+          "description": "异常：对方拒绝对话、同时对话数过多",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 656,
+          "slug": "AS-006~func",
+          "description": "Agent 被其他 Agent 联系后评估是否值得交流",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 657,
+          "slug": "AS-006~edge",
+          "description": "异常：大量 Agent 同时联系",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 660,
+          "slug": "AS-008~func",
+          "description": "Agent 实时分析对话，向主人发送私下建议",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 661,
+          "slug": "AS-008~edge",
+          "description": "异常：建议为空、AI 服务降级",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 662,
+          "slug": "AS-009~func",
+          "description": "匹配度达标后 Agent 请求主人确认引荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 663,
+          "slug": "AS-009~edge",
+          "description": "异常：引荐请求超时、一方接受一方拒绝",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 684,
+          "slug": "US-AGENT-015~func",
+          "description": "用户在匹配过程中随时退出",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 695,
+          "slug": "ISSUE-AI004~c1",
+          "description": "引擎实现:\n- 上下文管理\n- 意图识别\n- 回复生成\n- 对话状态跟踪\n- 多轮对话支持\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 696,
+          "slug": "ISSUE-AI004~c2",
+          "description": "人格系统:\n- Agent人格定义\n- 语气风格适配\n- 行为特征模拟\n- 场景角色扮演\n- 人格一致性维护\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 697,
+          "slug": "ISSUE-AI004~c3",
+          "description": "协商机制:\n- 双向Agent对话\n- 条件协商流程\n- 匹配意愿确认\n- 分歧处理策略\n- 共识达成检测\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 698,
+          "slug": "ISSUE-AI004~c4",
+          "description": "记忆系统:\n- 短期对话记忆\n- 长期Agent记忆\n- 关键信息提取\n- 记忆摘要生成\n- 记忆检索增强\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 699,
+          "slug": "ISSUE-AI004~c5",
+          "description": "切换机制:\n- 人工介入检测\n- 切换请求处理\n- 对话上下文移交\n- 接管状态同步\n- 恢复AI代理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 700,
+          "slug": "ISSUE-AI004~c6",
+          "description": "API实现:\n- 对话生成API\n- 流式响应支持\n- WebSocket实时对话\n- 对话历史查询\n- 生成参数配置\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 98,
+      "slug": "ISSUE-VS003",
+      "title": "相机拍照与上传",
+      "description": "实现VisionShare场景的相机拍照和照片上传功能。接单用户通过相机拍摄实时照片，\n支持拍照预览、照片编辑、批量上传等功能。集成图片安全检查，\n确保上传内容符合规范。\n",
+      "status": "fixing",
+      "acceptance_criteria": [
+        {
+          "ac_id": 34,
+          "slug": "AS-VS-002-AC-3",
+          "description": "处理隐私脱敏并上传",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 91,
+          "slug": "VS-002-AC-2",
+          "description": "点击接单后进入拍照界面",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 560,
+          "slug": "ISSUE-VS003~c1",
+          "description": "相机界面:\n- 原生相机调用(Expo Camera)\n- 拍照按钮和连拍功能\n- 闪光灯和焦距控制\n- 照片预览和重拍\n- 相机权限处理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 561,
+          "slug": "ISSUE-VS003~c2",
+          "description": "编辑功能:\n- 照片预览界面\n- 裁剪和旋转\n- 滤镜和亮度调整\n- 标记和注释\n- 照片选择/取消\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 562,
+          "slug": "ISSUE-VS003~c3",
+          "description": "安全检测:\n- 敏感内容识别\n- 违规图片拦截\n- 人脸识别和隐私检测\n- 图片质量检查\n- 检查结果反馈\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 563,
+          "slug": "ISSUE-VS003~c4",
+          "description": "上传功能:\n- 多图批量上传\n- 上传进度显示\n- 断点续传\n- 图片压缩和优化\n- 上传队列管理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 564,
+          "slug": "ISSUE-VS003~c5",
+          "description": "存储管理:\n- 照片元数据记录\n- 云存储集成(S3/OSS)\n- 缩略图生成\n- 照片关联任务\n- 存储生命周期管理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 565,
+          "slug": "ISSUE-VS003~c6",
+          "description": "导入功能:\n- 本地相册访问\n- 多选照片导入\n- 导入照片预览\n- 导入安全检查\n- 照片来源标记\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 606,
+          "slug": "VS-002~func",
+          "description": "用户根据地域和信用过滤条件查看并接附近任务",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 607,
+          "slug": "VS-002~edge",
+          "description": "异常：位置异常、信用过滤绕过",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 666,
+          "slug": "AS-VS-002~func",
+          "description": "Agent 判断主人是否适合响应附近视觉任务",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 667,
+          "slug": "AS-VS-002~edge",
+          "description": "异常：无匹配照片、脱敏失败",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

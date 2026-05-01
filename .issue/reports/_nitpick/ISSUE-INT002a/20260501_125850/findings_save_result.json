@@ -1,0 +1,162 @@
+{
+  "task_id": 1085,
+  "issue_id": 64,
+  "inserted_count": 19,
+  "duplicates_count": 0,
+  "error_count": 9,
+  "inserted": [
+    {
+      "slug": "NP-2417",
+      "category": "runtime_behavior",
+      "severity": "critical",
+      "desc": "DATABASE_URL is passed to PrismaClient with no connection pool query string para"
+    },
+    {
+      "slug": "NP-2418",
+      "category": "runtime_behavior",
+      "severity": "critical",
+      "desc": "getConnectionStats() returns hardcoded zeros and a placeholder comment, so the A"
+    },
+    {
+      "slug": "NP-2419",
+      "category": "test_coverage",
+      "severity": "critical",
+      "desc": "performance.test.ts asserts on res.on('finish', ...), but the implementation ove"
+    },
+    {
+      "slug": "NP-2420",
+      "category": "consistency",
+      "severity": "critical",
+      "desc": "middleware/cache.ts uses an in-memory Map for HTTP response caching, contradicti"
+    },
+    {
+      "slug": "NP-2421",
+      "category": "test_coverage",
+      "severity": "warning",
+      "desc": "There is no test file for middleware/cache.ts. Cache hit/miss, TTL expiry, non-2"
+    },
+    {
+      "slug": "NP-2422",
+      "category": "runtime_behavior",
+      "severity": "critical",
+      "desc": "/ready endpoint returns hardcoded database: 'ok' without performing a real DB pi"
+    },
+    {
+      "slug": "NP-2423",
+      "category": "code_quality",
+      "severity": "warning",
+      "desc": "rateLimiter.ts intentionally bypasses rate limiting in NODE_ENV=test for several"
+    },
+    {
+      "slug": "NP-2424",
+      "category": "code_quality",
+      "severity": "warning",
+      "desc": "rateLimiter.ts:16-17 imports rateLimitEnv only to silence the unused-vars rule, "
+    },
+    {
+      "slug": "NP-2425",
+      "category": "code_quality",
+      "severity": "warning",
+      "desc": "falseReportPenaltyCheck uses dynamic import('../db/client') per request inside a"
+    },
+    {
+      "slug": "NP-2426",
+      "category": "code_quality",
+      "severity": "warning",
+      "desc": "cacheAside takes an unused _writeFn parameter. It is never invoked; only the rea"
+    },
+    {
+      "slug": "NP-2427",
+      "category": "code_quality",
+      "severity": "info",
+      "desc": "middleware/cache.ts uses any for CacheEntry.data and the body parameter, weakeni"
+    },
+    {
+      "slug": "NP-2428",
+      "category": "code_quality",
+      "severity": "info",
+      "desc": "performance.ts uses console.warn for slow request/query logging instead of the p"
+    },
+    {
+      "slug": "NP-2429",
+      "category": "code_quality",
+      "severity": "info",
+      "desc": "perf/api-load-test.js hardcodes API_TOKEN = 'test-token' and email/password defa"
+    },
+    {
+      "slug": "NP-2430",
+      "category": "code_quality",
+      "severity": "info",
+      "desc": "db/client.ts line 32 sets log: ['query', 'info', 'warn', 'error'] in development"
+    },
+    {
+      "slug": "NP-2431",
+      "category": "consistency",
+      "severity": "critical",
+      "desc": "Performance index migration 20260419000000_perf_indexes (which adds composite in"
+    },
+    {
+      "slug": "NP-2432",
+      "category": "runtime_behavior",
+      "severity": "warning",
+      "desc": "Cache middleware uses an in-memory Map instead of Redis. Multi-node deployments "
+    },
+    {
+      "slug": "NP-2433",
+      "category": "runtime_behavior",
+      "severity": "warning",
+      "desc": "/metrics endpoint exposes only uptime/memory/pid; no p50/p95/p99 latency percent"
+    },
+    {
+      "slug": "NP-2434",
+      "category": "test_coverage",
+      "severity": "warning",
+      "desc": "rateLimiter.ts has 6 NODE_ENV==='test' bypass branches that short-circuit cleanu"
+    },
+    {
+      "slug": "NP-2435",
+      "category": "test_coverage",
+      "severity": "critical",
+      "desc": "Performance middleware tests have 2/7 failing tests: 'should add performance hea"
+    }
+  ],
+  "duplicates": [],
+  "errors": [
+    {
+      "error": "DB server [500]: IntegrityError: (sqlite3.IntegrityError) CHECK constraint failed: ck_nitpick_category\n[SQL: INSERT INTO nitpick_findings (slug, issue_id, task_id, transition, category, severity, description, evidence, recommendation, file_path, line_range, status, disposition, related_ac_id, duplicate_of, created_at, resolved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('NP-2417', 64, 1085, 'accepted-to-nitpicking', 'ac_verification', 'critical', \"Four key infrastructure files needed by the AC are present in the working tree but never committed to master. These include the Redis-backed rate lim ... (36 characters truncated) ... rvice, the DB query analyzer, and the perf indexes migration. None of them ship in master, so the corresponding AC capabilities don't actually exist.\", 'git ls-files returns empty for all four; git status shows them as ?? untracked.', 'Either commit these files to master with proper review, or remove them from the working tree and re-implement the missing capabilities so AC1/AC2 actually have shipping code.', 'apps/server/src/services/performanceMetrics.ts', None, 'open', None, None, None, '2026-05-01 13:18:02.887766', None)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)",
+      "description": "Four key infrastructure files needed by the AC are present in the working tree but never committed to master. These incl"
+    },
+    {
+      "error": "DB server [500]: IntegrityError: (sqlite3.IntegrityError) CHECK constraint failed: ck_nitpick_category\n[SQL: INSERT INTO nitpick_findings (slug, issue_id, task_id, transition, category, severity, description, evidence, recommendation, file_path, line_range, status, disposition, related_ac_id, duplicate_of, created_at, resolved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('NP-2417', 64, 1085, 'accepted-to-nitpicking', 'ac_verification', 'critical', '/metrics endpoint does not return any P50/P90/P95/P99 latency percentiles. AC1 explicitly requires baseline P95<200ms verification via observable metrics; the endpoint only exposes process memory/uptime/pid.', 'apps/server/src/app.ts:157-172 returns {timestamp, uptime, memory, pid} only — no percentile data.', 'Wire a tracked PerformanceMetrics service into the performanceMonitor middleware and expose p50/p90/p95/p99 plus per-route counts on /metrics.', 'apps/server/src/app.ts:157-172', None, 'open', None, 396, None, '2026-05-01 13:18:02.902187', None)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)",
+      "description": "/metrics endpoint does not return any P50/P90/P95/P99 latency percentiles. AC1 explicitly requires baseline P95<200ms ve"
+    },
+    {
+      "error": "DB server [500]: IntegrityError: (sqlite3.IntegrityError) CHECK constraint failed: ck_nitpick_category\n[SQL: INSERT INTO nitpick_findings (slug, issue_id, task_id, transition, category, severity, description, evidence, recommendation, file_path, line_range, status, disposition, related_ac_id, duplicate_of, created_at, resolved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('NP-2426', 64, 1085, 'accepted-to-nitpicking', 'security', 'warning', 'cacheDelPattern and invalidateByVersion call redis.keys(pattern) which is O(N) and blocks Redis on large datasets. Under high cache pressure (the very scenario AC1 wants to validate), this becomes a foot-gun.', 'cache.ts:265 const keys = await redis.keys(pattern); cache.ts:596 same. No SCAN-based iteration.', 'Replace KEYS with a SCAN cursor loop or document that these helpers are admin-only.', 'apps/server/src/services/cache.ts:259-272,589-607', None, 'open', None, 396, None, '2026-05-01 13:18:03.048787', None)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)",
+      "description": "cacheDelPattern and invalidateByVersion call redis.keys(pattern) which is O(N) and blocks Redis on large datasets. Under"
+    },
+    {
+      "error": "DB server [500]: IntegrityError: (sqlite3.IntegrityError) CHECK constraint failed: ck_nitpick_category\n[SQL: INSERT INTO nitpick_findings (slug, issue_id, task_id, transition, category, severity, description, evidence, recommendation, file_path, line_range, status, disposition, related_ac_id, duplicate_of, created_at, resolved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('NP-2427', 64, 1085, 'accepted-to-nitpicking', 'ac_verification', 'warning', 'perf/db-perf-report.md reports concrete before/after numbers (450ms→85ms etc.) but there is no committed benchmark script, raw output, or reproducible procedure. Same for AC1 P95<200ms claim.', 'perf/db-perf-report.md:182-188 lists Match List 450→85ms with no source.', 'Commit a real k6 summary JSON / HTML report under perf/results/ and link it from the report.', 'perf/db-perf-report.md:180-188', None, 'open', None, None, None, '2026-05-01 13:18:03.073349', None)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)",
+      "description": "perf/db-perf-report.md reports concrete before/after numbers (450ms→85ms etc.) but there is no committed benchmark scrip"
+    },
+    {
+      "error": "DB server [500]: IntegrityError: (sqlite3.IntegrityError) CHECK constraint failed: ck_nitpick_category\n[SQL: INSERT INTO nitpick_findings (slug, issue_id, task_id, transition, category, severity, description, evidence, recommendation, file_path, line_range, status, disposition, related_ac_id, duplicate_of, created_at, resolved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('NP-2429', 64, 1085, 'accepted-to-nitpicking', 'ac_verification', 'warning', \"perf/api-load-test.js sets P95 threshold on a custom response_time Trend that is added per check, but the script's default function calls test functions in series with sleeps; mixed warmup/benchmark/stress phases share a single response_time metric making the threshold unreliable.\", 'api-load-test.js:11-12, 52-54, 169-191. All calls feed into the same responseTime Trend regardless of scenario tag.', \"Use scenario-tagged thresholds (e.g. response_time{phase:benchmark}: ['p(95)<200']) and exclude warmup/stress phases.\", 'perf/api-load-test.js:52-60,169-191', None, 'open', None, 396, None, '2026-05-01 13:18:03.121689', None)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)",
+      "description": "perf/api-load-test.js sets P95 threshold on a custom response_time Trend that is added per check, but the script's defau"
+    },
+    {
+      "error": "DB server [500]: IntegrityError: (sqlite3.IntegrityError) CHECK constraint failed: ck_nitpick_category\n[SQL: INSERT INTO nitpick_findings (slug, issue_id, task_id, transition, category, severity, description, evidence, recommendation, file_path, line_range, status, disposition, related_ac_id, duplicate_of, created_at, resolved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('NP-2431', 64, 1085, 'accepted-to-nitpicking', 'ac_verification', 'critical', 'Prisma connection pool configuration is dead code. CONNECTION_POOL_SIZE/CONNECTION_TIMEOUT/IDLE_TIMEOUT vars are read from env but never used; PrismaClient receives only DATABASE_URL verbatim. ESLint flags them as unused-vars errors.', \"apps/server/src/db/client.ts:14-37; ESLint: 'CONNECTION_POOL_SIZE is assigned a value but never used'\", \"Inject pool params into the URL via ?connection_limit=&pool_timeout= querystring (Prisma's documented mechanism), or remove the misleading constants.\", 'apps/server/src/db/client.ts', None, 'open', None, 397, None, '2026-05-01 13:18:03.166374', None)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)",
+      "description": "Prisma connection pool configuration is dead code. CONNECTION_POOL_SIZE/CONNECTION_TIMEOUT/IDLE_TIMEOUT vars are read fr"
+    },
+    {
+      "error": "DB server [500]: IntegrityError: (sqlite3.IntegrityError) CHECK constraint failed: ck_nitpick_category\n[SQL: INSERT INTO nitpick_findings (slug, issue_id, task_id, transition, category, severity, description, evidence, recommendation, file_path, line_range, status, disposition, related_ac_id, duplicate_of, created_at, resolved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('NP-2431', 64, 1085, 'accepted-to-nitpicking', 'ac_verification', 'critical', \"getConnectionStats() returns hardcoded zeros and is documented as 'placeholder for future implementation' — claim of pool monitoring is unsubstantiated.\", 'apps/server/src/db/client.ts:146-159 returns {active:0, idle:0, total:0}', 'Implement using pg_stat_activity SELECT or remove the function until functional.', 'apps/server/src/db/client.ts', None, 'open', None, 397, None, '2026-05-01 13:18:03.183296', None)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)",
+      "description": "getConnectionStats() returns hardcoded zeros and is documented as 'placeholder for future implementation' — claim of poo"
+    },
+    {
+      "error": "DB server [500]: IntegrityError: (sqlite3.IntegrityError) CHECK constraint failed: ck_nitpick_category\n[SQL: INSERT INTO nitpick_findings (slug, issue_id, task_id, transition, category, severity, description, evidence, recommendation, file_path, line_range, status, disposition, related_ac_id, duplicate_of, created_at, resolved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('NP-2432', 64, 1085, 'accepted-to-nitpicking', 'ac_verification', 'critical', 'AC2.5 (sharding/sub-partition strategy evaluation) has no artifact. Repo grep for shard|分表|分库 in perf/ docs/ apps/server/ *.md returns no design notes.', \"grep -rn 'shard|分表|分库' --include='*.md' returned only 评分表 (rating table heading).\", \"Author an ADR or perf/sharding-evaluation.md describing the assessment outcome (even if conclusion is 'not needed for current scale').\", 'docs/database/', None, 'open', None, 397, None, '2026-05-01 13:18:03.212630', None)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)",
+      "description": "AC2.5 (sharding/sub-partition strategy evaluation) has no artifact. Repo grep for shard|分表|分库 in perf/ docs/ apps/server"
+    },
+    {
+      "error": "DB server [500]: IntegrityError: (sqlite3.IntegrityError) CHECK constraint failed: ck_nitpick_category\n[SQL: INSERT INTO nitpick_findings (slug, issue_id, task_id, transition, category, severity, description, evidence, recommendation, file_path, line_range, status, disposition, related_ac_id, duplicate_of, created_at, resolved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('NP-2436', 64, 1085, 'accepted-to-nitpicking', 'ac_verification', 'info', 'matching service has no queryAnalyzer.ts. Optimization is limited to Redis cache-aside in optimizedMatchingService.ts. No EXPLAIN-driven analysis path.', \"ls apps/server/src/utils/queryAnalyzer.ts -> No such file or directory; grep 'queryAnalyzer' apps/server/src/ -> 0 hits.\", 'Either implement a queryAnalyzer that runs EXPLAIN on slow matching queries, or update AC2.4 acceptance text to reflect cache-only optimization.', 'apps/server/src/services/matching/optimizedMatchingService.ts', None, 'open', None, 397, None, '2026-05-01 13:18:04.837579', None)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)",
+      "description": "matching service has no queryAnalyzer.ts. Optimization is limited to Redis cache-aside in optimizedMatchingService.ts. N"
+    }
+  ]
+}

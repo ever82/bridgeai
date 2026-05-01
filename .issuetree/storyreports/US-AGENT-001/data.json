@@ -1,0 +1,185 @@
+{
+  "story": {
+    "id": 1,
+    "slug": "US-AGENT-001",
+    "title": "创建个人 Agent",
+    "story_type": "user",
+    "status": "active",
+    "narrative": "用户首次使用 BridgeAI，创建自己的 AI Agent，配置基本信息和偏好。",
+    "priority": 0
+  },
+  "verification_results": {
+    "environment_status": {
+      "backend": "running",
+      "web_frontend": "broken (missing @babel/runtime dependency)",
+      "mobile_app": "not tested (requires Expo Go)",
+      "database": "connected"
+    },
+    "api_verification_blocked": {
+      "reason": "DDoS protection middleware with 30s timeout blocks all POST/PUT/DELETE requests to /api/v1/* endpoints from localhost. Health endpoint (/health) works fine.",
+      "evidence": "Server log shows: [DDoS Protection] Slow request timeout from 127.0.0.1, [Performance] Slow request: POST /api/v1/auth/login took 30001ms",
+      "mitigation": "Code review and database schema analysis used as alternative verification method"
+    }
+  },
+  "ac_verification_by_code_review": [
+    {
+      "slug": "ISSUE-C001~c1",
+      "description": "Agent 创建接口 (POST /api/v1/agents)",
+      "evidence": "POST / endpoint with authenticate middleware, createAgentSchema validates type (enum, required) and name (1-100 chars, required)",
+      "status": "✅ code_exists",
+      "file": "apps/server/src/routes/agents.ts:133-168"
+    },
+    {
+      "slug": "ISSUE-C001~c2",
+      "description": "Agent 类型定义 (6种枚举)",
+      "evidence": "AgentType enum: VISIONSHARE, AGENTDATE, AGENTJOB, AGENTAD, DEMAND, SUPPLY. Mobile UI only shows 4 (DEMAND/SUPPLY excluded per NP-272). DB has 3 types in use: VISIONSHARE(47), AGENTDATE(1), AGENTJOB(1)",
+      "status": "✅ code_exists",
+      "file": "packages/shared/src/types/agent.ts:5-12, apps/server/src/schemas/agentSchemas.ts:97-104"
+    },
+    {
+      "slug": "ISSUE-C001~c3",
+      "description": "Agent 生命周期 (DRAFT/ACTIVE/PAUSED/ARCHIVED)",
+      "evidence": "AgentStatus enum: DRAFT, ACTIVE, PAUSED, ARCHIVED. VALID_STATUS_TRANSITIONS defined. DB shows 3 statuses in use: DRAFT(2), ACTIVE(46), ARCHIVED(1). agent_status_history table exists with 6 entries.",
+      "status": "✅ code_exists",
+      "file": "packages/shared/src/types/agent.ts:14-19, 125-130"
+    },
+    {
+      "slug": "ISSUE-C001~c4",
+      "description": "Agent 查询接口 (GET /api/v1/agents)",
+      "evidence": "GET / endpoint with type/status filters and pagination support in agentService.getAgents()",
+      "status": "✅ code_exists",
+      "file": "apps/server/src/routes/agents.ts:40-90"
+    },
+    {
+      "slug": "ISSUE-C001~c5",
+      "description": "Agent 管理 UI (5步向导/列表页/空状态)",
+      "evidence": "CreateAgentScreen.tsx has 5-step wizard with progress bar (step/5*100%). AgentListScreen.tsx has empty state (No Agents Yet), create button, agent cards with type/status badges, toggle button, filters, sort, grid/list view. All testIDs present.",
+      "status": "✅ code_exists",
+      "file": "apps/mobile/src/screens/Agent/CreateAgentScreen.tsx, apps/mobile/src/screens/Agent/AgentListScreen.tsx"
+    },
+    {
+      "slug": "US-AGENT-017-AC-1",
+      "description": "注销特定场景 Agent (soft delete)",
+      "evidence": "deleteAgent() sets status=ARCHIVED, isActive=false, creates statusHistory entry. Pre-checks: agent exists (404), ownership (403), active matches (409). Config field stores {communicationStyle} on one archived agent.",
+      "status": "✅ code_exists",
+      "file": "apps/server/src/services/agentService.ts:375-417"
+    },
+    {
+      "slug": "US-AGENT-001-AC-4",
+      "description": "Agent 生成初始画像",
+      "evidence": "Profile auto-created on agent creation (empty L1/L2/L3). generateAgentPersonality(type) generates hardcoded traits per AgentType (e.g., VISIONSHARE→['地理敏感','价格敏锐','视觉导向']/'friendly'). Stored in agent.config.personality. NOT dynamically reading master profile.",
+      "status": "⚠️ partial",
+      "file": "apps/server/src/services/agentProfileService.ts:35-75, agentService.ts:190"
+    },
+    {
+      "slug": "ISSUE-A003~c1",
+      "description": "用户信息接口 (GET/PUT /me, POST /avatar, DELETE /me)",
+      "evidence": "GET /me returns user. PUT /me updates name/displayName/bio/website/location. POST /avatar accepts multipart file (5MB limit, jpeg/png/gif/webp) or avatarUrl field. DELETE /me requires password verification first.",
+      "status": "✅ code_exists",
+      "file": "apps/server/src/routes/users.ts:69-195"
+    },
+    {
+      "slug": "ISSUE-A003~c4",
+      "description": "隐私控制 (资料可见性/在线状态/联系方式/阻止列表)",
+      "evidence": "PrivacySettingsScreen.tsx with sections: profileVisibility(public/friends/private), onlineStatusVisibility, phoneVisibility, emailVisibility, allowSearchByPhone/Email, blocked list. Users table has privacy_settings jsonb column (currently empty in DB).",
+      "status": "✅ code_exists",
+      "file": "apps/mobile/src/screens/Settings/PrivacySettingsScreen.tsx"
+    },
+    {
+      "slug": "ISSUE-A003~c2",
+      "description": "头像管理 (上传/压缩/云存储)",
+      "evidence": "POST /avatar uses multer memoryStorage, storageService.uploadAvatar. Image compression/裁剪 not visible in code review - requires runtime testing. User table has avatar_url text column.",
+      "status": "⚠️ partial",
+      "file": "apps/server/src/routes/users.ts:120-162"
+    },
+    {
+      "slug": "ISSUE-A003~c3",
+      "description": "移动端资料 UI",
+      "evidence": "ProfileScreen and EditProfileScreen referenced in AC verification_method. Mobile app uses Expo with React Native.",
+      "status": "✅ code_exists",
+      "note": "UI verification requires Expo Go - web version broken"
+    },
+    {
+      "slug": "ISSUE-C006~c1",
+      "description": "场景配置 (SceneConfig type system)",
+      "evidence": "packages/shared/src/types/scene.ts defines comprehensive type system: SceneId('visionshare'|'agentdate'|'agentjob'|'agentad'), SceneMetadata, SceneConfig with fields[], capabilities[], templates[], validation, ui. 17 SceneFieldType options.",
+      "status": "✅ code_exists",
+      "file": "packages/shared/src/types/scene.ts"
+    },
+    {
+      "slug": "ISSUE-C006~c2",
+      "description": "字段系统 (SceneFieldDefinition, validation, dependencies)",
+      "evidence": "FieldValidationRule, FieldDependency, FieldUIConfig defined. SceneConfig includes validation and ui properties.",
+      "status": "✅ code_exists",
+      "file": "packages/shared/src/types/scene.ts"
+    },
+    {
+      "slug": "ISSUE-C006~c3",
+      "description": "场景模板 (SceneTemplate)",
+      "evidence": "SceneTemplate type defined with preset and user templates. server has templateService.",
+      "status": "✅ code_exists",
+      "file": "packages/shared/src/types/scene.ts"
+    },
+    {
+      "slug": "ISSUE-C006~c4",
+      "description": "能力系统 (SceneCapability)",
+      "evidence": "SceneCapability type defined with id, dependencies, config. 4 scene capabilities in DB.",
+      "status": "✅ code_exists",
+      "file": "packages/shared/src/types/scene.ts"
+    },
+    {
+      "slug": "ISSUE-C006~c5",
+      "description": "场景切换 (SceneMigration)",
+      "evidence": "SceneMigration type defined with field mappings and transformations. Route has /migration/validate, /migration/preview, /migration/execute.",
+      "status": "✅ code_exists",
+      "file": "packages/shared/src/types/scene.ts"
+    },
+    {
+      "slug": "ISSUE-C006~c6",
+      "description": "场景配置可视化",
+      "evidence": "SceneConfig includes SceneUIConfig with sections, layout, theme. Mobile CreateAgentScreen Step 3 shows SceneConfigForm.",
+      "status": "✅ code_exists",
+      "file": "packages/shared/src/types/scene.ts, apps/mobile/src/screens/Agent/CreateAgentScreen.tsx"
+    }
+  ],
+  "db_evidence": {
+    "agent_types_in_use": { "VISIONSHARE": 47, "AGENTDATE": 1, "AGENTJOB": 1 },
+    "agent_statuses_in_use": { "DRAFT": 2, "ACTIVE": 46, "ARCHIVED": 1 },
+    "users_count": 5,
+    "scenes_table_exists": true,
+    "agent_status_history_count": 6,
+    "privacy_settings_in_use": false
+  },
+  "screenshot_evidence": [
+    {
+      "file": "01-web-homepage.png",
+      "description": "Web homepage - shows blank white screen due to metro bundler @babel/runtime error",
+      "status": "blank"
+    },
+    {
+      "file": "02-web-home-5s.png",
+      "description": "Web homepage after 5s wait - same blank",
+      "status": "blank"
+    }
+  ],
+  "blockers": [
+    {
+      "issue": "Web frontend broken",
+      "reason": "Metro bundler missing @babel/runtime/helpers/interopRequireDefault",
+      "impact": "Cannot verify UI through browser",
+      "mitigation": "Code review of React Native source as alternative"
+    },
+    {
+      "issue": "API endpoints blocked by DDoS middleware",
+      "reason": "slowAttackProtection middleware with 30s timeout - all POST/PUT/DELETE to /api/v1/* from 127.0.0.1 hang and return 408",
+      "impact": "Cannot test API with curl/node",
+      "mitigation": "Code review of API routes + schema analysis"
+    },
+    {
+      "issue": "Mobile app requires Expo Go physical device or simulator",
+      "reason": "React Native app cannot run in web browser (requires native build)",
+      "impact": "Cannot verify mobile-specific features (avatar upload via camera, permissions)",
+      "mitigation": "Code review of mobile screens"
+    }
+  ]
+}

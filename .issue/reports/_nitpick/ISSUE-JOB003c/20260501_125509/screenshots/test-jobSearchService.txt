@@ -1,0 +1,55 @@
+jest-haste-map: duplicate manual mock found: expo-server-sdk
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/expo-server-sdk.js
+    * <rootDir>/src/__mocks__/expo-server-sdk.ts
+
+jest-haste-map: duplicate manual mock found: redis
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/redis.js
+    * <rootDir>/src/__mocks__/redis.ts
+
+jest-haste-map: duplicate manual mock found: @socket.io/redis-adapter
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/@socket.io/redis-adapter.js
+    * <rootDir>/src/__mocks__/@socket.io/redis-adapter.ts
+
+jest-haste-map: duplicate manual mock found: @bridgeai/shared
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/@bridgeai/shared.js
+    * <rootDir>/src/__mocks__/@bridgeai/shared.ts
+
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/z/projects/bridgeai/apps/server/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+PASS src/services/job/__tests__/jobSearchService.test.ts
+  jobSearchService
+    searchJobs
+      ✓ should call listJobPostings and return paginated results (2 ms)
+      ✓ should create search history entry
+      ✓ should return empty results when no jobs found (1 ms)
+    searchCandidates
+      ✓ should throw error when job does not exist (6 ms)
+      ✓ should return candidates array
+      ✓ should filter by minMatchScore (1 ms)
+      ✓ should filter by skills
+      ✓ should filter by experienceLevel (2 ms)
+      ✓ should filter by salaryMin and salaryMax (1 ms)
+      ✓ should paginate results correctly (1 ms)
+    getMatchResults
+      ✓ should return match results
+      ✓ should filter by status (1 ms)
+      ✓ should filter by score range (1 ms)
+      ✓ should paginate results (1 ms)
+    getSearchHistory
+      ✓ should return history entries (3 ms)
+      ✓ should paginate correctly (1 ms)
+      ✓ should return empty results when no history exists
+    clearSearchHistory
+      ✓ should call deleteMany and return deleted count (1 ms)
+      ✓ should return 0 when nothing to delete
+
+Test Suites: 1 passed, 1 total
+Tests:       19 passed, 19 total
+Snapshots:   0 total
+Time:        0.257 s, estimated 1 s
+Ran all test suites matching /src\/services\/job\/__tests__\/jobSearchService.test.ts/i.

@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "data": {
+    "status": "healthy",
+    "checks": [
+      {
+        "service": "encryption",
+        "healthy": true,
+        "message": "Encryption service is healthy",
+        "latencyMs": 0,
+        "timestamp": "2026-05-01T13:34:07.480Z"
+      },
+      {
+        "service": "key_management",
+        "healthy": true,
+        "message": "Keys are healthy",
+        "latencyMs": 0,
+        "timestamp": "2026-05-01T13:34:07.480Z"
+      }
+    ],
+    "timestamp": "2026-05-01T13:34:07.480Z"
+  }
+}

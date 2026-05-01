@@ -1,0 +1,88 @@
+=== AS-007 Source Code Probes — 2026年 4月30日 星期四 22时18分45秒 CST ===
+
+## Phase 1: 聊天底座 (Communication / Rooms / Messages)
+OK  apps/server/src/services/chat/roomService.ts
+OK  apps/server/src/services/chat/participantService.ts
+OK  apps/server/src/services/messageService.ts
+OK  apps/server/src/services/dating/humanChatRoomService.ts
+OK  apps/server/src/services/dating/agentConversationRoom.ts
+MISS apps/server/src/repositories/messageRepository.ts
+MISS apps/server/src/repositories/roomRepository.ts
+OK  apps/server/src/routes/dating
+
+## Phase 2: 信息披露策略 (Disclosure)
+OK  apps/server/src/services/disclosureService.ts
+OK  apps/server/src/services/disclosureAuditService.ts
+OK  apps/server/src/routes/disclosure.ts
+
+## Phase 3: Whisper 私下建议
+OK  apps/server/src/services/dating/privateAdviceService.ts
+OK  apps/server/src/services/dating/agentInitiatedChat.ts
+
+## Phase 4: 亲自聊/代聊切换
+OK  apps/server/src/services/dating/consentProcessor.ts
+OK  apps/server/src/services/dating/consentStateManager.ts
+OK  apps/server/src/services/dating/conversationStateManager.ts
+OK  apps/server/src/services/dating/agentChatDispatcher.ts
+
+## Phase 5: 引荐 + 四人群聊
+OK  apps/server/src/services/dating/referralService.ts
+OK  apps/server/src/services/dating/referralHistoryService.ts
+OK  apps/server/src/services/dating/referralNotificationService.ts
+OK  apps/server/src/services/dating/recommendationService.ts
+OK  apps/server/src/services/dating/matchAlgorithm.ts
+
+## Phase 6: AgentJob 协商
+  __tests__
+  companyVerification.js
+  companyVerification.ts
+  humanHandoff.js
+  humanHandoff.ts
+  index.js
+  index.ts
+  interviewScheduling.js
+  interviewScheduling.ts
+  jobExtraction.js
+  jobExtraction.ts
+  jobMatchNotifications.js
+  jobMatchNotifications.ts
+  jobPostingService.js
+  jobPostingService.ts
+  jobRecommendation.js
+  jobRecommendation.ts
+  jobSearchService.js
+  jobSearchService.ts
+  negotiationResult.js
+  negotiationResult.ts
+  negotiationRoom.js
+  negotiationRoom.ts
+  resumeScreening.js
+  resumeScreening.ts
+  salaryNegotiation.js
+  salaryNegotiation.ts
+  deliveryService.js
+  deliveryService.ts
+  index.js
+  index.ts
+  profileService.js
+  profileService.ts
+  resumeExtractionService.js
+  resumeExtractionService.ts
+
+## Phase 7: AgentAd 协商
+OK  apps/server/src/services/offerService.ts
+OK  apps/server/src/services/merchantService.ts
+OK  apps/server/src/services/ai/agentNegotiationService.ts
+
+## Phase 8: 历史 + 举报
+OK  apps/server/src/services/ai/conversationReportService.ts
+OK  apps/server/src/routes/reports.ts
+OK  apps/server/src/services/dating/referralHistoryService.ts
+
+## 移动端关键屏幕
+OK  apps/mobile/src/screens/messages (tsx files: 7)
+OK  apps/mobile/src/screens/agent (tsx files: 8)
+OK  apps/mobile/src/screens/dating (tsx files: 6)
+OK  apps/mobile/src/screens/Job (tsx files: 8)
+OK  apps/mobile/src/screens/auth (tsx files: 3)
+OK  apps/mobile/src/screens/settings (tsx files: 8)

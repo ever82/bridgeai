@@ -1,0 +1,54 @@
+{
+  "health": {
+    "endpoint": "GET /health",
+    "status": 200,
+    "response": {
+      "success": true,
+      "data": { "status": "healthy", "service": "bridgeai-server", "version": "0.1.0" }
+    },
+    "result": "PASS"
+  },
+  "register": {
+    "endpoint": "POST /api/v1/auth/register",
+    "status": "TIMEOUT",
+    "response": "Request timed out after 15s with no body received (curl exit 28)",
+    "result": "FAIL - server hangs on /api/v1/* routes"
+  },
+  "login": {
+    "endpoint": "POST /api/v1/auth/login",
+    "status": "TIMEOUT",
+    "response": "Request timed out after 15s. Connection accepted, request sent, no response from handler",
+    "result": "FAIL"
+  },
+  "users_me": {
+    "endpoint": "GET /api/v1/users/me",
+    "status": "BLOCKED",
+    "response": "Skipped - cannot obtain auth token because login hangs",
+    "result": "BLOCKED"
+  },
+  "agents_types": {
+    "endpoint": "GET /api/v1/agents/types",
+    "status": "TIMEOUT",
+    "response": "No response within 8s",
+    "result": "FAIL"
+  },
+  "agents_list": {
+    "endpoint": "GET /api/v1/agents",
+    "status": "BLOCKED",
+    "response": "Skipped - requires auth token",
+    "result": "BLOCKED"
+  },
+  "agent_create": {
+    "endpoint": "POST /api/v1/agents",
+    "status": "BLOCKED",
+    "response": "Skipped - requires auth token",
+    "result": "BLOCKED"
+  },
+  "_notes": [
+    "GET /health responds normally (200), but every /api/v1/* route hangs indefinitely.",
+    "Behavior is consistent for both curl direct and Playwright E2E suite (18 failed, 1 passed).",
+    "Server log shows successful boot: scene extractors registered, Socket.io initialized, LLM service init, port 3001 listening.",
+    "Server initialization triggered EADDRINUSE on attempted restart, confirming the original instance still owns the port.",
+    "While investigating, a separate compile-time bug was found: src/services/transactionService.ts called logger.child() but utils/logger.ts did not export a child() method. A patch was added to logger.ts to add child() so the server could re-bootstrap."
+  ]
+}

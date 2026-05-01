@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "data": [
+    { "status": "DRAFT", "changedAt": "2026-04-30T17:35:28.816Z", "reason": "Agent created" },
+    {
+      "status": "ACTIVE",
+      "changedAt": "2026-04-30T17:35:47.661Z",
+      "reason": "Status changed from DRAFT to ACTIVE"
+    },
+    {
+      "status": "PAUSED",
+      "changedAt": "2026-04-30T17:35:47.680Z",
+      "reason": "Status changed from ACTIVE to PAUSED"
+    },
+    {
+      "status": "ARCHIVED",
+      "changedAt": "2026-04-30T17:35:47.694Z",
+      "reason": "Status changed from PAUSED to ARCHIVED"
+    }
+  ]
+}

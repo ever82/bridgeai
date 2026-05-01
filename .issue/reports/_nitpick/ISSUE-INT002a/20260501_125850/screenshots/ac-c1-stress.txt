@@ -1,0 +1,16 @@
+=== AC1.2 Evidence: High concurrency throughput test ===
+From perf/api-load-test.js stress scenario (lines 39-50):
+  stages: [
+    { duration: '30s', target: 200 },  // ramp to 200 VUs
+    { duration: '1m',  target: 200 },  // hold 200 VUs
+    { duration: '30s', target: 400 },  // ramp to 400 VUs (>= 100 ✔)
+    { duration: '1m',  target: 400 },  // hold 400 VUs
+    { duration: '30s', target: 0 },
+  ]
+
+benchmark scenario also reaches 100 VUs sustained.
+
+apps/server/perf/peak-load-test.js exists (separate file).
+apps/server/perf/api-rate-limit-test.js exists.
+
+VERDICT: pass — VUs definitely >= 100, and ramps to 400.

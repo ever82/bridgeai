@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nitpick Report — ISSUE-INT002a</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #1a1a1a;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", Arial, sans-serif;
+    line-height: 1.55;
+    font-size: 14px;
+  }
+  header {
+    background: linear-gradient(135deg, #232323 0%, #1a1a1a 100%);
+    border-bottom: 1px solid #333;
+    padding: 24px 32px;
+  }
+  header h1 { margin: 0 0 8px; font-size: 22px; color: #fff; }
+  header .meta { color: #aaa; font-size: 13px; }
+  header .meta span { margin-right: 18px; }
+  header .status-pill {
+    display: inline-block;
+    background: #fbbf24;
+    color: #1a1a1a;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 12px;
+  }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
+  section { margin-bottom: 36px; }
+  h2 {
+    font-size: 18px;
+    color: #fff;
+    border-bottom: 1px solid #333;
+    padding-bottom: 8px;
+    margin: 0 0 16px;
+  }
+  h3 { font-size: 15px; color: #ddd; margin: 16px 0 8px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .tile {
+    background: #232323;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .tile .label { color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .tile .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .tile.crit .value { color: #ff4444; }
+  .tile.warn .value { color: #ffa500; }
+  .tile.info .value { color: #888; }
+  .tile.pass .value { color: #4ade80; }
+  .tile.partial .value { color: #fbbf24; }
+  .tile.fail .value { color: #ef4444; }
+  .card {
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+  }
+  .card .ac-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .card .ac-head h3 { margin: 0; font-size: 16px; }
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .pill.pass    { background: #14532d; color: #4ade80; }
+  .pill.partial { background: #78350f; color: #fbbf24; }
+  .pill.fail    { background: #7f1d1d; color: #ef4444; }
+  .pill.critical{ background: #7f1d1d; color: #ff4444; }
+  .pill.warning { background: #78350f; color: #ffa500; }
+  .pill.info    { background: #333;    color: #aaa; }
+  .pill.cat     { background: #1e3a5f; color: #93c5fd; margin-left: 6px; }
+  .ac-desc { color: #bbb; font-size: 13px; margin: 8px 0 12px; white-space: pre-line; }
+  .sub-items { display: grid; gap: 8px; margin-top: 10px; }
+  .sub-item {
+    background: #1c1c1c;
+    border: 1px solid #2a2a2a;
+    border-left: 3px solid #555;
+    border-radius: 4px;
+    padding: 10px 12px;
+  }
+  .sub-item.pass    { border-left-color: #4ade80; }
+  .sub-item.partial { border-left-color: #fbbf24; }
+  .sub-item.fail    { border-left-color: #ef4444; }
+  .sub-item .head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .sub-item .name { font-weight: 600; color: #eee; }
+  .sub-item .notes { color: #bbb; margin-top: 6px; font-size: 13px; }
+  .sub-item a { color: #93c5fd; text-decoration: none; font-size: 12px; }
+  .sub-item a:hover { text-decoration: underline; }
+  .finding {
+    background: #222;
+    border: 1px solid #333;
+    border-left: 4px solid #555;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .finding.critical { border-left-color: #ff4444; }
+  .finding.warning  { border-left-color: #ffa500; }
+  .finding.info     { border-left-color: #888; }
+  .finding .head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .finding .head .left { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .finding .slug { font-family: monospace; color: #93c5fd; font-weight: 600; }
+  .finding .desc { margin: 8px 0; color: #ddd; }
+  .finding .row { margin-top: 8px; font-size: 13px; }
+  .finding .row .lbl { color: #888; display: inline-block; min-width: 95px; }
+  .codebox {
+    background: #0f0f0f;
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-top: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: #cbd5e1;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  code { background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 3px; padding: 1px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #fbbf24; }
+  table { width: 100%; border-collapse: collapse; background: #1f1f1f; border: 1px solid #333; border-radius: 6px; overflow: hidden; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #2a2a2a; }
+  th { background: #2a2a2a; color: #ddd; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  td { font-size: 13px; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-family: monospace; }
+  td.num.pass { color: #4ade80; }
+  td.num.fail { color: #ef4444; }
+  ul.checkpoints, ul.untracked { padding-left: 0; list-style: none; }
+  ul.checkpoints li, ul.untracked li {
+    background: #1c1c1c;
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  ul.checkpoints .vc-slug { font-family: monospace; color: #fbbf24; font-weight: 600; margin-right: 8px; }
+  ul.untracked code { color: #ef4444; }
+  a.evlink { color: #93c5fd; text-decoration: none; font-size: 12px; }
+  a.evlink:hover { text-decoration: underline; }
+  footer { margin-top: 40px; padding: 18px 32px; border-top: 1px solid #333; color: #666; font-size: 12px; text-align: center; }
+  .summary-text { color: #aaa; font-size: 13px; font-style: italic; margin-top: 10px; padding: 8px 10px; background: #1c1c1c; border-radius: 4px; border-left: 2px solid #444; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Nitpick Report — ISSUE-INT002a · 基础设施性能优化</h1>
+  <div class="meta">
+    <span><strong>Status:</strong> <span class="status-pill">nitpicking</span></span>
+    <span><strong>Task:</strong> #1085</span>
+    <span><strong>Generated:</strong> 2026-05-01 12:58:50</span>
+    <span><strong>Issue type:</strong> implement</span>
+  </div>
+</header>
+
+<main>
+
+<!-- ========== SUMMARY TILES ========== -->
+<section>
+  <h2>Summary</h2>
+  <div class="tiles">
+    <div class="tile pass"><div class="label">AC pass</div><div class="value">0 / 2</div></div>
+    <div class="tile partial"><div class="label">AC partial</div><div class="value">1</div></div>
+    <div class="tile fail"><div class="label">AC fail</div><div class="value">1</div></div>
+    <div class="tile crit"><div class="label">Critical</div><div class="value">12</div></div>
+    <div class="tile warn"><div class="label">Warning</div><div class="value">11</div></div>
+    <div class="tile info"><div class="label">Info</div><div class="value">5</div></div>
+    <div class="tile pass"><div class="label">Tests passed</div><div class="value">130</div></div>
+    <div class="tile fail"><div class="label">Tests failed</div><div class="value">2</div></div>
+  </div>
+</section>
+
+<!-- ========== ACCEPTANCE CRITERIA ========== -->
+<section>
+  <h2>Acceptance Criteria</h2>
+
+  <article class="card">
+    <div class="ac-head">
+      <h3>ISSUE-INT002a~c1 · API性能测试与优化</h3>
+      <div>
+        <span class="pill cat">Code Review: <span class="pill fail">fail</span></span>
+        <span class="pill cat">AC Verification: <span class="pill partial">partial</span></span>
+      </div>
+    </div>
+    <div class="ac-desc">- 核心API响应时间基准测试(目标P95&lt;200ms)
+- 高并发场景API吞吐量测试
+- 数据库查询性能分析与优化
+- 缓存策略实施与验证(Redis)
+- API限流与熔断机制压力测试</div>
+
+    <div class="sub-items">
+      <div class="sub-item pass">
+        <div class="head">
+          <span class="name">P95&lt;200ms baseline test exists &amp; meaningful <span class="pill pass">pass</span></span>
+          <a class="evlink" href="screenshots/ac-c1-baseline.txt">screenshots/ac-c1-baseline.txt</a>
+        </div>
+        <div class="notes">perf/api-load-test.js defines <code>response_time: ['p(95)&lt;200']</code> threshold with warmup/benchmark/stress scenarios and 7 endpoint test functions. Script is k6-runnable but not executed live.</div>
+      </div>
+      <div class="sub-item pass">
+        <div class="head">
+          <span class="name">High concurrency throughput (VUs ≥ 100) <span class="pill pass">pass</span></span>
+          <a class="evlink" href="screenshots/ac-c1-stress.txt">screenshots/ac-c1-stress.txt</a>
+        </div>
+        <div class="notes">stress scenario ramps to 200 then 400 VUs; benchmark scenario sustains 100 VUs.</div>
+      </div>
+      <div class="sub-item partial">
+        <div class="head">
+          <span class="name">DB query perf analysis present <span class="pill partial">partial</span></span>
+          <a class="evlink" href="screenshots/ac-c2-indexes.txt">screenshots/ac-c2-indexes.txt</a>
+        </div>
+        <div class="notes">perf/db-perf-report.md (232 lines) exists with EXPLAIN-style analysis. However the dedicated perf-index migration (<code>20260419000000_perf_indexes</code>) is UNTRACKED on master.</div>
+      </div>
+      <div class="sub-item partial">
+        <div class="head">
+          <span class="name">Redis cache strategy &amp; verification <span class="pill partial">partial</span></span>
+          <a class="evlink" href="screenshots/ac-c1-cache.txt">screenshots/ac-c1-cache.txt</a> · <a class="evlink" href="screenshots/ac-c1-cache-jest.log">jest log</a>
+        </div>
+        <div class="notes">services/cache.ts is Redis-backed with cacheAside/writeThrough/readThrough strategies; 107 cache tests pass. BUT middleware/cache.ts uses an in-memory Map instead of Redis.</div>
+      </div>
+      <div class="sub-item partial">
+        <div class="head">
+          <span class="name">API rate limiting pressure test <span class="pill partial">partial</span></span>
+          <a class="evlink" href="screenshots/ac-c1-rate.txt">screenshots/ac-c1-rate.txt</a> · <a class="evlink" href="screenshots/ac-c1-rate-jest.log">jest log</a>
+        </div>
+        <div class="notes">18/18 rateLimiter unit tests pass. apps/server/perf/api-rate-limit-test.js k6 script exists. But rateLimiter.ts contains 6 <code>NODE_ENV==='test'</code> bypass branches that disable substantial behaviour during unit tests.</div>
+      </div>
+    </div>
+
+    <div class="summary-text">AC1 is largely scaffolded: k6 scripts and Redis cache service are in place and 125 unit tests pass. Significant gaps: response middleware cache is in-memory, /metrics endpoint exposes only memory/uptime (no p50/p95 percentiles), rateLimiter test bypasses are heavy, and live load-test results are absent.</div>
+
+    <h3>Code Review reasoning</h3>
+    <div class="codebox">AC1 requires P95&lt;200ms baseline, high-concurrency throughput, query perf, Redis cache validation, and rate-limit pressure tests. Multiple critical gaps: /metrics has no percentile data (performanceMetrics.ts uncommitted), middleware/cache.ts uses in-memory Map, redisRateLimitStore.ts is uncommitted, /ready returns hardcoded ok, performance middleware tests fail. No committed k6 run artifact verifies the P95 claim.</div>
+  </article>
+
+  <article class="card">
+    <div class="ac-head">
+      <h3>ISSUE-INT002a~c2 · 数据库性能优化</h3>
+      <div>
+        <span class="pill cat">Code Review: <span class="pill fail">fail</span></span>
+        <span class="pill cat">AC Verification: <span class="pill fail">fail</span></span>
+      </div>
+    </div>
+    <div class="ac-desc">- 慢查询分析与索引优化
+- 高并发读写性能测试
+- Prisma连接池配置优化
+- 复杂查询(匹配算法)性能优化
+- 数据库分表分库策略评估</div>
+
+    <div class="sub-items">
+      <div class="sub-item partial">
+        <div class="head">
+          <span class="name">Slow query analysis &amp; index optimization <span class="pill partial">partial</span></span>
+          <a class="evlink" href="screenshots/ac-c2-indexes.txt">screenshots/ac-c2-indexes.txt</a>
+        </div>
+        <div class="notes">schema.prisma has <code>@@index</code> lines and tracked migration <code>20260428000001_add_l2data_gin_index</code> exists. However migration <code>20260419000000_perf_indexes</code> is UNTRACKED.</div>
+      </div>
+      <div class="sub-item pass">
+        <div class="head">
+          <span class="name">High-concurrency read/write test <span class="pill pass">pass</span></span>
+          <a class="evlink" href="screenshots/ac-c2-pool.txt">screenshots/ac-c2-pool.txt</a>
+        </div>
+        <div class="notes">apps/server/perf/db-performance-test.js exists with 100 VUs, 10m duration, p95/p99 thresholds for simple/complex/join/aggregation queries.</div>
+      </div>
+      <div class="sub-item fail">
+        <div class="head">
+          <span class="name">Prisma connection pool configuration <span class="pill fail">fail</span></span>
+          <a class="evlink" href="screenshots/ac-c2-pool.txt">screenshots/ac-c2-pool.txt</a>
+        </div>
+        <div class="notes">db/client.ts declares CONNECTION_POOL_SIZE/CONNECTION_TIMEOUT/IDLE_TIMEOUT (lines 14-16) but they are NEVER USED — ESLint reports them as unused-vars errors. PrismaClient receives only DATABASE_URL verbatim. <code>getConnectionStats()</code> returns hardcoded zeros.</div>
+      </div>
+      <div class="sub-item partial">
+        <div class="head">
+          <span class="name">Complex query (matching) optimization <span class="pill partial">partial</span></span>
+          <a class="evlink" href="screenshots/ac-c2-matching-perf.txt">screenshots/ac-c2-matching-perf.txt</a>
+        </div>
+        <div class="notes">optimizedMatchingService.ts uses Redis cache-aside (TTL 60-300s). But there is no <code>queryAnalyzer.ts</code> in apps/server/src/utils, no EXPLAIN-based runtime optimization.</div>
+      </div>
+      <div class="sub-item fail">
+        <div class="head">
+          <span class="name">Sharding/sub-partition strategy evaluation <span class="pill fail">fail</span></span>
+          <a class="evlink" href="screenshots/ac-c2-sharding.txt">screenshots/ac-c2-sharding.txt</a>
+        </div>
+        <div class="notes">Grep across perf/, docs/, apps/server/ for <code>shard|分表|分库</code> returns zero matches. No design doc or ADR evaluates sharding.</div>
+      </div>
+    </div>
+
+    <div class="summary-text">AC2 has strong index coverage in the base schema and a working db-performance k6 script, but the connection-pool config is a no-op, no sharding evaluation exists, and the dedicated perf-index migration tied to this issue was never committed to master.</div>
+
+    <h3>Code Review reasoning</h3>
+    <div class="codebox">AC2 demands slow-query indexing, high-concurrency tests, Prisma connection pool tuning, complex query optimization, and sharding evaluation. The perf_indexes migration not committed; queryAnalyzer.ts not committed. db/client.ts declares pool constants but never uses them. getConnectionStats() returns hardcoded zeros. DB perf report cites optimization wins without reproducible benchmark. Sharding evaluation missing entirely.</div>
+  </article>
+</section>
+
+<!-- ========== FINDINGS ========== -->
+<section>
+  <h2>Findings (28 saved · NP-2417 → NP-2444)</h2>
+
+  <h3 style="color:#ff4444">Critical (12)</h3>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">NP-2417</span><span class="pill critical">critical</span><span class="pill cat">runtime_behavior</span></div><span class="pill cat">AC: c2</span></div>
+    <div class="desc">DATABASE_URL is passed to PrismaClient with no connection pool query string parameters (connection_limit, pool_timeout). The CONNECTION_POOL_SIZE/CONNECTION_TIMEOUT/IDLE_TIMEOUT constants are computed but never used, so AC2's connection pool optimization is effectively unimplemented.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/db/client.ts:14-43</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">apps/server/src/db/client.ts:14-16 declare the three constants. Lines 31-43 build PrismaClient with url: process.env.DATABASE_URL verbatim.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Build the Prisma URL by appending <code>?connection_limit=${CONNECTION_POOL_SIZE}&amp;pool_timeout=${CONNECTION_TIMEOUT/1000}</code> before passing into <code>datasources.db.url</code>, or remove the dead constants.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">NP-2418</span><span class="pill critical">critical</span><span class="pill cat">runtime_behavior</span></div><span class="pill cat">AC: c2</span></div>
+    <div class="desc">getConnectionStats() returns hardcoded zeros and a placeholder comment, so the AC2 Prisma connection pool monitoring deliverable is a stub.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/db/client.ts:146-159</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">apps/server/src/db/client.ts:146-159 returns {active:0, idle:0, total:0} with the comment 'This is a placeholder for future implementation'.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Implement via <code>prisma.$queryRaw</code> against pg_stat_activity filtered to the application user/db, or via Prisma metrics feature.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">NP-2419</span><span class="pill critical">critical</span><span class="pill cat">test_coverage</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">performance.test.ts asserts on res.on('finish', ...), but the implementation overrides res.end and never registers any 'finish' listener. The two performanceHeaders tests will fail at runtime.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/middleware/__tests__/performance.test.ts:70-94</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">performance.test.ts:73,80-94 mock res.on('finish'); performance.ts:166-179 only uses res.end override.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Either change the implementation to use <code>res.on('finish', ...)</code> or rewrite the tests to mock res.end and verify the override sets X-Response-Time correctly.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">NP-2420</span><span class="pill critical">critical</span><span class="pill cat">consistency</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">middleware/cache.ts uses an in-memory Map for HTTP response caching, contradicting AC1 (Redis cache strategy verification) and the existence of a Redis-backed services/cache.ts. Two parallel cache backends with no shared invalidation.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/middleware/cache.ts:8-14</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">apps/server/src/middleware/cache.ts:14 const cacheStore = new Map&lt;string, CacheEntry&gt;(); Comment line 13 says 'in production, use Redis' but never does.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Replace the Map-based store with calls into services/cache.ts (cacheGet/cacheSet) using a per-route prefix, or remove this middleware entirely.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">NP-2422</span><span class="pill critical">critical</span><span class="pill cat">runtime_behavior</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">/ready endpoint returns hardcoded database: 'ok' without performing a real DB ping. A readiness probe with no real check will mark a broken pod healthy.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/app.ts:144-154</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">apps/server/src/app.ts:144-154 returns checks: { database: 'ok' }. No await prisma.$queryRaw `SELECT 1`.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Make /ready async and call <code>await prisma.$queryRaw `SELECT 1`</code> (and redis.ping()), returning 503 on error. Reuse <code>testConnection()</code> if appropriate.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">NP-2431</span><span class="pill critical">critical</span><span class="pill cat">consistency</span></div><span class="pill cat">AC: c2</span></div>
+    <div class="desc">Performance index migration <code>20260419000000_perf_indexes</code> (composite indexes for ISSUE-INT002a) is UNTRACKED on master — created in working tree but never committed. The promised composite indexes therefore are not deployed.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/prisma/migrations/20260419000000_perf_indexes/migration.sql</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">git ls-files apps/server/prisma/migrations/ does not list 20260419000000_perf_indexes; git ls-files --others does.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Either commit the migration with proper review, or remove it from the working tree if rejected.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">NP-2435</span><span class="pill critical">critical</span><span class="pill cat">test_coverage</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">Performance middleware tests have 2/7 failing tests: 'should add performance headers to response' and 'should set X-Response-Time header'. Tests expect res.on('finish'), implementation uses res.end override.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/middleware/__tests__/performance.test.ts:70-94</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">ac-step1-jest-perf.log: Tests: 2 failed, 5 passed, 7 total</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Investigate why response headers are not being added — could indicate the perf header middleware is broken, which directly undermines AC1 latency tracking.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">CR-extra</span><span class="pill critical">critical</span><span class="pill cat">ac_verification</span></div><span class="pill cat">AC: both</span></div>
+    <div class="desc">Four key infrastructure files needed by the AC are present in the working tree but never committed to master: <code>performanceMetrics.ts</code>, <code>redisRateLimitStore.ts</code>, <code>queryAnalyzer.ts</code>, and the perf indexes migration. None of them ship in master, so the corresponding AC capabilities don't actually exist. <em>(DB save rejected — category check constraint)</em></div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/services/performanceMetrics.ts</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">git ls-files returns empty for all four; git status shows them as ?? untracked.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Either commit these files to master with proper review, or remove them from the working tree and re-implement so AC1/AC2 actually have shipping code.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">CR-extra</span><span class="pill critical">critical</span><span class="pill cat">ac_verification</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">/metrics endpoint does not return any P50/P90/P95/P99 latency percentiles. AC1 explicitly requires baseline P95&lt;200ms verification via observable metrics; the endpoint only exposes process memory/uptime/pid. <em>(DB save rejected — category check constraint)</em></div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/app.ts:157-172</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">apps/server/src/app.ts:157-172 returns {timestamp, uptime, memory, pid} only — no percentile data.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Wire a tracked PerformanceMetrics service into the performanceMonitor middleware and expose p50/p90/p95/p99 plus per-route counts on /metrics.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">CR-extra</span><span class="pill critical">critical</span><span class="pill cat">ac_verification</span></div><span class="pill cat">AC: c2</span></div>
+    <div class="desc">Prisma connection pool configuration is dead code. CONNECTION_POOL_SIZE/CONNECTION_TIMEOUT/IDLE_TIMEOUT vars read from env but never used; PrismaClient receives only DATABASE_URL verbatim. ESLint flags them as unused-vars errors. <em>(DB save rejected — category check constraint)</em></div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/db/client.ts</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">apps/server/src/db/client.ts:14-37; ESLint: 'CONNECTION_POOL_SIZE is assigned a value but never used'</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Inject pool params into the URL via <code>?connection_limit=&amp;pool_timeout=</code> querystring (Prisma's documented mechanism), or remove the misleading constants.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">CR-extra</span><span class="pill critical">critical</span><span class="pill cat">ac_verification</span></div><span class="pill cat">AC: c2</span></div>
+    <div class="desc">getConnectionStats() returns hardcoded zeros and is documented as 'placeholder for future implementation' — claim of pool monitoring is unsubstantiated. <em>(DB save rejected — duplicate of NP-2418)</em></div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/db/client.ts</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">apps/server/src/db/client.ts:146-159 returns {active:0, idle:0, total:0}</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Implement using pg_stat_activity SELECT or remove the function until functional.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head"><div class="left"><span class="slug">CR-extra</span><span class="pill critical">critical</span><span class="pill cat">ac_verification</span></div><span class="pill cat">AC: c2</span></div>
+    <div class="desc">AC2.5 (sharding/sub-partition strategy evaluation) has no artifact. Repo grep for shard|分表|分库 in perf/ docs/ apps/server/ *.md returns no design notes. <em>(DB save rejected — category check constraint)</em></div>
+    <div class="row"><span class="lbl">File:</span> <code>docs/database/</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">grep -rn 'shard|分表|分库' --include='*.md' returned only 评分表 (rating table heading).</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Author an ADR or perf/sharding-evaluation.md describing the assessment outcome (even if conclusion is 'not needed for current scale').</div>
+  </article>
+
+  <h3 style="color:#ffa500">Warning (11)</h3>
+
+  <article class="finding warning">
+    <div class="head"><div class="left"><span class="slug">NP-2421</span><span class="pill warning">warning</span><span class="pill cat">test_coverage</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">There is no test file for middleware/cache.ts. Cache hit/miss, TTL expiry, non-2xx skipping, GET-only behavior, and clearCache are all uncovered.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/middleware/cache.ts</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">Listing of apps/server/src/middleware/__tests__/ shows no cache.test.ts.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Add cache.test.ts covering: GET hit, GET miss + populate, non-GET bypass, status &gt;=300 not cached, TTL expiry, generateCacheKey ordering, clearCache pattern, getCacheStats.</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head"><div class="left"><span class="slug">NP-2423</span><span class="pill warning">warning</span><span class="pill cat">code_quality</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">rateLimiter.ts intentionally bypasses rate limiting in NODE_ENV=test for several limiters (enhancedIpLimiter, strictAuthLimiter, combinedRateLimiter, falseReportPenaltyCheck, reportLimiter). Rate limiting is never integration-tested under load.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/middleware/rateLimiter.ts:259,290,334,351,454</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">rateLimiter.ts:259, 290-291, 333-335, 351-353, 454. rateLimiter.test.ts:169-187 only asserts typeof === 'function'.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Add explicit integration test (without NODE_ENV=test bypass) that exercises 429 behavior against the actual middleware via supertest.</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head"><div class="left"><span class="slug">NP-2424</span><span class="pill warning">warning</span><span class="pill cat">code_quality</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">rateLimiter.ts:16-17 imports rateLimitEnv only to silence the unused-vars rule, then never uses it.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/middleware/rateLimiter.ts:11-17</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">rateLimiter.ts:11-17 import { ..., rateLimitEnv } from '../config/rateLimit' with eslint-disable-next-line.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Remove the import and the eslint-disable, or actually use rateLimitEnv to drive Redis-backed configuration.</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head"><div class="left"><span class="slug">NP-2425</span><span class="pill warning">warning</span><span class="pill cat">code_quality</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">falseReportPenaltyCheck uses dynamic import('../db/client') per request inside a hot middleware path. While Node will cache the module, the .then chain adds avoidable overhead and complicates error handling.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/middleware/rateLimiter.ts:366-407</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">rateLimiter.ts:366-407 import('../db/client').then(...).</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Hoist <code>import { prisma } from '../db/client'</code> to the top of the file and use async/await.</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head"><div class="left"><span class="slug">NP-2426</span><span class="pill warning">warning</span><span class="pill cat">code_quality</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">cacheAside takes an unused _writeFn parameter. It is never invoked; only the read path is implemented.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/services/cache.ts:318-337</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">cache.ts:318-337. _writeFn is leading-underscore-named but JSDoc claims write semantics.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Either drop the parameter and rename the doc, or implement the write/invalidate side.</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head"><div class="left"><span class="slug">NP-2432</span><span class="pill warning">warning</span><span class="pill cat">runtime_behavior</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">Cache middleware uses an in-memory Map instead of Redis. Multi-node deployments will have inconsistent caches.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/middleware/cache.ts:13-14</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">apps/server/src/middleware/cache.ts:13-14: const cacheStore = new Map&lt;string, CacheEntry&gt;();</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Refactor cacheMiddleware to use the Redis-backed services/cache.ts get/set with namespaced keys.</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head"><div class="left"><span class="slug">NP-2433</span><span class="pill warning">warning</span><span class="pill cat">runtime_behavior</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">/metrics endpoint exposes only uptime/memory/pid; no p50/p95/p99 latency percentiles are emitted, making the AC1 P95 SLO unmeasurable from the running service.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/app.ts:157-172</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">apps/server/src/app.ts:157-172</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Integrate prom-client histograms (http_request_duration_seconds) and expose Prometheus text format on /metrics, or include rolling p50/p95.</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head"><div class="left"><span class="slug">NP-2434</span><span class="pill warning">warning</span><span class="pill cat">test_coverage</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">rateLimiter.ts has 6 NODE_ENV==='test' bypass branches that short-circuit cleanup and disable limiters, weakening the 18/18 unit test signal.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/middleware/rateLimiter.ts</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">apps/server/src/middleware/rateLimiter.ts lines 74, 259, 290, 334, 351, 454</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Replace blanket NODE_ENV bypass with explicit injectable config and enable the limiter in dedicated stress tests.</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head"><div class="left"><span class="slug">CR-extra</span><span class="pill warning">warning</span><span class="pill cat">security</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">cacheDelPattern and invalidateByVersion call <code>redis.keys(pattern)</code> which is O(N) and blocks Redis on large datasets. Under high cache pressure (the very scenario AC1 wants to validate), this becomes a foot-gun. <em>(DB save rejected — category check constraint)</em></div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/services/cache.ts:259-272,589-607</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">cache.ts:265 const keys = await redis.keys(pattern); cache.ts:596 same. No SCAN-based iteration.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Replace KEYS with a SCAN cursor loop or document that these helpers are admin-only.</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head"><div class="left"><span class="slug">CR-extra</span><span class="pill warning">warning</span><span class="pill cat">ac_verification</span></div><span class="pill cat">AC: both</span></div>
+    <div class="desc">perf/db-perf-report.md reports concrete before/after numbers (450ms→85ms etc.) but there is no committed benchmark script, raw output, or reproducible procedure. Same for AC1 P95&lt;200ms claim. <em>(DB save rejected — category check constraint)</em></div>
+    <div class="row"><span class="lbl">File:</span> <code>perf/db-perf-report.md:180-188</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">perf/db-perf-report.md:182-188 lists Match List 450→85ms with no source.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Commit a real k6 summary JSON / HTML report under perf/results/ and link it from the report.</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head"><div class="left"><span class="slug">CR-extra</span><span class="pill warning">warning</span><span class="pill cat">ac_verification</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">perf/api-load-test.js sets P95 threshold on a custom response_time Trend that is added per check, but the script's default function calls test functions in series with sleeps; mixed warmup/benchmark/stress phases share a single response_time metric making the threshold unreliable. <em>(DB save rejected — category check constraint)</em></div>
+    <div class="row"><span class="lbl">File:</span> <code>perf/api-load-test.js:52-60,169-191</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">api-load-test.js:11-12, 52-54, 169-191. All calls feed into the same responseTime Trend regardless of scenario tag.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Use scenario-tagged thresholds (e.g. <code>response_time{phase:benchmark}: ['p(95)&lt;200']</code>) and exclude warmup/stress phases.</div>
+  </article>
+
+  <h3 style="color:#888">Info (5)</h3>
+
+  <article class="finding info">
+    <div class="head"><div class="left"><span class="slug">NP-2427</span><span class="pill info">info</span><span class="pill cat">code_quality</span></div></div>
+    <div class="desc">middleware/cache.ts uses <code>any</code> for CacheEntry.data and the body parameter, weakening type safety in a TypeScript codebase that elsewhere is strict.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/middleware/cache.ts:9,49</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">middleware/cache.ts:9 data: any; line 49 (body: any).</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Use <code>unknown</code> or a generic to preserve type information.</div>
+  </article>
+
+  <article class="finding info">
+    <div class="head"><div class="left"><span class="slug">NP-2428</span><span class="pill info">info</span><span class="pill cat">code_quality</span></div></div>
+    <div class="desc">performance.ts uses <code>console.warn</code> for slow request/query logging instead of the project logger that cache.ts uses.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/middleware/performance.ts:88,124</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">performance.ts:88, 124-126 use console.warn; cache.ts:8 imports logger from '../utils/logger'.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Use the shared logger so structured logs land in the same sink.</div>
+  </article>
+
+  <article class="finding info">
+    <div class="head"><div class="left"><span class="slug">NP-2429</span><span class="pill info">info</span><span class="pill cat">code_quality</span></div><span class="pill cat">AC: c1</span></div>
+    <div class="desc">perf/api-load-test.js hardcodes API_TOKEN = 'test-token' and email/password defaults. CI runs that forget to set env vars will hammer auth endpoints with bad credentials and trigger the false-credential rate limiter.</div>
+    <div class="row"><span class="lbl">File:</span> <code>perf/api-load-test.js:64,87-90</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">api-load-test.js:64, 87-90.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Fail fast in setup() if API_TOKEN is the default, or remove the auth payload from default scenario.</div>
+  </article>
+
+  <article class="finding info">
+    <div class="head"><div class="left"><span class="slug">NP-2430</span><span class="pill info">info</span><span class="pill cat">code_quality</span></div><span class="pill cat">AC: c2</span></div>
+    <div class="desc">db/client.ts line 32 sets <code>log: ['query', 'info', 'warn', 'error']</code> in development. The query log emits every SQL statement to stdout, drowning signal. The slow-query log already exists via the $extends wrapper.</div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/db/client.ts:31-44</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">db/client.ts:31-44.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Drop 'query' from the dev log array; rely on the slow-query wrapper.</div>
+  </article>
+
+  <article class="finding info">
+    <div class="head"><div class="left"><span class="slug">CR-extra</span><span class="pill info">info</span><span class="pill cat">ac_verification</span></div><span class="pill cat">AC: c2</span></div>
+    <div class="desc">matching service has no <code>queryAnalyzer.ts</code>. Optimization is limited to Redis cache-aside in optimizedMatchingService.ts. No EXPLAIN-driven analysis path. <em>(DB save rejected — category check constraint)</em></div>
+    <div class="row"><span class="lbl">File:</span> <code>apps/server/src/services/matching/optimizedMatchingService.ts</code></div>
+    <div class="row"><span class="lbl">Evidence:</span><div class="codebox">ls apps/server/src/utils/queryAnalyzer.ts -&gt; No such file or directory; grep 'queryAnalyzer' apps/server/src/ -&gt; 0 hits.</div></div>
+    <div class="row"><span class="lbl">Recommendation:</span> Either implement a queryAnalyzer that runs EXPLAIN on slow matching queries, or update AC2.4 acceptance text to reflect cache-only optimization.</div>
+  </article>
+</section>
+
+<!-- ========== TEST RESULTS ========== -->
+<section>
+  <h2>Test Results</h2>
+  <table>
+    <thead><tr><th>Suite</th><th>Passed</th><th>Failed</th><th>Status</th><th>Log</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>middleware/__tests__/performance.test.ts</code></td>
+        <td class="num pass">5</td>
+        <td class="num fail">2</td>
+        <td><span class="pill fail">fail</span></td>
+        <td><a class="evlink" href="screenshots/ac-step1-jest-perf.log">jest-perf.log</a></td>
+      </tr>
+      <tr>
+        <td><code>middleware/__tests__/rateLimiter.test.ts</code></td>
+        <td class="num pass">18</td>
+        <td class="num fail">0</td>
+        <td><span class="pill pass">pass</span></td>
+        <td><a class="evlink" href="screenshots/ac-c1-rate-jest.log">rate-jest.log</a></td>
+      </tr>
+      <tr>
+        <td>Cache test suites (4 suites — services/cache + middleware integration)</td>
+        <td class="num pass">107</td>
+        <td class="num fail">0</td>
+        <td><span class="pill pass">pass</span></td>
+        <td><a class="evlink" href="screenshots/ac-c1-cache-jest.log">cache-jest.log</a></td>
+      </tr>
+      <tr>
+        <td><strong>Totals</strong></td>
+        <td class="num pass"><strong>130</strong></td>
+        <td class="num fail"><strong>2</strong></td>
+        <td><span class="pill partial">partial</span></td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ========== LINT RESULTS ========== -->
+<section>
+  <h2>Lint Results · 3 errors / 1 warning</h2>
+  <p style="color:#aaa">ESLint on rateLimiter.ts, services/cache.ts, db/client.ts. Full log: <a class="evlink" href="screenshots/ac-step1-lint.log">screenshots/ac-step1-lint.log</a></p>
+  <div class="codebox">apps/server/src/db/client.ts
+  14:7  error  'CONNECTION_POOL_SIZE' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+  15:7  error  'CONNECTION_TIMEOUT'  is assigned a value but never used.  @typescript-eslint/no-unused-vars
+  16:7  error  'IDLE_TIMEOUT'        is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+apps/server/src/middleware/rateLimiter.ts
+  23:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 4 problems (3 errors, 1 warning)</div>
+</section>
+
+<!-- ========== UNTRACKED FILES ========== -->
+<section>
+  <h2>Untracked Critical Files</h2>
+  <p style="color:#aaa">These files exist in the working tree but are NOT tracked on master. The corresponding AC capabilities therefore do not actually ship.</p>
+  <ul class="untracked">
+    <li><code>apps/server/src/services/performanceMetrics.ts</code> — P50/P90/P95/P99 latency metrics service. Required by AC1 to expose percentiles on <code>/metrics</code>.</li>
+    <li><code>apps/server/src/middleware/redisRateLimitStore.ts</code> — Redis-backed rate-limit store. Required by AC1 rate-limit pressure test.</li>
+    <li><code>apps/server/src/db/queryAnalyzer.ts</code> — DB query analyzer (EXPLAIN-driven). Required by AC2.4 complex query optimization.</li>
+    <li><code>apps/server/prisma/migrations/20260419000000_perf_indexes/migration.sql</code> — Composite perf index migration. Required by AC2.1 slow-query index optimization.</li>
+  </ul>
+</section>
+
+<!-- ========== OPEN CHECKPOINTS ========== -->
+<section>
+  <h2>Open Checkpoints (7 unresolved from previous round)</h2>
+  <ul class="checkpoints">
+    <li><span class="vc-slug">VC-1143</span> Main implementation commit <code>2ad66001</code> never merged to master. Key files missing: performanceMetrics.ts, redisRateLimitStore.ts, queryAnalyzer.ts, migration 20260419000000_perf_indexes. The /metrics endpoint and enhanced /health/detailed are missing the metrics integration. Commit 2ad66001 is NOT an ancestor of HEAD.</li>
+    <li><span class="vc-slug">VC-1144</span> Prisma connection pool configuration regression in <code>db/client.ts</code>. URL parameter builder appending <code>connection_limit</code>/<code>pool_timeout</code> was reverted on master. <code>getConnectionStats()</code> returns hardcoded zeros instead of querying pg_stat_activity.</li>
+    <li><span class="vc-slug">VC-1145</span> Dead code in <code>db/client.ts</code>: CONNECTION_POOL_SIZE / CONNECTION_TIMEOUT / IDLE_TIMEOUT declared but never used. ESLint reports <code>@typescript-eslint/no-unused-vars</code> errors.</li>
+    <li><span class="vc-slug">VC-1146</span> Performance middleware test failures: 2 of 7 tests fail in performance.test.ts. Tests expect <code>res.on('finish', ...)</code> but implementation uses <code>res.end</code> override. Test out of sync with implementation.</li>
+    <li><span class="vc-slug">VC-1147</span> Cache middleware (<code>middleware/cache.ts</code>) still uses in-memory Map instead of Redis. Inconsistent with AC1 which requires Redis caching strategy.</li>
+    <li><span class="vc-slug">VC-1148</span> No test coverage for cache middleware or cache service. AC1 requires '缓存策略实施与验证(Redis)' but no automated tests verify the cache strategy.</li>
+    <li><span class="vc-slug">VC-1149</span> <code>/ready</code> endpoint in app.ts returns static <code>'ok'</code> without actually checking database connectivity. INT002a commit added a real readiness probe that tested DB connection, but current HEAD just returns hardcoded response.</li>
+  </ul>
+</section>
+
+</main>
+
+<footer>
+  Generated 2026-05-01 12:58:50 · ISSUE-INT002a / Task 1085 ·
+  <code>/Users/z/projects/bridgeai/.issue/reports/_nitpick/ISSUE-INT002a/20260501_125850/</code>
+</footer>
+
+</body>
+</html>

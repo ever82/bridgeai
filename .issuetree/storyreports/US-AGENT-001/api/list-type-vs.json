@@ -1,0 +1,188 @@
+{
+  "success": true,
+  "data": {
+    "agents": [
+      {
+        "id": "24a3dfb3-8a7d-4d39-8c5e-153c35609116",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 8",
+        "description": "Bulk 8",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.626Z",
+        "updatedAt": "2026-04-30T17:36:11.626Z"
+      },
+      {
+        "id": "c1fa6460-92aa-4469-9e7d-d7d49950fce3",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 7",
+        "description": "Bulk 7",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.613Z",
+        "updatedAt": "2026-04-30T17:36:11.613Z"
+      },
+      {
+        "id": "d489cacc-2bcf-4b19-844c-9f2e3186202f",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 6",
+        "description": "Bulk 6",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.598Z",
+        "updatedAt": "2026-04-30T17:36:11.598Z"
+      },
+      {
+        "id": "b890bb96-adad-4577-a3d8-0314fddba564",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 5",
+        "description": "Bulk 5",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.584Z",
+        "updatedAt": "2026-04-30T17:36:11.584Z"
+      },
+      {
+        "id": "4025c9c5-c845-4e2a-8779-55d2b0bcf5b2",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 4",
+        "description": "Bulk 4",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.570Z",
+        "updatedAt": "2026-04-30T17:36:11.570Z"
+      },
+      {
+        "id": "bf0db1d8-aad2-4c2a-a60a-d85a369409ac",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 3",
+        "description": "Bulk 3",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.555Z",
+        "updatedAt": "2026-04-30T17:36:11.555Z"
+      },
+      {
+        "id": "f5cba4db-b0aa-45fe-a00f-9913f048989a",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 2",
+        "description": "Bulk 2",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.539Z",
+        "updatedAt": "2026-04-30T17:36:11.539Z"
+      },
+      {
+        "id": "de4a3347-5c31-41d2-9d87-345f1879616c",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 1",
+        "description": "Bulk 1",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.522Z",
+        "updatedAt": "2026-04-30T17:36:11.522Z"
+      },
+      {
+        "id": "3f18e5e0-41d1-4ee2-b635-4ff90d3b0b42",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "My VisionShare",
+        "description": "Test agent for verification",
+        "status": "ARCHIVED",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          },
+          "sceneConfig": { "price": 50, "range": "local", "autoShare": true },
+          "communicationStyle": "friendly"
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:35:28.816Z",
+        "updatedAt": "2026-04-30T17:35:47.694Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 9,
+      "totalPages": 1,
+      "hasNext": false,
+      "hasPrev": false
+    }
+  }
+}

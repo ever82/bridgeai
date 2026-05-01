@@ -1,0 +1,30 @@
+=== AC2.1 Evidence: Slow query analysis & index optimization ===
+
+Indexes already in apps/server/prisma/schema.prisma (tracked):
+  agents:                @@index([userId]) @@index([type]) @@index([latitude, longitude])
+  agent_status_history:  @@index([agentId]) @@index([createdAt])
+  demands:               @@index([agentId]) @@index([status]) @@index([tags])
+  supplies:              @@index([agentId]) @@index([status]) @@index([skills])
+  matches:               @@index([demandId]) @@index([supplyId]) @@index([status])
+  conversations:         @@index([matchId]) @@index([lastMessageAt])
+  messages:              @@index([conversationId]) @@index([createdAt])
+  reviews:               @@index([matchId]) @@index([reviewerId]) @@index([revieweeId])
+                         @@index([sceneType]) @@index([status]) @@index([moderationStatus])
+  ... etc.
+
+Tracked perf migrations (git ls-files):
+  20260428000001_add_l2data_gin_index/migration.sql
+
+UNTRACKED (working tree only):
+  apps/server/prisma/migrations/20260419000000_perf_indexes/migration.sql
+    -- Performance Indexes for ISSUE-INT002a
+    -- Adds composite indexes: matches_demand_id_status_idx,
+    -- matches_supply_id_status_idx, matches_score_idx,
+    -- demands_status_created_at_idx, supplies_status_created_at_idx,
+    -- chat_messages_room_created_at_idx, notifications_user_status_created_idx
+  -> This migration was created but NEVER COMMITTED. On master HEAD it is
+     untracked. So the perf-specific index optimizations are NOT part of
+     the accepted issue artifacts on master.
+
+VERDICT: partial — base schema has many @@index lines, but the dedicated
+  perf-index migration for ISSUE-INT002a is untracked.

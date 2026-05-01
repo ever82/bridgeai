@@ -1,0 +1,74 @@
+{
+  "success": true,
+  "data": {
+    "agents": [
+      {
+        "id": "3f18e5e0-41d1-4ee2-b635-4ff90d3b0b42",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "My VisionShare",
+        "description": "Test agent for verification",
+        "status": "ARCHIVED",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          },
+          "sceneConfig": { "price": 50, "range": "local", "autoShare": true },
+          "communicationStyle": "friendly"
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:35:28.816Z",
+        "updatedAt": "2026-04-30T17:35:47.694Z"
+      },
+      {
+        "id": "a094a9a2-6e94-4c7e-afae-01ee23b851a5",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "AGENTDATE",
+        "name": "Date Agent",
+        "description": "For dating",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["社交活跃", "情感细腻", "谨慎匹配"],
+            "communicationStyle": "warm"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:35:28.838Z",
+        "updatedAt": "2026-04-30T17:35:28.838Z"
+      },
+      {
+        "id": "e33baa1d-2db4-46a6-9c52-88601e6bf356",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "AGENTJOB",
+        "name": "Job Agent",
+        "description": "For jobs",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["技能导向", "效率优先", "职业敏感"],
+            "communicationStyle": "professional"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:35:28.852Z",
+        "updatedAt": "2026-04-30T17:35:28.852Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 3,
+      "total": 12,
+      "totalPages": 4,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "changed_files": [
+    "apps/server/src/services/cache.ts",
+    "apps/server/src/middleware/cache.ts",
+    "apps/server/src/middleware/performance.ts",
+    "apps/server/src/middleware/__tests__/performance.test.ts",
+    "apps/server/src/middleware/rateLimiter.ts",
+    "apps/server/src/middleware/__tests__/rateLimiter.test.ts",
+    "apps/server/src/db/client.ts",
+    "apps/server/src/app.ts",
+    "perf/api-load-test.js",
+    "perf/db-perf-report.md",
+    "apps/server/prisma/schema.prisma"
+  ],
+  "untracked_critical_files": [
+    "apps/server/src/services/performanceMetrics.ts",
+    "apps/server/src/middleware/redisRateLimitStore.ts",
+    "apps/server/src/db/queryAnalyzer.ts",
+    "apps/server/prisma/migrations/20260419000000_perf_indexes/migration.sql"
+  ],
+  "findings": [
+    {
+      "category": "ac_verification",
+      "severity": "critical",
+      "description": "Four key infrastructure files needed by the AC are present in the working tree but never committed to master. These include the Redis-backed rate limit store, the performance metrics service, the DB query analyzer, and the perf indexes migration. None of them ship in master, so the corresponding AC capabilities don't actually exist.",
+      "evidence": "git ls-files returns empty for all four; git status shows them as ?? untracked.",
+      "file_path": "apps/server/src/services/performanceMetrics.ts",
+      "recommendation": "Either commit these files to master with proper review, or remove them from the working tree and re-implement the missing capabilities so AC1/AC2 actually have shipping code.",
+      "related_ac": "both"
+    },
+    {
+      "category": "ac_verification",
+      "severity": "critical",
+      "description": "/metrics endpoint does not return any P50/P90/P95/P99 latency percentiles. AC1 explicitly requires baseline P95<200ms verification via observable metrics; the endpoint only exposes process memory/uptime/pid.",
+      "evidence": "apps/server/src/app.ts:157-172 returns {timestamp, uptime, memory, pid} only — no percentile data.",
+      "file_path": "apps/server/src/app.ts:157-172",
+      "recommendation": "Wire a tracked PerformanceMetrics service into the performanceMonitor middleware and expose p50/p90/p95/p99 plus per-route counts on /metrics.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "runtime_behavior",
+      "severity": "critical",
+      "description": "DATABASE_URL is passed to PrismaClient with no connection pool query string parameters (connection_limit, pool_timeout). The CONNECTION_POOL_SIZE/CONNECTION_TIMEOUT/IDLE_TIMEOUT constants are computed but never used, so AC2's connection pool optimization is effectively unimplemented.",
+      "evidence": "apps/server/src/db/client.ts:14-16 declare the three constants. Lines 31-43 build PrismaClient with url: process.env.DATABASE_URL verbatim.",
+      "file_path": "apps/server/src/db/client.ts:14-43",
+      "recommendation": "Build the Prisma URL by appending ?connection_limit=${CONNECTION_POOL_SIZE}&pool_timeout=${CONNECTION_TIMEOUT/1000} before passing into datasources.db.url, or remove the dead constants.",
+      "related_ac": "ISSUE-INT002a~c2"
+    },
+    {
+      "category": "runtime_behavior",
+      "severity": "critical",
+      "description": "getConnectionStats() returns hardcoded zeros and a placeholder comment, so the AC2 Prisma connection pool monitoring deliverable is a stub.",
+      "evidence": "apps/server/src/db/client.ts:146-159 returns {active:0, idle:0, total:0} with the comment 'This is a placeholder for future implementation'.",
+      "file_path": "apps/server/src/db/client.ts:146-159",
+      "recommendation": "Implement via prisma.$queryRaw against pg_stat_activity filtered to the application user/db, or via Prisma metrics feature.",
+      "related_ac": "ISSUE-INT002a~c2"
+    },
+    {
+      "category": "test_coverage",
+      "severity": "critical",
+      "description": "performance.test.ts asserts on res.on('finish', ...), but the implementation overrides res.end and never registers any 'finish' listener. The two performanceHeaders tests will fail at runtime.",
+      "evidence": "performance.test.ts:73,80-94 mock res.on('finish'); performance.ts:166-179 only uses res.end override.",
+      "file_path": "apps/server/src/middleware/__tests__/performance.test.ts:70-94",
+      "recommendation": "Either change the implementation to use res.on('finish', ...) or rewrite the tests to mock res.end and verify the override sets X-Response-Time correctly.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "consistency",
+      "severity": "critical",
+      "description": "middleware/cache.ts uses an in-memory Map for HTTP response caching, contradicting AC1 (Redis cache strategy verification) and the existence of a Redis-backed services/cache.ts. Two parallel cache backends with no shared invalidation.",
+      "evidence": "apps/server/src/middleware/cache.ts:14 const cacheStore = new Map<string, CacheEntry>(); Comment line 13 says 'in production, use Redis' but never does.",
+      "file_path": "apps/server/src/middleware/cache.ts:8-14",
+      "recommendation": "Replace the Map-based store with calls into services/cache.ts (cacheGet/cacheSet) using a per-route prefix, or remove this middleware entirely.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "test_coverage",
+      "severity": "warning",
+      "description": "There is no test file for middleware/cache.ts. Cache hit/miss, TTL expiry, non-2xx skipping, GET-only behavior, and clearCache are all uncovered.",
+      "evidence": "Listing of apps/server/src/middleware/__tests__/ shows no cache.test.ts.",
+      "file_path": "apps/server/src/middleware/cache.ts",
+      "recommendation": "Add cache.test.ts covering: GET hit, GET miss + populate, non-GET bypass, status >=300 not cached, TTL expiry, generateCacheKey ordering, clearCache pattern, getCacheStats.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "runtime_behavior",
+      "severity": "critical",
+      "description": "/ready endpoint returns hardcoded database: 'ok' without performing a real DB ping. A readiness probe with no real check will mark a broken pod healthy.",
+      "evidence": "apps/server/src/app.ts:144-154 returns checks: { database: 'ok' }. No await prisma.$queryRaw `SELECT 1`.",
+      "file_path": "apps/server/src/app.ts:144-154",
+      "recommendation": "Make /ready async and call await prisma.$queryRaw `SELECT 1` (and redis.ping()), returning 503 with database: 'fail' on error. Reuse testConnection() if appropriate.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "code_quality",
+      "severity": "warning",
+      "description": "rateLimiter.ts intentionally bypasses rate limiting in NODE_ENV=test for several limiters. enhancedIpLimiter, strictAuthLimiter, combinedRateLimiter, falseReportPenaltyCheck and reportLimiter all skip in test env, meaning rate limiting is never integration-tested under load.",
+      "evidence": "rateLimiter.ts:259, 290-291, 333-335, 351-353, 454. rateLimiter.test.ts:169-187 only asserts typeof === 'function'.",
+      "file_path": "apps/server/src/middleware/rateLimiter.ts:259,290,334,351,454",
+      "recommendation": "Add explicit integration test (without NODE_ENV=test bypass) that exercises 429 behavior against the actual middleware via supertest.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "code_quality",
+      "severity": "warning",
+      "description": "rateLimiter.ts:16-17 imports rateLimitEnv only to silence the unused-vars rule, then never uses it.",
+      "evidence": "rateLimiter.ts:11-17 import { ..., rateLimitEnv } from '../config/rateLimit' with eslint-disable-next-line.",
+      "file_path": "apps/server/src/middleware/rateLimiter.ts:11-17",
+      "recommendation": "Remove the import and the eslint-disable, or actually use rateLimitEnv to drive Redis-backed configuration.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "code_quality",
+      "severity": "warning",
+      "description": "falseReportPenaltyCheck uses dynamic import('../db/client') per request inside a hot middleware path. While Node will cache the module, the .then chain adds avoidable overhead and complicates error handling.",
+      "evidence": "rateLimiter.ts:366-407 import('../db/client').then(...).",
+      "file_path": "apps/server/src/middleware/rateLimiter.ts:366-407",
+      "recommendation": "Hoist import { prisma } from '../db/client' to the top of the file and use async/await.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "security",
+      "severity": "warning",
+      "description": "cacheDelPattern and invalidateByVersion call redis.keys(pattern) which is O(N) and blocks Redis on large datasets. Under high cache pressure (the very scenario AC1 wants to validate), this becomes a foot-gun.",
+      "evidence": "cache.ts:265 const keys = await redis.keys(pattern); cache.ts:596 same. No SCAN-based iteration.",
+      "file_path": "apps/server/src/services/cache.ts:259-272,589-607",
+      "recommendation": "Replace KEYS with a SCAN cursor loop or document that these helpers are admin-only.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "code_quality",
+      "severity": "warning",
+      "description": "cacheAside takes an unused _writeFn parameter. It is never invoked; only the read path is implemented.",
+      "evidence": "cache.ts:318-337. _writeFn is leading-underscore-named but JSDoc claims write semantics.",
+      "file_path": "apps/server/src/services/cache.ts:318-337",
+      "recommendation": "Either drop the parameter and rename the doc, or implement the write/invalidate side.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "ac_verification",
+      "severity": "warning",
+      "description": "perf/db-perf-report.md reports concrete before/after numbers (450ms→85ms etc.) but there is no committed benchmark script, raw output, or reproducible procedure. Same for AC1 P95<200ms claim.",
+      "evidence": "perf/db-perf-report.md:182-188 lists Match List 450→85ms with no source.",
+      "file_path": "perf/db-perf-report.md:180-188",
+      "recommendation": "Commit a real k6 summary JSON / HTML report under perf/results/ and link it from the report.",
+      "related_ac": "both"
+    },
+    {
+      "category": "code_quality",
+      "severity": "info",
+      "description": "middleware/cache.ts uses any for CacheEntry.data and the body parameter, weakening type safety in a TypeScript codebase that elsewhere is strict.",
+      "evidence": "middleware/cache.ts:9 data: any; line 49 (body: any).",
+      "file_path": "apps/server/src/middleware/cache.ts:9,49",
+      "recommendation": "Use unknown or a generic to preserve type information.",
+      "related_ac": "none"
+    },
+    {
+      "category": "code_quality",
+      "severity": "info",
+      "description": "performance.ts uses console.warn for slow request/query logging instead of the project logger that cache.ts uses.",
+      "evidence": "performance.ts:88, 124-126 use console.warn; cache.ts:8 imports logger from '../utils/logger'.",
+      "file_path": "apps/server/src/middleware/performance.ts:88,124",
+      "recommendation": "Use the shared logger so structured logs land in the same sink.",
+      "related_ac": "none"
+    },
+    {
+      "category": "ac_verification",
+      "severity": "warning",
+      "description": "perf/api-load-test.js sets P95 threshold on a custom response_time Trend that is added per check, but the script's default function calls test functions in series with sleeps; mixed warmup/benchmark/stress phases share a single response_time metric making the threshold unreliable.",
+      "evidence": "api-load-test.js:11-12, 52-54, 169-191. All calls feed into the same responseTime Trend regardless of scenario tag.",
+      "file_path": "perf/api-load-test.js:52-60,169-191",
+      "recommendation": "Use scenario-tagged thresholds (e.g. response_time{phase:benchmark}: ['p(95)<200']) and exclude warmup/stress phases.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "code_quality",
+      "severity": "info",
+      "description": "perf/api-load-test.js hardcodes API_TOKEN = 'test-token' and email/password defaults. CI run that forgets to set env vars will hammer auth endpoints with bad credentials and trigger the false-credential rate limiter.",
+      "evidence": "api-load-test.js:64, 87-90.",
+      "file_path": "perf/api-load-test.js:64,87-90",
+      "recommendation": "Fail fast in setup() if API_TOKEN is the default, or remove the auth payload from default scenario.",
+      "related_ac": "ISSUE-INT002a~c1"
+    },
+    {
+      "category": "code_quality",
+      "severity": "info",
+      "description": "db/client.ts line 32 sets log: ['query', 'info', 'warn', 'error'] in development. The query log emits every SQL statement to stdout, drowning signal. The slow-query log already exists via the $extends wrapper.",
+      "evidence": "db/client.ts:31-44.",
+      "file_path": "apps/server/src/db/client.ts:31-44",
+      "recommendation": "Drop 'query' from the dev log array; rely on the slow-query wrapper.",
+      "related_ac": "ISSUE-INT002a~c2"
+    }
+  ],
+  "ac_code_review_results": [
+    {
+      "ac_slug": "ISSUE-INT002a~c1",
+      "verdict": "fail",
+      "reasoning": "AC1 requires P95<200ms baseline, high-concurrency throughput, query perf, Redis cache validation, and rate-limit pressure tests. Multiple critical gaps: /metrics has no percentile data (performanceMetrics.ts uncommitted), middleware/cache.ts uses in-memory Map, redisRateLimitStore.ts is uncommitted, /ready returns hardcoded ok, performance middleware tests fail. No committed k6 run artifact verifies the P95 claim."
+    },
+    {
+      "ac_slug": "ISSUE-INT002a~c2",
+      "verdict": "fail",
+      "reasoning": "AC2 demands slow-query indexing, high-concurrency tests, Prisma connection pool tuning, complex query optimization, and sharding evaluation. The perf_indexes migration not committed; queryAnalyzer.ts not committed. db/client.ts declares pool constants but never uses them. getConnectionStats() returns hardcoded zeros. DB perf report cites optimization wins without reproducible benchmark. Sharding evaluation missing entirely."
+    }
+  ]
+}

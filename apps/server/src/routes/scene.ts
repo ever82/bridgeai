@@ -46,11 +46,13 @@ const sceneIdSchema = z.object({
 const migrationPreviewSchema = z.object({
   fromScene: z.enum(['visionshare', 'agentdate', 'agentjob', 'agentad']),
   toScene: z.enum(['visionshare', 'agentdate', 'agentjob', 'agentad']),
+  agentId: z.string().optional(),
 });
 
 const migrationExecuteSchema = z.object({
   fromScene: z.enum(['visionshare', 'agentdate', 'agentjob', 'agentad']),
   toScene: z.enum(['visionshare', 'agentdate', 'agentjob', 'agentad']),
+  agentId: z.string().optional(),
   manualData: z.record(z.any()).optional(),
 });
 
@@ -365,7 +367,7 @@ router.get(
       }
 
       // Get preset templates
-      const presetTemplates = getPresetTemplates(sceneId as any);
+      const presetTemplates = await getPresetTemplates(sceneId as any);
 
       // Get user templates if authenticated
       let userTemplates: any[] = [];
@@ -570,7 +572,7 @@ router.post(
   async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { fromScene, toScene } = req.body;
-      const { agentId } = req.query;
+      const agentId = (req.body.agentId || req.query.agentId) as string | undefined;
       const userId = req.user?.id;
 
       if (!agentId) {
@@ -582,7 +584,7 @@ router.post(
 
       // Verify agent belongs to the user (NP-365)
       const agent = await prisma.agent.findFirst({
-        where: { id: agentId as string, userId },
+        where: { id: agentId, userId },
       });
 
       if (!agent) {
@@ -592,7 +594,7 @@ router.post(
         });
       }
 
-      const preview = await previewMigration(agentId as string, fromScene, toScene);
+      const preview = await previewMigration(agentId, fromScene, toScene);
 
       res.json({
         success: true,
@@ -619,7 +621,7 @@ router.post(
   async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { fromScene, toScene, manualData } = req.body;
-      const { agentId } = req.query;
+      const agentId = (req.body.agentId || req.query.agentId) as string | undefined;
       const userId = req.user?.id;
 
       if (!agentId) {
@@ -631,7 +633,7 @@ router.post(
 
       // Verify agent belongs to the user (NP-365)
       const agent = await prisma.agent.findFirst({
-        where: { id: agentId as string, userId },
+        where: { id: agentId, userId },
       });
 
       if (!agent) {
@@ -641,7 +643,7 @@ router.post(
         });
       }
 
-      const result = await executeMigration(agentId as string, fromScene, toScene, manualData);
+      const result = await executeMigration(agentId, fromScene, toScene, manualData);
 
       res.json({
         success: true,

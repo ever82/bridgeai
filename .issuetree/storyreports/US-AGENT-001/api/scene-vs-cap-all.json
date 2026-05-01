@@ -1,0 +1,99 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "image_upload",
+      "name": "图片上传",
+      "description": "支持上传高清图片作品",
+      "enabled": true,
+      "version": "1.0.0",
+      "dependencies": [],
+      "config": {
+        "maxFileSize": 20971520,
+        "allowedFormats": ["jpg", "jpeg", "png", "gif", "webp"],
+        "maxImages": 20
+      },
+      "status": {
+        "enabled": true,
+        "available": true,
+        "missingDependencies": [],
+        "hasCircularDeps": false
+      }
+    },
+    {
+      "id": "video_upload",
+      "name": "视频上传",
+      "description": "支持上传视频作品",
+      "enabled": true,
+      "version": "1.0.0",
+      "dependencies": [],
+      "config": {
+        "maxFileSize": 524288000,
+        "allowedFormats": ["mp4", "mov", "avi"],
+        "maxDuration": 300
+      },
+      "status": {
+        "enabled": true,
+        "available": true,
+        "missingDependencies": [],
+        "hasCircularDeps": false
+      }
+    },
+    {
+      "id": "portfolio_link",
+      "name": "作品集链接",
+      "description": "支持链接到外部作品集",
+      "enabled": true,
+      "version": "1.0.0",
+      "dependencies": [],
+      "status": {
+        "enabled": true,
+        "available": true,
+        "missingDependencies": [],
+        "hasCircularDeps": false
+      }
+    },
+    {
+      "id": "collaboration",
+      "name": "协作功能",
+      "description": "寻找合作者和项目",
+      "enabled": true,
+      "version": "1.0.0",
+      "dependencies": ["portfolio_link"],
+      "status": {
+        "enabled": true,
+        "available": true,
+        "missingDependencies": [],
+        "hasCircularDeps": false
+      }
+    },
+    {
+      "id": "marketplace",
+      "name": "作品交易",
+      "description": "出售和授权作品",
+      "enabled": false,
+      "version": "0.5.0",
+      "dependencies": ["image_upload"],
+      "status": {
+        "enabled": false,
+        "available": false,
+        "missingDependencies": [],
+        "hasCircularDeps": false
+      }
+    },
+    {
+      "id": "critique_system",
+      "name": "作品点评",
+      "description": "获取专业反馈和建议",
+      "enabled": true,
+      "version": "1.0.0",
+      "dependencies": [],
+      "status": {
+        "enabled": true,
+        "available": true,
+        "missingDependencies": [],
+        "hasCircularDeps": false
+      }
+    }
+  ]
+}

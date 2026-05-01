@@ -1,0 +1,9 @@
+{
+  "success": false,
+  "message": "Invalid status transition from ARCHIVED to ACTIVE",
+  "errorCode": "INTERNAL_ERROR",
+  "meta": {
+    "stack": "Error: Invalid status transition from ARCHIVED to ACTIVE\n    at Object.updateAgentStatus (/Users/z/projects/bridgeai/apps/server/src/services/agentService.js:222:15)\n    at async <anonymous> (/Users/z/projects/bridgeai/apps/server/src/routes/agents.js:327:19)",
+    "statusCode": 500
+  }
+}

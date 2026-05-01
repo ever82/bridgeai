@@ -1,0 +1,7 @@
+Browser: chrome-devtools-mcp profile was locked by another running instance
+(/Users/z/.cache/chrome-devtools-mcp/chrome-profile already in use; --isolated not
+supported by this MCP server invocation). UI screenshots could not be captured.
+
+API gateway: /api/* requests time out with 504 RESPONSE_TIMEOUT (likely DB/auth
+lookup hanging in this dev session). Health endpoints (/health, /health/encryption)
+respond 200. Verification therefore relies on source-code + route-mounting probes.

@@ -1,0 +1,59 @@
+{
+  "id": 48,
+  "slug": "AS-AD-002",
+  "title": "我为商家主人精准推销",
+  "narrative": "寻找潜在客户并推销优惠。",
+  "issues": [
+    {
+      "id": 15,
+      "slug": "ISSUE-AI003c",
+      "title": "供给智能提炼服务 - 映射、补全与评估",
+      "description": "实现供给结构化映射、信息补全和质量评估功能，\n包含供给到L2模型的映射、智能补全建议和质量评估系统\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 49,
+          "slug": "AS-AD-002-AC-1",
+          "description": "评估用户需求与优惠匹配度",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 193,
+          "slug": "ISSUE-AI003c~c1",
+          "description": "映射系统:\n- 供给字段到L2模型映射\n- 价格/时间标准化\n- 服务能力量化\n- 资质等级映射\n- 标签自动生成\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 194,
+          "slug": "ISSUE-AI003c~c2",
+          "description": "补全机制:\n- 信息缺失检测\n- 智能补全建议\n- 外部数据增强\n- 默认值推断\n- 补全确认流程\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 195,
+          "slug": "ISSUE-AI003c~c3",
+          "description": "评估系统:\n- 描述完整性评分\n- 信息可信度评估\n- 竞争力分析\n- 优化建议生成\n- 质量等级划分\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 678,
+          "slug": "AS-AD-002~func",
+          "description": "商家 Agent 寻找潜在客户并推销优惠",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 679,
+          "slug": "AS-AD-002~edge",
+          "description": "异常：无匹配用户、协商失败",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

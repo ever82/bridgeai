@@ -1,0 +1,355 @@
+{
+  "id": 7,
+  "slug": "US-AGENT-014",
+  "title": "Agent 控制信息披露",
+  "narrative": "Agent 根据对话情况决定是否向对方披露详细信息。",
+  "issues": [
+    {
+      "id": 29,
+      "slug": "ISSUE-COM001",
+      "title": "Socket.io通信基础设施",
+      "description": "搭建Socket.io通信基础设施，提供实时双向通信能力。\n该Issue已拆分为子Issue:\n- ISSUE-COM001a: Socket.io基础设施搭建（服务器、中间件、命名空间）\n- ISSUE-COM001b: 连接管理与房间系统（连接生命周期、房间、广播）\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 15,
+          "slug": "AS-005-AC-2",
+          "description": "自主发起对话请求",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 16,
+          "slug": "AS-005-AC-3",
+          "description": "同时与多个候选保持独立对话",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 107,
+          "slug": "DATE-004-AC-1",
+          "description": "四人群聊界面",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 128,
+          "slug": "US-AGENT-015-AC-1",
+          "description": "在匹配列表页或四人群聊中可随时退出",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 265,
+          "slug": "ISSUE-COM001~c1",
+          "description": "服务器搭建:\n- Socket.io与Express集成\n- 命名空间设计(/chat, /presence)\n- 适配器配置(支持多实例)\n- 传输方式配置\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 266,
+          "slug": "ISSUE-COM001~c2",
+          "description": "连接认证:\n- JWT token验证\n- 连接权限检查\n- 用户身份绑定\n- 认证失败处理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 267,
+          "slug": "ISSUE-COM001~c3",
+          "description": "连接生命周期:\n- 连接建立处理\n- 断开连接清理\n- 心跳检测\n- 重连机制\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 268,
+          "slug": "ISSUE-COM001~c4",
+          "description": "房间管理:\n- 房间创建和销毁\n- 加入/离开房间\n- 房间广播\n- 房间成员查询\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 592,
+          "slug": "US-AGENT-007~func",
+          "description": "用户在四人群聊中成功切换\"亲自聊\"和\"让 Agent 代聊\"",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 622,
+          "slug": "DATE-004~func",
+          "description": "双方接受引荐后进入四人群聊交友",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 632,
+          "slug": "JOB-004~func",
+          "description": "双方 Agent 和用户在四人群聊中协商薪资",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 642,
+          "slug": "AD-004~func",
+          "description": "Agent 与商家 Agent 谈判争取更好优惠",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 654,
+          "slug": "AS-005~func",
+          "description": "Agent 自主决定与符合条件的候选 Agent 发起对话",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 655,
+          "slug": "AS-005~edge",
+          "description": "异常：对方拒绝对话、同时对话数过多",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 684,
+          "slug": "US-AGENT-015~func",
+          "description": "用户在匹配过程中随时退出",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 685,
+          "slug": "US-AGENT-015~edge",
+          "description": "异常：频繁退出加入",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "slug": "ISSUE-C007",
+      "title": "Agent信息披露控制机制",
+      "description": "实现 Agent 信息披露控制机制，允许用户控制哪些信息\n在匹配过程中被披露，保护用户隐私。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 3,
+          "slug": "AS-001-AC-3",
+          "description": "获取隐私设置和披露权限",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 20,
+          "slug": "AS-007-AC-1",
+          "description": "分析当前信任水平",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 21,
+          "slug": "AS-007-AC-2",
+          "description": "执行披露策略（每次确认/自动）",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 22,
+          "slug": "AS-007-AC-3",
+          "description": "记录已披露信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 66,
+          "slug": "US-AGENT-011-AC-2",
+          "description": "为每个场景设置披露策略",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 68,
+          "slug": "US-AGENT-012-AC-2",
+          "description": "为每个场景设置展示策略",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 75,
+          "slug": "US-AGENT-014-AC-1",
+          "description": "支持每次确认模式和自动模式",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 76,
+          "slug": "US-AGENT-014-AC-2",
+          "description": "保护底线信息不轻易透露",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 77,
+          "slug": "US-AGENT-014-AC-3",
+          "description": "用户可实时否决即将发生的披露",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 102,
+          "slug": "DATE-001-AC-2",
+          "description": "设置隐私级别",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 260,
+          "slug": "ISSUE-C007~c1",
+          "description": "披露控制:\n- 公开信息(任何人可见)\n- 匹配后可见信息\n- 私聊后可见信息\n- 引荐后可见信息\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 261,
+          "slug": "ISSUE-C007~c2",
+          "description": "字段控制:\n- 每个字段的披露级别\n- 默认披露策略\n- 批量设置\n- 预览效果\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 262,
+          "slug": "ISSUE-C007~c3",
+          "description": "权限控制:\n- 披露级别计算\n- 访问权限验证\n- 自动披露升级\n- 披露历史记录\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 263,
+          "slug": "ISSUE-C007~c4",
+          "description": "预览功能:\n- 不同角色视角预览\n- 信息脱敏展示\n- 披露状态可视化\n- 对方可见信息提示\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 264,
+          "slug": "ISSUE-C007~c5",
+          "description": "变更处理:\n- 披露设置变更记录\n- 已披露信息撤回\n- 对方变更通知\n- 披露审计日志\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 588,
+          "slug": "US-AGENT-011~func",
+          "description": "用户为每个场景分别配置公开和详细两级需求信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 589,
+          "slug": "US-AGENT-011~edge",
+          "description": "异常：披露策略切换后的行为一致性",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 590,
+          "slug": "US-AGENT-012~func",
+          "description": "用户为每个场景分别配置公开和详细两级供给信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 591,
+          "slug": "US-AGENT-012~edge",
+          "description": "异常：供给信息被未授权访问",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 596,
+          "slug": "US-AGENT-014~func",
+          "description": "Agent 根据对话和信任水平决定是否披露详细信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 597,
+          "slug": "US-AGENT-014~edge",
+          "description": "异常：披露策略被绕过",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 616,
+          "slug": "DATE-001~func",
+          "description": "用户配置交友偏好和个人信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 617,
+          "slug": "DATE-001~edge",
+          "description": "异常：配置不完整、极端偏好",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 636,
+          "slug": "AD-001~func",
+          "description": "用户配置 Agent：品类、预算、品牌偏好",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 637,
+          "slug": "AD-001~edge",
+          "description": "异常：无偏好设置、极端预算",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 638,
+          "slug": "AD-002~func",
+          "description": "商家配置 Agent：目标客户、优惠、推广预算",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 639,
+          "slug": "AD-002~edge",
+          "description": "异常：目标客户描述为空、预算为零",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 646,
+          "slug": "AS-001~func",
+          "description": "Agent 被创建后能读取主人画像、学习规则、生成本场景性格",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 647,
+          "slug": "AS-001~edge",
+          "description": "异常：主人画像缺失、场景规则加载失败",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 658,
+          "slug": "AS-007~func",
+          "description": "Agent 根据信任水平决定是否向对方披露详细信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 659,
+          "slug": "AS-007~edge",
+          "description": "异常：披露策略被绕过、信任计算错误",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

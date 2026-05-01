@@ -1,0 +1,47 @@
+jest-haste-map: duplicate manual mock found: expo-server-sdk
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/expo-server-sdk.js
+    * <rootDir>/src/__mocks__/expo-server-sdk.ts
+
+jest-haste-map: duplicate manual mock found: redis
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/redis.js
+    * <rootDir>/src/__mocks__/redis.ts
+
+jest-haste-map: duplicate manual mock found: @bridgeai/shared
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/@bridgeai/shared.js
+    * <rootDir>/src/__mocks__/@bridgeai/shared.ts
+
+jest-haste-map: duplicate manual mock found: @socket.io/redis-adapter
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/@socket.io/redis-adapter.js
+    * <rootDir>/src/__mocks__/@socket.io/redis-adapter.ts
+
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/z/projects/bridgeai/apps/server/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+PASS src/services/job/__tests__/jobSearchRoutes.integration.test.ts
+  Job Search Routes Integration (JOB003c)
+    GET /api/v1/job-search/jobs
+      ✓ returns paginated job results for authenticated user (33 ms)
+      ✓ parses numeric and array query params correctly (5 ms)
+      ✓ returns 401 when no authenticated user is present (11 ms)
+      ✓ propagates 500 when service throws unexpected error (3 ms)
+    GET /api/v1/job-search/candidates/:jobId
+      ✓ returns candidate matches for the given job (9 ms)
+      ✓ returns 401 when not authenticated (4 ms)
+    GET /api/v1/job-search/matches
+      ✓ returns paginated match results for the user (11 ms)
+      ✓ returns 401 when not authenticated (3 ms)
+    Search history endpoints
+      ✓ GET /history returns paginated search history (8 ms)
+      ✓ DELETE /history clears search history and reports count (4 ms)
+      ✓ GET /history returns 401 when not authenticated (13 ms)
+      ✓ DELETE /history returns 401 when not authenticated (11 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       12 passed, 12 total
+Snapshots:   0 total
+Time:        0.437 s, estimated 1 s
+Ran all test suites matching /src\/services\/job\/__tests__\/jobSearchRoutes.integration.test.ts/i.

@@ -1,0 +1,20 @@
+=== AC1.1 Evidence: P95<200ms baseline test ===
+File: /Users/z/projects/bridgeai/perf/api-load-test.js (216 lines)
+
+Threshold (lines 52-59):
+  thresholds: {
+    response_time: ['p(95)<200'],   // P95 < 200ms threshold defined
+    error_rate: ['rate<0.01'],
+    http_req_failed: ['rate<0.01'],
+  }
+
+Scenarios (lines 16-50):
+  - warmup     : ramping-vus 0 -> 10 over 30s
+  - benchmark  : ramping-vus to 100 (over ~7m sustained)
+  - stress     : ramping-vus to 400
+
+Test functions defined: testHealthCheck, testAuth, testAgentList,
+  testAgentProfile, testMatching, testCreditScore, testRateLimit
+
+VERDICT: pass — threshold and scenarios properly defined; this is a k6 script
+  meant to run against a live server. No execution evidence (k6 not run here).

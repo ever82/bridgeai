@@ -1,0 +1,6 @@
+{
+  "success": false,
+  "message": "Invalid token",
+  "errorCode": "INVALID_TOKEN",
+  "meta": { "statusCode": 401 }
+}

@@ -1,0 +1,9 @@
+=== AC2.5 Evidence: Sharding/Sub-partition strategy evaluation ===
+
+Searched .md files for shard|分表|分库:
+  Result: only docs/database/README.md line 104 ("评分表 (ratings)") which is
+    a heading using the character 表 ("table"), NOT 分表 (sharding).
+
+No design notes, no ADR, no evaluation document on sharding/分库 found.
+
+VERDICT: fail — sharding strategy evaluation not present.

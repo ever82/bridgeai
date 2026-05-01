@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nitpick Report — ISSUE-SEC002</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", Arial, sans-serif;
+    line-height: 1.55;
+    font-size: 14px;
+  }
+  header {
+    background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+    border-bottom: 1px solid #2a3a5e;
+    padding: 24px 32px;
+  }
+  header h1 { margin: 0 0 8px; font-size: 22px; color: #fff; }
+  header .meta { color: #999; font-size: 13px; }
+  header .meta span { margin-right: 18px; }
+  header .status-pill {
+    display: inline-block;
+    background: #ffa502;
+    color: #1a1a2e;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 12px;
+  }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
+  section { margin-bottom: 36px; }
+  h2 {
+    font-size: 18px;
+    color: #fff;
+    border-bottom: 1px solid #2a3a5e;
+    padding-bottom: 8px;
+    margin: 0 0 16px;
+  }
+  h3 { font-size: 15px; color: #ddd; margin: 16px 0 8px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .tile {
+    background: #16213e;
+    border: 1px solid #2a3a5e;
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .tile .label { color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .tile .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .tile.crit .value { color: #ff4757; }
+  .tile.warn .value { color: #ffa502; }
+  .tile.info .value { color: #70a1ff; }
+  .tile.pass .value { color: #2ed573; }
+  .tile.partial .value { color: #ffa502; }
+  .tile.fail .value { color: #ff4757; }
+  .card {
+    background: #16213e;
+    border: 1px solid #2a3a5e;
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+  }
+  .card .ac-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .card .ac-head h3 { margin: 0; font-size: 16px; }
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .pill.pass     { background: #14532d; color: #2ed573; }
+  .pill.partial  { background: #78350f; color: #ffa502; }
+  .pill.fail     { background: #7f1d1d; color: #ff4757; }
+  .pill.critical { background: #7f1d1d; color: #ff4757; }
+  .pill.warning  { background: #78350f; color: #ffa502; }
+  .pill.info     { background: #1e3a5f; color: #70a1ff; }
+  .pill.cat      { background: #1e3a5f; color: #93c5fd; margin-left: 6px; }
+  .ac-desc { color: #bbb; font-size: 13px; margin: 8px 0 12px; white-space: pre-line; }
+  .summary-text { color: #aaa; font-size: 13px; font-style: italic; margin-top: 10px; padding: 8px 10px; background: #0f1629; border-radius: 4px; border-left: 2px solid #2a3a5e; }
+  .finding {
+    background: #16213e;
+    border: 1px solid #2a3a5e;
+    border-left: 4px solid #555;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .finding.critical { border-left-color: #ff4757; }
+  .finding.warning  { border-left-color: #ffa502; }
+  .finding.info     { border-left-color: #70a1ff; }
+  .finding .head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .finding .head .left { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .finding .slug { font-family: monospace; color: #93c5fd; font-weight: 600; }
+  .finding .desc { margin: 8px 0; color: #ddd; }
+  .finding .row { margin-top: 8px; font-size: 13px; }
+  .finding .row .lbl { color: #888; display: inline-block; min-width: 95px; }
+  .codebox {
+    background: #0f0f23;
+    border: 1px solid #2a2a4a;
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-top: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: #cbd5e1;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  code { background: #0f0f23; border: 1px solid #2a2a4a; border-radius: 3px; padding: 1px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #ffa502; }
+  table { width: 100%; border-collapse: collapse; background: #0f1629; border: 1px solid #2a3a5e; border-radius: 6px; overflow: hidden; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #1e2d4a; }
+  th { background: #1e2d4a; color: #ddd; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  td { font-size: 13px; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-family: monospace; }
+  td.num.pass { color: #2ed573; }
+  td.num.fail { color: #ff4757; }
+  a.evlink { color: #93c5fd; text-decoration: none; font-size: 12px; }
+  a.evlink:hover { text-decoration: underline; }
+  footer { margin-top: 40px; padding: 18px 32px; border-top: 1px solid #2a3a5e; color: #555; font-size: 12px; text-align: center; }
+  .severity-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .severity-dot.critical { background: #ff4757; }
+  .severity-dot.warning  { background: #ffa502; }
+  .severity-dot.info     { background: #70a1ff; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Nitpick Report — ISSUE-SEC002 · 敏感数据加密与保护</h1>
+  <div class="meta">
+    <span><strong>Status:</strong> <span class="status-pill">nitpicking</span></span>
+    <span><strong>Task:</strong> #1103</span>
+    <span><strong>Generated:</strong> 2026-05-01 13:12 UTC</span>
+  </div>
+</header>
+
+<main>
+
+<!-- ========== SUMMARY TILES ========== -->
+<section>
+  <h2>Summary</h2>
+  <div class="tiles">
+    <div class="tile pass"><div class="label">AC pass</div><div class="value">1 / 6</div></div>
+    <div class="tile partial"><div class="label">AC partial</div><div class="value">3</div></div>
+    <div class="tile fail"><div class="label">AC fail</div><div class="value">2</div></div>
+    <div class="tile crit"><div class="label">Critical</div><div class="value">4</div></div>
+    <div class="tile warn"><div class="label">Warning</div><div class="value">7</div></div>
+    <div class="tile info"><div class="label">Info</div><div class="value">4</div></div>
+    <div class="tile pass"><div class="label">Tests passed</div><div class="value">72</div></div>
+    <div class="tile fail"><div class="label">Tests failed</div><div class="value">3</div></div>
+  </div>
+</section>
+
+<!-- ========== ACCEPTANCE CRITERIA ========== -->
+<section>
+  <h2>Acceptance Criteria</h2>
+
+  <article class="card">
+    <div class="ac-head">
+      <h3>c1 · 加密方案设计 (AES-256/TLS 1.3)</h3>
+      <span class="pill partial">partial</span>
+    </div>
+    <div class="ac-desc">AES-256 encryption scheme with TLS 1.3 enforcement. tlsEnforcement module implemented and all 4 tests pass, but tlsEnforcement middleware is never registered in app.ts — remains dead code at runtime.</div>
+    <div class="summary-text">Encryption logic is sound (AES-256 with proper IV/key handling, 4/4 tests pass). The TLS enforcement middleware exists but is not wired into the Express app, so it has no production effect. No live TLS verification occurs.</div>
+  </article>
+
+  <article class="card">
+    <div class="ac-head">
+      <h3>c2 · 密钥管理 (Master key/DEK/Rotation)</h3>
+      <span class="pill pass">pass</span>
+    </div>
+    <div class="ac-desc">Master key / DEK hierarchy with key rotation. All 10 keyManagement tests pass. Key generation, wrapping/unwrapping, and rotation logic verified.</div>
+    <div class="summary-text">Strongest AC: key hierarchy is well-structured, 10/10 tests pass, encryption/decryption round-trips work. Minor concerns: rotation loses old DEK without re-encryption, and missing master key silently falls back to ephemeral key (data loss on restart).</div>
+  </article>
+
+  <article class="card">
+    <div class="ac-head">
+      <h3>c3 · 字段级加密 (Prisma auto encrypt/decrypt)</h3>
+      <span class="pill fail">fail</span>
+    </div>
+    <div class="ac-desc">Field-level encryption via Prisma middleware. encryptionMiddleware is defined but never registered in db/client.ts — 90+ lines of dead code. ENCRYPTED_FIELDS config references non-existent Prisma columns. Prisma $use vs $extends API incompatibility.</div>
+    <div class="summary-text">The encryption middleware module exists with encrypt/decrypt logic for Prisma field-level operations, but it is never registered on the PrismaClient instance. ENCRYPTED_FIELDS references columns that do not exist in the schema. Using deprecated Prisma $use API. 9 encryption utility tests pass but the middleware itself has zero test coverage.</div>
+  </article>
+
+  <article class="card">
+    <div class="ac-head">
+      <h3>c4 · 数据脱敏 (Log/API response masking)</h3>
+      <span class="pill fail">fail</span>
+    </div>
+    <div class="ac-desc">Data masking middleware for logs and API responses. dataMaskingMiddleware is implemented but never registered in app.ts — dead code at runtime. 36 masking utility and middleware tests pass, but the middleware is never invoked.</div>
+    <div class="summary-text">Masking utilities are solid (20 mask tests + 16 dataMasking tests all pass). The core problem: dataMaskingMiddleware is never wired into the Express middleware chain in app.ts, so no data is actually masked in production API responses or logs.</div>
+  </article>
+
+  <article class="card">
+    <div class="ac-head">
+      <h3>c5 · 个人信息保护 (PII/GDPR)</h3>
+      <span class="pill partial">partial</span>
+    </div>
+    <div class="ac-desc">PII detection and GDPR compliance. 3 of 16 pii tests fail due to expectation mismatches. gdprService and dataExportService are implemented but have no routes/controllers — dead code. Export functions return hardcoded data instead of real DB queries.</div>
+    <div class="summary-text">PII detection logic partially works (13/16 tests pass) but 3 failing tests indicate expectation mismatches that need fixing. GDPR and data export services are stubs with no routing, making the right-to-erasure and data-portability requirements unmet. Export endpoints return hardcoded sample data.</div>
+  </article>
+
+  <article class="card">
+    <div class="ac-head">
+      <h3>c6 · 性能监控 (Health check/Metrics)</h3>
+      <span class="pill partial">partial</span>
+    </div>
+    <div class="ac-desc">Health check and encryption performance metrics. monitoringService singleton exists but is never imported anywhere — metrics are not collected. Encryption cache uses unbounded Map with no eviction, creating a memory leak risk under sustained operation.</div>
+    <div class="summary-text">The monitoring service infrastructure is defined but never activated. No metrics are collected at runtime. The encryption cache grows without limit since no LRU/TTL eviction is implemented. Health check endpoints exist but do not verify encryption subsystem health.</div>
+  </article>
+
+</section>
+
+<!-- ========== FINDINGS ========== -->
+<section>
+  <h2>Findings (15 total)</h2>
+
+  <h3 style="color:#ff4757">Critical (4)</h3>
+
+  <article class="finding critical">
+    <div class="head">
+      <div class="left"><span class="slug">VC-1170</span><span class="pill critical">critical</span><span class="pill cat">verification</span></div>
+      <span class="pill cat">AC: c4</span>
+    </div>
+    <div class="desc">dataMaskingMiddleware is never registered in app.ts. The middleware exists with full masking logic but is dead code — no API responses or logs are masked in production.</div>
+    <div class="row"><span class="lbl">Category:</span> verification</div>
+    <div class="row"><span class="lbl">Impact:</span> Sensitive data (emails, phone numbers, IDs) may be exposed in API responses and log output.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head">
+      <div class="left"><span class="slug">VC-1171</span><span class="pill critical">critical</span><span class="pill cat">verification</span></div>
+      <span class="pill cat">AC: c3</span>
+    </div>
+    <div class="desc">encryptionMiddleware is never registered in db/client.ts. The Prisma field-level encryption/decryption middleware (90+ lines) is dead code. No database fields are encrypted at rest.</div>
+    <div class="row"><span class="lbl">Category:</span> verification</div>
+    <div class="row"><span class="lbl">Impact:</span> Sensitive database fields are stored in plaintext despite encryption middleware existing.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head">
+      <div class="left"><span class="slug">VC-1169</span><span class="pill critical">critical</span><span class="pill cat">verification</span></div>
+      <span class="pill cat">AC: c5</span>
+    </div>
+    <div class="desc">pii.test.ts has 3 failing tests — expectations mismatch between test assertions and actual implementation behavior. The PII detection logic does not meet all specified requirements.</div>
+    <div class="row"><span class="lbl">Category:</span> verification</div>
+    <div class="row"><span class="lbl">Impact:</span> PII detection may miss or incorrectly classify sensitive data fields.</div>
+  </article>
+
+  <article class="finding critical">
+    <div class="head">
+      <div class="left"><span class="slug">Unbounded cache</span><span class="pill critical">critical</span><span class="pill cat">code_quality</span></div>
+      <span class="pill cat">AC: c6</span>
+    </div>
+    <div class="desc">Encryption cache uses a plain Map that grows without limit. No eviction policy (LRU/TTL), no size cap. Under sustained encryption operations this creates a memory leak that can crash the process.</div>
+    <div class="row"><span class="lbl">Category:</span> code_quality</div>
+    <div class="row"><span class="lbl">Impact:</span> Memory exhaustion in production under normal load; OOM kill risk.</div>
+  </article>
+
+  <h3 style="color:#ffa502">Warning (7)</h3>
+
+  <article class="finding warning">
+    <div class="head">
+      <div class="left"><span class="slug">tlsEnforcement dead code</span><span class="pill warning">warning</span><span class="pill cat">runtime_behavior</span></div>
+      <span class="pill cat">AC: c1</span>
+    </div>
+    <div class="desc">tlsEnforcement middleware is never registered in app.ts. TLS 1.3 enforcement has no runtime effect — 4 tests pass but the middleware is never invoked in production.</div>
+    <div class="row"><span class="lbl">Category:</span> runtime_behavior</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head">
+      <div class="left"><span class="slug">Key rotation loses old DEK</span><span class="pill warning">warning</span><span class="pill cat">code_quality</span></div>
+      <span class="pill cat">AC: c2</span>
+    </div>
+    <div class="desc">Key rotation generates a new DEK but does not re-encrypt existing data with the new key. Old DEK is discarded, making previously encrypted data unrecoverable if it was encrypted with the old key. No cache invalidation on rotation.</div>
+    <div class="row"><span class="lbl">Category:</span> code_quality</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head">
+      <div class="left"><span class="slug">Missing master key fallback</span><span class="pill warning">warning</span><span class="pill cat">code_quality</span></div>
+      <span class="pill cat">AC: c2</span>
+    </div>
+    <div class="desc">When MASTER_KEY env var is missing, the system silently generates an ephemeral key. All data encrypted with this key is lost on process restart. No warning is logged at startup.</div>
+    <div class="row"><span class="lbl">Category:</span> code_quality</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head">
+      <div class="left"><span class="slug">ENCRYPTED_FIELDS mismatch</span><span class="pill warning">warning</span><span class="pill cat">consistency</span></div>
+      <span class="pill cat">AC: c3</span>
+    </div>
+    <div class="desc">ENCRYPTED_FIELDS configuration references Prisma model columns that do not exist in the current schema. Encryption middleware would attempt to encrypt non-existent fields, causing runtime errors if activated.</div>
+    <div class="row"><span class="lbl">Category:</span> consistency</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head">
+      <div class="left"><span class="slug">monitoringService not imported</span><span class="pill warning">warning</span><span class="pill cat">runtime_behavior</span></div>
+      <span class="pill cat">AC: c6</span>
+    </div>
+    <div class="desc">monitoringService is a singleton but is never imported anywhere in the application. No metrics are collected at runtime. The monitoring infrastructure exists but is inert.</div>
+    <div class="row"><span class="lbl">Category:</span> runtime_behavior</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head">
+      <div class="left"><span class="slug">gdprService/dataExportService dead code</span><span class="pill warning">warning</span><span class="pill cat">runtime_behavior</span></div>
+      <span class="pill cat">AC: c5</span>
+    </div>
+    <div class="desc">gdprService and dataExportService are implemented but have no routes or controllers. GDPR right-to-erasure and data-portability endpoints are unreachable. Export functions return hardcoded sample data instead of real DB queries.</div>
+    <div class="row"><span class="lbl">Category:</span> runtime_behavior</div>
+  </article>
+
+  <article class="finding warning">
+    <div class="head">
+      <div class="left"><span class="slug">Prisma API incompatibility</span><span class="pill warning">warning</span><span class="pill cat">consistency</span></div>
+      <span class="pill cat">AC: c3</span>
+    </div>
+    <div class="desc">encryptionMiddleware uses Prisma $use() API which is deprecated in Prisma 4.x+ and removed in 5.x. The project should use $extends() for client extensions. Current approach will break on Prisma upgrade.</div>
+    <div class="row"><span class="lbl">Category:</span> consistency</div>
+  </article>
+
+  <h3 style="color:#70a1ff">Info (4)</h3>
+
+  <article class="finding info">
+    <div class="head">
+      <div class="left"><span class="slug">No encryption middleware tests</span><span class="pill info">info</span><span class="pill cat">test_coverage</span></div>
+      <span class="pill cat">AC: c3</span>
+    </div>
+    <div class="desc">encryptionMiddleware has 90 lines of logic with zero test coverage. The middleware performs field-level encrypt/decrypt on Prisma models — this is a security-critical path that should be thoroughly tested.</div>
+    <div class="row"><span class="lbl">Category:</span> test_coverage</div>
+  </article>
+
+  <article class="finding info">
+    <div class="head">
+      <div class="left"><span class="slug">GDPR/export are stubs</span><span class="pill info">info</span><span class="pill cat">code_quality</span></div>
+      <span class="pill cat">AC: c5</span>
+    </div>
+    <div class="desc">GDPR service and data export service return hardcoded sample data rather than performing real database queries. These are proof-of-concept stubs, not production-ready implementations.</div>
+    <div class="row"><span class="lbl">Category:</span> code_quality</div>
+  </article>
+
+  <article class="finding info">
+    <div class="head">
+      <div class="left"><span class="slug">ESLint errors</span><span class="pill info">info</span><span class="pill cat">code_quality</span></div>
+      <span class="pill cat">AC: c3</span>
+    </div>
+    <div class="desc">5 ESLint errors and approximately 25 warnings found across the security-related modules. Errors include unused variables, type issues, and import problems.</div>
+    <div class="row"><span class="lbl">Category:</span> code_quality</div>
+  </article>
+
+  <article class="finding info">
+    <div class="head">
+      <div class="left"><span class="slug">KMSClient dead code</span><span class="pill info">info</span><span class="pill cat">code_quality</span></div>
+      <span class="pill cat">AC: c2</span>
+    </div>
+    <div class="desc">KMSClient implementation exists but is never used in production. The key management system relies on local key generation instead of a proper KMS integration.</div>
+    <div class="row"><span class="lbl">Category:</span> code_quality</div>
+  </article>
+
+</section>
+
+<!-- ========== TEST RESULTS ========== -->
+<section>
+  <h2>Test Results</h2>
+  <table>
+    <thead><tr><th>Test Suite</th><th>Passed</th><th>Failed</th><th>Total</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>pii.test.ts</code></td>
+        <td class="num pass">13</td>
+        <td class="num fail">3</td>
+        <td>16</td>
+        <td><span class="pill fail">fail</span></td>
+      </tr>
+      <tr>
+        <td><code>mask.test.ts</code></td>
+        <td class="num pass">20</td>
+        <td class="num fail">0</td>
+        <td>20</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td><code>dataMasking.test.ts</code> (utils + middleware)</td>
+        <td class="num pass">16</td>
+        <td class="num fail">0</td>
+        <td>16</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td><code>keyManagement.test.ts</code></td>
+        <td class="num pass">10</td>
+        <td class="num fail">0</td>
+        <td>10</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td><code>encryption.test.ts</code></td>
+        <td class="num pass">9</td>
+        <td class="num fail">0</td>
+        <td>9</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td><code>tlsEnforcement.test.ts</code></td>
+        <td class="num pass">4</td>
+        <td class="num fail">0</td>
+        <td>4</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr style="border-top: 2px solid #2a3a5e;">
+        <td><strong>Totals</strong></td>
+        <td class="num pass"><strong>72</strong></td>
+        <td class="num fail"><strong>3</strong></td>
+        <td><strong>75</strong></td>
+        <td><span class="pill partial">partial</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ========== LINT RESULTS ========== -->
+<section>
+  <h2>Lint Results · 5 errors / ~25 warnings</h2>
+  <div class="codebox">Security-related modules report 5 ESLint errors and approximately 25 warnings.
+Errors include: unused variables, type mismatches, deprecated API usage.
+Severity: blocking errors should be resolved before acceptance.</div>
+</section>
+
+</main>
+
+<footer>
+  Generated 2026-05-01 13:12 UTC · ISSUE-SEC002 / Task 1103 · Sensitive Data Encryption &amp; Protection<br>
+  <code>/Users/z/projects/bridgeai/.issue/reports/_nitpick/ISSUE-SEC002/20260501_131221/</code>
+</footer>
+
+</body>
+</html>

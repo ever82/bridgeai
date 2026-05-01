@@ -1,0 +1,22 @@
+=== AC2.3 Evidence: Prisma connection pool config ===
+File: /Users/z/projects/bridgeai/apps/server/src/db/client.ts
+
+Lines 14-17 — env vars are READ:
+  const CONNECTION_POOL_SIZE = parseInt(process.env.DATABASE_CONNECTION_POOL_SIZE || '20', 10);
+  const CONNECTION_TIMEOUT  = parseInt(process.env.DATABASE_CONNECTION_TIMEOUT  || '30000', 10);
+  const IDLE_TIMEOUT        = parseInt(process.env.DATABASE_IDLE_TIMEOUT        || '60000', 10);
+  const QUERY_TIMEOUT       = parseInt(process.env.DATABASE_QUERY_TIMEOUT       || '10000', 10);
+
+Lines 35-39 — but these vars are NEVER used. PrismaClient is constructed with:
+  datasources: { db: { url: process.env.DATABASE_URL } }
+The URL is passed verbatim — Prisma controls pooling via connection_limit
+querystring on DATABASE_URL, which the code does NOT inject.
+CONNECTION_POOL_SIZE etc. are essentially dead variables (only QUERY_TIMEOUT
+is later used in executeWithTimeout).
+
+Lines 146-159 — getConnectionStats() returns hardcoded zeros:
+  return { active: 0, idle: 0, total: 0 };
+Comment admits: "This is a placeholder for future implementation"
+
+VERDICT: partial — slow query logging works, but connection pool config
+is non-functional and pool stats are not implemented.

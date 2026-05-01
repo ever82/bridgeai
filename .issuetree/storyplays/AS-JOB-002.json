@@ -1,0 +1,341 @@
+{
+  "id": 46,
+  "slug": "AS-JOB-002",
+  "title": "我为招聘方主人筛选候选人",
+  "narrative": "筛选简历并与候选人 Agent 初步沟通。",
+  "issues": [
+    {
+      "id": 21,
+      "slug": "ISSUE-C002",
+      "title": "Agent信息模型系统",
+      "description": "实现 Agent 三层信息模型系统，为Agent提供完整的信息表达能力。\n该Issue已拆分为子Issue:\n- ISSUE-C002a: L1基础信息模型（年龄、性别、地域等基础字段）\n- ISSUE-C002b: L2结构化信息模型（场景特定的结构化属性）\n- ISSUE-C002c: L3自然语言信息模型（自由文本描述和多媒体）\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 7,
+          "slug": "AS-002-AC-3",
+          "description": "确认后存储并触发实时匹配",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 10,
+          "slug": "AS-003-AC-3",
+          "description": "激活供给状态等待匹配查询",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 11,
+          "slug": "AS-004-AC-1",
+          "description": "创建结构化记录",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 27,
+          "slug": "AS-009-AC-2",
+          "description": "向主人展示对方信息和信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 44,
+          "slug": "AS-JOB-002-AC-1",
+          "description": "批量评估候选简历",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 63,
+          "slug": "US-AGENT-002-AC-4",
+          "description": "Agent 从对话中自动提取关键字段并分类",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 64,
+          "slug": "US-AGENT-002-AC-5",
+          "description": "用户确认后自动保存到对应场景",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 65,
+          "slug": "US-AGENT-011-AC-1",
+          "description": "每个场景设置公开信息和详细信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 67,
+          "slug": "US-AGENT-012-AC-1",
+          "description": "每个场景设置公开信息和详细信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 85,
+          "slug": "US-AGENT-005-AC-2",
+          "description": "显示对话双方 Agent 和匹配度评分",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 97,
+          "slug": "VS-005-AC-1",
+          "description": "照片列表页显示价格、缩略图和拍摄者信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 101,
+          "slug": "DATE-001-AC-1",
+          "description": "设置个人基本信息和期望条件",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 111,
+          "slug": "JOB-001-AC-1",
+          "description": "设置技能标签、工作经历、期望薪资、工作偏好",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 112,
+          "slug": "JOB-002-AC-1",
+          "description": "设置职位信息、薪资预算、硬性条件和软性偏好",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 117,
+          "slug": "AD-001-AC-1",
+          "description": "设置品类、预算范围、品牌偏好",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 118,
+          "slug": "AD-002-AC-1",
+          "description": "设置目标客户、优惠活动、推广预算",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 126,
+          "slug": "US-AGENT-013-AC-1",
+          "description": "Agent 展示对方公开的需求和供给概要",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 226,
+          "slug": "ISSUE-C002~c1",
+          "description": "Agent L1层 - 可编辑的基础信息:\n- 年龄、性别、地域、职业等基础字段\n- 字段验证和约束规则\n- 用户资料编辑界面\n- L1数据库存储\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 227,
+          "slug": "ISSUE-C002~c2",
+          "description": "Agent L2层 - 场景特定结构化属性:\n- VisionShare: 拍照类型、设备、风格\n- AgentDate: 择偶标准、兴趣爱好\n- AgentJob: 技能、经验、期望薪资\n- AgentAd: 消费偏好、品牌倾向\n- L1到L2的映射关系\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 228,
+          "slug": "ISSUE-C002~c3",
+          "description": "Agent L3层 - 非结构化表达:\n- 自由文本自我介绍\n- 多媒体内容(照片、视频)\n- AI提炼的自然语言描述\n- L3与L1/L2的关联\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 586,
+          "slug": "US-AGENT-002~func",
+          "description": "用户与 Agent 对话后成功创建需求和供给",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 587,
+          "slug": "US-AGENT-002~edge",
+          "description": "异常场景：空输入、无意义输入、超长对话",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 588,
+          "slug": "US-AGENT-011~func",
+          "description": "用户为每个场景分别配置公开和详细两级需求信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 590,
+          "slug": "US-AGENT-012~func",
+          "description": "用户为每个场景分别配置公开和详细两级供给信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 602,
+          "slug": "US-AGENT-005~func",
+          "description": "用户能按场景筛选并查看 Agent 对话历史",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 612,
+          "slug": "VS-005~func",
+          "description": "用户支付积分查看照片，界面显示拍摄者信用",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 613,
+          "slug": "VS-005~edge",
+          "description": "异常：积分不足、支付中断",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 616,
+          "slug": "DATE-001~func",
+          "description": "用户配置交友偏好和个人信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 626,
+          "slug": "JOB-001~func",
+          "description": "求职者配置 Agent：技能、经验、期望薪资",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 628,
+          "slug": "JOB-002~func",
+          "description": "招聘方配置 Agent：发布职位需求",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 630,
+          "slug": "JOB-003~func",
+          "description": "Agent 间自动匹配职位和简历，双向过滤",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 636,
+          "slug": "AD-001~func",
+          "description": "用户配置 Agent：品类、预算、品牌偏好",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 638,
+          "slug": "AD-002~func",
+          "description": "商家配置 Agent：目标客户、优惠、推广预算",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 648,
+          "slug": "AS-002~func",
+          "description": "Agent 解析主人自然语言输入，提炼成结构化需求",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 649,
+          "slug": "AS-002~edge",
+          "description": "异常：需求提炼失败、三层字段为空",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 650,
+          "slug": "AS-003~func",
+          "description": "Agent 理解主人供给能力，记录为供给档案",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 651,
+          "slug": "AS-003~edge",
+          "description": "异常：供给信息为空、激活失败",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 652,
+          "slug": "AS-004~func",
+          "description": "Agent 批量读取候选公开信息，计算匹配度并排序",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 674,
+          "slug": "AS-JOB-002~func",
+          "description": "招聘方 Agent 筛选简历并与候选人 Agent 初筛",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 682,
+          "slug": "US-AGENT-013~func",
+          "description": "通过 Agent 浏览对方的公开需求和供给",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 683,
+          "slug": "US-AGENT-013~edge",
+          "description": "异常：尝试查看详细信息",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 69,
+      "slug": "ISSUE-JOB003",
+      "title": "简历智能匹配筛选",
+      "description": "实现求职者与招聘方的智能双向匹配系统。AI分析简历与职位\n要求的匹配度，考虑技能、经验、薪资期望等多维度因素，\n为双方推荐最合适的匹配对象。支持匹配筛选与排序。\n\n这是一个史诗级任务，包含以下子任务:\n- ISSUE-JOB003a: 核心算法层 - 匹配度算法实现\n- ISSUE-JOB003b: 服务层 - 筛选服务+推荐引擎\n- ISSUE-JOB003c: 接口层 - API+通知\n- ISSUE-JOB003d: UI层 - 移动端界面\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 113,
+          "slug": "JOB-003-AC-1",
+          "description": "评估匹配度并向双方推荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 630,
+          "slug": "JOB-003~func",
+          "description": "Agent 间自动匹配职位和简历，双向过滤",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 631,
+          "slug": "JOB-003~edge",
+          "description": "异常：单向匹配、过滤条件变更",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 674,
+          "slug": "AS-JOB-002~func",
+          "description": "招聘方 Agent 筛选简历并与候选人 Agent 初筛",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

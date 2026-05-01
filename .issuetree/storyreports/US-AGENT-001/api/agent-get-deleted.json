@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "data": {
+    "id": "e33baa1d-2db4-46a6-9c52-88601e6bf356",
+    "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+    "type": "AGENTJOB",
+    "name": "Job Agent",
+    "description": "For jobs",
+    "status": "ARCHIVED",
+    "config": {
+      "personality": {
+        "traits": ["技能导向", "效率优先", "职业敏感"],
+        "communicationStyle": "professional"
+      }
+    },
+    "latitude": null,
+    "longitude": null,
+    "isActive": false,
+    "createdAt": "2026-04-30T17:35:28.852Z",
+    "updatedAt": "2026-04-30T17:36:39.062Z"
+  }
+}

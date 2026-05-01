@@ -1,0 +1,452 @@
+{
+  "id": 26,
+  "slug": "JOB-005",
+  "title": "面试后评分",
+  "narrative": "面试完成后双方评分。",
+  "issues": [
+    {
+      "id": 35,
+      "slug": "ISSUE-CR002",
+      "title": "评分与评价系统",
+      "description": "实现用户评分与评价系统，包括双向评分机制、评价内容管理、\n评价审核与反作弊、评价统计与展示。评价系统与信用分计算联动，\n为平台提供可信的用户反馈机制。\n\n本Issue已拆分为以下子Issue：\n- ISSUE-CR002a: 后端API (c1, c2, c3) ~900行\n- ISSUE-CR002b: 前端UI (c4) ~500行\n- ISSUE-CR002c: 业务逻辑 (c5, c6) ~450行\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 776,
+          "slug": "ISSUE-CR002~func",
+          "description": "[评分系统功能完整性]\n评分与评价系统整体功能:\n- 评价提交和展示\n- 评价审核和反作弊\n- 评价与信用分联动\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "slug": "ISSUE-CR002a",
+      "title": "评分与评价系统 - 后端API",
+      "description": "实现评分与评价系统的后端API部分，包括数据模型设计和核心API接口。\n提供评价的提交、查询、回复、删除等基础功能，以及评价审核与反作弊机制。\n本Issue是ISSUE-CR002的拆分部分，专注于后端实现。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 109,
+          "slug": "DATE-005-AC-1",
+          "description": "交流结束后弹出评分界面",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 116,
+          "slug": "JOB-005-AC-1",
+          "description": "双向评分影响信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 123,
+          "slug": "AD-005-AC-2",
+          "description": "购买后可评分",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 124,
+          "slug": "US-AGENT-010-AC-1",
+          "description": "多维度评分（诚信度、礼貌度、响应度、满意度）",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 125,
+          "slug": "US-AGENT-010-AC-2",
+          "description": "评分影响信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 297,
+          "slug": "ISSUE-CR002a~c1",
+          "description": "评价系统数据库设计:\n- Review 表设计(评价ID、评价者、被评价者、评分、内容、场景类型)\n- ReviewReply 表设计(评价回复)\n- ReviewReport 表设计(评价举报)\n- ReviewStats 表设计(评价统计缓存)\n- 索引优化(按用户ID和场景类型查询)\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 298,
+          "slug": "ISSUE-CR002a~c2",
+          "description": "评分提交和查询接口:\n- POST /api/v1/reviews - 提交评价\n- GET /api/v1/reviews/received - 获取收到的评价\n- GET /api/v1/reviews/given - 获取发出的评价\n- PUT /api/v1/reviews/:id/reply - 回复评价\n- DELETE /api/v1/reviews/:id - 删除评价(管理员)\n- 评价权限验证(交易完成后才可评价)\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 299,
+          "slug": "ISSUE-CR002a~c3",
+          "description": "评价内容审核机制:\n- 敏感词过滤和AI内容审核\n- 恶意刷评价检测(同一用户多次评价)\n- 评价真实性验证(需有实际交互)\n- 申诉和举报处理流程\n- 异常评价自动标记\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 624,
+          "slug": "DATE-005~func",
+          "description": "约会完成后双方评分，影响信用分",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 625,
+          "slug": "DATE-005~edge",
+          "description": "异常：恶意评分、重复评分",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 634,
+          "slug": "JOB-005~func",
+          "description": "面试完成后双方评分",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 635,
+          "slug": "JOB-005~edge",
+          "description": "异常：未面试就评分",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 644,
+          "slug": "AD-005~func",
+          "description": "一键购买后评价商家",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 680,
+          "slug": "US-AGENT-010~func",
+          "description": "双方真人交流后互相评分，影响信用分",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 681,
+          "slug": "US-AGENT-010~edge",
+          "description": "异常：恶意评分、重复评分",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "slug": "ISSUE-CR002b",
+      "title": "评分与评价系统 - 前端UI",
+      "description": "实现评分与评价系统的移动端前端UI组件，包括评价列表、评分输入、\n评价详情展示等功能。本Issue是ISSUE-CR002的拆分部分，专注于前端界面实现。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 109,
+          "slug": "DATE-005-AC-1",
+          "description": "交流结束后弹出评分界面",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 123,
+          "slug": "AD-005-AC-2",
+          "description": "购买后可评分",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 300,
+          "slug": "ISSUE-CR002b~c1",
+          "description": "移动端评价UI:\n- 评价列表页面(收到的/发出的)\n- 评价卡片组件(评分、内容、时间)\n- 评分输入组件(星级评分+文字评价)\n- 评价详情页(含回复)\n- 评价统计展示(平均分、分布图)\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 624,
+          "slug": "DATE-005~func",
+          "description": "约会完成后双方评分，影响信用分",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 634,
+          "slug": "JOB-005~func",
+          "description": "面试完成后双方评分",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 680,
+          "slug": "US-AGENT-010~func",
+          "description": "双方真人交流后互相评分，影响信用分",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "slug": "ISSUE-CR002c",
+      "title": "评分与评价系统 - 业务逻辑",
+      "description": "实现评分与评价系统的业务逻辑部分，包括评价与信用分联动机制、\n评价相关的通知与提醒功能。本Issue是ISSUE-CR002的拆分部分，专注于业务逻辑实现。\n",
+      "status": "fixing",
+      "acceptance_criteria": [
+        {
+          "ac_id": 110,
+          "slug": "DATE-005-AC-2",
+          "description": "评分影响信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 301,
+          "slug": "ISSUE-CR002c~c1",
+          "description": "评价对信用分的影响:\n- 收到好评增加信用分\n- 收到差评扣除信用分\n- 评价数量对信用的影响\n- 评价回复率计入信用\n- 触发信用分重算事件\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 302,
+          "slug": "ISSUE-CR002c~c2",
+          "description": "评价相关通知:\n- 收到新评价推送通知\n- 待评价提醒(交易完成后24小时)\n- 评价回复通知\n- 差评预警通知(信用分下降时)\n- 通知偏好设置\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 624,
+          "slug": "DATE-005~func",
+          "description": "约会完成后双方评分，影响信用分",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "slug": "ISSUE-C007",
+      "title": "Agent信息披露控制机制",
+      "description": "实现 Agent 信息披露控制机制，允许用户控制哪些信息\n在匹配过程中被披露，保护用户隐私。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 3,
+          "slug": "AS-001-AC-3",
+          "description": "获取隐私设置和披露权限",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 20,
+          "slug": "AS-007-AC-1",
+          "description": "分析当前信任水平",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 21,
+          "slug": "AS-007-AC-2",
+          "description": "执行披露策略（每次确认/自动）",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 22,
+          "slug": "AS-007-AC-3",
+          "description": "记录已披露信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 66,
+          "slug": "US-AGENT-011-AC-2",
+          "description": "为每个场景设置披露策略",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 68,
+          "slug": "US-AGENT-012-AC-2",
+          "description": "为每个场景设置展示策略",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 75,
+          "slug": "US-AGENT-014-AC-1",
+          "description": "支持每次确认模式和自动模式",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 76,
+          "slug": "US-AGENT-014-AC-2",
+          "description": "保护底线信息不轻易透露",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 77,
+          "slug": "US-AGENT-014-AC-3",
+          "description": "用户可实时否决即将发生的披露",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 102,
+          "slug": "DATE-001-AC-2",
+          "description": "设置隐私级别",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 260,
+          "slug": "ISSUE-C007~c1",
+          "description": "披露控制:\n- 公开信息(任何人可见)\n- 匹配后可见信息\n- 私聊后可见信息\n- 引荐后可见信息\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 261,
+          "slug": "ISSUE-C007~c2",
+          "description": "字段控制:\n- 每个字段的披露级别\n- 默认披露策略\n- 批量设置\n- 预览效果\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 262,
+          "slug": "ISSUE-C007~c3",
+          "description": "权限控制:\n- 披露级别计算\n- 访问权限验证\n- 自动披露升级\n- 披露历史记录\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 263,
+          "slug": "ISSUE-C007~c4",
+          "description": "预览功能:\n- 不同角色视角预览\n- 信息脱敏展示\n- 披露状态可视化\n- 对方可见信息提示\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 264,
+          "slug": "ISSUE-C007~c5",
+          "description": "变更处理:\n- 披露设置变更记录\n- 已披露信息撤回\n- 对方变更通知\n- 披露审计日志\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 588,
+          "slug": "US-AGENT-011~func",
+          "description": "用户为每个场景分别配置公开和详细两级需求信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 589,
+          "slug": "US-AGENT-011~edge",
+          "description": "异常：披露策略切换后的行为一致性",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 590,
+          "slug": "US-AGENT-012~func",
+          "description": "用户为每个场景分别配置公开和详细两级供给信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 591,
+          "slug": "US-AGENT-012~edge",
+          "description": "异常：供给信息被未授权访问",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 596,
+          "slug": "US-AGENT-014~func",
+          "description": "Agent 根据对话和信任水平决定是否披露详细信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 597,
+          "slug": "US-AGENT-014~edge",
+          "description": "异常：披露策略被绕过",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 616,
+          "slug": "DATE-001~func",
+          "description": "用户配置交友偏好和个人信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 617,
+          "slug": "DATE-001~edge",
+          "description": "异常：配置不完整、极端偏好",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 636,
+          "slug": "AD-001~func",
+          "description": "用户配置 Agent：品类、预算、品牌偏好",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 637,
+          "slug": "AD-001~edge",
+          "description": "异常：无偏好设置、极端预算",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 638,
+          "slug": "AD-002~func",
+          "description": "商家配置 Agent：目标客户、优惠、推广预算",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 639,
+          "slug": "AD-002~edge",
+          "description": "异常：目标客户描述为空、预算为零",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 646,
+          "slug": "AS-001~func",
+          "description": "Agent 被创建后能读取主人画像、学习规则、生成本场景性格",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 647,
+          "slug": "AS-001~edge",
+          "description": "异常：主人画像缺失、场景规则加载失败",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 658,
+          "slug": "AS-007~func",
+          "description": "Agent 根据信任水平决定是否向对方披露详细信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 659,
+          "slug": "AS-007~edge",
+          "description": "异常：披露策略被绕过、信任计算错误",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

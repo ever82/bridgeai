@@ -1,0 +1,23 @@
+=== AC1.5 Evidence: Rate limiter pressure test ===
+
+apps/server/src/middleware/rateLimiter.ts:
+  - Token bucket per-user/IP (Map-based store)
+  - Tier-based limits: admin/premium/authenticated/anonymous
+  - Multiple bypass paths gated by NODE_ENV === 'test':
+      line 74:  cleanup interval not started under test
+      line 259: skip() returns true under test
+      line 290, 334, 454: similar test bypasses
+      line 351: behaviour branch under test
+  -> Under NODE_ENV=test, much of the limiter is bypassed.
+
+Test results (npx jest src/middleware/__tests__/rateLimiter --runInBand):
+  PASS src/middleware/__tests__/rateLimiter.test.ts
+  Test Suites: 1 passed, 1 total
+  Tests:       18 passed, 18 total
+
+Pressure-test artifact: apps/server/perf/api-rate-limit-test.js exists
+  (k6 script — execution requires running server).
+
+VERDICT: partial — unit tests pass, but extensive NODE_ENV=test bypasses
+  reduce the meaningfulness of the unit-tested behavior. Pressure script
+  exists but requires running server (not exercised here).

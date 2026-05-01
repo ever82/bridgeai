@@ -1,0 +1,7 @@
+{
+  "id": 8,
+  "slug": "US-AGENT-009",
+  "title": "接收 Agent 私聊建议",
+  "narrative": "Agent 给自己发送私聊建议，仅自己可见。",
+  "issues": []
+}

@@ -1,0 +1,451 @@
+{
+  "story": {
+    "id": 1,
+    "slug": "US-AGENT-001",
+    "title": "创建个人 Agent",
+    "story_type": "user",
+    "status": "active",
+    "narrative": "用户首次使用 BridgeAI，创建自己的 AI Agent，配置基本信息和偏好。",
+    "priority": 0
+  },
+  "issues": [
+    {
+      "slug": "ISSUE-A003",
+      "title": "用户基础资料管理",
+      "status": "nitpicking",
+      "ac_count": 14,
+      "acs": [
+        {
+          "slug": "AS-001-AC-1",
+          "description": "读取主人的基础画像和场景配置",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-001-AC-1",
+          "description": "用户设置昵称和头像",
+          "type": "functional",
+          "ai_status": "failed",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-017-AC-1",
+          "description": "注销特定场景 Agent",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-A003~c1",
+          "description": "用户信息接口:\n- 获取当前用户信息\n- 更新用户信息\n- 上传用户头像\n- 删除账号\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-A003~c2",
+          "description": "头像管理:\n- 头像上传接口\n- 图片压缩和裁剪\n- 云存储集成(OSS/S3)\n- 默认头像处理\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-A003~c3",
+          "description": "移动端资料 UI:\n- 个人资料展示页面\n- 编辑资料表单\n- 头像选择和上传\n- 资料预览\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-A003~c4",
+          "description": "隐私控制:\n- 资料可见性设置\n- 在线状态可见性\n- 手机号/邮箱隐私\n- 阻止列表管理\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-A003~c5",
+          "description": "安全功能:\n- 修改密码\n- 绑定/换绑手机号\n- 绑定/换绑邮箱\n- 登录设备管理\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-001~func",
+          "description": "用户首次创建 Agent 并配置基本信息和偏好",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-001~edge",
+          "description": "异常场景：重复创建、无效输入、网络中断",
+          "type": "edge_case",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "AS-001~func",
+          "description": "Agent 被创建后能读取主人画像、学习规则、生成本场景性格",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "AS-001~edge",
+          "description": "异常：主人画像缺失、场景规则加载失败",
+          "type": "edge_case",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-017~func",
+          "description": "用户注销某场景的 Agent",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-017~edge",
+          "description": "异常：注销后重新创建",
+          "type": "edge_case",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        }
+      ]
+    },
+    {
+      "slug": "ISSUE-C001",
+      "title": "Agent创建与基础配置",
+      "status": "nitpicking",
+      "ac_count": 18,
+      "acs": [
+        {
+          "slug": "AS-001-AC-4",
+          "description": "生成本场景下的性格和行为准则",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-001-AC-1",
+          "description": "用户设置昵称和头像",
+          "type": "functional",
+          "ai_status": "failed",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-001-AC-2",
+          "description": "用户选择感兴趣的场景（可多选）",
+          "type": "functional",
+          "ai_status": "failed",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-001-AC-3",
+          "description": "用户配置 Agent 沟通风格（直接/委婉/详细/简洁）",
+          "type": "functional",
+          "ai_status": "failed",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-001-AC-4",
+          "description": "Agent 生成初始画像",
+          "type": "functional",
+          "ai_status": "failed",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-017-AC-1",
+          "description": "注销特定场景 Agent",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-017-AC-2",
+          "description": "保留历史交易记录",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-C001~c1",
+          "description": "Agent 创建接口:\n- 创建 Agent 端点\n- Agent 类型选择(VisionShare, AgentDate, AgentJob, AgentAd)\n- 基础信息设置(名称、描述)\n- 用户关联和权限\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-C001~c2",
+          "description": "Agent 类型定义:\n- 四种场景类型枚举\n- 场景特定配置 Schema\n- 类型验证和转换\n- 场景能力声明\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-C001~c3",
+          "description": "Agent 生命周期:\n- 状态枚举: draft, active, paused, archived\n- 状态转换规则\n- 状态变更 API\n- 状态历史记录\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-C001~c4",
+          "description": "Agent 查询接口:\n- 获取用户所有 Agent\n- 按类型筛选\n- 按状态筛选\n- 分页和排序\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-C001~c5",
+          "description": "Agent 管理 UI:\n- Agent 列表页面\n- 创建 Agent 向导\n- Agent 卡片组件\n- 空状态设计\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-001~func",
+          "description": "用户首次创建 Agent 并配置基本信息和偏好",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-001~edge",
+          "description": "异常场景：重复创建、无效输入、网络中断",
+          "type": "edge_case",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "AS-001~func",
+          "description": "Agent 被创建后能读取主人画像、学习规则、生成本场景性格",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "AS-001~edge",
+          "description": "异常：主人画像缺失、场景规则加载失败",
+          "type": "edge_case",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-017~func",
+          "description": "用户注销某场景的 Agent",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-017~edge",
+          "description": "异常：注销后重新创建",
+          "type": "edge_case",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        }
+      ]
+    },
+    {
+      "slug": "ISSUE-C006",
+      "title": "场景配置管理",
+      "status": "accepted",
+      "ac_count": 16,
+      "acs": [
+        {
+          "slug": "AS-001-AC-1",
+          "description": "读取主人的基础画像和场景配置",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-001-AC-2",
+          "description": "用户选择感兴趣的场景（可多选）",
+          "type": "functional",
+          "ai_status": "failed",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-011-AC-1",
+          "description": "每个场景设置公开信息和详细信息",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-012-AC-1",
+          "description": "每个场景设置公开信息和详细信息",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-C006~c1",
+          "description": "场景配置:\n- VisionShare 场景配置\n- AgentDate 场景配置\n- AgentJob 场景配置\n- AgentAd 场景配置\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-C006~c2",
+          "description": "字段系统:\n- 场景特定字段\n- 字段验证规则\n- 字段依赖关系\n- 字段国际化\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-C006~c3",
+          "description": "场景模板:\n- 预设场景模板\n- 模板应用和复制\n- 用户自定义模板\n- 模板分享\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-C006~c4",
+          "description": "能力系统:\n- 场景支持的功能列表\n- 能力启用/禁用\n- 能力依赖检查\n- 能力版本管理\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-C006~c5",
+          "description": "场景切换:\n- 场景间数据迁移\n- 配置转换规则\n- 迁移预览\n- 迁移确认\n",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "ISSUE-C006~c6",
+          "description": "提供场景配置的可视化管理界面，支持场景切换和配置预览",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-001~func",
+          "description": "用户首次创建 Agent 并配置基本信息和偏好",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-011~func",
+          "description": "用户为每个场景分别配置公开和详细两级需求信息",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-011~edge",
+          "description": "异常：披露策略切换后的行为一致性",
+          "type": "edge_case",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-012~func",
+          "description": "用户为每个场景分别配置公开和详细两级供给信息",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "US-AGENT-012~edge",
+          "description": "异常：供给信息被未授权访问",
+          "type": "edge_case",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        },
+        {
+          "slug": "AS-001~func",
+          "description": "Agent 被创建后能读取主人画像、学习规则、生成本场景性格",
+          "type": "functional",
+          "ai_status": "pending",
+          "verdict": "no-evidence"
+        }
+      ]
+    }
+  ],
+  "total_ac": 48,
+  "verdict": "rejected",
+  "blockers": [
+    {
+      "id": "A",
+      "title": "Backend API routes timeout",
+      "severity": "blocker"
+    },
+    {
+      "id": "B",
+      "title": "Mobile Expo Web bundle error (@babel/runtime)",
+      "severity": "blocker"
+    },
+    {
+      "id": "C",
+      "title": "Chrome MCP instance conflict / blank screenshots",
+      "severity": "blocker"
+    }
+  ],
+  "screenshot_count": 1,
+  "api_evidence": {
+    "health": {
+      "endpoint": "GET /health",
+      "status": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "status": "healthy",
+          "service": "bridgeai-server",
+          "version": "0.1.0"
+        }
+      },
+      "result": "PASS"
+    },
+    "register": {
+      "endpoint": "POST /api/v1/auth/register",
+      "status": "TIMEOUT",
+      "response": "Request timed out after 15s with no body received (curl exit 28)",
+      "result": "FAIL - server hangs on /api/v1/* routes"
+    },
+    "login": {
+      "endpoint": "POST /api/v1/auth/login",
+      "status": "TIMEOUT",
+      "response": "Request timed out after 15s. Connection accepted, request sent, no response from handler",
+      "result": "FAIL"
+    },
+    "users_me": {
+      "endpoint": "GET /api/v1/users/me",
+      "status": "BLOCKED",
+      "response": "Skipped - cannot obtain auth token because login hangs",
+      "result": "BLOCKED"
+    },
+    "agents_types": {
+      "endpoint": "GET /api/v1/agents/types",
+      "status": "TIMEOUT",
+      "response": "No response within 8s",
+      "result": "FAIL"
+    },
+    "agents_list": {
+      "endpoint": "GET /api/v1/agents",
+      "status": "BLOCKED",
+      "response": "Skipped - requires auth token",
+      "result": "BLOCKED"
+    },
+    "agent_create": {
+      "endpoint": "POST /api/v1/agents",
+      "status": "BLOCKED",
+      "response": "Skipped - requires auth token",
+      "result": "BLOCKED"
+    },
+    "_notes": [
+      "GET /health responds normally (200), but every /api/v1/* route hangs indefinitely.",
+      "Behavior is consistent for both curl direct and Playwright E2E suite (18 failed, 1 passed).",
+      "Server log shows successful boot: scene extractors registered, Socket.io initialized, LLM service init, port 3001 listening.",
+      "Server initialization triggered EADDRINUSE on attempted restart, confirming the original instance still owns the port.",
+      "While investigating, a separate compile-time bug was found: src/services/transactionService.ts called logger.child() but utils/logger.ts did not export a child() method. A patch was added to logger.ts to add child() so the server could re-bootstrap."
+    ]
+  }
+}

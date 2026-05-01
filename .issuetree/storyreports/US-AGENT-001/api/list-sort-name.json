@@ -1,0 +1,72 @@
+{
+  "success": true,
+  "data": {
+    "agents": [
+      {
+        "id": "8622a4e1-1395-416d-9b94-5532d6c54aa8",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "AGENTAD",
+        "name": "Ad Agent",
+        "description": "For ads",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["消费敏感", "优惠追踪", "预算控制"],
+            "communicationStyle": "direct"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:35:28.866Z",
+        "updatedAt": "2026-04-30T17:35:28.866Z"
+      },
+      {
+        "id": "de4a3347-5c31-41d2-9d87-345f1879616c",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 1",
+        "description": "Bulk 1",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.522Z",
+        "updatedAt": "2026-04-30T17:36:11.522Z"
+      },
+      {
+        "id": "f5cba4db-b0aa-45fe-a00f-9913f048989a",
+        "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+        "type": "VISIONSHARE",
+        "name": "Bulk Agent 2",
+        "description": "Bulk 2",
+        "status": "DRAFT",
+        "config": {
+          "personality": {
+            "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+            "communicationStyle": "friendly"
+          }
+        },
+        "latitude": null,
+        "longitude": null,
+        "isActive": true,
+        "createdAt": "2026-04-30T17:36:11.539Z",
+        "updatedAt": "2026-04-30T17:36:11.539Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 3,
+      "total": 12,
+      "totalPages": 4,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  }
+}

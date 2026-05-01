@@ -1,0 +1,46 @@
+{
+  "success": true,
+  "data": {
+    "sections": [
+      {
+        "id": "basic",
+        "title": "基本信息",
+        "description": "作品的基本信息",
+        "icon": "📋",
+        "order": 1,
+        "fields": ["content_type", "purpose", "style", "portfolio_url"]
+      },
+      {
+        "id": "skills",
+        "title": "技能和经验",
+        "description": "你的专业技能",
+        "icon": "🛠️",
+        "order": 2,
+        "fields": ["skills", "experience_level"]
+      },
+      {
+        "id": "services",
+        "title": "服务信息",
+        "description": "可提供服务",
+        "icon": "💼",
+        "order": 3,
+        "fields": ["availability", "price_range"]
+      },
+      {
+        "id": "about",
+        "title": "关于你",
+        "description": "更多关于你的信息",
+        "icon": "👤",
+        "order": 4,
+        "fields": ["inspiration_sources", "favorite_artists"]
+      }
+    ],
+    "layout": "tabs",
+    "theme": {
+      "primaryColor": "#9C27B0",
+      "secondaryColor": "#E1BEE7",
+      "backgroundColor": "#F3E5F5",
+      "textColor": "#333333"
+    }
+  }
+}

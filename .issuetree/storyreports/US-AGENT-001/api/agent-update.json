@@ -1,0 +1,6 @@
+{
+  "success": false,
+  "message": "Resource not found",
+  "errorCode": "NOT_FOUND",
+  "meta": { "statusCode": 404 }
+}

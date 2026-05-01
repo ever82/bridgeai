@@ -3,9 +3,7 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": [
-      "ES2022"
-    ],
+    "lib": ["ES2022"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -17,14 +15,9 @@
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@bridgeai/*": [
-        "./packages/*/src"
-      ]
+      "@bridgeai/*": ["./packages/*/src"]
     }
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build"
-  ]
+  "exclude": ["node_modules", "dist", "build"],
+  "extends": "expo/tsconfig.base"
 }

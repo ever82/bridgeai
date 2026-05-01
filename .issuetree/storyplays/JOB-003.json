@@ -1,0 +1,123 @@
+{
+  "id": 24,
+  "slug": "JOB-003",
+  "title": "Agent 简历筛选（带过滤）",
+  "narrative": "Agent 间自动匹配职位和简历，双方过滤条件都满足才推荐。",
+  "issues": [
+    {
+      "id": 69,
+      "slug": "ISSUE-JOB003",
+      "title": "简历智能匹配筛选",
+      "description": "实现求职者与招聘方的智能双向匹配系统。AI分析简历与职位\n要求的匹配度，考虑技能、经验、薪资期望等多维度因素，\n为双方推荐最合适的匹配对象。支持匹配筛选与排序。\n\n这是一个史诗级任务，包含以下子任务:\n- ISSUE-JOB003a: 核心算法层 - 匹配度算法实现\n- ISSUE-JOB003b: 服务层 - 筛选服务+推荐引擎\n- ISSUE-JOB003c: 接口层 - API+通知\n- ISSUE-JOB003d: UI层 - 移动端界面\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 113,
+          "slug": "JOB-003-AC-1",
+          "description": "评估匹配度并向双方推荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 630,
+          "slug": "JOB-003~func",
+          "description": "Agent 间自动匹配职位和简历，双向过滤",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 631,
+          "slug": "JOB-003~edge",
+          "description": "异常：单向匹配、过滤条件变更",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 674,
+          "slug": "AS-JOB-002~func",
+          "description": "招聘方 Agent 筛选简历并与候选人 Agent 初筛",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "slug": "ISSUE-JOB003a",
+      "title": "简历智能匹配 - 核心算法层",
+      "description": "实现职位匹配度核心算法，包括技能匹配、经验评估、\n薪资匹配等多维度计算，输出0-100的综合匹配度评分。\n预估代码量: 200-300行\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 414,
+          "slug": "ISSUE-JOB003a~c1",
+          "description": "匹配算法:\n- 技能匹配度计算(关键词匹配+语义相似度)\n- 经验匹配评估(年限/行业/职级)\n- 薪资期望匹配度计算\n- 地域与工作方式兼容性评估\n- 综合匹配度评分(0-100分)\n- 匹配度权重可配置\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 71,
+      "slug": "ISSUE-JOB003b",
+      "title": "简历智能匹配 - 服务层",
+      "description": "实现AI筛选服务和双向推荐引擎，基于LLM进行简历深度分析，\n为求职者和招聘方生成智能推荐。\n预估代码量: 300-450行\n",
+      "status": "fixing",
+      "acceptance_criteria": [
+        {
+          "ac_id": 415,
+          "slug": "ISSUE-JOB003b~c1",
+          "description": "AI筛选:\n- 基于LLM的简历深度分析\n- 隐含技能推断\n- 经验相关性评估\n- 文化匹配度预测\n- 筛选建议生成\n- 排序与排名算法\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 416,
+          "slug": "ISSUE-JOB003b~c2",
+          "description": "推荐系统:\n- 为求职者推荐合适职位\n- 为招聘方推荐合适候选人\n- 推荐结果排序与分页\n- 推荐解释(为什么匹配)\n- 推荐反馈学习(喜欢/不喜欢)\n- 推荐去重与刷新\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 72,
+      "slug": "ISSUE-JOB003c",
+      "title": "简历智能匹配 - 接口层",
+      "description": "实现匹配查询API和匹配通知系统，支持多条件搜索、\n结果排序，以及匹配相关的推送通知。\n预估代码量: 250-350行\n",
+      "status": "fixing",
+      "acceptance_criteria": [
+        {
+          "ac_id": 417,
+          "slug": "ISSUE-JOB003c~c1",
+          "description": "查询接口:\n- 职位搜索API(多条件筛选)\n- 候选人搜索API(招聘方视角)\n- 匹配结果获取API\n- 搜索结果排序与过滤\n- 搜索历史记录\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 418,
+          "slug": "ISSUE-JOB003c~c2",
+          "description": "通知系统:\n- 新匹配结果通知\n- 高匹配度职位推送\n- 简历被查看通知\n- 匹配状态变更通知\n- 通知偏好设置\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 73,
+      "slug": "ISSUE-JOB003d",
+      "title": "简历智能匹配 - UI层",
+      "description": "实现移动端匹配展示界面，包括推荐列表、匹配详情、\n匹配度可视化展示和快速操作功能。\n预估代码量: 250-350行\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 419,
+          "slug": "ISSUE-JOB003d~c1",
+          "description": "UI实现:\n- 职位推荐列表页面\n- 候选人推荐列表页面(招聘方)\n- 匹配详情页面\n- 匹配度可视化展示\n- 快速操作(感兴趣/跳过)\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

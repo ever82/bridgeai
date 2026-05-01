@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story 验收报告 — US-AGENT-001</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  h1 { color: #58a6ff; font-size: 1.8rem; margin-bottom: 0.5rem; }
+  h2 { color: #e6edf3; font-size: 1.3rem; margin: 2rem 0 1rem; border-bottom: 1px solid #21262d; padding-bottom: 0.5rem; }
+  h3 { color: #8b949e; font-size: 1rem; margin: 1.5rem 0 0.5rem; }
+  .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 0.5rem;
+  }
+  .badge-blocked { background: #f8514966; color: #f85149; }
+  .badge-failed { background: #f8514966; color: #f85149; }
+  .badge-passed { background: #3fb95066; color: #3fb950; }
+  .badge-pending { background: #8b949e44; color: #8b949e; }
+  .card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+  .card-title { color: #e6edf3; font-weight: 600; }
+  .card-desc { color: #8b949e; font-size: 0.9rem; }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    padding: 1.2rem;
+    text-align: center;
+  }
+  .stat-number { font-size: 2.5rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { color: #8b949e; font-size: 0.85rem; margin-top: 0.3rem; }
+  .ac-list { margin-left: 1rem; }
+  .ac-item {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #21262d;
+  }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-slug { color: #79c0ff; font-family: monospace; font-size: 0.85rem; }
+  .ac-desc { color: #c9d1d9; font-size: 0.9rem; margin: 0.3rem 0; }
+  .method-tag {
+    display: inline-block;
+    background: #1f6feb33;
+    color: #58a6ff;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-family: monospace;
+  }
+  .error-box {
+    background: #f8514911;
+    border: 1px solid #f8514944;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+  }
+  .error-title { color: #f85149; font-weight: 600; margin-bottom: 0.5rem; }
+  .error-box pre {
+    background: #0d1117;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    color: #f85149;
+    margin-top: 0.5rem;
+  }
+  .blocked-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .workaround {
+    background: #1f6feb11;
+    border: 1px solid #1f6feb44;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0.5rem 0;
+  }
+  .workaround-title { color: #58a6ff; font-weight: 600; font-size: 0.9rem; }
+  .workaround-desc { color: #8b949e; font-size: 0.85rem; margin-top: 0.3rem; }
+  .attempt-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  .attempt-table th, .attempt-table td { padding: 0.5rem 0.8rem; text-align: left; border-bottom: 1px solid #21262d; }
+  .attempt-table th { color: #8b949e; font-weight: 600; font-size: 0.85rem; }
+  .attempt-table td { color: #c9d1d9; font-size: 0.85rem; }
+  .attempt-table .fail { color: #f85149; }
+  .attempt-table .partial { color: #d29922; }
+  .coverage-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .coverage-tag { font-size: 0.7rem; padding: 0.1rem 0.3rem; border-radius: 3px; font-family: monospace; }
+  .coverage-required { background: #f8514922; color: #f85149; }
+  .coverage-sufficient { background: #3fb95022; color: #3fb950; }
+  .coverage-not-needed { background: #21262d; color: #8b949e; }
+  @media print {
+    body { background: white; color: black; }
+    .card, .stat-card, .error-box, .workaround { background: #f6f8fa; border-color: #d0d7de; }
+    .badge-blocked { background: #ffebe9; color: #cf222e; }
+    .stat-number { color: #0969da; }
+    h1, h2 { color: #1f2328; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Story 验收报告</h1>
+<div class="meta">
+  <strong>Story:</strong> US-AGENT-001 — 创建个人 Agent<br>
+  <strong>报告时间:</strong> 2026-04-29 20:16<br>
+  <strong>状态:</strong> <span class="badge badge-blocked">环境阻塞</span><br>
+  <strong>执行人:</strong> report-story skill (Demo Agent + Critic Agent)
+</div>
+
+<!-- Summary Stats -->
+<div class="summary-grid">
+  <div class="stat-card">
+    <div class="stat-number">3</div>
+    <div class="stat-label">Issues</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">48</div>
+    <div class="stat-label">总 AC 数</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">0</div>
+    <div class="stat-label">已验证</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">48</div>
+    <div class="stat-label">待验证</div>
+  </div>
+</div>
+
+<!-- Story Overview -->
+<h2>Story 概览</h2>
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-pending">active</span>
+    <span class="badge badge-pending">user story</span>
+  </div>
+  <div class="card-desc" style="margin-top:0.5rem;">
+    <strong>叙事:</strong> 用户首次使用 BridgeAI，创建自己的 AI Agent，配置基本信息和偏好。
+  </div>
+</div>
+
+<!-- Environment Error -->
+<h2>环境阻塞</h2>
+<div class="error-box">
+  <div class="error-title">无法启动验收环境 — 6 种启动方案全部失败</div>
+  <p style="color:#8b949e; margin-bottom:1rem;">
+    验收需要启动 <code>pnpm dev</code> 后端服务器 + 移动端，但项目依赖存在系统性损坏。
+  </p>
+
+  <table class="attempt-table">
+    <tr><th>方案</th><th>命令</th><th>结果</th><th>错误</th></tr>
+    <tr><td>1</td><td><code>pnpm --filter server dev</code></td><td class="fail">失败</td><td>tsx 符号链接损坏，dist/cli.mjs 不存在</td></tr>
+    <tr><td>2</td><td><code>pnpm add -D tsx</code></td><td class="fail">失败</td><td>符号链接仍指向空目录</td></tr>
+    <tr><td>3</td><td><code>npx tsx src/index.ts</code></td><td class="fail">失败</td><td>tsx 自身 dist 目录为空</td></tr>
+    <tr><td>4</td><td><code>node dist/index.js</code></td><td class="fail">失败</td><td>编译不完整，@bridgeai/shared 类型缺失</td></tr>
+    <tr><td>5</td><td><code>tsc --project apps/server</code></td><td class="fail">失败</td><td>100+ 编译错误（DuplicateIdentifier 等）</td></tr>
+    <tr><td>6</td><td><code>jest agentService.test.ts</code></td><td class="fail">失败</td><td>70 测试套件全部失败（ts-jest 解析错误）</td></tr>
+  </table>
+
+  <h3 style="margin-top:1.5rem;">根本原因</h3>
+  <ul style="margin-left:1.5rem; color:#8b949e; font-size:0.9rem;">
+    <li><strong>pnpm hoisting 失效</strong> — node-linker=hoisted 配置下，大量依赖包未正确提升到根目录</li>
+    <li><strong>545 个 .js/.ts 混合文件</strong> — 混合存在，且 .js 文件为旧编译结果，引用了不存在的类型</li>
+    <li><strong>符号链接指向空目录</strong> — apps/server/node_modules/tsx → ../../node_modules/.pnpm/tsx@4.21.0/.../tsx，目录不存在</li>
+    <li><strong>关键类型缺失</strong> — VisibilityLevel 从 @bridgeai/shared 无法正确解析（profileService.js:6）</li>
+  </ul>
+</div>
+
+<!-- Issues and ACs -->
+<h2>Issues &amp; ACs（待验证）</h2>
+
+<!-- Issue 1 -->
+<h3>ISSUE-A003 — 用户基础资料管理</h3>
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-pending">ai_confirmed</span>
+    <span class="badge badge-pending">implement</span>
+  </div>
+  <div class="card-desc">实现用户资料管理功能，包括头像上传、基本信息编辑、隐私设置、账号安全等功能。</div>
+</div>
+
+<div class="ac-list">
+  <div class="ac-item">
+    <div class="ac-slug">AS-001-AC-1</div>
+    <div class="ac-desc">读取主人的基础画像和场景配置</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-001-AC-1</div>
+    <div class="ac-desc">用户设置昵称和头像</div>
+    <div class="method-tag">ai: failed</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-017-AC-1</div>
+    <div class="ac-desc">注销特定场景 Agent</div>
+    <div class="method-tag">pending</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-A003~c1</div>
+    <div class="ac-desc">用户信息接口: 获取当前用户信息 / 更新用户信息 / 上传用户头像 / 删除账号</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-A003~c2</div>
+    <div class="ac-desc">头像管理: 头像上传接口 / 图片压缩和裁剪 / 云存储集成(OSS/S3) / 默认头像处理</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-A003~c3</div>
+    <div class="ac-desc">移动端资料 UI: 个人资料展示页面 / 编辑资料表单 / 头像选择和上传 / 资料预览</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-A003~c4</div>
+    <div class="ac-desc">隐私控制: 资料可见性设置 / 在线状态可见性 / 手机号/邮箱隐私 / 阻止列表管理</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-A003~c5</div>
+    <div class="ac-desc">安全功能: 修改密码 / 绑定/换绑手机号 / 绑定/换绑邮箱 / 登录设备管理</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-001~func</div>
+    <div class="ac-desc">用户首次创建 Agent 并配置基本信息和偏好</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-001~edge</div>
+    <div class="ac-desc">异常场景：重复创建、无效输入、网络中断</div>
+    <div class="method-tag">human: failed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">AS-001~func</div>
+    <div class="ac-desc">Agent 被创建后能读取主人画像、学习规则、生成本场景性格</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">AS-001~edge</div>
+    <div class="ac-desc">异常：主人画像缺失、场景规则加载失败</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-017~func</div>
+    <div class="ac-desc">用户注销某场景的 Agent</div>
+    <div class="method-tag">pending</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-017~edge</div>
+    <div class="ac-desc">异常：注销后重新创建</div>
+    <div class="method-tag">pending</div>
+  </div>
+</div>
+
+<!-- Issue 2 -->
+<h3>ISSUE-C001 — Agent创建与基础配置</h3>
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-pending">ai_confirmed</span>
+    <span class="badge badge-pending">implement</span>
+  </div>
+  <div class="card-desc">实现 Agent 创建和基础配置功能，包括 Agent 类型定义、基础属性设置、场景关联、初始状态配置等。</div>
+</div>
+
+<div class="ac-list">
+  <div class="ac-item">
+    <div class="ac-slug">AS-001-AC-4</div>
+    <div class="ac-desc">生成本场景下的性格和行为准则</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-001-AC-1</div>
+    <div class="ac-desc">用户设置昵称和头像</div>
+    <div class="method-tag">ai: failed</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-001-AC-2</div>
+    <div class="ac-desc">用户选择感兴趣的场景（可多选）</div>
+    <div class="method-tag">ai: failed</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-001-AC-3</div>
+    <div class="ac-desc">用户配置 Agent 沟通风格（直接/委婉/详细/简洁）</div>
+    <div class="method-tag">ai: failed</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-001-AC-4</div>
+    <div class="ac-desc">Agent 生成初始画像</div>
+    <div class="method-tag">ai: failed</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-017-AC-1</div>
+    <div class="ac-desc">注销特定场景 Agent</div>
+    <div class="method-tag">pending</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-017-AC-2</div>
+    <div class="ac-desc">保留历史交易记录</div>
+    <div class="method-tag">pending</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-C001~c1</div>
+    <div class="ac-desc">Agent 创建接口: 创建 Agent 端点 / Agent 类型选择(VisionShare, AgentDate, AgentJob, AgentAd) / 基础信息设置 / 用户关联</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-C001~c2</div>
+    <div class="ac-desc">Agent 类型定义: 四种场景类型枚举 / 场景特定配置 Schema / 类型验证和转换</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">e2e: not_needed</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-C001~c3</div>
+    <div class="ac-desc">Agent 生命周期: 状态枚举(draft/active/paused/archived) / 状态转换规则 / 状态变更 API</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-C001~c4</div>
+    <div class="ac-desc">Agent 查询接口: 获取用户所有 Agent / 按类型筛选 / 按状态筛选 / 分页和排序</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-C001~c5</div>
+    <div class="ac-desc">Agent 管理 UI: Agent 列表页面 / 创建 Agent 向导 / Agent 卡片组件 / 空状态设计</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">unit: sufficient</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-001~func</div>
+    <div class="ac-desc">用户首次创建 Agent 并配置基本信息和偏好</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-001~edge</div>
+    <div class="ac-desc">异常场景：重复创建、无效输入、网络中断</div>
+    <div class="method-tag">human: failed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">AS-001~func</div>
+    <div class="ac-desc">Agent 被创建后能读取主人画像、学习规则、生成本场景性格</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">AS-001~edge</div>
+    <div class="ac-desc">异常：主人画像缺失、场景规则加载失败</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-017~func</div>
+    <div class="ac-desc">用户注销某场景的 Agent</div>
+    <div class="method-tag">pending</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-017~edge</div>
+    <div class="ac-desc">异常：注销后重新创建</div>
+    <div class="method-tag">pending</div>
+  </div>
+</div>
+
+<!-- Issue 3 -->
+<h3>ISSUE-C006 — 场景配置管理</h3>
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-pending">ai_confirmed</span>
+    <span class="badge badge-pending">implement</span>
+  </div>
+  <div class="card-desc">实现四大场景的配置管理系统，包括场景特定字段定义、场景模板、场景能力配置等。</div>
+</div>
+
+<div class="ac-list">
+  <div class="ac-item">
+    <div class="ac-slug">AS-001-AC-1</div>
+    <div class="ac-desc">读取主人的基础画像和场景配置</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-001-AC-2</div>
+    <div class="ac-desc">用户选择感兴趣的场景（可多选）</div>
+    <div class="method-tag">ai: failed</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-011-AC-1</div>
+    <div class="ac-desc">每个场景设置公开信息和详细信息</div>
+    <div class="method-tag">pending</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-012-AC-1</div>
+    <div class="ac-desc">每个场景设置公开信息和详细信息</div>
+    <div class="method-tag">pending</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-C006~c1</div>
+    <div class="ac-desc">场景配置: VisionShare / AgentDate / AgentJob / AgentAd 场景配置定义</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">e2e: not_needed</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-C006~c2</div>
+    <div class="ac-desc">字段系统: 场景特定字段 / 字段验证规则 / 字段依赖关系 / 字段国际化</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-C006~c3</div>
+    <div class="ac-desc">场景模板: 预设场景模板 / 模板应用和复制 / 用户自定义模板 / 模板分享</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-C006~c4</div>
+    <div class="ac-desc">能力系统: 场景支持的功能列表 / 能力启用/禁用 / 能力依赖检查 / 能力版本管理</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-C006~c5</div>
+    <div class="ac-desc">场景切换: 场景间数据迁移 / 配置转换规则 / 迁移预览 / 迁移确认</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">unit: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">ISSUE-C006~c6</div>
+    <div class="ac-desc">提供场景配置的可视化管理界面，支持场景切换和配置预览</div>
+    <div class="method-tag">e2e: required</div>
+    <div class="method-tag">integration: required</div>
+    <div class="method-tag">unit: not_needed</div>
+    <div class="method-tag">manual: not_needed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-001~func</div>
+    <div class="ac-desc">用户首次创建 Agent 并配置基本信息和偏好</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-011~func</div>
+    <div class="ac-desc">用户为每个场景分别配置公开和详细两级需求信息</div>
+    <div class="method-tag">pending</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-011~edge</div>
+    <div class="ac-desc">异常：披露策略切换后的行为一致性</div>
+    <div class="method-tag">pending</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-012~func</div>
+    <div class="ac-desc">用户为每个场景分别配置公开和详细两级供给信息</div>
+    <div class="method-tag">pending</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">US-AGENT-012~edge</div>
+    <div class="ac-desc">异常：供给信息被未授权访问</div>
+    <div class="method-tag">pending</div>
+  </div>
+  <div class="ac-item">
+    <div class="ac-slug">AS-001~func</div>
+    <div class="ac-desc">Agent 被创建后能读取主人画像、学习规则、生成本场景性格</div>
+    <div class="method-tag">human: passed</div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div style="margin-top:3rem; padding-top:1rem; border-top:1px solid #21262d; color:#484f58; font-size:0.8rem; text-align:center;">
+  Generated by IssueTree report-story skill — US-AGENT-001
+</div>
+
+</div>
+</body>
+</html>

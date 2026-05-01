@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "data": {
+    "id": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+    "email": "agent-demo-1777570509@bridgeai.com",
+    "emailVerified": false,
+    "name": "Agent Demo",
+    "displayName": "Agent Demo",
+    "avatarUrl": null,
+    "bio": null,
+    "website": null,
+    "location": null,
+    "phone": null,
+    "phoneVerified": false,
+    "status": "ACTIVE",
+    "privacySettings": null,
+    "createdAt": "2026-04-30T17:35:10.155Z",
+    "updatedAt": "2026-04-30T17:35:10.155Z"
+  }
+}

@@ -32,6 +32,13 @@ const DEMO_PASSWORD = 'Demo1234!';
 // ---------------------------------------------------------------------------
 const DEMO_USERS = [
   {
+    email: 'test-e2e@bridgeai.test',
+    name: 'E2E Test User',
+    displayName: 'E2E Test User',
+    phone: null,
+    bio: '自动化验收测试账号，用于 play-story E2E 验证',
+  },
+  {
     email: 'demo-vision@bridgeai.com',
     name: 'Alice (VisionShare)',
     displayName: 'Alice',

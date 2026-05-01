@@ -39,6 +39,12 @@ export const lightTheme = {
     notificationBg: '#FEF3C7',
     notificationBorder: '#FDE68A',
     notificationText: '#92400E',
+
+    // Additional utility colors
+    white: '#FFFFFF',
+    black: '#000000',
+    disabled: '#BDBDBD',
+    surface: '#FFFFFF',
   },
 
   fonts: {
@@ -139,6 +145,17 @@ export const lightTheme = {
     normal: 2,
     thick: 4,
   },
+
+  // Alias: radius -> borderRadius (shorthand used by some screens)
+  radius: {
+    none: 0,
+    sm: 4,
+    md: 8,
+    lg: 12,
+    xl: 16,
+    '2xl': 20,
+    full: 9999,
+  },
 };
 
 export const darkTheme = {
@@ -182,6 +199,12 @@ export const darkTheme = {
     notificationBg: '#3D2E08',
     notificationBorder: '#5C4314',
     notificationText: '#FCD34D',
+
+    // Additional utility colors
+    white: '#FFFFFF',
+    black: '#000000',
+    disabled: '#636366',
+    surface: '#1C1C1E',
   },
 
   fonts: lightTheme.fonts,
@@ -189,6 +212,7 @@ export const darkTheme = {
   borderRadius: lightTheme.borderRadius,
   shadows: lightTheme.shadows,
   borders: lightTheme.borders,
+  radius: lightTheme.radius,
 };
 
 export type Theme = typeof lightTheme;

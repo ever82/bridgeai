@@ -1,0 +1,89 @@
+{
+  "id": 47,
+  "slug": "AS-AD-001",
+  "title": "我为消费者主人比价",
+  "narrative": "同时与多个商家 Agent 谈判争取最优价格。",
+  "issues": [
+    {
+      "id": 13,
+      "slug": "ISSUE-AI003a",
+      "title": "供给智能提炼服务 - 核心解析引擎与API",
+      "description": "实现供给智能提炼服务的核心解析引擎和API端点，\n包含供给解析引擎和供给API与集成，为场景提取器提供基础能力\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 48,
+          "slug": "AS-AD-001-AC-2",
+          "description": "对比各家优惠方案推荐最优",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 190,
+          "slug": "ISSUE-AI003a~c1",
+          "description": "解析引擎:\n- 服务描述理解\n- 供给实体识别\n- 服务类型分类\n- 供给结构化输出\n- 能力评估评分\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 191,
+          "slug": "ISSUE-AI003a~c2",
+          "description": "API实现:\n- 供给提取API端点\n- 批量供给导入\n- 提取结果存储\n- 质量报告生成\n- 供给更新同步\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 676,
+          "slug": "AS-AD-001~func",
+          "description": "消费者 Agent 同时与多个商家 Agent 谈判比价",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 677,
+          "slug": "AS-AD-001~edge",
+          "description": "异常：所有商家方案都不好",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "slug": "ISSUE-AI003b",
+      "title": "供给智能提炼服务 - 场景提取器",
+      "description": "实现供给场景提取器，支持VisionShare摄影师、AgentJob求职者、AgentAd商家\n等多场景的供给信息提取，包含供给方资质提取和场景自动识别能力\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 48,
+          "slug": "AS-AD-001-AC-2",
+          "description": "对比各家优惠方案推荐最优",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 192,
+          "slug": "ISSUE-AI003b~c1",
+          "description": "场景适配:\n- VisionShare摄影师供给(设备、经验、风格)\n- AgentJob求职者供给(技能、经历、期望)\n- AgentAd商家供给(商品、优惠、库存)\n- 供给方资质提取\n- 场景自动识别\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 676,
+          "slug": "AS-AD-001~func",
+          "description": "消费者 Agent 同时与多个商家 Agent 谈判比价",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 677,
+          "slug": "AS-AD-001~edge",
+          "description": "异常：所有商家方案都不好",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

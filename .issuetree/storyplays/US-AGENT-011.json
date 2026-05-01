@@ -1,0 +1,129 @@
+{
+  "id": 3,
+  "slug": "US-AGENT-011",
+  "title": "配置需求信息（分公开和详细）",
+  "narrative": "用户配置不同场景下的需求信息，分公开和详细两级。",
+  "issues": [
+    {
+      "id": 27,
+      "slug": "ISSUE-C006",
+      "title": "场景配置管理",
+      "description": "实现四大场景的配置管理系统，包括场景特定字段定义、\n场景模板、场景能力配置等。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 1,
+          "slug": "AS-001-AC-1",
+          "description": "读取主人的基础画像和场景配置",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 57,
+          "slug": "US-AGENT-001-AC-2",
+          "description": "用户选择感兴趣的场景（可多选）",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 65,
+          "slug": "US-AGENT-011-AC-1",
+          "description": "每个场景设置公开信息和详细信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 67,
+          "slug": "US-AGENT-012-AC-1",
+          "description": "每个场景设置公开信息和详细信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 254,
+          "slug": "ISSUE-C006~c1",
+          "description": "场景配置:\n- VisionShare 场景配置\n- AgentDate 场景配置\n- AgentJob 场景配置\n- AgentAd 场景配置\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 255,
+          "slug": "ISSUE-C006~c2",
+          "description": "字段系统:\n- 场景特定字段\n- 字段验证规则\n- 字段依赖关系\n- 字段国际化\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 256,
+          "slug": "ISSUE-C006~c3",
+          "description": "场景模板:\n- 预设场景模板\n- 模板应用和复制\n- 用户自定义模板\n- 模板分享\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 257,
+          "slug": "ISSUE-C006~c4",
+          "description": "能力系统:\n- 场景支持的功能列表\n- 能力启用/禁用\n- 能力依赖检查\n- 能力版本管理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 258,
+          "slug": "ISSUE-C006~c5",
+          "description": "场景切换:\n- 场景间数据迁移\n- 配置转换规则\n- 迁移预览\n- 迁移确认\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 259,
+          "slug": "ISSUE-C006~c6",
+          "description": "提供场景配置的可视化管理界面，支持场景切换和配置预览",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 584,
+          "slug": "US-AGENT-001~func",
+          "description": "用户首次创建 Agent 并配置基本信息和偏好",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 588,
+          "slug": "US-AGENT-011~func",
+          "description": "用户为每个场景分别配置公开和详细两级需求信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 589,
+          "slug": "US-AGENT-011~edge",
+          "description": "异常：披露策略切换后的行为一致性",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 590,
+          "slug": "US-AGENT-012~func",
+          "description": "用户为每个场景分别配置公开和详细两级供给信息",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 591,
+          "slug": "US-AGENT-012~edge",
+          "description": "异常：供给信息被未授权访问",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 646,
+          "slug": "AS-001~func",
+          "description": "Agent 被创建后能读取主人画像、学习规则、生成本场景性格",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

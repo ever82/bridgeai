@@ -1,0 +1,9 @@
+{
+  "success": false,
+  "message": "Validation error: Agent name is required",
+  "errorCode": "INTERNAL_ERROR",
+  "meta": {
+    "stack": "Error: Validation error: Agent name is required\n    at <anonymous> (/Users/z/projects/bridgeai/apps/server/src/routes/agents.js:110:15)\n    at <anonymous> (/Users/z/projects/bridgeai/apps/server/src/middleware/common.js:8:25)\n    at Layer.handle [as handle_request] (/Users/z/projects/bridgeai/node_modules/express/lib/router/layer.js:95:5)\n    at next (/Users/z/projects/bridgeai/node_modules/express/lib/router/route.js:149:13)\n    at authenticate (/Users/z/projects/bridgeai/apps/server/src/middleware/auth.js:62:9)",
+    "statusCode": 500
+  }
+}

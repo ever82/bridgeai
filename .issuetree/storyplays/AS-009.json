@@ -1,0 +1,481 @@
+{
+  "id": 40,
+  "slug": "AS-009",
+  "title": "我请求主人确认引荐",
+  "narrative": "匹配度达标后请求主人确认引荐。",
+  "issues": [
+    {
+      "id": 16,
+      "slug": "ISSUE-AI004",
+      "title": "Agent对话生成服务",
+      "description": "实现Agent对话生成服务，为AI Agent提供智能对话能力，\n支持Agent间的自主沟通、协商、匹配对话，以及Agent与用户\n的交互对话，具备上下文记忆和个性化回复能力。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 15,
+          "slug": "AS-005-AC-2",
+          "description": "自主发起对话请求",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 16,
+          "slug": "AS-005-AC-3",
+          "description": "同时与多个候选保持独立对话",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 18,
+          "slug": "AS-006-AC-2",
+          "description": "评估是否值得交流",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 19,
+          "slug": "AS-006-AC-3",
+          "description": "向主人汇报对话进展",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 23,
+          "slug": "AS-008-AC-1",
+          "description": "实时分析对方意图和态度",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 24,
+          "slug": "AS-008-AC-2",
+          "description": "发送策略建议、风险提示、话题推荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 26,
+          "slug": "AS-009-AC-1",
+          "description": "评估匹配度是否达到引荐阈值",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 53,
+          "slug": "AS-LEARN-001-AC-1",
+          "description": "记录成功匹配的共同特征",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 54,
+          "slug": "AS-LEARN-001-AC-2",
+          "description": "分析失败对话原因",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 55,
+          "slug": "AS-LEARN-001-AC-3",
+          "description": "学习主人决策偏好",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 70,
+          "slug": "US-AGENT-007-AC-2",
+          "description": "点击\"让 Agent 聊\"按钮后 Agent 以自己名义发言",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 78,
+          "slug": "US-AGENT-009-AC-1",
+          "description": "私聊建议显示在侧边栏或独立区域",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 79,
+          "slug": "US-AGENT-009-AC-2",
+          "description": "建议包括话题推荐、风险提示、对方意图分析",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 93,
+          "slug": "VS-003-AC-2",
+          "description": "符合条件的照片推荐给用户确认",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 108,
+          "slug": "DATE-004-AC-2",
+          "description": "Agent 提供交友话题建议",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 129,
+          "slug": "US-AGENT-015-AC-2",
+          "description": "Agent 礼貌结束对话",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 592,
+          "slug": "US-AGENT-007~func",
+          "description": "用户在四人群聊中成功切换\"亲自聊\"和\"让 Agent 代聊\"",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 598,
+          "slug": "US-AGENT-009~func",
+          "description": "Agent 实时向用户发送私聊建议，仅自己可见",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 599,
+          "slug": "US-AGENT-009~edge",
+          "description": "异常：建议泄露、建议为空",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 608,
+          "slug": "VS-003~func",
+          "description": "系统扫描本地相册并推荐匹配照片",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 622,
+          "slug": "DATE-004~func",
+          "description": "双方接受引荐后进入四人群聊交友",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 623,
+          "slug": "DATE-004~edge",
+          "description": "异常：成员离线、消息丢失",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 654,
+          "slug": "AS-005~func",
+          "description": "Agent 自主决定与符合条件的候选 Agent 发起对话",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 655,
+          "slug": "AS-005~edge",
+          "description": "异常：对方拒绝对话、同时对话数过多",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 656,
+          "slug": "AS-006~func",
+          "description": "Agent 被其他 Agent 联系后评估是否值得交流",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 657,
+          "slug": "AS-006~edge",
+          "description": "异常：大量 Agent 同时联系",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 660,
+          "slug": "AS-008~func",
+          "description": "Agent 实时分析对话，向主人发送私下建议",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 661,
+          "slug": "AS-008~edge",
+          "description": "异常：建议为空、AI 服务降级",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 662,
+          "slug": "AS-009~func",
+          "description": "匹配度达标后 Agent 请求主人确认引荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 663,
+          "slug": "AS-009~edge",
+          "description": "异常：引荐请求超时、一方接受一方拒绝",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 684,
+          "slug": "US-AGENT-015~func",
+          "description": "用户在匹配过程中随时退出",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 695,
+          "slug": "ISSUE-AI004~c1",
+          "description": "引擎实现:\n- 上下文管理\n- 意图识别\n- 回复生成\n- 对话状态跟踪\n- 多轮对话支持\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 696,
+          "slug": "ISSUE-AI004~c2",
+          "description": "人格系统:\n- Agent人格定义\n- 语气风格适配\n- 行为特征模拟\n- 场景角色扮演\n- 人格一致性维护\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 697,
+          "slug": "ISSUE-AI004~c3",
+          "description": "协商机制:\n- 双向Agent对话\n- 条件协商流程\n- 匹配意愿确认\n- 分歧处理策略\n- 共识达成检测\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 698,
+          "slug": "ISSUE-AI004~c4",
+          "description": "记忆系统:\n- 短期对话记忆\n- 长期Agent记忆\n- 关键信息提取\n- 记忆摘要生成\n- 记忆检索增强\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 699,
+          "slug": "ISSUE-AI004~c5",
+          "description": "切换机制:\n- 人工介入检测\n- 切换请求处理\n- 对话上下文移交\n- 接管状态同步\n- 恢复AI代理\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 700,
+          "slug": "ISSUE-AI004~c6",
+          "description": "API实现:\n- 对话生成API\n- 流式响应支持\n- WebSocket实时对话\n- 对话历史查询\n- 生成参数配置\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "slug": "ISSUE-CR001",
+      "title": "信用分计算系统",
+      "description": "实现用户信用分计算系统，包括信用分模型设计、多维度评分算法、\n信用等级划分、信用分历史追踪、以及信用分的实时更新机制。\n信用分是平台信任体系的核心，影响用户的匹配优先级、交易权限和场景准入。\n",
+      "status": "ai_confirmed",
+      "acceptance_criteria": [
+        {
+          "ac_id": 27,
+          "slug": "AS-009-AC-2",
+          "description": "向主人展示对方信息和信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 31,
+          "slug": "AS-VS-001-AC-3",
+          "description": "筛选信用高、距离近的候选",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 51,
+          "slug": "AS-PROTO-001-AC-1",
+          "description": "每条消息包含发送者类型和信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 81,
+          "slug": "US-AGENT-006-AC-1",
+          "description": "收到引荐通知，显示匹配理由",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 82,
+          "slug": "US-AGENT-006-AC-2",
+          "description": "显示对方关键信息和信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 90,
+          "slug": "VS-002-AC-1",
+          "description": "只显示符合地域和信用过滤条件的任务",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 110,
+          "slug": "DATE-005-AC-2",
+          "description": "评分影响信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 116,
+          "slug": "JOB-005-AC-1",
+          "description": "双向评分影响信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 124,
+          "slug": "US-AGENT-010-AC-1",
+          "description": "多维度评分（诚信度、礼貌度、响应度、满意度）",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 125,
+          "slug": "US-AGENT-010-AC-2",
+          "description": "评分影响信用分",
+          "criteria_type": "security",
+          "status": "pending"
+        },
+        {
+          "ac_id": 291,
+          "slug": "ISSUE-CR001~c1",
+          "description": "信用分数据库设计:\n- CreditScore 表设计(用户ID、当前分数、等级、更新时间)\n- CreditHistory 表设计(分数变更历史记录)\n- CreditFactor 表设计(各维度评分因子存储)\n- 数据库索引优化(按用户ID和日期查询)\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 292,
+          "slug": "ISSUE-CR001~c2",
+          "description": "信用分计算核心算法:\n- 基础信息完整性评分(资料完善度)\n- 行为信用评分(活跃度、响应率)\n- 交易信用评分(完成率、纠纷记录)\n- 社交信用评分(评价、举报记录)\n- 加权综合算法实现\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 293,
+          "slug": "ISSUE-CR001~c3",
+          "description": "信用等级划分机制:\n- 等级定义(例如: 优秀900-1000、良好750-899、一般600-749、较差<600)\n- 等级权益配置(不同等级的权限差异)\n- 等级升降级规则\n- 等级徽章和视觉展示\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 294,
+          "slug": "ISSUE-CR001~c4",
+          "description": "信用分对外接口:\n- GET /api/v1/credit/score - 获取当前用户信用分\n- GET /api/v1/credit/history - 获取信用分历史记录\n- GET /api/v1/credit/factors - 获取各维度评分详情\n- POST /api/v1/credit/recalculate - 触发重新计算(管理员)\n- 其他用户信用分查询(脱敏)\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 295,
+          "slug": "ISSUE-CR001~c5",
+          "description": "信用分动态更新:\n- 事件驱动更新(交易完成、评价提交等)\n- 定时任务全量计算(每日/每周)\n- 更新频率限制(防止刷分)\n- 异常波动检测和告警\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 296,
+          "slug": "ISSUE-CR001~c6",
+          "description": "信用分在匹配中的应用:\n- 信用分筛选接口(最低分数要求)\n- 信用分排序权重\n- 信用不达标用户过滤\n- 匹配结果中的信用分展示\n",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 600,
+          "slug": "US-AGENT-006~func",
+          "description": "Agent 请求引荐真人时，用户能接受或拒绝",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 601,
+          "slug": "US-AGENT-006~edge",
+          "description": "异常：引荐请求丢失、双方同时拒绝",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 606,
+          "slug": "VS-002~func",
+          "description": "用户根据地域和信用过滤条件查看并接附近任务",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 624,
+          "slug": "DATE-005~func",
+          "description": "约会完成后双方评分，影响信用分",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 625,
+          "slug": "DATE-005~edge",
+          "description": "异常：恶意评分、重复评分",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 634,
+          "slug": "JOB-005~func",
+          "description": "面试完成后双方评分",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 635,
+          "slug": "JOB-005~edge",
+          "description": "异常：未面试就评分",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 662,
+          "slug": "AS-009~func",
+          "description": "匹配度达标后 Agent 请求主人确认引荐",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 663,
+          "slug": "AS-009~edge",
+          "description": "异常：引荐请求超时、一方接受一方拒绝",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        },
+        {
+          "ac_id": 664,
+          "slug": "AS-VS-001~func",
+          "description": "Agent 解析主人地点意图，设置过滤条件并寻找响应者",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 680,
+          "slug": "US-AGENT-010~func",
+          "description": "双方真人交流后互相评分，影响信用分",
+          "criteria_type": "functional",
+          "status": "pending"
+        },
+        {
+          "ac_id": 681,
+          "slug": "US-AGENT-010~edge",
+          "description": "异常：恶意评分、重复评分",
+          "criteria_type": "edge_case",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

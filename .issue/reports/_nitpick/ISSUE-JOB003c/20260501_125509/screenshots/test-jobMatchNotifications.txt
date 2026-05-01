@@ -1,0 +1,51 @@
+jest-haste-map: duplicate manual mock found: expo-server-sdk
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/expo-server-sdk.js
+    * <rootDir>/src/__mocks__/expo-server-sdk.ts
+
+jest-haste-map: duplicate manual mock found: redis
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/redis.js
+    * <rootDir>/src/__mocks__/redis.ts
+
+jest-haste-map: duplicate manual mock found: @bridgeai/shared
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/@bridgeai/shared.js
+    * <rootDir>/src/__mocks__/@bridgeai/shared.ts
+
+jest-haste-map: duplicate manual mock found: @socket.io/redis-adapter
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/@socket.io/redis-adapter.js
+    * <rootDir>/src/__mocks__/@socket.io/redis-adapter.ts
+
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/z/projects/bridgeai/apps/server/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+PASS src/services/job/__tests__/jobMatchNotificationsRoutes.integration.test.ts
+  Job Match Notification Routes Integration (JOB003c)
+    POST /notify/new-match
+      ✓ sends a new-match notification for an enabled user (37 ms)
+      ✓ returns 401 when not authenticated (11 ms)
+      ✓ non-admin users cannot impersonate other users via targetUserId (3 ms)
+      ✓ admins may target a different user via targetUserId (10 ms)
+    POST /notify/high-match
+      ✓ sends a high-match notification (4 ms)
+      ✓ returns 401 when not authenticated (11 ms)
+    POST /notify/resume-viewed
+      ✓ sends a resume-viewed notification (12 ms)
+      ✓ returns 401 when not authenticated (4 ms)
+    POST /notify/match-status
+      ✓ sends a match-status notification for a valid status (10 ms)
+      ✓ rejects invalid status values with 400 (4 ms)
+      ✓ returns 401 when not authenticated (13 ms)
+    Preferences endpoints
+      ✓ GET /preferences returns the user preferences (11 ms)
+      ✓ PUT /preferences upserts preferences for the user (4 ms)
+      ✓ GET /preferences returns 401 when not authenticated (9 ms)
+      ✓ PUT /preferences returns 401 when not authenticated (4 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       15 passed, 15 total
+Snapshots:   0 total
+Time:        0.403 s, estimated 1 s
+Ran all test suites matching /src\/services\/job\/__tests__\/jobMatchNotificationsRoutes.integration.test.ts/i.

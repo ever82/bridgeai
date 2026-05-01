@@ -308,15 +308,15 @@ export async function previewMigration(
   const migration = generateMigrationPlan(fromScene, toScene);
 
   // Get current profile data
+  // Use select to avoid pulling columns that may not exist in DB schema
   const profile = await prisma.agentProfile.findFirst({
     where: { agentId, sceneId: fromScene },
+    select: { l2Data: true },
   });
 
-  if (!profile) {
-    throw new Error('Agent profile not found');
-  }
-
-  const currentData = (profile.l2Data as Record<string, any>) || {};
+  // If no profile exists for the source scene, treat as empty data
+  // (allows previewing migration before any profile data is set)
+  const currentData = (profile?.l2Data as Record<string, any>) || {};
 
   // Apply transformations to create preview
   const previewData = applyMigrationTransformations(

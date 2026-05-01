@@ -9,6 +9,7 @@ import { asyncHandler } from '../middleware/common';
 import { handleUploadError } from '../middleware/upload';
 import { validateBody } from '../middleware/validation';
 import { ApiResponse } from '../utils/response';
+import { prisma } from '../db/client';
 import * as storageService from '../services/storageService';
 import * as userService from '../services/userService';
 
@@ -460,6 +461,148 @@ router.get(
     const blockedUsers = await userService.getBlockedUsers(req.user.id);
 
     res.json(ApiResponse.success(blockedUsers));
+  })
+);
+
+/**
+ * @route POST /api/v1/users/blocked
+ * @desc Add a user to the blocked list (alias of /block, body uses blockedUserId)
+ * @access Private
+ */
+router.post(
+  '/blocked',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const { blockedUserId, userId, reason } = req.body;
+    const targetId = blockedUserId || userId;
+
+    if (!targetId) {
+      throw new AppError('blockedUserId is required', 'USER_ID_REQUIRED', 400);
+    }
+
+    await userService.blockUser(req.user.id, targetId, reason);
+
+    res.status(201).json(
+      ApiResponse.success({
+        blockedUserId: targetId,
+        message: 'User blocked successfully',
+      })
+    );
+  })
+);
+
+/**
+ * @route POST /api/v1/users/phone/send-code
+ * @desc Send a verification code to phone number (dev mode returns mock code)
+ * @access Private
+ */
+router.post(
+  '/phone/send-code',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const { phone } = req.body;
+
+    if (!phone) {
+      throw new AppError('Phone number is required', 'PHONE_REQUIRED', 400);
+    }
+
+    // In production, integrate with SMS provider; for dev/test return a fixed code.
+    const isDev = process.env.NODE_ENV !== 'production';
+    const code = isDev ? '123456' : undefined;
+
+    res.json(
+      ApiResponse.success({
+        success: true,
+        phone,
+        ...(code ? { code } : {}),
+        expiresIn: 300,
+        message: 'Verification code sent',
+      })
+    );
+  })
+);
+
+/**
+ * @route POST /api/v1/users/email/send-code
+ * @desc Send a verification code to email (dev mode returns mock code)
+ * @access Private
+ */
+router.post(
+  '/email/send-code',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const { email } = req.body;
+
+    if (!email) {
+      throw new AppError('Email is required', 'EMAIL_REQUIRED', 400);
+    }
+
+    const isDev = process.env.NODE_ENV !== 'production';
+    const code = isDev ? '123456' : undefined;
+
+    res.json(
+      ApiResponse.success({
+        success: true,
+        email,
+        ...(code ? { code } : {}),
+        expiresIn: 300,
+        message: 'Verification code sent',
+      })
+    );
+  })
+);
+
+/**
+ * @route GET /api/v1/users/sessions
+ * @desc List active sessions (refresh tokens) for current user
+ * @access Private
+ */
+router.get(
+  '/sessions',
+  authenticate,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('Unauthorized', 'UNAUTHORIZED', 401);
+    }
+
+    const tokens = await prisma.refreshToken.findMany({
+      where: {
+        userId: req.user.id,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        deviceInfo: true,
+        ipAddress: true,
+        createdAt: true,
+        expiresAt: true,
+      },
+    });
+
+    const sessions = tokens.map(t => ({
+      id: t.id,
+      deviceInfo: t.deviceInfo,
+      ipAddress: t.ipAddress,
+      createdAt: t.createdAt,
+      expiresAt: t.expiresAt,
+      current: false,
+    }));
+
+    res.json(ApiResponse.success(sessions));
   })
 );
 

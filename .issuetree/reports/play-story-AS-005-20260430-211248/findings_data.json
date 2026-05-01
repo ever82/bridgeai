@@ -1,0 +1,146 @@
+[
+  {
+    "issue_id": 16,
+    "ac_slug": "AS-005-AC-2",
+    "severity": "critical",
+    "category": "verification",
+    "description": "Agent 自主发起对话服务从未被任何外部代码调用 — 是死代码。initiateChat() 是 Story 的核心 API，但全代码库（除自身模块、index.ts re-export、单元测试外）没有 caller。Socket handler、REST 路由、job queue 均无入口触发，意味着 Agent 自主决定与候选 Agent 发起对话在生产路径上根本不会执行。",
+    "evidence": "apps/server/src/services/dating/agentInitiatedChat.ts:90 — initiateChat() 被定义但无生产调用方",
+    "recommendation": "增加调度层（cron / 候选生成回调 / Socket 事件 / worker），在候选列表生成后自动调用 initiateChat。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "ISSUE-AI004~c1",
+    "severity": "critical",
+    "category": "code_quality",
+    "description": "Agent 自动响应是硬编码模板字符串，没有调用 LLM。generateResponseContent 完全使用 4-5 条候选模板字符串数组按 turnIndex % responses.length 轮播。没有 LLM 调用、没有上下文管理、没有人格化、没有意图识别。剧本要求的 5-10 轮自然对话评估性格契合度实际只是机械复读。",
+    "evidence": "apps/server/src/services/dating/agentInitiatedChat.ts:335-363 — 模板数组 + 轮播",
+    "recommendation": "替换为 agentDialogService.generateMessage() 真实 LLM 调用，并接入人格 prompt 与上下文管理。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "US-AGENT-009~func",
+    "severity": "critical",
+    "category": "verification",
+    "description": "agent:private_advice 私聊建议通道在代码中完全不存在。剧本明确声明 agent:private_advice 通道仅推送给主人 socket，但全代码库 grep private_advice|privateAdvice|私聊建议 在 server 与 mobile 均无任何匹配。AS-008 整套实时分析意图、发送私下建议、风险提示、话题推荐、一键采纳在 server 端无 emit 事件，mobile 无订阅与 UI。",
+    "evidence": "apps/server (全代码库 grep) — 无任何 private_advice 通道实现",
+    "recommendation": "实现 socket 端 emit 到 user:{ownerId} 私聊房间、mobile 订阅、私聊建议侧边栏组件。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "ISSUE-AI004~c4",
+    "severity": "critical",
+    "category": "verification",
+    "description": "agent_memory 长期记忆表完全不存在，AS-LEARN-001 无落地。剧本声明通过查询 agent_memory 表验证 Agent 学习。schema.prisma 仅有 DialogSessionRecord，无 AgentMemory 模型，无成功匹配特征/失败原因/主人偏好的存储 schema。Phase 7.4-7.6 三个 AS-LEARN AC 没有数据落点。",
+    "evidence": "apps/server/prisma/schema.prisma — 无 AgentMemory 模型",
+    "recommendation": "设计 AgentMemory 表（含 userId、agentId、memoryType、structuredFields、createdAt）并创建写入路径（成功引荐后/被拒后/用户否决后）。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "US-AGENT-009~edge",
+    "severity": "critical",
+    "category": "test_coverage",
+    "description": "缺少双 socket 集成测试验证私聊建议不泄露给对方。无双 socket（Alice + Bob）集成测试用于断言 Bob socket 在建议生成时不会收到 agent:private_advice 类事件。这一关键安全边界 AC 没有自动化保障。",
+    "evidence": "apps/server/src/tests/integration/ — 缺少双 socket 隔离测试",
+    "recommendation": "编写双 socket 集成测试：一个 Alice socket 一个 Bob socket，触发建议生成并断言 Bob 在 1 秒窗口内未收到任何 advice 事件。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "AS-005~edge",
+    "severity": "critical",
+    "category": "verification",
+    "description": "无并发上限/限流机制 — 50+ Agent 并发与对话数上限 AC 无落地。agentInitiatedChat 与 agentNegotiationService 均无并发计数与限流。agentBehaviorService 文件头注释明确写道 intentionally not yet wired into the dispatch path — that integration is tracked separately，即未接入消息发送链路。10 个对话上限、50+ 并发限流、按信用分排队全部为空实现。",
+    "evidence": "apps/server/src/services/dating/agentInitiatedChat.ts; apps/server/src/services/agentBehaviorService.ts:8-9",
+    "recommendation": "在 initiateChat 入口检查每用户活跃 chat 数；在 negotiation 接收端按优先级队列处理；接入 agentBehaviorService 到分发路径。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "ISSUE-AI004~c6",
+    "severity": "critical",
+    "category": "verification",
+    "description": "dialogHandler 只是被动广播器，不调用 dialog 引擎。/dialog 命名空间 handler 仅暴露 join_session/leave_session/new_message/typing/session_state 5 个透传事件，无调用 agentDialogService.generateMessage() 或 agentToAgentDialog() 入口。mobile 端无法通过 WebSocket 触发 Agent 实际生成消息。也未发现对应 REST 路由。",
+    "evidence": "apps/server/src/socket/handlers/dialogHandler.ts:1-71 — 只有透传事件",
+    "recommendation": "增加 dialog:generate socket event 调用 service 并回写结果。"
+  },
+  {
+    "issue_id": 29,
+    "ac_slug": "ISSUE-COM001~c4",
+    "severity": "warning",
+    "category": "code_quality",
+    "description": "协商房间永不释放 — 内存泄漏。agentNegotiationService 的 rooms Map 与 agentDialogService 的 sessions Map 都没有 delete/clear 调用、无 TTL、无定期回收。confirmSelection 仅改 status 不移除，archiveSession 同样。生产环境长时间运行内存持续增长。",
+    "evidence": "apps/server/src/services/ai/agentNegotiationService.ts:216 — Map 无清理",
+    "recommendation": "实现 idle TTL（如 30 分钟无活动 → archive → delete）或定期清理任务。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "AS-005-AC-2",
+    "severity": "warning",
+    "category": "test_coverage",
+    "description": "agentInitiatedChat 单元测试断言极弱，仅检查存在性。should generate a response message 仅断言 content 存在与 senderAgentId 匹配，未验证内容是真实生成而非模板。should create a chat session with opening line 期待开场白固定为 嗨！很高兴认识你 — 反向证实开场白也是固定字符串。无 LLM 失败、并发、超时、对方拒绝、50+ 限流场景测试。",
+    "evidence": "apps/server/src/services/dating/__tests__/agentInitiatedChat.test.ts:46-95",
+    "recommendation": "补充内容差异性断言、拒绝/超时/并发上限测试、Agent 学习记忆写入测试。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "ISSUE-AI004~c4",
+    "severity": "warning",
+    "category": "code_quality",
+    "description": "记忆系统仅有 LLM 单段总结，无关键信息提取与向量检索。记忆系统实现为：历史超过 20 条时让 LLM 用 2-3 句总结塞入 metadata.conversationSummary。无结构化关键信息提取（无 主人偏好/成功特征/拒绝原因 独立字段）；extractSharedInterests 是 提取 2-4 字中文词组按频次排序 的关键词匹配，无向量检索。剧本声称的记忆检索增强未实现。",
+    "evidence": "apps/server/src/services/ai/agentDialogService.ts:720-743; apps/server/src/services/dating/agentConversationRoom.ts:509",
+    "recommendation": "引入结构化记忆 schema (intents, preferences, milestones)；后续考虑 embedding 检索。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "ISSUE-AI004~c3",
+    "severity": "warning",
+    "category": "code_quality",
+    "description": "双向 Agent 协商无明确状态机/共识达成检测/分歧处理。updateDialogPhase 仅按消息条数判定（messageCount<=2 → intro，>6 → negotiating），无对方 Agent 接受/拒绝/反提议状态、无底线触碰检测、无共识达成判定（剧本 Step 5.4 提的薪资底线 22K 触碰自动反提议无代码）、无死锁防御。",
+    "evidence": "apps/server/src/services/ai/agentDialogService.ts:767-802",
+    "recommendation": "设计明确的 NegotiationState enum (PROPOSED/COUNTER/ACCEPTED/REJECTED/STALEMATE) 与底线检查器。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "ISSUE-AI004~c2",
+    "severity": "warning",
+    "category": "code_quality",
+    "description": "Agent 人格系统仅是 prompt 字符串拼接，无一致性维护与场景规则学习。buildPersona = agent.config.personality 数组 + communicationStyle 字符串拼到 prompt 即完事。无人格状态持久化、无跨会话一致性校验、无违反人格检测。Step 1.2 要求的学习场景行为准则 → 显示进度 → 生成行为准则摘要无对应实现。",
+    "evidence": "apps/server/src/services/ai/agentDialogService.ts:675-690",
+    "recommendation": "实现学习场景规则入口（生成并持久化 persona）；增加跨轮 persona drift 检测。"
+  },
+  {
+    "issue_id": 29,
+    "ac_slug": "ISSUE-COM001~c1",
+    "severity": "info",
+    "category": "code_quality",
+    "description": "Socket 命名空间设计冗余，11 个命名空间职责重叠。同时存在 / /chat /user /handoff /system /group /room /negotiation /presence /dialog /matchSubscriptions 共 11 个命名空间。/chat /dialog /group /room 职责高度重叠（都做加入房间/广播/离开房间）。剧本只要求 /chat 与 /presence 两个。命名空间膨胀导致重复认证开销与客户端连接复杂度。",
+    "evidence": "apps/server/src/socket/index.ts:83-170",
+    "recommendation": "整合 /chat /dialog /group /room → /chat 一个命名空间下用 events 区分。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "ISSUE-COM001~c3",
+    "severity": "warning",
+    "category": "code_quality",
+    "description": "dialog session 双轨存储 (memory Map + DB)，状态不一致与多实例风险。sessions Map 内存缓存 + dialogSessionRecord DB upsert，每条消息都重写整个 session（messages JSON 列整体替换）。多实例下进程内存 Map 偏离；大对话越多越慢（O(n) 序列化）。persistSession 失败仅 logger.warn，调用方拿到的是 in-memory 状态，下次重启丢失。",
+    "evidence": "apps/server/src/services/ai/agentDialogService.ts:154,403-407,808",
+    "recommendation": "改为 messages 单独 table、append-only；session Map 仅做缓存；多副本配合 Redis pub/sub。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "JOB-004~func",
+    "severity": "warning",
+    "category": "consistency",
+    "description": "横向场景 (AgentJob/AgentAd/VisionShare) 各自独立实现，未真正复用基础设施。三场景各有自己的 Room 与 Chat 服务（dating 的 agentConversationRoom + agentInitiatedChat、job 的 negotiationRoom、ad 的 agentNegotiationService），房间数据结构、状态机、消息格式互不相同。剧本 Phase 5 声称的横向同构 — 同一套基础设施实际是三套各自实现，没有共享 base class 或抽象。VisionShare 与 Agent 对话基础设施完全脱钩。",
+    "evidence": "apps/server/src/services/dating/agentConversationRoom.ts; apps/server/src/services/job/negotiationRoom.ts; apps/server/src/services/ai/agentNegotiationService.ts",
+    "recommendation": "抽象 AgentRoomBase / AgentDialogBase 类，三场景继承统一接口。"
+  },
+  {
+    "issue_id": 16,
+    "ac_slug": "AS-009-AC-1",
+    "severity": "warning",
+    "category": "verification",
+    "description": "AS-009 引荐流程仅有 referralService 桩，阈值/实时触发/UI 链路不完整。匹配度达标 → 请求引荐 → 进入四人群聊 整个流程在代码中只有 completeRoom 末尾一段 — 当 qualityScore >= 0.6 调用 createReferralFromConversation。但：(a) 剧本要求 80% 阈值，代码用 0.6；(b) 此触发只在 room 完成时走，不是匹配度实时达标动态触发；(c) 实时意图分析 → 主人确认弹窗 → 双方接受跳四人群聊在 mobile 端无对应屏幕。",
+    "evidence": "apps/server/src/services/dating/agentConversationRoom.ts:413-439",
+    "recommendation": "拆分实时阈值监听器 + 引荐确认 UI 流；阈值常量集中配置；与剧本对齐为 0.8。"
+  }
+]

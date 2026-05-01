@@ -1,0 +1,25 @@
+{
+  "success": true,
+  "data": {
+    "id": "3f18e5e0-41d1-4ee2-b635-4ff90d3b0b42",
+    "userId": "74d3d96f-f823-4d29-8bf7-14a2fac8b3ec",
+    "type": "VISIONSHARE",
+    "name": "My VisionShare",
+    "description": "Test agent for verification",
+    "status": "PAUSED",
+    "config": {
+      "personality": {
+        "traits": ["地理敏感", "价格敏锐", "视觉导向"],
+        "communicationStyle": "friendly"
+      },
+      "sceneConfig": { "price": 50, "range": "local", "autoShare": true },
+      "communicationStyle": "friendly"
+    },
+    "latitude": null,
+    "longitude": null,
+    "isActive": true,
+    "createdAt": "2026-04-30T17:35:28.816Z",
+    "updatedAt": "2026-04-30T17:35:47.680Z"
+  },
+  "message": "Agent status updated successfully"
+}

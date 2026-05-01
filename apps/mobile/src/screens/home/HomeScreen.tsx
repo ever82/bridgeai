@@ -205,7 +205,7 @@ export const HomeScreen = () => {
     if (!showNotificationPanel) return null;
 
     return (
-      <View style={styles.notificationPanelContainer}>
+      <View style={[styles.notificationPanelContainer, { top: insets.top + 50 }]}>
         <Pressable style={styles.notificationPanelBackdrop} onPress={handleToggleNotification} />
         <View style={styles.notificationPanel}>
           <View style={styles.notificationPanelHeader}>
@@ -1059,7 +1059,6 @@ const styles = StyleSheet.create({
   // Notification Panel
   notificationPanelContainer: {
     position: 'absolute',
-    top: insets.top + 50,
     right: theme.spacing.lg,
     left: theme.spacing.lg,
     zIndex: 1000,

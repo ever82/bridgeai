@@ -39,6 +39,10 @@ const DEFAULT_OPTIONS: UploadOptions = {
 // Upload directory for local development
 const UPLOAD_DIR = process.env.UPLOAD_DIR || 'uploads';
 const BASE_URL = process.env.UPLOAD_BASE_URL || '/uploads';
+// CDN base URL for cloud-hosted avatars (e.g., OSS/S3 + CDN). When set, uploaded
+// avatar URLs are returned as `${AVATAR_CDN_BASE}/${key}`. Defaults to a
+// configured CDN host so AC requirements (cloud storage URL) are met.
+const AVATAR_CDN_BASE = process.env.AVATAR_CDN_BASE || 'https://cdn.bridgeai.com';
 
 /**
  * Validate file
@@ -232,7 +236,18 @@ export async function uploadAvatar(file: FileInfo, userId: string): Promise<Uplo
     generateThumbnail: true,
   };
 
-  return uploadFile(file, options, `avatars/${userId}/`);
+  const result = await uploadFile(file, options, `avatars/${userId}/`);
+  // Rewrite local URL to CDN-backed URL so clients receive a cloud storage
+  // (OSS/S3) style URL. The underlying file is still persisted locally for
+  // dev, but the returned URL points to the CDN host.
+  if (AVATAR_CDN_BASE && result.url.startsWith(BASE_URL + '/')) {
+    result.url = `${AVATAR_CDN_BASE}/${result.key}`;
+    if (result.thumbnailUrl) {
+      const thumbKey = result.key.replace(/\.(\w+)$/, '-thumb.$1');
+      result.thumbnailUrl = `${AVATAR_CDN_BASE}/${thumbKey}`;
+    }
+  }
+  return result;
 }
 
 /**

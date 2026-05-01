@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Play-Story Report: US-AGENT-001</title>
+<style>
+  :root { --bg: #1a1a2e; --card: #16213e; --accent: #0f3460; --highlight: #e94560; --text: #eee; --muted: #8892b0; --pass: #4caf50; --warn: #ff9800; --fail: #f44336; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 2rem; }
+  h1 { color: var(--highlight); margin-bottom: 0.5rem; }
+  h2 { color: var(--text); margin: 1.5rem 0 0.5rem; border-bottom: 1px solid var(--accent); padding-bottom: 0.5rem; }
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin: 1rem 0; }
+  .stat { background: var(--card); padding: 1rem; border-radius: 8px; text-align: center; }
+  .stat .num { font-size: 2rem; font-weight: bold; }
+  .stat .label { font-size: 0.8rem; color: var(--muted); }
+  .phase { background: var(--card); border-radius: 8px; padding: 1.2rem; margin: 1rem 0; border-left: 4px solid var(--accent); }
+  .phase.pass { border-left-color: var(--pass); }
+  .phase.warn { border-left-color: var(--warn); }
+  .phase.fail { border-left-color: var(--fail); }
+  .phase h3 { display: flex; align-items: center; gap: 0.5rem; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: #fff; }
+  .badge.pass { background: var(--pass); }
+  .badge.warn { background: var(--warn); }
+  .badge.fail { background: var(--fail); }
+  .step { margin: 0.5rem 0; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 4px; font-size: 0.9rem; }
+  .step .screenshot-desc { color: var(--muted); font-style: italic; margin-top: 4px; }
+  .bug { background: rgba(244,67,54,0.1); border: 1px solid var(--fail); border-radius: 8px; padding: 1rem; margin: 0.5rem 0; }
+  .bug h4 { color: var(--fail); }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--accent); }
+  th { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; }
+  .timestamp { color: var(--muted); font-size: 0.8rem; }
+</style>
+</head>
+<body>
+
+<h1>US-AGENT-001: 创建个人 Agent</h1>
+<p class="timestamp">验收时间: 2026-05-01 16:31 UTC+8 | 验收工具: play-story v3 (截图铁律)</p>
+
+<h2>验收概览</h2>
+<div class="summary">
+  <div class="stat"><div class="num" style="color:var(--pass)">9</div><div class="label">Phase 完全通过</div></div>
+  <div class="stat"><div class="num" style="color:var(--warn)">7</div><div class="label">Phase 部分通过</div></div>
+  <div class="stat"><div class="num" style="color:var(--fail)">0</div><div class="label">Phase 完全失败</div></div>
+  <div class="stat"><div class="num" style="color:var(--fail)">4</div><div class="label">Bug 发现</div></div>
+</div>
+
+<h2>Phase 验证结果</h2>
+
+<div class="phase pass">
+  <h3><span class="badge pass">✅ PASS</span> Phase 1: 登录与导航</h3>
+  <div class="step">
+    <strong>Step 1.1:</strong> Home 页正确渲染，显示 "下午好，E2E Test User"，Agent 状态小A(在线)，今日匹配12对话
+    <div class="screenshot-desc">截图实际显示: BridgeAI Home 页面完整渲染，用户名、Agent状态、匹配信息、精选内容、底部导航均可见</div>
+  </div>
+  <div class="step">
+    <strong>Step 1.2:</strong> Profile 页显示 "E2E Test User"，信用分600/良好，包含 "我的 Agent" 菜单项
+  </div>
+</div>
+
+<div class="phase pass">
+  <h3><span class="badge pass">✅ PASS</span> Phase 2: Agent 列表 / 空状态</h3>
+  <div class="step">
+    <strong>Step 2.1:</strong> 空状态正确显示 "No Agents Yet" + "Create your first agent to get started" + "Create Agent" 按钮
+  </div>
+  <div class="step">
+    <strong>Step 2.2:</strong> Create Agent 向导 Step 1 正确加载，包含 Avatar 上传、Agent Name (0/100)、Description (0/500)、Visibility 选择
+  </div>
+</div>
+
+<div class="phase warn">
+  <h3><span class="badge warn">⚠️ PARTIAL</span> Phase 3: 基础信息 (Step 1)</h3>
+  <div class="step">
+    <strong>Step 3.1:</strong> 空名称提交 → 页面停留在 Step 1 但无错误提示 <span class="badge warn">⚠️ 缺少验证错误</span>
+  </div>
+  <div class="step">
+    <strong>Step 3.2:</strong> 填入名称 "测试Agent" (7/100)、描述、Visibility=Private → 成功跳转 Step 2 <span class="badge pass">✅</span>
+  </div>
+</div>
+
+<div class="phase pass">
+  <h3><span class="badge pass">✅ PASS</span> Phase 4: 场景类型 (Step 2)</h3>
+  <div class="step">
+    <strong>Step 4.1:</strong> 4种场景类型卡片正确显示: Vision Share / Agent Date / Agent Job / Agent Ad
+  </div>
+  <div class="step">
+    <strong>Step 4.2:</strong> 选择 Vision Share，点击 Next → 成功进入 Step 3
+  </div>
+</div>
+
+<div class="phase pass">
+  <h3><span class="badge pass">✅ PASS</span> Phase 5: 场景配置 (Step 3)</h3>
+  <div class="step">
+    <strong>Step 5.1:</strong> VisionShare 配置表单: 需求范围(本地/同城/全国)、价格设置(元/次)、自动分享开关
+  </div>
+  <div class="step">
+    <strong>Step 5.2:</strong> 填入价格5.00，选择"全国"范围 → 成功进入 Step 4
+  </div>
+</div>
+
+<div class="phase pass">
+  <h3><span class="badge pass">✅ PASS</span> Phase 6: AI 行为 (Step 4)</h3>
+  <div class="step">
+    <strong>Step 6.1:</strong> AI 配置表单完整: LLM模型(GPT-4/GPT-3.5/Claude 3/本地)、温度滑块(0.5)、回复风格(正式/友好/幽默)、自动回复开关、人机切换条件
+  </div>
+  <div class="step">
+    <strong>Step 6.2:</strong> 默认设置 → 成功进入 Step 5
+  </div>
+</div>
+
+<div class="phase warn">
+  <h3><span class="badge warn">⚠️ PARTIAL</span> Phase 7: 预览与提交 (Step 5)</h3>
+  <div class="step">
+    <strong>Step 7.1:</strong> 预览页正确显示: 资料预览/对话测试 Tab，配置摘要(status=DRAFT, price=500, range=全国) <span class="badge pass">✅</span>
+  </div>
+  <div class="step">
+    <strong>Step 7.2:</strong> 点击 "Create Agent" → API 返回 201 Created，但 UI 抛出 "Maximum update depth exceeded" 未自动导航 <span class="badge warn">⚠️ UI 导航失败</span>
+  </div>
+</div>
+
+<div class="phase pass">
+  <h3><span class="badge pass">✅ PASS</span> Phase 8: 创建后验证</h3>
+  <div class="step">
+    <strong>Step 8.1:</strong> Agent 列表显示新创建的 "测试Agent" (Vision Share / Draft)，含 Toggle 开关
+  </div>
+  <div class="step">
+    <strong>Step 8.2:</strong> Agent 详情页显示完整信息，有 "编辑 Agent" 和 "删除 Agent" 按钮
+  </div>
+  <div class="step">
+    <strong>Step 8.3:</strong> 编辑模式正确预填数据，标题变为 "Edit Agent"
+  </div>
+</div>
+
+<div class="phase warn">
+  <h3><span class="badge warn">⚠️ PARTIAL</span> Phase 9: 生命周期状态</h3>
+  <div class="step">
+    <strong>Step 9.1:</strong> DRAFT → ACTIVE: Toggle 切换成功，状态变 "Active" <span class="badge pass">✅</span>
+  </div>
+  <div class="step">
+    <strong>Step 9.2:</strong> ACTIVE → PAUSED: Toggle 切换成功 <span class="badge pass">✅</span>
+  </div>
+  <div class="step">
+    <strong>Step 9.3:</strong> PAUSED → ARCHIVED: API 成功 (status: ARCHIVED)，但 UI 无 Archive 按钮 <span class="badge warn">⚠️ UI 缺少归档按钮</span>
+  </div>
+</div>
+
+<div class="phase pass">
+  <h3><span class="badge pass">✅ PASS</span> Phase 10: 分页/排序/筛选</h3>
+  <div class="step">
+    <strong>Step 10.1:</strong> 类型筛选下拉: All Types / VisionShare / AgentDate / AgentJob / AgentAd / Demand / Supply
+  </div>
+  <div class="step">
+    <strong>Step 10.2:</strong> 选择 VisionShare 筛选 → 正确过滤
+  </div>
+  <div class="step">
+    <strong>Step 10.3:</strong> 排序选项: Name / Created Time / Updated Time
+  </div>
+</div>
+
+<div class="phase warn">
+  <h3><span class="badge warn">⚠️ PARTIAL</span> Phase 11: 删除</h3>
+  <div class="step">
+    <strong>Step 11.1:</strong> UI "删除 Agent" 按钮点击无反应，无确认弹窗 <span class="badge warn">⚠️</span>
+  </div>
+  <div class="step">
+    <strong>Step 11.2:</strong> API DELETE /api/agents/{id} → 200 "Agent deleted successfully" <span class="badge pass">✅</span>
+  </div>
+</div>
+
+<div class="phase pass">
+  <h3><span class="badge pass">✅ PASS</span> Phase 12: 隐私/可见性</h3>
+  <div class="step">
+    <strong>Step 12.1:</strong> Step 1 包含 Private (Only you can see this agent) 和 Public (Visible to others) 选项
+  </div>
+</div>
+
+<div class="phase warn">
+  <h3><span class="badge warn">⚠️ PARTIAL</span> Phase 13: 安全/信息披露</h3>
+  <div class="step">
+    <strong>Step 13.1:</strong> Agent 详情页无直接 Security/Disclosure 入口 <span class="badge warn">⚠️ UI 无入口</span>
+  </div>
+  <div class="step">
+    <strong>Step 13.2:</strong> API /api/v1/disclosure/{agentId}/settings → 错误 "Failed to get disclosure settings" (缺少数据库表) <span class="badge warn">⚠️ DB 未同步</span>
+  </div>
+</div>
+
+<div class="phase pass">
+  <h3><span class="badge pass">✅ PASS</span> Phase 14: 场景模板</h3>
+  <div class="step">
+    <strong>Step 14.1:</strong> Step 2 提供 4 种预定义场景类型（作为模板选择）
+  </div>
+</div>
+
+<div class="phase warn">
+  <h3><span class="badge warn">⚠️ PARTIAL</span> Phase 15: 能力系统</h3>
+  <div class="step">
+    <strong>Step 15.1:</strong> 类型定义存在 (shared/types/capability.d.ts)，但 UI 无可视化能力管理 <span class="badge warn">⚠️ UI 未实现</span>
+  </div>
+</div>
+
+<div class="phase warn">
+  <h3><span class="badge warn">⚠️ PARTIAL</span> Phase 16: 场景切换</h3>
+  <div class="step">
+    <strong>Step 16.1:</strong> SceneMigrationScreen 组件存在，但 Agent 详情页无 "切换场景" 导航入口 <span class="badge warn">⚠️ UI 无入口</span>
+  </div>
+</div>
+
+<h2>发现的 Bug</h2>
+
+<div class="bug">
+  <h4>Bug #1: Agent 创建后 UI 卡死 (Critical)</h4>
+  <p>API 返回 201 Created 后，UI 抛出 "Maximum update depth exceeded" React 错误，页面卡在 Step 5 不自动导航回列表。</p>
+  <p><strong>文件:</strong> CreateAgentScreen.tsx</p>
+</div>
+
+<div class="bug">
+  <h4>Bug #2: 空名称无验证错误 (Warning)</h4>
+  <p>向导 Step 1 不输入名称直接点 Next，页面停留但无任何错误提示。用户不知道为什么无法继续。</p>
+  <p><strong>文件:</strong> CreateAgentScreen.tsx</p>
+</div>
+
+<div class="bug">
+  <h4>Bug #3: 删除按钮无响应 (Warning)</h4>
+  <p>Agent 详情页 "删除 Agent" 按钮点击后无确认弹窗、无反应。API DELETE 正常工作。</p>
+  <p><strong>文件:</strong> EditAgentScreen.tsx</p>
+</div>
+
+<div class="bug">
+  <h4>Bug #4: L2 Profile API 500 错误 (Warning)</h4>
+  <p>/api/v1/agents/:id/profile/l2 因缺少 l3_media_urls 数据库列而崩溃返回 500。</p>
+  <p><strong>文件:</strong> apps/server/src/routes/agentProfile.ts</p>
+</div>
+
+<h2>AC 覆盖汇总</h2>
+<table>
+  <thead>
+    <tr><th>AC Slug</th><th>描述</th><th>结果</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>ISSUE-A003~c1</td><td>用户信息接口</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>ISSUE-A003~c2</td><td>头像管理</td><td><span class="badge warn">⚠️ Web 无法测试相机</span></td></tr>
+    <tr><td>ISSUE-A003~c3</td><td>移动端资料 UI</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>ISSUE-A003~c4</td><td>隐私控制</td><td><span class="badge warn">⚠️ 部分实现</span></td></tr>
+    <tr><td>ISSUE-A003~c5</td><td>安全功能</td><td><span class="badge warn">⚠️ DB 未同步</span></td></tr>
+    <tr><td>ISSUE-C001~c1</td><td>Agent 创建接口</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>ISSUE-C001~c2</td><td>Agent 类型定义</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>ISSUE-C001~c3</td><td>Agent 生命周期</td><td><span class="badge warn">⚠️ Archive 仅 API</span></td></tr>
+    <tr><td>ISSUE-C001~c4</td><td>Agent 查询接口</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>ISSUE-C001~c5</td><td>Agent 管理 UI</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>ISSUE-C006~c1</td><td>场景配置</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>ISSUE-C006~c2</td><td>字段系统</td><td><span class="badge warn">⚠️ 空名称无验证</span></td></tr>
+    <tr><td>ISSUE-C006~c3</td><td>场景模板</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>ISSUE-C006~c4</td><td>能力系统</td><td><span class="badge warn">⚠️ UI 未实现</span></td></tr>
+    <tr><td>ISSUE-C006~c5</td><td>场景切换</td><td><span class="badge warn">⚠️ UI 无入口</span></td></tr>
+    <tr><td>ISSUE-C006~c6</td><td>配置可视化预览</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>US-AGENT-001~func</td><td>首次创建 Agent</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>US-AGENT-001~edge</td><td>异常场景</td><td><span class="badge warn">⚠️ 验证提示缺失</span></td></tr>
+    <tr><td>US-AGENT-001-AC-1</td><td>昵称和头像</td><td><span class="badge warn">⚠️ 头像 Web 不可测</span></td></tr>
+    <tr><td>US-AGENT-001-AC-2</td><td>场景选择</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>US-AGENT-001-AC-3</td><td>沟通风格</td><td><span class="badge pass">✅</span></td></tr>
+    <tr><td>US-AGENT-001-AC-4</td><td>初始画像</td><td><span class="badge pass">✅</span></td></tr>
+  </tbody>
+</table>
+
+<h2>修复环境问题 (验收前置)</h2>
+<table>
+  <thead><tr><th>#</th><th>问题</th><th>根因</th><th>修复</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>HomeScreen insets ReferenceError</td><td>StyleSheet.create 模块级引用组件级变量</td><td>内联动态样式</td></tr>
+    <tr><td>2</td><td>Metro Promise.all RangeError</td><td>worktrees 目录被枚举 (125+副本)</td><td>blockList 排除</td></tr>
+    <tr><td>3</td><td>Theme 字段系统性缺失</td><td>radius/white/surface 等从未定义</td><td>补齐 theme schema</td></tr>
+    <tr><td>4</td><td>测试账号不存在</td><td>seed 脚本从未创建 test-e2e 用户</td><td>注册 + 加入 seed</td></tr>
+    <tr><td>5</td><td>Agent 卡住不自知</td><td>skill 缺乏超时/卡住自检</td><td>skill 增加防卡机制</td></tr>
+  </tbody>
+</table>
+
+</body>
+</html>
